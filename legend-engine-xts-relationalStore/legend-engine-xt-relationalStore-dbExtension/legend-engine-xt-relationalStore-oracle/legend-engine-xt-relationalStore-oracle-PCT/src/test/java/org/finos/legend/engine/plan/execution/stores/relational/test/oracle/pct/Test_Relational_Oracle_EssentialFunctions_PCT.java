@@ -313,10 +313,7 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::string::tests::parseBoolean::testParseTrue_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
 
             // ParseDate
-            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "java.sql.SQLDataException: ORA-01858: a non-numeric character was found where a numeric was expected\n\nhttps://docs.oracle.com/error-help/db/ora-01858/", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_", "java.sql.SQLDataException: ORA-01858: a non-numeric character was found where a numeric was expected\n\nhttps://docs.oracle.com/error-help/db/ora-01858/", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_", "java.sql.SQLDataException: ORA-01858: a non-numeric character was found where a numeric was expected\n\nhttps://docs.oracle.com/error-help/db/ora-01858/", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_", "java.sql.SQLDataException: ORA-01858: a non-numeric character was found where a numeric was expected\n\nhttps://docs.oracle.com/error-help/db/ora-01858/", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_", "\"expected %2014-02-27 to be an instance of DateTime, actual: StrictDate\"", AdapterQualifier.needsInvestigation),
 
             // ParseDecimal
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-01722: invalid number\n\nhttps://docs.oracle.com/error-help/db/ora-01722/", AdapterQualifier.needsInvestigation),
