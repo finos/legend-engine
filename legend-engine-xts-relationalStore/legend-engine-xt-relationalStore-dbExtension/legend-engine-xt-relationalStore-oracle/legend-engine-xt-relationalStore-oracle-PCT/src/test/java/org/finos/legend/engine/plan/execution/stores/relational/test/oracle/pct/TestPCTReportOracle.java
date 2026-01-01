@@ -19,7 +19,7 @@ import org.finos.legend.pure.m3.pct.shared.provider.PCTReportProviderLoader;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestPCRReportOracle
+public class TestPCTReportOracle
 {
     @Test
     public void canFindPCTReport()
