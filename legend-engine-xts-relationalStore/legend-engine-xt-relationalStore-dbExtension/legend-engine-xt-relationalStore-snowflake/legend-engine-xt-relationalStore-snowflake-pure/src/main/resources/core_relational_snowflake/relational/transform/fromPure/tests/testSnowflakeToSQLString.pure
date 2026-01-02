@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
                                                 ['firstName', 'age']),
                                                 meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "firstName"', $s);
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithOrderbySnowflake():Boolean[1]
@@ -41,7 +41,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
                                                 ['firstName', 'age'])->sort(asc('age'))->limit(5),
                                                 meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "firstName" order by "age" limit 5', $s);
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "root".FIRSTNAME order by "age" limit 5', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSqlGenerationIndexOf():Boolean[1]
@@ -235,7 +235,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::simpleGr
           ->groupBy('90.01', agg('cnt', x|$x, y| $y->count()))};
 
  let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "productTable_d#5_d#2_m2".NAME as "90.01", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#5_d#2_m2" on ("root".prodId = "productTable_d#5_d#2_m2".ID) group by "90.01"', $snowflakeSql);
+   assertEquals('select "productTable_d#5_d#2_m2".NAME as "90.01", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "productTable_d#5_d#2_m2" on ("root".prodId = "productTable_d#5_d#2_m2".ID) group by "productTable_d#5_d#2_m2".NAME', $snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJaroWinklerSimilarity():Boolean[1]
