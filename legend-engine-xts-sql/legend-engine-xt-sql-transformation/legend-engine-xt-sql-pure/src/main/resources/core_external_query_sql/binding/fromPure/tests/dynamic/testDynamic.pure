@@ -26,7 +26,7 @@ import meta::external::query::sql::transformation::queryToPure::tests::dynamic::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicCSV():Boolean[1]
 {
-  assertEquals('|#TDS{\na,b\n1,2\n2,3}#->meta::pure::functions::relation::select(~[a])',
+  assertEquals('|#TDS{\na:Integer[0..1],b:Integer[0..1]\n1,2\n2,3\n}#->meta::pure::functions::relation::select(~[a])',
                 transform('select a from csv(\'a,b\n1,2\n2,3\')',[]));
 }
 
@@ -46,7 +46,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   let lambda = meta::external::query::sql::transformation::queryToPure::sqlToPure('select id from variant(\'a\')', $source, [], ^Map<String, ValueSpecification>())->cast(@FunctionDefinition<Any>);
 
-  assertEquals('|#TDS{\nid,payload:meta::pure::metamodel::variant::Variant\n1,"[1,2,3]"\n2,"[4,5,6]"}#->meta::pure::functions::relation::select(~[id])',
+  assertEquals('|#TDS{\nid:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1]\n1,"[1,2,3]"\n2,"[4,5,6]"\n}#->meta::pure::functions::relation::select(~[id])',
               $lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
   );
 }

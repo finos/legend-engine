@@ -88,35 +88,35 @@ public class ProjectExtend extends AggregationShared
 
         CoreInstance secondParameter = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
 
-            TestTDS result;
-            if (secondParameter instanceof FuncColSpec)
-            {
-                result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), (FuncColSpec<?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
-            }
-            else if (secondParameter instanceof FuncColSpecArray)
-            {
-                result = ((FuncColSpecArray<?, ?>) secondParameter)._funcSpecs().injectInto(
-                        targetTds,
-                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
-                );
-            }
-            else if (secondParameter instanceof AggColSpec)
-            {
-                Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
-                result = targetTds.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
-            }
-            else if (secondParameter instanceof AggColSpecArray)
-            {
-                Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
-                result = ((AggColSpecArray<?, ?, ?>) secondParameter)._aggSpecs().injectInto(
-                        targetTds,
-                        (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
-                );
-            }
-            else if (Instance.instanceOf(secondParameter, "meta::pure::functions::relation::_Window", processorSupport))
-            {
-                MutableList<String> partitionIds = secondParameter.getValueForMetaPropertyToMany("partition").collect(PrimitiveUtilities::getStringValue).toList();
-                Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = partitionIds.isEmpty() ? tds.wrapFullTDS() : tds.sort(partitionIds.collect(c -> new SortInfo(c, SortDirection.ASC)));
+        TestTDS result;
+        if (secondParameter instanceof FuncColSpec)
+        {
+            result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), (FuncColSpec<?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
+        }
+        else if (secondParameter instanceof FuncColSpecArray)
+        {
+            result = ((FuncColSpecArray<?, ?>) secondParameter)._funcSpecs().injectInto(
+                    targetTds,
+                    (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
+            );
+        }
+        else if (secondParameter instanceof AggColSpec)
+        {
+            Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
+            result = targetTds.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), (AggColSpec<?, ?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null));
+        }
+        else if (secondParameter instanceof AggColSpecArray)
+        {
+            Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = tds.wrapFullTDS();
+            result = ((AggColSpecArray<?, ?, ?>) secondParameter)._aggSpecs().injectInto(
+                    targetTds,
+                    (a, aggColSpec) -> a.addColumn(processOneAggColSpec(source, Lists.fixedSize.empty(), new Window(new Rows(true, true)), aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, false, false, null))
+            );
+        }
+        else if (Instance.instanceOf(secondParameter, "meta::pure::functions::relation::_Window", processorSupport))
+        {
+            MutableList<String> partitionIds = secondParameter.getValueForMetaPropertyToMany("partition").collect(PrimitiveUtilities::getStringValue).toList();
+            Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source = partitionIds.isEmpty() ? tds.wrapFullTDS() : tds.sort(partitionIds.collect(c -> new SortInfo(c, SortDirection.ASC)));
 
             ListIterable<? extends CoreInstance> sortInfos = secondParameter.getValueForMetaPropertyToMany("sortInfo");
             MutableList<SortInfo> newSortInfos = Sort.getSortInfos(sortInfos, processorSupport).toList();
@@ -245,7 +245,7 @@ public class ProjectExtend extends AggregationShared
                     parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), false, processorSupport));
                     parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveHandler(repository)), false, processorSupport));
                 }
-                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(source.getOne(), i, "", null, relationType, -1, repository, false), false, processorSupport));
+                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType, -1, repository, false), false, processorSupport));
                 CoreInstance newValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 setter.value(k++, newValue.getValueForMetaPropertyToOne("values"));
             }

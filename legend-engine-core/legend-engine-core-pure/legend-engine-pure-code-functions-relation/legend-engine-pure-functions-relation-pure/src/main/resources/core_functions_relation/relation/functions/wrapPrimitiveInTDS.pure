@@ -16,10 +16,11 @@ import meta::pure::metamodel::variant::*;
 import meta::pure::test::pct::*;
 
 //Issue: we require type as a parameter so that the function can be called from 'dynamic compiled mode'
-native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::wrapPrimitiveInTDS<T>(value:T[0..1], type:T[1]):meta::pure::metamodel::relation::TDS<(value:T[0..1])>[1];
+native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::wrapPrimitiveInTDS<T>(value:T[*], type:T[1]):meta::pure::metamodel::relation::TDS<(value:T[0..1])>[1];
 
 function <<test.Test>> meta::pure::functions::relation::tests::wrapPrimitiveInTDS::testWrap():Boolean[1]
 {
     assertEquals('ok', wrapPrimitiveInTDS('o', @String)->map(x|$x.value->toOne()+'k'));
     assertEquals(3, wrapPrimitiveInTDS(1, @Integer)->map(x|$x.value->toOne()+2));
+    assertEquals('ok', wrapPrimitiveInTDS(['o','b'], @String)->map(x|$x.value->toOne()+'k'));
 }

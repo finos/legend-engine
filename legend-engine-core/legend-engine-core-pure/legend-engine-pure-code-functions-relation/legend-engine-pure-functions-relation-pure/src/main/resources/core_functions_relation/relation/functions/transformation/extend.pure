@@ -1321,11 +1321,11 @@ meta::pure::functions::relation::tests::extend::testVariantColumn<T|m>(f:Functio
 
    assertEquals('#TDS\n'+
                 '   id,payload,passthru\n'+
-                '   1,[1,2,3],[1,2,3]\n'+
-                '   2,[4,5,6],[4,5,6]\n'+
-                '   3,[7,8,9],[7,8,9]\n'+
-                '   4,[10,11,12],[10,11,12]\n'+
-                '   5,[13,14,15],[13,14,15]\n'+
+                '   1,"[1,2,3]","[1,2,3]"\n'+
+                '   2,"[4,5,6]","[4,5,6]"\n'+
+                '   3,"[7,8,9]","[7,8,9]"\n'+
+                '   4,"[10,11,12]","[10,11,12]"\n'+
+                '   5,"[13,14,15]","[13,14,15]"\n'+
                 '#', $res->toString());
 }
 
@@ -1353,11 +1353,11 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtractio
 
    assertEquals('#TDS\n'+
                 '   id,payload,atCol0,atCol1\n'+
-                '   1,[1,2,3],1,2\n'+
-                '   2,[4,5,6],4,5\n'+
-                '   3,[7,8,9],7,8\n'+
-                '   4,[10,11,12],10,11\n'+
-                '   5,[13,14,15],13,14\n'+
+                '   1,"[1,2,3]","1","2"\n'+
+                '   2,"[4,5,6]","4","5"\n'+
+                '   3,"[7,8,9]","7","8"\n'+
+                '   4,"[10,11,12]","10","11"\n'+
+                '   5,"[13,14,15]","13","14"\n'+
                 '#', $res->toString());
 }
 
@@ -1386,9 +1386,9 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction<
 
    assertEquals('#TDS\n'+
                 '   id,payload,booleanKey,integerKey,stringKey\n'+
-                '   1,{"boolean":true,"integer":1,"string":"hello"},true,1,"hello"\n'+
-                '   2,{"boolean":false,"integer":2,"string":"world"},false,2,"world"\n'+
-                '   3,{"boolean":true,"integer":3,"string":"world"},true,3,"world"\n'+
+                '   1,"{""boolean"":true,""integer"":1,""string"":""hello""}","true","1","""hello"""\n'+
+                '   2,"{""boolean"":false,""integer"":2,""string"":""world""}","false","2","""world"""\n'+
+                '   3,"{""boolean"":true,""integer"":3,""string"":""world""}","true","3","""world"""\n'+
                 '#', $res->toString());
 }
 
@@ -1415,11 +1415,11 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_filter<T|m>(f:
 
    assertEquals('#TDS\n'+
                 '   id,payload,divBy2\n'+
-                '   1,[1,2,3],[2]\n'+
-                '   2,[4,5,6],[4,6]\n'+
-                '   3,[7,8,9],[8]\n'+
-                '   4,[10,11,12],[10,12]\n'+
-                '   5,[13,14,15],[14]\n'+
+                '   1,"[1,2,3]","[2]"\n'+
+                '   2,"[4,5,6]","[4,6]"\n'+
+                '   3,"[7,8,9]","[8]"\n'+
+                '   4,"[10,11,12]","[10,12]"\n'+
+                '   5,"[13,14,15]","[14]"\n'+
                 '#', $res->toString());
 }
 
@@ -1446,11 +1446,11 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_map<T|m>(f:Fun
 
    assertEquals('#TDS\n'+
                 '   id,payload,payloadMod\n'+
-                '   1,[1,2,3],[1,0,1]\n'+
-                '   2,[4,5,6],[0,1,0]\n'+
-                '   3,[7,8,9],[1,0,1]\n'+
-                '   4,[10,11,12],[0,1,0]\n'+
-                '   5,[13,14,15],[1,0,1]\n'+
+                '   1,"[1,2,3]","[1,0,1]"\n'+
+                '   2,"[4,5,6]","[0,1,0]"\n'+
+                '   3,"[7,8,9]","[1,0,1]"\n'+
+                '   4,"[10,11,12]","[0,1,0]"\n'+
+                '   5,"[13,14,15]","[1,0,1]"\n'+
                 '#', $res->toString());
 }
 
@@ -1477,10 +1477,10 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_fold<T|m>(f:Fu
 
    assertEquals('#TDS\n'+
                 '   id,payload,payloadFoldMult\n'+
-                '   1,[1,2,3],6\n'+
-                '   2,[4,5,6],120\n'+
-                '   3,[7,8,9],504\n'+
-                '   4,[10,11,12],1320\n'+
-                '   5,[13,14,15],2730\n'+
+                '   1,"[1,2,3]",6\n'+
+                '   2,"[4,5,6]",120\n'+
+                '   3,"[7,8,9]",504\n'+
+                '   4,"[10,11,12]",1320\n'+
+                '   5,"[13,14,15]",2730\n'+
                 '#', $res->toString());
 }

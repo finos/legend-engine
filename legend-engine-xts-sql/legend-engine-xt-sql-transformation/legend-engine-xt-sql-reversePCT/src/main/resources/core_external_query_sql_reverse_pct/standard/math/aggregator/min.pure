@@ -122,7 +122,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name,employeeNumber\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n'+
                             '1,2,A,21.12\n'+
                             '2,1,B,41.14\n'+
                             '3,3,C,71.17\n'+
@@ -132,8 +132,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7,3,G,91.19\n'+
                             '8,1,H,81.18\n'+
                             '9,5,I,51.15\n'+
-                            '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id,grp,name,employeeNumber\n1,2,A,21.12\n2,1,B,41.14\n3,3,C,71.17\n4,4,D,31.13\n5,2,E,11.11\n6,1,F,1.1\n7,3,G,91.19\n8,1,H,81.18\n9,5,I,51.15\n10,0,J,101.101\') as "table0_0" group by "grp"'
+                            '10,0,J,101.101\n}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n1,2,A,21.12\n2,1,B,41.14\n3,3,C,71.17\n4,4,D,31.13\n5,2,E,11.11\n6,1,F,1.1\n7,3,G,91.19\n8,1,H,81.18\n9,5,I,51.15\n10,0,J,101.101\') as "table0_0" group by "grp"'
                         )
                       ]
                  ),
@@ -141,7 +141,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                             '1.1,2,A\n'+
                             '2.2,1,B\n'+
                             '3.3,3,C\n'+
@@ -151,8 +151,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
+                            '10.10,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
                         )
                       ]
                  ),
@@ -160,7 +160,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                             '1.1,2,A\n'+
                             '2.2,1,B\n'+
                             '3.3,3,C\n'+
@@ -170,8 +170,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
+                            '10.10,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
                         )
                       ]
                  ),
@@ -179,7 +179,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                             '1,2,A\n'+
                             '2,1,B\n'+
                             '3,3,C\n'+
@@ -189,8 +189,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7,3,G\n'+
                             '8,1,H\n'+
                             '9,5,I\n'+
-                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                            '10,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", min("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
                         )
                       ]
                  ),
@@ -198,7 +198,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name,employeeNumber\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n'+
                             '1,2,A,21\n'+
                             '2,1,B,41\n'+
                             '3,3,C,71\n'+
@@ -208,8 +208,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7,3,G,91\n'+
                             '8,1,H,81\n'+
                             '9,5,I,51\n'+
-                            '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id,grp,name,employeeNumber\n1,2,A,21\n2,1,B,41\n3,3,C,71\n4,4,D,31\n5,2,E,11\n6,1,F,1\n7,3,G,91\n8,1,H,81\n9,5,I,51\n10,0,J,101\') as "table0_0" group by "grp"'
+                            '10,0,J,101\n}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n1,2,A,21\n2,1,B,41\n3,3,C,71\n4,4,D,31\n5,2,E,11\n6,1,F,1\n7,3,G,91\n8,1,H,81\n9,5,I,51\n10,0,J,101\') as "table0_0" group by "grp"'
                         )
                       ]
                  ),
@@ -217,7 +217,7 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name,employeeNumber\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n'+
                             '1,2,A,21d\n'+
                             '2,1,B,41.14d\n'+
                             '3,3,C,71d\n'+
@@ -227,8 +227,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7,3,G,91d\n'+
                             '8,1,H,81.18d\n'+
                             '9,5,I,51d\n'+
-                            '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::min())',
-                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id,grp,name,employeeNumber\n1,2,A,21d\n2,1,B,41.14d\n3,3,C,71d\n4,4,D,31.13d\n5,2,E,11d\n6,1,F,1.1d\n7,3,G,91d\n8,1,H,81.18d\n9,5,I,51d\n10,0,J,101.101d\') as "table0_0" group by "grp"'
+                            '10,0,J,101.101d\n}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::min())',
+                            'select "table0_0".grp as "grp", min("table0_0".employeeNumber) as "newCol" from csv(\'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],employeeNumber:Integer[0..1]\n1,2,A,21d\n2,1,B,41.14d\n3,3,C,71d\n4,4,D,31.13d\n5,2,E,11d\n6,1,F,1.1d\n7,3,G,91d\n8,1,H,81.18d\n9,5,I,51d\n10,0,J,101.101d\') as "table0_0" group by "grp"'
                         )
                       ]
                  )

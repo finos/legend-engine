@@ -20,15 +20,19 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.tds.accessor.protocol.TDSContainer;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDS;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
@@ -59,7 +63,14 @@ public class TDSAccessorCompilerExtension implements CompilerExtension
             {
                 TDSContainer tdsContainer = (TDSContainer) o;
 
-                TDS<?> tds = TDSExtension.parse(tdsContainer.tdsString.trim(), (SourceInformation) null, compileContext.pureModel.getExecutionSupport().getProcessorSupport());
+                String text = tdsContainer.tdsString.trim();
+
+                Pair<String, GenericType> res = TDSExtension.extractBodyAndType(
+                        text,
+                        header -> Compiler.getLambdaRawType(PureGrammarParser.newInstance().parseLambda("|~[" + header + "]"), compileContext.pureModel)._typeArguments().getFirst()
+                );
+
+                TDS<?> tds = TDSExtension.parse(res.getTwo(), res.getOne(), (SourceInformation) null, compileContext.pureModel.getExecutionSupport().getProcessorSupport());
 
                 return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
                         ._genericType(tds._classifierGenericType())

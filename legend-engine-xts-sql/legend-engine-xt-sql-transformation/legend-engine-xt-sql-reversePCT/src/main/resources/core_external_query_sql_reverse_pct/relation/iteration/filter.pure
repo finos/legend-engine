@@ -23,10 +23,10 @@ function meta::external::query::sql::reversePCT::tests::relation::iteration::fil
                       'meta::pure::functions::relation::tests::filter::testSimpleFilterShared_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'val\n'+
+                            'val:Integer[0..1]\n'+
                             '1\n'+
                             '3\n'+
-                            '4}#->meta::pure::functions::relation::filter(x: (val:Integer)[1]|$x.val > 1)',
+                            '4\n}#->meta::pure::functions::relation::filter(x: (val:Integer)[1]|$x.val > 1)',
                             'select val from csv(\'val\n1\n3\n4\') as t where t.val > 1')
                       ]
                     )

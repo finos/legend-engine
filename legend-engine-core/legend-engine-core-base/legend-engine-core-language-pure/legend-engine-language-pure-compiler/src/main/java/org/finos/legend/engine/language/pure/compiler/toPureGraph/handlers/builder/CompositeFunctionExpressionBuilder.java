@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDatePropagationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -43,11 +44,11 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
         this.builders = FastList.newListWith(builders);
     }
 
-    public void validate()
+    public void validate(Map<String, Dispatch> dispatchMap)
     {
         MutableList<String> names = this.builders.collect(FunctionExpressionBuilder::getFunctionName).distinct();
         Assert.assertTrue(names.size() == 1, () -> "Composite builders should have the same simple name. Found " + names);
-        this.builders.forEach(FunctionExpressionBuilder::validate);
+        this.builders.forEach(functionExpressionBuilder -> functionExpressionBuilder.validate(dispatchMap));
     }
 
     @Override

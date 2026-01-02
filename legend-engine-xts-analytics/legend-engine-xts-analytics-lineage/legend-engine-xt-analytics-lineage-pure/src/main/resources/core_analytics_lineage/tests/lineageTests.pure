@@ -774,7 +774,7 @@ function <<test.Test>> meta::analytics::lineage::tests::relation::testJoinChainO
 }
 
 
-function <<access.private>> meta::analytics::lineage::tests::relation::joinParam(input:Relation<(firstName:Varchar, FIRMIDFK:Integer)>[1]):Relation<Any>[1]
+function <<access.private>> meta::analytics::lineage::tests::relation::joinParam(input:Relation<(firstName:Varchar(200), FIRMIDFK:Integer)>[1]):Relation<Any>[1]
 {
   $input->join(#>{meta::analytics::lineage::tests::db.firmTable}#->project(~['FIRMID': x| $x.FIRM_ID]), JoinKind.INNER, {x,y| $x.FIRMIDFK == $y.FIRMID})
 }

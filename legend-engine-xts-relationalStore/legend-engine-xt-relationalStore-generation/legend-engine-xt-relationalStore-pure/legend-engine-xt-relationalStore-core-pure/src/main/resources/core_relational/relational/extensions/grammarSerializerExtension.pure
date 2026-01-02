@@ -300,7 +300,12 @@ function meta::relational::grammar::serialization::relationGrammarExtension():me
               let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
               '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
               ,
-            t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->regexpReplace('\n\\s+', '\n', true)->regexpReplace(',\\s*+', ',', true)+'}#';
+            t:meta::pure::metamodel::relation::TDS<Any>[1]|
+                      $t->toString(true)
+                      ->replace('#TDS\n','#TDS{\n')
+                      ->replace('\n#','\n}#')
+                      ->regexpReplace('\n\\s+', '\n', true)
+                      ->regexpReplace(',\\s*+', ',', true);                      
           ],
         extraPackageableElementHandlers =
           [

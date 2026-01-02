@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -41,9 +42,16 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         this.handlers = FastList.newListWith(handlers);
     }
 
-    public void validate()
+    public void validate(Map<String, Dispatch> dispatchMap)
     {
-        this.handlers.forEach(handler -> Assert.assertTrue(handler.getFunctionName().equals(handler.getFunc()._functionName()), () -> "Wrong name specified in Handler: " + handler.getFunctionName() + " different from " + handler.getFunc()._functionName()));
+        this.handlers.forEach(handler ->
+        {
+            Assert.assertTrue(handler.getFunctionName().equals(handler.getFunc()._functionName()), () -> "Wrong name specified in Handler: " + handler.getFunctionName() + " different from " + handler.getFunc()._functionName());
+            if (dispatchMap.get(handler.getFullName()) == null)
+            {
+                throw new RuntimeException("Can't find a generated handler for the function " + handler.getFullName());
+            }
+        });
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
         Assert.assertTrue(names.size() == 1, () -> "Multi handlers should have the same simple name. Found " + names.size() + " -> " + names);
         MutableList<Integer> signatures = this.handlers.collect(FunctionHandler::getParametersSize).distinct();

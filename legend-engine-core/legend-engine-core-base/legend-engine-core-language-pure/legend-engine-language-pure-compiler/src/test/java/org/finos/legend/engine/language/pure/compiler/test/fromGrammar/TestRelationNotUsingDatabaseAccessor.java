@@ -231,4 +231,58 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
                 "COMPILATION error at [4:60-63]: Can't find a match for function 'over(String[1])'"
         );
     }
+
+    @Test
+    public void testExtendColumnMultiplicity()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[0..1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->select(~[mycol])->extend(over(~mycol), ~newCol:{p,w,r|$r.mycol + 'w'})\n" +
+                        "}",
+                "COMPILATION error at [4:110-114]: Collection element must have a multiplicity [1] - Context:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, new lambda, Applying plus], multiplicity:[0..1]"
+        );
+    }
+
+    @Test
+    public void testExtendColumnMultiplicityWorking()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->select(~[mycol])->extend(over(~mycol), ~newCol:{p,w,r|$r.mycol + 'w'})\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testExtendColumnMultiplicityWithPotentialEmptyRow()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->select(~[mycol])->extend(over(~mycol), ~newCol:{p,w,r|$p->lag($r).mycol + 'w'})\n" +
+                        "}",
+                "COMPILATION error at [4:119-123]: Collection element must have a multiplicity [1] - Context:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, new lambda, Applying plus], multiplicity:[0..1]"
+        );
+    }
+
+    @Test
+    public void testExtendColumnMultiplicityWithPotentialEmptyRowWorking()
+    {
+        test(
+                "###Pure\n" +
+                        "Class test::Person{name : String[1];}" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   test::Person.all()->project(~[mycol:x|$x.name])->select(~[mycol])->extend(over(~mycol), ~newCol:{p,w,r|$p->lag($r)->toOne().mycol + 'w'})\n" +
+                        "}"
+        );
+    }
 }

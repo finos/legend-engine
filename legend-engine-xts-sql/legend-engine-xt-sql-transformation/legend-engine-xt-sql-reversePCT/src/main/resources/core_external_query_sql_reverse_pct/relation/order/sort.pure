@@ -23,36 +23,36 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::ord
                       'meta::pure::functions::relation::tests::sort::testSimpleSortShared_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())',
+                            '2,Thierry\n}#->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())',
                             'select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0" order by "id"'
                         ),
                         rev('|#TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::ascending(), ~name->meta::pure::functions::relation::ascending()])',
+                            '2,Thierry\n}#->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::ascending(), ~name->meta::pure::functions::relation::ascending()])',
                             'select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0" order by "id","name"'
                         ),
                         rev('|#TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::descending(), ~name->meta::pure::functions::relation::ascending()])',
+                            '2,Thierry\n}#->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::descending(), ~name->meta::pure::functions::relation::ascending()])',
                             'select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0" order by "id" desc,"name"'
                         )
                       ]
@@ -61,40 +61,40 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::ord
                       'meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_',
                       [
                         rev('|let t = #TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#;\n'+
+                            '2,Thierry\n}#;\n'+
                             ' $t->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending());\n'+
                             '',
                             'WITH t AS (select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0") select "t_0"."id", "t_0"."name" from t as "t_0" order by "id"'
                         ),
                         rev('|let t = #TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#;\n'+
+                            '2,Thierry\n}#;\n'+
                             ' $t->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::ascending(), ~name->meta::pure::functions::relation::ascending()]);\n'+
                             '',
                             'WITH t AS (select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0") select "t_0"."id", "t_0"."name" from t as "t_0" order by "id","name"'
                         ),
                         rev('|let t = #TDS{\n'+
-                            'id,name\n'+
+                            'id:Integer[0..1],name:String[0..1]\n'+
                             '2,George\n'+
                             '3,Pierre\n'+
                             '1,Sachin\n'+
                             '1,Neema\n'+
                             '5,David\n'+
                             '4,Alex\n'+
-                            '2,Thierry}#;\n'+
+                            '2,Thierry\n}#;\n'+
                             ' $t->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::descending(), ~name->meta::pure::functions::relation::ascending()]);\n'+
                             '',
                             'WITH t AS (select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n2,George\n3,Pierre\n1,Sachin\n1,Neema\n5,David\n4,Alex\n2,Thierry\') as "table0_0") select "t_0"."id", "t_0"."name" from t as "t_0" order by "id" desc,"name"'

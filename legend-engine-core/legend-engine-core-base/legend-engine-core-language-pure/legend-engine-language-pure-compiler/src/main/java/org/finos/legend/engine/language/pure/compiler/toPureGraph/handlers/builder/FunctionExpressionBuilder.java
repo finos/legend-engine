@@ -22,6 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
@@ -117,7 +118,7 @@ public abstract class FunctionExpressionBuilder
 
     public abstract Optional<Integer> getParametersSize();
 
-    public abstract void validate();
+    public abstract void validate(Map<String, Dispatch> dispatchMap);
 
     public abstract void build(Map<String, Function<?>> result);
 }

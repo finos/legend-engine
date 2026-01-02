@@ -37,6 +37,7 @@
         <module>legend-engine-pure-code-functions-pureExtensions</module>
         <module>legend-engine-pure-code-functions-planExecution</module>
         <module>legend-engine-pure-code-functions-javaCompiler</module>
+        <module>legend-engine-pure-code-scenario-quant-pure</module>
         <module>legend-engine-pure-code-core-extension</module>
         <module>legend-engine-pure-platform-modular-generation</module>
         <module>legend-engine-pure-ide</module>

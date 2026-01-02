@@ -1,0 +1,10 @@
+//import meta::pure::functions::flow::*;
+//
+//function meta::external::scenario::quant::dailyLogReturns():Boolean[1]
+//{
+//  #>{meta::external::scenario::quant::quantDB.MarketDataAggregated}#
+//  ->select(~[symbol, date, close_price])
+//  ->extend(over(~symbol, ~date->ascending()), ~log_return : {p,w,r|log($r.close_price/coalesce($p->lag($r).close_price, $r.close_price))});
+//  ->extend(over(~symbol, ~date->ascending()), ~log_return : {p,w,r|$p->lag($r).close_price});
+//  true;
+//}

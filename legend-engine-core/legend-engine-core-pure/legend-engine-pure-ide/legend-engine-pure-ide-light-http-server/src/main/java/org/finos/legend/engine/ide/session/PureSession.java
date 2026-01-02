@@ -179,6 +179,7 @@ public class PureSession
         }
         catch (Throwable t)
         {
+            t.printStackTrace();
             //todo: refactor this to not need the ByteArrayOutputStream
             ByteArrayOutputStream pureResponse = new ByteArrayOutputStream();
             outputStream.write(exceptionToJson(this, t, pureResponse).getBytes());

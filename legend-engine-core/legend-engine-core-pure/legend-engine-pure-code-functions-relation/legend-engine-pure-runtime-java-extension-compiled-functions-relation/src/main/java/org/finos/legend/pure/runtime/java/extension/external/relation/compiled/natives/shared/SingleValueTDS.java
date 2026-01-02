@@ -33,6 +33,7 @@ public class SingleValueTDS extends TestTDSCompiled
 
     public SingleValueTDS(Object value, GenericType genericType, CompiledExecutionSupport es)
     {
+        super(es.getProcessorSupport());
         this.value = value;
         this.genericType = genericType;
         this.es = es;

@@ -66,15 +66,15 @@ public class Compiler
         return new PureModel(model, user, deploymentMode, pureModelProcessParameter, metaData);
     }
 
-    public static ValueSpecification getLambdaRawType(LambdaFunction lambda, PureModel pureModel)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType getLambdaRawType(LambdaFunction lambda, PureModel pureModel)
     {
-        return HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast();
+        return HelperValueSpecificationBuilder.buildLambdaWithContext(lambda.body, lambda.parameters, new CompileContext.Builder(pureModel).build(), new ProcessingContext("Processing return type for lambda"))._expressionSequence().getLast()._genericType();
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> buildLambdaRelationType(LambdaFunction lambda, PureModel pureModel)
     {
-        ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
-        Type type = valueSpecification._genericType()._typeArguments().getFirst()._rawType();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel);
+        Type type = genericType._typeArguments().getFirst()._rawType();
         Assert.assertTrue(type instanceof RelationType, () -> "Relation type expected in lambda");
         return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) type;
     }
@@ -86,13 +86,13 @@ public class Compiler
 
     public static String getLambdaReturnType(LambdaFunction lambda, PureModel pureModel)
     {
-        ValueSpecification valueSpecification = getLambdaRawType(lambda, pureModel);
-        return HelperModelBuilder.getTypeFullPath(valueSpecification._genericType()._rawType(), pureModel.getExecutionSupport());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel);
+        return HelperModelBuilder.getTypeFullPath(genericType._rawType(), pureModel.getExecutionSupport());
     }
 
     public static GenericType getLambdaReturnGenericType(LambdaFunction lambda, PureModel pureModel)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel)._genericType();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType genericType = getLambdaRawType(lambda, pureModel);
         Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType protocolGenericType = core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(genericType, pureModel.getExecutionSupport());
         String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(protocolGenericType, pureModel.getExecutionSupport());
         try

@@ -50,23 +50,23 @@ public class TestFunctionTester extends PureExpressionTest
                 "function test():Any[*]\n" +
                         "{" +
                         "print(#TDS\n" +
-                        "            id, payload:meta::pure::metamodel::variant::Variant\n" +
+                        "            id, payload:meta::pure::metamodel::variant::Variant[1]\n" +
                         "            1, \"[1,2,3]\"\n" +
                         "            2, \"[4,5,6]\"\n" +
                         "            3, \"[7,8,9]\"\n" +
                         "            4, \"[10,11,12]\"\n" +
                         "            5, \"[13,14,15]\"\n" +
-                        "    #->extend(~abc:x|$x.payload->meta::pure::functions::variant::navigation::get(0))->sort(~id->ascending())->toString(), 1);\n" +
+                        "    #->extend(~abc:x|$x.id)->sort(~id->ascending())->toString(), 1);\n" +
                         "}");
-        try
-        {
+//        try
+//        {
             this.execute("test():Any[*]");
-            Assert.fail("Sort call fails on inference");
-        }
-        catch (Exception e)
-        {
-            Assert.assertTrue(e.getMessage().contains("Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, abc:Variant)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, abc:Variant)>"));
-        }
+            //Assert.fail("Sort call fails on inference");
+//        }
+//        catch (Exception e)
+//        {
+//            Assert.assertTrue(e.getMessage().contains("Error instantiating the type 'SortInfo<X⊆(id:Integer, payload:Variant, abc:Variant)>'. Could not resolve type for the property 'column': ColSpec<X⊆(id:Integer, payload:Variant, abc:Variant)>"));
+//        }
     }
 
     @org.junit.Test

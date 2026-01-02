@@ -21,7 +21,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestACompiler
+public class TestTDSCompiler
 {
     @Test
     public void testTDSAccessor()
@@ -49,6 +49,34 @@ public class TestACompiler
                 "   }#->extend(~n:z|$z.oks->toOne()+'ww');\n" +
                 "   true;\n" +
                 "}", "The column 'oks' can't be found in the relation (val:String, ok:String)");
+    }
+
+    @Test
+    public void testTDSWithTypeAndMultiplicity()
+    {
+        test("###Pure\n" +
+                "function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #TDS{\n" +
+                "   val,ok:String[1]\n" +
+                "   a,b\n" +
+                "   }#->extend(~n:z|$z.ok+'ww');\n" +
+                "   true;\n" +
+                "}");
+    }
+
+    @Test
+    public void testTDSWithNumericType()
+    {
+        test("###Pure\n" +
+                "function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #TDS{\n" +
+                "   val,ok:Numeric(10,4)[1]\n" +
+                "   a,1.5\n" +
+                "   }#->extend(~n:z|$z.ok + 2);\n" +
+                "   true;\n" +
+                "}");
     }
 
     private static void test(String code)

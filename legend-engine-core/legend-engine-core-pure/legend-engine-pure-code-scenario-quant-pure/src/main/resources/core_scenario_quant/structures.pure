@@ -1,0 +1,15 @@
+//###Relational
+//Database meta::external::scenario::quant::quantDB
+//(
+//  Table tick(symbol VARCHAR(255))
+//  Table MarketDataAggregated
+//        (
+//          symbol VARCHAR(255) NOT NULL,
+//          date Timestamp NOT NULL,
+//          open_price Decimal(12,4) NOT NULL,
+//          high_price Decimal(12,4) NOT NULL,
+//          low_price Decimal(12,4) NOT NULL,
+//          close_price Decimal(12,4) NOT NULL,
+//          volume INT NOT NULL
+//        )
+//)

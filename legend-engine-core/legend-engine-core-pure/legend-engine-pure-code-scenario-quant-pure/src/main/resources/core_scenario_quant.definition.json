@@ -1,0 +1,10 @@
+{
+  "name": "core_scenario_quant",
+  "pattern": "(meta::external::scenario::quant)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_precise_primitives",
+    "core_functions_relation",
+    "core_functions_unclassified"
+  ]
+}

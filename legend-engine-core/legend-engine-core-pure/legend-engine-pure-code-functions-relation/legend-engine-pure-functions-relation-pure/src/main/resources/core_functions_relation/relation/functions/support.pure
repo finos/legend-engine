@@ -1,0 +1,14 @@
+function <<access.private>> meta::pure::functions::relation::printMul(multiplicity:Multiplicity[1]):String[1]
+{
+    if ($multiplicity.multiplicityParameter->isEmpty(),
+        | let lowerBound = $multiplicity->getLowerBound();
+          if ($multiplicity->hasUpperBound(),
+              | let upperBound = $multiplicity->getUpperBound();
+                if ($lowerBound == $upperBound,
+                    | $lowerBound->toString(),
+                    | $lowerBound->toString() + '..' + $upperBound->toString());,
+              | if ($lowerBound == 0,
+                    | '*',
+                    | $lowerBound->toString() + '..*'));,
+        | $multiplicity.multiplicityParameter->toOne())
+}
