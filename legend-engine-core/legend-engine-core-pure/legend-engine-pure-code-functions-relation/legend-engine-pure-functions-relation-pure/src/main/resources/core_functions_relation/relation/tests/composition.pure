@@ -1346,3 +1346,42 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '   3,aaa,bbb,bbb\n'+
                 '#', $res->sort([~id->ascending()])->toString());
 }
+
+//Test for ambiguous column error on Snowflake
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupBy_Join_With_Conflicting_Alias<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{   
+  let tds1 = #TDS
+                id, grp, name
+                P, Y, A
+                Q, X, B
+                R, Z, C
+                S, U, D
+                T, Y, E
+              #;
+
+  let tds2 = #TDS
+                id2, grp2, name2
+                P, Y, A
+                Q, X, B
+                R, Z, C
+                S, V, D
+                T, V, E
+              #;
+
+  let expr = {| $tds1->select(~id)->join($tds2, JoinKind.INNER, {x,y| 1 == 1})
+                      ->project(~[name2: x|$x.id->toOne()->toString()])
+                      ->groupBy(~[name2], ~[newCol : x | 1 : y | $y->plus()])
+                      ->distinct();
+              };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   name2,newCol\n'+
+                '   P,1\n'+
+                '   Q,1\n'+
+                '   R,1\n'+
+                '   S,1\n'+
+                '   T,1\n'+
+                '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
+}
