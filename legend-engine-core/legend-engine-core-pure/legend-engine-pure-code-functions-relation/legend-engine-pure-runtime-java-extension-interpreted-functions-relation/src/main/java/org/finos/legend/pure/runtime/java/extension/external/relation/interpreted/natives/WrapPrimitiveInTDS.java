@@ -48,7 +48,7 @@ public class WrapPrimitiveInTDS extends Shared
     {
         CoreInstance returnGenericType = getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
         GenericType genericType = (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType");
-        CoreInstance value = params.get(0).getValueForMetaPropertyToOne("values");
+        CoreInstance value = params.get(0).getValueForMetaPropertyToMany("values").getFirst();
         TDSCoreInstance tds = new TDSCoreInstance(new SingleValueTDS(value, genericType, repository, processorSupport), returnGenericType, repository, processorSupport);
         tds.setKeyValues(Lists.mutable.with("csv"), Lists.mutable.with(repository.newStringCoreInstance("value\n" + value.getName())));
         return ValueSpecificationBootstrap.wrapValueSpecification(tds, false, processorSupport);

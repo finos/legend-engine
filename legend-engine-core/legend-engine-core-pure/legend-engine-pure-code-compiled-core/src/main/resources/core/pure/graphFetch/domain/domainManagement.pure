@@ -125,7 +125,7 @@ function meta::pure::graphFetch::domain::generateMutationFunctionExpression(func
   let newRuntime = ^InstanceValue(genericType = $runtime->genericType(), multiplicity = ZeroMany, values = $runtime);
 
   let saveFunc = ^$func(
-    func = meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_,
+    func = meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__PackageableRuntime_1__T_MANY_,
     functionName = 'save',
     genericType = $genericType,
     resolvedTypeParameters = $genericType ,

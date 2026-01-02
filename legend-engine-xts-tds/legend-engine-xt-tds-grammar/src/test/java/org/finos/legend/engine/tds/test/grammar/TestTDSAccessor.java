@@ -32,4 +32,18 @@ public class TestTDSAccessor extends TestGrammarRoundtrip.TestGrammarRoundtripTe
                 "  }#\n" +
                 "}\n");
     }
+
+    @Test
+    public void testTDSAccessorWithTypesAndMuls()
+    {
+        test("function f(): String[1]\n" +
+                "{\n" +
+                "  let x = #TDS{\n" +
+                "      val, more:String[1]\n" +
+                "      1, a\n" +
+                "      2, b\n" +
+                "      3, c\n" +
+                "  }#\n" +
+                "}\n");
+    }
 }

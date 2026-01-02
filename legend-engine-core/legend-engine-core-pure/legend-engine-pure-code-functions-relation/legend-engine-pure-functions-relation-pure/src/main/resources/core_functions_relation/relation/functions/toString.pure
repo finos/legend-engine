@@ -14,15 +14,22 @@
 
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
 
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1]):String[1]
 {
+  $rel->toString(false);
+}
+
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1], typesAndMuls : Boolean[1]):String[1]
+{
     let cols = $rel->columns();
     '#TDS\n'+
-    '   '+$cols->map(c|$c.name)->joinStrings(',')+'\n'+
-    $rel->map(x|'   '+$cols->map(c|s($c->eval($x)->first()))->joinStrings(','))->joinStrings('\n')+'\n'+
+    '   '+$cols->map(c|$c.name->toOne() + if($typesAndMuls,|':'+$c->genericType().typeArguments->at(1).rawType->toOne()->elementToPath()+'['+$c->genericType().multiplicityArguments->at(0)->printMul()+']',|''))->joinStrings(',')+'\n'+
+         $rel->map(x|'   '+$cols->map(c|s($c->eval($x)->first(), $c.classifierGenericType.typeArguments->at(1).rawType))->joinStrings(',');)->joinStrings('\n')+'\n'+
     '#';
 }
+
 
 function <<test.Test>> meta::pure::functions::relation::tests::toString::testToString():Boolean[1]
 {
@@ -37,4 +44,19 @@ function <<test.Test>> meta::pure::functions::relation::tests::toString::testToS
                           2, 3, ee
                           3, 2, eewe
                         #->toString());
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::toString::testToStringWithTypesAndMuls():Boolean[1]
+{
+    assertEquals( '#TDS\n'+
+                  '   val:Integer[0..1],other:Integer[0..1],txt:String[0..1]\n'+
+                  '   1,2,aa\n'+
+                  '   2,3,ee\n'+
+                  '   3,2,eewe\n'+
+                  '#', #TDS
+                          val, other, txt
+                          1, 2, aa
+                          2, 3, ee
+                          3, 2, eewe
+                        #->toString(true));
 }

@@ -79,7 +79,7 @@ public class RelationNativeImplementation
     public static Relation<?> build(Object value, GenericType genericType, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        return new TDSContainer(new SingleValueTDS(value, genericType, (CompiledExecutionSupport) es), ps);
+        return new TDSContainer(new SingleValueTDS(value instanceof MutableList ? ((MutableList<?>)value).getFirst() : value, genericType, (CompiledExecutionSupport) es), ps);
     }
 
     public static TestTDSCompiled getTDS(Object value, ExecutionSupport es)
@@ -267,7 +267,7 @@ public class RelationNativeImplementation
                 throw new PureExecutionException("Flatten does not support type: " + colType + ". Supported types are String, Integer, Float, Boolean, and Variant.");
         }
 
-        TestTDSCompiled tds = new TestTDSCompiled();
+        TestTDSCompiled tds = new TestTDSCompiled(ps);
         tds.addColumn(columnInstance._name(), colResType, colRes);
 
         return new TDSContainer(tds, ps);
@@ -1083,7 +1083,7 @@ public class RelationNativeImplementation
             MutableList<TestTDSCompiled> subList = Lists.mutable.empty();
             for (SharedPureFunction f : colFuncs.collect(c -> c.func))
             {
-                TestTDSCompiled one = new TestTDSCompiled();
+                TestTDSCompiled one = new TestTDSCompiled(ps);
                 RichIterable<?> li = CompiledSupport.toPureCollection(f.execute(Lists.mutable.with(o), es));
                 switch ((String) typesL.get(i))
                 {

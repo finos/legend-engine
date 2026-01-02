@@ -21,7 +21,9 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.pure.m2.inlinedsl.tds.M2TDSPaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -36,32 +38,32 @@ public class TestTDSCompiled extends TestTDS
 {
     private CoreInstance classifierGenericType;
 
-    public TestTDSCompiled()
+    public TestTDSCompiled(ProcessorSupport processorSupport)
     {
-        super();
+        super(processorSupport);
     }
 
-    public TestTDSCompiled(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
+    public TestTDSCompiled(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypes, int rows, ProcessorSupport processorSupport)
     {
-        super(columnOrdered, columnType, rows);
+        super(columnOrdered, columnType, pureTypes, rows, processorSupport);
     }
 
     public TestTDSCompiled(CsvReader.Result result, CoreInstance classifierGenericType, ProcessorSupport processorSupport)
     {
-        super(result, processorSupport);
+        super(result, ((RelationType<?>)((GenericType)classifierGenericType)._typeArguments().getFirst()._rawType())._columns().collect(c -> _Column.getColumnType(c)._rawType()).toList(), processorSupport);
         this.classifierGenericType = classifierGenericType;
     }
 
     @Override
     public TestTDS newTDS()
     {
-        return new TestTDSCompiled();
+        return new TestTDSCompiled(this.processorSupport);
     }
 
     @Override
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
+    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypes, int rows)
     {
-        return new TestTDSCompiled(columnOrdered, columnType, rows);
+        return new TestTDSCompiled(columnOrdered, columnType, pureTypes, rows, this.processorSupport);
     }
 
     public Object getValueAsCoreInstance(String columnName, int rowNum)

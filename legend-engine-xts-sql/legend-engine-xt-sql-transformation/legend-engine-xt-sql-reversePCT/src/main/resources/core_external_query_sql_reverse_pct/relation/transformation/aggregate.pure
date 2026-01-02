@@ -23,10 +23,10 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpec_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                             '1,2,A\n'+
                             '2,1,B\n'+
-                            '3,3,C}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus())',
+                            '3,3,C\n}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus())',
                             'select sum("table0_0".id) as "idSum" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\') as "table0_0"'
                         )
                       ]
@@ -35,10 +35,10 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,code\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],code:String[0..1]\n'+
                             '1,2,A\n'+
                             '2,1,A\n'+
-                            '3,3,A}#->meta::pure::functions::relation::aggregate(~[idSum:x: (id:Integer, grp:Integer, code:String)[1]|$x.id:y: Integer[*]|$y->plus(),codes:x: (id:Integer, grp:Integer, code:String)[1]|$x.code:y: String[*]|$y->meta::pure::functions::string::joinStrings(\':\')])',
+                            '3,3,A\n}#->meta::pure::functions::relation::aggregate(~[idSum:x: (id:Integer, grp:Integer, code:String)[1]|$x.id:y: Integer[*]|$y->plus(),codes:x: (id:Integer, grp:Integer, code:String)[1]|$x.code:y: String[*]|$y->meta::pure::functions::string::joinStrings(\':\')])',
                             'select sum("table0_0".id) as "idSum", string_agg("table0_0".code, Text\':\') as "codes" from csv(\'id,grp,code\n1,2,A\n2,1,A\n3,3,A\') as "table0_0"'
                         )
                       ]
@@ -47,10 +47,10 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_WithFilter_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,grp,name\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                             '1,2,A\n'+
                             '2,1,B\n'+
-                            '3,3,C}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus())->meta::pure::functions::relation::filter(r: (idSum:Integer)[1]|$r.idSum == 6)',
+                            '3,3,C\n}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer, grp:Integer, name:String)[1]|$x.id:y: Integer[*]|$y->plus())->meta::pure::functions::relation::filter(r: (idSum:Integer)[1]|$r.idSum == 6)',
                             'select "subselect"."idSum" as "idSum" from (select sum("table0_1".id) as "idSum" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\') as "table0_1") as "subselect" where "subselect"."idSum" = 6'
                         )
                       ]

@@ -332,6 +332,37 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void testExtendRespectMultiplicity()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id + 1)\n" +
+                        "}",
+                "COMPILATION error at [7:35-36]: Collection element must have a multiplicity [1] - Context:[Function 'test::f__Any_MANY_' Third Pass, Applying extend, new lambda, Applying plus], multiplicity:[0..1]"
+        );
+    }
+
+    @Test
+    public void testExtendRespectMultiplicityWorking()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer NOT NULL))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id + 1)\n" +
+                        "}"
+        );
+    }
+
+    @Test
     public void testExtendErrorDupColumns()
     {
         test(
