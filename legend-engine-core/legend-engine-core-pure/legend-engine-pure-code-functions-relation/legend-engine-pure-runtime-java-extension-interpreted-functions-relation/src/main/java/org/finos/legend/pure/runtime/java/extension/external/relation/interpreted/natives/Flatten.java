@@ -16,7 +16,9 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives;
 
 import io.deephaven.csv.parsers.DataType;
+
 import java.util.Stack;
+
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
@@ -25,6 +27,7 @@ import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericTypeCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -114,7 +117,7 @@ public class Flatten extends Shared
         }
 
         TestTDSInterpreted tds = new TestTDSInterpreted(this.repository, processorSupport);
-        tds.addColumn(columnInstance._name(), colResType, colRes);
+        tds.addColumn(columnInstance._name(), colResType, (Type) type, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, processorSupport), colRes);
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds, returnGenericType, repository, processorSupport), true, processorSupport);
     }

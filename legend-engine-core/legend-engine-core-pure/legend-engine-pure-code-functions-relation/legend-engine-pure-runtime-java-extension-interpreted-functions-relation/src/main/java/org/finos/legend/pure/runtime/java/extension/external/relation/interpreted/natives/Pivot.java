@@ -193,35 +193,35 @@ public class Pivot extends Shared
         VariableContext mapFVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, mapF);
         VariableContext reduceFVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, reduceF);
 
-        Type type = ((FunctionType) reduceF._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
+        FunctionType functionType = ((FunctionType) reduceF._classifierGenericType()._typeArguments().getFirst()._rawType());
 
         FixedSizeList<CoreInstance> parameters = Lists.fixedSize.with((CoreInstance) null);
 
         int size = sorted.getTwo().size();
         DataType resType = null;
         Object _finalRes = null;
-        if (type == _Package.getByUserPath("String", processorSupport))
+        if (functionType._returnType()._rawType() == _Package.getByUserPath("String", processorSupport))
         {
             String[] finalRes = new String[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.STRING;
             _finalRes = finalRes;
         }
-        if (type == _Package.getByUserPath("Integer", processorSupport))
+        if (functionType._returnType()._rawType() == _Package.getByUserPath("Integer", processorSupport))
         {
             long[] finalRes = new long[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.LONG;
             _finalRes = finalRes;
         }
-        if (type == _Package.getByUserPath("Float", processorSupport))
+        if (functionType._returnType()._rawType() == _Package.getByUserPath("Float", processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.DOUBLE;
             _finalRes = finalRes;
         }
-        return tds == null ? sorted.getOne()._distinct(sorted.getTwo()).addColumn(name, resType, _finalRes) : tds.addColumn(name, resType, _finalRes);
+        return tds == null ? sorted.getOne()._distinct(sorted.getTwo()).addColumn(name, resType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), _finalRes) : tds.addColumn(name, resType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), _finalRes);
     }
 
     private void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> res, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, int size, FixedSizeList<CoreInstance> parameters, VariableContext mapFVarContext, VariableContext reduceFVarContext)

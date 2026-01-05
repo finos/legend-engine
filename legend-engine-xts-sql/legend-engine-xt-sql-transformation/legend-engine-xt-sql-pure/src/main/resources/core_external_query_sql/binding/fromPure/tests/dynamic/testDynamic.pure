@@ -61,7 +61,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   let value = 2;
 
-  assertEquals('|$rel->meta::pure::functions::relation::filter(x: (a:Integer, b:Integer)[1]|$x.b == $value)',
+  assertEquals('|$rel->meta::pure::functions::relation::filter(x: (a:Integer[0..1], b:Integer[0..1])[1]|$x.b == $value)',
                 transform('select * from var(\'rel\') where b = var(\'value\')',[], newMap([
                   pair('rel', $rel->deactivate()),
                   pair('value', $value->deactivate())
@@ -77,7 +77,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableUsingCTE():Boolean[1]
 {
   assertEquals('|let tab = #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n]);\n'+
-               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200))[1]|$x.n == \'a\');\n',
+               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200)[0..1])[1]|$x.n == \'a\');\n',
               transform('with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'',[]));
 }
 

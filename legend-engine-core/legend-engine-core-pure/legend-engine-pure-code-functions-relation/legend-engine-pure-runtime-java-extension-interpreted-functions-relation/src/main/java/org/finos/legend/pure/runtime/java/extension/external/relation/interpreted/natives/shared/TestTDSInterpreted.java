@@ -59,12 +59,6 @@ public class TestTDSInterpreted extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS()
-    {
-        return new TestTDSInterpreted(this.modelRepository, this.processorSupport);
-    }
-
-    @Override
     public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypesByColumnName, int rows)
     {
         return new TestTDSInterpreted(columnOrdered, columnType, pureTypesByColumnName, rows, this.modelRepository, this.processorSupport);

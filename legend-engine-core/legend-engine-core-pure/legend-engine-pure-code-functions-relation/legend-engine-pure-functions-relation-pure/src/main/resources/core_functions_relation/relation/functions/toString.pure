@@ -25,7 +25,11 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toS
 {
     let cols = $rel->columns();
     '#TDS\n'+
-    '   '+$cols->map(c|$c.name->toOne() + if($typesAndMuls,|':'+$c->genericType().typeArguments->at(1).rawType->toOne()->elementToPath()+'['+$c->genericType().multiplicityArguments->at(0)->printMul()+']',|''))->joinStrings(',')+'\n'+
+    '   '+$cols->map(c| let name = $c.name->toOne()->trim();
+                        let isSimple = $name->startsWith('\'') || $name->matches('^[a-zA-Z0-9_]+$');
+                        let nameContainsSpace = $name->contains(' ');
+                        if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'') + if($typesAndMuls,|':'+$c->genericType().typeArguments->at(1).rawType->toOne()->elementToPath()+'['+$c->genericType().multiplicityArguments->at(0)->printMul()+']',|'');
+                    )->joinStrings(',')+'\n'+
          $rel->map(x|'   '+$cols->map(c|s($c->eval($x)->first(), $c.classifierGenericType.typeArguments->at(1).rawType))->joinStrings(',');)->joinStrings('\n')+'\n'+
     '#';
 }

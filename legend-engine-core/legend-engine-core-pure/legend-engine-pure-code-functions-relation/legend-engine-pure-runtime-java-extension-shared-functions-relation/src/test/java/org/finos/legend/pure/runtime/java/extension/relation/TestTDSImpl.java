@@ -44,12 +44,6 @@ public class TestTDSImpl extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS()
-    {
-        return new TestTDSImpl();
-    }
-
-    @Override
     public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumn, int rows)
     {
         return new TestTDSImpl(columnOrdered, columnType, pureTypesByColumn, rows);

@@ -28,6 +28,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpecArray;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
@@ -41,6 +42,7 @@ import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -167,13 +169,15 @@ public class ProjectExtend extends AggregationShared
 
         VariableContext evalVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, lambdaFunction);
 
-        Type type = ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
+        FunctionType functionType = ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getFirst()._rawType());
+        Type type = functionType._returnType()._rawType();
+        Multiplicity multiplicity = functionType._returnMultiplicity();
 
         if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
         {
             String[] finalRes = new String[(int) source.getOne().getRowCount()];
             processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.STRING, finalRes);
+            return new ColumnValue(name, DataType.STRING, type, multiplicity, finalRes);
         }
         else if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
@@ -181,7 +185,7 @@ public class ProjectExtend extends AggregationShared
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.LONG, finalRes, nulls);
+            return new ColumnValue(name, DataType.LONG, type, multiplicity, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath(M3Paths.Boolean, processorSupport))
         {
@@ -189,7 +193,7 @@ public class ProjectExtend extends AggregationShared
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getBooleanValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.BOOLEAN_AS_BYTE, finalRes, nulls);
+            return new ColumnValue(name, DataType.BOOLEAN_AS_BYTE, type, multiplicity, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
         {
@@ -197,17 +201,17 @@ public class ProjectExtend extends AggregationShared
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.DOUBLE, finalRes, nulls);
+            return new ColumnValue(name, DataType.DOUBLE, type, multiplicity, finalRes, nulls);
         }
         else if (type == _Package.getByUserPath(M3Paths.Variant, processorSupport))
         {
             Variant[] finalRes = new Variant[(int) source.getOne().getRowCount()];
             processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : (Variant) val, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.CUSTOM, finalRes);
+            return new ColumnValue(name, DataType.CUSTOM, type, multiplicity, finalRes);
         }
         else
         {
-            throw new RuntimeException("The type " + type._name() + " is not supported yet!");
+            throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(type) + " is not supported yet!");
         }
     }
 

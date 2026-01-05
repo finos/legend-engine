@@ -26,7 +26,7 @@ function meta::external::query::sql::reversePCT::tests::relation::iteration::fil
                             'val:Integer[0..1]\n'+
                             '1\n'+
                             '3\n'+
-                            '4\n}#->meta::pure::functions::relation::filter(x: (val:Integer)[1]|$x.val > 1)',
+                            '4\n}#->meta::pure::functions::relation::filter(x: (val:Integer[0..1])[1]|$x.val > 1)',
                             'select val from csv(\'val\n1\n3\n4\') as t where t.val > 1')
                       ]
                     )

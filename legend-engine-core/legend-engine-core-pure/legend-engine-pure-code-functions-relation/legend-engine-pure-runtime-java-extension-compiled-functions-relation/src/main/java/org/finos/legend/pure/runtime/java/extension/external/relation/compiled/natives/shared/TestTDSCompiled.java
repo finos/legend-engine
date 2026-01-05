@@ -55,12 +55,6 @@ public class TestTDSCompiled extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS()
-    {
-        return new TestTDSCompiled(this.processorSupport);
-    }
-
-    @Override
     public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypes, int rows)
     {
         return new TestTDSCompiled(columnOrdered, columnType, pureTypes, rows, this.processorSupport);

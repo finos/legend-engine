@@ -203,7 +203,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                     NYC, USA, 2012, 7600
                     NYC, USA, 2012, 7600
                  #->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
-                 ->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
+                 ->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
                  ->filter(x|$x.city=='NYC')
                };
 
@@ -235,7 +235,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->select(~[city,country,year,treePlanted])
                   ->groupBy(~[city,country], ~[year:x|$x.year:x|$x->plus(), treePlanted:x|$x.treePlanted:x|$x->plus()])
                   ->pivot(~[year], ~['newCol' : x|$x.treePlanted:x|$x->plus()])
-                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'4022__|__newCol\'':Integer,'\'6035__|__newCol\'':Integer)>)
+                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'4022__|__newCol':Integer,'6035__|__newCol':Integer)>)
                   ->sort(ascending(~city))
                };
 
@@ -269,7 +269,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->select(~[city,country,year,treePlanted])
                   ->groupBy(~[year,city,country], ~treePlanted:x|$x.treePlanted:x|$x->plus())
                   ->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
-                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
+                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
                   ->extend(~newCol:x|$x.city->toOne() + '_0')
                   ->sort(ascending(~city))
                   ->limit(3)
@@ -304,8 +304,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->filter(x|$x.yr > 10)
                   ->select(~[city,country,year,treePlanted])
                   ->pivot(~[year], ~['newCol':x|$x.treePlanted:x|$x->plus()])
-                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
-                  ->groupBy(~[country], ~['\'2011__|__newCol\'':x|$x.'\'2011__|__newCol\'':x|$x->plus(),'\'2012__|__newCol\'':x|$x.'\'2012__|__newCol\'':x|$x->plus()])
+                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
+                  ->groupBy(~[country], ~['2011__|__newCol':x|$x.'2011__|__newCol':x|$x->plus(),'2012__|__newCol':x|$x.'2012__|__newCol':x|$x->plus()])
                   ->extend(~newCol:x|$x.country->toOne() + '_0')
                   ->sort(ascending(~country))
                };
@@ -1296,7 +1296,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 #->project(~[name: x | $x.payload->to(@meta::pure::functions::relation::tests::composition::Person)])
               };
 
-   let res =  assertError(|$f->eval($expr), 'The type Person is not supported yet!');
+   let res =  assertError(|$f->eval($expr), 'The type meta::pure::functions::relation::tests::composition::Person is not supported yet!');
 }
 
 

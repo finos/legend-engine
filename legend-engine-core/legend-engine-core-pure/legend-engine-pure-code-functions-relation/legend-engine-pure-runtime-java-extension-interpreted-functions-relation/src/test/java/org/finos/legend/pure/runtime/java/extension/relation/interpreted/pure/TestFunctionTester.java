@@ -50,7 +50,7 @@ public class TestFunctionTester extends PureExpressionTest
                 "function test():Any[*]\n" +
                         "{" +
                         "print(#TDS\n" +
-                        "            id, payload:meta::pure::metamodel::variant::Variant[1]\n" +
+                        "            id:Integer[1], payload:meta::pure::metamodel::variant::Variant[1]\n" +
                         "            1, \"[1,2,3]\"\n" +
                         "            2, \"[4,5,6]\"\n" +
                         "            3, \"[7,8,9]\"\n" +

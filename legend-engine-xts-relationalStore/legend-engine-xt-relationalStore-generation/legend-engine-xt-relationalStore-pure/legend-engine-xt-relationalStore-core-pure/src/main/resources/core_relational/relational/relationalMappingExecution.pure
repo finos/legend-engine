@@ -151,7 +151,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                                                   pair(|$cType == List, |$pureToDbMap->get(Variant))
                                                                                                 ],
                                                                                                 | 
-                                                                                                  fail('The type %s is not supported yet!'->format($cType.name->toOne()));[]; 
+                                                                                                  fail('The type %s is not supported yet!'->format($cType->elementToPath()));[]; 
                                                                                                 )
                                                                                            ])
                                                                 );

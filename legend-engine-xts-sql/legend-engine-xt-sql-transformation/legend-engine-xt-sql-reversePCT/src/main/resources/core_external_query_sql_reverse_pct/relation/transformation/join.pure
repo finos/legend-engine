@@ -21,10 +21,10 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                  revsForTest(
                       'meta::pure::functions::relation::tests::join::testSimpleJoinShared_Function_1__Boolean_1_',
                       [
-                        rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2})',
+                        rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2})',
                             'select "table0_0"."id" as "id", "table0_0"."name" as "name", "table0_0"."id2" as "id2", "table0_0"."col" as "col", "table0_0"."other" as "other" from (select "table0_1"."id" as "id", "table0_1"."name" as "name", "table1_0"."id2" as "id2", "table1_0"."col" as "col", "table1_0"."other" as "other" from (select "table0_2".id as "id", "table0_2".name as "name" from csv(\'id,name\n1,George\n2,Pierre\n3,Sachin\n4,David\') as "table0_2") as "table0_1" inner join (select "table1_1".id2 as "id2", "table1_1".col as "col", "table1_1".other as "other" from csv(\'id2,col,other\n1,More George 1,1\n1,More George 2,2\n4,More David,1\') as "table1_1") as "table1_0" on ("table0_1"."id" = "table1_0"."id2")) as "table0_0"'
                         ),
-                        rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2})',
+                        rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2})',
                             'select "table0_0"."id" as "id", "table0_0"."name" as "name", "table0_0"."id2" as "id2", "table0_0"."col" as "col", "table0_0"."other" as "other" from (select "table0_1"."id" as "id", "table0_1"."name" as "name", "table1_0"."id2" as "id2", "table1_0"."col" as "col", "table1_0"."other" as "other" from (select "table0_2".id as "id", "table0_2".name as "name" from csv(\'id,name\n1,George\n2,Pierre\n3,Sachin\n4,David\') as "table0_2") as "table0_1" left outer join (select "table1_1".id2 as "id2", "table1_1".col as "col", "table1_1".other as "other" from csv(\'id2,col,other\n1,More George 1,1\n1,More George 2,2\n4,More David,1\') as "table1_1") as "table1_0" on ("table0_1"."id" = "table1_0"."id2")) as "table0_0"'
                         )
                       ]
@@ -43,7 +43,7 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                             '1,More George 1,1\n'+
                             '1,More George 2,2\n'+
                             '4,More David,1\n}#;\n'+
-                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2});\n',
+                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2});\n',
                             'WITH t1 AS (select "table1_0".id as "id", "table1_0".name as "name" from csv(\'id,name\n              1,George\n              2,Pierre\n              3,Sachin\n              4,David\') as "table1_0"), ' +
                               't2 AS (select "table1_0".id2 as "id2", "table1_0".col as "col", "table1_0".other as "other" from csv(\'id2,col,other\n              1,More George 1,1\n              1,More George 2,2\n              4,More David,1\') as "table1_0") ' +
                               'select "t1_0"."id" as "id", "t1_0"."name" as "name", "t1_0"."id2" as "id2", "t1_0"."col" as "col", "t1_0"."other" as "other" from (select "t1_1"."id" as "id", "t1_1"."name" as "name", "t2_0"."id2" as "id2", "t2_0"."col" as "col", "t2_0"."other" as "other" from (select "t1_2"."id", "t1_2"."name" from t1 as "t1_2") as "t1_1" inner join (select "t2_1"."id2", "t2_1"."col", "t2_1"."other" from t2 as "t2_1") as "t2_0" on ("t1_1"."id" = "t2_0"."id2")) as "t1_0"'
@@ -59,7 +59,7 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                             '1,More George 1,1\n'+
                             '1,More George 2,2\n'+
                             '4,More David,1\n}#;\n'+
-                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2});\n'+
+                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2});\n'+
                             '',
                             'WITH t1 AS (select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n              1,George\n              2,Pierre\n              3,Sachin\n              4,David\') as "table0_0"), ' +
                               't2 AS (select "table0_0".id2 as "id2", "table0_0".col as "col", "table0_0".other as "other" from csv(\'id2,col,other\n              1,More George 1,1\n              1,More George 2,2\n              4,More David,1\') as "table0_0") ' +
@@ -77,7 +77,7 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                             ' let t2 = #TDS{\n'+
                             'id2:Integer[0..1],name:String[0..1]\n'+
                             '3,Pierre\n}#;\n'+
-                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer, col:String, other:Integer)[1], y: (id2:Integer, name:String)[1]|$x.id == $y.id2});\n'+
+                            ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer[0..1], col:String[0..1], other:Integer[0..1])[1], y: (id2:Integer[0..1], name:String[0..1])[1]|$x.id == $y.id2});\n'+
                             '',
                             'WITH t1 AS (select "table0_0".id as "id", "table0_0".col as "col", "table0_0".other as "other" from csv(\'id,col,other\n              1,More Test 1,1\n              2,More Test 2,2\') as "table0_0"), ' +
                               't2 AS (select "table0_0".id2 as "id2", "table0_0".name as "name" from csv(\'id2,name\n              3,Pierre\') as "table0_0") ' +

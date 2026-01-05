@@ -2610,7 +2610,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
                 c|
                   let colName = $c.name->toOne();
                   let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
-                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$colName->addQuotesIfNecessary(), type=$types->get($colType)->toOne())));
+                  let mayQuotePivotColNames = if ($colName->contains('__|__'),|'\''+$colName+'\'',|$colName);
+                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$mayQuotePivotColNames->addQuotesIfNecessary(), type=$types->get($colType)->toOne())));
               );
 }
 
