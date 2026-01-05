@@ -105,7 +105,7 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
                col(p|$p.lastName,'lastName')
             ])
          ->meta::pure::tds::groupBy(['firstName'], [agg('count',r|$r.getString('firstName'), c|$c->size())])
-   });
+   }); 
 
    assertSchemaRoundTripEquality({|
       Person.all()->projectWithColumnSubset([
@@ -279,6 +279,26 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
          ->olapGroupBy('constString',asc('constString'),y|$y->meta::pure::functions::math::olap::rowNumber(),'rowNumber')
    });
 
+   assertSchemaRoundTripEquality(
+      [
+         ^TDSColumn(name = 'firstName', offset= 0, type = String),
+         ^TDSColumn(name = 'lastName', offset= 1, type = String)
+      ],   
+      {|
+      Person.all()
+         ->project([
+               col(p|$p.firstName,'firstName') ,
+               col(p|$p.lastName,'lastName')
+            ])
+          ->union(
+      Person.all()
+         ->project([
+               col(p|$p.firstName,'firstName') ,
+               col(p|$p.lastName,'lastName')
+            ])              
+            )
+   });     
+
    let t = ^TabularDataSet(rows = [], columns = ^TDSColumn(name = 'aCol', offset= 0, type = String));
    assertSchemaRoundTripEquality(
       [
@@ -335,12 +355,12 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
          });
 }
 
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[1]}>[1]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[*]}>[1]) : Boolean[1]
 {
    assertSchemaRoundTripEquality($query, defaultExtensions());
 }
 
-function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[1]}>[1], extensions:Extension[*]) : Boolean[1]
+function meta::pure::tds::schema::tests::assertSchemaRoundTripEquality(query : FunctionDefinition<{->TabularDataSet[*]}>[1], extensions:Extension[*]) : Boolean[1]
 {
    let expected = $query->eval().columns;//->map(c|if($c.offset->isEmpty(), |^$c(offset = 0), | $c));
    assertSchemaRoundTripEquality($expected, $query, $extensions);
