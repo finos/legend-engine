@@ -268,11 +268,24 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   '}';
   let elements = meta::legend::compileLegendGrammar($semiGrammar);
   let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
-  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
-  assert($result.mappedEntities->size() == 4); 
+  let result = meta::analytics::mapping::modelCoverage::analyze($autoMappedMapping, true, false, true);
+  assert($result.mappedEntities->size() == 4);
   assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm');
   assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm_address');
   assertContains($result.mappedEntities.path, 'semi_structured_generated_embedded_inheritance_model_Person_firm_autoMapped_firm_address_street');
+
+  assert($result.mappedEntities.info.class->size() == 0);
+
+  assertContains($result.classes.name, 'Firm');
+  assertContains($result.classes.name, 'Address');
+  assertContains($result.classes.name, 'Street');
+
+  let firmClass = $result.classes->filter(c | $c.name == 'Firm')->toOne();
+  assertContains($firmClass.properties.genericType.rawType->map(type | $type->elementToPath()), 'inheritance::model::Address');
+  let addressClass = $result.classes->filter(c | $c.name == 'Address')->toOne();
+  assertContains($addressClass.properties.genericType.rawType->map(type | $type->elementToPath()), 'inheritance::model::Street');
+  let streetClass = $result.classes->filter(c | $c.name == 'Street')->toOne();
+  assertContains($addressClass.properties.genericType.rawType->map(type | $type->elementToPath()), 'String');
 }
 
 ###Relational
