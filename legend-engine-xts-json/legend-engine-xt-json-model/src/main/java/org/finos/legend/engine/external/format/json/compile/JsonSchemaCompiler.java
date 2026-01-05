@@ -61,18 +61,18 @@ public class JsonSchemaCompiler implements CompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", false, ps -> handlers.res("meta::external::format::json::schema::DiscriminatorMapping", "one"), ps -> ps.size() == 2))
+                                handlers.m(handlers.h("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", "mapSchema", false, ps -> handlers.res("meta::external::format::json::schema::DiscriminatorMapping", "one"), ps -> ps.size() == 2))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 4))
+                                handlers.m(handlers.h("meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_", "discriminateOneOf", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 4))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::external::format::json::functions::toJson_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
+                                handlers.m(handlers.h("meta::external::format::json::functions::toJson_T_MANY__RootGraphFetchTree_1__String_1_", "toJson", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
-                                        handlers.h("meta::external::format::json::functions::fromJson_Class_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
-                                        handlers.h("meta::external::format::json::functions::fromJson_Class_1__Byte_MANY__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2 && "Byte".equals(ps.get(1)._genericType()._rawType()._name()))
+                                        handlers.h("meta::external::format::json::functions::fromJson_Class_1__String_1__T_MANY_", "fromJson", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
+                                        handlers.h("meta::external::format::json::functions::fromJson_Class_1__Byte_MANY__T_MANY_", "fromJson", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> ps.size() == 2 && "Byte".equals(ps.get(1)._genericType()._rawType()._name()))
                                 )
                         )
                 ));

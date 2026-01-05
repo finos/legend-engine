@@ -80,7 +80,10 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
                                       ^TDSColumn
                                       (
                                         name = $p.first,
-                                        type = $p.second.type->cast(@meta::pure::metamodel::type::DataType),
+                                        type = if ($p.second.type->instanceOf(PrimitiveType) || $p.second.type->instanceOf(Enumeration) || [Variant, Map, List]->contains($p.second.type),
+                                                   | $p.second.type,
+                                                   | fail('The type %s is not supported yet!'->format($p.second.type.name->toOne())); [];
+                                                  ),
                                         documentation =  $p.second.documentation,
                                         enumMappingId =   if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),|[] ,|  $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>).name, p:PropertyMapping[0..1] | []])),
                                         enumMapping   = if($exeCtx->contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM), | [], | $p.second.propertyMapping->match([r:RelationalPropertyMapping[0..1] | $r.transformer->cast(@EnumerationMapping<Any>), p:PropertyMapping[0..1] | []])),
@@ -120,6 +123,11 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                               |$class->_subTypeOf(TabularDataSet),
                               | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx);
                           ),
+						  pair(
+                              |$class->_subTypeOf(meta::pure::metamodel::relation::Relation) && $query->instanceOf(TdsSelectSqlQuery) && $query->cast(@TdsSelectSqlQuery).paths->isNotEmpty() &&
+                               $query->cast(@TdsSelectSqlQuery).paths->map(p|$p.first) == $sq.vs.genericType.typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(c|$c.name->toOne()),
+                              | meta::relational::mapping::TDSSelectQueryToTDSResultType($class,$query->cast(@TdsSelectSqlQuery),$exeCtx)
+                          ),
                           pair(
                               |$class->_subTypeOf(meta::pure::metamodel::relation::Relation),
                               |
@@ -135,8 +143,16 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   type = $cType,
                                                                   sourceDataType = $cType->match([
                                                                                               p : PrimitiveType[1] | $pureToDbMap->get($cType->toOne()->bypassExtendedPrimitives()),
-                                                                                              e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),
-                                                                                              a : Any[*] | []
+                                                                                              e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),                                                                                              
+                                                                                              a : Any[*] | 
+                                                                                                if([
+                                                                                                  pair(|$cType == Variant, |$pureToDbMap->get(Variant)),
+                                                                                                  pair(|$cType == Map, |$pureToDbMap->get(Variant)),
+                                                                                                  pair(|$cType == List, |$pureToDbMap->get(Variant))
+                                                                                                ],
+                                                                                                | 
+                                                                                                  fail('The type %s is not supported yet!'->format($cType.name->toOne()));[]; 
+                                                                                                )
                                                                                            ])
                                                                 );
                                                           )

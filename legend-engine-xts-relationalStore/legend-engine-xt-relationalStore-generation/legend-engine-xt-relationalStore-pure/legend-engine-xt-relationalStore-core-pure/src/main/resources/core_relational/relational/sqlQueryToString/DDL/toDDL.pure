@@ -109,7 +109,7 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                   let table = $schema->table($tableName);
                                   assertNotEmpty($table,| 'Table "' + $tableName + '" not found in Schema "' + $schemaName + '" in Database(s) ' + $dbNames);
                                   let pTable = $tablePostProcessor->eval($table)->toOne();
-                                  let columns = $columnNames->map(cName | let c = $pTable->toOne().columns->cast(@Column)->filter(tc| $tc.name->equalIgnoreCase($cName->trim()))->first();
+                                  let columns = $columnNames->map(cName | let c = $pTable->toOne().columns->cast(@Column)->filter(tc| $tc.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes()->equalIgnoreCase($cName->trim()->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes()))->first();
                                                                           assertNotEmpty($c,| 'Column "' + $cName + '" not found in Table "' + $tableName + '" in Database(s) ' + $dbNames);
                                                                           $c;  );
                                   let sql = loadValuesToDbTable2(list($tab.p.values->slice(3,$tab.p.values->size())),
@@ -153,6 +153,18 @@ function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Datab
 
    let formattedData = $data->split('\n')
                             ->map(l|list($l->meta::alloy::service::execution::splitWithEmptyValue()))
+                            ->concatenate(list(''));
+
+   $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($formattedData, $db, $dbConfig, t:Table[1]|$t));
+}
+
+// Properly handle/respect quoted values
+function meta::alloy::service::execution::setUpDataSQLsV2(data:String[1], db:Database[*], dbConfig:DbConfig[1]) : String[*]
+{
+   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig));
+
+   let formattedData = $data->split('\n')
+                            ->map(l|list($l->meta::alloy::service::execution::splitWithEmptyValueV2()))
                             ->concatenate(list(''));
 
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($formattedData, $db, $dbConfig, t:Table[1]|$t));

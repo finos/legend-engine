@@ -36,7 +36,6 @@ public class TestValidation
     public void testList() throws Exception
     {
         Response response = api.list(null);
-        System.out.println(response.getEntity().toString());
         List<FunctionActivatorInfo> info = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(response.getEntity().toString(), new TypeReference<List<FunctionActivatorInfo>>(){});
         Assert.assertEquals(1, info.size());
         Assert.assertEquals("BigQuery Function", info.get(0).name);

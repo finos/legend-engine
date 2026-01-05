@@ -1,0 +1,19 @@
+function meta::legend::compiler::test():Any[1]
+{
+    assertEquals(3, meta::pure::functions::math::plus_Integer_MANY__Integer_1_->eval([1,2]));
+    assertEquals(3, 'meta::pure::functions::math::plus_Integer_MANY__Integer_1_'->pathToElement()->cast(@Function<{Integer[*]->Integer[1]}>)->eval([1,2]));
+    assertEquals(3, 'meta::pure::functions::math::plus_Integer_MANY__Integer_1_'->lenientPathToElement()->toOne()->cast(@Function<{Integer[*]->Integer[1]}>)->eval([1,2]));
+    assertEquals(3, 'meta::pure::functions::math::plus_Integer_MANY__Integer_1_'->forgivingPathToElement()->toOne()->cast(@Function<{Integer[*]->Integer[1]}>)->eval([1,2]));
+}
+
+function meta::legend::compiler::testElementNotHere():Any[1]
+{
+    assertEmpty('x::NewElement'->lenientPathToElement());
+    assertEmpty('x::NewElement'->forgivingPathToElement());
+}
+
+function meta::legend::compiler::testElementFound():Any[1]
+{
+    assertNotEmpty('x::NewElement'->lenientPathToElement());
+    assertNotEmpty('x::NewElement'->forgivingPathToElement());
+}

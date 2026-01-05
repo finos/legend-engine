@@ -435,7 +435,7 @@ public class RelationNativeImplementation
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (boolean) val));
                 return new ColumnValue(colFuncSpecTrans.newColName, DataType.BOOLEAN_AS_BYTE, resultBoolean, nulls);
             default:
-                throw new RuntimeException(colFuncSpecTrans.columnType + " not supported yet");
+                throw new PureExecutionException("The type " + colFuncSpecTrans.columnType + " is not supported yet!");
         }
     }
 

@@ -40,9 +40,9 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                             '4,David}#;\n'+
                             ' let t2 = #TDS{\n'+
                             'id2,col,other\n'+
-                            '1,MoreGeorge1,1\n'+
-                            '1,MoreGeorge2,2\n'+
-                            '4,MoreDavid,1}#;\n'+
+                            '1,More George 1,1\n'+
+                            '1,More George 2,2\n'+
+                            '4,More David,1}#;\n'+
                             ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2});\n',
                             'WITH t1 AS (select "table1_0".id as "id", "table1_0".name as "name" from csv(\'id,name\n              1,George\n              2,Pierre\n              3,Sachin\n              4,David\') as "table1_0"), ' +
                               't2 AS (select "table1_0".id2 as "id2", "table1_0".col as "col", "table1_0".other as "other" from csv(\'id2,col,other\n              1,More George 1,1\n              1,More George 2,2\n              4,More David,1\') as "table1_0") ' +
@@ -56,9 +56,9 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                             '4,David}#;\n'+
                             ' let t2 = #TDS{\n'+
                             'id2,col,other\n'+
-                            '1,MoreGeorge1,1\n'+
-                            '1,MoreGeorge2,2\n'+
-                            '4,MoreDavid,1}#;\n'+
+                            '1,More George 1,1\n'+
+                            '1,More George 2,2\n'+
+                            '4,More David,1}#;\n'+
                             ' $t1->meta::pure::functions::relation::join($t2, meta::pure::functions::relation::JoinKind.LEFT, {x: (id:Integer, name:String)[1], y: (id2:Integer, col:String, other:Integer)[1]|$x.id == $y.id2});\n'+
                             '',
                             'WITH t1 AS (select "table0_0".id as "id", "table0_0".name as "name" from csv(\'id,name\n              1,George\n              2,Pierre\n              3,Sachin\n              4,David\') as "table0_0"), ' +
@@ -72,8 +72,8 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       [
                         rev('|let t1 = #TDS{\n'+
                             'id,col,other\n'+
-                            '1,MoreTest1,1\n'+
-                            '2,MoreTest2,2}#;\n'+
+                            '1,More Test 1,1\n'+
+                            '2,More Test 2,2}#;\n'+
                             ' let t2 = #TDS{\n'+
                             'id2,name\n'+
                             '3,Pierre}#;\n'+

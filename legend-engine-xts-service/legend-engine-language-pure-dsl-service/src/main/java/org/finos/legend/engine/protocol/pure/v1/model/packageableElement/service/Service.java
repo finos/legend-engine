@@ -41,6 +41,7 @@ public class Service extends PackageableElement
 
     public ServiceTest_Legacy test;
     public List<PostValidation> postValidations = Collections.emptyList();
+    public String mcpServer;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

@@ -155,7 +155,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsUnion::testUnionWithJoin
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select * from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
      $result.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 
 }

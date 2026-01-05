@@ -678,22 +678,22 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::relational::milestoning::unknownDefaultBusinessDate__Date_1_", false, ps -> handlers.res("Date", "one"))
+                                handlers.h("meta::relational::milestoning::unknownDefaultBusinessDate__Date_1_", "unknownDefaultBusinessDate", false, ps -> handlers.res("Date", "one"))
                         ),
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::pure::tds::tableToTDS_Table_1__TableTDS_1_", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
+                                handlers.h("meta::pure::tds::tableToTDS_Table_1__TableTDS_1_", "tableToTDS", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
                         ),
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::pure::tds::viewToTDS_View_1__TableTDS_1_", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
+                                handlers.h("meta::pure::tds::viewToTDS_View_1__TableTDS_1_", "viewToTDS", false, ps -> handlers.res("meta::relational::mapping::TableTDS", "one"))
                         ),
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::pure::functions::asserts::assertJsonStringsEqual_String_1__String_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> true)
+                                handlers.h("meta::pure::functions::asserts::assertJsonStringsEqual_String_1__String_1__Boolean_1_", "assertJsonStringsEqual", false, ps -> handlers.res("Boolean", "one"), ps -> true)
                         ),
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_", false, ps -> handlers.res("meta::relational::metamodel::relation::Table", "one"))
+                                handlers.h("meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_", "tableReference", false, ps -> handlers.res("meta::relational::metamodel::relation::Table", "one"))
                         ),
                         new FunctionHandlerRegistrationInfo(null,
-                                handlers.h("meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_", false, ps -> handlers.res("meta::relational::metamodel::relation::View", "one"))
+                                handlers.h("meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_", "viewReference", false, ps -> handlers.res("meta::relational::metamodel::relation::View", "one"))
                         )
                 ));
     }
@@ -705,31 +705,31 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
-                                        handlers.grp(Handlers.JoinInference, handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function"))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
+                                        handlers.grp(Handlers.JoinInference, handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function"))),
+                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
                                 )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
-                                        handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true)))
+                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "columnValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "columnValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)),
-                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2)))
+                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_", "extendWithDigestOnColumns", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)),
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", "extendWithDigestOnColumns", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
-                                        handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
+                                handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "rowValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "rowValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                                handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "iqrClassify", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(Lists.mutable.with(3),
-                                handlers.m(handlers.h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && !handlers.typeOne(ps.get(2), "String")))
+                                handlers.m(handlers.h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Function_1__Boolean_1_", "assertEq", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && !handlers.typeOne(ps.get(2), "String")))
                         )
                 ));
     }
@@ -740,7 +740,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(registerElementForPathToElement ->
         {
             registerElementForPathToElement.value("meta::relational::contract", Lists.mutable.with(
-                    "supports_FunctionExpression_1__Boolean_1_",
                     "supportsStream_FunctionExpression_1__Boolean_1_",
                     "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
             ));

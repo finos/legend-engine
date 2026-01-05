@@ -174,7 +174,6 @@ public class TestMetaDataServer
                         {
                             String key = "" + _package + version;
                             String res = this.fromMappings.get(key);
-                            System.out.println(key);
                             Assert.assertTrue(res != null, () -> key + " can't be found");
                             return res;
                         }
@@ -188,7 +187,6 @@ public class TestMetaDataServer
                         {
                             String key = "" + _package + version;
                             String res = this.fromStores.get(key);
-                            System.out.println(key);
                             Assert.assertTrue(res != null, () -> key + " can't be found");
                             return res;
                         }

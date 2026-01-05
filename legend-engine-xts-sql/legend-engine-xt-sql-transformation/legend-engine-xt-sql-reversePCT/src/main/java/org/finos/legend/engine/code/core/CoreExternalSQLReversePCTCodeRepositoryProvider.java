@@ -14,19 +14,12 @@
 
 package org.finos.legend.engine.code.core;
 
-import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
 public class CoreExternalSQLReversePCTCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    public static final Adapter SQLAdapter = new Adapter(
-            "SQL",
-            "Reverse_PCT",
-            "meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_"
-    );
-
     @Override
     public CodeRepository repository()
     {

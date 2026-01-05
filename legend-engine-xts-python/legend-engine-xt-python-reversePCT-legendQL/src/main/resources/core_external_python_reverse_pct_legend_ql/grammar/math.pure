@@ -40,7 +40,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       ),
       meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_->testRev(
         [
-          rev('|1 / 96', 'c(1 / 96)')
+          noRev('|1 / 96')
         ]
       ),
       meta::pure::functions::math::tests::divide::testNegativeDivide_Function_1__Boolean_1_->testRev(
@@ -59,6 +59,139 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           noRev('|1.0D / 2.0')
         ]
       )
+    ]->combine(),
+    [
+       meta::pure::functions::math::tests::minus::testSimpleMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 - 2', 'c(3) - c(2)'),
+          rev('|3 - (-2)', '3 - c(-2)'),
+          rev('|(-3) - 2', 'c(-3) - 2')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testComplexMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|6 - (4 - 5) - 7', 'c(6) - (c(4) - c(5)) - c(7)'),
+          rev('|3 - (4 - 5) - 7', 'c(3) - c(4 - 5) - c(7)'),
+          rev('|(-3) - (4 - 5) - 7', 'c(-3) - c(4 - 5) - c(7)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testFloatMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 - 1.5', 'c(3) - c(1.5)'),
+          rev('|0 - 1.5', '0 - c(1.5)'),
+          rev('|1.5 - 3', 'c(1.5) - 3'),
+          rev('|(-1.5) - 3', 'c(-1.5) - 3')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0 - 1', 'c(0) - 1'),
+          rev('|-1', 'c(-1)'),
+          rev('|-(-1)', '-c(-1)'),
+          rev('|-(-(-1))', '(-(-c(-1)))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.0D - 2.0D - 3.0D'),
+          noRev('|1.0D - 2 - 3.0'),
+          noRev('|(-4.0D) - 2.0D - 1')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testSingleExpressionMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|-$val', 'c(-1)'),
+          rev('|-(3 - 2)', '-(c(3)-c(2))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|9223372036854775898 - 132', 'c(9223372036854775898) - 132')
+        ]
+      )
+
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::plus::testSimplePlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1 + 2', 'c(1) + c(2)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testComplexPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 + (4 + 5) + 7', 'c(3) + c(4 + 5) + c(7)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testNegativePlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1 + (-2)', '1 + c(-2)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testPlusMany_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 + 4 + 5 + 7', 'c(3) + c(4) + c(5) + c(7)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testSinglePlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|+(1)', 'c(+1)'),
+          rev('|+(+(1))', '+(+c(1))'),
+          rev('|+(+(+(1)))', '+(+(+c(1)))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testFloatPlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0.9 + 0.8', 'c(0.9) + c(0.8)'),
+          rev('|1 + 0.7', 'c(1) + 0.7'),
+          rev('|2 + (-0.3)', '2 + c(-0.3)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testPlusInteger_Function_1__Boolean_1_->testRev(
+        [
+          rev('|15 + 13 + 2 + 1 + 1', 'c(15) + c(13) + c(2) + c(1) + c(1)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testPlusFloat_Function_1__Boolean_1_->testRev(
+        [
+          rev('|12.5 + 13.5 + 4.0 + 1.5 + 0.5', 'c(12.5) + c(13.5) + c(4.0) + c(1.5) + c(0.5)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testPlusNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|15 + 13 + 2.0 + 1 + 1.0', 'c(15) + c(13) + c(2.0) + c(1) + c(1.0)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.0D + 2.0D + 3.0D'),
+          noRev('|1.0D + 2.0 + 3'),
+          noRev('|(-4.0D) + 2.0D + 1')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_->testRev(
+        [
+          rev('|9223372036854775807 + 3 + (4 + 5) + 7', 'c(9223372036854775807) + c(3) + c(4) + c(5) + c(7)'),
+          rev('|4 + 9223372036854775807 + 9223372036854775807 + 3', 'c(4) + c(9223372036854775807) + c(9223372036854775807) + 3'),
+          rev('|9223372036854775807 + 3 + 4 + 5 + 7', 'c(9223372036854775807) + c(3) + c(4) + c(5) + c(7)')
+        ]
+      )
+
     ]->combine()
   ]
 }

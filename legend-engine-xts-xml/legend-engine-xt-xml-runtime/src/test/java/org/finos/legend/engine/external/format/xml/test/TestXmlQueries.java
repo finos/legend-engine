@@ -286,6 +286,19 @@ public class TestXmlQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/allDataTypeResult.json")));
     }
 
+    @Test
+    public void testInternalizeWithTextContentAndAttribute()
+    {
+        String grammar = priceModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data:Byte[*]|test::model::Price->internalize(test::model::Binding, $data)->serialize(#{test::model::Price{_currency, value__}}#)",
+                Maps.mutable.with("data", resource("queries/priceWithTextContentAndAttribute.xml")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/priceWithTextContentAndAttributeResult.json")));
+    }
+
     private String schemalessBinding()
     {
         return "###ExternalFormat\n" +
@@ -323,6 +336,21 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "{\n" +
                 "  contentType: 'application/xml';\n" +
                 "  modelIncludes: [ test::model::AllDataType ];\n" +
+                "}\n";
+    }
+
+    private String priceModel()
+    {
+        return "Class test::model::Price\n" +
+                "{\n" +
+                "   _currency : String[1];\n" +
+                "   value__   : Decimal[1];\n" +
+                "}\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::model::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/xml';\n" +
+                "  modelIncludes: [ test::model::Price ];\n" +
                 "}\n";
     }
 }

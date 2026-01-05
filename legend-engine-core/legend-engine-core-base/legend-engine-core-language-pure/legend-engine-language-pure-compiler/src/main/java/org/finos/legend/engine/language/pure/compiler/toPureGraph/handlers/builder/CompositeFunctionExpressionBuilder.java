@@ -24,23 +24,39 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
-    List<FunctionExpressionBuilder> builders;
+    MutableList<FunctionExpressionBuilder> builders;
 
     public CompositeFunctionExpressionBuilder(FunctionExpressionBuilder[] builders)
     {
-        MutableList<String> names = FastList.newListWith(builders).collect(FunctionExpressionBuilder::getFunctionName).distinct();
-        Assert.assertTrue(names.size() == 1, () -> "Composite builders should have the same simple name. Found " + names);
         this.builders = FastList.newListWith(builders);
+    }
+
+    public void validate()
+    {
+        MutableList<String> names = this.builders.collect(FunctionExpressionBuilder::getFunctionName).distinct();
+        Assert.assertTrue(names.size() == 1, () -> "Composite builders should have the same simple name. Found " + names);
+        this.builders.forEach(FunctionExpressionBuilder::validate);
+    }
+
+    @Override
+    public void build(Map<String, Function<?>> result)
+    {
+        for (FunctionExpressionBuilder builder : this.builders)
+        {
+            builder.build(result);
+        }
     }
 
     public String getFunctionName()
@@ -68,7 +84,7 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     @Override
     public void addFunctionHandler(FunctionHandler handler)
     {
-        List<FunctionExpressionBuilder> target = this.builders.stream().filter(f -> f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize()).collect(Collectors.toList());
+        List<FunctionExpressionBuilder> target = this.builders.select(f -> f.getParametersSize().isPresent() && f.getParametersSize().get() == handler.getParametersSize());
         target.get(0).handlers().add(handler);
     }
 

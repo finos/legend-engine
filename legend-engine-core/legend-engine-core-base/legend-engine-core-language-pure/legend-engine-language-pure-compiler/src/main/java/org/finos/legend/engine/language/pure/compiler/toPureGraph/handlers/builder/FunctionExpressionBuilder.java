@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.clas
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -37,6 +38,7 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.type.Type;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public abstract class FunctionExpressionBuilder
@@ -114,4 +116,8 @@ public abstract class FunctionExpressionBuilder
     public abstract Boolean supportFunctionHandler(FunctionHandler handler);
 
     public abstract Optional<Integer> getParametersSize();
+
+    public abstract void validate();
+
+    public abstract void build(Map<String, Function<?>> result);
 }

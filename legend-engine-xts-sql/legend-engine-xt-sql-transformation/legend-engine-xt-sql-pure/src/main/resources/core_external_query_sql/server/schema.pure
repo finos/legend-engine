@@ -64,23 +64,26 @@ function meta::external::query::sql::server::schema::transformOne(p:PackageableE
                           '#>{'+$dbPath + '.' + $path->joinStrings('.')+'}#;';
                         );
 
-                        let code = $dbStr+'\n###Pure\nfunction test::container():Any[*]{\n' + $accessors->joinStrings('\n') + '\n}';
+                        if ($accessors->isNotEmpty(),
+                          |
+                            let code = $dbStr+'\n###Pure\nfunction test::container():Any[*]{\n' + $accessors->joinStrings('\n') + '\n}';
 
-                        let compiled = meta::legend::compile($code);
-                        
-                        let expressions = $compiled->filter(x|$x.name == 'container__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
+                            let compiled = meta::legend::compile($code);
 
-                        $expressions->map(e | 
-                          let table = $e->cast(@InstanceValue).values->toOne()->cast(@meta::pure::store::RelationStoreAccessor<Any>).sourceElement->cast(@Table);
+                            let expressions = $compiled->filter(x|$x.name == 'container__Any_MANY_')->toOne()->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
 
-                          ^AddressableRelation
-                          (
-                              tableFunctionName = 'tb',
-                              packageableElement = $dbPath,
-                              pathWithinElement = getTablePath($table),
-                              relationType = $e.genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>)->transformRelationType()
-                          );
-                        );,
+                            $expressions->map(e |
+                              let table = $e->cast(@InstanceValue).values->toOne()->cast(@meta::pure::store::RelationStoreAccessor<Any>).sourceElement->cast(@Table);
+
+                              ^AddressableRelation
+                              (
+                                  tableFunctionName = 'tb',
+                                  packageableElement = $dbPath,
+                                  pathWithinElement = getTablePath($table),
+                                  relationType = $e.genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>)->transformRelationType()
+                              );
+                            );,
+                          | []);,
           a:Any[1]|[]
       ]
     )->toOneMany()    

@@ -160,6 +160,7 @@ import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.engine.testData.generation.api.TestDataGeneration;
 import org.finos.legend.engine.testable.api.TestableApi;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.reversePCT.http.Documentation;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
 import org.finos.legend.server.shared.bundles.HostnameHeaderBundle;
@@ -350,6 +351,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // PCT
         environment.jersey().register(new PCT());
+        environment.jersey().register(new Documentation());
 
         // Protocol
         environment.jersey().register(new PureProtocol());
@@ -437,7 +439,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // DataQuality
         environment.jersey().register(new DataQualityExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, null));
-
 
         // Testable
         environment.jersey().register(new TestableApi(modelManager));

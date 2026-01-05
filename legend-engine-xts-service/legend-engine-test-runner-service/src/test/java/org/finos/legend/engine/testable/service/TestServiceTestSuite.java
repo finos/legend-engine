@@ -1190,7 +1190,7 @@ public class TestServiceTestSuite
         Assert.assertEquals(1, serviceStoreTestResultsWithTestError.size());
         Assert.assertTrue(serviceStoreTestResultsWithTestError.get(0) instanceof TestError);
         MatcherAssert.assertThat(((TestError) serviceStoreTestResultsWithTestError.get(0)).error.replace("\r", ""), CoreMatchers.containsString((
-                "                                               Request was not matched\n" +
+                        "                                               Request was not matched\n" +
                         "                                               =======================\n" +
                         "\n" +
                         "-----------------------------------------------------------------------------------------------------------------------\n" +
@@ -1202,8 +1202,8 @@ public class TestServiceTestSuite
                         "                                                           | gerParam=1&floatParam=1.123&booleanParam=false\n" +
                         "                                                           |\n" +
                         "Query: booleanParam = false                                | booleanParam: false\n" +
-                        "Query: floatParam = 1.123                                  | floatParam: 1.123\n" +
                         "Query: stringParam = dummy                                 | stringParam: dummy\n" +
+                        "Query: floatParam = 1.123                                  | floatParam: 1.123\n" +
                         "                                                           |\n" +
                         "                                                           |\n" +
                         "-----------------------------------------------------------------------------------------------------------------------\n")));

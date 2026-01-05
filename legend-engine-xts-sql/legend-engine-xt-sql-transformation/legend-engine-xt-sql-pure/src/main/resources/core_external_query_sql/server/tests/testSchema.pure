@@ -27,6 +27,13 @@ function <<test.Test>> meta::external::query::sql::server::schema::testTransform
   assertEquals($expected->meta::json::toJSON(100), $res->meta::json::toJSON(100));
 }
 
+function <<test.Test>> meta::external::query::sql::server::schema::testTransformEmptyDatabase():Boolean[1]
+{
+  let res = meta::external::query::sql::server::schema::transform(meta::external::query::sql::server::schema::EmptyTestDB);
+
+  assertEquals(^AddressableRelationCollection()->meta::json::toJSON(100), $res->meta::json::toJSON(100));
+}
+
 
 ###Relational
 Database meta::external::query::sql::server::schema::TestDB
@@ -43,4 +50,9 @@ Database meta::external::query::sql::server::schema::TestDB
       name Varchar(200)
     )
   )
+)
+
+###Relational
+Database meta::external::query::sql::server::schema::EmptyTestDB
+(
 )

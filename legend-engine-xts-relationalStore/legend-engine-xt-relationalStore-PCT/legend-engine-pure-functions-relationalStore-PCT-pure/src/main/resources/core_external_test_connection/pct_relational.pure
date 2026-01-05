@@ -434,7 +434,7 @@ function meta::relational::tests::pct::process::setupDatabase(csvs: String[*], d
 
   let pctDbConfig = ^$dbConfig(dbExtension = ^$originalExtension(ddlCommandsTranslator = $ddlTranslator));
 
-  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLs($database->toOne(), $pctDbConfig);
+  let setUpSQLs = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLsV2($database->toOne(), $pctDbConfig);
   print(if($debug.debug,|'\n' + $setUpSQLs->joinStrings('\n') + '\n',|''));
 
   let nodes = ^meta::pure::executionPlan::SequenceExecutionNode(
@@ -557,7 +557,7 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                           let type = $i.genericType.rawType->toOne();
                           let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
                           // Nil is for Empty Sets, Any is currently for collection of primitives of different types (may create an issue if we have classes of different types)
-                          if ($type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, ColSpec, ColSpecArray, FuncColSpec, FuncColSpecArray, AggColSpec, AggColSpecArray, SortInfo, _Window, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
+                          if (not($i.values->isEmpty() && $i.multiplicity->isToOne()) && !$hasClass && $type->instanceOf(Class) && !$type->subTypeOf(Function) && !$type->in([Any, Nil, TDS, Enumeration, ColSpec, ColSpecArray, FuncColSpec, FuncColSpecArray, AggColSpec, AggColSpecArray, SortInfo, _Window, Map, List, Pair, Variant, meta::pure::metamodel::relation::Relation]),
                               |
                                 // Process class
                                 let values = $i.values->map(
@@ -823,7 +823,7 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
 
   let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
-  let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne())));
+  let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne('type not supported: ' + $p->functionReturnType().rawType->toOne()->elementToPath()))));
   let idCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
   let tableAlias = ^TableAlias(database=$db, name=$class.name->toOne(), relationalElement = $table);

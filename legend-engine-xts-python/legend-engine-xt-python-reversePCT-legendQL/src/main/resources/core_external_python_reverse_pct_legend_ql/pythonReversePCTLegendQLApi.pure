@@ -19,7 +19,7 @@ import meta::external::python::reversePCT::legendQL::*;
 
 function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter<X|o>(f: Function<{->X[o]}>[1]):X[o]
 {
-  let rev = findReverseForFunction($f, pythonLegendQLReverses(), []);
+  let rev = findReverseForFunction($f, pythonLegendQLReverses().reversesForSource, []);
 
   if ($rev.shouldBeSupported,
     | let pythonString = $rev.reverse->toOne();
@@ -31,24 +31,36 @@ function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external:
   );
 }
 
-function meta::external::python::reversePCT::legendQL::pythonLegendQLReverses(): ReversesForSource[*]
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReverses(): ReverseInformation[1]
 {
-  pythonLegendQLReversesEssential()
-    ->concatenate(
-      pythonLegendQLReversesGrammar()
-    )
-    ->concatenate(
-      pythonLegendQLReversesRelation()
-    )
-    ->concatenate(
-      pythonLegendQLReversesStandard()
-    )
-    ->concatenate(
-      pythonLegendQLReversesUnclassified()
-    )
-    ->concatenate(
-      pythonLegendQLReversesVariant()
-    )
+  ^ReverseInformation
+  (
+    reversesForSource =   pythonLegendQLReversesEssential()
+                          ->concatenate(pythonLegendQLReversesGrammar())
+                          ->concatenate(pythonLegendQLReversesRelation())
+                          ->concatenate(pythonLegendQLReversesStandard())
+                          ->concatenate(pythonLegendQLReversesUnclassified())
+                          ->concatenate(pythonLegendQLReversesVariant()),
+    reverseTransformer = val:String[1]| ^FunctionExpression
+                                        (
+                                          func = meta::external::python::reversePCT::legendQL::pythonToPure_String_1__Any_1_,
+                                          importGroup = ^ImportGroup(),
+                                          multiplicity=PureOne,
+                                          genericType=^GenericType(rawType=Any),
+                                          parametersValues = ^InstanceValue
+                                                              (
+                                                                genericType = ^GenericType(rawType=String),
+                                                                multiplicity = PureOne,
+                                                                values = $val
+                                                              )
+                                        );    
+  )
+}
+
+function meta::external::python::reversePCT::legendQL::pythonToPure(python:String[1]): Any[1]
+{
+  // Used only for documentation
+  '';
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssential(): ReversesForSource[*]
@@ -74,16 +86,22 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
     ->concatenate(
       pythonLegendQLReversesGrammarMath()
     )
+    ->concatenate(
+      pythonLegendQLReversesGrammarBoolean()
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
 {
-  []
+  pythonLegendQLReversesEssentialRelation()
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
 {
   pythonLegendQLReversesStandardMath()
+    ->concatenate(
+      pythonLegendQLReversesStandardBoolean()
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
@@ -126,11 +144,15 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
     'from pylegend.core.language import PyLegendPrimitive\n' + 
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
     'from pylegend.core.language.shared.functions import pi\n' + 
+    'from pylegend.extensions.tds.legendql_api.frames.legendql_api_csv_input_frame import LegendQLApiCsvNonExecutableInputTdsFrame as csv_frame\n'+
+    'from pylegend.core.tds.legendql_api.frames.legendql_api_applied_function_tds_frame import LegendQLApiAppliedFunctionTdsFrame' +
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' + 
     '  if isinstance(res, PyLegendPrimitive):\n' + 
     '     return res.to_pure_expression(FrameToPureConfig())\n' +
+    '  if isinstance(res, LegendQLApiAppliedFunctionTdsFrame) or isinstance(res, csv_frame):\n' + 
+    '     return res.to_pure(FrameToPureConfig())\n' +
     '  raise RuntimeError("Unhandled expression type " + str(type(res)))\n' +
     '\n' +
     'print(func())\n';

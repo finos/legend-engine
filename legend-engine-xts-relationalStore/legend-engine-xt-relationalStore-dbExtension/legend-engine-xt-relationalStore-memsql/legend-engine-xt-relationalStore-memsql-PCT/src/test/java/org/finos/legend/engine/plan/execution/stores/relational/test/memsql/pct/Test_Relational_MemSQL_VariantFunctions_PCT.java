@@ -90,7 +90,29 @@ public class Test_Relational_MemSQL_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::tests::collection::fold::testFold_FromVariant_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL", AdapterQualifier.needsImplementation),
 
             pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
-            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "Datatype to SQL text not supported for Database Type: MemSQL", AdapterQualifier.needsImplementation)
+            one("meta::pure::functions::variant::navigation::tests::get::testGetFromZeroMultiplicityObject_Function_1__Boolean_1_", "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '::hello' at line 1", AdapterQualifier.needsImplementation),
+
+
+            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
+
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToMany_Function_1__Boolean_1_", "[unsupported-api] The function 'array_flatten' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessQualifiedProperty_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_withTypeLookup_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToOne_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessProperty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndAccessProperty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: MemSQL\""),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypePropertyAndClassToType_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypeProperty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\"")
     );
 
     public static Test suite()

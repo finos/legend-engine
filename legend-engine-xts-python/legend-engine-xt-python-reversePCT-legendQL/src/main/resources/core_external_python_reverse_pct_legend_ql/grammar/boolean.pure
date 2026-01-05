@@ -1,0 +1,402 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammarBoolean(): ReversesForSource[*]
+{
+  [
+    // equality -----------
+    [ // eq -----------
+      meta::pure::functions::boolean::tests::equality::eq::testEqInteger_Function_1__Boolean_1_->testRev(
+        [
+          rev('|6->meta::pure::functions::boolean::eq(6)', 'c(6) == 6'),
+          rev('|6->meta::pure::functions::boolean::eq(3 + 3)', '6 == c(3) + c(3)'),
+          rev('|6->meta::pure::functions::boolean::eq(7)', '6 == c(7)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\'->meta::pure::functions::boolean::eq(\'ab\')', 'c("ab") == "ab"'),
+          rev('|\'ab\'->meta::pure::functions::boolean::eq(\'a\' + \'b\')', '"ab" == c("a" + "b")'),
+          rev('|\'ab\'->meta::pure::functions::boolean::eq(\'cd\')', 'c("ab") == c("cd")')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqFloat_Function_1__Boolean_1_->testRev(
+        [
+          rev('|6.3->meta::pure::functions::boolean::eq(6.3)', 'c(6.3) == 6.3'),
+          rev('|6.3->meta::pure::functions::boolean::eq(6.3 + 0.0)', '6.3 == c(6.3 + 0.0)'),
+          rev('|6.3->meta::pure::functions::boolean::eq(7.8)', 'c(6.3) == c(7.8)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.FIRST)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.SECOND)'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(1)'),
+          noRev('|\'a\'->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+          noRev('|$x->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+          noRev('|$x->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$x->meta::pure::functions::boolean::eq($x)'),
+          noRev('|$instance->meta::pure::functions::boolean::eq($instance)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$side1->meta::pure::functions::boolean::eq($side1)'),
+          noRev('|$side1->meta::pure::functions::boolean::eq($side2)'),
+          noRev('|$side2->meta::pure::functions::boolean::eq($side1)'),
+          noRev('|$side1->meta::pure::functions::boolean::eq($side3)'),
+          noRev('|$side3->meta::pure::functions::boolean::eq($side1)'),
+          noRev('|$side1->meta::pure::functions::boolean::eq($side4)'),
+          noRev('|$left11->meta::pure::functions::boolean::eq($left11)'),
+          noRev('|$left11->meta::pure::functions::boolean::eq($left12)'),
+          noRev('|$left12->meta::pure::functions::boolean::eq($left11)'),
+          noRev('|$left11->meta::pure::functions::boolean::eq($left21)'),
+          noRev('|$left21->meta::pure::functions::boolean::eq($left11)'),
+          noRev('|$right11->meta::pure::functions::boolean::eq($right11)'),
+          noRev('|$right11->meta::pure::functions::boolean::eq($right12)'),
+          noRev('|$right12->meta::pure::functions::boolean::eq($right11)'),
+          noRev('|$right11->meta::pure::functions::boolean::eq($right21)'),
+          noRev('|$right21->meta::pure::functions::boolean::eq($right22)'),
+          noRev('|$right21->meta::pure::functions::boolean::eq($right23)'),
+          noRev('|$left11->meta::pure::functions::boolean::eq($right11)'),
+          noRev('|$bot11->meta::pure::functions::boolean::eq($bot11)'),
+          noRev('|$bot11->meta::pure::functions::boolean::eq($bot12)'),
+          noRev('|$bot11->meta::pure::functions::boolean::eq($bot21)'),
+          noRev('|$left11->meta::pure::functions::boolean::eq($bot11)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1->meta::pure::functions::boolean::eq(1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+          noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(1)'),
+          noRev('|1->meta::pure::functions::boolean::eq(2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+          noRev('|2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(1)'),
+          noRev('|^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1)->meta::pure::functions::boolean::eq(1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+          noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1))')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::equality::eq::testEqBoolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::boolean::eq(true)','c(True) == True'),
+          rev('|false->meta::pure::functions::boolean::eq(false)','False == c(False)'),
+          rev('|true->meta::pure::functions::boolean::eq(false)','c(True) == c(False)'),
+          rev('|false->meta::pure::functions::boolean::eq(true)','c(False) == c(True)')
+        ]
+      )
+    ]->combine(),
+    [ // equal ----------------
+      meta::pure::functions::boolean::tests::equality::equal::testEqualInteger_Function_1__Boolean_1_->testRev(
+        [
+          rev('|6 == 6', 'c(6) == 6'),
+          rev('|6 == (3 + 3)', '6 == c(3) + c(3)'),
+          rev('|meta::pure::functions::boolean::not(6 == 7)', '~(c(6) == c(7))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualFloat_Function_1__Boolean_1_->testRev(
+        [
+          rev('|6.3 == 6.3', 'c(6.3) == 6.3'),
+          rev('|6.3 == (6.3 + 0.0)', '6.3 == c(6.3) + c(0.0)'),
+          rev('|meta::pure::functions::boolean::not(6.3 == 7.8)', '~(c(6.3) == c(7.8))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'ab\' == \'ab\'', 'c("ab") == "ab"'),
+          rev('|\'ab\' == (\'a\' + \'b\')', '"ab" == c("a" + "b")'),
+          rev('|meta::pure::functions::boolean::not(\'ab\' == \'cd\')', '~(c("ab") == c("cd"))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2014-02-27T05:01:35.231+0000 == %2014-02-27T05:01:35.231+0000', 'c(datetime(2014,2,27,5,1,35,231)) == c(datetime(2014,2,27,5,1,35,231))'),
+          rev('|meta::pure::functions::boolean::not(%2014-02-27T05:01:35.231+0000 == %2014-02-27T10:01:35.231+0000)', '~(datetime(2014,2,27,5,1,35,231) == c(datetime(2014,2,27,10,1,35,231)))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST'),
+          noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND'),
+          noRev('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+          noRev('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+          noRev('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.FIRST)'),
+          noRev('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND == meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.SECOND)'),
+          noRev('|meta::pure::functions::boolean::not(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST == 1)'),
+          noRev('|meta::pure::functions::boolean::not(\'a\' == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+          noRev('|$x == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST'),
+          noRev('|meta::pure::functions::boolean::not($x == meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$x == $x'),
+          noRev('|$y == $y'),
+          noRev('|$instance == $instance')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$side1 == $side1'),
+          noRev('|$side1 == $side2'),
+          noRev('|$side2 == $side1'),
+          noRev('|meta::pure::functions::boolean::not($side1 == $side3)'),
+          noRev('|meta::pure::functions::boolean::not($side3 == $side1)'),
+          noRev('|meta::pure::functions::boolean::not($side1 == $side4)'),
+          noRev('|$left11 == $left11'),
+          noRev('|$left11 == $left12'),
+          noRev('|$left12 == $left11'),
+          noRev('|meta::pure::functions::boolean::not($left11 == $left21)'),
+          noRev('|meta::pure::functions::boolean::not($left21 == $left11)'),
+          noRev('|$right11 == $right11'),
+          noRev('|$right11 == $right12'),
+          noRev('|$right12 == $right11'),
+          noRev('|meta::pure::functions::boolean::not($right11 == $right21)'),
+          noRev('|$right21 == $right22'),
+          noRev('|meta::pure::functions::boolean::not($right21 == $right23)'),
+          noRev('|meta::pure::functions::boolean::not($left11 == $right11)'),
+          noRev('|$bot11 == $bot11'),
+          noRev('|$bot11 == $bot12'),
+          noRev('|meta::pure::functions::boolean::not($bot11 == $bot21)'),
+          noRev('|meta::pure::functions::boolean::not($left11 == $bot11)'),
+          noRev('|meta::pure::functions::boolean::not($otherBot11 == $otherBot12)'),
+          noRev('|$otherBot11 == $otherBot21'),
+          noRev('|meta::pure::functions::boolean::not($otherBot12 == $otherBot21)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1 == 1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)'),
+          noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == 1'),
+          noRev('|1 == 2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)'),
+          noRev('|2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == 1'),
+          noRev('|^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1) == 1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)'),
+          noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger) == ^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1)')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true == true','c(True) == c(True)'),
+          rev('|false == false','c(False) == False'),
+          rev('|meta::pure::functions::boolean::not(true == false)','~(c(True) == False)'),
+          rev('|meta::pure::functions::boolean::not(false == true)','~(False == c(True))')
+        ]
+      )
+    ]->combine(),
+    // inequality -----------
+    [ // greaterThanEqual
+      meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number_Function_1__Boolean_1_->testRev(
+        [
+          rev('|4 >= 3', 'c(4) >= c(3)'),
+          rev('|3 >= 3', 'c(3) >= 3'),
+          rev('|3 >= 4', '3 >= c(4)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2012-10-02 >= %2012-10-01', 'c(date(2012,10,2)) >= date(2012,10,1)'),
+          rev('|%2012-10-02 >= %2012-10-02', 'date(2012,10,2) >= c(date(2012,10,2))'),
+          rev('|%2012-10-02 >= %2012-10-03', 'c(date(2012,10,2)) >= c(date(2012,10,3))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'b\' >= \'a\'', 'c("b") >= c("a")'),
+          rev('|\'a\' >= \'a\'', 'c("a") >= "a"'),
+          rev('|\'a\' >= \'b\'', '"a" >= c("b")')
+        ]
+      )
+    ]->combine(),
+    [ // lessThan -------------------
+      meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Number_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 < 4', 'c(3) < 4'),
+          rev('|4 < 3', '4 < c(3)'),
+          rev('|3 < 3', 'c(3) < c(3)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Date_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2012-10-01 < %2012-10-02', 'c(date(2012,10,1)) < date(2012,10,2)'),
+          rev('|%2012-10-03 < %2012-10-02', 'c(date(2012,10,3)) < c(date(2012,10,2))'),
+          rev('|%2012-10-02 < %2012-10-02', 'c(date(2012,10,2)) < c(date(2012,10,2))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_String_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\' < \'b\'', 'c("a") < "b"'),
+          rev('|\'b\' < \'a\'', '"b" < c("a")'),
+          rev('|\'a\' < \'a\'', 'c("a") < c("a")')
+        ]
+      )
+    ]->combine(),
+    [ // greaterThan --------------------
+      meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Number_Function_1__Boolean_1_->testRev(
+        [
+          rev('|4 > 3', 'c(4) > 3'),
+          rev('|3 > 4', '3 > c(4)'),
+          rev('|3 > 3', 'c(3) > c(3)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Date_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2012-10-02 > %2012-10-01', 'c(date(2012,10,2)) > date(2012,10,1)'),
+          rev('|%2012-10-02 > %2012-10-03', 'date(2012,10,2) > c(date(2012,10,3))'),
+          rev('|%2012-10-02 > %2012-10-02', 'c(date(2012,10,2)) > c(date(2012,10,2))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_String_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'b\' > \'a\'', 'c("b") > "a"'),
+          rev('|\'a\' > \'b\'', '"a" > c("b")'),
+          rev('|\'a\' > \'a\'', 'c("a") > c("a")')
+        ]
+      )
+    ]->combine(),
+    [ // lessThanEqual -----------------------
+      meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Number_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 <= 4', 'c(3) <= 4'),
+          rev('|3 <= 3', 'c(3) <= c(3)'),
+          rev('|4 <= 3', '4 <= c(3)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Date_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2012-10-01 <= %2012-10-02', 'c(date(2012,10,1)) <= date(2012,10,2)'),
+          rev('|%2012-10-02 <= %2012-10-02', 'c(date(2012,10,2)) <= c(date(2012,10,2))'),
+          rev('|%2012-10-03 <= %2012-10-02', 'date(2012,10,3) <= c(date(2012,10,2))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_String_Function_1__Boolean_1_->testRev(
+        [
+          rev('|\'a\' <= \'b\'', 'c("a") <= "b"'),
+          rev('|\'a\' <= \'a\'', 'c("a") <= c("a")'),
+          rev('|\'b\' <= \'a\'', '"b" <= c("a")')
+        ]
+      )
+    ]->combine(),
+    [ // and ----------------
+      meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true && true', 'c(True) & True'),
+          rev('|true && false', 'True & c(False)'),
+          rev('|false && true', 'c(False) & c(True)'),
+          rev('|false && false', 'c(False & False)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_->testRev(
+        [
+          rev('|(true && true) && true', '(c(True) & c(True)) & c(True)'),
+          rev('|(true && true) && false', '(c(True) & c(True)) & c(False)'),
+          rev('|(true && false) && true', '(c(True) & c(False)) & c(True)'),
+          rev('|(true && false) && false', '(c(True) & c(False)) & c(False)'),
+          rev('|(false && true) && true', '(c(False) & c(True)) & c(True)'),
+          rev('|(false && true) && false', '(c(False) & c(True)) & c(False)'),
+          rev('|(false && false) && true', '(c(False) & c(False)) & c(True)'),
+          rev('|(false && false) && false', '(c(False) & c(False)) & c(False)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|(1 == 1) && meta::pure::functions::boolean::not(2 == 3)','(c(1) == 1) & ~(2 == c(3))'),
+          rev('|(1 == 2) && meta::pure::functions::boolean::not(2 == 3)','(c(1) == c(2)) & ~(c(2) == c(3))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|((1 == 1) && meta::pure::functions::boolean::not(2 == 3)) && true','(c(1) == 1) & ~(2 == c(3)) & c(True)'),
+          rev('|((1 == 2) && meta::pure::functions::boolean::not(2 == 3)) && false','(c(1) == c(2)) & ~(c(2) == c(3)) & c(False)')
+        ]
+      )
+    ]->combine(),
+    [ // not ---------------
+      meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::boolean::not()', '~c(True)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::not::testNotFalse_Function_1__Boolean_1_->testRev(
+        [
+          rev('|false->meta::pure::functions::boolean::not()', '~c(False)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_->testRev(
+        [
+          rev('|false->meta::pure::functions::boolean::not() && true', '~c(False) & True'),
+          rev('|true->meta::pure::functions::boolean::not() && false', '~c(True) & c(False)'),
+          rev('|meta::pure::functions::boolean::not(true && false)', '~(c(True) & c(False))')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::not::testNotFalseExpression_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::boolean::not(1 == 3)','~(c(1) == c(3))')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::conjunctions::not::testNotTrueExpression_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::boolean::not(3 == 3)','~(c(3) == c(3))')
+        ]
+      )
+    ]->combine(),
+    [ // or -------------------
+      meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true || true', 'c(True) | True'),
+          rev('|true || false', 'True | c(False)'),
+          rev('|false || true', 'c(False) | c(True)'),
+          rev('|false || false', 'c(False) | c(False)')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_->testRev(
+        [
+          rev('|(true || true) || true', '(c(True) | c(True)) | True'),
+          rev('|(true || true) || false', '(c(True) | True) | c(False)'),
+          rev('|(true || false) || true', '(True | c(False)) | c(True)'),
+          rev('|(true || false) || false', '(c(True) | False) | False'),
+          rev('|(false || true) || true', '(False | True) | c(True)'),
+          rev('|(false || true) || false', '(c(False) | True) | False'),
+          rev('|(false || false) || true', '(c(False) | c(False)) | c(True)'),
+          rev('|(false || false) || false', '(c(False) | c(False)) | c(False)')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::conjunctions::or::testBinaryExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|(1 == 1) || (2 == 3)','(c(1) == 1) | (2 == c(3))'),
+          rev('|(1 == 2) || (2 == 3)','(c(1) == c(2)) | (c(2) == c(3))')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|(meta::pure::functions::boolean::not(1 == 1) || (2 == 3)) || true','~(c(1) == 1) | (2 == c(3)) | True'),
+          rev('|((1 == 2) || (2 == 3)) || false','(c(1) == c(2)) | (c(2) == c(3)) | c(False)')
+        ]
+      )
+    ]->combine()
+  ]
+}

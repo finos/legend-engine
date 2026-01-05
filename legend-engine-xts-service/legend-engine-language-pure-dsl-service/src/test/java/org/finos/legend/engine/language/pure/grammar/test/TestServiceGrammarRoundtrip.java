@@ -2113,6 +2113,24 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
         testComposedGrammarWithoutSectionIndex(expected, true);
     }
 
+    @Test
+    public void testServiceWithMcpServer()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a->from(meta::myMapping, meta::myRuntime);\n" +
+                "  }\n" +
+                "  mcpServer: ab;\n" +
+                "}\n");
+    }
+
+
     private void testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
     {
         PureGrammarComposer grammarTransformer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
