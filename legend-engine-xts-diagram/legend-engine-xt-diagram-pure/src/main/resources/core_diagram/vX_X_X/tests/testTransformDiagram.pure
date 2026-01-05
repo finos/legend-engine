@@ -1,0 +1,74 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function <<test.Test>> meta::protocols::pure::vX_X_X::diagram::testWithBasicDiagram():Boolean[1]
+{
+  let diagram = meta::pure::functions::io::readFile('core_diagram/vX_X_X/tests/basicDiagram.legend')->toOne()->meta::legend::compile()->filter(i|$i.package.name == 'model' && $i.name == 'generalDiagram')->cast(@meta::pure::metamodel::diagram::Diagram)->toOne();
+  let protocolDiagram = $diagram->meta::protocols::pure::vX_X_X::diagram::transformDiagram();
+  assertEquals('model', $protocolDiagram.package);
+  assertEquals('generalDiagram', $protocolDiagram.name);
+  assertEmpty($protocolDiagram.propertyViews);
+  assertSize($protocolDiagram.classViews, 3);
+  assertSize($protocolDiagram.generalizationViews, 2);
+
+  assertContains($protocolDiagram.classViews.class, 'model::animal::Animal');
+  assertContains($protocolDiagram.classViews.class, 'model::animal::mammal::Mammal');
+  assertContains($protocolDiagram.classViews.class, 'model::animal::reptile::Reptile');
+
+  let animalClassView = $protocolDiagram.classViews->filter(classView | $classView.class == 'model::animal::Animal')->toOne();
+  assertEquals('633a57fd-0d95-44fe-9184-f32058dc73d8', $animalClassView.id);
+
+  assertContains($protocolDiagram.generalizationViews.sourceView, '97fdf326-b558-44bd-bc91-07ac2209159d');
+  assertContains($protocolDiagram.generalizationViews.sourceView, '99a2e9af-f298-4446-8693-97e362ce66eb');
+  assertSize($protocolDiagram.generalizationViews.targetView->removeDuplicates(), 1);
+  assertContains($protocolDiagram.generalizationViews.targetView, '633a57fd-0d95-44fe-9184-f32058dc73d8');
+}
+
+
+
+function <<test.Test>> meta::protocols::pure::vX_X_X::diagram::testWithDiagramWithAssociationAndClassProperty():Boolean[1]
+{
+  let diagram = readFile('core_diagram/vX_X_X/tests/diagramWithAssociationAndClassProperty.legend')->toOne()->meta::legend::compile()->filter(i|$i.package.name == 'domain' && $i.name == 'COVIDDataDiagram')->cast(@meta::pure::metamodel::diagram::Diagram)->toOne();
+  let protocolDiagram = $diagram->meta::protocols::pure::vX_X_X::diagram::transformDiagram();
+  assertEquals('domain', $protocolDiagram.package);
+  assertEquals('COVIDDataDiagram', $protocolDiagram.name);
+  assertEmpty($protocolDiagram.generalizationViews);
+  assertSize($protocolDiagram.classViews, 4);
+  assertSize($protocolDiagram.propertyViews, 3);
+
+  assertContains($protocolDiagram.classViews.class, 'domain::COVIDData');
+  assertContains($protocolDiagram.classViews.class, 'domain::Demographics');
+  assertContains($protocolDiagram.classViews.class, 'domain::Class1');
+  assertContains($protocolDiagram.classViews.class, 'domain::Class2');
+
+  assertSize($protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'demographics'), 1);
+  assertSize($protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'fromClass1'), 1);
+  assertSize($protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'fromClass2'), 1);
+
+  let demographicsPropertyView = $protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'demographics')->toOne();
+  let fromClass1PropertyView = $protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'fromClass1')->toOne();
+  let fromClass2View = $protocolDiagram.propertyViews->filter(propertyView | $propertyView.property.property == 'fromClass2')->toOne();
+
+  assertEquals('domain::COVIDData', $demographicsPropertyView.property.class);
+  assertEquals('domain::Class12Assoc', $fromClass1PropertyView.property.class);
+  assertEquals('domain::Class12Assoc', $fromClass2View.property.class);
+
+  assertEquals('6b69f44b-f729-46aa-b244-ec5ee8164142', $demographicsPropertyView.sourceView);
+  assertEquals('690e89d4-23e9-46e8-8543-c89c22cc9e15', $fromClass1PropertyView.sourceView);
+  assertEquals('f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07', $fromClass2View.sourceView);
+
+  assertEquals('159e797e-ae75-437d-ba9c-253f99a48826', $demographicsPropertyView.targetView);
+  assertEquals('f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07', $fromClass1PropertyView.targetView);
+  assertEquals('690e89d4-23e9-46e8-8543-c89c22cc9e15', $fromClass2View.targetView);
+}
