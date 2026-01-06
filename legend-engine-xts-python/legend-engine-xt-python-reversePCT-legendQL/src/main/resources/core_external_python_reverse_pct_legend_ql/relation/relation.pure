@@ -1050,7 +1050,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                     '9,5,I\n'+
                     '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
             '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], [] , frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
+               'frame.window(["grp"], [] , frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         ),
@@ -1070,7 +1070,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->plus()])',
              '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], lambda r : r.id.descending(), frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\')),("other", lambda p, w, r: r.id , lambda c:c.sum())])'+
+               'frame.window(["grp"], lambda r : r.id.descending(), frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\')),("other", lambda p, w, r: r.id , lambda c:c.sum())])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         ),
@@ -1092,7 +1092,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                               ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->plus()]);\n'+
                               '',
              '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], lambda r : r.id.descending(), frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\')),("other", lambda p, w, r: r.id , lambda c:c.sum())])'+
+               'frame.window(["grp"], lambda r : r.id.descending(), frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\')),("other", lambda p, w, r: r.id , lambda c:c.sum())])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         ),
@@ -1112,7 +1112,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                     '9,5,I\n'+
                     '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
             '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], lambda r : r.id , frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
+               'frame.window(["grp"], lambda r : r.id , frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         ),
@@ -1134,7 +1134,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                               ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
                               '',
             '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], lambda r : r.id.descending() , frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
+               'frame.window(["grp"], lambda r : r.id.descending() , frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         ),
@@ -1154,7 +1154,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
              '(lambda frame: frame.window_extend(' +
-               'frame.window(["grp"], lambda r : r.id.descending() , frame.rows()), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
+               'frame.window(["grp"], lambda r : r.id.descending() , frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
         )
@@ -2244,7 +2244,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,0\n'+
                   '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o , r.i] , frame.rows()), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o , r.i] , frame.rows("unbounded","unbounded")), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
           ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
         ]
       ),
@@ -2530,7 +2530,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,0\n'+
                 '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", [], frame.rows()), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", [], frame.rows("unbounded","unbounded")), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
         ]
       ),
@@ -2556,7 +2556,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,0\n'+
                   '300,2,0}#->meta::pure::functions::relation::extend(~[p,o]->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window(["p","o"] , [] , frame.rows()), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window(["p","o"] , [] , frame.rows("unbounded","unbounded")), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
         ]
       ),
@@ -2634,7 +2634,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,0\n'+
                   '300,2,0}#->meta::pure::functions::relation::extend(~[p,o]->meta::pure::functions::relation::over(~i->meta::pure::functions::relation::ascending(), 4->meta::pure::functions::relation::_range(2)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( ["p","o"], lambda r: [r.i] , frame.range(4,2)), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( ["p","o"], lambda r: [r.i] , frame.range(number_start=4, number_end=2)), ("sum_i_Rows", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
         ]
       ),
@@ -2660,7 +2660,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range("unbounded",0)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start="unbounded",number_end=0)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2686,7 +2686,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,10\n'+
                 '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range("unbounded",0)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start="unbounded",number_end=0)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2712,7 +2712,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.ascending()] , frame.range("unbounded",-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.ascending()] , frame.range(number_start="unbounded",number_end=-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2738,7 +2738,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range("unbounded", -1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start="unbounded",number_end=-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2764,7 +2764,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,10\n'+
                 '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range("unbounded",1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start="unbounded",number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2790,7 +2790,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,10\n'+
                 '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range("unbounded",1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start="unbounded",number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2816,7 +2816,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,10\n'+
                 '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(0,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=0,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2842,7 +2842,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(0,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=0,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2868,7 +2868,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '300,1,10\n'+
                 '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(-1, "unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=-1,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2894,7 +2894,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(-1,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum()))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=-1,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum()))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2920,7 +2920,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(1,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=1,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2946,7 +2946,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(1,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=1,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2972,7 +2972,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-2, -1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(-2,-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=-2,number_end=-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -2998,7 +2998,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-2, -1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(-2,-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=-2,number_end=-1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3024,7 +3024,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(-1,1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=-1,number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3050,7 +3050,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(-1,1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=-1,number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3076,7 +3076,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(2)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(1,2)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=1,number_end=2)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3102,7 +3102,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(2)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(1,2)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=1,number_end=2)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,3,30\\n100,1,10\\n100,2,20\\n100,2,20\\n100,3,30\\n100,3,30\\n200,1,10\\n200,1,10\\n200,1,10\\n200,2,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3128,7 +3128,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(-1,1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=-1,number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,null,30\\n100,1,10\\n100,2,20\\n100,null,20\\n100,3,30\\n100,null,30\\n200,1,10\\n200,1,10\\n200,null,10\\n200,null,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3154,7 +3154,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, 1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(-1,1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start=-1,number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,null,30\\n100,1,10\\n100,2,20\\n100,null,20\\n100,3,30\\n100,null,30\\n200,1,10\\n200,1,10\\n200,null,10\\n200,null,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3180,7 +3180,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.range("unbounded",1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(number_start="unbounded",number_end=1)), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,null,30\\n100,1,10\\n100,2,20\\n100,null,20\\n100,3,30\\n100,null,30\\n200,1,10\\n200,1,10\\n200,null,10\\n200,null,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3206,7 +3206,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,1,10\n'+
                   '300,2,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Integer, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Integer, i:Integer)>[1], r: (p:Integer, o:Integer, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.range(-1,"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(number_start=-1,number_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,1,10\\n0,1,10\\n0,null,30\\n100,1,10\\n100,2,20\\n100,null,20\\n100,3,30\\n100,null,30\\n200,1,10\\n200,1,10\\n200,null,10\\n200,null,20\\n200,3,30\\n200,3,30\\n300,1,10\\n300,2,20"))')
         ]
       ),
@@ -3227,7 +3227,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   'Snack,2.25\n'+
                   'Snack,4.00}#->meta::pure::functions::relation::extend(~menu_cogs_usd->meta::pure::functions::relation::ascending()->meta::pure::functions::relation::over(0->meta::pure::functions::relation::_range(2.1)), ~sum_cogs:{p: meta::pure::metamodel::relation::Relation<(menu_category:String, menu_cogs_usd:Float)>[1], w: meta::pure::functions::relation::_Window<(menu_category:String, menu_cogs_usd:Float)>[1], r: (menu_category:String, menu_cogs_usd:Float)[1]|$r.menu_cogs_usd}:y: Float[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( [], lambda r: [r.menu_cogs_usd] , frame.range(0,2.1)), ("sum_cogs", lambda p, w, r: r.menu_cogs_usd , lambda c:c.sum() ))' +
+              'frame.window( [], lambda r: [r.menu_cogs_usd] , frame.range(number_start=0,number_end=2.1)), ("sum_cogs", lambda p, w, r: r.menu_cogs_usd , lambda c:c.sum() ))' +
            ')(csv_frame("\\nmenu_category,menu_cogs_usd\\nBeverage,0.5\\nBeverage,0.65\\nBeverage,0.75\\nDessert,0.50\\nDessert,1.00\\nDessert,1.25\\nDessert,2.50\\nDessert,3.00\\nSnack,1.25\\nSnack,2.25\\nSnack,4.00"))')
         ]
       ),
@@ -3271,7 +3271,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
            '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range("unbounded",frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start="unbounded",duration_end=0, duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3297,7 +3297,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range("unbounded",frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start="unbounded",duration_end=0, duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3323,7 +3323,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range("unbounded",frame.duration_range_boundary(-1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start="unbounded",duration_end=-1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3349,7 +3349,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range("unbounded",frame.duration_range_boundary(-1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start="unbounded",duration_end=-1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3375,7 +3375,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range("unbounded",frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start="unbounded",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3401,7 +3401,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::_range(1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range("unbounded",frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start="unbounded",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3427,7 +3427,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3453,7 +3453,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3479,7 +3479,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3505,7 +3505,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3531,7 +3531,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(1,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=1,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3557,7 +3557,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(1,"DAYS"),"unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=1,duration_start_unit="DAYS",duration_end="unbounded")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3583,7 +3583,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end=0,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3609,7 +3609,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end=0,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3635,7 +3635,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end=0,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3661,7 +3661,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 0, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),frame.duration_range_boundary(0,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end=0,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3687,7 +3687,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3713,7 +3713,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 0->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(0,"DAYS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=0,duration_start_unit="DAYS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3739,7 +3739,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-2, meta::pure::functions::date::DurationUnit.DAYS, -1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(-2,"DAYS"),frame.duration_range_boundary(-1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=-2,duration_start_unit="DAYS",duration_end=-1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3765,7 +3765,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-2, meta::pure::functions::date::DurationUnit.DAYS, -1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(-2,"DAYS"),frame.duration_range_boundary(-1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=-2,duration_start_unit="DAYS",duration_end=-1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3791,7 +3791,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3817,7 +3817,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), meta::pure::functions::relation::_range(-1, meta::pure::functions::date::DurationUnit.DAYS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(-1,"DAYS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=-1,duration_start_unit="DAYS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3843,7 +3843,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 2, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(1,"DAYS"),frame.duration_range_boundary(2,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=1,duration_start_unit="DAYS",duration_end=2,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3869,7 +3869,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.DAYS, 2, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(1,"DAYS"),frame.duration_range_boundary(2,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=1,duration_start_unit="DAYS",duration_end=2,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3895,7 +3895,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::ascending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.SECONDS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o] , frame.duration_range(frame.duration_range_boundary(1,"SECONDS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o] , frame.range(duration_start=1,duration_start_unit="SECONDS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       ),
@@ -3921,7 +3921,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   '300,2024-01-29T00:32:34.000000000+0000,10\n'+
                   '300,2024-01-30T00:32:34.000000000+0000,20}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over(~o->meta::pure::functions::relation::descending(), 1->meta::pure::functions::relation::_range(meta::pure::functions::date::DurationUnit.SECONDS, 1, meta::pure::functions::date::DurationUnit.DAYS)), ~newCol:{p: meta::pure::metamodel::relation::Relation<(p:Integer, o:Date, i:Integer)>[1], w: meta::pure::functions::relation::_Window<(p:Integer, o:Date, i:Integer)>[1], r: (p:Integer, o:Date, i:Integer)[1]|$r.i}:y: Integer[*]|$y->plus())',
           '(lambda frame: frame.window_extend(' +
-              'frame.window( "p", lambda r: [r.o.descending()] , frame.duration_range(frame.duration_range_boundary(1,"SECONDS"),frame.duration_range_boundary(1,"DAYS"))), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
+              'frame.window( "p", lambda r: [r.o.descending()] , frame.range(duration_start=1,duration_start_unit="SECONDS",duration_end=1,duration_end_unit="DAYS")), ("newCol", lambda p, w, r: r.i , lambda c:c.sum() ))' +
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       )
