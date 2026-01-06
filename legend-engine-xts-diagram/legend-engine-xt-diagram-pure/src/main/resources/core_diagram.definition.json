@@ -1,9 +1,11 @@
 {
   "name": "core_diagram",
-  "pattern": "(meta::pure::milestoning|meta::pure::functions::meta|meta::pure::metamodel::diagram)(::.*)?",
+  "pattern": "(meta::pure::milestoning|meta::pure::functions::meta|meta::pure::metamodel::diagram|meta::protocols::pure::vX_X_X::diagram)(::.*)?",
   "dependencies": [
     "platform",
     "core_functions_unclassified",
-    "core_diagram_metamodel"
+    "core_diagram_metamodel",
+    "core",
+    "core_external_compiler"
   ]
 }

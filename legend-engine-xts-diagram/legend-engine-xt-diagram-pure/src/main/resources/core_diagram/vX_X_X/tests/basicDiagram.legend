@@ -1,0 +1,50 @@
+###Diagram
+Diagram model::generalDiagram
+{
+  classView 633a57fd-0d95-44fe-9184-f32058dc73d8
+  {
+    class: model::animal::Animal;
+    position: (293.0,122.0);
+    rectangle: (134.8984375,44.0);
+  }
+  classView 97fdf326-b558-44bd-bc91-07ac2209159d
+  {
+    class: model::animal::mammal::Mammal;
+    position: (247.0,192.0);
+    rectangle: (114.14453125,44.0);
+  }
+  classView 99a2e9af-f298-4446-8693-97e362ce66eb
+  {
+    class: model::animal::reptile::Reptile;
+    position: (405.0,186.0);
+    rectangle: (120.84765625,44.0);
+  }
+  generalizationView
+  {
+    source: 97fdf326-b558-44bd-bc91-07ac2209159d;
+    target: 633a57fd-0d95-44fe-9184-f32058dc73d8;
+    points: [(304.072265625,214.0),(360.44921875,144.0)];
+  }
+  generalizationView
+  {
+    source: 99a2e9af-f298-4446-8693-97e362ce66eb;
+    target: 633a57fd-0d95-44fe-9184-f32058dc73d8;
+    points: [(465.423828125,208.0),(360.44921875,144.0)];
+  }
+}
+
+###Pure
+Class model::animal::reptile::Reptile extends model::animal::Animal
+{
+  hasFin: Boolean[1];
+}
+
+Class model::animal::Animal
+{
+  noOfLegs: Number[1];
+}
+
+Class model::animal::mammal::Mammal extends model::animal::Animal
+{
+  species: String[1];
+}
