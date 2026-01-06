@@ -73,7 +73,7 @@ public class GroupByColSpecAgg extends AbstractNative implements Native
         result.append("return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + "(c._name(),");
         result.append("PureCompiledLambda.getPureFunction(c._map(),es),");
         result.append("(Function2)PureCompiledLambda.getPureFunction(c._reduce(),es),");
-        result.append("((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._reduce()._classifierGenericType()._typeArguments().toList().get(0)._rawType())._returnType()._rawType()._name());");
+        result.append("((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._reduce()._classifierGenericType()._typeArguments().toList().get(0)._rawType()));");
         result.append("    }\n" +
                 "})");
     }

@@ -23,12 +23,12 @@ function meta::external::query::sql::reversePCT::tests::relation::slice::drop::r
                     'meta::pure::functions::relation::tests::drop::testSimpleDropShared_Function_1__Boolean_1_',
                     [
                       rev('|#TDS{\n'+
-                            'val,str\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
                             '1,a\n'+
                             '3,ewe\n'+
                             '4,qw\n'+
                             '5,wwe\n'+
-                            '6,weq}#->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::drop(3)',
+                            '6,weq\n}#->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::drop(3)',
                             'select val,str from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') order by val offset 3')
                     ]
                    )

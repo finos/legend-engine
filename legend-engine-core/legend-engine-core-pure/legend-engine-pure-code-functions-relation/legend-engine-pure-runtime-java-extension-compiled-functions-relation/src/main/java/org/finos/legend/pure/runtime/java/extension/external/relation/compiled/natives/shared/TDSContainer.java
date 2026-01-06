@@ -16,6 +16,7 @@ package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.
 
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relation_Relation_Impl;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.generictype.GenericType;
 
 public class TDSContainer extends Root_meta_pure_metamodel_relation_Relation_Impl
 {

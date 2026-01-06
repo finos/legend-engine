@@ -17,5 +17,22 @@ import meta::pure::test::pct::*;
 
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a:Any[0..1]):String[1]
 {  
-  if ($a->isEmpty(),|'null',|$a->toOne()->toString());
+  s($a,[]);
+}
+
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a:Any[0..1], type:Type[0..1]):String[1]
+{  
+  if ($a->isEmpty(),
+    |if ($type == Variant,
+      |'"null"',
+      |'null'
+      ),
+    |$a->toOne()->match(
+      [
+        v : Variant[1] | '"'+$v->toString()->replace('"','""')+'"',
+        s : String[1] | if($s->contains('{') || $s->contains('['), |'"'+$s->replace('"','""')+'"', |$s),        
+        o : Any[1] | $o->toString()
+      ]
+    )
+  );
 }

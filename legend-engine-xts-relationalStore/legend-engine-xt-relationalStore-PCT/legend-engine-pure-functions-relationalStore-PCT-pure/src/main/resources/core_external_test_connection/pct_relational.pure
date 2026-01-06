@@ -148,7 +148,15 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   $resultFinal;,
                 |
                   let resultFinal = meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);
-                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+                  print(if($debug.debug,|$resultFinal->match(
+                                            [
+                                              x:meta::pure::metamodel::relation::Relation<Any>[1]|'\nResult Final:\n'+$x->toString(true),
+                                              a:Any[1]|'\nResult Final:\n'+$a->toString()
+                                            ]
+                                         ),
+                          |''
+                        )
+                  );
                   $resultFinal;
               );
     ))->cast(@X)->toMultiplicity(@[o]);

@@ -213,7 +213,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '2,3.5\n'+
                 '3,1\n'+
                 '3,1.5\n'+
-                '3,2.0}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Float)[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::stdDevSample()])',
+                '3,2.0}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Float[0..1])[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::stdDevSample()])',
               '(lambda frame:' +
                '  frame.group_by(["id"],("newCol",lambda x : x.val , lambda c : c.std_dev_sample()))' +
                ')(csv_frame("id,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"))'
@@ -233,7 +233,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '2,3.5\n'+
                 '3,1\n'+
                 '3,1.5\n'+
-                '3,2.0}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Float)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Float)>[1], r: (id:Integer, val:Float)[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::stdDevSample())',
+                '3,2.0}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Float[0..1])>[1], r: (id:Integer[0..1], val:Float[0..1])[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::stdDevSample())',
               '(lambda frame: frame.window_extend(' +
                 'frame.window("id", []), ("newCol", lambda p , w , r : r.val , lambda c : c.std_dev_sample()))'+
               ')(csv_frame("id,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"))')
@@ -249,7 +249,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '1,1\n'+
                 '1,2\n'+
                 '2,2\n'+
-                '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Integer)[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
+                '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Integer[0..1])[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
                '(lambda frame:' +
                '  frame.group_by("id",("newCol", lambda x: x.val , lambda c : c.std_dev_population()))' +
                ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
@@ -263,7 +263,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                   '1,1\n'+
                   '1,2\n'+
                   '2,2\n'+
-                  '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Integer)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Integer)>[1], r: (id:Integer, val:Integer)[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())', 
+                  '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())', 
               '(lambda frame: frame.window_extend(' +
                 'frame.window("id", []), ("newCol", lambda p , w , r : r.val , lambda c : c.std_dev_population()))'+
               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
@@ -287,7 +287,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91\n'+
                 '8,1,H,81\n'+
                 '9,5,I,51\n'+
-                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::average())',
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::average())',
              '(lambda frame:' +
              '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.average()))' +
              ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
@@ -307,7 +307,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G,91.0\n'+
                             '8,1,H,81.0\n'+
                             '9,5,I,51.0\n'+
-                            '10,0,J,101.0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::average())',
+                            '10,0,J,101.0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::average())',
                         '(lambda frame:' +
                         '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.average()))' +
                         ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21.0\\n2,1,B,41.0\\n3,3,C,71.0\\n4,4,D,31.0\\n5,2,E,11.0\\n6,1,F,1.0\\n7,3,G,91.0\\n8,1,H,81.0\\n9,5,I,51.0\\n10,0,J,101.0"))'
@@ -328,7 +328,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G,91d\n'+
                             '8,1,H,81d\n'+
                             '9,5,I,51d\n'+
-                            '10,0,J,101.0d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::average())')
+                            '10,0,J,101.0d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::average())')
         ]
       ),
 
@@ -345,7 +345,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G\n'+
                             '7,1,H\n'+
                             '9,5,I\n'+
-                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average())',
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average())',
                '(lambda frame: frame.window_extend(' +
                 'frame.window("grp", []), [("newCol",lambda p,w,r: r.id , lambda c : c.average())])'+
                ')(csv_frame("id,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n7,1,H\\n9,5,I\\n10,0,J"))')
@@ -365,7 +365,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.0,3,G\n'+
                 '7.0,1,H\n'+
                 '9.0,5,I\n'+
-                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average())',
+                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average())',
                '(lambda frame: frame.window_extend(' +
                 'frame.window("grp", []), [("newCol",lambda p,w,r: r.id , lambda c : c.average())])'+
                ')(csv_frame("id,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
@@ -386,7 +386,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91\n'+
                 '8,1,H,81\n'+
                 '9,5,I,51\n'+
-                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::max())',
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::max())',
               '(lambda frame:' +
               '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.max()))' +
               ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
@@ -406,7 +406,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91.19\n'+
                 '8,1,H,81.18\n'+
                 '9,5,I,51.15\n'+
-                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::max())',
+                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::max())',
             '(lambda frame:' +
             '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.max()))' +
             ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.1\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.101"))'
@@ -427,7 +427,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G\n'+
                             '8,1,H\n'+
                             '9,5,I\n'+
-                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::max())',
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::max())',
                '(lambda frame: frame.window_extend(' +
                'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max())])'+
                ')(csv_frame("id,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
@@ -447,7 +447,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.7,3,G\n'+
                 '8.8,1,H\n'+
                 '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::max())',
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::max())',
                '(lambda frame: frame.window_extend(' +
                'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max())])'+
                ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -467,7 +467,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                   '7.7,3,G\n'+
                   '8.8,1,H\n'+
                   '9.9,5,I\n'+
-                  '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::max())',
+                  '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::max())',
                '(lambda frame: frame.window_extend(' +
                'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max())])'+
                ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -489,7 +489,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91\n'+
                 '8,1,H,81\n'+
                 '9,5,I,51\n'+
-                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::min())',
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::min())',
             '(lambda frame:' +
             '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.min()))' +
             ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
@@ -509,7 +509,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91.19\n'+
                 '8,1,H,81.18\n'+
                 '9,5,I,51.15\n'+
-                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::min())',
+                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::min())',
             '(lambda frame:' +
             '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.min()))' +
             ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.1\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.101"))')
@@ -529,7 +529,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G,91d\n'+
                 '8,1,H,81.18d\n'+
                 '9,5,I,51d\n'+
-                '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::min())')
+                '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::min())')
         ]
       ),
 
@@ -546,7 +546,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7,3,G\n'+
                 '8,1,H\n'+
                 '9,5,I\n'+
-                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::min())',
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::min())',
                '(lambda frame: frame.window_extend(' +
                'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min())])'+
                ')(csv_frame("id,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
@@ -566,7 +566,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.7,3,G\n'+
                 '8.8,1,H\n'+
                 '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
               '(lambda frame: frame.window_extend(' +
               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -586,7 +586,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.7,3,G\n'+
                 '8.8,1,H\n'+
                 '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
               '(lambda frame: frame.window_extend(' +
               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -608,7 +608,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G,91\n'+
                             '8,1,H,81\n'+
                             '9,5,I,51\n'+
-                            '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Integer)[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::sum())', 
+                            '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::sum())', 
              '(lambda frame:' +
              '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.sum()))' +
              ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
@@ -628,7 +628,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G,91.19\n'+
                             '8,1,H,81.18\n'+
                             '9,5,I,51.15\n'+
-                            '10,0,J,101.1}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::sum())',
+                            '10,0,J,101.1}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::sum())',
              '(lambda frame:' +
              '  frame.group_by(["grp"],("newCol",lambda x : x.employeeNumber , lambda c : c.sum()))' +
              ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.11\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.101"))')
@@ -648,7 +648,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G,91d\n'+
                             '8,1,H,81.18d\n'+
                             '9,5,I,51d\n'+
-                            '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer, grp:Integer, name:String, employeeNumber:Float)[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::sum())')
+                            '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::sum())')
         ]
       ),
 
@@ -665,7 +665,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7,3,G\n'+
                             '8,1,H\n'+
                             '9,5,I\n'+
-                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::sum())', 
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::sum())', 
               '(lambda frame: frame.window_extend(' +
               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
               ')(csv_frame("id,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
@@ -685,7 +685,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum())',
+                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum())',
               '(lambda frame: frame.window_extend(' +
               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -705,7 +705,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Float, grp:Integer, name:String)>[1], r: (id:Float, grp:Integer, name:String)[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum())',
+                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum())',
               '(lambda frame: frame.window_extend(' +
               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
@@ -721,7 +721,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                   '1,1\n'+
                   '1,2\n'+
                   '2,2\n'+
-                  '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Integer)[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation()])',
+                  '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Integer[0..1])[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation()])',
              '(lambda frame:' +
              '  frame.group_by("id",("newCol", lambda x: x.val , lambda c : c.variance_population()))' +
              ')(csv_frame("id,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
@@ -735,7 +735,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '1,1\n'+
                 '1,2\n'+
                 '2,2\n'+
-                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Integer)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Integer)>[1], r: (id:Integer, val:Integer)[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation())', 
+                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation())', 
               '(lambda frame: frame.window_extend(' +
               'frame.window("id", []), [("newCol",lambda p , w, r : r.val , lambda c : c.variance_population())])'+
               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
@@ -753,7 +753,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '1,3.0\n'+
                 '2,2\n'+
                 '2,4\n'+
-                '2,6}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Float)[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::varianceSample()])', 
+                '2,6}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Float[0..1])[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::varianceSample()])', 
               '(lambda frame: ' +
               'frame.group_by("id",("newCol", lambda x: x.val , lambda c : c.variance()))'+
               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3.0\\n2,2\\n2,4\\n2,6"))')
@@ -769,7 +769,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '1,3.0\n'+
                 '2,2\n'+
                 '2,4\n'+
-                '2,6}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Float)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Float)>[1], r: (id:Integer, val:Float)[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::varianceSample())',
+                '2,6}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Float[0..1])>[1], r: (id:Integer[0..1], val:Float[0..1])[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::varianceSample())',
               '(lambda frame: frame.window_extend(' +
               'frame.window("id", []), [("newCol",lambda p , w, r : r.val , lambda c : c.variance())])'+
               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3.0\\n2,2\\n2,4\\n2,6"))')

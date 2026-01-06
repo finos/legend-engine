@@ -15,8 +15,11 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.compiled;
 
 import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
+
 import io.deephaven.csv.parsers.DataType;
+
 import java.util.Objects;
+
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
@@ -51,6 +54,7 @@ import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.navigation.relation._Column;
@@ -79,7 +83,7 @@ public class RelationNativeImplementation
     public static Relation<?> build(Object value, GenericType genericType, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        return new TDSContainer(new SingleValueTDS(value, genericType, (CompiledExecutionSupport) es), ps);
+        return new TDSContainer(new SingleValueTDS(value instanceof MutableList ? ((MutableList<?>) value).getFirst() : value, genericType, (CompiledExecutionSupport) es), ps);
     }
 
     public static TestTDSCompiled getTDS(Object value, ExecutionSupport es)
@@ -210,7 +214,7 @@ public class RelationNativeImplementation
         RelationType<?> lateralResult = (RelationType<?>) ((FunctionType) function._classifierGenericType()._typeArguments().getOnly()._rawType())._returnType()._typeArguments().getOnly()._rawType();
 
         TestTDS agg = lateralResult._columns().injectInto(sourceTds.newEmptyTDS(), (t, x) ->
-                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast()._rawType()));
+                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast()._rawType(), x._classifierGenericType()._multiplicityArguments().getFirst()));
 
         for (int i = 0; i < sourceTds.getRowCount(); i++)
         {
@@ -225,7 +229,7 @@ public class RelationNativeImplementation
         return new TDSContainer((TestTDSCompiled) agg, ps);
     }
 
-    public static <T> Relation<? extends Object> flatten(RichIterable<T> toFlatten, String colName, String colType, ExecutionSupport es)
+    public static <T> Relation<? extends Object> flatten(RichIterable<T> toFlatten, String colName, GenericType colType, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
 
@@ -241,7 +245,7 @@ public class RelationNativeImplementation
         DataType colResType;
         Object colRes;
 
-        switch (colType)
+        switch (PackageableElement.getUserPathForPackageableElement(colType._rawType()))
         {
             case M3Paths.String:
                 colResType = DataType.STRING;
@@ -267,8 +271,8 @@ public class RelationNativeImplementation
                 throw new PureExecutionException("Flatten does not support type: " + colType + ". Supported types are String, Integer, Float, Boolean, and Variant.");
         }
 
-        TestTDSCompiled tds = new TestTDSCompiled();
-        tds.addColumn(columnInstance._name(), colResType, colRes);
+        TestTDSCompiled tds = new TestTDSCompiled(ps);
+        tds.addColumn(columnInstance._name(), colResType, colType._rawType(), (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, ps), colRes);
 
         return new TDSContainer(tds, ps);
     }
@@ -322,12 +326,12 @@ public class RelationNativeImplementation
     public abstract static class ColFuncSpecTrans
     {
         public String newColName;
-        public String columnType;
+        public FunctionType functionType;
 
-        public ColFuncSpecTrans(String newColName, String columnType)
+        public ColFuncSpecTrans(String newColName, FunctionType functionType)
         {
             this.newColName = newColName;
-            this.columnType = columnType;
+            this.functionType = functionType;
         }
 
         public abstract Object eval(Object partition, Object frame, Object row, ExecutionSupport es);
@@ -337,9 +341,9 @@ public class RelationNativeImplementation
     {
         public SharedPureFunction func;
 
-        public ColFuncSpecTrans1(String newColName, SharedPureFunction func, String columnType)
+        public ColFuncSpecTrans1(String newColName, SharedPureFunction func, FunctionType functionType)
         {
-            super(newColName, columnType);
+            super(newColName, functionType);
             this.func = func;
         }
 
@@ -354,9 +358,9 @@ public class RelationNativeImplementation
     {
         public SharedPureFunction func;
 
-        public ColFuncSpecTrans2(String newColName, SharedPureFunction func, String columnType)
+        public ColFuncSpecTrans2(String newColName, SharedPureFunction func, FunctionType functionType)
         {
-            super(newColName, columnType);
+            super(newColName, functionType);
             this.func = func;
         }
 
@@ -411,31 +415,31 @@ public class RelationNativeImplementation
     {
         long size = tds.getOne().getRowCount();
         boolean[] nulls = new boolean[(int) size];
-        switch (colFuncSpecTrans.columnType)
+        switch (PackageableElement.getUserPathForPackageableElement(colFuncSpecTrans.functionType._returnType()._rawType()))
         {
             case M3Paths.String:
                 MutableList<String> res = Lists.mutable.empty();
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> res.add((String) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.STRING, res.toArray(new String[0]));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.STRING, colFuncSpecTrans.functionType._returnType()._rawType(), colFuncSpecTrans.functionType._returnMultiplicity(), res.toArray(new String[0]));
             case M3Paths.Integer:
                 long[] resultLong = new long[(int) size];
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultLong[i] = (long) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.LONG, resultLong, nulls);
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.LONG, colFuncSpecTrans.functionType._returnType()._rawType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultLong, nulls);
             case M3Paths.Float:
                 double[] resultDouble = new double[(int) size];
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = (double) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.DOUBLE, resultDouble, nulls);
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.DOUBLE, colFuncSpecTrans.functionType._returnType()._rawType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultDouble, nulls);
             case M3Paths.Variant:
             case "Variant":
                 MutableList<Variant> variantRes = Lists.mutable.empty();
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> variantRes.add((Variant) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.CUSTOM, variantRes.toArray(new Variant[0]));
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.CUSTOM, colFuncSpecTrans.functionType._returnType()._rawType(), colFuncSpecTrans.functionType._returnMultiplicity(), variantRes.toArray(new Variant[0]));
             case M3Paths.Boolean:
                 boolean[] resultBoolean = new boolean[(int) size];
                 extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (boolean) val));
-                return new ColumnValue(colFuncSpecTrans.newColName, DataType.BOOLEAN_AS_BYTE, resultBoolean, nulls);
+                return new ColumnValue(colFuncSpecTrans.newColName, DataType.BOOLEAN_AS_BYTE, colFuncSpecTrans.functionType._returnType()._rawType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultBoolean, nulls);
             default:
-                throw new PureExecutionException("The type " + colFuncSpecTrans.columnType + " is not supported yet!");
+                throw new PureExecutionException("The type " + PackageableElement.getUserPathForPackageableElement(colFuncSpecTrans.functionType._returnType()._rawType()) + " is not supported yet!");
         }
     }
 
@@ -520,13 +524,13 @@ public class RelationNativeImplementation
     {
         public String newColName;
         public Function2 reduce;
-        public String reduceType;
+        public FunctionType reduceFunctionType;
 
-        public AggColSpecTrans(String newColName, Function2 reduce, String reduceType)
+        public AggColSpecTrans(String newColName, Function2 reduce, FunctionType reduceFunctionType)
         {
             this.newColName = newColName;
             this.reduce = reduce;
-            this.reduceType = reduceType;
+            this.reduceFunctionType = reduceFunctionType;
         }
 
         public abstract Object eval(Object partition, Object frame, Object row, ExecutionSupport es);
@@ -537,15 +541,15 @@ public class RelationNativeImplementation
         public SharedPureFunction map;
         public AggColSpec<?, ?, ?> aggColSpec = null;
 
-        public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, String reduceType)
+        public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, FunctionType reduceFunctionType)
         {
-            super(newColName, reduce, reduceType);
+            super(newColName, reduce, reduceFunctionType);
             this.map = map;
         }
 
-        public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, String reduceType, AggColSpec<?, ?, ?> aggColSpec)
+        public AggColSpecTrans1(String newColName, SharedPureFunction map, Function2 reduce, FunctionType reduceFunctionType, AggColSpec<?, ?, ?> aggColSpec)
         {
-            this(newColName, map, reduce, reduceType);
+            this(newColName, map, reduce, reduceFunctionType);
             this.aggColSpec = aggColSpec;
         }
 
@@ -560,9 +564,9 @@ public class RelationNativeImplementation
     {
         public SharedPureFunction map;
 
-        public AggColSpecTrans2(String newColName, SharedPureFunction map, Function2 reduce, String reduceType)
+        public AggColSpecTrans2(String newColName, SharedPureFunction map, Function2 reduce, FunctionType reduceFunctionType)
         {
-            super(newColName, reduce, reduceType);
+            super(newColName, reduce, reduceFunctionType);
             this.map = map;
         }
 
@@ -656,27 +660,27 @@ public class RelationNativeImplementation
         temp = aggColSpecTransAll.injectInto(temp, (existing, aggColSpecTrans) ->
         {
             int size = sorted.getTwo().size();
-            switch (aggColSpecTrans.reduceType)
+            switch (PackageableElement.getUserPathForPackageableElement(aggColSpecTrans.reduceFunctionType._returnType()._rawType()))
             {
                 case M3Paths.String:
                 {
                     String[] finalRes = new String[size];
                     performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalRes[j] = (String) o, true);
-                    existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, finalRes);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.STRING, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalRes);
                     break;
                 }
                 case M3Paths.Integer:
                 {
                     long[] finalResLong = new long[size];
                     performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResLong[j] = (long) o, true);
-                    existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, finalResLong);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.LONG, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalResLong);
                     break;
                 }
                 case M3Paths.Float:
                 {
                     double[] finalResDouble = new double[size];
                     performMapReduce(null, Lists.fixedSize.empty(), aggColSpecTrans, aggColSpecTrans.reduce, es, sorted, (j, o) -> finalResDouble[j] = (double) o, true);
-                    existing.addColumn(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble);
+                    existing.addColumn(aggColSpecTrans.newColName, DataType.DOUBLE, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalResDouble);
                     break;
                 }
             }
@@ -746,26 +750,26 @@ public class RelationNativeImplementation
         for (AggColSpecTrans aggColSpecTrans : aggColSpecTransAll)
         {
             boolean[] nulls = new boolean[(int) size];
-            switch (aggColSpecTrans.reduceType)
+            switch (PackageableElement.getUserPathForPackageableElement(aggColSpecTrans.reduceFunctionType._returnType()._rawType()))
             {
                 case M3Paths.String:
                     String[] finalRes = new String[size];
                     performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> finalRes[j] = (String) o, compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, finalRes));
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.STRING, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalRes));
                     break;
                 case M3Paths.Integer:
                     long[] finalResLong = new long[size];
                     performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResLong[j] = (long) o), compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, finalResLong, nulls));
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.LONG, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalResLong, nulls));
                     break;
                 case M3Paths.Float:
                 case M3Paths.Number:
                     double[] finalResDouble = new double[size];
                     performMapReduce(window, sortInfos, aggColSpecTrans, aggColSpecTrans.reduce, es, sortRes, (j, o) -> processWithNull(j, o, nulls, () -> finalResDouble[j] = (double) o), compress);
-                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, finalResDouble, nulls));
+                    columnValues.add(new ColumnValue(aggColSpecTrans.newColName, DataType.DOUBLE, aggColSpecTrans.reduceFunctionType._returnType()._rawType(), aggColSpecTrans.reduceFunctionType._returnMultiplicity(), finalResDouble, nulls));
                     break;
                 default:
-                    throw new RuntimeException(aggColSpecTrans.reduceType + " is not supported yet!");
+                    throw new RuntimeException(PackageableElement.getUserPathForPackageableElement(aggColSpecTrans.reduceFunctionType._returnType()._rawType()) + " is not supported yet!");
             }
         }
         return columnValues;
@@ -1075,7 +1079,7 @@ public class RelationNativeImplementation
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
 
-        MutableList<? extends String> typesL = colFuncs.collect(c -> c.columnType).toList();
+        MutableList<? extends FunctionType> typesL = colFuncs.collect(c -> c.functionType).toList();
         MutableList<? extends String> namesL = colFuncs.collect(c -> c.newColName).toList();
         ListIterable<TestTDSCompiled> pre = objects.collect(o ->
         {
@@ -1083,19 +1087,19 @@ public class RelationNativeImplementation
             MutableList<TestTDSCompiled> subList = Lists.mutable.empty();
             for (SharedPureFunction f : colFuncs.collect(c -> c.func))
             {
-                TestTDSCompiled one = new TestTDSCompiled();
+                TestTDSCompiled one = new TestTDSCompiled(ps);
                 RichIterable<?> li = CompiledSupport.toPureCollection(f.execute(Lists.mutable.with(o), es));
-                switch ((String) typesL.get(i))
+                switch (PackageableElement.getUserPathForPackageableElement(typesL.get(i)._returnType()._rawType()))
                 {
                     case M3Paths.String:
-                        one.addColumn(namesL.get(i), DataType.STRING, li.toArray(new String[0]));
+                        one.addColumn(namesL.get(i), DataType.STRING, typesL.get(i)._returnType()._rawType(), typesL.get(i)._returnMultiplicity(), li.toArray(new String[0]));
                         break;
                     case M3Paths.Integer:
-                        one.addColumn(namesL.get(i), DataType.LONG, toLong(li));
+                        one.addColumn(namesL.get(i), DataType.LONG, typesL.get(i)._returnType()._rawType(), typesL.get(i)._returnMultiplicity(), toLong(li));
                         break;
                     case M3Paths.Float:
                     case M3Paths.Number:
-                        one.addColumn(namesL.get(i), DataType.DOUBLE, toDouble(li));
+                        one.addColumn(namesL.get(i), DataType.DOUBLE, typesL.get(i)._returnType()._rawType(), typesL.get(i)._returnMultiplicity(), toDouble(li));
                         break;
                     default:
                         throw new RuntimeException(typesL.get(i) + " is not supported yet!");
