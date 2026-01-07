@@ -578,7 +578,7 @@ Class meta::analytics::lineage::LineageExtension extends ModuleExtension
     buildPropertyReport:Function<{ meta::analytics::lineage::property::scanner::ScannerState[1], LineageExtension[*] -> Function<{Nil[1] -> meta::analytics::lineage::property::scanner::ScannerState[1]}>[*]}>[0..1];
     propertyReportToGraphNode:Function<{ -> Function<{Nil[1] -> meta::pure::lineage::graph::NodeData[1]}>[*]}>[0..1];
     graphID:  Function<{->Function<{Nil[1]->String[1]}>[*]}>[0..1];
-    ScanMapgDpNode: Function<{meta::analytics::lineage::property::scanner::ScannerState[1], LineageExtension[*]->  meta::analytics::lineage::property::scanner::ScannerState[1]}>[0..1];
+    buildMappingNode: Function<{meta::analytics::lineage::property::scanner::ScannerState[1], LineageExtension[*]->  meta::analytics::lineage::property::scanner::ScannerState[1]}>[0..1];
 
 }
 function meta::analytics::lineage::getLineageExtension(extension:Extension[*]):LineageExtension[*]

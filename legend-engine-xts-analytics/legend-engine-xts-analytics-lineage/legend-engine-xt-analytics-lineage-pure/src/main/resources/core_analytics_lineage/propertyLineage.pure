@@ -373,7 +373,7 @@ function meta::analytics::lineage::property::buildNamedTransforms(fe:FunctionExp
     let updatedNode = $ownerNode->mutateAdd('properties',$props.second.values);
     let updatedState = ^$state(currentFunction=$fe);
     let incomingState= $updatedNode->meta::analytics::lineage::property::scanMappedNode($updatedState,$fe,$extension);
-    let extendedState = $extension.ScanMapgDpNode->map(r|$r->eval($incomingState, $extension));
+    let extendedState = $extension.buildMappingNode->map(r|$r->eval($incomingState, $extension));
     let finalIncomingState = if($extendedState->isEmpty(), | $incomingState, | $extendedState->toOne()->cast(@ScannerState));
     if($state.inReprocess,
     | $finalIncomingState,
