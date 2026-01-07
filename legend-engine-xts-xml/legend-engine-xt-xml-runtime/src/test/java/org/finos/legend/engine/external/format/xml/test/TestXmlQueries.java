@@ -286,6 +286,33 @@ public class TestXmlQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/allDataTypeResult.json")));
     }
 
+    @Test
+    public void testSkipElementWhenParticleCanConsume()
+    {
+        String grammar = libraryModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data: Byte[*]|test::models::Library->internalize(\n" +
+                        "      test::bindings::XmlBinding,\n" +
+                        "      $data\n" +
+                        "    )->serialize(\n" +
+                        "      #{\n" +
+                        "        test::models::Library{\n" +
+                        "            Shelf{\n" +
+                        "              ID,\n" +
+                        "              Book{\n" +
+                        "                ID\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          }\n" +
+                        "      }#\n" +
+                        "    )",
+                Maps.mutable.with("data", resource("queries/library.xml")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/library.json")));
+    }
+
     private String schemalessBinding()
     {
         return "###ExternalFormat\n" +
@@ -324,5 +351,30 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "  contentType: 'application/xml';\n" +
                 "  modelIncludes: [ test::model::AllDataType ];\n" +
                 "}\n";
+    }
+
+    public String libraryModel()
+    {
+        return "Class test::models::Library\n" +
+                "{\n" +
+                "  Shelf: test::models::Shelf[*];\n" +
+                "}\n\n" +
+                "Class test::models::Book\n" +
+                "{\n" +
+                "  ID: String[0..1];\n" +
+                "}\n\n" +
+                "Class test::models::Shelf\n" +
+                "{\n" +
+                "  Book: test::models::Book[*];\n" +
+                "  ID: String[0..1];\n" +
+                "}\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::bindings::XmlBinding\n" +
+                "{\n" +
+                "  contentType: 'application/xml';\n" +
+                "  modelIncludes: [\n" +
+                "    test::models\n" +
+                "  ];\n" +
+                "}";
     }
 }
