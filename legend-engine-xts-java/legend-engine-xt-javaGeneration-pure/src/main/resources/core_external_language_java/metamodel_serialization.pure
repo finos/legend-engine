@@ -688,20 +688,23 @@ function <<access.private>> meta::external::language::java::serialization::addTe
   if($s == '',
     | $sfer,
   | if( $sfer.pending->endsWith('\n'),
-    | ^$sfer(
-        completeLines += $sfer.wipLine->plus()->applyFolds(0, 100)->concatenate($sfer.pending),
+    | let lineEnded = $sfer->finishLine();
+      ^$lineEnded(
+        completeLines += $sfer.pending,
         pending       = '',
-        wipLine       = $sfer.tabString->concatenate($s));,
+        wipLine       += $s 
+      );,
   | ^$sfer(
       wipLine += $sfer.pending->concatenate($s),
-      pending = '');
+      pending = ''
+    )
   ))
 }
 
 function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1]): Stringifier[1]
 {
   ^$sfer(
-      completeLines += $sfer.wipLine,
+      completeLines += $sfer.wipLine->plus()->applyFolds(0, 100),
       pending       = '',
       wipLine       = $sfer.tabString
   )
