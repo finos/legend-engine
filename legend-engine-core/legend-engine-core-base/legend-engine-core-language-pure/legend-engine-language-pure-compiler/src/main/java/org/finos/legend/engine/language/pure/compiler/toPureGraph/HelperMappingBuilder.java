@@ -94,6 +94,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 
 import java.util.List;
 import java.util.Map;
@@ -373,7 +374,11 @@ public class HelperMappingBuilder
             XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
             final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association.path, xStoreAssociationMapping.association.sourceInformation);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
-            base._association(pureAssociation)._stores(stores)._parent(parentMapping)._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
+            final String id = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
+            base._id(id)
+                ._association(pureAssociation)
+                ._stores(stores)._parent(parentMapping).
+                _propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
             return base;
         }
         return context.getCompilerExtensions().getExtraAssociationMappingProcessors().stream()
