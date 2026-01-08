@@ -1347,9 +1347,13 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort([~id->ascending()])->toString());
 }
 
-//Test for ambiguous column error on Snowflake
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupBy_Join_With_Conflicting_Alias<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{   
+function 
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
+  {
+    doc.doc='Test for ambiguous column errors in databases such as Snowflake, DuckDB, Postgres and MemSQL. This occurs when an alias is identical to a column name present across two or more joined tables. To resolve this, fully qualified names or column indices should be used instead of aliases in the groupBy expression.'
+  }
+meta::pure::functions::relation::tests::composition::testGroupBy_Ambiguous_Column_Error<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
   let tds1 = #TDS
                 id, grp, name
                 P, Y, A
@@ -1368,10 +1372,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 T, V, E
               #;
 
-  let expr = {| $tds1->select(~id)->join($tds2, JoinKind.INNER, {x,y| 1 == 1})
+  let expr = {| $tds1->select(~[id, name])->join($tds2, JoinKind.INNER, {x,y| $x.name==$y.name2})
                       ->project(~[name2: x|$x.id->toOne()->toString()])
-                      ->groupBy(~[name2], ~[newCol : x | 1 : y | $y->plus()])
-                      ->distinct();
+                      ->groupBy(~name2, ~[newCol : x | 1 : y | $y->plus()]);
               };
 
   let res =  $f->eval($expr);
@@ -1385,3 +1388,4 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 '   T,1\n'+
                 '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
 }
+
