@@ -38,7 +38,8 @@ public class Core_Relational_MemSQL_PCTReportProvider implements PCTReportProvid
                 "pct-reports/ADAPTER_grammar_compiled_MemSQL.json",
                 "pct-reports/ADAPTER_relation_compiled_MemSQL.json",
                 "pct-reports/ADAPTER_unclassified_compiled_MemSQL.json",
-                "pct-reports/ADAPTER_variant_compiled_MemSQL.json"
+                "pct-reports/ADAPTER_variant_compiled_MemSQL.json",
+                "pct-reports/ADAPTER_scenario_quant_compiled_MemSQL.json"
         );
     }
 }

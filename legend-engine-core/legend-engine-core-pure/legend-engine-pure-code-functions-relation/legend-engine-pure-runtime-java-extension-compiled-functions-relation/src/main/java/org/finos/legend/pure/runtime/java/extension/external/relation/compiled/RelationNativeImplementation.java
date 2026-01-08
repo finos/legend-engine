@@ -200,7 +200,7 @@ public class RelationNativeImplementation
         int actualOffset = ((RowContainer) r).getRow() + (int) offset;
         if (actualOffset < 0 || actualOffset >= ((TDSContainer) w).tds.getRowCount())
         {
-            return (T) new NullRowContainer();
+            return (T) null;
         }
         return (T) new RowContainer(RelationNativeImplementation.getTDS(w, es), actualOffset);
     }
@@ -470,11 +470,11 @@ public class RelationNativeImplementation
         for (int j = 0; j < size; j++)
         {
             Pair<Integer, Integer> r = tds.getTwo().get(j);
-            TDSContainer winTDS = new TDSContainer((TestTDSCompiled) tds.getOne().slice(r.getOne(), r.getTwo()), ((CompiledExecutionSupport) es).getProcessorSupport());
-
+            TestTDSCompiled subTDS = (TestTDSCompiled) tds.getOne().slice(r.getOne(), r.getTwo());
+            TDSContainer winTDS = new TDSContainer(subTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
             for (int i = 0; i < r.getTwo() - r.getOne(); i++)
             {
-                func.value(k++, colFuncSpecTrans.eval(winTDS, frame, new RowContainer((TestTDSCompiled) tds.getOne(), i), es));
+                func.value(k++, colFuncSpecTrans.eval(winTDS, frame, new RowContainer(subTDS, i), es));
             }
         }
     }

@@ -39,7 +39,8 @@ public class Core_Relational_Postgres_PCTReportProvider implements PCTReportProv
                 "pct-reports/ADAPTER_grammar_compiled_Postgres.json",
                 "pct-reports/ADAPTER_relation_compiled_Postgres.json",
                 "pct-reports/ADAPTER_unclassified_compiled_Postgres.json",
-                "pct-reports/ADAPTER_variant_compiled_Postgres.json"
+                "pct-reports/ADAPTER_variant_compiled_Postgres.json",
+                "pct-reports/ADAPTER_scenario_quant_compiled_Postgres.json"
         );
     }
 }

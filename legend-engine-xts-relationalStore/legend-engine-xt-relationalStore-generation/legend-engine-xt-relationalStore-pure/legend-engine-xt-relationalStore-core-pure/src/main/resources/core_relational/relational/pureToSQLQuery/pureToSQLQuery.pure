@@ -817,8 +817,8 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
                                                        );
 
    //Add types for Aggregations
-   let aggPathInformation = $aggs.aggregateFn->map(a | let pureType = $a->functionReturnType().rawType->toOne();
-                                                       ^PathInformation(type=$pureType, relationalType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)););
+   let aggPathInformation = $aggs.aggregateFn->map(a | let pureType = $a->functionReturnType();
+                                                       ^PathInformation(type=$pureType.rawType->toOne(), relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType)););
    let paths = $funcPathInformation->concatenate($aggPathInformation)->cast(@PathInformation);
 
    ^$operation(
@@ -2024,7 +2024,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::createC
                    ^Column
                    (
                       name = $pm.propertyPlaceHolder,
-                      type = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pm.property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne())->toOne()
+                      type = meta::relational::transform::fromPure::pureTypeToDataType($pm.property->cast(@Property<Nil,Any|*>).genericType)->toOne()
                    )
                 ),
       varName = $crossSet.varName,
@@ -2034,6 +2034,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::createC
 
 function meta::relational::functions::pureToSqlQuery::processCrossPropertyMapping(crossPropertyMappings:CrossSetImplementationPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+   let genType = $property->cast(@Property<Nil,Any|*>).genericType;
    let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
 
    let firstStep = $propertyReturnType->match([
@@ -2042,7 +2043,7 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
                          let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
                          let relElement = $currentTreeNode.alias.relationalElement;
                          let sel = $oldSrcOperation.select;
-                         let newColumn = ^TableAliasColumn(alias=$currentTreeNode.alias, column=^Column(name=$mappingImpl, type=meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($p)->toOne()));
+                         let newColumn = ^TableAliasColumn(alias=$currentTreeNode.alias, column=^Column(name=$mappingImpl, type=meta::relational::transform::fromPure::pureTypeToDataType($genType)->toOne()));
                          if($state.inFilter,
                             | ^$oldSrcOperation(select = ^$sel(filteringOperation+=$newColumn)),
                             | ^$oldSrcOperation(select = ^$sel(columns+=$newColumn))
@@ -2605,13 +2606,12 @@ function meta::relational::functions::pureToSqlQuery::processCast(f:FunctionExpr
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::relationTypeColumnAliases(rel:meta::pure::metamodel::relation::RelationType<Any>[1], alias: TableAlias[1]):Alias[*]
 {
-  let types = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   $rel.columns->map(
                 c|
                   let colName = $c.name->toOne();
-                  let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
+                  let colType = $c.classifierGenericType.typeArguments->at(1);
                   let mayQuotePivotColNames = if ($colName->contains('__|__'),|'\''+$colName+'\'',|$colName);
-                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$mayQuotePivotColNames->addQuotesIfNecessary(), type=$types->get($colType)->toOne())));
+                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$mayQuotePivotColNames->addQuotesIfNecessary(), type=meta::relational::transform::fromPure::pureTypeToDataType($colType)->toOne())));
               );
 }
 
@@ -3382,13 +3382,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    // Return Type
    let pureType = $aggSpec->match(
                                 [
-                                  t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType().rawType->toOne(),
-                                  r:TdsOlapRank<Any>[1]|Integer,
-                                  z:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|$z.function->functionReturnType().rawType->toOne(),
-                                  o:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|$o.reduce->functionReturnType().rawType->toOne()
+                                  t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType(),
+                                  r:TdsOlapRank<Any>[1]|^GenericType(rawType=Integer),
+                                  z:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|$z.function->functionReturnType(),
+                                  o:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|$o.reduce->functionReturnType()
                                 ]
                               );
-   let newPath = pair($newColumnName, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
+   let newPath = pair($newColumnName, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
 
    if ($f->cast(@SimpleFunctionExpression).func == meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_,
     | ^$operation(select = ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn), paths +=$newPath)),
@@ -6010,8 +6010,8 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                                                                                     z:meta::pure::metamodel::relation::ColSpec<Any>[1]|$z.name
                                                                                   ]
                                                                                 )->map(n|$existingPaths->filter(p|$p.first == $n))
-                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));)),
+                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType();
+                                                 pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));)),
     | []);                                                 
 
    if($noSubSelect
@@ -6093,8 +6093,8 @@ function meta::relational::functions::pureToSqlQuery::processStaticPivot(express
 
   let existingPaths = $inputSelect.paths;
   let pathInfos = $existingPaths->filter(p|$p.first == $pivotColumnName)
-                                ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                              pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType();
+                                                              pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
                                                          )
                                              );
 
@@ -6143,8 +6143,8 @@ function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expres
                       ]);
   let existingPaths = $inputSelect.paths;
   let pathInfos = $pivotColumnNames->map(n|$existingPaths->filter(p|$p.first == $n))
-                                   ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                   ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType();
+                                                                 pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
                                                             )
                                                 );
   let pivotColumnAliasName = 'pivot_column';
@@ -7321,9 +7321,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                     ),
                                                     pair(|$supportedFunction == meta::relational::functions::pureToSqlQuery::processRowMapper_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
                                                          |$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                                    )                                                                            
+                                                    ),
+                                                    // Should not be doing that... Need to process the standard way...
+                                                    pair(|$supportedFunction == meta::relational::functions::pureToSqlQuery::processDivideRound_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('divideRound', $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
+                                                    )
                                                   ],
-                                                    | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
+                                                  | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
                                               );,
                                           | fail('function ' + $f.func.name->makeString() + ' is not yet supported'); ^DynaFunction(name='fail');
                                           );
@@ -7654,8 +7658,8 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
                                                                                );
                                                         );
 
-         let windowColPaths = $wc->map(w| let pureType = $w.func->match([a:OlapAggregation<Any>[1]|$a.aggregateFn->functionReturnType().rawType->toOne(),r:OlapRank<Any>[1]|Integer ]);
-                                          let path = ^PathInformation(type = $pureType,documentation = $w.documentation,relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType));
+         let windowColPaths = $wc->map(w| let pureType = $w.func->match([a:OlapAggregation<Any>[1]|$a.aggregateFn->functionReturnType(),r:OlapRank<Any>[1]|^GenericType(rawType=Integer)]);
+                                          let path = ^PathInformation(type = $pureType.rawType->toOne(), documentation = $w.documentation, relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType));
                                           pair($w.name,$path);
                                        );
          let olapCols = $newColumnsWithPossiblePKs->filter(c|$c->instanceOf(WindowColumn));
@@ -9259,9 +9263,9 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
 
   // 2. create inner join b/w exploded and the other relation.
   let toReplace = ^Alias(name = 'dummy', relationalElement = $explodeOp);
-  let flattendOutputDataType = if($pureReturnType->isEmpty() || meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->isEmpty(),
+  let flattendOutputDataType = if($pureReturnType->isEmpty() || meta::relational::transform::fromPure::pureTypeToDataType($pureReturnType->toOne())->isEmpty(),
                                   | ^meta::relational::metamodel::datatype::SemiStructured(),
-                                  | meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->toOne());
+                                  | meta::relational::transform::fromPure::pureTypeToDataType($pureReturnType->toOne())->toOne());
   let replaceWith = ^Alias(name = 'dummy', relationalElement = ^TableAliasColumn(column = ^Column(name = $flattenOutputAlias.name, type = $flattendOutputDataType), alias = $explodedSubQuery));
   let updatedOperation = replaceDynaFunctionWithTableAliasColumn($join.operation, ^Pair<Alias, Alias>(first = $toReplace, second = $replaceWith))->cast(@Operation);
   let otherTableInJoin = if($tableToExplodeAlias == $sourceAliasInJoin, | $targetAliasInJoin, | $sourceAliasInJoin);

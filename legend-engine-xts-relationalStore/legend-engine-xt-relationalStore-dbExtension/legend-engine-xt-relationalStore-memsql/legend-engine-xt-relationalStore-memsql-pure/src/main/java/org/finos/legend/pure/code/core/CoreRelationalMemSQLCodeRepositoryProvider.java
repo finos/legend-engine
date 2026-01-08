@@ -14,12 +14,19 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
 public class CoreRelationalMemSQLCodeRepositoryProvider implements CodeRepositoryProvider
 {
+    public static final Adapter memsqlAdapter = new Adapter(
+            "MemSQL",
+            "Store_Relational",
+            "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_"
+    );
+
     @Override
     public CodeRepository repository()
     {
