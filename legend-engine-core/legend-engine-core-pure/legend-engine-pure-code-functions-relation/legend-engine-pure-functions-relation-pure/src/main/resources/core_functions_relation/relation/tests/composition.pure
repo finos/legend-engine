@@ -1350,9 +1350,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
 function 
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
   {
-    doc.doc='Test for ambiguous column name errors in databases such as Snowflake, DuckDB, Postgres and MemSQL. This occurs when an alias used in groupBy expression is identical to a column name present across two or more joined tables. To resolve this, fully qualified names or column indices should be used instead of aliases in the groupBy expression.'
+    doc.doc='Test when alias name is same as column name across two or more joined tables'
   }
-meta::pure::functions::relation::tests::composition::testGroupBy_Ambiguous_Column_Error<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds1 = #TDS
                 id, grp, name
