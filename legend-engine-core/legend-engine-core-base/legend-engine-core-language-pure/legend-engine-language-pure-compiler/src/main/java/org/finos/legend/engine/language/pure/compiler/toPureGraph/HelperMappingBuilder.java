@@ -377,8 +377,9 @@ public class HelperMappingBuilder
             final String id = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
             base._id(id)
                 ._association(pureAssociation)
-                ._stores(stores)._parent(parentMapping).
-                _propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
+                ._stores(stores)
+                ._parent(parentMapping)
+                ._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
             return base;
         }
         return context.getCompilerExtensions().getExtraAssociationMappingProcessors().stream()
