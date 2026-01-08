@@ -1350,7 +1350,7 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
 function 
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
   {
-    doc.doc='Test for ambiguous column errors in databases such as Snowflake, DuckDB, Postgres and MemSQL. This occurs when an alias is identical to a column name present across two or more joined tables. To resolve this, fully qualified names or column indices should be used instead of aliases in the groupBy expression.'
+    doc.doc='Test for ambiguous column name errors in databases such as Snowflake, DuckDB, Postgres and MemSQL. This occurs when an alias is identical to a column name present across two or more joined tables. To resolve this, fully qualified names or column indices should be used instead of aliases in the groupBy expression.'
   }
 meta::pure::functions::relation::tests::composition::testGroupBy_Ambiguous_Column_Error<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -1372,8 +1372,8 @@ meta::pure::functions::relation::tests::composition::testGroupBy_Ambiguous_Colum
                 T, V, E
               #;
 
-  let expr = {| $tds1->select(~[id, name])->join($tds2, JoinKind.INNER, {x,y| $x.name==$y.name2})
-                      ->project(~[name2: x|$x.id->toOne()->toString()])
+  let expr = {| $tds1->select(~[id, name])->join($tds2, JoinKind.INNER, {x,y| $x.id == $y.id2})
+                      ->project(~[name2: x|$x.name->toOne()->toString()])
                       ->groupBy(~name2, ~[newCol : x | 1 : y | $y->plus()]);
               };
 
@@ -1381,11 +1381,11 @@ meta::pure::functions::relation::tests::composition::testGroupBy_Ambiguous_Colum
 
   assertEquals( '#TDS\n'+
                 '   name2,newCol\n'+
-                '   P,1\n'+
-                '   Q,1\n'+
-                '   R,1\n'+
-                '   S,1\n'+
-                '   T,1\n'+
+                '   A,1\n'+
+                '   B,1\n'+
+                '   C,1\n'+
+                '   D,1\n'+
+                '   E,1\n'+
                 '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
 }
 
