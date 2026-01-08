@@ -492,6 +492,32 @@ function meta::relational::functions::sqlQueryToString::default::processGroupByC
                                 ]));
 }
 
+Enum meta::relational::functions::sqlQueryToString::default::GroupByExpression
+{
+  ALIAS,
+  COL_NAME,
+  COL_INDEX
+}
+
+function meta::relational::functions::sqlQueryToString::default::processGroupByColumns(groupByColumns:RelationalOperationElement[*], selectColumns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], groupByExpression:GroupByExpression[1], extensions:Extension[*]):String[*]
+{   
+   let selectColNames = $selectColumns->map(c | $c->match([
+                                                    a: Alias[1] | $a.name, 
+                                                    any: Any[*] | $any
+                                                  ])
+                                           );
+   $groupByColumns->map(c | $c->match([
+                                a:Alias[1] | if($groupByExpression == GroupByExpression.ALIAS, 
+                                                  | $dbConfig.identifierProcessor($a->cast(@Alias).name),
+                                                  | if($groupByExpression == GroupByExpression.COL_INDEX, 
+                                                        | ($selectColNames->indexOf($a.name) + 1)->toString(),
+                                                        | $a->cast(@Alias).relationalElement->processOperation($dbConfig, $format, $extensions)
+                                                      )
+                                               ),
+                                c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
+                                ]));
+}
+
 function meta::relational::functions::sqlQueryToString::default::processOrderBy(orderBy:OrderBy[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[*]
 {
    $orderBy->map(o | $o.column->match([
