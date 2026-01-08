@@ -14,12 +14,19 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
 public class CoreScenarioQuantCodeRepositoryProvider implements CodeRepositoryProvider
 {
+    public static final ReportScope scenario_Quant_Functions = new ReportScope(
+            "scenario_quant",
+            "meta::external::scenario::quant",
+            "/core_scenario_quant/"
+    );
+
     @Override
     public CodeRepository repository()
     {

@@ -57,6 +57,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
@@ -109,8 +110,9 @@ public abstract class TestTDS
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
-                String pureType = pureTypesByColumnName.get(columnName) == null ? null : pureTypesByColumnName.get(columnName).getValueForMetaPropertyToOne("name").getName();
-                result = !isNull[rowNum] ? ("Decimal".equals(pureType) ? BigDecimal.valueOf(data[rowNum]) : data[rowNum]) : null;
+                CoreInstance pureType = pureTypesByColumnName.get(columnName) == null ? null : pureTypesByColumnName.get(columnName);
+                boolean isDecimal = pureType != null && processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Decimal));
+                result = !isNull[rowNum] ? (isDecimal ? BigDecimal.valueOf(data[rowNum]) : data[rowNum]) : null;
                 break;
             }
             case STRING:

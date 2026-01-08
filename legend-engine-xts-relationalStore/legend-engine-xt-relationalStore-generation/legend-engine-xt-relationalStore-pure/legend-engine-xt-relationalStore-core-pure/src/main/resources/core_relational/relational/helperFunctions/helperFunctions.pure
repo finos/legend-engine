@@ -443,7 +443,7 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
   let relationColumnType = $rfpm.column.classifierGenericType.typeArguments->at(1).rawType->toOne();
   ^TableAliasColumn(
     alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping)),
-    column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne(), type = pureTypeToRelationalTypeMap()->get($relationColumnType)->toOne())
+    column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($relationColumnType)->toOne())
   );
 }
 
