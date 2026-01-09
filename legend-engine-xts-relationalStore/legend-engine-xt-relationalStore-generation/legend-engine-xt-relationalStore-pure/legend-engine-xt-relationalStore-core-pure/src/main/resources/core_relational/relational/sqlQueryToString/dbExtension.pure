@@ -46,6 +46,13 @@ Class meta::relational::functions::sqlQueryToString::Format
    }:String[1];
 }
 
+Enum meta::relational::functions::sqlQueryToString::ReferenceStrategy
+{
+  ALIAS,
+  COL_EXPRESSION,
+  COL_INDEX
+}
+
 Class meta::relational::functions::sqlQueryToString::DbConfig
 {
    dbType:DatabaseType[1];
@@ -53,6 +60,8 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    quoteIdentifiers:Boolean[1];
 
    dbExtension: DbExtension[1];
+
+   columnReferenceStrategy: ReferenceStrategy[1] = ReferenceStrategy.ALIAS;
 
    isDbReservedIdentifier(str:String[1])
    {
