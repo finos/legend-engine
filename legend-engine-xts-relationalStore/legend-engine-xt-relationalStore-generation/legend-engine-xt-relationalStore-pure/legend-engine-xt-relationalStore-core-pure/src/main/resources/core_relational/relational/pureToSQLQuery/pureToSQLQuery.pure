@@ -629,7 +629,8 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let colFuncName = $fe.func.name->toOne();
   let tableAlias = $leftSelect.data.alias;
   let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
-  let foundColumn = if($foundColumnInSelect->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundColumnInSelect);
+  let foundAlias = if($foundColumnInSelect->isEmpty(), |findAlias($fe.func.name->toOne(), $operation->cast(@SelectWithCursor).parent.select.columns), |$foundColumnInSelect);
+  let foundColumn = if($foundAlias->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundAlias);
 
   let colAlias = if ($foundColumn->isNotEmpty(),
     |
@@ -2889,6 +2890,18 @@ function meta::relational::functions::pureToSqlQuery::processFirstNotNull(f:Func
   processDynafuncWithRename('coalesce', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
+function meta::relational::functions::pureToSqlQuery::findAlias(columnName:String[1], columns:RelationalOperationElement[*]):Alias[0..1]
+{
+  let column = $columns->filter(c|$c->extractColumnName()->quoteSafeEqual($columnName));
+  if($column->isEmpty(),
+    |[],
+    |$column->toOne()->match([
+      a: Alias[1] | $a,
+      op: RelationalOperationElement[1] | ^Alias(name = $op->extractColumnName(), relationalElement = $op)
+    ])
+  );
+}
+
 function meta::relational::functions::pureToSqlQuery::processDynafuncWithRename(newName:String[1], f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let oldFunc = $f.func;
@@ -2903,12 +2916,9 @@ function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], columns:RelationalOperationElement[*]):Alias[1]
 {
-   let column = $columns->filter(c|$c->extractColumnName()->quoteSafeEqual($columnName));
+   let column = findAlias($columnName, $columns);
    assertNotEmpty($column,{|'The column \''+$columnName+'\' can\'t be found ('+ $columns->map(c|$c->extractColumnName())->joinStrings(',')+')'});
-   $column->toOne()->match([
-    a: Alias[1] | $a,
-    op: RelationalOperationElement[1] | ^Alias(name = $op->extractColumnName(), relationalElement = $op)
-   ]);
+   $column->toOne();
 }
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(f:FunctionExpression[1], select:SelectSQLQuery[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):Alias[*]
@@ -6432,19 +6442,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsProject(f:Functi
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processColSpec(f:meta::pure::metamodel::function::Function<Any>[1], name:String[1], currentPropertyMapping:PropertyMapping[*], mainQuery:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):Pair<Alias,Pair<String,PathInformation>>[1]
 {
-  let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0); 
+  let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0);   
+  let select = $mainQuery.select;
+  let newElement = $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();
 
-  let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
-  
-  // todo this should be the behavior, but just scoping variant to reduce scope of change
-  let newElement = if($expressionToRoute->isVariantInput($vars, $state) || ($expressionToRoute->instanceOf(FunctionExpression) && $expressionToRoute->cast(@FunctionExpression).func == if_Pair_MANY__Function_1__T_m_),
-    |
-        let select = $mainQuery.select;
-        $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();,
-    |
-        processTdsLambda($expressionToRoute, $mainQuery.select.columns, false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0);
-  );
-  
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
                                             relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
@@ -6803,7 +6804,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoin(asOfJoin:Bo
 
     let child = ^JoinTreeNode(alias=$rightAlias, join=$join, joinType=if($type->instanceOf(JoinType),|$type->cast(@JoinType),|meta::relational::functions::pureToSqlQuery::joinKindToType($type->cast(@JoinKind))), database=^Database(), joinName='tdsJoin');
     let root = ^RootJoinTreeNode(alias=$leftAliasForJoinNode, childrenData=$child);
-     let columnList = $swc1.select.columns->concatenate($swc2.select.columns);
+    let columnList = $swc1.select.columns->concatenate($swc2.select.columns);
     let newAlias = ^TableAlias(name = 'tdsJoined_' + $nodeId, relationalElement=^TdsSelectSqlQuery(data=$root, columns=if($Q1isVarSetPlaceHolder,|[],|if($columnList->fold({cl, res | $cl->instanceOf(Alias) && $res}, true) && ($columnList->map(cl | $cl->cast(@Alias).name) == $leftAliasWithColumns->concatenate($aliases2)->map(cl | $cl->cast(@Alias).name)), | [], | $leftAliasWithColumns->concatenate($aliases2)))));
     let newData = ^RootJoinTreeNode(alias = $newAlias);
 
