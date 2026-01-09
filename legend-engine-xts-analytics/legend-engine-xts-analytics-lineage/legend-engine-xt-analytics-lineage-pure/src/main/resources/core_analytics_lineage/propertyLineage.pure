@@ -28,7 +28,7 @@ import meta::pure::extension::*;
 import meta::pure::metamodel::relation::*;
 import meta::analytics::lineage::property::*;
 import meta::analytics::lineage::property::scanner::*;
-  
+
 Class meta::analytics::lineage::property::PropertyLineageReport
 {
  propertyOwner:meta::analytics::lineage::property::PropertyLineageNode[*];
@@ -48,27 +48,27 @@ Class meta::analytics::lineage::property::StorePropertyLineageNode extends Prope
 }
 
 
-Class meta::analytics::lineage::property::PropertyOwnerNode  extends PropertyLineageNode 
+Class meta::analytics::lineage::property::PropertyOwnerNode  extends PropertyLineageNode
 {
   properties:meta::analytics::lineage::property::LineageProperty[*];
-  
+
 }
-Class meta::analytics::lineage::property::RootQuery  extends PropertyOwnerNode 
+Class meta::analytics::lineage::property::RootQuery  extends PropertyOwnerNode
 {
 }
 
-Class meta::analytics::lineage::property::Query  extends PropertyOwnerNode 
+Class meta::analytics::lineage::property::Query  extends PropertyOwnerNode
 {
 }
 
 
-Class meta::analytics::lineage::property::RelationalPropertyOwner  extends PropertyOwnerNode 
+Class meta::analytics::lineage::property::RelationalPropertyOwner  extends PropertyOwnerNode
 {
-    relationType:String[1]; 
+    relationType:String[1];
     relationName:String[1];
     schemaName:String[1];
-    relationOwnerPath:String[1]; 
-    relationOwnerName:String[1]; 
+    relationOwnerPath:String[1];
+    relationOwnerName:String[1];
 
 }
 
@@ -80,20 +80,19 @@ Class meta::analytics::lineage::property::MappedSetOwner extends PropertyOwnerNo
 }
 
 
-Class meta::analytics::lineage::property::MappedClassOwner  extends PropertyOwnerNode 
+Class meta::analytics::lineage::property::MappedClassOwner  extends PropertyOwnerNode
 {
     mapping:String[0..1];
-    setImplementationID:String[0..1];
-    _class:String[1];
-
+    setImplementationID:String[*];
+    _class:String[*];
 }
 
 
 
-Class meta::analytics::lineage::property::OwnerLink  
+Class meta::analytics::lineage::property::OwnerLink
 {
-  <<equality.Key>> source:String[1];  //change these to references 
-  <<equality.Key>> target:String[1];  
+  <<equality.Key>> source:String[1];  //change these to references
+  <<equality.Key>> target:String[1];
 
 }
 
@@ -112,7 +111,7 @@ Class meta::analytics::lineage::property::LineageProperty
 {
    <<equality.Key>> name:String[1];
     dataType:String[1];
-    sourceInfo:SourceInformation[0..1]; 
+    sourceInfo:SourceInformation[0..1];
     scope:String[0..1];
     propertyType:meta::analytics::lineage::property::PropertyType[1];  //Relational/ Model/ Relation
   <<equality.Key>>  ownerID:String[1];
@@ -123,21 +122,21 @@ Class meta::analytics::lineage::property::LineageProperty
 Class meta::analytics::lineage::property::LineageModelProperty extends  meta::analytics::lineage::property::LineageProperty
 {
     propertyTree:PropertyPathTree[1];
-
 }
 
 
-Class meta::analytics::lineage::property::PropertyLink   
+Class meta::analytics::lineage::property::PropertyLink
 {
   source:meta::analytics::lineage::property::LineageProperty[1];
-  target:meta::analytics::lineage::property::LineageProperty[1];  
+  target:meta::analytics::lineage::property::LineageProperty[1];
 }
 
 
 Class meta::analytics::lineage::property::scanner::ScannerState
 {
   //current owners for buildings links across levels of the tree
-  currentOwner:PropertyOwnerNode[*]; 
+  currentOwner:PropertyOwnerNode[*];
+  ownerToMapping: Map<String, Mapping>[0..1];
   lineageColumn: LineageProperty[*];
   vars:Map<String, List<Any>>[1] ;
   currentFunction : FunctionExpression[0..1];
@@ -156,7 +155,7 @@ Class meta::analytics::lineage::property::scanner::ScannerState
 
 
 function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1], state:ScannerState[1], extension:LineageExtension[*]):ScannerState[1]
-{  
+{
   let extended = $extension.buildPropertyReport->map(r|$r->eval($state,$extension));
   $vs->match($extended->concatenate(
               [
@@ -236,7 +235,7 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                     pair('meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_',
                                                          {|  let incomingState = $fe.parametersValues->at(0)->evaluateAndDeactivate()->scanBuildPropertyLineage($state,$extension);
                                                             let cols = extractQueryColumnsAtParam($fe,1,$incomingState,$state);
-                                                           ^$incomingState( lineageColumn=$cols); 
+                                                           ^$incomingState( lineageColumn=$cols);
                                                         }),
                                                     pair('meta::pure::functions::relation::project_Relation_1__FuncColSpec_1__Relation_1_',
                                                          {| let incomingState = $fe.parametersValues->at(0)->evaluateAndDeactivate()->scanBuildPropertyLineage($state,$extension);
@@ -318,7 +317,7 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                          let columns =  $cols->map(c|$c->meta::pure::lineage::scanProject::extractCol($state.vars));
                                                          let namedTransforms = $columns->map(c|^NamedTransform(name=$c.name,function=$c.func->cast(@FunctionDefinition<Any>)));
                                                           buildNamedTransforms($fe,$classPath,$namedTransforms,$state,$extension);
-                                                      ), 
+                                                      ),
                                                pair('meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_',
                                                            |
                                                             let classPath = $fe.parametersValues->at(0).genericType.rawType->toOne()->elementToPath()->toOne();
@@ -327,9 +326,9 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                             let cols = $funcs->zip($names);
                                                             let namedTransforms = $cols->map(c|^NamedTransform(name=$c.second->cast(@String),function=$c.first->cast(@FunctionDefinition<Any>)));
                                                              buildNamedTransforms($fe,$classPath,$namedTransforms,$state,$extension);
-                                                           
-                                                      ),       
-                                                       
+
+                                                      ),
+
                                                 pair('meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_',
                                                          {|
                                                              let propfns = $fe.parametersValues->at(1)->meta::analytics::lineage::property::relation::scanRelations::extractTransforms($state.vars);
@@ -341,15 +340,15 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
                                                    let fn = $dispatch->get($funcPath);
                                                    if($fn->isNotEmpty(),
                                                          |$fn->toOne()->eval();,
-                                                         | if($fe.parametersValues->evaluateAndDeactivate()->size()>0 && $funcPath->startsWith('meta::') , 
+                                                         | if($fe.parametersValues->evaluateAndDeactivate()->size()>0 && $funcPath->startsWith('meta::') ,
                                                                    |$fe.parametersValues->evaluateAndDeactivate()->at(0)->scanBuildPropertyLineage($state,$extension);
                                                                    ,| if(!$funcPath->in($state.visitedFunctions),
-                                                                            |$fe.func->scanBuildPropertyLineage(^$state(visitedFunctions+=$funcPath),$extension),     
+                                                                            |$fe.func->scanBuildPropertyLineage(^$state(visitedFunctions+=$funcPath),$extension),
                                                                             |$state)
                                                                    );
-                                                        );,  
+                                                        );,
               i:InstanceValue[1]              |     if($i.values->size()>1,
-                                                                  |  $i.values->evaluateAndDeactivate()->fold({a,b|$a->scanBuildPropertyLineage($b,$extension)}, $state);, 
+                                                                  |  $i.values->evaluateAndDeactivate()->fold({a,b|$a->scanBuildPropertyLineage($b,$extension)}, $state);,
                                                                   |  $i.values->evaluateAndDeactivate()->at(0)->scanBuildPropertyLineage($state,$extension)
                                                                        ),
               r:RelationElementAccessor<Any>[1] | $r->meta::analytics::lineage::property::buildAccessorPropertyNode($state, $extension);,
@@ -363,34 +362,31 @@ function meta::analytics::lineage::property::scanBuildPropertyLineage(vs: Any[1]
 function meta::analytics::lineage::property::buildNamedTransforms(fe:FunctionExpression[1],classPath: String[1],transforms:NamedTransform[*], state:ScannerState[1],  extension:LineageExtension[*]): ScannerState[1]
 {
     let mappingPath= if($state.mapping->isNotEmpty(),|$state.mapping->toOne()->elementToPath(),|[]);
-    let name = $classPath+ if( $mappingPath->isNotEmpty(),|'.'+$mappingPath->toOne(),|'') ;
+    let name = $classPath+ if( $mappingPath->isNotEmpty(),|'.'+$mappingPath->toOne(),|'');
     let ownerNode = ^MappedClassOwner(name =$name, id= 'MappedClassOwner_' + $name,  _class=  $classPath, mapping=$mappingPath);
     let props =  $transforms->map(transform|let propertiesPaths = $transform.function->cast(@FunctionDefinition<Any>).expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], [], noDebug())->removeDuplicates();
-                                  let tree = $propertiesPaths.result->buildPropertyTree();   
+                                  let tree = $propertiesPaths.result->buildPropertyTree();
                                   let trees =  $propertiesPaths.result->map(p|$p->buildPropertyTree());
                                   let modelProps = $trees->map( t | ^LineageModelProperty(propertyType=PropertyType.MODEL, dataType=$transform.function->cast(@FunctionDefinition<Any>)->functionReturnType().rawType.name->toOne(), name=$t->propertyTreetoName(), ownerID = $ownerNode.id, propertyTree=$t));
                                   pair($transform.name,list($modelProps));
-                                  ); 
-                                  
+                                  );
     let updatedNode = $ownerNode->mutateAdd('properties',$props.second.values);
     let updatedState = ^$state(currentFunction=$fe);
-    let incomingState= $updatedNode->meta::analytics::lineage::property::scanMappedNode($updatedState,$extension);
-
-
+    let incomingState= $updatedNode->meta::analytics::lineage::property::scanMappedNode($updatedState,$fe,$extension);
+    let extendedState = $extension.buildMappingNode->map(r|$r->eval($incomingState, $extension));
+    let finalIncomingState = if($extendedState->isEmpty(), | $incomingState, | $extendedState->toOne()->cast(@ScannerState));
     if($state.inReprocess,
-    | $incomingState;,
-    | let queryProps = $props->map( p |   let sourceCol = $incomingState.lineageColumn->filter(c|$c.name->in($p.second.values.name));
+    | $finalIncomingState,
+    | let queryProps = $props->map( p |   let sourceCol = $finalIncomingState.lineageColumn->filter(c|$c.name->in($p.second.values.name));
                                           let prop =  ^LineageProperty(ownerID='query',dataType=$sourceCol.dataType->at(0), propertyType=PropertyType.MODEL, name=$p.first, scope= 'IDENTITY',sourceProperties=$sourceCol);
                                           );
-
       let rootNode = ^meta::analytics::lineage::property::Query(name = $fe.func.name->toOne(), id='Query_'+$fe.func.name->toOne(),properties=$queryProps);  //TODO Add id# so we get unique ids for these
-      let links =  $incomingState.currentOwner->map(o| ^OwnerLink(source=$o.id, target = $rootNode.id ));
-      ^$incomingState(currentOwner=$rootNode,
-                propertyOwner+= $rootNode, 
+      let links =  $finalIncomingState.currentOwner->map(o| ^OwnerLink(source=$o.id, target = $rootNode.id ));
+      ^$finalIncomingState(currentOwner=$rootNode,
+                propertyOwner+= $rootNode,
                 ownerLink += $links,
                 lineageColumn=$queryProps   ););
 }
-
 
 
 function meta::analytics::lineage::property::propertyTreetoName(t:PropertyPathTree[1]):String[1]
@@ -422,7 +418,7 @@ function meta::analytics::lineage::property::propertyTreeProperties(t:PropertyPa
 function  meta::analytics::lineage::property::lineagePropertyToString(p:LineageProperty[1], pretty:Boolean[1], Iindent:String[1], extensions:LineageExtension[*]):String[1]
 {
     let indent = if($pretty && $Iindent =='',|'\n\t',|'');
-    $p.ownerID+'.'+ $p.name 
+    $p.ownerID+'.'+ $p.name
       + if( $p.sourceProperties->isNotEmpty(),| '->'+$indent+ $p.sourceProperties->map(s|$s->lineagePropertyToString($pretty,$indent+'\t',$extensions))->joinStrings('[',','+$indent,']' ),|'');
 
 }
@@ -433,8 +429,6 @@ function  meta::analytics::lineage::property::buildPropertyLineageReport(element
   $element->match([v:ValueSpecification[1] |$v->buildVSLineagePropertyNode($ownerID,$state,$extensions)
 
               ] );
-
-
 }
 
 
@@ -444,28 +438,28 @@ function meta::pure::lineage::relation::scanRelations::accessorToLineageProperty
     $r->match( $extension.accessorToLineageProperty->map(a|$a->eval($column,$extension))->concatenate(
               rea:RelationElementAccessor<Any>[*]| $rea.sourceElement->cast(@Table).columns->cast(@meta::relational::metamodel::Column)->filter(rac|$rac.name==$column.name)->map(c|$c->lineagePropertyColumn().second))->toOneMany());
                                                     //needs to work with Views
-  } 
+  }
 
 function  meta::analytics::lineage::property::buildAccessorPropertyNode(accessor:RelationElementAccessor<Any>[1], state:ScannerState[1], extensions:LineageExtension[*] ):ScannerState[1]
 {
-  
 
-    let columns =  $accessor.classifierGenericType.typeArguments.rawType->cast(@RelationType<Any>).columns; 
 
-    $accessor->match(  [r:meta::pure::store::RelationStoreAccessor<Any>[1] |  
+    let columns =  $accessor.classifierGenericType.typeArguments.rawType->cast(@RelationType<Any>).columns;
+
+    $accessor->match(  [r:meta::pure::store::RelationStoreAccessor<Any>[1] |
                                                                               let lineageColumns  = $columns->map(c| accessorToLineageProperty($r,$c,$extensions));
                                                                               let store = $r.sourceElement->cast(@NamedRelation)->schema().database;
                                                                               let ownerNode = $r.sourceElement->cast(@NamedRelation)->namedRelationToOwner($lineageColumns);
                                                                               let storeNode = ^StorePropertyLineageNode(name=$store.name->toOne(), id= $store->elementToPath());
                                                                               let link = ^OwnerLink(source=$storeNode.id,target=$ownerNode.id);
-                                                                                                                                                            
+
                                                                               ^$state(currentOwner= $ownerNode,
                                                                                        lineageColumn=$lineageColumns,
                                                                                       propertyOwner+=$ownerNode->concatenate($storeNode),
                                                                                       ownerLink+=$link);
 
                         ]            );
-  
+
 
 }
 
@@ -484,7 +478,6 @@ function  meta::analytics::lineage::property::buildVSLineagePropertyNode(funcBod
     let relationScan  = $funcBody->scanBuildPropertyLineage($updatedState,$extensions);
    let node = ^RootQuery(name= $ownerID, id=$ownerID,properties=$relationScan.lineageColumn);
    let ownerLink = $relationScan.currentOwner->map(o|  ^OwnerLink(source=$o.id,target=$node.id));
-
     let propertyLink =  $relationScan.lineageColumn->map( c | $c.sourceProperties->map( source |     ^PropertyLink(target=$c, source= $source )));
    ^PropertyLineageReport(propertyOwner=$node->concatenate($relationScan.propertyOwner),
                           ownerLink=$ownerLink->concatenate($relationScan.ownerLink));
@@ -495,18 +488,120 @@ function  meta::analytics::lineage::property::buildVSLineagePropertyNode(funcBod
 
 }
 
+function meta::analytics::lineage::property::resolveSetForClass(mappingRoot: Mapping[1],leafCls: Class<Any>[1],stateMapping: Mapping[1]): InstanceSetImplementation[*]
+{
+  let cms = $stateMapping->meta::pure::mapping::rootClassMappingByClass($leafCls);
+  if($cms->isNotEmpty(),
+    | $cms->last()
+        ->meta::pure::router::routing::resolveOperation($mappingRoot)
+        ->match([
+          r:RootRelationalInstanceSetImplementation[1] | [$r],
+          p:InstanceSetImplementation[1]               | [$p],
+          a:Any[*]                                     | []
+        ]),
+    | []
+  );
+}
 
+function meta::analytics::lineage::property::propsPerMappingNode( props: LineageModelProperty[*], ownerMappingPath: String[1],classSetCache: Map<Class<Any>, InstanceSetImplementation>[1],ClassPath: String[*],m:MappedClassOwner[1],rootMapping:Mapping[1]):PropsPerMappingLineageScanner[1]
+{
+  let updatedProps =$props->cast(@LineageModelProperty)->fold({ lc, acc |
+          let pathClasses = $lc.propertyTree->propertyTreeProperties()->map(pp | $pp.owner->match([ c:Class<Any>[1] | $c, a:Any[*] | [] ]))->filter(c | !$c->isEmpty())->map(c | $c->toOne());
+          let leafClsOpt  = if($pathClasses->isNotEmpty(), | $pathClasses->last(), | []);
+          let leafSetOpt  = if($leafClsOpt->isNotEmpty(), | $classSetCache->get($leafClsOpt->toOne()), | []);
+          let groups = if($leafSetOpt->isNotEmpty(),
+                      | $leafSetOpt->map(si | ^Pair<Mapping, InstanceSetImplementation>(
+                                     first  = $si.parent,second = $si))->groupBy(g | $g.first)->keyValues(),
+                      | []->cast(@Pair<Mapping, List<Pair<Mapping, InstanceSetImplementation>>>));
+          let attachToRoot = if($groups->isEmpty(), | true, | $groups->exists(g | $g.first ==$rootMapping));
+          let mappingSetImplPairs = $groups->map(g |
+               let groupMappingPath = $g.first;
+               let repSet           = $g.second.values.second;
+               ^Pair<Mapping, InstanceSetImplementation>(first = $groupMappingPath, second = $repSet->toOne());
+          );
+          let propPairsForRoot = if($attachToRoot, | [ ^Pair<Mapping, LineageModelProperty>(first = $rootMapping->toOne(),second = ^$lc(ownerID = 'MappedClassOwner_' + $ownerMappingPath, sourceProperties = $lc.sourceProperties)) ],|[]);
+          let propPairsForNonRoot = if($attachToRoot,| [],| $mappingSetImplPairs->filter(pairs | $pairs.first != $rootMapping)->map(pairs | ^Pair<Mapping, LineageModelProperty>(first = $pairs.first,
+                  second = ^$lc(ownerID = 'MappedClassOwner_' + $pairs.first->toOne()->elementToPath()->toOne(),sourceProperties = $lc.sourceProperties))));
+          ^Pair<List<Pair<Mapping, LineageModelProperty>>, List<Pair<Mapping, InstanceSetImplementation>>>(
+             first  = ^List<Pair<Mapping, LineageModelProperty>>(values = $acc.first.values->concatenate($propPairsForRoot)->concatenate($propPairsForNonRoot)),
+             second = ^List<Pair<Mapping, InstanceSetImplementation>>(values = $acc.second.values->concatenate($mappingSetImplPairs))
+          );
+  },
+  ^Pair<List<Pair<Mapping, LineageModelProperty>>, List<Pair<Mapping, InstanceSetImplementation>>>(
+        first  = ^List<Pair<Mapping, LineageModelProperty>>(values = []),
+        second = ^List<Pair<Mapping, InstanceSetImplementation>>(values = [])
+  ));
+  let propsPairs = $updatedProps.first.values;
+  let mappingSetImplPairs = $updatedProps.second.values;
+  let allProps = $propsPairs->map(pp | $pp.second)->cast(@LineageModelProperty);
+  let propsperMapping =$propsPairs->groupBy(pp | $pp.first)->keyValues();
+  let ownersPerMapping = $propsperMapping->map(kv |
+                                let mappingPath = $kv.first;
+                                let mappingName = $mappingPath->cast(@Mapping)->elementToPath()->toOne();
+                                let repSetOpt = $mappingSetImplPairs->filter(p | $p.first == $mappingPath)->map(p | $p.second);
+                                let repSet    = if(!$repSetOpt->isNotEmpty(), | [], | $repSetOpt);
+                                let childClass = if(!$repSet->isNotEmpty() || $repSet.class->isEmpty(), | $ClassPath,| $repSet->filter(x | ($x->instanceOf(RootRelationalInstanceSetImplementation) || ($x->instanceOf(PureInstanceSetImplementation))))->map(x | $x.class->elementToPath()->toOne()));
+                                let childSetId = if(!$repSet->isNotEmpty(), | '', | $repSet.id)->distinct();
+                                ^MappedClassOwner(name = $mappingName,id = 'MappedClassOwner_' + $mappingName,_class = $childClass->distinct(),mapping = $mappingPath->toOne()->elementToPath(), setImplementationID= $childSetId,properties = $kv.second.values->map(p | $p.second)->cast(@LineageModelProperty));
+  );
+  let ownerToMappingPairs = $propsperMapping->map(kv |
+                                 let mappingPath = $kv.first;
+                                 let mappingName = $mappingPath->cast(@Mapping)->elementToPath()->toOne();
+                                 ^Pair<String, Mapping>(first = 'MappedClassOwner_' + $mappingName, second = $mappingPath););
+  let ownerToMappingMap = $ownerToMappingPairs->newMap();
+  let rootOwners  = $ownersPerMapping->filter(o | $o.mapping->toOne() == $rootMapping->toOne()->elementToPath());
+  let childOwners = $ownersPerMapping->filter(o | $o.mapping->toOne() != $rootMapping->toOne()->elementToPath());
+  let parentIndex = meta::analytics::lineage::property::buildMappingParentIndex($mappingSetImplPairs);
+  let owners = $rootOwners->concatenate($childOwners)->cast(@PropertyLineageNode);
+  let childToParentLinks = $childOwners->map(co |let childPath  = $co.name->toOne();
+              let parentPathOpt = $parentIndex->get($childPath);
+              if($parentPathOpt->isEmpty(),| [],| let parentOwnerOpt = $owners->filter(x|$x.name == $parentPathOpt);
+                    if($parentOwnerOpt->isEmpty(), | [], | ^OwnerLink(source = $co.id, target = $parentOwnerOpt->toOne().id));
+              );
+  );
+  let incomingIndex = $childToParentLinks->groupBy(e | $e.source)->keyValues()->newMap();
+  let orphanChildOwners = $childOwners->filter(o | $incomingIndex->get($o.id)->isEmpty());
+  let orphanToRootLinks = $orphanChildOwners->map(o | ^OwnerLink(source = $o.id, target = $rootOwners.id->toOne()));
+  let finalChildToRootLinks = if($orphanToRootLinks->isNotEmpty(), | $childToParentLinks->concatenate($orphanToRootLinks)->removeDuplicates(), | $childToParentLinks);
+  ^PropsPerMappingLineageScanner(allProps = $allProps,mappingSetImplPairs = $mappingSetImplPairs,childOwners = $childOwners,rootOwner=$rootOwners->toOne(),childToRootLinks=$finalChildToRootLinks,ownerToMapping = $ownerToMappingMap);
+}
 
-function  meta::analytics::lineage::property::scanMappedNode(m:MappedClassOwner[1],state:meta::analytics::lineage::property::scanner::ScannerState[1], extensions:LineageExtension[*]):ScannerState[1]
+function meta::analytics::lineage::property::buildMappingParentIndex(mappingSetImplPairs: Pair<Mapping, InstanceSetImplementation>[*]): Map<String, String>[1]
+{
+  let pairs = $mappingSetImplPairs->map(p |
+    let parentSet      = $p.second.parent->toOne();
+    let parentPath     = $parentSet->elementToPath()->toOne();
+    let childMappings = $parentSet.includes->map(inc | $inc.included->cast(@Mapping)->elementToPath()->toOne());
+    $childMappings->map(x | if($x != $parentPath && !$parentPath->isEmpty(),
+         | ^Pair<String, String>(first = $x, second = $parentPath),
+         | []
+    );
+    );
+  )->concatenate([]);
+  $pairs->removeDuplicates()->newMap();
+}
 
-{  
+function  meta::analytics::lineage::property::scanMappedNode(m:MappedClassOwner[1],state:meta::analytics::lineage::property::scanner::ScannerState[1], fe:FunctionExpression[1],extensions:LineageExtension[*]):ScannerState[1]
+{
    if($m.mapping->isEmpty(),
       |$state,
-      |let mapping = $m.mapping->toOne()->pathToElement()->cast(@Mapping);
-        let set =$state.mapping->toOne()->meta::pure::mapping::rootClassMappingByClass($m._class->pathToElement()->cast(@Class<Any>))->last()->meta::pure::router::routing::resolveOperation($mapping);
-          //TODO: add extensions for other mapping types 
-      let mappedNode = $set->match( [r:RootRelationalInstanceSetImplementation[1]|  
-                                                                                    let owner = ^$m(name=  $r.parent->elementToPath(),id ='MappedClassOwner_' + $r.id, setImplementationID=$r.id); 
+      |
+        let class = $fe.parametersValues->at(0).genericType.rawType->toOne();
+        let set =$state.mapping->toOne()->meta::pure::mapping::rootClassMappingByClass($class->cast(@Class<Any>))->last()->meta::pure::router::routing::resolveOperation($state.mapping->toOne());
+          //TODO: add extensions for other mapping types
+        let leafClassesPerProp = $m.properties->cast(@LineageModelProperty)->map(lp | let pathClasses = $lp.propertyTree->propertyTreeProperties()->map(pp | $pp.owner->match([ c:Class<Any>[1] | $c, a:Any[*] | [] ]))
+                                              ->filter(c | !$c->isEmpty())->map(c | $c->toOne());
+                                              if($pathClasses->isNotEmpty(), | [$pathClasses->last()], | []);
+        )->concatenate([])->removeDuplicates();
+        let classSetCache = $leafClassesPerProp->removeDuplicates()->fold({cls, acc |  let cached = $acc->get($cls);
+                if($cached->isNotEmpty(),
+                    |$acc,
+                    | let resolved = meta::analytics::lineage::property::resolveSetForClass($state.mapping->toOne(), $cls, $state.mapping->toOne());
+                    if($resolved->isNotEmpty(), | $acc->put($cls, $resolved->at(0)), | $acc);
+                );
+        }, ^Map<Class<Any>, InstanceSetImplementation>());
+      let mappedNode = $set->match( [r:RootRelationalInstanceSetImplementation[1]|
+                                                                                   let owner = ^$m(name=  $r.parent->elementToPath(),id ='MappedClassOwner_' + $r.parent->elementToPath()->toOne(), setImplementationID=$r.id);
                                                                                    let props = $m.properties->cast(@LineageModelProperty)->fold({p,columnState|  let res= $p.propertyTree->meta::pure::lineage::scanColumns::scanColumns($state.mapping->toOne(), $columnState.classToSets, $columnState.idToSet);
                                                                                                             let sourceProps = $res.colRes.columns->map(c|$c.column->lineagePropertyColumn());
                                                                                                             let newProp = ^$p(ownerID=$owner.id,  sourceProperties = $sourceProps.second);
@@ -517,54 +612,66 @@ function  meta::analytics::lineage::property::scanMappedNode(m:MappedClassOwner[
                                                                                                                           classToSets = $res.classToSets->map(n|$n->keyValues())->newMap());
                                                                                                                                               },
                                                                                                         ^LineagePropertyColumnScanner(idToSet=^Map<String, List<SetImplementation>>(), classToSets=^Map<Class<Any>, List<InstanceSetImplementation>>()));
-                                                                                  let ownerWithProps =  $owner->mutateAdd('properties',$props.properties);
-
-
+                                                                                  let updatedRes = propsPerMappingNode($props.properties->cast(@LineageModelProperty),$owner.name->toOne(),$classSetCache,$m._class,$owner,$r.parent->toOne());
+                                                                                  let ownerWithProps  = $updatedRes.rootOwner;
+                                                                                  let childOwners     = $updatedRes.childOwners;
+                                                                                  let attachedProps = $updatedRes.allProps;
+                                                                                  let mergedOwnerToMapping = $state.ownerToMapping->map(n|$n->keyValues())->concatenate($updatedRes.ownerToMapping->map(n|$n->keyValues()))->newMap();
+                                                                                  let propTargets = $m.properties->groupBy(p | $p.name)->keyValues()->map(kv | ^Pair<String, LineageProperty>(first = $kv.first, second = $kv.second.values->at(0)))->newMap();
+                                                                                  let updatedPropertyLinks = $attachedProps->map(ap | let prop = $propTargets->get($ap.name)->toOne();
+                                                                                              if($prop->isEmpty(), | [], | ^PropertyLink(target=^$prop(ownerID=$ap.ownerID),source=$ap)););
                                                                                    let relationalOwners = $props.owners->distinct();
                                                                                    let storenodes = $relationalOwners->filter(o|$o->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->groupBy(n|pair($n.relationOwnerPath,$n.relationOwnerName));
                                                                                    let newNodeLink = $storenodes->keyValues()->map(s|let storeNode =   ^StorePropertyLineageNode(name=$s.first.second, id= $s.first.first);
                                                                                                                                     let links =  $s.second.values->map(v|  ^OwnerLink(source=$storeNode.id,target=$v.id));
                                                                                                                                     pair($storeNode,list($links));
-                                                                                   
                                                                                    );
-                                                                                   
-                                                                                  let mappingToRelationalLink = $relationalOwners->map(rel| ^OwnerLink(target=$ownerWithProps.id, source=$rel.id)  );    
+                                                                                  let relOwnerIndex = $relationalOwners->filter(ro | $ro->instanceOf(RelationalPropertyOwner))->cast(@RelationalPropertyOwner)->groupBy(ro | $ro.id)->keyValues()->map(e | ^Pair<String, RelationalPropertyOwner>(first = $e.first, second = $e.second.values->at(0)))->newMap();
+                                                                                  let childToRelationalLinks =$childOwners->map(co | let relIds =$co.properties->cast(@LineageModelProperty)->map(lp | $lp.sourceProperties->map(sp | $sp.ownerID))->concatenate([])->removeDuplicates();
+                                                                                        let matchingRelOwners =   $relIds->map(rid | $relOwnerIndex->get($rid))->filter(ro | !$ro->isEmpty())->map(ro | $ro->toOne());
+                                                                                        $matchingRelOwners->map(rel | ^OwnerLink(source = $rel.id, target = $co.id));
+                                                                                  );
+                                                                                  let mappingToRelationalLink = $relationalOwners->map(rel| ^OwnerLink(target=$ownerWithProps.id, source=$rel.id));
                                                                                 ^$state(currentOwner=$ownerWithProps,
-                                                                                       propertyLink +=$props.link,
-                                                                                      ownerLink += $mappingToRelationalLink->concatenate($newNodeLink.second.values),
-                                                                                      propertyOwner += $ownerWithProps->concatenate($relationalOwners)->concatenate($newNodeLink.first),
-                                                                                      lineageColumn=$props.properties);,
+                                                                                        ownerToMapping = $state.ownerToMapping->concatenate($mergedOwnerToMapping)->removeDuplicates()->toOne(),
+                                                                                       propertyLink +=$updatedPropertyLinks,
+                                                                                      ownerLink += $mappingToRelationalLink->concatenate($childToRelationalLinks)->concatenate($newNodeLink.second.values)->concatenate($updatedRes.childToRootLinks),
+                                                                                      propertyOwner += $ownerWithProps->concatenate($childOwners)->cast(@PropertyLineageNode)->concatenate($relationalOwners)->concatenate($newNodeLink.first),
+                                                                                      lineageColumn=$updatedRes.allProps);,
                                                     p:PureInstanceSetImplementation[1] | let reProcess =   $state.currentFunction->evaluateAndDeactivate()->toOne()->meta::pure::mapping::modelToModel::chain::allReprocess([], $state.mapping, $state.extensions, true, noDebug()) ;
-                                                                                         let id =  'MappedClassOwner_' +$p.id;
-                                                                                         let owner = ^$m(name=  $p.parent->elementToPath(), id=$id, setImplementationID=$p.id);  
-                                                                                         let  sourceNode =  $reProcess.res-> scanBuildPropertyLineage(^$state(inReprocess=true),$extensions); 
+                                                                                         let id =  'MappedClassOwner_' + $p.parent->elementToPath();
+                                                                                         let owner = ^$m(name=  $p.parent->elementToPath(), id=$id, setImplementationID=$p.id);
+                                                                                         let  sourceNode =  $reProcess.res-> scanBuildPropertyLineage(^$state(inReprocess=true),$extensions);
                                                                                          let sourceNodeProp = $sourceNode.lineageColumn->cast(@LineageModelProperty)->map(l|pair($l, list($l.propertyTree->propertyTreeProperties())));
-                                                                                         let updatedprops = $m.properties->map(lc|  let modelProperties = $lc->cast(@LineageModelProperty).propertyTree->map(p|$p->propertyTreeProperties()); 
+                                                                                         let updatedprops = $m.properties->map(lc|  let modelProperties = $lc->cast(@LineageModelProperty).propertyTree->map(p|$p->propertyTreeProperties());
                                                                                                                                       let processedFns = $reProcess.propertyFunctions->filter(p|$p.first ->in($modelProperties));
                                                                                                                                       let sourceTrees =  $processedFns.second->evaluateAndDeactivate()->map(p|$p->scanProperties(^List<PropertyPathNode>(), [], [], noDebug())).result->buildPropertyTree()->map(p|$p->propertyTreeProperties());
                                                                                                                                       let upstreamProperties = $sourceNodeProp->filter( p|  $p.second.values->containsAll($sourceTrees));
-                                                                                                                                      ^$lc(ownerID=$owner.id, sourceProperties = $upstreamProperties.first);); 
-
-                                                                                          let updatedOwner =     ^$owner(properties=$updatedprops);                   
-                                                                                          let ownerLink = [^OwnerLink(source=$sourceNode.currentOwner.id->toOne(),target=$updatedOwner.id)];      
-                                                                                            ^$sourceNode( inReprocess=false,
-                                                                                                          currentOwner= $updatedOwner,
-                                                                                                          lineageColumn=$updatedprops,
-                                                                                                          propertyOwner+=$updatedOwner,
-                                                                                                          ownerLink+=$ownerLink);,
-                                                                                 
-                                                     a:Any[*]|         $state;       
-                                                           
-
+                                                                                                                                      ^$lc(ownerID=$owner.id, sourceProperties = $upstreamProperties.first););
+                                                                                          let updatedRes = propsPerMappingNode($updatedprops->cast(@LineageModelProperty),$owner.name->toOne(),$classSetCache,$m._class,$owner,$p.parent->toOne());
+                                                                                          let updatedOwner =    $updatedRes.rootOwner;
+                                                                                          let childOwners = $updatedRes.childOwners;
+                                                                                          let ownerLink = [^OwnerLink(source=$sourceNode.currentOwner.id->toOne(),target=$updatedOwner.id)];
+                                                                                          let childPureToRelMapLinks = $childOwners->map(co | let relIds =$co.properties->map(lp | $lp.sourceProperties->map(sp | $sp.ownerID))->concatenate([])->removeDuplicates();
+                                                                                              let matchingMcOwners =   $sourceNode.propertyOwner->filter(x|$x->instanceOf(MappedClassOwner))->filter(mc | $mc.id->in($relIds))->filter(ro | !$ro->isEmpty())->map(ro | $ro->toOne());
+                                                                                              $matchingMcOwners->map(rel | ^OwnerLink(source = $rel.id, target = $co.id));
+                                                                                          );
+                                                                                          let mergedOwnerToMapping = $state.ownerToMapping->map(n|$n->keyValues())->concatenate($updatedRes.ownerToMapping->map(n|$n->keyValues()))->newMap();
+                                                                                          ^$sourceNode( inReprocess=false,
+                                                                                                        ownerToMapping = $state.ownerToMapping->concatenate($mergedOwnerToMapping)->removeDuplicates()->toOne(),
+                                                                                                        currentOwner= $updatedOwner,
+                                                                                                        lineageColumn=$updatedRes.allProps,
+                                                                                                        propertyOwner+=$updatedOwner->concatenate($childOwners)->cast(@PropertyLineageNode),
+                                                                                                        ownerLink+=$ownerLink->concatenate($childPureToRelMapLinks)->concatenate($updatedRes.childToRootLinks));,
+                                                     a:Any[*]|         $state;
                                      ]););
-
-
 }
+
 function   meta::analytics::lineage::property::extractPropertyFuncion(v:Pair<Property<Nil,Any|*>, ValueSpecification>[1]):Any[*]
 {
     if($v.second->instanceOf(SimpleFunctionExpression) && $v.second->cast(@SimpleFunctionExpression).func==eval_Function_1__T_n__V_m_,
           |let fn = $v.second->cast(@SimpleFunctionExpression);
-          
+
            let sourcePorperty = $fn.parametersValues->at(0)->cast(@InstanceValue).values;
         let sourcePropertyTree = $v.second->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()).result;//  _Firm.employees
             $fn.propertyName ; // the target name
@@ -588,7 +695,7 @@ function   meta::analytics::lineage::property::buildMultiLevelPropertyTrees(vs:V
 function  meta::analytics::lineage::property::extractNamedProperties(n:NamedTransform[1],ownerID:String[1]):LineageModelProperty[*]
 {
 
-    
+
    let path =  $n.function->evaluateAndDeactivate().expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug());
    ^LineageModelProperty(propertyType=PropertyType.MODEL, dataType=$n.function->functionReturnType().rawType.name->toOne(), name=$n.name, ownerID = $ownerID, propertyTree=$path.result->buildPropertyTree());
 
@@ -613,7 +720,16 @@ Class meta::analytics::lineage::property::LineagePropertyColumnScanner
    link:PropertyLink[*];
    owners:PropertyOwnerNode[*];
 }
-    
+
+Class meta::analytics::lineage::property::PropsPerMappingLineageScanner
+{
+  allProps: LineageModelProperty[*];
+  mappingSetImplPairs: Pair<Mapping, InstanceSetImplementation>[*];
+  childOwners: MappedClassOwner[*];
+  rootOwner: MappedClassOwner[1];
+  childToRootLinks: OwnerLink[*];
+  ownerToMapping: Map<String, Mapping>[1];
+}
 
 
 
@@ -629,8 +745,8 @@ function <<access.private>> meta::analytics::lineage::property::findUltimateSour
   let sourceId = $link.source;
   if($removeIds->contains($sourceId),
     |let incomingLinks = $allLinks->filter(l|$l.target == $sourceId);
-     if($incomingLinks->isEmpty(), 
-       |[], 
+     if($incomingLinks->isEmpty(),
+       |[],
        |$incomingLinks->map(l|$l->findUltimateSource($removeIds, $allLinks));
      );,
     |[$link.source]
@@ -642,8 +758,8 @@ function  <<access.private>> meta::analytics::lineage::property::findUltimateTar
   let targetId = $link.target;
   if($removeIds->contains($targetId),
     |let outgoingLinks = $allLinks->filter(l|$l.source == $targetId);
-     if($outgoingLinks->isEmpty(), 
-       |[], 
+     if($outgoingLinks->isEmpty(),
+       |[],
        |$outgoingLinks->map(l|$l->findUltimateTargets($removeIds, $allLinks));
      );,
     |[$link.target]
@@ -664,7 +780,7 @@ function meta::analytics::lineage::property::toGraphFromPropertyLineage(state:Sc
     let targets = $link->findUltimateTargets($removeIds, $state.ownerLink);
     $sources->map(src | $targets->map(tgt |  if($src!= $tgt,
                                                 | ^OwnerLink(source=$src, target=$tgt),
-                                              | [] 
+                                              | []
                                               );
                                 ));)->distinct();
 
@@ -674,7 +790,6 @@ function meta::analytics::lineage::property::toGraphFromPropertyLineage(state:Sc
 
   let allLinks = $filteredLinks->concatenate($bypassLinks)->cast(@OwnerLink);
   let filteredNodes = $state.propertyOwner->filter(o|!$removeIds->contains($o.id));
-
   let nodes = $filteredNodes->map(o|pair($o.id,$o->match($extension.propertyReportToGraphNode->map(a|$a->eval())->concatenate(
     [s:StorePropertyLineageNode[1] | ^NodeData(id=$s->toGraphID(), type=$s->type().name->toOne(), text=$s.name),
      r:RelationalPropertyOwner[1]| ^NodeData(id=$r->toGraphID(), type=$r->type().name->toOne(), text=$r.relationName);,
@@ -683,7 +798,6 @@ function meta::analytics::lineage::property::toGraphFromPropertyLineage(state:Sc
     ])->toOneMany())));
 
   let nodesById = $nodes->groupBy(c|$c.first);
-
   ^Graph(
     nodes = $nodes.second->map(n| ^meta::pure::lineage::graph::Node(data=$n)),
     edges = $allLinks->map(l|

@@ -146,11 +146,10 @@ function <<access.private>> meta::pure::lineage::scanColumns::enrichSimpleProper
     let propertyMappings = $sets->map(s|$s->_propertyMappingsByPropertyName($sp.name->toOne()));
     printDebug(|'  property mappings: '+$propertyMappings->map(pm|$pm.sourceSetImplementationId+' -> '+if($pm.targetSetImplementationId == '',|$sp.name->toOne(),|$pm.targetSetImplementationId))->joinStrings('[',', ',']')+'\n', $debug);
     // more than one resolved mapping implies one PropertyPathTree enriches into multiple trees due to multiple subtypes/subclasses
-    let resolvedMappings = $propertyMappings->map(pm|if($pm->instanceOf(AggregationAwarePropertyMapping), |reprocessAggregationAwarePropertyMapping($pm),| $pm);); 
+    let resolvedMappings = $propertyMappings->map(pm|if($pm->instanceOf(AggregationAwarePropertyMapping), |reprocessAggregationAwarePropertyMapping($pm),| $pm););
     printDebug(|'  resolved mappings: '+$resolvedMappings->map(pm|$pm.sourceSetImplementationId+' -> '+if($pm.targetSetImplementationId == '',|$sp.name->toOne(),|$pm.targetSetImplementationId))->joinStrings('[',', ',']')+'\n', $debug);
-    
     if($sp.genericType.rawType->isNotEmpty() && $sp.genericType.rawType->toOne()->instanceOf(DataType), // branch on data type property
-        | 
+        |
           $resolvedMappings->filter(pm|$pm->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping)->fold({pm, st|
                                                                   let columns = $pm->getColumns();
                                                                   let parentMapping = $pm.owner.parent->toOne(); // TODO: check if best place for mapping identification
@@ -165,12 +164,12 @@ function <<access.private>> meta::pure::lineage::scanColumns::enrichQualifiedPro
     let sets = $state.setsInScope->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation);
 
     if($qp->hasGeneratedMilestoningPropertyStereotype(),
-            | 
+            |
               printDebug('  found generated milestoning property stereotype\n', $debug);
               let propertyMappings = $sets->map(s|$s->_propertyMappingsByPropertyName($qp.functionName->toOne()+'AllVersions'));
               printDebug(|'  property mappings: '+$propertyMappings->map(pm|$pm.sourceSetImplementationId+' -> '+if($pm.targetSetImplementationId == '',|$qp.functionName->toOne()+'AllVersions',|$pm.targetSetImplementationId))->joinStrings('[',', ',']')+'\n', $debug);
               $propertyMappings->fold({pm,st|$pm->enrichNonDataTypeProperty($qp.genericType.rawType->toOne(), $p, $possiblePropertyTargetClasses, $st, ^$debug(space=$debug.space+'    '))}, $state);, // TODO: check property mapping
-            | 
+            |
               printDebug('  found non milestoned qualified property\n', $debug);
               let afterQualifier = $p.qualifierSubTree->toOne()->enrichPropertyPathTreeWithDataSetMapping(^$state(enrichedTrees=[]), false, ^$debug(space=$debug.space+'    ')); // TODO: check significance of afterQualifier
               let children = $p.children->map(c|$c->enrichPropertyPathTreeWithDataSetMapping(^$state(enrichedTrees=[], setsInScope=$afterQualifier.setsInScope), false, ^$debug(space=$debug.space+'    ')));
@@ -185,14 +184,14 @@ function <<access.private>> meta::pure::lineage::scanColumns::getTargetSetImplem
    let targetClass = $sets->filter(s | $s.id == $targetSiId).class; // TODO: can this even be empty?
 
    if ($targetClass->isNotEmpty() && $possiblePropertyTargetClasses->isNotEmpty() && !$possiblePropertyTargetClasses->exists(c|$targetClass->toOne()->_subTypeOf($c)),
-        | 
+        |
           if($possiblePropertyTargetClasses->exists(c|$c->_subTypeOf($targetClass->toOne())),
               |
-                $sets->filter(s | $s.class == $possiblePropertyTargetClasses->filter(c|$c->_subTypeOf($targetClass->toOne()))->toOne()).id;, 
+                $sets->filter(s | $s.class == $possiblePropertyTargetClasses->filter(c|$c->_subTypeOf($targetClass->toOne()))->toOne()).id;,
               |
                 [];
           ),
-        | 
+        |
           $targetSiId;
     );
 }
@@ -217,19 +216,21 @@ function <<access.private>> meta::pure::lineage::scanColumns::enrichNonDataTypeP
                                                s: SemiStructuredRelationalPropertyMapping[1]           | [],
                                                p: PropertyMapping[1]                                   | $p->getTargetSetImplementationIdFromPropertyMapping($possiblePropertyTargetClasses, $state.sets)
                                               ]);
-
   printDebug(|'  targetSetImplementationId: ' +if($targetSetImplementationId->isEmpty(),|'',|$targetSetImplementationId->toOne())+'\n', $debug);
 
 
    let tree = ^DataSetMappingEnrichedPropertyTree(display=$p.display, alias=if($targetSetImplementationId->isEmpty(),|'',|$targetSetImplementationId->toOne()), type=$type, mapping=$pm.owner.parent->toOne()); // check alias multiplicity inconsistency
-   
-   let columns = $pm->match([s: SemiStructuredRelationalPropertyMapping[1] | $s->getColumns(), 
+   let columns = $pm->match([s: SemiStructuredRelationalPropertyMapping[1] | $s->getColumns(),
                              r: RelationalPropertyMapping[1]               | if($targetSetImplementationId->contains($r.targetSetImplementationId), | $r->getColumns(),| []),
+                             x: meta::pure::mapping::xStore::XStorePropertyMapping[1] |  let srcSet = $state.sets->filter(s | $s.id == $x.sourceSetImplementationId && $s->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
+                                                                                         let tgtSet = $state.sets->filter(s | $s.id == $x.targetSetImplementationId && $s->instanceOf(RootRelationalInstanceSetImplementation))->cast(@RootRelationalInstanceSetImplementation);
+                                                                                         let srcFkNames =if($srcSet->isNotEmpty() && !$srcSet->toOne().mappingClass->isEmpty(),| $srcSet->toOne().mappingClass->toOne().properties.name,| []);
+                                                                                         let srcCols = if($srcSet->isNotEmpty() && $srcFkNames->isNotEmpty(),|$srcFkNames->map(n |$srcSet->toOne().propertyMappings->filter(pm |$pm->instanceOf(RelationalPropertyMapping) && $pm->cast(@RelationalPropertyMapping).property.name == $n)->cast(@RelationalPropertyMapping)->fold({rpm, acc | $acc->concatenate($rpm->getColumns())}, []->cast(@ColumnWithContext)))->concatenate([])->removeDuplicates(),|[]);
+                                                                                         let tgtCols =if($tgtSet->isNotEmpty(),|$tgtSet->toOne().primaryKey->match([t:TableAliasColumn[1] | [^ColumnWithContext(column=$t.column, context='TableAliasColumn')],a:Any[1] | []]),|[]);
+                                                                                         $srcCols->concatenate($tgtCols);,
                              a: Any[1]                                     | []->cast(@ColumnWithContext) // TODO: check
                              ]);
-
    let targetSetVals = if($targetSetImplementationId->isEmpty(), | [], | $state.sets->filter(s|$s.id == $targetSetImplementationId->toOne()));
-   
    let children = manageQualifiers($p.children, [])->map(c|$c->enrichPropertyPathTreeWithDataSetMapping(^$state(enrichedTrees=[], setsInScope=$targetSetVals), false, ^$debug(space=$debug.space+'    ')));
 
    let enrichedTree = ^$tree(dataSetColumns=$columns, children=$children.enrichedTrees);
