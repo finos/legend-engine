@@ -472,7 +472,7 @@ public class PureModel implements IPureModel
 
     public static PureModel getCorePureModel()
     {
-        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), Identity.getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(new CoreCompilerExtension()), Identity.getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()
