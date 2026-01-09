@@ -74,6 +74,7 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
 
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_", "column \"tb_8983769_1767975234205_0.name\" must appear in the GROUP BY clause or be used in an aggregate function", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
