@@ -14,15 +14,22 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
-import org.junit.Assert;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestMappingCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -1483,7 +1490,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n").getTwo();
 
         Root_meta_external_store_model_PureInstanceSetImplementation_Impl classA = (Root_meta_external_store_model_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
-        Assert.assertEquals("test_B", classA._propertyMappings().getLast()._targetSetImplementationId());
+        assertEquals("test_B", classA._propertyMappings().getLast()._targetSetImplementationId());
     }
 
     @Test
@@ -2288,6 +2295,48 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                     "   }\n)\n"
             );
         }
+    }
+    Set XStore Association id in Compiler
+    @Test
+    public void testXStoreAssociationIds() throws IOException
+    {
+        String model = org.apache.commons.io.IOUtils.resourceToString("/localCrossStoreJoins.pure", StandardCharsets.UTF_8);
+        String mapping =
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      name: $src.name,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n" +
+                "   *test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmName: String[0..1] : '',\n" +
+                "      fullName: $src.fullName,\n" +
+                "      addressName: $src.addressName\n" +
+                "   }\n" +
+                "\n%s\n";
+        
+        String modelAndMapping = String.format(model, mapping);
+        String xStoreAssociation1 = 
+                "   test::Firm_Person: XStore {\n" +
+                "      employer: $this.firmName == $that.name\n" +
+                "   }";
+        Pair<PureModelContextData, PureModel> pmcdAndModel1 = test(String.format(modelAndMapping, xStoreAssociation1));
+        RichIterable<? extends AssociationImplementation> m1 = pmcdAndModel1.getTwo().getMapping("test::crossPropertyMappingWithLocalProperties")._associationMappings();
+        assertEquals(1, m1.size());
+        assertTrue(m1.getOnly() instanceof XStoreAssociationImplementation);
+        assertEquals("test_Firm_Person", m1.getOnly()._id());
+
+        String xStoreAssociation2 = 
+                "   test::Firm_Person[fp]: XStore {\n" +
+                "      employer: $this.firmName == $that.name,\n" +
+                "      employees: $this.name == $that.firmName\n" +
+                "   }";
+        Pair<PureModelContextData, PureModel> pmcdAndModel2 = test(String.format(modelAndMapping, xStoreAssociation2));
+        RichIterable<? extends AssociationImplementation> m2 = pmcdAndModel2.getTwo().getMapping("test::crossPropertyMappingWithLocalProperties")._associationMappings();
+        assertEquals(1, m2.size());
+        assertTrue(m2.getOnly() instanceof XStoreAssociationImplementation);
+        assertEquals("fp", m2.getOnly()._id());
     }
 
     @Test
