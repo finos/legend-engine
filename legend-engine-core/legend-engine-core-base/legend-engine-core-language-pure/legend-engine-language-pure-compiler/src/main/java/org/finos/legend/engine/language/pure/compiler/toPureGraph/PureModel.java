@@ -114,6 +114,7 @@ import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -472,7 +473,7 @@ public class PureModel implements IPureModel
 
     public static PureModel getCorePureModel()
     {
-        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), Identity.getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(new CoreCompilerExtension()), Identity.getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()
@@ -1596,5 +1597,15 @@ public class PureModel implements IPureModel
         }
         this.packageableElementsIndex.put(buildPackageString(packagePath, name), pureElement);
         return pureElement;
+    }
+
+    public Map<String, MutableSet<String>> getTaxoMap()
+    {
+        return this.extensions.getExtraSubTypesForFunctionMatching();
+    }
+
+    public MutableSet<String> taxonomyTypes(String taxonomyName)
+    {
+        return Objects.requireNonNull(this.extensions.getExtraSubTypesForFunctionMatching().get(taxonomyName), () -> "no taxonomyName found for: " + taxonomyName);
     }
 }

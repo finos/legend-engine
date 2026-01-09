@@ -56,6 +56,40 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <addResourcesToClasspath>true</addResourcesToClasspath>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>generate handlers helper</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <includePluginDependencies>true</includePluginDependencies>
+                            <mainClass>org.finos.legend.engine.pure.code.core.MatchGenerator</mainClass>
+                            <arguments>
+                                <argument>org.finos.legend.engine.language.pure.compiler.toPureGraph</argument>
+                                <argument>FunctionDispatchExtension</argument>
+                                <argument>handlers_dispatch_functions.txt</argument>
+                                <argument>${project.build.directory}/generated-sources/</argument>
+                            </arguments>
+                            <classpathScope>test</classpathScope>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 

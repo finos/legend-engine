@@ -37,7 +37,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
-import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -747,5 +746,10 @@ public class CompileContext
         return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass(M3Paths.TaggedValue))
                 ._tag(resolveTag(taggedValue.tag))
                 ._value(taggedValue.value);
+    }
+
+    public boolean taxonomyContains(String taxonomy, String value)
+    {
+        return this.pureModel.taxonomyTypes(taxonomy).contains(value);
     }
 }

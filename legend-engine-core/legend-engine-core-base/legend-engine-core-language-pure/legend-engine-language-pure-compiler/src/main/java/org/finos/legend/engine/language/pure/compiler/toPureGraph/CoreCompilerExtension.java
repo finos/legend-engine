@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCompilerHelper, StoreProviderCompilerHelper
+public class CoreCompilerExtension extends FunctionDispatchExtension implements CompilerExtension, EmbeddedDataCompilerHelper, StoreProviderCompilerHelper
 {
     @Override
     public MutableList<String> group()
