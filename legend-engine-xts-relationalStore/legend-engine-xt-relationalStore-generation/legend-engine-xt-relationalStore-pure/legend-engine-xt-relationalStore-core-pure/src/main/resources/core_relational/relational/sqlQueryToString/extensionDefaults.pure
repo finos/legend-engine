@@ -492,13 +492,6 @@ function meta::relational::functions::sqlQueryToString::default::processGroupByC
                                 ]));
 }
 
-Enum meta::relational::functions::sqlQueryToString::default::GroupByExpression
-{
-  ALIAS,
-  COL_NAME,
-  COL_INDEX
-}
-
 function meta::relational::functions::sqlQueryToString::default::processGroupByColumns(groupByColumns:RelationalOperationElement[*], selectColumns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[*]
 {   
    let selectColNames = $selectColumns->map(c | $c->match([
