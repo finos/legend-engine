@@ -44,7 +44,8 @@ import java.util.function.Supplier;
 
 public class XmlReader
 {
-    private static final int EVENT_BUFFER_SIZE = 4096;
+    private static final int EVENT_BUFFER_STARTING_SIZE = 4096;
+    private static final int MAX_EVENT_BUFFER_SIZE = 4 * EVENT_BUFFER_STARTING_SIZE;
     private static final int DEFAULT_CAPTURE_CAPACITY = 4096;
 
     private static final XMLInputFactory XML_INPUT_FACTORY = createInputFactory();
@@ -479,7 +480,8 @@ public class XmlReader
 
     private class EventBuffer
     {
-        private XMLEvent[] events = new XMLEvent[EVENT_BUFFER_SIZE];
+        private XMLEvent[] events = new XMLEvent[EVENT_BUFFER_STARTING_SIZE];
+        private int bufferSize = EVENT_BUFFER_STARTING_SIZE;
         private long low;
         private long high;
         private long max;
@@ -511,7 +513,7 @@ public class XmlReader
             {
                 throw new IllegalStateException("Attempting to read beyond end of XML events");
             }
-            return events[(int) (index % EVENT_BUFFER_SIZE)];
+            return events[(int) (index % bufferSize)];
         }
 
         XMLEvent moveTo(long index)
@@ -524,14 +526,14 @@ public class XmlReader
         {
             while (index > high && index < max)
             {
-                if ((high - low) >= EVENT_BUFFER_SIZE)
+                if ((high - low) >= bufferSize)
                 {
-                    throw new IllegalStateException("Cannot buffer more than " + EVENT_BUFFER_SIZE + " XML events");
+                    growBuffer();
                 }
                 try
                 {
                     high++;
-                    events[(int) (high % EVENT_BUFFER_SIZE)] = reader.nextEvent();
+                    events[(int) (high % bufferSize)] = reader.nextEvent();
                     if (!reader.hasNext())
                     {
                         max = high;
@@ -542,6 +544,25 @@ public class XmlReader
                     throw exceptionHandler.apply(e);
                 }
             }
+        }
+
+        private void growBuffer()
+        {
+            int newSize = bufferSize * 2;
+            if (newSize > MAX_EVENT_BUFFER_SIZE)
+            {
+                throw new IllegalStateException("XML event buffer size limit exceeded. Max buffer size is " + MAX_EVENT_BUFFER_SIZE);
+            }
+            XMLEvent[] newEvents = new XMLEvent[newSize];
+
+            // Copy existing events to the new array
+            for (long i = low; i <= high; i++)
+            {
+                newEvents[(int) (i % newSize)] = events[(int) (i % bufferSize)];
+            }
+
+            events = newEvents;
+            bufferSize = newSize;
         }
     }
 
