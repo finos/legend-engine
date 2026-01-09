@@ -231,6 +231,11 @@
                                 <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
                                 <version>${project.version}</version>
                             </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
                         </dependencies>
                     </plugin>
                 </plugins>
@@ -411,6 +416,12 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
