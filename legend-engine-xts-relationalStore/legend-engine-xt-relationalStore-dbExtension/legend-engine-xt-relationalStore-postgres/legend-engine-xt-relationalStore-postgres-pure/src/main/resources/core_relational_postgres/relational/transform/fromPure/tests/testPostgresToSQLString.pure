@@ -58,7 +58,7 @@ function <<test.Test>> meta::relational::functions::sqlToString::postgres::testT
                                   )};
 
    let postGresSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, postgresExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by "legalName"', $postGresSql);
+   assertEquals('select "root".LEGALNAME as "legalName", string_agg("personTable_d#4_d_m1".FIRSTNAME, Text\'*\') as "employeesFirstName" from firmTable as "root" left outer join personTable as "personTable_d#4_d_m1" on ("root".ID = "personTable_d#4_d_m1".FIRMID) group by 1', $postGresSql);
 }
 
 function <<test.Test>> meta::relational::functions::sqlToString::postgres::testToSQLStringJoinStringsSimpleConcat():Boolean[1]
