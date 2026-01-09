@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
                                                 ['firstName', 'age']),
                                                 meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by 1, $s);
+   assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by 1', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithOrderbySnowflake():Boolean[1]
