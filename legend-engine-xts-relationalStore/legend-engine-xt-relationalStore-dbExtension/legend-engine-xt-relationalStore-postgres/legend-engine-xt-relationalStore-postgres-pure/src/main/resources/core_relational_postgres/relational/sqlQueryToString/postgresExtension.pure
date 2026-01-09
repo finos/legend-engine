@@ -300,8 +300,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
    $s->processSelectSQLQueryForPostgres($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], oldDbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
+  let dbConfig = ^$oldDbConfig(columnReferenceStrategy = ReferenceStrategy.COL_INDEX);
   assertEmpty($s.pivot, 'pivot is not supported');
   assertEmpty($s.qualifyOperation, 'QUALIFY grammar is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
@@ -311,7 +312,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($s.columns, $dbConfig, $format->indent(), $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForPostgres_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
