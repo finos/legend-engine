@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,7 +39,8 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_scenario_quant.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_scenario_quant.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -90,7 +92,8 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -105,6 +108,97 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-pct</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate-pct-functions</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                    <scopeProviderMethod>
+                        org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions
+                    </scopeProviderMethod>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-pct</artifactId>
+                <executions>
+                    <execution>
+                        <id>PCT-Generation-Compiled</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>generate-pct-report</goal>
+                        </goals>
+                        <configuration>
+                            <mode>Compiled</mode>
+                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                            <PCTTestSuites>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.pure.code.core.scenario.quant.Test_Compiled_ScnearioQuantFunctions_PCT
+                                </PCTTestSuite>
+                            </PCTTestSuites>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>PCT-Generation-Interpreted</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>generate-pct-report</goal>
+                        </goals>
+                        <configuration>
+                            <mode>Interpreted</mode>
+                            <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                            <PCTTestSuites>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.pure.code.core.scenario.quant.Test_Interpreted_ScnearioQuantFunctions_PCT
+                                </PCTTestSuite>
+                            </PCTTestSuites>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                        </artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
@@ -113,14 +207,30 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m4</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
@@ -134,26 +244,47 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-code-compiled-core</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.engine</groupId>-->
+        <!--            <artifactId>legend-engine-pure-code-compiled-core</artifactId>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections</artifactId>-->
-<!--        </dependency>-->
-
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-unclassified</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-relation</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- TEST -->
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>junit</groupId>-->
+        <!--            <artifactId>junit</artifactId>-->
+        <!--        </dependency>-->
         <!-- TEST -->
     </dependencies>
 </project>

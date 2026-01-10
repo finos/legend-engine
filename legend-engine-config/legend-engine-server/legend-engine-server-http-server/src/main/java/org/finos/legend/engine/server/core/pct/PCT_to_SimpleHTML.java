@@ -62,6 +62,7 @@ public class PCT_to_SimpleHTML
         moduleURLs.put("standard", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure/src/main/resources", commitId));
         moduleURLs.put("relation", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure/src/main/resources", commitId));
         moduleURLs.put("unclassified", String.format("https://github.com/finos/legend-engine/tree/%s/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure/src/main/resources", commitId));
+        moduleURLs.put("core_scenario_quant", String.format("https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-scenario-quant-pure/src/main/resources", commitId));
 
         Documentation doc = DocumentationGeneration.buildDocumentation();
 
@@ -81,6 +82,10 @@ public class PCT_to_SimpleHTML
                 .groupBy(x ->
                 {
                     String id = x.functionDefinition.sourceId;
+                    if (x.reportScope.filePath.length() > id.lastIndexOf("/"))
+                    {
+                        throw new RuntimeException("The file should not be in the top repo folder '" + id + "' in '" + x.reportScope.filePath + "'");
+                    }
                     return id.substring(x.reportScope.filePath.length(), id.lastIndexOf("/"));
                 });
         MutableMap<AdapterKey, TestResultCount> testResultCountByAdapter = Maps.mutable.empty();
@@ -175,12 +180,13 @@ public class PCT_to_SimpleHTML
             String pos = tab.isEmpty() ? "top" : "bottom";
             String borderLine = "border-" + pos + "-style:solid!important;border-" + pos + "-width:1px!important;" + (tab.equals("") ? "border-" + pos + "-color:#000000;" : "border-" + pos + "-color:#EEEEEE;");
             String emptyCell = "<td style='" + borderLine + "'>&nbsp;</td>";
-            return "<tr id ='" + id + "'>" +
-                    "<td style='" + (tab.isEmpty() ? borderLine : "") + "text-align:left!important'>" + tab + "<a onclick=\"flip('" + id + "', [" + node.getChildren().collectWithIndex((n, i) -> printAllChildrenIds(n, id + "_" + node.getValue(), i)).makeString(", ") + "])\">" + node.getValue() + "</a></td>" +
-                    emptyCell +
-                    emptyCell +
-                    adapters.collect(c -> emptyCell).makeString("") +
-                    "</tr>" +
+            return "<tr id ='" + id + "'>\n" +
+                    "   <td style='" + (tab.isEmpty() ? borderLine : "") + "text-align:left!important'>" + tab + "<a onclick=\"flip('" + id + "', [" + node.getChildren().collectWithIndex((n, i) -> printAllChildrenIds(n, id + "_" + node.getValue(), i)).makeString(", ") + "])\">" + node.getValue() + "</a></td>\n" +
+                    "   " + emptyCell + "\n" +
+                    "   " + emptyCell + "\n" +
+                    "   " + emptyCell + "\n" +
+                    adapters.collect(c -> "   " + emptyCell + "\n").makeString("") +
+                    "</tr>\n" +
                     node.getChildren().collectWithIndex((n, i) -> addTableRow(n, tab + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", id + "_" + node.getValue() + "_" + i, adapters)).makeString("\n");
         }
         else if (node.getValue() instanceof MutableList)

@@ -131,7 +131,6 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                           pair(
                               |$class->_subTypeOf(meta::pure::metamodel::relation::Relation),
                               |
-                               let pureToDbMap = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
                                ^TDSResultType
                                (
                                     genericType=^GenericType(rawType=$class),
@@ -142,13 +141,13 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                   name = $p.name->toOne(),
                                                                   type = $cType,
                                                                   sourceDataType = $cType->match([
-                                                                                              p : PrimitiveType[1] | $pureToDbMap->get($cType->toOne()->bypassExtendedPrimitives()),
+                                                                                              p : PrimitiveType[1] | meta::relational::transform::fromPure::pureTypeToDataType($cType->toOne()->bypassExtendedPrimitives()),
                                                                                               e : Enumeration<Any>[1] | $query->cast(@TdsSelectSqlQuery).columns->cast(@Alias)->filter(c | $c.name == '\"' + $p.name->toOne() + '\"').relationalElement->cast(@TableAliasColumn).column->cast(@Column).type->toOne(),                                                                                              
                                                                                               a : Any[*] | 
                                                                                                 if([
-                                                                                                  pair(|$cType == Variant, |$pureToDbMap->get(Variant)),
-                                                                                                  pair(|$cType == Map, |$pureToDbMap->get(Variant)),
-                                                                                                  pair(|$cType == List, |$pureToDbMap->get(Variant))
+                                                                                                  pair(|$cType == Variant, | meta::relational::transform::fromPure::pureTypeToDataType(Variant)),
+                                                                                                  pair(|$cType == Map, | meta::relational::transform::fromPure::pureTypeToDataType(Variant)),
+                                                                                                  pair(|$cType == List, | meta::relational::transform::fromPure::pureTypeToDataType(Variant))
                                                                                                 ],
                                                                                                 | 
                                                                                                   fail('The type %s is not supported yet!'->format($cType->elementToPath()));[]; 
@@ -836,24 +835,28 @@ function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSet
    ]);
 }
 
-function meta::relational::mapping::pureTypeToRelationalTypeMap(): Map<Type, meta::relational::metamodel::datatype::DataType>[1]
+function meta::relational::mapping::pureTypeToDataType(type:Type[1]): meta::relational::metamodel::datatype::DataType[0..1]
 {
-  meta::relational::transform::fromPure::pureTypeToDataTypeMap()
-    ->put(String, ^meta::relational::metamodel::datatype::Varchar(size = 8192))
-    ->put(Integer, ^meta::relational::metamodel::datatype::BigInt())
+  if (
+    [
+      pair(|$type == String, |^meta::relational::metamodel::datatype::Varchar(size = 8192)),
+      pair(|$type == Integer, |^meta::relational::metamodel::datatype::BigInt())
+    ],
+    | meta::relational::transform::fromPure::pureTypeToDataType($type)
+  )
 }
 
 function meta::relational::mapping::inferSourceDataType(type: Any[1]): meta::relational::metamodel::datatype::DataType[0..1]
 {
   if ($type->instanceOf(PrimitiveType),
     | 
-      let inferedSourceDataType = meta::relational::mapping::pureTypeToRelationalTypeMap()->get($type);
+      let inferedSourceDataType = meta::relational::mapping::pureTypeToDataType($type->cast(@PrimitiveType));
       if (
         $inferedSourceDataType->isEmpty(),
           | [],
           | $inferedSourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne());,
       | if ($type->instanceOf(EnumerationMapping),
-        | meta::relational::mapping::pureTypeToRelationalTypeMap()->get(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
+        | meta::relational::mapping::pureTypeToDataType(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
         | []
       )
     );
