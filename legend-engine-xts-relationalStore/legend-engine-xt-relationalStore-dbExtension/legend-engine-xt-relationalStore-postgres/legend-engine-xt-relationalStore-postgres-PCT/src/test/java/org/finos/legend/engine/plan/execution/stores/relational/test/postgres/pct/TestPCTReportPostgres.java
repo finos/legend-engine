@@ -25,7 +25,7 @@ public class TestPCTReportPostgres
     public void canFindPCTReport()
     {
         Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified", "variant"),
+                Sets.mutable.with("scenario_quant", "essential", "grammar", "standard", "relation", "unclassified", "variant"),
                 PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Postgres")).collect(x -> x.reportScope.module).toSet()
         );
     }

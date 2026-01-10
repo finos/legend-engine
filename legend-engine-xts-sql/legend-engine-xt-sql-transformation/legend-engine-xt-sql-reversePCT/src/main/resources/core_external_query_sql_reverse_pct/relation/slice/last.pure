@@ -24,7 +24,7 @@ function meta::external::query::sql::reversePCT::tests::relation::slice::last::r
                     [
                       rev(
                         '|#TDS{\n'+
-                        'id,grp,name\n'+
+                        'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
                         '1,2,A\n'+
                         '2,1,B\n'+
                         '3,3,C\n'+
@@ -34,7 +34,7 @@ function meta::external::query::sql::reversePCT::tests::relation::slice::last::r
                         '7,3,G\n'+
                         '8,1,H\n'+
                         '9,5,I\n'+
-                        '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, grp:Integer, name:String)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, grp:Integer, name:String)>[1], r: (id:Integer, grp:Integer, name:String)[1]|$p->meta::pure::functions::relation::last($w, $r).id})',
+                        '10,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::last($w, $r).id})',
                         'select id, grp, name, last_value(id) over (partition by grp order by id desc) as newCol from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\')'
                       )
                     ]

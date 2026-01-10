@@ -25,7 +25,7 @@ public class TestPCTReportJavaBinding
     public void canFindPCTReport()
     {
         Assert.assertEquals(
-                Sets.mutable.with("essential", "grammar", "standard", "relation", "unclassified"),
+                Sets.mutable.with("scenario_quant", "essential", "grammar", "standard", "relation", "unclassified"),
                 PCTReportProviderLoader.gatherReports().select(x -> x.adapterKey.adapter.name.equals("Java")).collect(x -> x.reportScope.module).toSet()
         );
     }

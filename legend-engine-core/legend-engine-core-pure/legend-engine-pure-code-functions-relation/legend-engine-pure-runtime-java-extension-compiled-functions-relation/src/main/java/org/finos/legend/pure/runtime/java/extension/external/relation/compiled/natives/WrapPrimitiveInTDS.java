@@ -28,7 +28,7 @@ public class WrapPrimitiveInTDS extends AbstractNative implements Native
 {
     public WrapPrimitiveInTDS()
     {
-        super("wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_");
+        super("wrapPrimitiveInTDS_T_MANY__T_1__TDS_1_");
     }
 
     @Override

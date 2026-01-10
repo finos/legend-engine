@@ -1,8 +1,8 @@
 import meta::pure::mapping::*;
-import meta::core::runtime::*;
+import meta::pure::runtime::*;
 import meta::pure::graphFetch::*;
 
-function <<functionType.NotImplementedFunction>> meta::pure::mutation::save<T>(values: T[*], rootGraphFetchTree: RootGraphFetchTree<T>[1], mapping: Mapping[1], runtime: Runtime[1]): T[*]
+function <<functionType.NotImplementedFunction>> meta::pure::mutation::save<T>(values: T[*], rootGraphFetchTree: RootGraphFetchTree<T>[1], mapping: Mapping[1], runtime: PackageableRuntime[1]): T[*]
 {
   fail('Not implemented!');
   $values;
@@ -11,6 +11,6 @@ function <<functionType.NotImplementedFunction>> meta::pure::mutation::save<T>(v
 function meta::pure::mutation::mutationFunctions():Function<Any>[*]
 {
   [
-    meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_
+    meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__PackageableRuntime_1__T_MANY_
   ]
 }

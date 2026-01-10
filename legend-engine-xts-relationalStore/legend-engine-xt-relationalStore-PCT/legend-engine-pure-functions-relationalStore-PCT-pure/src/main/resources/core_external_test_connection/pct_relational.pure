@@ -77,7 +77,7 @@ function meta::relational::tests::pct::extractDependentFunctionsImpl(f:Any[1], v
     | [],
     |  $f->match([
         z:FunctionDefinition<Any>[1] |
-                    if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
+                    if($z->instanceOf(PackageableElement) && ($z->elementToPath()->startsWith('meta::external::scenario') || (!$z->hasStereotype('function', PCT) && $z->elementToPath()->contains('::tests::'))),|$z,|[])
                       ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
         x:SimpleFunctionExpression[1]|
                     let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
@@ -148,7 +148,15 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   $resultFinal;,
                 |
                   let resultFinal = meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);
-                  print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->toString(),|''));
+                  print(if($debug.debug,|$resultFinal->match(
+                                            [
+                                              x:meta::pure::metamodel::relation::Relation<Any>[1]|'\nResult Final:\n'+$x->toString(true),
+                                              a:Any[1]|'\nResult Final:\n'+$a->toString()
+                                            ]
+                                         ),
+                          |''
+                        )
+                  );
                   $resultFinal;
               );
     ))->cast(@X)->toMultiplicity(@[o]);
@@ -662,7 +670,6 @@ function meta::relational::tests::pct::process::reprocessNew(values:Any[*], type
 
 function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
-  let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let rand = random() * 10000000;
   let table = ^Table
   (
@@ -670,7 +677,7 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
     columns = $tds->columns()->map(c|
                     ^meta::relational::metamodel::Column(
                         name=$c.name->toOne(),
-                        type=$map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne(),
+                        type=meta::relational::transform::fromPure::pureTypeToDataType($c->genericType().typeArguments->at(1))->toOne(),
                         nullable=$c->functionReturnMultiplicity()->getLowerBound() == 0
                     )
                   ),
@@ -821,9 +828,8 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
   let rand = random() * 10000000;
   let tableName = $class.name->toOne() + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
 
-  let map = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
-  let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=$map->get($p->functionReturnType().rawType->toOne())->toOne('type not supported: ' + $p->functionReturnType().rawType->toOne()->elementToPath()))));
+  let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=meta::relational::transform::fromPure::pureTypeToDataType($p->functionReturnType())->toOne('type not supported: ' + $p->functionReturnType().rawType->toOne()->elementToPath()))));
   let idCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
   let tableAlias = ^TableAlias(database=$db, name=$class.name->toOne(), relationalElement = $table);

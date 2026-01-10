@@ -17,12 +17,14 @@ package org.finos.legend.pure.runtime.java.extension.relation;
 import io.deephaven.csv.parsers.DataType;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 public class TestTDSImpl extends TestTDS
 {
     public TestTDSImpl()
     {
+        super(null);
     }
 
     public TestTDSImpl(String csv)
@@ -30,9 +32,9 @@ public class TestTDSImpl extends TestTDS
         super(csv, null);
     }
 
-    public TestTDSImpl(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
+    public TestTDSImpl(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumn, int rows)
     {
-        super(columnOrdered, columnType, rows);
+        super(columnOrdered, columnType, pureTypesByColumn, rows, null);
     }
 
     @Override
@@ -42,14 +44,8 @@ public class TestTDSImpl extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS()
+    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumn, int rows)
     {
-        return new TestTDSImpl();
-    }
-
-    @Override
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
-    {
-        return new TestTDSImpl(columnOrdered, columnType, rows);
+        return new TestTDSImpl(columnOrdered, columnType, pureTypesByColumn, rows);
     }
 }

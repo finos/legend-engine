@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-reversePCT</artifactId>
-        <version>4.117.1-SNAPSHOT</version>
+        <version>4.118.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>

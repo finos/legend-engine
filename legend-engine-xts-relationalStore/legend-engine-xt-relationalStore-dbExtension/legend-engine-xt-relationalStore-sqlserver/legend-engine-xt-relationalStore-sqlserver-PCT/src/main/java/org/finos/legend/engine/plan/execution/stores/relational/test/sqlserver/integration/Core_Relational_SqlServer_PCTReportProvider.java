@@ -38,7 +38,8 @@ public class Core_Relational_SqlServer_PCTReportProvider implements PCTReportPro
                 "pct-reports/ADAPTER_grammar_compiled_SqlServer.json",
                 "pct-reports/ADAPTER_relation_compiled_SqlServer.json",
                 "pct-reports/ADAPTER_unclassified_compiled_SqlServer.json",
-                "pct-reports/ADAPTER_variant_compiled_SqlServer.json"
+                "pct-reports/ADAPTER_variant_compiled_SqlServer.json",
+                "pct-reports/ADAPTER_scenario_quant_compiled_SqlServer.json"
         );
     }
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.117.1-SNAPSHOT</version>
+        <version>4.118.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -1221,6 +1221,12 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-memsql-PCT</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -1277,6 +1283,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared-format-runtime</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-identity-core</artifactId>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

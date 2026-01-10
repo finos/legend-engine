@@ -172,6 +172,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                               $s.aggregateFn->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))
                                               ]);,
                                     x:Enum[1]|$x->genericType().rawType->toOne()->elementToPath() + '.' + $x.name->toOne(),
+                                    t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->replace(' ','')+'}#',
                                     a:Any[1] |$a->toRepresentation();
                                   ])->toOneMany()
                             )
@@ -533,7 +534,7 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::conve
 
 function meta::pure::metamodel::serialization::grammar::printRelationType(rType:meta::pure::metamodel::relation::RelationType<Any>[1]):String[1]
 {
-    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne()->convertIdentifier())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType())->joinStrings(', ')+')';
+    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne()->convertIdentifier())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType()+'['+$x.classifierGenericType.multiplicityArguments->at(0)->printMultiplicity()+']')->joinStrings(', ')+')';
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionSignature(func:Function<Any>[1]):String[1]

@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -42,9 +43,9 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
-    public void validate()
+    public void validate(Map<String, Dispatch> dispatchMap)
     {
-        handlers.validate();
+        handlers.validate(dispatchMap);
     }
 
     @Override

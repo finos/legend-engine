@@ -480,7 +480,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         | meta::legend::compileVS('|'+$vs->printValueSpecification(^GContext(space='')))->evaluateAndDeactivate()->cast(@LambdaFunction<Any>).expressionSequence.genericType,
         |$vs.genericType
       )->toOne();
-      let wrapped = sfe(meta::pure::functions::relation::wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_, $vs.genericType, [$vs, ^InstanceValue(multiplicity = PureOne, genericType = $genType, values = [])])->evaluateAndDeactivate();
+      let wrapped = sfe(meta::pure::functions::relation::wrapPrimitiveInTDS_T_MANY__T_1__TDS_1_, $vs.genericType, [$vs, ^InstanceValue(multiplicity = PureOne, genericType = $genType, values = [])])->evaluateAndDeactivate();
       // println('Generated Pure Function for column: '+$wrapped->printValueSpecification(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
       ^$context(expression=$wrapped);,
     | let from = $querySpec.from->processFrom($context);

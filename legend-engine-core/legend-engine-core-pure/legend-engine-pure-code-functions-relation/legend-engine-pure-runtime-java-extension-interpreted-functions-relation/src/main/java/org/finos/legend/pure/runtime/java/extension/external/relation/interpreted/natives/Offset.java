@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
@@ -49,7 +50,6 @@ public class Offset extends Shared
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         TestTDS tds = getTDS(params, 0, processorSupport);
-        TestTDS nullTDS = tds.newNullTDS();
 
         RelationType<?> relationType = getRelationType(params, 0);
 
@@ -58,7 +58,7 @@ public class Offset extends Shared
         int newRow = currentRow + offset;
         if (newRow < 0 || newRow >= tds.getRowCount())
         {
-            return ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(nullTDS, 0, "", null, relationType, -1, repository, false), true, processorSupport);
+            return ValueSpecificationBootstrap.wrapValueSpecification(Lists.immutable.empty(), true, params.get(0).getValueForMetaPropertyToOne("genericType"), processorSupport);
         }
         else
         {

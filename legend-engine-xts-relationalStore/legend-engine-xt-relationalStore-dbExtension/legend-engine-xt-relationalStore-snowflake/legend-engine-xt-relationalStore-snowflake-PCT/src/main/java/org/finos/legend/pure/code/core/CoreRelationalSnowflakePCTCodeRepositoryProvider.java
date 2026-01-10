@@ -21,12 +21,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 
 public class CoreRelationalSnowflakePCTCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    public static final Adapter snowflakeAdapter = new Adapter(
-            "Snowflake",
-            "Store_Relational",
-            "meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_"
-    );
-    
     @Override
     public CodeRepository repository()
     {
