@@ -14,6 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test;
 
+import io.deephaven.client.impl.BarrageSession;
+import io.deephaven.client.impl.BarrageSessionFactoryConfig;
+import io.deephaven.client.impl.ClientChannelFactory;
+import io.deephaven.client.impl.ClientChannelFactoryDefaulter;
+import io.deephaven.client.impl.ClientConfig;
+import io.deephaven.client.impl.SessionConfig;
+import io.deephaven.uri.DeephavenTarget;
+import org.apache.arrow.memory.BufferAllocator;
+import org.apache.arrow.memory.RootAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -26,10 +35,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class DeephavenTestContainer
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeephavenTestContainer.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(DeephavenTestContainer.class);
     private static final String DEEPHAVEN_VERSION_TAG = "0.37.4";
     private static final int PORT = 10_000;
     private static final String PSK = "myStaticPSK";
@@ -37,7 +49,14 @@ public class DeephavenTestContainer
     private static final String START_OPTS = "-Xmx4g -Dauthentication.psk=" + PSK + " -Ddeephaven.application.dir=" + APP_DIR;
     private static final String SCRIPT_RESOURCE = "testDataSetup.py";
 
+    private static final ClientChannelFactory CLIENT_CHANNEL_FACTORY = ClientChannelFactoryDefaulter.builder()
+            .userAgent(BarrageSessionFactoryConfig.userAgent(Collections.singletonList("deephaven-barrage-examples")))
+            .build();
+
+    public static final BufferAllocator bufferAllocator = new RootAllocator();
+
     public static GenericContainer<?> deephavenContainer;
+    public static BarrageSession deephavenSession;
 
     public static boolean startDeephaven(String versionTag)
     {
@@ -65,6 +84,66 @@ public class DeephavenTestContainer
         }
         catch (Exception e)
         {
+            stopDeephaven();
+            return false;
+        }
+    }
+
+    private static GenericContainer<?> startDeephavenContainerForPCT(String versionTag)
+    {
+        DockerImageName imageName = DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "ghcr.io") + "/deephaven/server:" + versionTag)
+                .asCompatibleSubstituteFor("ghcr.io/deephaven/server:" + versionTag);
+
+        deephavenContainer = new GenericContainer<>(imageName)
+                .withExposedPorts(PORT)
+                .withPrivilegedMode(true)
+                .withEnv("START_OPTS", "-Xmx4g -Dauthentication.psk=12345678")
+                .withLogConsumer(new Slf4jLogConsumer(LOGGER).withPrefix("Deephaven"))
+                .waitingFor(Wait.forHttp("/").forPort(PORT).forStatusCode(200).withStartupTimeout(java.time.Duration.ofMinutes(2)));
+
+        deephavenContainer.start();
+        return deephavenContainer;
+    }
+
+    private static BarrageSession buildSession(GenericContainer<?> container)
+    {
+        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
+
+        final BarrageSessionFactoryConfig.Factory factory = BarrageSessionFactoryConfig.builder()
+                .clientConfig(ClientConfig.builder().target(DeephavenTarget.builder().isSecure(false).host(container.getHost()).port(container.getMappedPort(PORT)).build()).build())
+                .clientChannelFactory(CLIENT_CHANNEL_FACTORY)
+                .allocator(bufferAllocator)
+                .scheduler(scheduler)
+                .build()
+                .factory();
+
+        deephavenSession = factory.newBarrageSession(sessionConfig());
+        return deephavenSession;
+    }
+
+    private static SessionConfig sessionConfig()
+    {
+        final SessionConfig.Builder builder = SessionConfig.builder();
+        builder.authenticationTypeAndValue("io.deephaven.authentication.psk.PskAuthenticationHandler 12345678");
+        return builder.build();
+    }
+
+    public static boolean startDeephavenForPCT(String versionTag)
+    {
+        if (deephavenContainer != null && deephavenContainer.isRunning())
+        {
+            stopDeephaven();
+        }
+
+        try
+        {
+            deephavenContainer = startDeephavenContainerForPCT(versionTag);
+            deephavenSession = buildSession(deephavenContainer);
+            return true;
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("Failed to start Deephaven for PCT", e);
             stopDeephaven();
             return false;
         }

@@ -81,6 +81,21 @@ function meta::external::store::deephaven::pureToDeephaven::mapDeephavenTypeToPu
   $res->cast(@DataType);
 }
 
+function meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType():Map<Type, meta::external::store::deephaven::metamodel::type::Type>[1]
+{
+   newMap([
+      pair(Integer, ^meta::external::store::deephaven::metamodel::type::LongType()),
+      pair(Decimal, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
+      pair(Float, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
+      pair(Number, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
+      pair(String, ^meta::external::store::deephaven::metamodel::type::StringType()),
+      pair(Date, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
+      pair(DateTime, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
+      pair(StrictDate, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
+      pair(Boolean, ^meta::external::store::deephaven::metamodel::type::BooleanType())
+   ]);
+}
+
 function meta::external::store::deephaven::contract::supports(): Function<{FunctionExpression[1]->Boolean[1]}>[1]
 {
   let supportedFunctions = meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunctions().first;
