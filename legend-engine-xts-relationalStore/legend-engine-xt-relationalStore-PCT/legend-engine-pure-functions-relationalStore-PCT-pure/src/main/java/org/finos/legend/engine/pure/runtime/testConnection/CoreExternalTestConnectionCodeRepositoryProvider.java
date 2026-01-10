@@ -44,11 +44,6 @@ public class CoreExternalTestConnectionCodeRepositoryProvider implements CodeRep
             "Store_Relational",
             "meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution_Function_1__X_o_"
     );
-    public static final Adapter oracleAdapter = new Adapter(
-            "Oracle",
-            "Store_Relational",
-            "meta::relational::tests::pct::testAdapterForRelationalWithOracleExecution_Function_1__X_o_"
-    );
 
 
     @Override

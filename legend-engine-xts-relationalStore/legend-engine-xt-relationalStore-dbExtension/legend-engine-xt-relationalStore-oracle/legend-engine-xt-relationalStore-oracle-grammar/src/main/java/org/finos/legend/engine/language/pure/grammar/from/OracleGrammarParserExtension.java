@@ -35,13 +35,13 @@ public class OracleGrammarParserExtension implements IRelationalGrammarParserExt
             if ("Oracle".equals(code.getType()))
             {
                 return IRelationalGrammarParserExtension.parse(code, OracleLexerGrammar::new, OracleParserGrammar::new,
-                        p -> visitMemSqlDatasourceSpecification(code, p.oracleDatasourceSpecification()));
+                        p -> visitOracleDatasourceSpecification(code, p.oracleDatasourceSpecification()));
             }
             return null;
         });
     }
 
-    private OracleDatasourceSpecification visitMemSqlDatasourceSpecification(DataSourceSpecificationSourceCode code, OracleParserGrammar.OracleDatasourceSpecificationContext dbSpecCtx)
+    private OracleDatasourceSpecification visitOracleDatasourceSpecification(DataSourceSpecificationSourceCode code, OracleParserGrammar.OracleDatasourceSpecificationContext dbSpecCtx)
     {
         OracleDatasourceSpecification dsSpec = new OracleDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
