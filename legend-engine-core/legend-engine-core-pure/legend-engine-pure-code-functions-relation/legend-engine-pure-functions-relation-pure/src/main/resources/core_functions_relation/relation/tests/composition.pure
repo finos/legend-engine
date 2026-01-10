@@ -1346,3 +1346,44 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '   3,aaa,bbb,bbb\n'+
                 '#', $res->sort([~id->ascending()])->toString());
 }
+
+function 
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
+  {
+    doc.doc='Test when alias name is same as column name across two or more joined tables'
+  }
+meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds1 = #TDS
+                id, grp, name
+                P, Y, A
+                Q, X, B
+                R, Z, B
+                S, U, C
+                T, Y, D
+              #;
+
+  let tds2 = #TDS
+                id2, grp2, name2
+                P, Y, A
+                Q, X, B
+                R, Z, B
+                S, V, C
+                T, V, D
+              #;
+
+  let expr = {| $tds1->select(~[id, name])->join($tds2, JoinKind.INNER, {x,y| $x.id == $y.id2})
+                      ->project(~[name2: x|$x.name->toOne()->toString()])
+                      ->groupBy(~name2, ~[newCol : x | 1 : y | $y->plus()]);
+              };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   name2,newCol\n'+
+                '   A,1\n'+
+                '   B,2\n'+
+                '   C,1\n'+
+                '   D,1\n'+
+                '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
+}

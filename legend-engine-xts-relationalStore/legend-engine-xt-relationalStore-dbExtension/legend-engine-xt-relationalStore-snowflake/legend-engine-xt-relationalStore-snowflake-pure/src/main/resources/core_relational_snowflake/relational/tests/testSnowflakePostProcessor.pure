@@ -60,7 +60,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPo
       meta::relational::extension::relationalExtensions()
    ).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
 
-   assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "ProductName" having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
+   assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by 1 having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOpCachedTransform():Boolean[1]
@@ -83,5 +83,5 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPo
       meta::relational::extension::relationalExtensions()
    ).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
 
-   assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "ProductName" having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
+   assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by 1 having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
 }
