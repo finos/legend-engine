@@ -611,6 +611,16 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-oracle-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-oracle-execution</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-oracle-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -857,6 +867,7 @@
             <artifactId>legend-engine-xt-relationalStore-trino-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-trino-execution</artifactId>
