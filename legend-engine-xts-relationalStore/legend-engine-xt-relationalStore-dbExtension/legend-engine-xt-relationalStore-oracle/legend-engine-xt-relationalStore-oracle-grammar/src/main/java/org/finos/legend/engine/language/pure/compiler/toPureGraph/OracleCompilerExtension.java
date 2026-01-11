@@ -40,7 +40,7 @@ public class OracleCompilerExtension implements IRelationalCompilerExtension
             if (datasourceSpecification instanceof OracleDatasourceSpecification)
             {
                 OracleDatasourceSpecification oracleDatasourceSpecification = (OracleDatasourceSpecification) datasourceSpecification;
-                Root_meta_pure_alloy_connections_alloy_specification_OracleDatasourceSpecification _oracle = new Root_meta_pure_alloy_connections_alloy_specification_OracleDatasourceSpecification_Impl("");
+                Root_meta_pure_alloy_connections_alloy_specification_OracleDatasourceSpecification _oracle = new Root_meta_pure_alloy_connections_alloy_specification_OracleDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::OracleDatasourceSpecification"));
                 _oracle._host(oracleDatasourceSpecification.host);
                 _oracle._port(oracleDatasourceSpecification.port);
                 _oracle._serviceName(oracleDatasourceSpecification.serviceName);
