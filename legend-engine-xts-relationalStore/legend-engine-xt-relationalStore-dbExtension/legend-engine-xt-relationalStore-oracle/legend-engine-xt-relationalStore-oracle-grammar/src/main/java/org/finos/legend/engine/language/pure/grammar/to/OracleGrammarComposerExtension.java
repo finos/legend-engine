@@ -38,8 +38,8 @@ public class OracleGrammarComposerExtension implements IRelationalGrammarCompose
                 return "Oracle\n" +
                         context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.host, true) + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + convertString(String.valueOf(spec.port), true) + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "databaseName: " + convertString(spec.serviceName, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "serviceName: " + convertString(spec.serviceName, true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation) + "}";
             }
             return null;

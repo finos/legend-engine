@@ -50,7 +50,7 @@ public class OracleGrammarParserExtension implements IRelationalGrammarParserExt
         dsSpec.host = PureGrammarParserUtility.fromGrammarString(hostContext.STRING().getText(), true);
         // port
         OracleParserGrammar.PortContext portContext = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.port(), "port", dsSpec.sourceInformation);
-        dsSpec.port = Integer.valueOf(PureGrammarParserUtility.fromGrammarString(portContext.STRING().getText(), true));
+        dsSpec.port = Integer.parseInt(portContext.INTEGER().getText());
 
         OracleParserGrammar.ServiceNameContext databaseNameContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.serviceName(), "serviceName", dsSpec.sourceInformation);
         Optional.ofNullable(databaseNameContext).ifPresent(hostCtx -> dsSpec.serviceName = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));

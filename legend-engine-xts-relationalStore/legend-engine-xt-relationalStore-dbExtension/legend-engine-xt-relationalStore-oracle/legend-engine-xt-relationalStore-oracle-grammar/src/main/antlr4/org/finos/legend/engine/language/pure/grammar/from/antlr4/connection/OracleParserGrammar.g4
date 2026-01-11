@@ -21,7 +21,7 @@ oracleDatasourceSpecification:         ORACLE
 ;
 host:                                  HOST COLON STRING SEMI_COLON
 ;
-port:                                  PORT COLON STRING SEMI_COLON
+port:                                  PORT COLON INTEGER SEMI_COLON
 ;
 serviceName:                           SERVICENAME COLON STRING SEMI_COLON
 ;
