@@ -1,0 +1,12 @@
+{
+  "name": "core_relational_oracle",
+  "pattern": "(meta::relational::functions::sqlQueryToString::oracle|meta::relational::tests::sqlQueryToString::oracle|meta::relational::tests::query::function::oracle|meta::relational::functions::sqlToString::oracle|meta::relational::tests::mapping::function::oracle|meta::relational::tests::tds::oracle|meta::pure::executionPlan::tests::oracle|meta::pure::alloy::connections|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core",
+    "core_relational"
+  ]
+}
