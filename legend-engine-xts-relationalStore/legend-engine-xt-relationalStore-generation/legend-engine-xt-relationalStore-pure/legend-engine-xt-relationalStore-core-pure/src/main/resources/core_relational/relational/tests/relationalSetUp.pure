@@ -360,6 +360,29 @@ Mapping meta::relational::tests::MappingWithInnerJoinAndEmbeddedMappingSub
             }
 )
 
+Mapping meta::pure::mapping::modelToModel::test::simple::PersonPureMappingSub
+(
+  meta::pure::mapping::modelToModel::test::shared::dest::PersonView: Pure
+  {
+    ~src Person
+      firstname: $src.firstName,
+      lastname:  $src.lastName
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::simple::OrderContactPureMapping
+(
+  include meta::pure::mapping::modelToModel::test::simple::PersonPureMappingSub
+
+  meta::pure::mapping::modelToModel::test::shared::dest::OrderContactView: Pure
+  {
+    ~src Order
+      orderId:         $src.id,
+      qty:             $src.quantity,
+      contact:         $src.pnlContact
+  }
+)
+
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
@@ -570,7 +593,7 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
                 locations : [dbInc]@Person_Location,
                 manager : [dbInc]@Person_Manager
             }
-      
+
       Person_ExtendedPrimitives : Relational
             {
                 //~primaryKey([dbInc]default.personTable.ID, [dbInc]default.personTable.FIRSTNAME)
@@ -674,6 +697,54 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
    }
 )
 
+Mapping meta::relational::tests::NestedRelationalMapping
+(
+  Address: Relational
+  {
+    name     : [dbInc]addressTable.NAME,
+    street   : [dbInc]addressTable.STREET,
+    type     : EnumerationMapping GE : [dbInc]addressTable.TYPE,
+    comments : [dbInc]addressTable.COMMENTS
+  }
+
+  GeographicEntityType: EnumerationMapping GE
+  {
+    CITY: 1
+  }
+)
+
+Mapping meta::relational::tests::RelationalIncludedMapping
+(
+  include meta::relational::tests::NestedRelationalMapping
+
+  Person: Relational
+  {
+    scope([dbInc])
+    (
+      firstName : personTable.FIRSTNAME,
+      age       : personTable.AGE
+    ),
+    scope([dbInc]default.personTable)
+    (
+      lastName  : LASTNAME
+    ),
+    address : [dbInc]@Address_Person,
+    firm    : [dbInc]@Firm_Person,
+    manager : [dbInc]@Person_Manager
+  }
+)
+
+Mapping meta::relational::tests::MappingIncludesNestedMappings
+(
+  include meta::relational::tests::RelationalIncludedMapping
+
+  Firm: Relational
+  {
+    legalName : [dbInc]firmTable.LEGALNAME,
+    employees : [dbInc]@Firm_Person
+  }
+)
+
 Mapping meta::relational::tests::simpleRelationalMappingWithEnumConstant
 (
    Synonym : Relational
@@ -727,7 +798,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 latestEventDate : [db]@Trade_TradeEventViewMaxTradeEventDate | tradeEventViewMaxTradeEventDate.maxTradeEventDate,
                 events : [db]@Trade_TradeEvent
              }
-    
+
     WeightedTrade : Relational
              {
                 id : [db]weightedTradeTable.ID,
@@ -736,7 +807,7 @@ Mapping meta::relational::tests::simpleRelationalMapping
                 settlementDateTime : [db]weightedTradeTable.settlementDateTime,
                 weight: [db]weightedTradeTable.weight,
                 weight2: [db]weightedTradeTable.weight2
-             } 
+             }
 
    Order : Relational
              {
@@ -1511,4 +1582,5 @@ function <<test.Test>> meta::relational::tests::json::testResultToJsonStream():B
           or( $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2"}}], "__TYPE": "meta::pure::mapping::Result"}',
               $result->toJSONStringStream([],true)->makeString() == '{"values": [{"columns":[{"name":"id","type":"String","metaType":"PrimitiveType"},{"name":"name","type":"","metaType":""},{"name":"value","type":"","metaType":""},{"name":"date","type":"","metaType":""},{"name":"Location","type":"meta::json::tests::GeographicEntityType","metaType":"Enumeration"}],"rows":[{"values":[1,"Hello",2.2,"2015-04-15","CITY"]},{"values":[2,"Geoff",3.2,"2015-02-15","CITY"]}], "__TYPE": "meta::pure::tds::TabularDataSet"}], "activities": [{"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}, {"__TYPE":"meta::relational::mapping::RelationalActivity","sql":"select * from abc","comment":null,"executionTimeInNanoSecond":1,"sqlGenerationTimeInNanoSecond":1,"connectionAcquisitionTimeInNanoSecond":1,"executionPlanInformation":"","dataSource":{"__TYPE":"meta::relational::runtime::DataSource","host":"somehost","port":8080,"name":"testdb","type":"H2","serverPrincipal":null}}], "__TYPE": "meta::pure::mapping::Result"}'));
  }
+
 
