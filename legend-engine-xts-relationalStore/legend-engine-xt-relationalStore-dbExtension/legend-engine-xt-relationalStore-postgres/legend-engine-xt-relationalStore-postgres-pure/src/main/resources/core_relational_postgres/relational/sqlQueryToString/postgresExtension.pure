@@ -300,9 +300,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
    $s->processSelectSQLQueryForPostgres($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], oldDbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
-  let dbConfig = ^$oldDbConfig(columnReferenceStrategy = ReferenceStrategy.COL_INDEX);
   assertEmpty($s.pivot, 'pivot is not supported');
   assertEmpty($s.qualifyOperation, 'QUALIFY grammar is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
