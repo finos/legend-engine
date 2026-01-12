@@ -61,7 +61,13 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    dbExtension: DbExtension[1];
 
-   columnReferenceStrategy: ReferenceStrategy[1] = ReferenceStrategy.ALIAS;
+   columnReferenceStrategy()
+   {
+     if ($this.dbType->in([DatabaseType.Snowflake, DatabaseType.Postgres, DatabaseType.DuckDB]), 
+          | ReferenceStrategy.COL_INDEX, 
+          | ReferenceStrategy.ALIAS
+        );
+   }: ReferenceStrategy[1];
 
    isDbReservedIdentifier(str:String[1])
    {
