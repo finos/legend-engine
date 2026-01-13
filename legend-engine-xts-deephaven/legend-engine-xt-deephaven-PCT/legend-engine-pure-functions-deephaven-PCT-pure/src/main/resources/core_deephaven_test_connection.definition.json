@@ -1,0 +1,19 @@
+{
+  "name": "core_deephaven_test_connection",
+  "pattern": "(meta::external::store::deephaven::tests::pct)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_store",
+    "platform_dsl_tds",
+    "core",
+    "core_deephaven_execution_test",
+    "core_deephaven_pure",
+    "core_deephaven_java_platform_binding",
+    "core_external_compiler",
+    "core_external_execution",
+    "core_functions_json",
+    "core_functions_relation",
+    "core_functions_standard",
+    "core_functions_unclassified"
+  ]
+}

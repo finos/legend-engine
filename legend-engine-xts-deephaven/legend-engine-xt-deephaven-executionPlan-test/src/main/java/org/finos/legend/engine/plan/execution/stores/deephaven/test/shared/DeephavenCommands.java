@@ -63,13 +63,11 @@ public class DeephavenCommands
             throw new RuntimeException("Failed to start Deephaven container");
         }
 
-//        Thread.sleep(2000); // wait for Deephaven to be ready for connections
         Root_meta_pure_functions_io_http_URL_Impl url = new Root_meta_pure_functions_io_http_URL_Impl("deephavenUrl");
         String host = DeephavenTestContainer.deephavenContainer.getHost();
-//        int mappedPort = DeephavenTestContainer.deephavenContainer.getMappedPort(DEEPHAVEN_PORT);
+        int mappedPort = DeephavenTestContainer.deephavenContainer.getMappedPort(DEEPHAVEN_PORT);
         url._host(host);
-        url._port(DEEPHAVEN_PORT);
-//        url._port(mappedPort);
+        url._port(mappedPort);
         url._path("/");
         return url;
     }
