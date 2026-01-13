@@ -323,12 +323,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
                                                     a: Alias[1] | $a.name, 
                                                     any: Any[*] | $any
                                                   ])
-                                   );
+                                           );
    $groupByColumns->map(c | $c->match([
                                 a:Alias[1] | ($selectColNames->indexOf($a.name) + 1)->toString(),
                                 c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
                                ])
-                );
+                       );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSliceOrDropForPostgres(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
