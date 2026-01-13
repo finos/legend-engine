@@ -51,9 +51,6 @@ Class meta::external::dataquality::DataQualityRule
 }
 
 Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement
-[
-  mustEndWithRuntime: $this.query->meta::external::dataquality::isEndingWithFromFunction()
-]
 {
   query: LambdaFunction<Any>[1];                                         // should return a relation - enforced in compiler
   validations: meta::external::dataquality::RelationValidation[*];
