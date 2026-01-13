@@ -46,13 +46,6 @@ Class meta::relational::functions::sqlQueryToString::Format
    }:String[1];
 }
 
-Enum meta::relational::functions::sqlQueryToString::ReferenceStrategy
-{
-  ALIAS,
-  COL_EXPRESSION,
-  COL_INDEX
-}
-
 Class meta::relational::functions::sqlQueryToString::DbConfig
 {
    dbType:DatabaseType[1];
@@ -60,14 +53,6 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    quoteIdentifiers:Boolean[1];
 
    dbExtension: DbExtension[1];
-
-   columnReferenceStrategy()
-   {
-     if ($this.dbType->in([DatabaseType.Snowflake, DatabaseType.Postgres, DatabaseType.DuckDB]), 
-          | ReferenceStrategy.COL_INDEX, 
-          | ReferenceStrategy.ALIAS
-        );
-   }: ReferenceStrategy[1];
 
    isDbReservedIdentifier(str:String[1])
    {
