@@ -105,6 +105,16 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|true->meta::pure::functions::boolean::eq(false)','c(True) == c(False)'),
           rev('|false->meta::pure::functions::boolean::eq(true)','c(False) == c(True)')
         ]
+      ),
+
+      meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2014->meta::pure::functions::boolean::eq(%2014)'),
+          rev('|%2014-02-27T05:01:35.231+0000->meta::pure::functions::boolean::eq(%2014-02-27T05:01:35.231+0000)','c(datetime(2014, 2, 27, 5, 1, 35, 231)) == c(datetime(2014, 2, 27, 5, 1, 35, 231))'),
+          noRev('|%2014->meta::pure::functions::boolean::eq(%2013)'),
+          noRev('|%2014->meta::pure::functions::boolean::eq(%2014-01-01)'),
+          rev('|%2014-02-27T05:01:35.231+0000->meta::pure::functions::boolean::eq(%2014-02-27T10:01:35.231+0000)','c(datetime(2014, 2, 27, 5, 1, 35, 231)) == c(datetime(2014, 2, 27, 10, 1, 35, 231))')
+        ]
       )
     ]->combine(),
     [ // equal ----------------
@@ -203,6 +213,14 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|meta::pure::functions::boolean::not(true == false)','~(c(True) == False)'),
           rev('|meta::pure::functions::boolean::not(false == true)','~(False == c(True))')
         ]
+      ),
+
+      meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2014 == %2014'),
+          noRev('|meta::pure::functions::boolean::not(%2014 == %2014-01-01)'),
+          noRev('|meta::pure::functions::boolean::not(%2014 == %2013)')
+        ]
       )
     ]->combine(),
     // inequality -----------
@@ -227,6 +245,14 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|\'a\' >= \'a\'', 'c("a") >= "a"'),
           rev('|\'a\' >= \'b\'', '"a" >= c("b")')
         ]
+      ),
+       meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true >= false','c(True) >= False'),
+          rev('|true >= true','True >= c(True)'),
+          rev('|false >= true','c(False) >= c(True)'),
+          rev('|false >= false','c(False) >= c(False)')
+        ]
       )
     ]->combine(),
     [ // lessThan -------------------
@@ -249,6 +275,14 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|\'a\' < \'b\'', 'c("a") < "b"'),
           rev('|\'b\' < \'a\'', '"b" < c("a")'),
           rev('|\'a\' < \'a\'', 'c("a") < c("a")')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true < false','c(True) < False'),
+          rev('|true < true','True < c(True)'),
+          rev('|false < true','c(False) < c(True)'),
+          rev('|false < false','c(False) < c(False)')
         ]
       )
     ]->combine(),
@@ -273,6 +307,14 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|\'a\' > \'b\'', '"a" > c("b")'),
           rev('|\'a\' > \'a\'', 'c("a") > c("a")')
         ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true > false','c(True) > False'),
+          rev('|true > true','True > c(True)'),
+          rev('|false > true','c(False) > c(True)'),
+          rev('|false > false','c(False) > c(False)')
+        ]
       )
     ]->combine(),
     [ // lessThanEqual -----------------------
@@ -295,6 +337,14 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
           rev('|\'a\' <= \'b\'', 'c("a") <= "b"'),
           rev('|\'a\' <= \'a\'', 'c("a") <= c("a")'),
           rev('|\'b\' <= \'a\'', '"b" <= c("a")')
+        ]
+      ),
+      meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true <= false','c(True) <= False'),
+          rev('|true <= true','True <= c(True)'),
+          rev('|false <= true','c(False) <= c(True)'),
+          rev('|false <= false','c(False) <= c(False)')
         ]
       )
     ]->combine(),
@@ -359,6 +409,12 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       meta::pure::functions::boolean::tests::conjunctions::not::testNotTrueExpression_Function_1__Boolean_1_->testRev(
         [
           rev('|meta::pure::functions::boolean::not(3 == 3)','~(c(3) == c(3))')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[false, false->meta::pure::functions::boolean::not()]->meta::pure::functions::collection::at(1)')
         ]
       )
     ]->combine(),

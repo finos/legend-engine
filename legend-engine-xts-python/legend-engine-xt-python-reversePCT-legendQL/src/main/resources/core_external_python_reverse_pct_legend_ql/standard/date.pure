@@ -1,0 +1,208 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::legendQL::*;
+
+function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandardDate(): ReversesForSource[*]
+{
+  [
+    // operation -----------------------------------------------------
+    [
+      meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"SECONDS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"SECONDS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"SECONDS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"SECONDS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"SECONDS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"SECONDS")'),
+          rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"SECONDS")'),
+          rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"SECONDS")'),
+          rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"SECONDS")'),
+          rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"SECONDS")'),
+          rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"SECONDS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"MINUTES")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"MINUTES")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"MINUTES")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"MINUTES")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"MINUTES")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"MINUTES")'),
+          rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"MINUTES")'),
+          rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"MINUTES")'),
+          rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"MINUTES")'),
+          rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"MINUTES")'),
+          rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"MINUTES")')
+        ]
+      ),
+
+
+      meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"HOURS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"HOURS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"HOURS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"HOURS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"HOURS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"HOURS")'),
+          rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"HOURS")'),
+          rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"HOURS")'),
+          rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"HOURS")'),
+          rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"HOURS")'),
+          rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"HOURS")')
+        ]
+      ),
+
+        meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"DAYS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"DAYS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"DAYS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"DAYS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"DAYS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"DAYS")'),
+          rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"DAYS")'),
+          rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"DAYS")'),
+          rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"DAYS")'),
+          rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"DAYS")'),
+          rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.DAYS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"DAYS")')
+        ]
+      ),
+
+        meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"WEEKS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"WEEKS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"WEEKS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"WEEKS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"WEEKS")'),
+          rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"WEEKS")'),
+          rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"WEEKS")'),
+          rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"WEEKS")'),
+          rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"WEEKS")'),
+          rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"WEEKS")'),
+          rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.WEEKS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"WEEKS")')
+        ]
+      ),
+
+    meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"MONTHS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"MONTHS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"MONTHS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"MONTHS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"MONTHS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"MONTHS")'),
+        rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"MONTHS")'),
+        rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"MONTHS")'),
+        rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"MONTHS")'),
+        rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"MONTHS")'),
+        rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"MONTHS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(1,"YEARS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(2,"YEARS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(10,"YEARS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(18,"YEARS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(3,"YEARS")'),
+        rev('|%2024-01-31T00:32:34.999123456+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,0,32,34,999123)).time_bucket(30,"YEARS")'),
+        rev('|%2024-01-31T23:22:09.710123456+0000->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,23,22,9,710123)).time_bucket(2,"YEARS")'),
+        rev('|%2024-01-31T11:00:21.235123456+0000->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,11,0,21,235123)).time_bucket(10,"YEARS")'),
+        rev('|%2024-01-31T17:15:59.249123456+0000->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2024,1,31,17,15,59,249123)).time_bucket(18,"YEARS")'),
+        rev('|%1951-10-21T08:59:00.676123456+0000->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(1951,10,21,8,59,0,676123)).time_bucket(3,"YEARS")'),
+        rev('|%2124-08-21T23:59:51.000000000+0000->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2124,8,21,23,59,51,0)).time_bucket(30,"YEARS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketSeconds_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.SECONDS)','c(date(2024,1,31)).time_bucket(1,"SECONDS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMinutes_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.MINUTES)','c(date(2024,1,31)).time_bucket(1,"MINUTES")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketHours_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.HOURS)','c(date(2024,1,31)).time_bucket(1,"HOURS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketDays_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(1,"DAYS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(2,"DAYS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(10,"DAYS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(18,"DAYS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(3,"DAYS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2024,1,31)).time_bucket(30,"DAYS")'),
+        rev('|%1951-10-21->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.DAYS)','c(date(1951,10,21)).time_bucket(3,"DAYS")'),
+        rev('|%2124-08-21->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2124,8,21)).time_bucket(30,"DAYS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(1,"WEEKS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(2,"WEEKS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(10,"WEEKS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(18,"WEEKS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(3,"WEEKS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2024,1,31)).time_bucket(30,"WEEKS")'),
+        rev('|%1951-10-21->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(1951,10,21)).time_bucket(3,"WEEKS")'),
+        rev('|%2124-08-21->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2124,8,21)).time_bucket(30,"WEEKS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMonths_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(1,"MONTHS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(2,"MONTHS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(10,"MONTHS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(18,"MONTHS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(3,"MONTHS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2024,1,31)).time_bucket(30,"MONTHS")'),
+        rev('|%1951-10-21->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(1951,10,21)).time_bucket(3,"MONTHS")'),
+        rev('|%2124-08-21->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2124,8,21)).time_bucket(30,"MONTHS")')
+      ]
+      ),
+
+      meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_->testRev(
+      [
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(1, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(1,"YEARS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(2, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(2,"YEARS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(10, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(10,"YEARS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(18, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(18,"YEARS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(3,"YEARS")'),
+        rev('|%2024-01-31->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2024,1,31)).time_bucket(30,"YEARS")'),
+        rev('|%1951-10-21->meta::pure::functions::date::timeBucket(3, meta::pure::functions::date::DurationUnit.YEARS)','c(date(1951,10,21)).time_bucket(3,"YEARS")'),
+        rev('|%2124-08-21->meta::pure::functions::date::timeBucket(30, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2124,8,21)).time_bucket(30,"YEARS")')
+      ]
+    )
+    ]->combine()
+    
+  ]
+}
