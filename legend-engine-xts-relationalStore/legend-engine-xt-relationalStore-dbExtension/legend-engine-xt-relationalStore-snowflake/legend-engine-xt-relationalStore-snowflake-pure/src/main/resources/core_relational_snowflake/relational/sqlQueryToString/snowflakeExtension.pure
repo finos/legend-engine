@@ -657,12 +657,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
                                                     a: Alias[1] | $a.name, 
                                                     any: Any[*] | $any
                                                   ])
-                                   );
+                                           );
    $groupByColumns->map(c | $c->match([
                                 a:Alias[1] | ($selectColNames->indexOf($a.name) + 1)->toString(),
                                 c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
                                ])
-                );
+                       );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
