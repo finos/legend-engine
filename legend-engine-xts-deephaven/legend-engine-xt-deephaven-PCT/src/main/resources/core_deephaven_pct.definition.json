@@ -1,5 +1,5 @@
 {
-  "name": "core_deephaven_test_connection",
+  "name": "core_deephaven_pct",
   "pattern": "(meta::external::store::deephaven::tests::pct)(::.*)?",
   "dependencies": [
     "platform",

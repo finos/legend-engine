@@ -97,7 +97,7 @@ public class DeephavenTestContainer
         deephavenContainer = new GenericContainer<>(imageName)
                 .withExposedPorts(PORT)
                 .withPrivilegedMode(true)
-                .withEnv("START_OPTS", "-Xmx4g -Dauthentication.psk=12345678")
+                .withEnv("START_OPTS", "-Xmx4g -Dauthentication.psk=" + PSK)
                 .withLogConsumer(new Slf4jLogConsumer(LOGGER).withPrefix("Deephaven"))
                 .waitingFor(Wait.forHttp("/").forPort(PORT).forStatusCode(200).withStartupTimeout(java.time.Duration.ofMinutes(2)));
 
@@ -124,16 +124,16 @@ public class DeephavenTestContainer
     private static SessionConfig sessionConfig()
     {
         final SessionConfig.Builder builder = SessionConfig.builder();
-        builder.authenticationTypeAndValue("io.deephaven.authentication.psk.PskAuthenticationHandler 12345678");
+        builder.authenticationTypeAndValue("io.deephaven.authentication.psk.PskAuthenticationHandler " + PSK);
         return builder.build();
     }
 
     public static boolean startDeephavenForPCT(String versionTag)
     {
-        if (deephavenContainer != null && deephavenContainer.isRunning())
-        {
-            stopDeephaven();
-        }
+//        if (deephavenContainer != null && deephavenContainer.isRunning())
+//        {
+//            stopDeephaven();
+//        }
 
         try
         {
@@ -171,6 +171,24 @@ public class DeephavenTestContainer
 
     public static boolean stopDeephaven()
     {
+        // Close the session first if it exists
+        if (deephavenSession != null)
+        {
+            try
+            {
+                deephavenSession.close();
+            }
+            catch (Exception e)
+            {
+                LOGGER.warn("Error closing Deephaven session", e);
+            }
+            finally
+            {
+                deephavenSession = null;
+            }
+        }
+
+        // Then stop the container
         if (deephavenContainer != null && deephavenContainer.isRunning())
         {
             try
@@ -180,6 +198,7 @@ public class DeephavenTestContainer
             }
             catch (Exception e)
             {
+                LOGGER.warn("Error stopping Deephaven container", e);
                 return false;
             }
             finally

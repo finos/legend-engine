@@ -80,7 +80,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getDeeph
                      )->makeString(',')
                    )->joinStrings('\n');
   
-   $tdsString->meta::pure::metamodel::relation::stringToTDS();
+   $tdsString->stringToTDS();
 }
 
 // function meta::protocols::pure::vX_X_X::invocation::execution::execute::transformActivitiesForDeephaven(

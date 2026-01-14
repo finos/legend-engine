@@ -15,11 +15,13 @@
 package org.finos.legend.engine.plan.execution.stores.deephaven.compiler;
 
 import io.deephaven.api.ColumnName;
+import io.deephaven.api.ConcurrencyControl;
 import io.deephaven.api.JoinAddition;
 import io.deephaven.api.JoinMatch;
 import io.deephaven.api.Pair;
 import io.deephaven.api.Selectable;
 import io.deephaven.api.SortColumn;
+import io.deephaven.api.SortSpec;
 import io.deephaven.api.TableOperations;
 import io.deephaven.api.TableOperationsDefaults;
 import io.deephaven.api.expression.Expression;
@@ -69,6 +71,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
     static
     {
         DEPENDENCIES.put("io.deephaven.api.ColumnName", ColumnName.class);
+        DEPENDENCIES.put("io.deephaven.api.ConcurrencyControl", ConcurrencyControl.class);
         DEPENDENCIES.put("io.deephaven.api.expression.Expression", Expression.class);
         DEPENDENCIES.put("io.deephaven.api.filter.Filter", Filter.class);
         DEPENDENCIES.put("io.deephaven.api.filter.FilterAnd", FilterAnd.class);
@@ -84,6 +87,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.Pair", Pair.class);
         DEPENDENCIES.put("io.deephaven.api.Selectable", Selectable.class);
         DEPENDENCIES.put("io.deephaven.api.SortColumn", SortColumn.class);
+        DEPENDENCIES.put("io.deephaven.api.SortSpec", SortSpec.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperations", TableOperations.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperationsDefaults", TableOperationsDefaults.class);
 

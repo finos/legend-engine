@@ -15,12 +15,8 @@
 ###Pure
 native function meta::external::store::deephaven::executionTest::utils::startDeephaven(imageTag: String[1]): meta::pure::functions::io::http::URL[1];
 
-native function meta::external::store::deephaven::executionTest::utils::startDeephavenForPCT(imageTag: String[1]): meta::pure::functions::io::http::URL[1];
-
 native function meta::external::store::deephaven::executionTest::utils::stopDeephaven(imageTag: String[1]): Nil[0];
 
 native function meta::external::store::deephaven::executionTest::utils::createTableFromCSV(tableName: String[1], csv: String[1]): Nil[0];
 
-// native function meta::external::store::deephaven::executionTest::utils::createTableWithData(tableName:String[1], columnNames:String[*], columnTypes:String[*], rows:Any[*]):Boolean[1];
-
-// native function meta::external::store::deephaven::executionTest::utils::createTable<T>(tableName:String[1], data:Relation<T>[1]):Boolean[1];
+native function meta::external::store::deephaven::executionTest::utils::getDeephavenTestConnection(): meta::external::store::deephaven::metamodel::runtime::DeephavenConnection[1];

@@ -15,7 +15,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test.shared;
 
-import com.sun.jna.StringArray;
 import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.TableHandle;
 import io.deephaven.csv.CsvTools;
@@ -47,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import io.deephaven.qst.type.StringType;
 import org.apache.arrow.memory.BufferAllocator;

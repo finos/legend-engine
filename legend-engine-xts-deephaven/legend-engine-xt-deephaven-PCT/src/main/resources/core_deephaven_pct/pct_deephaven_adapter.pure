@@ -34,9 +34,7 @@ function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X
 {
   let debug = noDebug();
 
-  let url = meta::external::store::deephaven::executionTest::utils::startDeephavenForPCT('0.37.4');
-  
-  let reprocessed = $f->meta::external::store::deephaven::tests::pct::process::reprocess($url, $debug);
+  let reprocessed = $f->meta::external::store::deephaven::tests::pct::process::reprocess($debug);
   let newFunction = $reprocessed.first;
   let state = $reprocessed.second;
   let deephavenTables = $state.deephavenStore.tables;
@@ -51,6 +49,7 @@ function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X
          let tableName = $deephavenTables->at($i).name;
          let csv = $csvs->at($i);
          meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv);
+         '';
        );,
      | fail('There must be one csv per table!')
   );
@@ -61,17 +60,14 @@ function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X
 
   let resultType = $f->functionReturnType().rawType->toOne();
   let json = $resultJson->meta::json::parseJSON();
-  let x = if (!$json->instanceOf(JSONObject),
+  if (!$json->instanceOf(JSONObject),
       | $json->meta::json::fromJSON($resultType),
       | if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='objects').value->isNotEmpty(),
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__Type', failOnUnknownProperties=false, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult)->toOne();
               let resultTDS = meta::protocols::pure::vX_X_X::invocation::execution::execute::getDeephavenTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);,
             | []
         )
-    );
-
-  meta::external::store::deephaven::executionTest::utils::stopDeephaven('0.37.4');
-  $x->cast(@X)->toMultiplicity(@[o]);  
+     )->cast(@X)->toMultiplicity(@[o]);
 }
 
 Class meta::external::store::deephaven::tests::pct::process::DeephavenProcessingState
@@ -84,24 +80,12 @@ Class meta::external::store::deephaven::tests::pct::process::DeephavenProcessing
    csvs : String[*];
 }
 
-function meta::external::store::deephaven::tests::pct::process::createDeephavenConnection(url:meta::pure::functions::io::http::URL[1]): meta::external::store::deephaven::metamodel::runtime::DeephavenConnection[1]
-{
-    ^meta::external::store::deephaven::metamodel::runtime::DeephavenConnection(
-        authSpec = ^meta::pure::runtime::connection::authentication::PSKAuthenticationSpecification(
-            psk = '12345678'
-        ),
-        sourceSpec = ^meta::external::store::deephaven::metamodel::runtime::DeephavenSourceSpecification(
-            url = $url
-        )
-    );
-}
-
-function meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime(url:meta::pure::functions::io::http::URL[1]): Runtime[1]
+function meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime(): Runtime[1]
 {
     ^Runtime(
         connectionStores = ^ConnectionStore(
             element = 'meta::external::store::deephaven::tests::pct::process::DeephavenStore',
-            connection = meta::external::store::deephaven::tests::pct::process::createDeephavenConnection($url)
+            connection = meta::external::store::deephaven::executionTest::utils::getDeephavenTestConnection()
         )
     );
 }
@@ -120,7 +104,7 @@ function meta::external::store::deephaven::tests::pct::process::initState(openVa
   );
 }
 
-function meta::external::store::deephaven::tests::pct::process::reprocess(f:Function<Any>[1], url:meta::pure::functions::io::http::URL[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,DeephavenProcessingState>[1]
+function meta::external::store::deephaven::tests::pct::process::reprocess(f:Function<Any>[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,DeephavenProcessingState>[1]
 {
   let dhConfig = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
@@ -133,9 +117,7 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(f:Func
       z:FunctionDefinition<Any>[1]|
             print(if($debug.debug, | 'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n', | ''));
 
-            let deephavenRuntime = meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime($url);
-            // INstead of starting a deephaven instance, get a test connection
-            // Use GetDeephavenTestConnection() instead
+            let deephavenRuntime = meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime();
             let initState = meta::external::store::deephaven::tests::pct::process::initState($z->openVariableValues(), $deephavenRuntime);
             
             let reprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(expr|$expr->meta::external::store::deephaven::tests::pct::process::reprocess($initState));

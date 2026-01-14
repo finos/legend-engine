@@ -14,20 +14,22 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test.interpreted;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
-import org.finos.legend.engine.plan.execution.stores.deephaven.test.shared.DeephavenCommands;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.stores.deephaven.test.shared.GetDeephavenTestConnectionShared;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.InterpretedMetadata;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.m3.compiler.Context;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.finos.legend.pure.m3.navigation.Instance;
-import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
-import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
@@ -41,24 +43,19 @@ import java.util.Stack;
 
 public class GetDeephavenTestConnection extends NativeFunction
 {
-    private final FunctionExecutionInterpreted functionExecution;
-    private final ModelRepository repository;
-
     public GetDeephavenTestConnection(FunctionExecutionInterpreted functionExecution, ModelRepository modelRepository)
     {
-        this.functionExecution = functionExecution;
-        this.repository = modelRepository;
     }
 
     @Override
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        CoreInstance imageTagCoreInstance = params.get(0);
-        String imageTag = Instance.getValueForMetaPropertyToOneResolved(imageTagCoreInstance, M3Properties.values, processorSupport).getName();
-        Root_meta_pure_functions_io_http_URL url = DeephavenCommands.startServer(imageTag);
-        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl(null, null, _Package.getByUserPath("meta::pure::metamodel::type::generics::GenericType", processorSupport))
-                ._rawType((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type) _Package.getByUserPath("meta::pure::functions::io::http::URL", processorSupport));
-        url._classifierGenericType(genericType);
-        return ValueSpecificationBootstrap.wrapValueSpecification(url, true, processorSupport);
+        PackageableConnection connection = new PackageableConnection();
+        connection._package = "toGetValue";
+        connection.name = "DeephavenTestConn";
+        connection.connectionValue = GetDeephavenTestConnectionShared.getDatabaseConnection();
+        PureModelContextData pmcd = PureModelContextData.newPureModelContextData(null, null, Lists.mutable.with(connection));
+        PureModel pureModel = Compiler.compile(pmcd, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", new InterpretedMetadata(processorSupport));
+        return ValueSpecificationBootstrap.wrapValueSpecification(Lists.mutable.with(pureModel.getConnection("toGetValue::DeephavenTestConn", null)), false, processorSupport);
     }
 }

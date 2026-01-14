@@ -143,7 +143,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-executionPlan-test", "deephaven_execution_test"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-pure", "deephaven_pure"))
                 .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-javaPlatformBinding-pure", "deephaven-java-platform-binding"))
-                .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-PCT/legend-engine-pure-functions-deephaven-PCT-pure", "deephaven_test_connection"))
+                .with(this.buildCore("legend-engine-xts-deephaven/legend-engine-xt-deephaven-PCT", "deephaven_pct"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-executionPlan-test", "elasticsearch_execution_test"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
