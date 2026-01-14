@@ -10,6 +10,17 @@ identifier:                                     VALID_STRING | STRING
                                                 | TO_BYTES_FUNCTION
 ;
 
+// -------------------------------------- SHARED --------------------------------------
+
+stereotypes:                                    LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
+;
+stereotype:                                     qualifiedName DOT identifier
+;
+taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
+;
+taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
+;
+
 // -------------------------------------- EXPRESSION & VALUE SPECIFICATION --------------------------------------
 
 nonArrowOrEqualExpression :
@@ -109,7 +120,7 @@ atomicExpression:                               dsl
 
 columnBuilders: TILDE (oneColSpec | colSpecArray)
 ;
-oneColSpec: identifier ((COLON (type multiplicity? | anyLambda) extraFunction? ))?
+oneColSpec: stereotypes? taggedValues? identifier ((COLON (type multiplicity? | anyLambda) extraFunction? ))?
 ;
 colSpecArray: (BRACKET_OPEN (oneColSpec(COMMA oneColSpec)*)? BRACKET_CLOSE)
 ;

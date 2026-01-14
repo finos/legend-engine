@@ -1421,6 +1421,8 @@ public class DomainParseTreeWalker
         colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
         colSpec.genericType = oneColSpec.type() == null ? null : processGenericType(oneColSpec.type());
         colSpec.multiplicity = oneColSpec.multiplicity() == null ? null : buildMultiplicity(oneColSpec.multiplicity().multiplicityArgument());
+        colSpec.stereotypes = oneColSpec.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(oneColSpec.stereotypes());
+        colSpec.taggedValues = oneColSpec.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(oneColSpec.taggedValues());
         if (oneColSpec.anyLambda() != null)
         {
             colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());
@@ -1648,17 +1650,6 @@ public class DomainParseTreeWalker
             result.multiplicityArguments = ListIterate.collect(ctx.multiplicityArguments().multiplicityArgument(), this::buildMultiplicity);
         }
         result.typeVariableValues = processTypeVariableValues(ctx.typeVariableValues());
-
-        // For backward compatibility when users were not defining typeArgs ----------------------
-        if (type instanceof PackageableType && "Result".equals(((PackageableType) type).fullPath))
-        {
-            if (result.typeArguments.isEmpty())
-            {
-                result.typeArguments = Lists.mutable.with(new GenericType(new PackageableType("meta::pure::metamodel::type::Any")));
-                result.multiplicityArguments = Lists.mutable.with(new Multiplicity(1, null));
-            }
-        }
-        //----------------------------------------------------------------------------------------
         return result;
     }
 
