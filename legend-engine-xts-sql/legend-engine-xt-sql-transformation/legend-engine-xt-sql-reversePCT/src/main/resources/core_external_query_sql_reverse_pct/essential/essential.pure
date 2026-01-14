@@ -17,6 +17,8 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::essential::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::essential::collection::boolean::quantification::exists::reverses(),
+
     meta::external::query::sql::reversePCT::tests::essential::collection::slice::head::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::collection::slice::init::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::collection::slice::slice::reverses(),
@@ -59,6 +61,16 @@ function meta::external::query::sql::reversePCT::tests::essential::reverses():Re
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cos::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cot::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::sin::reverses(),
-    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::tan::reverses()
+    meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::tan::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::replace::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::reverse::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::toLower::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::toUpper::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::trim::lTrim::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::trim::rTrim::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::string::transformation::trim::trim::reverses()
+
   ]
 }

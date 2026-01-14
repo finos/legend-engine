@@ -17,6 +17,8 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::relation::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::reverses(),
+    
     meta::external::query::sql::reversePCT::tests::relation::relation::functions::size::size::reverses(),
 
     meta::external::query::sql::reversePCT::tests::relation::iteration::filter::reverses(),
@@ -43,6 +45,7 @@ function meta::external::query::sql::reversePCT::tests::relation::reverses():Rev
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::aggregate::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::concatenate::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::distinct::reverses(),
+    meta::external::query::sql::reversePCT::tests::relation::relation::functions::transformation::extend::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::groupBy::reverses(),
     meta::external::query::sql::reversePCT::tests::relation::functions::transformation::join::reverses()
 

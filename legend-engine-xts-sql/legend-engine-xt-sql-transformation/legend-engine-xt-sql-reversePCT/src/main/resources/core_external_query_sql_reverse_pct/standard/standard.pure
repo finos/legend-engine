@@ -42,6 +42,7 @@ function meta::external::query::sql::reversePCT::tests::standard::reverses():Rev
 
     //meta::external::query::sql::reversePCT::tests::standard::collection::and::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::collection::greatest::reverses(),
+    // meta::external::query::sql::reversePCT::tests::standard::collection::in::reverses(),
     meta::external::query::sql::reversePCT::tests::standard::collection::least::reverses()
     //meta::external::query::sql::reversePCT::tests::standard::collection::or::reverses()
   ]
