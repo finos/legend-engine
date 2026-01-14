@@ -1352,7 +1352,7 @@ function
   {
     doc.doc='Test when alias name is same as column name across two or more joined tables'
   }
-meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Column_Names<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds1 = #TDS
                 id, grp, name
