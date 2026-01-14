@@ -54,7 +54,7 @@ function meta::external::query::sql::reversePCT::framework::reverses():ReverseIn
                         ->concatenate(meta::external::query::sql::reversePCT::tests::unclassified::reverses())
                         ->concatenate(meta::external::query::sql::reversePCT::tests::variant::reverses()),
     reverseTransformer = val:String[1]|
-        meta::legend::compileVS('#SQL{'+$val+'}#');
+        meta::legend::compileVS('#SQL{'+$val+'\n}#');
   )
 }
 

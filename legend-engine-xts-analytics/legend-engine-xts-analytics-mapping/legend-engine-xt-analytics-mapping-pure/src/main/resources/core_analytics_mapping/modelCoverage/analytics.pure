@@ -51,6 +51,7 @@ Class meta::analytics::mapping::modelCoverage::MappedEntityInfo
 {
    isRootEntity : Boolean[0..1];
    classPath: String[1];
+   class: Class<Any>[0..1];
    subClasses : String[*];
 }
 
@@ -156,10 +157,13 @@ function meta::analytics::mapping::modelCoverage::analyze(
   let mappedEntities = $entities->concatenate($inheritanceEntities);
   if ($returnLightGraph == true,
         | let mappedEntityPaths = $mappedEntities->map(m | $m.info->toOne().classPath)->removeDuplicates();
-          let mappedClasses = $allClasses->keyValues()->map(c | $c.first)->filter(c | $mappedEntityPaths->contains($c->elementToPath()));
+          let mappedClasses = $allClasses->keyValues()->map(c | $c.first)->filter(c | $mappedEntityPaths->contains($c->elementToPath()))
+                              ->concatenate($mappedEntities.info.class);
+          // remove class from info
+          let prunedMappedEntities = $mappedEntities->map(m | if($m.info->toOne().class->isEmpty(), | $m, | ^$m(info = ^MappedEntityInfo(classPath = $m.info->toOne().classPath, subClasses = $m.info->toOne().subClasses, isRootEntity = $m.info->toOne().isRootEntity))));
           let classCoverageAnalysis = getClassModelCoverage($mappedClasses);
           ^MappingModelCoverageAnalysisResult(
-            mappedEntities = $mappedEntities,
+            mappedEntities = $prunedMappedEntities,
             classes = $classCoverageAnalysis.classes,
             enumerations = $classCoverageAnalysis.enumerations,
             associations = $classCoverageAnalysis.associations,

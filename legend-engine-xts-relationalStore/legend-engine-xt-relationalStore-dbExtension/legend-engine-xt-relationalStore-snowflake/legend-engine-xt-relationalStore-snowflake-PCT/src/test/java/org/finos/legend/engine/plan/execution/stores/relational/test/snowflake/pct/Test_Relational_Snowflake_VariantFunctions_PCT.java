@@ -22,7 +22,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import org.finos.legend.pure.code.core.CoreRelationalSnowflakePCTCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.CoreRelationalSnowflakeCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
@@ -34,7 +34,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Relational_Snowflake_VariantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
-    private static final Adapter adapter = CoreRelationalSnowflakePCTCodeRepositoryProvider.snowflakeAdapter;
+    private static final Adapter adapter = CoreRelationalSnowflakeCodeRepositoryProvider.snowflakeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
 

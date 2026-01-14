@@ -80,35 +80,35 @@ public class Project extends Shared
             MutableList<TestTDS> allTDS = Lists.mutable.empty();
             for (Pair<LambdaFunction<CoreInstance>, VariableContext> fInfo : funcs)
             {
-                Type type = ((FunctionType) fInfo.getOne()._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
+                FunctionType functionType = ((FunctionType) fInfo.getOne()._classifierGenericType()._typeArguments().getFirst()._rawType());
                 TestTDS tds = new TestTDSInterpreted(this.repository, processorSupport);
                 Object colRes = null;
                 DataType colResType = null;
 
                 MutableList<Object> vals = Lists.mutable.empty();
 
-                final Function<CoreInstance, Object> valExtractor = getExtractor(processorSupport, type);
+                final Function<CoreInstance, Object> valExtractor = getExtractor(processorSupport, functionType._returnType()._rawType());
 
                 CoreInstance subResult = this.functionExecution.executeFunction(false, fInfo.getOne(), parameters, resolvedTypeParameters, resolvedMultiplicityParameters, fInfo.getTwo(), functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 subResult.getValueForMetaPropertyToMany("values").forEach(c -> vals.add(valExtractor.apply(c)));
 
-                if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
+                if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.String, processorSupport))
                 {
                     colResType = DataType.STRING;
                     colRes = vals.toArray(new String[0]);
                 }
-                if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
+                if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Integer, processorSupport))
                 {
                     colResType = DataType.LONG;
                     colRes = vals.stream().mapToLong(x -> ((Number) x).longValue()).toArray();
                 }
-                if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
+                if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Float, processorSupport))
                 {
                     colResType = DataType.DOUBLE;
                     colRes = vals.stream().mapToDouble(x -> (Double) x).toArray();
                 }
 
-                TestTDS resTDS = tds.addColumn(names.get(i++), colResType, colRes);
+                TestTDS resTDS = tds.addColumn(names.get(i++), colResType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), colRes);
                 if (vals.isEmpty())
                 {
                     resTDS = resTDS.setNull();

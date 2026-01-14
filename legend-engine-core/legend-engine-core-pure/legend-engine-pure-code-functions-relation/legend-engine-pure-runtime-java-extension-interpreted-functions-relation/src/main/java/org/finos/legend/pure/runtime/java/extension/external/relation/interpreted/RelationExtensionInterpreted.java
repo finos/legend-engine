@@ -127,7 +127,7 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", AsOfJoin::new),
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", AsOfJoin::new),
                 Tuples.pair("write_Relation_1__RelationElementAccessor_1__Integer_1_", Write::new),
-                Tuples.pair("wrapPrimitiveInTDS_T_$0_1$__T_1__TDS_1_", WrapPrimitiveInTDS::new)
+                Tuples.pair("wrapPrimitiveInTDS_T_MANY__T_1__TDS_1_", WrapPrimitiveInTDS::new)
         );
     }
 

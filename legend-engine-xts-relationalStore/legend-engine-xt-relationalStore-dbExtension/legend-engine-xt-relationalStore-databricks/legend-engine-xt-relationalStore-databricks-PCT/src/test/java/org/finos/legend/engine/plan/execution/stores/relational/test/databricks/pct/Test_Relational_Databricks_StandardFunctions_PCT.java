@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
+import org.finos.legend.pure.code.core.CoreRelationalDatabricksCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
@@ -33,7 +34,7 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
-    private static final Adapter adapter = CoreExternalTestConnectionCodeRepositoryProvider.databricksAdapter;
+    private static final Adapter adapter = CoreRelationalDatabricksCodeRepositoryProvider.databricksAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
 

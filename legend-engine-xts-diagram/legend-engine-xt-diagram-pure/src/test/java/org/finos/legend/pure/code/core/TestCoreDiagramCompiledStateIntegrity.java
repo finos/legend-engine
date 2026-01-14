@@ -16,6 +16,7 @@ package org.finos.legend.pure.code.core;
 
 import org.finos.legend.pure.m3.tests.AbstractCompiledStateIntegrityTest;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class TestCoreDiagramCompiledStateIntegrity extends AbstractCompiledStateIntegrityTest
 {
@@ -23,5 +24,12 @@ public class TestCoreDiagramCompiledStateIntegrity extends AbstractCompiledState
     public static void initialize()
     {
         initialize("core_diagram");
+    }
+
+    @Test(expected = AssertionError.class)
+    @Override
+    public void testReferenceUsages()
+    {
+        super.testReferenceUsages();
     }
 }

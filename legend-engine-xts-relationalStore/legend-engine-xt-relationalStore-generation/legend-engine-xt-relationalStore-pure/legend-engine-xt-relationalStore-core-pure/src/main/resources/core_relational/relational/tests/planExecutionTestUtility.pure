@@ -65,8 +65,11 @@ function meta::relational::metamodel::execute::tests::executeLegendFunction(conn
   assertEquals($expectedTds, $actualTds);
 }
 
-function meta::relational::metamodel::execute::tests::sortCsv(csv: String[1]):String[1]
+function meta::relational::metamodel::execute::tests::sortCsv(_csv: String[1]):String[1]
 {
+  let mid = $_csv->indexOf('\n');
+  let csv = $_csv->substring(0,$mid)->split(',')->map(x|'\''+$x->trim()+'\'')->joinStrings(',') + $_csv->substring($mid,$_csv->length());
+
   let tds = $csv->stringToTDS();
   let columns = $tds->columns();
 

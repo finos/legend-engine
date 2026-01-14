@@ -30,9 +30,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpe
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpecArray;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -74,31 +74,31 @@ public abstract class AggregationShared extends Shared
         VariableContext mapFVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, mapF);
         VariableContext reduceFVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, reduceF);
 
-        Type type = ((FunctionType) reduceF._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType()._rawType();
+        FunctionType functionType = ((FunctionType) reduceF._classifierGenericType()._typeArguments().getFirst()._rawType());
 
         int size = compress ? aggregationScope.getTwo().size() : (int) aggregationScope.getOne().getRowCount();
         boolean[] nulls = new boolean[(int) size];
-        if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
+        if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.String, processorSupport))
         {
             String[] finalRes = new String[size];
             performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.STRING, finalRes);
+            return new ColumnValue(name, DataType.STRING, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes);
         }
-        else if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
+        else if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
             long[] finalRes = new long[size];
             performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.LONG, finalRes, nulls);
+            return new ColumnValue(name, DataType.LONG, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes, nulls);
         }
-        else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport) || type == _Package.getByUserPath(M3Paths.Number, processorSupport))
+        else if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Float, processorSupport) || functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Number, processorSupport))
         {
             double[] finalRes = new double[size];
             performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.DOUBLE, finalRes, nulls);
+            return new ColumnValue(name, DataType.DOUBLE, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes, nulls);
         }
         else
         {
-            throw new RuntimeException("The type " + type._name() + " is not supported yet!");
+            throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(functionType._returnType()._rawType()) + " is not supported yet!");
         }
     }
 

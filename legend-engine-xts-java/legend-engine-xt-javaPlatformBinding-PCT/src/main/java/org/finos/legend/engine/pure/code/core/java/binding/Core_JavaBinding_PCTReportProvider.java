@@ -37,7 +37,8 @@ public class Core_JavaBinding_PCTReportProvider implements PCTReportProvider
                 "pct-reports/ADAPTER_essential_compiled_Java.json",
                 "pct-reports/ADAPTER_grammar_compiled_Java.json",
                 "pct-reports/ADAPTER_relation_compiled_Java.json",
-                "pct-reports/ADAPTER_unclassified_compiled_Java.json"
+                "pct-reports/ADAPTER_unclassified_compiled_Java.json",
+                "pct-reports/ADAPTER_scenario_quant_compiled_Java.json"
         );
     }
 }

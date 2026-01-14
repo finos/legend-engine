@@ -73,7 +73,7 @@ public class Extend extends AbstractNative implements Native
         result.append("return new org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation." + className + "(");
         result.append("c._name(),");
         result.append("PureCompiledLambda.getPureFunction(c._function(),es),");
-        result.append(" ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._function()._classifierGenericType()._typeArguments().toList().get(0)._rawType())._returnType()._rawType()._name()\n");
+        result.append(" ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType)c._function()._classifierGenericType()._typeArguments().toList().get(0)._rawType())\n");
         result.append(");\n");
         result.append("    }\n" +
                 "   }" +

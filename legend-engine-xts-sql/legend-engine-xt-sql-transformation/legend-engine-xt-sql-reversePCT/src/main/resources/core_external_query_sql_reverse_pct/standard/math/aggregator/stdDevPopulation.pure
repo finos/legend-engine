@@ -34,12 +34,12 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,val\n'+
+                            'id:Integer[0..1],val:Integer[0..1]\n'+
                             '1,1\n'+
                             '1,2\n'+
                             '2,2\n'+
-                            '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer, val:Integer)[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
-                            'select "table0_0".id as "id", stddev_pop("table0_0".val) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0" group by "id"'
+                            '2,4\n}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Integer[0..1])[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
+                            'select "table0_0".id as "id", stddev_pop("table0_0".val) as "newCol" from csv(\'id:Integer[0..1],val:Integer[0..1]\n1,1\n1,2\n2,2\n2,4\') as "table0_0" group by "id"'
                         )
                       ]
                  ),
@@ -47,12 +47,12 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                       'meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'id,val\n'+
+                            'id:Integer[0..1],val:Integer[0..1]\n'+
                             '1,1\n'+
                             '1,2\n'+
                             '2,2\n'+
-                            '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer, val:Integer)>[1], w: meta::pure::functions::relation::_Window<(id:Integer, val:Integer)>[1], r: (id:Integer, val:Integer)[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())',
-                            'select "table0_0".id as "id", "table0_0".val as "val", stddev_pop("table0_0".val) OVER (Partition By "table0_0".id) as "newCol" from csv(\'id,val\n1,1\n1,2\n2,2\n2,4\') as "table0_0"'
+                            '2,4\n}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())',
+                            'select "table0_0".id as "id", "table0_0".val as "val", stddev_pop("table0_0".val) OVER (Partition By "table0_0".id) as "newCol" from csv(\'id:Integer[0..1],val:Integer[0..1]\n1,1\n1,2\n2,2\n2,4\') as "table0_0"'
                         )
                       ]
                  )

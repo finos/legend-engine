@@ -25,6 +25,7 @@ import meta::relational::extension::*;
 import meta::alloy::objectReference::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::relational::functions::pureToSqlQuery::deprecated::*;
 import meta::relational::functions::pureToSqlQuery::union::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::pureToSqlQuery::*;
@@ -629,7 +630,8 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let colFuncName = $fe.func.name->toOne();
   let tableAlias = $leftSelect.data.alias;
   let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
-  let foundColumn = if($foundColumnInSelect->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundColumnInSelect);
+  let foundAlias = if($foundColumnInSelect->isEmpty(), |findAlias($fe.func.name->toOne(), $operation->cast(@SelectWithCursor).parent.select.columns), |$foundColumnInSelect);
+  let foundColumn = if($foundAlias->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundAlias);
 
   let colAlias = if ($foundColumn->isNotEmpty(),
     |
@@ -817,8 +819,8 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
                                                        );
 
    //Add types for Aggregations
-   let aggPathInformation = $aggs.aggregateFn->map(a | let pureType = $a->functionReturnType().rawType->toOne();
-                                                       ^PathInformation(type=$pureType, relationalType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)););
+   let aggPathInformation = $aggs.aggregateFn->map(a | let pureType = $a->functionReturnType();
+                                                       ^PathInformation(type=$pureType.rawType->toOne(), relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType)););
    let paths = $funcPathInformation->concatenate($aggPathInformation)->cast(@PathInformation);
 
    ^$operation(
@@ -2024,7 +2026,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::createC
                    ^Column
                    (
                       name = $pm.propertyPlaceHolder,
-                      type = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pm.property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne())->toOne()
+                      type = meta::relational::transform::fromPure::pureTypeToDataType($pm.property->cast(@Property<Nil,Any|*>).genericType)->toOne()
                    )
                 ),
       varName = $crossSet.varName,
@@ -2034,6 +2036,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::createC
 
 function meta::relational::functions::pureToSqlQuery::processCrossPropertyMapping(crossPropertyMappings:CrossSetImplementationPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+   let genType = $property->cast(@Property<Nil,Any|*>).genericType;
    let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
 
    let firstStep = $propertyReturnType->match([
@@ -2042,7 +2045,7 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
                          let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
                          let relElement = $currentTreeNode.alias.relationalElement;
                          let sel = $oldSrcOperation.select;
-                         let newColumn = ^TableAliasColumn(alias=$currentTreeNode.alias, column=^Column(name=$mappingImpl, type=meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($p)->toOne()));
+                         let newColumn = ^TableAliasColumn(alias=$currentTreeNode.alias, column=^Column(name=$mappingImpl, type=meta::relational::transform::fromPure::pureTypeToDataType($genType)->toOne()));
                          if($state.inFilter,
                             | ^$oldSrcOperation(select = ^$sel(filteringOperation+=$newColumn)),
                             | ^$oldSrcOperation(select = ^$sel(columns+=$newColumn))
@@ -2605,12 +2608,12 @@ function meta::relational::functions::pureToSqlQuery::processCast(f:FunctionExpr
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::relationTypeColumnAliases(rel:meta::pure::metamodel::relation::RelationType<Any>[1], alias: TableAlias[1]):Alias[*]
 {
-  let types = meta::relational::transform::fromPure::pureTypeToDataTypeMap();
   $rel.columns->map(
                 c|
                   let colName = $c.name->toOne();
-                  let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
-                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$colName->addQuotesIfNecessary(), type=$types->get($colType)->toOne())));
+                  let colType = $c.classifierGenericType.typeArguments->at(1);
+                  let mayQuotePivotColNames = if ($colName->contains('__|__'),|'\''+$colName+'\'',|$colName);
+                  ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$mayQuotePivotColNames->addQuotesIfNecessary(), type=meta::relational::transform::fromPure::pureTypeToDataType($colType)->toOne())));
               );
 }
 
@@ -2683,7 +2686,7 @@ function meta::relational::functions::pureToSqlQuery::processHash(f:FunctionExpr
   $functionExpression->processDynaFunction($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName(hashType : meta::pure::functions::hash::HashType[1]): String[1]
+function  meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName(hashType : meta::pure::functions::hash::HashType[1]): String[1]
 {
   let name = newMap([
     pair(meta::pure::functions::hash::HashType.MD5, 'md5'),
@@ -2888,6 +2891,18 @@ function meta::relational::functions::pureToSqlQuery::processFirstNotNull(f:Func
   processDynafuncWithRename('coalesce', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
+function meta::relational::functions::pureToSqlQuery::findAlias(columnName:String[1], columns:RelationalOperationElement[*]):Alias[0..1]
+{
+  let column = $columns->filter(c|$c->extractColumnName()->quoteSafeEqual($columnName));
+  if($column->isEmpty(),
+    |[],
+    |$column->toOne()->match([
+      a: Alias[1] | $a,
+      op: RelationalOperationElement[1] | ^Alias(name = $op->extractColumnName(), relationalElement = $op)
+    ])
+  );
+}
+
 function meta::relational::functions::pureToSqlQuery::processDynafuncWithRename(newName:String[1], f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let oldFunc = $f.func;
@@ -2902,12 +2917,9 @@ function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(columnName:String[1], columns:RelationalOperationElement[*]):Alias[1]
 {
-   let column = $columns->filter(c|$c->extractColumnName()->quoteSafeEqual($columnName));
+   let column = findAlias($columnName, $columns);
    assertNotEmpty($column,{|'The column \''+$columnName+'\' can\'t be found ('+ $columns->map(c|$c->extractColumnName())->joinStrings(',')+')'});
-   $column->toOne()->match([
-    a: Alias[1] | $a,
-    op: RelationalOperationElement[1] | ^Alias(name = $op->extractColumnName(), relationalElement = $op)
-   ]);
+   $column->toOne();
 }
 
 function meta::relational::functions::pureToSqlQuery::findAliasOrFail(f:FunctionExpression[1], select:SelectSQLQuery[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):Alias[*]
@@ -3381,13 +3393,13 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    // Return Type
    let pureType = $aggSpec->match(
                                 [
-                                  t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType().rawType->toOne(),
-                                  r:TdsOlapRank<Any>[1]|Integer,
-                                  z:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|$z.function->functionReturnType().rawType->toOne(),
-                                  o:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|$o.reduce->functionReturnType().rawType->toOne()
+                                  t:TdsOlapAggregation<Any>[1]|$t.func->functionReturnType(),
+                                  r:TdsOlapRank<Any>[1]|^GenericType(rawType=Integer),
+                                  z:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|$z.function->functionReturnType(),
+                                  o:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|$o.reduce->functionReturnType()
                                 ]
                               );
-   let newPath = pair($newColumnName, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
+   let newPath = pair($newColumnName, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
 
    if ($f->cast(@SimpleFunctionExpression).func == meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_,
     | ^$operation(select = ^$mainSelect(columns = $mainSelect.columns->concatenate($windowColumn), paths +=$newPath)),
@@ -4764,7 +4776,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapA
    ])); 
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::newDynaFunction(name: String[1], params: RelationalOperationElement[*]): DynaFunction[1]
+function meta::relational::functions::pureToSqlQuery::newDynaFunction(name: String[1], params: RelationalOperationElement[*]): DynaFunction[1]
 {
    let unwrapped = $params->unwrapAlias(); 
    if($name->in(['and','or']),
@@ -6009,8 +6021,8 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                                                                                     z:meta::pure::metamodel::relation::ColSpec<Any>[1]|$z.name
                                                                                   ]
                                                                                 )->map(n|$existingPaths->filter(p|$p.first == $n))
-                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));)),
+                   ->concatenate($aggVS->map(a|  let pureType = $a.reduce->toOne()->functionReturnType();
+                                                 pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));)),
     | []);                                                 
 
    if($noSubSelect
@@ -6092,8 +6104,8 @@ function meta::relational::functions::pureToSqlQuery::processStaticPivot(express
 
   let existingPaths = $inputSelect.paths;
   let pathInfos = $existingPaths->filter(p|$p.first == $pivotColumnName)
-                                ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                              pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType();
+                                                              pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
                                                          )
                                              );
 
@@ -6142,8 +6154,8 @@ function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expres
                       ]);
   let existingPaths = $inputSelect.paths;
   let pathInfos = $pivotColumnNames->map(n|$existingPaths->filter(p|$p.first == $n))
-                                   ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType().rawType->toOne();
-                                                                 pair($a.name, ^PathInformation(type=$pureType, relationalType= meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureType)));
+                                   ->concatenate($aggVS->map(a | let pureType = $a.reduce->toOne()->functionReturnType();
+                                                                 pair($a.name, ^PathInformation(type=$pureType.rawType->toOne(), relationalType= meta::relational::transform::fromPure::pureTypeToDataType($pureType)));
                                                             )
                                                 );
   let pivotColumnAliasName = 'pivot_column';
@@ -6431,19 +6443,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsProject(f:Functi
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processColSpec(f:meta::pure::metamodel::function::Function<Any>[1], name:String[1], currentPropertyMapping:PropertyMapping[*], mainQuery:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):Pair<Alias,Pair<String,PathInformation>>[1]
 {
-  let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0); 
+  let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
+  let select = $mainQuery.select;
+  let newElement = $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();
 
-  let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
-  
-  // todo this should be the behavior, but just scoping variant to reduce scope of change
-  let newElement = if($expressionToRoute->isVariantInput($vars, $state) || ($expressionToRoute->instanceOf(FunctionExpression) && $expressionToRoute->cast(@FunctionExpression).func == if_Pair_MANY__Function_1__T_m_),
-    |
-        let select = $mainQuery.select;
-        $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();,
-    |
-        processTdsLambda($expressionToRoute, $mainQuery.select.columns, false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0);
-  );
-  
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
                                             relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
@@ -6802,7 +6805,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoin(asOfJoin:Bo
 
     let child = ^JoinTreeNode(alias=$rightAlias, join=$join, joinType=if($type->instanceOf(JoinType),|$type->cast(@JoinType),|meta::relational::functions::pureToSqlQuery::joinKindToType($type->cast(@JoinKind))), database=^Database(), joinName='tdsJoin');
     let root = ^RootJoinTreeNode(alias=$leftAliasForJoinNode, childrenData=$child);
-     let columnList = $swc1.select.columns->concatenate($swc2.select.columns);
+    let columnList = $swc1.select.columns->concatenate($swc2.select.columns);
     let newAlias = ^TableAlias(name = 'tdsJoined_' + $nodeId, relationalElement=^TdsSelectSqlQuery(data=$root, columns=if($Q1isVarSetPlaceHolder,|[],|if($columnList->fold({cl, res | $cl->instanceOf(Alias) && $res}, true) && ($columnList->map(cl | $cl->cast(@Alias).name) == $leftAliasWithColumns->concatenate($aliases2)->map(cl | $cl->cast(@Alias).name)), | [], | $leftAliasWithColumns->concatenate($aliases2)))));
     let newData = ^RootJoinTreeNode(alias = $newAlias);
 
@@ -7124,235 +7127,6 @@ function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(
        });
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumExprPropertyMapping(f:FunctionExpression[1], paths:Pair<String, PathInformation>[*]):RelationalPropertyMapping[*]
-{
-  let name = $f->instanceValueAtParameter(1)->cast(@String);
-  let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
-  if($matchedPath->isEmpty(),
-    | [],
-    | let pm = $matchedPath->toOne().second;
-      $pm.propertyMapping->cast(@RelationalPropertyMapping);
-  );
-}
-
-function <<access.private>> meta::relational::functions::pureToSqlQuery::isFunctionWithName(r: ValueSpecification[1], functionName: String[1]):Boolean[1]
-{
-  $r->instanceOf(FunctionExpression) && $r->cast(@FunctionExpression).func.functionName == $functionName;
-}
-
-function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:ValueSpecification[1], columns:RelationalOperationElement[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], currentPropertyMapping:PropertyMapping[*], paths:Pair<String, PathInformation>[*], context:DebugContext[1]):RelationalOperationElement[*]
-{
-   $mapFn->match(
-                  [
-                     r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                     fx:FunctionExpression[1]|
-                        let f = $fx->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->evaluateAndDeactivate();
-                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
-                          | let foundColumn = findAliasOrFail($f.func.name->toOne(), $columns);
-                            let res = $foundColumn.relationalElement;
-                            // Column application -> Generalize all that...
-                            if ($f.parametersValues->size() == 1 && $f.parametersValues->at(0)->instanceOf(FunctionExpression),
-                              | let subFuncExpr = $f.parametersValues->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate();
-                                let funcName = $subFuncExpr.func.functionName;
-                                let win = $state.currentWindow->toOne();
-                                if([
-                                      pair(|$funcName == 'offset',
-                                           |let offset = $subFuncExpr.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@Integer);
-                                            ^$win(func = newDynaFunction(if ($offset > 0, |'lead', |'lag'), $res));
-                                      ),
-                                      pair(|$funcName == 'first',
-                                           |^$win(func = newDynaFunction('first', $res));
-                                      ),
-                                      pair(|$funcName == 'last',
-                                           |^$win(func = newDynaFunction('last', $res));
-                                      ),
-                                      pair(|$funcName == 'nth',
-                                           |let offset = $subFuncExpr.parametersValues->at(3)->cast(@InstanceValue).values->at(0)->cast(@Integer);
-                                            ^$win(func = newDynaFunction('nth', $res->concatenate(^Literal(value=$offset))));
-                                      )
-                                   ],
-                                   |fail('unknown function \''+$subFuncExpr.func.functionName->toOne()+'\''); $res;
-                                );,
-                              | $res
-                            );
-                            ,
-                          |
-                            let tdsGetterDispatch = {|findColumnInTdsFromGetter($f, $columns, $returnColumnName, $vars, $state)};
-                            let dispatch = [
-                                            pair('getNumber', $tdsGetterDispatch),
-                                            pair('getInteger', $tdsGetterDispatch),
-                                            pair('getDecimal', $tdsGetterDispatch),
-                                            pair('getString', $tdsGetterDispatch),
-                                            pair('getFloat', $tdsGetterDispatch),
-                                            pair('getDate', $tdsGetterDispatch),
-                                            pair('getDateTime', $tdsGetterDispatch),
-                                            pair('getStrictDate', $tdsGetterDispatch),
-                                            pair('getBoolean', $tdsGetterDispatch),
-                                            pair('getEnum', $tdsGetterDispatch),
-                                            pair('isNull', $tdsGetterDispatch),
-                                            pair('isNotNull', $tdsGetterDispatch)
-                                          ];
-
-                            let func = $dispatch->filter(d|$d.first == $f.func.functionName);
-
-                            if($func->isNotEmpty(),
-                                    |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
-                                    |let supportedFunction = findSupportedFunction($f, $vars, $state);
-                                     if($supportedFunction->isNotEmpty(),
-                                       |
-                                          let inHandler =  {|
-                                            let valueParam = $f.parametersValues->at(0);
-                                              let valueArg = $valueParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-
-                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
-                                              let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
-
-                                              if($valueParam->isFunctionWithName('getEnum'),
-                                                | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
-                                                  let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
-                                                    e: Enum[1]| if($enumPropertyMapping->isNotEmpty(),
-                                                                  | $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
-                                                                  | $e.name
-                                                                ),
-                                                    a: Any[1] | $a
-                                                  ]));
-                                                  let enumMappedCollectionArg = ^LiteralList(values=$mappedEnumValues->map(v|^Literal(value=$v)));
-                                                  newDynaFunction('in', $valueArg->concatenate($enumMappedCollectionArg));,
-                                                | newDynaFunction('in', $valueArg->concatenate($mergedCollectionArg));
-                                              );
-                                            };
-
-                                          let overrides = [
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = equal_Any_MANY__Any_MANY__Boolean_1_, second = {|
-                                              let params = $f.parametersValues->partition(p|$p->isFunctionWithName('getEnum'));
-
-                                              if($params.first.values->isNotEmpty(),
-                                                | let enumVarParam = $params.first.values->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
-                                                  let otherParam = $params.second.values->toOne()->evaluateAndDeactivate();
-
-                                                  let enumVarProcessedParam = $enumVarParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-                                                  let otherProcessedParam = $otherParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
-                                                  let enumPropertyMapping = getEnumExprPropertyMapping($enumVarParam, $paths);
-
-                                                  if($otherProcessedParam->hasReferenceToEnum(),
-                                                    | if($enumPropertyMapping->isNotEmpty(),
-                                                        | let left = ^EnumProcessingHolder(param = $enumVarParam, processedParam = $enumVarProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$enumVarProcessedParam, currentPropertyMapping=$enumPropertyMapping));
-                                                          let right = ^EnumProcessingHolder(param = $otherParam, processedParam = $otherProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$otherProcessedParam));
-                                                          processEqualsForEnum($left, $right, $context, $state);,
-                                                        | let newParam = ^Literal(value = $otherProcessedParam->cast(@Literal).value->cast(@Enum).name->toOne());
-                                                          newDynaFunction('equal', [$enumVarProcessedParam, $newParam]);
-                                                      ),
-                                                    | newDynaFunction('equal', [$enumVarProcessedParam, $otherProcessedParam]);
-                                                  );,
-                                                | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
-                                              );
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {|
-                                              ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context))
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = plus_String_MANY__String_1_, second = {|
-                                              ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_$0_1$__Any_MANY__Boolean_1_, second = $inHandler),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = $inHandler),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {|
-                                              newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::date::month_Date_1__Month_1_, second = {|
-                                              newDynaFunction('monthName', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, second = {|
-                                              newDynaFunction('splitPart', [
-                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
-                                                $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
-                                                $f.parametersValues->at(2)->zeroToOneBasedIndex()->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) ->toOne()
-                                              ])
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = parseDate_String_1__Date_1_, second = {|
-                                              let format = ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=String), values = 'YYYY-MM-DD HH24:MI:SS');
-                                              newDynaFunction('toTimestamp', [
-                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
-                                                ^Literal(value = 'YYYY-MM-DD HH24:MI:SS')
-                                              ]);
-                                            }),
-                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, second = {|
-                                              let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
-                                              let name = meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName($type);
-
-                                                  let value = $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
-
-                                                  newDynaFunction($name, $value);
-                                                })
-                                              ]->concatenate(
-                                                        [
-                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1_,
-                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_,
-                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_
-                                                        ]->map(func|
-                                                          ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {|
-                                                            ^DynaFunction(
-                                                              name = 'concat',
-                                                              parameters = $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                                              )
-                                                          })
-                                                        )
-                                              );
-
-                                              let override = $overrides->filter(o | $o.first == $f.func)->first();
-                                              if ([
-                                                    pair(|$override->isNotEmpty(),
-                                                         |$override->toOne().second->eval()
-                                                    ),
-                                                    pair(|$supportedFunction->in([processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_, processCast_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_]),
-                                                         |$f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) 
-                                                    ),
-                                                    pair(|$supportedFunction == processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
-                                                         |  
-                                                            let win = $state.currentWindow->toOne();
-                                                               ^$win
-                                                               (
-                                                                  func = ^DynaFunction
-                                                                         (
-                                                                            name = $f.func.functionName->toOne(),
-                                                                            parameters = $f.parametersValues->tail()->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                                                         )
-                                                               );
-                                                    ),
-                                                    pair(|$supportedFunction == meta::relational::functions::pureToSqlQuery::processRowMapper_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
-                                                         |$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
-                                                    )                                                                            
-                                                  ],
-                                                    | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
-                                              );,
-                                          | fail('function ' + $f.func.name->makeString() + ' is not yet supported'); ^DynaFunction(name='fail');
-                                          );
-                            );
-
-                      );
-                     ,i:InstanceValue[1]| let transformedValues = $i.values->map(v | $v->match([
-                                                          s:String[1] | ^Literal(value=$s),
-                                                          n:Number[1] | ^Literal(value=$n),
-                                                          d:Date[1] | ^Literal(value=$d),
-                                                          b:Boolean[1] | ^Literal(value=$b),
-                                                          e:Enum[1] | ^Literal(value=$e),
-                                                          e:Enumeration<Any>[1] | ^Literal(value=$e),
-                                                          f:SimpleFunctionExpression[1]|$f->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          v:VariableExpression[1] | $v->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          i:InstanceValue[1]|$i->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($columns, $returnColumnName,$vars, $state, $currentPropertyMapping, $paths, $context),
-                                                          v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
-                                              ]));
-                                          if($transformedValues->isNotEmpty(),
-                                             | $transformedValues,
-                                             | ^Literal(value = ^SQLNull())
-                                          );
-                     ,v:VariableExpression[1] | let res = $v->resolve($vars, $state.inScopeVars);
-                                                if($res->isEmpty(),|[],|processTdsLambda($res->toOne(), $columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));
-
-                  ]
-                );
-}
-
 function meta::relational::functions::pureToSqlQuery::processPath(pa:Path<Nil,Any|*>[1], pathName:String[1], counter:String[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
      let projection = $pa.path->fold(
@@ -7653,8 +7427,8 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
                                                                                );
                                                         );
 
-         let windowColPaths = $wc->map(w| let pureType = $w.func->match([a:OlapAggregation<Any>[1]|$a.aggregateFn->functionReturnType().rawType->toOne(),r:OlapRank<Any>[1]|Integer ]);
-                                          let path = ^PathInformation(type = $pureType,documentation = $w.documentation,relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType));
+         let windowColPaths = $wc->map(w| let pureType = $w.func->match([a:OlapAggregation<Any>[1]|$a.aggregateFn->functionReturnType(),r:OlapRank<Any>[1]|^GenericType(rawType=Integer)]);
+                                          let path = ^PathInformation(type = $pureType.rawType->toOne(), documentation = $w.documentation, relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType));
                                           pair($w.name,$path);
                                        );
          let olapCols = $newColumnsWithPossiblePKs->filter(c|$c->instanceOf(WindowColumn));
@@ -8507,7 +8281,7 @@ function meta::relational::functions::pureToSqlQuery::processEnumValue(
     ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value = $enumValue)),|^$select(columns = ^Literal(value = $enumValue))));
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::extractEnumValue(
+function meta::relational::functions::pureToSqlQuery::extractEnumValue(
          expression : FunctionExpression[1],
          currentPropertyMapping:PropertyMapping[*],
          context:DebugContext[1]
@@ -9258,9 +9032,9 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
 
   // 2. create inner join b/w exploded and the other relation.
   let toReplace = ^Alias(name = 'dummy', relationalElement = $explodeOp);
-  let flattendOutputDataType = if($pureReturnType->isEmpty() || meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->isEmpty(),
+  let flattendOutputDataType = if($pureReturnType->isEmpty() || meta::relational::transform::fromPure::pureTypeToDataType($pureReturnType->toOne())->isEmpty(),
                                   | ^meta::relational::metamodel::datatype::SemiStructured(),
-                                  | meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($pureReturnType->toOne())->toOne());
+                                  | meta::relational::transform::fromPure::pureTypeToDataType($pureReturnType->toOne())->toOne());
   let replaceWith = ^Alias(name = 'dummy', relationalElement = ^TableAliasColumn(column = ^Column(name = $flattenOutputAlias.name, type = $flattendOutputDataType), alias = $explodedSubQuery));
   let updatedOperation = replaceDynaFunctionWithTableAliasColumn($join.operation, ^Pair<Alias, Alias>(first = $toReplace, second = $replaceWith))->cast(@Operation);
   let otherTableInJoin = if($tableToExplodeAlias == $sourceAliasInJoin, | $targetAliasInJoin, | $sourceAliasInJoin);
@@ -10094,38 +9868,38 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
 function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>[1]
 {
    newMap([
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,   second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,           second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::CYMinus2_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::CYMinus3_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p4wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p4wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p52wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p52wa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12mtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pma_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pmtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::priorDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::priorYear_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,    second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pw_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,           second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pw_fm_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pwa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pwtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pymtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pyqtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pywa_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pywtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::qtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::reportEndDay_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_, second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::wtd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::ytd_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::annualized_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,   second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cme_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cw_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,           second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::cw_fm_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::CYMinus2_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::CYMinus3_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::mtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12wa_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p4wa_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p4wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p52wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p52wa_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::p12mtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,       second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pma_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pmtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pqtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::priorDay_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,     second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::priorYear_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,    second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pw_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,           second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pw_fm_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pwa_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pwtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pymtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pyqtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pytd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pywa_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,         second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::pywtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,        second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::qtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::reportEndDay_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_, second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::calendar::ytd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_,          second=meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::distinct_T_MANY__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processDistinct_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processVariantRemoveDuplicates_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::getAll_Class_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processGetAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
@@ -10436,7 +10210,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_, second=meta::relational::functions::pureToSqlQuery::processAggregation_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_, second=meta::relational::functions::pureToSqlQuery::processAggregation_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processAggregation_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__PackageableRuntime_1__T_MANY_, second=meta::relational::functions::pureToSqlQuery::processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, second=meta::relational::functions::pureToSqlQuery::processHash_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::hash::hashCode_Any_MANY__Integer_1_, second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_, second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
