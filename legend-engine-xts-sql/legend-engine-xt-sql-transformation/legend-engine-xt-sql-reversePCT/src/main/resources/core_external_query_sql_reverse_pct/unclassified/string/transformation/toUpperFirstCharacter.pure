@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::unclassified::string::transformation::toUpperFirstCharacter::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_unclassified/string/transformation/toUpperFirstCharacter.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_',
+                      [
+                        rev('|\'xOxOxOx\'->meta::pure::functions::string::toUpperFirstCharacter()',
+                            'select case when char_length(Text\'xOxOxOx\') = 0 then Text\'xOxOxOx\' else concat(Text\'\', upper(substring(Text\'xOxOxOx\', 0, 1)), substring(Text\'xOxOxOx\', 1), Text\'\') end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_',
+                      [
+                        rev('|\'XoXoXoX\'->meta::pure::functions::string::toUpperFirstCharacter()',
+                            'select case when char_length(Text\'XoXoXoX\') = 0 then Text\'XoXoXoX\' else concat(Text\'\', upper(substring(Text\'XoXoXoX\', 0, 1)), substring(Text\'XoXoXoX\', 1), Text\'\') end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_',
+                      [
+                        rev('|\'1isOne\'->meta::pure::functions::string::toUpperFirstCharacter()',
+                            'select case when char_length(Text\'1isOne\') = 0 then Text\'1isOne\' else concat(Text\'\', upper(substring(Text\'1isOne\', 0, 1)), substring(Text\'1isOne\', 1), Text\'\') end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_',
+                      [
+                        rev('|\'\'->meta::pure::functions::string::toUpperFirstCharacter()',
+                            'select case when char_length(Text\'\') = 0 then Text\'\' else concat(Text\'\', upper(substring(Text\'\', 0, 1)), substring(Text\'\', 1), Text\'\') end'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::unclassified::string::transformation::toUpperFirstCharacter::exec():Boolean[1]
+{
+   meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

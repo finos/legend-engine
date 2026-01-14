@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import meta::pure::test::pct::reversePCT::framework::*;
-function meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::reverses():ReversesForSource[1]
+function meta::external::query::sql::reversePCT::tests::unclassified::flow::coalesce::reverses():ReversesForSource[1]
 {
   ^ReversesForSource(
-    source = '/core_functions_unclassified/tbd/coalesce.pure',
+    source = '/core_functions_unclassified/flow/coalesce.pure',
     reverses = [
                  revsForTest(
                       'meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty_Function_1__Boolean_1_',
@@ -150,7 +150,7 @@ function meta::external::query::sql::reversePCT::tests::unclassified::tbd::coale
   )
 }
 
-function meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::exec():Boolean[1]
+function meta::external::query::sql::reversePCT::tests::unclassified::flow::coalesce::exec():Boolean[1]
 {
    meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::flow::test::coalesce::coalesce_NotEmpty_DefaultEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);

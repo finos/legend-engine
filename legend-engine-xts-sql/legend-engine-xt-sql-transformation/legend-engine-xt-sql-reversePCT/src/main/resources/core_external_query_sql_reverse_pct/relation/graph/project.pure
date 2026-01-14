@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/graph/project.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_',
+                      [
+                        rev('|^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])',
+                            'select "root".name as "one", "address6422583_1767999355735_0".val as "two", "primitivecontainer4140965_1767999355741_0".val as "three" from leSchema.TypeForProjectTest9719275_1767999355729 as "root" left outer join leSchema.Address6422583_1767999355735 as "address6422583_1767999355735_0" on ("root".pureId__ = "address6422583_1767999355735_0".TypeForProjectTest_addresses__) left outer join leSchema.PrimitiveContainer4140965_1767999355741 as "primitivecontainer4140965_1767999355741_0" on ("root".pureId__ = "primitivecontainer4140965_1767999355741_0".TypeForProjectTest_values__)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::project::testSimpleProjectList_Function_1__Boolean_1_',
+                      [
+                        rev('|[^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)]), ^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok3\', addresses=^meta::pure::functions::relation::tests::project::Address(val=\'no\'), values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])]->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])',
+                            'select "root".name as "one", "address1846472_1767999358181_0".val as "two", "primitivecontainer646788_1767999358187_0".val as "three" from leSchema.TypeForProjectTest1650123_1767999358174 as "root" left outer join leSchema.Address1846472_1767999358181 as "address1846472_1767999358181_0" on ("root".pureId__ = "address1846472_1767999358181_0".TypeForProjectTest_addresses__) left outer join leSchema.PrimitiveContainer646788_1767999358187 as "primitivecontainer646788_1767999358187_0" on ("root".pureId__ = "primitivecontainer646788_1767999358187_0".TypeForProjectTest_values__)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_',
+                      [
+                        rev('|^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[])->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])',
+                            'select "root".name as "one", "address4526470_1767999360506_0".val as "two", "primitivecontainer3963298_1767999360512_0".val as "three" from leSchema.TypeForProjectTest9733609_1767999360500 as "root" left outer join leSchema.Address4526470_1767999360506 as "address4526470_1767999360506_0" on ("root".pureId__ = "address4526470_1767999360506_0".TypeForProjectTest_addresses__) left outer join leSchema.PrimitiveContainer3963298_1767999360512 as "primitivecontainer3963298_1767999360512_0" on ("root".pureId__ = "primitivecontainer3963298_1767999360512_0".TypeForProjectTest_values__)'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#->meta::pure::functions::relation::project(~[name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.str->meta::pure::functions::multiplicity::toOne() + $c.val->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()])',
+                            'select concat("table0_0".str,\'\',cast("table0_0".val as varchar)) as "name" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::exec():Boolean[1]
+{
+   meta::pure::functions::relation::tests::project::testSimpleProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::project::testSimpleProjectList(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::project::testSimpleRelationProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}
