@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test.shared;
 
-import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.BarrageSnapshot;
 import io.deephaven.client.impl.TableHandle;
 import io.deephaven.csv.util.CsvReaderException;
@@ -33,7 +32,6 @@ public class DeephavenCommands
 {
     private static final int DEEPHAVEN_PORT = 10000;
     public static final String START_SERVER_FUNCTION = "startDeephaven_String_1__URL_1_";
-    public static final String START_SERVER_FOR_PCT_FUNCTION = "startDeephavenForPCT_String_1__URL_1_";
     public static final String STOP_SERVER_FUNCTION = "stopDeephaven_String_1__Nil_0_";
     public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__Nil_0_";
     public static final String GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION = "getDeephavenTestConnection__DeephavenConnection_1_";
@@ -77,11 +75,6 @@ public class DeephavenCommands
 
     public static void createTableFromCSV(String tableName, String csv)
     {
-        if (DeephavenTestContainer.deephavenContainer == null)
-        {
-            DeephavenTestContainer.startDeephavenForPCT("0.37.4");
-        }
-
         DeephavenTestContainer.LOGGER.info("Creating table '{}' from CSV data using session: {}", tableName, DeephavenTestContainer.deephavenSession);
 
         CsvToNewTable csvToNewTable = null;
@@ -103,21 +96,6 @@ public class DeephavenCommands
             throw new RuntimeException("Failed to publish table '" + tableName + "' to Deephaven. Session may be closed or invalid.", e);
         }
 
-//        try
-//        {
-//            TableHandle queryTableHandle = deephavenSession.session().batch().of(TicketTable.fromQueryScopeField(tableName));
-//            BarrageSnapshot snapshot = deephavenSession.snapshot(queryTableHandle, BarrageUtil.DEFAULT_SNAPSHOT_OPTIONS);
-//            Table table = snapshot.entireTable().get();
-//            LOGGER.info("Created table '" + tableName + "' with " + table.size() + " rows");
-//            TableTools.show(table);
-//        }
-//        catch (InterruptedException | ExecutionException e)
-//        {
-//            throw new RuntimeException("Failed to verify table creation for '" + tableName + "'", e);
-//        }
-
-//        TableTools.show(tableFuture);
-
         TableHandle queryTableHandle = DeephavenTestContainer.deephavenSession.session().batch().of(TicketTable.fromQueryScopeField(tableName));
         FlightStream stream = DeephavenTestContainer.deephavenSession.stream(queryTableHandle);
 
@@ -126,11 +104,7 @@ public class DeephavenCommands
             DeephavenTestContainer.LOGGER.info("row count: " + stream.getRoot().getRowCount());
         }
 
-//            stream.next()
-//            stream.getRoot().getRowCount();
-
         BarrageSnapshot snapshot = DeephavenTestContainer.deephavenSession.snapshot(queryTableHandle, BarrageUtil.DEFAULT_SNAPSHOT_OPTIONS);
-//            snapshot.partialTable()
         Table tableFuture = null;
         try
         {

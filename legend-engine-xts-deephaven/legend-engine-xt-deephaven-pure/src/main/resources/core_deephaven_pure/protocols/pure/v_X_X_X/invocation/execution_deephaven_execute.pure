@@ -82,18 +82,3 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getDeeph
   
    $tdsString->stringToTDS();
 }
-
-// function meta::protocols::pure::vX_X_X::invocation::execution::execute::transformActivitiesForDeephaven(
-//    activities: meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenExecutionActivity[*],
-//    extensions: Extension[*]
-// ): Activity[*]
-// {
-//    // Simple transformation - for now just return empty activities
-//    // This can be enhanced later if needed
-//    [];
-// }
-
-// Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenExecutionActivity extends meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::ExecutionActivity
-// {
-//    query : String[1];
-// }

@@ -18,14 +18,12 @@ import meta::external::store::deephaven::metamodel::type::*;
 
 Class meta::external::store::deephaven::metamodel::store::DeephavenStore extends meta::pure::store::Store
 {
-  // tables : Table[1..*];
   tables : Table[*]; 
 }
 
 Class meta::external::store::deephaven::metamodel::store::Table
 {
   name : String[1];
-  // columns : Column[1..*];
   columns : Column[*];
 }
 

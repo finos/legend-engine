@@ -55,13 +55,11 @@ public class DeephavenTestConnectionIntegration implements TestConnectionIntegra
     @Override
     public void shutDown() throws Exception
     {
-//        this.cleanup();
     }
 
     @Override
     public void start() throws Exception
     {
-//        this.setup();
     }
 }
 

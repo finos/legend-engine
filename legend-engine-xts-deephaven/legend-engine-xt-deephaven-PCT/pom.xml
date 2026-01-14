@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
-        <version>4.118.1-SNAPSHOT</version>
+        <version>4.118.2-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -432,7 +432,6 @@
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
         </dependency>
 
-        <!-- Deephaven dependencies for runtime execution plan compilation -->
         <dependency>
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-engine-api</artifactId>

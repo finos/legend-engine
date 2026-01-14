@@ -42,7 +42,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class DeephavenTestContainer
 {
     public static final Logger LOGGER = LoggerFactory.getLogger(DeephavenTestContainer.class);
-    private static final String DEEPHAVEN_VERSION_TAG = "0.37.4";
     private static final int PORT = 10_000;
     private static final String PSK = "myStaticPSK";
     private static final String APP_DIR = "/app.d";
@@ -130,11 +129,6 @@ public class DeephavenTestContainer
 
     public static boolean startDeephavenForPCT(String versionTag)
     {
-//        if (deephavenContainer != null && deephavenContainer.isRunning())
-//        {
-//            stopDeephaven();
-//        }
-
         try
         {
             deephavenContainer = startDeephavenContainerForPCT(versionTag);
@@ -171,7 +165,6 @@ public class DeephavenTestContainer
 
     public static boolean stopDeephaven()
     {
-        // Close the session first if it exists
         if (deephavenSession != null)
         {
             try
@@ -188,7 +181,6 @@ public class DeephavenTestContainer
             }
         }
 
-        // Then stop the container
         if (deephavenContainer != null && deephavenContainer.isRunning())
         {
             try
