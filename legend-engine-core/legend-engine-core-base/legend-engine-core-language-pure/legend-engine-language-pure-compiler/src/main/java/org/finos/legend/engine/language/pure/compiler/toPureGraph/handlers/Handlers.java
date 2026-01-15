@@ -596,7 +596,7 @@ public class Handlers
         }
         else
         {
-            final GenericType gt2 = gt._rawType()._name().equals("TabularDataSet") || gt._rawType()._name().equals("TableTDS") ? cc.pureModel.getGenericType("meta::pure::tds::TDSRow") : gt;
+            final GenericType gt2 = valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()) ? cc.pureModel.getGenericType("meta::pure::tds::TDSRow") : gt;
             toCollection(parameters.get(1)).values.forEach(l -> updateLambdaWithCol(gt2, l, cc));
         }
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
@@ -718,8 +718,7 @@ public class Handlers
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
         List<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
         GenericType gt = firstProcessedParameter._genericType();
-        String gtName = gt._rawType()._name();
-        if ("TabularDataSet".equals(gtName) || "TableTDS".equals(gtName))
+        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()))
         {
             updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
             parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
@@ -785,8 +784,7 @@ public class Handlers
         MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
         GenericType gt = firstProcessedParameter._genericType();
 
-        String gtName = gt._rawType()._name();
-        if ("TabularDataSet".equals(gtName) || "TableTDS".equals(gtName))
+        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()))
         {
             int aggOffset = parameters.size() == 3 ? 2 : 3;
             aggInferenceAll(parameters, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), 1, aggOffset, valueSpecificationBuilder);
