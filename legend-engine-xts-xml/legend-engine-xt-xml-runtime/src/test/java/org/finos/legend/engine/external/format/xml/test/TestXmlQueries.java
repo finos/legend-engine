@@ -21,7 +21,6 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -287,6 +286,33 @@ public class TestXmlQueries extends TestExternalFormatQueries
     }
 
     @Test
+    public void testContainerHandlerWithSameAttrNameAtDifferentDepth()
+    {
+        String grammar = libraryModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data: Byte[*]|test::models::Library->internalize(\n" +
+                        "      test::bindings::XmlBinding,\n" +
+                        "      $data\n" +
+                        "    )->serialize(\n" +
+                        "      #{\n" +
+                        "        test::models::Library{\n" +
+                        "            Shelf{\n" +
+                        "              ID,\n" +
+                        "              Book{\n" +
+                        "                ID\n" +
+                        "              }\n" +
+                        "            }\n" +
+                        "          }\n" +
+                        "      }#\n" +
+                        "    )",
+                Maps.mutable.with("data", resource("queries/library.xml")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/library.json")));
+    }
+
+    @Test
     public void testInternalizeWithTextContentAndAttribute()
     {
         String grammar = priceModel();
@@ -337,6 +363,31 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "  contentType: 'application/xml';\n" +
                 "  modelIncludes: [ test::model::AllDataType ];\n" +
                 "}\n";
+    }
+
+    public String libraryModel()
+    {
+        return "Class test::models::Library\n" +
+                "{\n" +
+                "  Shelf: test::models::Shelf[*];\n" +
+                "}\n\n" +
+                "Class test::models::Book\n" +
+                "{\n" +
+                "  ID: String[0..1];\n" +
+                "}\n\n" +
+                "Class test::models::Shelf\n" +
+                "{\n" +
+                "  Book: test::models::Book[*];\n" +
+                "  ID: String[0..1];\n" +
+                "}\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::bindings::XmlBinding\n" +
+                "{\n" +
+                "  contentType: 'application/xml';\n" +
+                "  modelIncludes: [\n" +
+                "    test::models\n" +
+                "  ];\n" +
+                "}";
     }
 
     private String priceModel()
