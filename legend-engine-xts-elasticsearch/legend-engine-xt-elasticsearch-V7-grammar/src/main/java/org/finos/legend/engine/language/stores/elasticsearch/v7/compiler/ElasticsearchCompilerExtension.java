@@ -22,8 +22,12 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -110,5 +114,11 @@ public class ElasticsearchCompilerExtension implements CompilerExtension
                     )
             );
         });
+    }
+
+    @Override
+    public MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
+    {
+        return Maps.mutable.with("cov_tds_TabularDataSet", Sets.mutable.with("IndexTDS"));
     }
 }
