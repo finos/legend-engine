@@ -95,7 +95,7 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx6g -XX:CompressedClassSpaceSize=1400M"
+          MAVEN_OPTS: "-Xmx6g -XX:CompressedClassSpaceSize=1200M -XX:MaxMetaspaceSize=4g"
         run: |
           mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
@@ -104,7 +104,7 @@ jobs:
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: "-Xmx6g -XX:CompressedClassSpaceSize=1400M"
+          MAVEN_OPTS: "-Xmx6g -XX:CompressedClassSpaceSize=1200M -XX:MaxMetaspaceSize=4g"
         # NOTE: here we publish snapshot to a staging Maven registry
         # some registry like Maven Central requires javadoc, but for now we
         # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
