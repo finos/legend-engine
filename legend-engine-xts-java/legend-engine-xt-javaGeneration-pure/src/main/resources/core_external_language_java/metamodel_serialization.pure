@@ -31,9 +31,9 @@ Class meta::external::language::java::serialization::Stringifier
    tabDepth         : Integer[1];
    scope            : Scope[1];
    foldLevel        : Integer[1];
-   wipLine          : String[1];
+   wipLine          : String[*];
    pending          : String[1];
-   completeLines    : String[1];
+   completeLines    : String[*];
 
    tabString()  { range(0, $this.tabDepth)->map(x| $this.tab)->joinStrings() }: String[1];
 
@@ -677,40 +677,37 @@ function <<access.private>> meta::external::language::java::serialization::debug
    println('scope         = ' + $sfer.scope->toString());
    println('tabDepth      = ' + $sfer.tabDepth->toString());
    println('pending       = \'' + $sfer.pending->replace('\n', '\\n') + '\'');
-   println('wipLine       = \'' + $sfer.wipLine + '\'');
-   println('completeLines = \'' + $sfer.completeLines->replace('\n', '\\n') + '\'');
+   println('wipLine       = \'' + $sfer.wipLine->plus() + '\'');
+   println('completeLines = \'' + $sfer.completeLines->plus()->replace('\n', '\\n') + '\'');
    println('--------------------------------------------------');
    $sfer;
 }
 
 function <<access.private>> meta::external::language::java::serialization::addText(sfer:Stringifier[1], s:String[1]): Stringifier[1]
 {
-   if($s == '',
-      | $sfer,
-      {|
-
-         let lineEnded = if($sfer.pending->endsWith('\n'), |$sfer->finishLine(false), |$sfer); //TODO: Skip newline checks for certain modes
-
-             ^$lineEnded(
-            wipLine = $lineEnded.wipLine + $lineEnded.pending + $s,
-            pending = ''
-                        );
-      }
-    );
+  if($s == '',
+    | $sfer,
+  | if( $sfer.pending->endsWith('\n'),
+    | let lineEnded = $sfer->finishLine();
+      ^$lineEnded(
+        completeLines += $sfer.pending,
+        pending       = '',
+        wipLine       += $s 
+      );,
+  | ^$sfer(
+      wipLine += $sfer.pending->concatenate($s),
+      pending = ''
+    )
+  ))
 }
 
-function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1], lastLine:Boolean[1]): Stringifier[1]
+function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1]): Stringifier[1]
 {
-   let newLinePos     = $sfer.pending->indexOf('\n');
-   let beforeNewLines = if($lastLine, |'', |$sfer.pending->substring(0, $newLinePos));
-   let newLines       = if($lastLine, |'', |$sfer.pending->substring($newLinePos));
-   let newCompleted   = applyFolds($sfer.wipLine + $beforeNewLines, 0, 100)->joinStrings('\n');
-
-   ^$sfer(
-      completeLines = $sfer.completeLines + $newCompleted + $newLines,
+  ^$sfer(
+      completeLines += $sfer.wipLine->plus()->applyFolds(0, 100),
       pending       = '',
       wipLine       = $sfer.tabString
-   );
+  )
 }
 
 function <<access.private>> meta::external::language::java::serialization::openBrace(sfer:Stringifier[1]): Stringifier[1]
@@ -760,7 +757,7 @@ function <<access.private>> meta::external::language::java::serialization::pendi
 
 function <<access.private>> meta::external::language::java::serialization::semicolon(sfer:Stringifier[1]): Stringifier[1]
 {
-   ^$sfer(wipLine=$sfer.wipLine + ';', pending='');
+   ^$sfer(wipLine += ';', pending='');
 }
 
 function <<access.private>> meta::external::language::java::serialization::openParentheses(sfer:Stringifier[1]): Stringifier[1]
@@ -770,7 +767,7 @@ function <<access.private>> meta::external::language::java::serialization::openP
 
 function <<access.private>> meta::external::language::java::serialization::closeParentheses(sfer:Stringifier[1]): Stringifier[1]
 {
-   ^$sfer(wipLine=$sfer.wipLine + ')', pending='');
+   ^$sfer(wipLine += ')', pending='');
 }
 
 function <<access.private>> meta::external::language::java::serialization::space(sfer:Stringifier[1]): Stringifier[1]
@@ -799,7 +796,7 @@ function <<access.private>> meta::external::language::java::serialization::blank
 
 function <<access.private>> meta::external::language::java::serialization::blankLine(sfer:Stringifier[1]): Stringifier[1]
 {
-   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->matches(' *\\{'),  //  TODO: Extra new lines  are ok so this can be dropped
+   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->plus()->matches(' *\\{'),  //  TODO: Extra new lines  are ok so this can be dropped
           | $sfer,
          |
       if($sfer.pending->endsWith('\n'),
@@ -902,7 +899,7 @@ function <<access.private>> meta::external::language::java::serialization::initi
 
 function meta::external::language::java::serialization::getResult(sfer:Stringifier[1]): String[1]
 {
-   $sfer->finishLine(true).completeLines;
+   $sfer->finishLine().completeLines->plus();
 }
 
 function <<access.private>> meta::external::language::java::serialization::applyFolds(s:String[1], level:Integer[1], maxLength:Integer[1]): String[1]

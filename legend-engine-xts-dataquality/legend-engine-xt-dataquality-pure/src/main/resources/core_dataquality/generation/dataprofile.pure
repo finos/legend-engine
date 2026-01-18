@@ -25,6 +25,7 @@ import meta::pure::metamodel::relation::*;
 
 function meta::external::dataquality::dataprofile::getProfilingLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], wrapWithFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
+  assert($dqRelationValidation.query->isEndingWithFromFunction(), 'Query must end with a from in order to execute');
   let lambda = $dqRelationValidation.query->popTerminalFunctionExpression();
   
   let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();

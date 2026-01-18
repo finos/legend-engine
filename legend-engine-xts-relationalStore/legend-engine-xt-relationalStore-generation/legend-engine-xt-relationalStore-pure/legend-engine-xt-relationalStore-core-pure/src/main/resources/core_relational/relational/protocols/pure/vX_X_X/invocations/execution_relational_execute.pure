@@ -13,6 +13,7 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::json::*;
@@ -44,17 +45,27 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::processT
   ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$res), second=^List<Activity>(values=$r.activities->transformActivities($extensions)));
 }
 
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::manageName(_name:String[0..1]):String[1]
+{
+    let name = $_name->toOne()->trim();
+    let isSimple = $name->startsWith('\'') || $name->matches('^[a-zA-Z0-9_]+$');
+    if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'');
+}
+
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], funcReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]): Any[1]
 {
   let cols = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
 
   // We lose column type info after pivot, so need to compensate from protocol.
-  let columnTypeMap = if ($funcReturnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
-                        | $funcReturnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x | pair($x.name->toOne(), $x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()))->newMap(),
-                        | $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | pair($c.name, $t)))->newMap()
-                      );
+  let columns = if ($funcReturnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                    | $funcReturnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x |                        
+                        let multiplicity = $x->functionReturnMultiplicity();
+                        manageName($x.name) + ':'+$x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()+'['+if ($multiplicity == ZeroMany,|PureOne, |$multiplicity)->printMultiplicity()+']';
+                      ),
+                    | $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | manageName($c.name) + ':' + $t))
+                );
 
-  let tdsString = $cols->map(c| $c.name + $columnTypeMap->get($c.name)->map(t | ':' + $t)->orElse(''))->joinStrings(',') + '\n' +
+  let tdsString = $columns->joinStrings(',') + '\n' +
                                 $r.result.rows->map(x|
                                   range($x.values->size())->map(z |
                                       $x.values->at($z)->match([

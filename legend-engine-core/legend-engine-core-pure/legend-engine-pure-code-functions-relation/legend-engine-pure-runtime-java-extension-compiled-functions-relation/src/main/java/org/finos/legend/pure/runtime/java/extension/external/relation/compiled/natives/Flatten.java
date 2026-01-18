@@ -17,6 +17,7 @@ package org.finos.legend.pure.runtime.java.extension.external.relation.compiled.
 
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -24,6 +25,8 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
+
+import static org.finos.legend.pure.runtime.java.compiled.generation.GenericTypeSerializationInCode.generateGenericTypeBuilder;
 
 public class Flatten extends AbstractNative implements Native
 {
@@ -36,10 +39,9 @@ public class Flatten extends AbstractNative implements Native
     {
         ListIterable<? extends CoreInstance> parameterValues = functionExpression.getValueForMetaPropertyToMany(M3Properties.parametersValues);
 
-        CoreInstance rawType = Instance.getValueForMetaPropertyToOneResolved(parameterValues.get(0), M3Properties.genericType, M3Properties.rawType, processorContext.getSupport());
-        String type = PackageableElement.getUserPathForPackageableElement(rawType, "::");
+        CoreInstance genericType = Instance.getValueForMetaPropertyToOneResolved(parameterValues.get(0), M3Properties.genericType, processorContext.getSupport());
 
-        return getString(transformedParams, "\"" + type + "\"");
+        return getString(transformedParams, generateGenericTypeBuilder((GenericType) genericType, processorContext));
     }
 
     //TODO the type inference here may not be bullet proof as we only get single value from vars[0]
@@ -51,7 +53,7 @@ public class Flatten extends AbstractNative implements Native
                 "            @Override\n" +
                 "            public Object execute(ListIterable<?> vars, final ExecutionSupport es)\n" +
                 "            {\n" +
-                "                return " + getString(Lists.mutable.with("(RichIterable)vars.get(0)", "((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec)vars.get(1))"), "CompiledSupport.getPureClassName(((RichIterable) vars.get(0)).getAny())") + ";" +
+                "                return " + getString(Lists.mutable.with("(RichIterable)vars.get(0)", "((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec)vars.get(1))"), "null") + ";" +
                 "            }\n" +
                 "        }";
     }

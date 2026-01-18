@@ -130,6 +130,12 @@ public class FlexCollectionElement extends Element
 
     private boolean canConsumeElement(DeserializeContext<?> context)
     {
+        if (particle != null && particle.canConsume(context))
+        {
+            context.reader.skipElement();
+            return false;
+        }
+
         if (attributes.anySatisfy(a -> a.canConsume(context)))
         {
             context.reader.skipElement();

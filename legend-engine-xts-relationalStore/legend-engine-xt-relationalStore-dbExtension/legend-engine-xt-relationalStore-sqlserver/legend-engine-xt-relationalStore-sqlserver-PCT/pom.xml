@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-sqlserver</artifactId>
-        <version>4.117.1-SNAPSHOT</version>
+        <version>4.118.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,24 +36,13 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_StandardFunctions_PCT
-                        </PCTTestSuite>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_EssentialFunctions_PCT
-                        </PCTTestSuite>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_GrammarFunctions_PCT
-                        </PCTTestSuite>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_RelationFunctions_PCT
-                        </PCTTestSuite>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_UnclassifiedFunctions_PCT
-                        </PCTTestSuite>
-                        <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_VariantFunctions_PCT
-                        </PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_StandardFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_EssentialFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_GrammarFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_RelationFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_UnclassifiedFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_VariantFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_ScenarioQuantFunctions_PCT</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -96,6 +85,16 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -126,11 +125,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-            <!--            <scope>runtime</scope>-->
-        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
@@ -245,6 +239,12 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

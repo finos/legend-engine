@@ -494,15 +494,14 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): LambdaFunction<Any>[1]
 {
-  let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
-
   //if validation name provided only generate query for that validation else generate query for all validations
   let selectedValidations = if ($validationNames->isEmpty(),
     | $dqRelationValidation.validations,
     | $dqRelationValidation.validations->filter(val| $validationNames->contains($val.name))
   );
+  let containsFrom = $dqRelationValidation.query->isEndingWithFromFunction();
   let multipleValidations = $selectedValidations->size() > 1;
-  let lambda = if ($removeFrom || $multipleValidations, //if we are running multiple validations we will wrap the expression in an eval on the from function at the end to ensure correct sql generated
+  let lambda = if (($removeFrom || $multipleValidations) && $containsFrom, //if we are running multiple validations we will wrap the expression in an eval on the from function at the end to ensure correct sql generated
     | $dqRelationValidation.query->popTerminalFunctionExpression(), 
     | $dqRelationValidation.query
   );
@@ -522,8 +521,9 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
         | [buildLetExpression('sourceQuery', $query), $validationsUnion],
         | $validationsUnion
       );
-      if (!$removeFrom && $multipleValidations, 
-        | ^$lambda(expressionSequence = $expressionSequence)->wrapWithEvalOnFrom($from), //need to wrap in eval on from so that let expression works correctly (correct sql can be generated)
+      if (!$removeFrom && $multipleValidations && $containsFrom, 
+        | let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
+          ^$lambda(expressionSequence = $expressionSequence)->wrapWithEvalOnFrom($from);, //need to wrap in eval on from so that let expression works correctly (correct sql can be generated)
         | ^$lambda(expressionSequence = $expressionSequence)
       );
   );
@@ -532,13 +532,13 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
 {
   if($selectedValidation.type->isNotEmpty() && $selectedValidation.type == 'ROW_LEVEL',
-     | $query->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom), // for backward compatibility
-     | $query->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom));
+     | $query->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive), // for backward compatibility
+     | $query->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive));
 }
 
 
 // row level validation for backward compatibility
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1]): FunctionExpression[1]
 {
   let inputRelType = $query->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
   let withValidationFilterExpression = $query->toOne()->evaluateAndDeactivate()->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $inputRelType);
@@ -552,7 +552,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   );
 }
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(query: ValueSpecification[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(query: ValueSpecification[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1], castDQColumnsToPrimitive:Boolean[1]): FunctionExpression[1]
 {
   // assertion transformation
   let poppedAssertion = $selectedValidation->popAssertionForProjection()->evaluateAndDeactivate();
@@ -890,14 +890,6 @@ function meta::external::dataquality::buildRelationLimitFilterExpression(f: Valu
                             genericType=$returnType,
                             multiplicity = ZeroMany,
                             importGroup=system::imports::coreImport)->evaluateAndDeactivate();
-}
-
-function meta::external::dataquality::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
-{
-  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition(
-    meta::external::dataquality::fromFunctions()
-    );
-  !$getExprList->isEmpty();
 }
 
 function meta::external::dataquality::isEndingWithFromFunction(func: FunctionDefinition<Any>[1]):Boolean[1]

@@ -25,6 +25,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -43,17 +44,17 @@ import org.eclipse.collections.impl.block.factory.Comparators;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.function.Function;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -71,15 +72,18 @@ public abstract class TestTDS
     public static final byte BOOLEAN_AS_BYTE_SENTINEL = Byte.MIN_VALUE;
     public static final long DATE_TIME_AS_LONG_SENTINEL = Long.MIN_VALUE;
 
+    protected MutableMap<String, Type> pureTypesByColumnName = Maps.mutable.empty();
     protected MutableMap<String, Object> dataByColumnName = Maps.mutable.empty();
     protected MutableMap<String, boolean[]> isNullByColumn = Maps.mutable.empty();
     protected MutableMap<String, DataType> columnType = Maps.mutable.empty();
-    protected MutableMap<String, String> columnPureType = Maps.mutable.empty();
     protected MutableList<String> columnsOrdered = Lists.mutable.empty();
     protected long rowCount;
 
-    public TestTDS()
+    protected final ProcessorSupport processorSupport;
+
+    public TestTDS(ProcessorSupport processorSupport)
     {
+        this.processorSupport = processorSupport;
     }
 
     public abstract Object getValueAsCoreInstance(String columnName, int rowNum);
@@ -106,8 +110,9 @@ public abstract class TestTDS
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
-                String pureType = columnPureType.get(columnName);
-                result = !isNull[rowNum] ? ("Decimal".equals(pureType) ? BigDecimal.valueOf(data[rowNum]) : data[rowNum]) : null;
+                CoreInstance pureType = pureTypesByColumnName.get(columnName) == null ? null : pureTypesByColumnName.get(columnName);
+                boolean isDecimal = pureType != null && processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Decimal));
+                result = !isNull[rowNum] ? (isDecimal ? BigDecimal.valueOf(data[rowNum]) : data[rowNum]) : null;
                 break;
             }
             case STRING:
@@ -122,16 +127,14 @@ public abstract class TestTDS
         return result;
     }
 
-    public abstract TestTDS newTDS();
-
     public TestTDS newEmptyTDS()
     {
-        return newTDS(columnsOrdered, columnType, 0);
+        return newTDS(columnsOrdered, columnType, pureTypesByColumnName, 0);
     }
 
     public TestTDS newNullTDS()
     {
-        TestTDS testTDS = newTDS(columnsOrdered, columnType, 1);
+        TestTDS testTDS = newTDS(columnsOrdered, columnType, pureTypesByColumnName, 1);
         for (String col : columnsOrdered)
         {
             testTDS.isNullByColumn.put(col, new boolean[]{true});
@@ -174,37 +177,35 @@ public abstract class TestTDS
         return testTDS;
     }
 
-    public abstract TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows);
+    public abstract TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> columnTyp, int rows);
 
     public TestTDS(String csv, ProcessorSupport processorSupport)
     {
-        this(readCsv(csv), processorSupport);
+        this(readCsv(csv), Lists.mutable.empty(), processorSupport);
     }
 
-    public TestTDS(CsvReader.Result result, ProcessorSupport processorSupport)
+    public TestTDS(CsvReader.Result result, MutableList<Type> types, ProcessorSupport processorSupport)
     {
+        this.processorSupport = processorSupport;
+
         this.rowCount = result.numRows();
 
-        ArrayIterate.forEach(result.columns(), c ->
+        if (types.isEmpty())
         {
-            String name = c.name();
-            DataType type = c.dataType();
-            int typeIndex = name.indexOf(':');
-            if (typeIndex != -1)
-            {
-                String specifiedType = name.substring(typeIndex + 1);
-                type = pureToTDSType(specifiedType, type);
-                name = name.substring(0, typeIndex);
-                columnPureType.put(name, specifiedType);
-            }
-            else
-            {
-                columnPureType.put(name, tdsTypeToPure(type));
-            }
+            types = Lists.mutable.withAll(Collections.nCopies(result.numCols(), null));
+        }
+
+        ListIterate.zip(Lists.mutable.with(result.columns()), types).forEach(c ->
+        {
+            String name = c.getOne().name().trim();
+            DataType type = c.getOne().dataType();
+
+            type = c.getTwo() == null || c.getTwo() == processorSupport.package_getByUserPath(M3Paths.Number) ? type : pureToTDSType(c.getTwo());
 
             columnsOrdered.add(name);
             columnType.put(name, type);
-            Object data = getDataAsType(c, type, (int) rowCount, processorSupport);
+            pureTypesByColumnName.put(name, c.getTwo());
+            Object data = getDataAsType(c.getOne(), type, (int) rowCount, processorSupport);
             dataByColumnName.put(name, data);
             boolean[] isNullFlag = new boolean[(int) this.rowCount];
             isNullByColumn.put(name, isNullFlag);
@@ -237,9 +238,9 @@ public abstract class TestTDS
                     dataByColumnName.put(name, variants);
                     for (int i = 0; i < this.rowCount; i++)
                     {
-                        Object origData = c.data();
+                        Object origData = c.getOne().data();
                         String value;
-                        switch (c.dataType()) // check original type
+                        switch (c.getOne().dataType()) // check original type
                         {
                             case LONG:
                                 long lVal = ((long[]) origData)[i];
@@ -257,7 +258,7 @@ public abstract class TestTDS
                                 value = ((String[]) origData)[i];
                                 break;
                             default:
-                                throw new RuntimeException("ERROR " + c.dataType() + " not supported yet on variant!");
+                                throw new RuntimeException("ERROR " + c.getOne().dataType() + " not supported yet on variant!");
                         }
                         variants[i] = value == null ? null : VariantInstanceImpl.newVariant(value, processorSupport);
                     }
@@ -275,62 +276,43 @@ public abstract class TestTDS
                     }
                     break;
                 default:
-                    throw new RuntimeException(c.dataType() + " not supported yet!");
+                    throw new RuntimeException(c.getOne().dataType() + " not supported yet!");
             }
         });
     }
 
-    private static DataType pureToTDSType(String specifiedType)
+    private DataType pureToTDSType(Type type)
     {
-        return Objects.requireNonNull(pureToTDSType(specifiedType, null), () -> "ERROR " + specifiedType + " not supported yet!");
+        return Objects.requireNonNull(pureToTDSType(type, null), () -> "ERROR " + type + " not supported yet!");
     }
 
-    private static DataType pureToTDSType(String specifiedType, DataType type)
+    private DataType pureToTDSType(Type pureType, DataType type)
     {
-        switch (specifiedType)
+        if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Boolean)))
         {
-            case M3Paths.Boolean:
-                type = DataType.BOOLEAN_AS_BYTE;
-                break;
-            case M3Paths.Integer:
-                type = DataType.LONG;
-                break;
-            case M3Paths.DateTime:
-                type = DataType.DATETIME_AS_LONG;
-                break;
-            case M3Paths.Float:
-                type = DataType.DOUBLE;
-                break;
-            case M3Paths.String:
-                type = DataType.STRING;
-                break;
-            case M3Paths.Variant:
-                type = DataType.CUSTOM;
-                break;
-            default:
+            return DataType.BOOLEAN_AS_BYTE;
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Integer)))
+        {
+            return DataType.LONG;
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Date)))
+        {
+            return DataType.DATETIME_AS_LONG;
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Number)))
+        {
+            return DataType.DOUBLE;
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.String)))
+        {
+            return DataType.STRING;
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Variant)))
+        {
+            return DataType.CUSTOM;
         }
         return type;
-    }
-
-    private static String tdsTypeToPure(DataType givenType)
-    {
-        switch (givenType)
-        {
-            case BOOLEAN_AS_BYTE:
-                return M3Paths.Boolean;
-            case LONG:
-                return M3Paths.Integer;
-            case DATETIME_AS_LONG:
-                return M3Paths.DateTime;
-            case DOUBLE:
-                return M3Paths.Float;
-            case STRING:
-                return M3Paths.String;
-            case CUSTOM:
-                return M3Paths.Variant;
-            default:
-        }
-        throw new RuntimeException("ERROR " + givenType + " not supported yet!");
     }
 
     private Object getDataAsType(CsvReader.ResultColumn c, DataType type, int rowCount, ProcessorSupport processorSupport)
@@ -373,10 +355,12 @@ public abstract class TestTDS
         return c.data();
     }
 
-    protected TestTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
+    protected TestTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumnName, int rows, ProcessorSupport processorSupport)
     {
+        this.processorSupport = processorSupport;
         this.columnsOrdered = columnOrdered;
         this.columnType = columnType;
+        this.pureTypesByColumnName = pureTypesByColumnName;
         this.rowCount = rows;
         this.columnType.keyValuesView().forEach(p ->
         {
@@ -517,7 +501,7 @@ public abstract class TestTDS
         columnOrdered.addAll(this.columnsOrdered);
         columnOrdered.addAll(otherTDS.columnsOrdered);
         columnOrdered = columnOrdered.distinct();
-        TestTDS res = newTDS(columnOrdered, columnTypes, (int) (rowCount * otherTDS.rowCount));
+        TestTDS res = newTDS(columnOrdered, columnTypes, pureTypesByColumnName, (int) (rowCount * otherTDS.rowCount));
 
         if (res.rowCount != 0)
         {
@@ -579,10 +563,11 @@ public abstract class TestTDS
 
     public TestTDS copy()
     {
-        TestTDS result = newTDS();
-        result.rowCount = rowCount;
-        result.columnsOrdered = Lists.mutable.withAll(columnsOrdered);
-        result.columnType = Maps.mutable.withMap(columnType);
+        TestTDS result = newTDS(Lists.mutable.withAll(columnsOrdered), Maps.mutable.withMap(columnType), Maps.mutable.withMap(this.pureTypesByColumnName), (int) rowCount);
+//        result.columnsOrdered = Lists.mutable.withAll(columnsOrdered);
+//        result.columnType = Maps.mutable.withMap(columnType);
+//        result.pureTypesByColumnName = Maps.mutable.withMap(this.pureTypesByColumnName);
+//        result.rowCount = rowCount;
         result.dataByColumnName = Maps.mutable.empty();
         result.isNullByColumn = Maps.mutable.empty();
         dataByColumnName.forEachKey(columnName ->
@@ -724,10 +709,11 @@ public abstract class TestTDS
 
     public TestTDS concatenate(TestTDS tds2)
     {
-        TestTDS result = newTDS();
-        result.rowCount = this.rowCount + tds2.rowCount;
-        result.columnType = Maps.mutable.withMap(columnType);
-        result.columnsOrdered = Lists.mutable.withAll(columnsOrdered);
+        TestTDS result = newTDS(Lists.mutable.withAll(columnsOrdered), Maps.mutable.withMap(columnType), Maps.mutable.withMap(pureTypesByColumnName), (int) (this.rowCount + tds2.rowCount));
+//        result.rowCount = this.rowCount + tds2.rowCount;
+//        result.columnType = Maps.mutable.withMap(columnType);
+//        result.pureTypesByColumnName = Maps.mutable.withMap(pureTypesByColumnName);
+//        result.columnsOrdered = Lists.mutable.withAll(columnsOrdered);
 
         dataByColumnName.forEachKey(columnName ->
         {
@@ -794,11 +780,11 @@ public abstract class TestTDS
     {
         if (columnValue.nulls == null)
         {
-            return addColumn(columnValue.name, columnValue.type, columnValue.result);
+            return addColumn(columnValue.name, columnValue.type, columnValue.pureType, columnValue.multiplicity, columnValue.result);
         }
         else
         {
-            return addColumn(columnValue.name, columnValue.type, columnValue.result, columnValue.nulls);
+            return addColumn(columnValue.name, columnValue.type, columnValue.pureType, columnValue.multiplicity, columnValue.result, columnValue.nulls);
         }
     }
 
@@ -807,9 +793,9 @@ public abstract class TestTDS
         return Tuples.pair(this.copy(), Lists.mutable.with(Tuples.pair(0, (int) this.getRowCount())));
     }
 
-    public TestTDS addColumn(String name, CoreInstance type)
+    public TestTDS addColumn(String name, Type type, Multiplicity multiplicity)
     {
-        DataType dataType = pureToTDSType(PackageableElement.getUserPathForPackageableElement(type));
+        DataType dataType = pureToTDSType(type);
 
         Object res;
 
@@ -837,17 +823,17 @@ public abstract class TestTDS
                 throw new RuntimeException("ERROR " + dataType + " not supported yet!");
         }
 
-        return addColumn(name, dataType, res);
+        return addColumn(name, dataType, type, multiplicity, res);
     }
 
-    public TestTDS addColumn(String name, DataType dataType, Object res)
+    public TestTDS addColumn(String name, DataType dataType, Type type, Multiplicity multiplicity, Object res)
     {
         boolean[] array = new boolean[Array.getLength(res)];
         Arrays.fill(array, Boolean.FALSE);
-        return addColumn(name, dataType, res, array);
+        return addColumn(name, dataType, type, multiplicity, res, array);
     }
 
-    public TestTDS addColumn(String name, DataType dataType, Object res, boolean[] nulls)
+    public TestTDS addColumn(String name, DataType dataType, Type type, Multiplicity multiplicity, Object res, boolean[] nulls)
     {
         int size = Array.getLength(res);
         if (this.rowCount == 0)
@@ -859,6 +845,7 @@ public abstract class TestTDS
             throw new RuntimeException("Error!");
         }
         this.dataByColumnName.put(name, res);
+        this.pureTypesByColumnName.put(name, type);
         this.columnsOrdered.add(name);
         this.columnType.put(name, dataType);
         this.isNullByColumn.put(name, nulls);
@@ -1234,7 +1221,7 @@ public abstract class TestTDS
             }
         }
 
-        TestTDS missingTDS = newTDS(res.columnsOrdered.clone(), res.columnType.clone(), missings.size());
+        TestTDS missingTDS = newTDS(res.columnsOrdered.clone(), res.columnType.clone(), pureTypesByColumnName, missings.size());
 
         int cursor = 0;
         for (Integer missing : missings)
@@ -1400,7 +1387,7 @@ public abstract class TestTDS
             this.aggColumnName = aggColumnName;
             this.columnType = columnType;
             // TODO: we might need to rethink this column naming strategy, it could break in some edge cases
-            this.columnName = "'" + ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__") + "'";
+            this.columnName = ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__");
         }
 
         public String getColumnName()

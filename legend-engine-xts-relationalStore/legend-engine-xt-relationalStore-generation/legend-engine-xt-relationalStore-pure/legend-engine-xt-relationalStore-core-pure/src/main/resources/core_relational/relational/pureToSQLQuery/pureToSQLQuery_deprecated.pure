@@ -1,0 +1,255 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::deprecated::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::mapping::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+
+function meta::relational::functions::pureToSqlQuery::deprecated::processTdsLambda(mapFn:ValueSpecification[1], columns:RelationalOperationElement[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], currentPropertyMapping:PropertyMapping[*], paths:Pair<String, PathInformation>[*], context:DebugContext[1]):RelationalOperationElement[*]
+{
+   $mapFn->match(
+                  [
+                     r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                     fx:FunctionExpression[1]|
+                        let f = $fx->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->evaluateAndDeactivate();
+                        if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
+                          | let foundColumn = findAliasOrFail($f.func.name->toOne(), $columns);
+                            let res = $foundColumn.relationalElement;
+                            // Column application -> Generalize all that...
+                            if ($f.parametersValues->size() == 1 && $f.parametersValues->at(0)->instanceOf(FunctionExpression),
+                              | let subFuncExpr = $f.parametersValues->at(0)->cast(@FunctionExpression)->evaluateAndDeactivate();
+                                let funcName = $subFuncExpr.func.functionName;
+                                let win = $state.currentWindow->toOne();
+                                if([
+                                      pair(|$funcName == 'offset',
+                                           |let offset = $subFuncExpr.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+                                            ^$win(func = newDynaFunction(if ($offset > 0, |'lead', |'lag'), $res));
+                                      ),
+                                      pair(|$funcName == 'first',
+                                           |^$win(func = newDynaFunction('first', $res));
+                                      ),
+                                      pair(|$funcName == 'last',
+                                           |^$win(func = newDynaFunction('last', $res));
+                                      ),
+                                      pair(|$funcName == 'nth',
+                                           |let offset = $subFuncExpr.parametersValues->at(3)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+                                            ^$win(func = newDynaFunction('nth', $res->concatenate(^Literal(value=$offset))));
+                                      )
+                                   ],
+                                   |fail('unknown function \''+$subFuncExpr.func.functionName->toOne()+'\''); $res;
+                                );,
+                              | $res
+                            );
+                            ,
+                          |
+                            let tdsGetterDispatch = {|findColumnInTdsFromGetter($f, $columns, $returnColumnName, $vars, $state)};
+                            let dispatch = [
+                                            pair('getNumber', $tdsGetterDispatch),
+                                            pair('getInteger', $tdsGetterDispatch),
+                                            pair('getDecimal', $tdsGetterDispatch),
+                                            pair('getString', $tdsGetterDispatch),
+                                            pair('getFloat', $tdsGetterDispatch),
+                                            pair('getDate', $tdsGetterDispatch),
+                                            pair('getDateTime', $tdsGetterDispatch),
+                                            pair('getStrictDate', $tdsGetterDispatch),
+                                            pair('getBoolean', $tdsGetterDispatch),
+                                            pair('getEnum', $tdsGetterDispatch),
+                                            pair('isNull', $tdsGetterDispatch),
+                                            pair('isNotNull', $tdsGetterDispatch)
+                                          ];
+
+                            let func = $dispatch->filter(d|$d.first == $f.func.functionName);
+
+                            if($func->isNotEmpty(),
+                                    |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
+                                    |let supportedFunction = findSupportedFunction($f, $vars, $state);
+                                     if($supportedFunction->isNotEmpty(),
+                                       |
+                                          let inHandler =  {|
+                                            let valueParam = $f.parametersValues->at(0);
+                                              let valueArg = $valueParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+
+                                              let collectionArg = $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
+                                              let mergedCollectionArg = $collectionArg->match([l:Literal[*] | ^LiteralList(values = $l), ll:LiteralList[1] | $ll]);
+
+                                              if($valueParam->isFunctionWithName('getEnum'),
+                                                | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
+                                                  let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
+                                                    e: Enum[1]| if($enumPropertyMapping->isNotEmpty(),
+                                                                  | $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
+                                                                  | $e.name
+                                                                ),
+                                                    a: Any[1] | $a
+                                                  ]));
+                                                  let enumMappedCollectionArg = ^LiteralList(values=$mappedEnumValues->map(v|^Literal(value=$v)));
+                                                  newDynaFunction('in', $valueArg->concatenate($enumMappedCollectionArg));,
+                                                | newDynaFunction('in', $valueArg->concatenate($mergedCollectionArg));
+                                              );
+                                            };
+
+                                          let overrides = [
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = equal_Any_MANY__Any_MANY__Boolean_1_, second = {|
+                                              let params = $f.parametersValues->partition(p|$p->isFunctionWithName('getEnum'));
+
+                                              if($params.first.values->isNotEmpty(),
+                                                | let enumVarParam = $params.first.values->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
+                                                  let otherParam = $params.second.values->toOne()->evaluateAndDeactivate();
+
+                                                  let enumVarProcessedParam = $enumVarParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                                  let otherProcessedParam = $otherParam->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne();
+                                                  let enumPropertyMapping = getEnumExprPropertyMapping($enumVarParam, $paths);
+
+                                                  if($otherProcessedParam->hasReferenceToEnum(),
+                                                    | if($enumPropertyMapping->isNotEmpty(),
+                                                        | let left = ^EnumProcessingHolder(param = $enumVarParam, processedParam = $enumVarProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$enumVarProcessedParam, currentPropertyMapping=$enumPropertyMapping));
+                                                          let right = ^EnumProcessingHolder(param = $otherParam, processedParam = $otherProcessedParam, currentPropertyMapping = ^OperationWithParentPropertyMapping(element=$otherProcessedParam));
+                                                          processEqualsForEnum($left, $right, $context, $state);,
+                                                        | let newParam = ^Literal(value = $otherProcessedParam->cast(@Literal).value->cast(@Enum).name->toOne());
+                                                          newDynaFunction('equal', [$enumVarProcessedParam, $newParam]);
+                                                      ),
+                                                    | newDynaFunction('equal', [$enumVarProcessedParam, $otherProcessedParam]);
+                                                  );,
+                                                | newDynaFunction('equal', $f.parametersValues->map(p| $p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne()));
+                                              );
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {|
+                                              ^Literal(value=extractEnumValue($f, $currentPropertyMapping, $context))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = plus_String_MANY__String_1_, second = {|
+                                              ^JoinStrings(strings=$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_$0_1$__Any_MANY__Boolean_1_, second = $inHandler),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = in_Any_1__Any_MANY__Boolean_1_, second = $inHandler),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, second = {|
+                                              newDynaFunction('coalesce', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::date::month_Date_1__Month_1_, second = {|
+                                              newDynaFunction('monthName', $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, second = {|
+                                              newDynaFunction('splitPart', [
+                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                $f.parametersValues->at(1)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                $f.parametersValues->at(2)->zeroToOneBasedIndex()->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) ->toOne()
+                                              ])
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = parseDate_String_1__Date_1_, second = {|
+                                              let format = ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType=String), values = 'YYYY-MM-DD HH24:MI:SS');
+                                              newDynaFunction('toTimestamp', [
+                                                $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)->toOne(),
+                                                ^Literal(value = 'YYYY-MM-DD HH24:MI:SS')
+                                              ]);
+                                            }),
+                                            ^PureFunctionTDSToRelationalFunctionPair(first = meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, second = {|
+                                              let type = $f.parametersValues->at(1)->reactivate()->cast(@meta::pure::functions::hash::HashType)->toOne();
+                                              let name = meta::relational::functions::pureToSqlQuery::hashTypeToHashDynaFuncName($type);
+
+                                                  let value = $f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context);
+
+                                                  newDynaFunction($name, $value);
+                                                })
+                                              ]->concatenate(
+                                                        [
+                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1_,
+                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_,
+                                                          meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_
+                                                        ]->map(func|
+                                                          ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {|
+                                                            ^DynaFunction(
+                                                              name = 'concat',
+                                                              parameters = $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                                              )
+                                                          })
+                                                        )
+                                              );
+
+                                              let override = $overrides->filter(o | $o.first == $f.func)->first();
+                                              if ([
+                                                    pair(|$override->isNotEmpty(),
+                                                         |$override->toOne().second->eval()
+                                                    ),
+                                                    pair(|$supportedFunction->in([processNoOp_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_, processCast_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_]),
+                                                         |$f.parametersValues->at(0)->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context) 
+                                                    ),
+                                                    pair(|$supportedFunction == processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |  
+                                                            let win = $state.currentWindow->toOne();
+                                                               ^$win
+                                                               (
+                                                                  func = ^DynaFunction
+                                                                         (
+                                                                            name = $f.func.functionName->toOne(),
+                                                                            parameters = $f.parametersValues->tail()->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                                                         )
+                                                               );
+                                                    ),
+                                                    pair(|$supportedFunction == meta::relational::functions::pureToSqlQuery::processRowMapper_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |$f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))
+                                                    ),
+                                                    // Should not have to do that
+                                                    pair(|$supportedFunction == processDivideRound_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('divideRound', $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)))
+                                                    )                                                                         
+                                                  ],
+                                                    | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
+                                              );,
+                                          | fail('function ' + $f.func.name->makeString() + ' is not yet supported'); ^DynaFunction(name='fail');
+                                          );
+                            );
+
+                      );
+                     ,i:InstanceValue[1]| let transformedValues = $i.values->map(v | $v->match([
+                                                          s:String[1] | ^Literal(value=$s),
+                                                          n:Number[1] | ^Literal(value=$n),
+                                                          d:Date[1] | ^Literal(value=$d),
+                                                          b:Boolean[1] | ^Literal(value=$b),
+                                                          e:Enum[1] | ^Literal(value=$e),
+                                                          e:Enumeration<Any>[1] | ^Literal(value=$e),
+                                                          f:SimpleFunctionExpression[1]|$f->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          v:VariableExpression[1] | $v->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          i:InstanceValue[1]|$i->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($columns, $returnColumnName,$vars, $state, $currentPropertyMapping, $paths, $context),
+                                                          v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
+                                              ]));
+                                          if($transformedValues->isNotEmpty(),
+                                             | $transformedValues,
+                                             | ^Literal(value = ^SQLNull())
+                                          );
+                     ,v:VariableExpression[1] | let res = $v->resolve($vars, $state.inScopeVars);
+                                                if($res->isEmpty(),|[],|processTdsLambda($res->toOne(), $columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context));
+
+                  ]
+                );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::deprecated::isFunctionWithName(r: ValueSpecification[1], functionName: String[1]):Boolean[1]
+{
+  $r->instanceOf(FunctionExpression) && $r->cast(@FunctionExpression).func.functionName == $functionName;
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::deprecated::getEnumExprPropertyMapping(f:FunctionExpression[1], paths:Pair<String, PathInformation>[*]):RelationalPropertyMapping[*]
+{
+  let name = $f->instanceValueAtParameter(1)->cast(@String);
+  let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
+  if($matchedPath->isEmpty(),
+    | [],
+    | let pm = $matchedPath->toOne().second;
+      $pm.propertyMapping->cast(@RelationalPropertyMapping);
+  );
+}

@@ -129,7 +129,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
 {
     let expr = {
                 | #TDS
-                      val, str, other kind
+                      val, str, 'other kind'
                       1, a,  a
                       3, ewe, b
                       4, qw, c
@@ -141,7 +141,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   other kind\n'+
+                  '   \'other kind\'\n'+
                   '   a\n'+
                   '   b\n'+
                   '   c\n'+
@@ -154,7 +154,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
 {
     let expr = {| 
                   let t = #TDS
-                      val, str, other kind
+                      val, str, 'other kind'
                       1, a,  a
                       3, ewe, b
                       4, qw, c
@@ -168,7 +168,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::select::testSingle
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   other kind\n'+
+                  '   \'other kind\'\n'+
                   '   a\n'+
                   '   b\n'+
                   '   c\n'+

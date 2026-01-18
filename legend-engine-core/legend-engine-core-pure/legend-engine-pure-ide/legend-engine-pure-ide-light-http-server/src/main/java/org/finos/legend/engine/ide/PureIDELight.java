@@ -71,6 +71,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core", ""))
                 // --- MINIMUM -----
 
+                .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-scenario-quant-pure", "scenario_quant"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-conventions-essential-pure", "external_language_java_conventions_essential"))
                 .with(this.buildCore("legend-engine-xts-java/legend-engine-xt-javaGeneration-conventions-standard-pure", "external_language_java_conventions_standard"))
                 .with(this.buildCore("legend-engine-xts-protocol-java-generation/legend-engine-protocol-generation-pure", "protocol_generation"))
@@ -92,6 +93,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-redshift/legend-engine-xt-relationalStore-redshift-pure", "relational_redshift"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-databricks/legend-engine-xt-relationalStore-databricks-pure", "relational_databricks"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-hive/legend-engine-xt-relationalStore-hive-pure", "relational_hive"))
+                .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-oracle/legend-engine-xt-relationalStore-oracle-pure", "relational_oracle"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-postgres/legend-engine-xt-relationalStore-postgres-pure", "relational_postgres"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-presto/legend-engine-xt-relationalStore-presto-pure", "relational_presto"))
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-sybase/legend-engine-xt-relationalStore-sybase-pure", "relational_sybase"))

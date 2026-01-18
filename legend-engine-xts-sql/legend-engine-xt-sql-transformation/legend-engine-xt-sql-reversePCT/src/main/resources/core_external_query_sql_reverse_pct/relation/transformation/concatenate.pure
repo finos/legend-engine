@@ -23,14 +23,14 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_',
                       [
                         rev('|#TDS{\n'+
-                            'val,str\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
                             '1,a\n'+
                             '3,ewe\n'+
-                            '4,qw}#->meta::pure::functions::relation::concatenate(#TDS{\n'+
-                            'val,str\n'+
+                            '4,qw\n}#->meta::pure::functions::relation::concatenate(#TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
                             '5,qwea\n'+
                             '6,eeewe\n'+
-                            '7,qqwew}#)',
+                            '7,qqwew\n}#)',
                             'select "unionalias_0"."val" as "val", "unionalias_0"."str" as "str" from (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\') as "table0_0" UNION ALL select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n  5,qwea\n  6,eeewe\n  7,qqwew\') as "table0_0") as "unionalias_0"'
                         )
                       ]
@@ -39,15 +39,15 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_',
                       [
                         rev('|let a = #TDS{\n'+
-                            'val,str\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
                             '1,a\n'+
                             '3,ewe\n'+
-                            '4,qw}#;\n'+
+                            '4,qw\n}#;\n'+
                             ' let b = #TDS{\n'+
-                            'val,str\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
                             '5,qwea\n'+
                             '6,eeewe\n'+
-                            '7,qqwew}#;\n'+
+                            '7,qqwew\n}#;\n'+
                             ' let c = $a->meta::pure::functions::relation::concatenate($b);\n'+
                             ' $c->meta::pure::functions::relation::concatenate($b);\n'+
                             '',

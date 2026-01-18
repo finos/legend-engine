@@ -38,7 +38,8 @@ public class Core_Relational_H2_PCTReportProvider implements PCTReportProvider
                 "pct-reports/ADAPTER_grammar_compiled_H2.json",
                 "pct-reports/ADAPTER_relation_compiled_H2.json",
                 "pct-reports/ADAPTER_unclassified_compiled_H2.json",
-                "pct-reports/ADAPTER_variant_compiled_H2.json"
+                "pct-reports/ADAPTER_variant_compiled_H2.json",
+                "pct-reports/ADAPTER_scenario_quant_compiled_H2.json"
         );
     }
 }

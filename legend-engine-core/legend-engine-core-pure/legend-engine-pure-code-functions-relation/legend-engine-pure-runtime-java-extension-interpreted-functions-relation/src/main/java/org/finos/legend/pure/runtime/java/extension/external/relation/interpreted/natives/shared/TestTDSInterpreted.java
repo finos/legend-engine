@@ -38,38 +38,30 @@ import static org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap.*;
 public class TestTDSInterpreted extends TestTDS
 {
     protected ModelRepository modelRepository;
-    protected ProcessorSupport processorSupport;
 
-    public TestTDSInterpreted(CsvReader.Result result, ModelRepository repository, ProcessorSupport processorSupport)
+    public TestTDSInterpreted(CsvReader.Result result, MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypes, ModelRepository repository, ProcessorSupport processorSupport)
     {
-        super(result, processorSupport);
+        super(result, pureTypes, processorSupport);
         this.modelRepository = repository;
-        this.processorSupport = processorSupport;
     }
 
-    private TestTDSInterpreted(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows, ModelRepository repository, ProcessorSupport processorSupport)
+    private TestTDSInterpreted(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypesByColumnName, int rows, ModelRepository repository, ProcessorSupport processorSupport)
     {
-        super(columnOrdered, columnType, rows);
+        super(columnOrdered, columnType, pureTypesByColumnName, rows, processorSupport);
         this.modelRepository = repository;
-        this.processorSupport = processorSupport;
+        this.pureTypesByColumnName = pureTypesByColumnName;
     }
 
     public TestTDSInterpreted(ModelRepository repository, ProcessorSupport processorSupport)
     {
+        super(processorSupport);
         this.modelRepository = repository;
-        this.processorSupport = processorSupport;
     }
 
     @Override
-    public TestTDS newTDS()
+    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypesByColumnName, int rows)
     {
-        return new TestTDSInterpreted(this.modelRepository, this.processorSupport);
-    }
-
-    @Override
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, int rows)
-    {
-        return new TestTDSInterpreted(columnOrdered, columnType, rows, this.modelRepository, this.processorSupport);
+        return new TestTDSInterpreted(columnOrdered, columnType, pureTypesByColumnName, rows, this.modelRepository, this.processorSupport);
     }
 
     public CoreInstance getValueAsCoreInstance(String columnName, int rowNum)
@@ -113,7 +105,7 @@ public class TestTDSInterpreted extends TestTDS
             case DOUBLE:
             {
                 double[] data = (double[]) dataAsObject;
-                String pureType = columnPureType.get(columnName);
+                String pureType = pureTypesByColumnName.get(columnName) == null ? null : pureTypesByColumnName.get(columnName).getValueForMetaPropertyToOne("name").getName();
                 result = !isNull[rowNum] ?
                         ("Decimal".equals(pureType) ? wrapValueSpecification(modelRepository.newDecimalCoreInstance(BigDecimal.valueOf(data[rowNum])), true, processorSupport) : newFloatLiteral(modelRepository, BigDecimal.valueOf(data[rowNum]), processorSupport)) :
                         ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath("Decimal".equals(pureType) ? M3Paths.Decimal : M3Paths.Float, processorSupport), processorSupport), true, processorSupport);

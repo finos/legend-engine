@@ -234,7 +234,7 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildEntity
    ^MappedEntity(
       path = $path,
       properties = $properties->removeDuplicatesBy(x | $x.name),
-      info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $class->elementToPath()), | [])
+      info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $class->elementToPath(), class = if($path->startsWith('semi_structured'), | $class, | [])), | [])
    );
 }
 
@@ -354,7 +354,7 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
           let newVisited = $visited->concatenate([^Pair<Class<Any>, String>(first = $property.genericType.rawType->toOne()->cast(@Class<Any>), second = $entityPath)]);
             let propertyType = $property.genericType.rawType->toOne()->cast(@Class<Any>);
             let children = $propertyType.properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $isRootEntity, $config, $newVisited));
-            let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties), info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $propertyType->elementToPath()), | []));
+            let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties), info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $propertyType->elementToPath(), class = if($entityPath->startsWith('semi_structured'), | $propertyType, | [])), | []));
          ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[$currentMappedEntity]->concatenate($children->map(c|$c.mappedEntities)));
          );
      )

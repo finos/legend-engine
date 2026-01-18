@@ -1,0 +1,65 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+function meta::protocols::pure::vX_X_X::diagram::transformDiagram(diagram: meta::pure::metamodel::diagram::Diagram[1]): meta::protocols::pure::vX_X_X::metamodel::diagram::Diagram[1]
+{
+  let classViews = $diagram.classViews->map(classView |
+    ^meta::protocols::pure::vX_X_X::metamodel::diagram::view::ClassView
+    (
+      id = $classView.id,
+      class = $classView.class->elementToPath(),
+      position = ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Point(x = $classView.position.x->cast(@Float), y = $classView.position.y->cast(@Float)),
+      rectangle = ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Rectangle(width = $classView.rectangle.width->cast(@Float), height = $classView.rectangle.height->cast(@Float)),
+      hideStereotypes = $classView.hideStereotypes,
+      hideTaggedValues = $classView.hideTaggedValues,
+      hideProperties = $classView.hideProperties
+    )
+  );
+
+  let propertyViews = $diagram.propertyViews->map(propertyView |
+    ^meta::protocols::pure::vX_X_X::metamodel::diagram::view::PropertyView
+    (
+      property =
+      ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr
+      (
+        class = $propertyView.property.owner->elementToPath(),
+        property = $propertyView.property.name->toOne()
+      ),
+      sourceView = $propertyView.from.classView.id,
+      targetView = $propertyView.to.classView.id,
+      line = ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Line(points = $propertyView.path->map(point |
+      ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Point(x = $point.x->cast(@Float), y = $point.y->cast(@Float))))
+    )
+  );
+
+  let generalizationViews = $diagram.generalizationViews->map(generalizationView |
+    ^meta::protocols::pure::vX_X_X::metamodel::diagram::view::GeneralizationView
+    (
+      sourceView = $generalizationView.from.classView.id,
+      targetView = $generalizationView.to.classView.id,
+      line = ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Line(points = $generalizationView.path->map(point |
+      ^meta::protocols::pure::vX_X_X::metamodel::diagram::geometry::Point(x = $point.x->cast(@Float), y = $point.y->cast(@Float))))
+    )
+  );
+
+  ^meta::protocols::pure::vX_X_X::metamodel::diagram::Diagram
+  (
+    _type = 'diagram',
+    name = $diagram.name->toOne(),
+    package = if($diagram.package->isEmpty(),|[],|$diagram.package->toOne()->elementToPath()),
+    classViews = $classViews,
+    propertyViews = $propertyViews,
+    generalizationViews = $generalizationViews
+  );
+}

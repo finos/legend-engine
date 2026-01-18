@@ -18,25 +18,33 @@ import io.deephaven.csv.parsers.DataType;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
 public class ColumnValue
 {
     String name;
     DataType type;
+    Type pureType;
+    Multiplicity multiplicity;
     Object result;
     boolean[] nulls = null;
 
-    public ColumnValue(String name, DataType type, Object result)
+    public ColumnValue(String name, DataType type, Type pureType, Multiplicity multiplicity, Object result)
     {
         this.name = name;
         this.type = type;
+        this.pureType = pureType;
+        this.multiplicity = multiplicity;
         this.result = result;
     }
 
-    public ColumnValue(String name, DataType type, Object result, boolean[] nulls)
+    public ColumnValue(String name, DataType type, Type pureType, Multiplicity multiplicity, Object result, boolean[] nulls)
     {
         this.name = name;
         this.type = type;
+        this.pureType = pureType;
+        this.multiplicity = multiplicity;
         this.result = result;
         this.nulls = nulls;
     }
@@ -68,6 +76,8 @@ public class ColumnValue
         return "ColumnValue{" +
                 "name='" + name + '\'' +
                 ", type=" + type +
+                ", pureType=" + pureType +
+                ", multiplicity=" + multiplicity +
                 ", result=" + res.makeString("[", ",", "]") +
                 '}';
     }

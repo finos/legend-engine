@@ -22,6 +22,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Relati
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.generictype.GenericType;
+import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
@@ -52,7 +53,12 @@ public abstract class Shared extends NativeFunction
         }
         return value instanceof TDSCoreInstance ?
                 ((TDSCoreInstance) value).getTDS() :
-                new TestTDSInterpreted(TestTDS.readCsv((value.getValueForMetaPropertyToOne("csv")).getName()), repository, processorSupport);
+                new TestTDSInterpreted(
+                        TestTDS.readCsv((value.getValueForMetaPropertyToOne("csv")).getName()),
+                        ((RelationType<?>)((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType)value.getValueForMetaPropertyToOne("classifierGenericType"))._typeArguments().getFirst()._rawType())._columns().collect(c -> _Column.getColumnType(c)._rawType()).toList(),
+                        repository,
+                        processorSupport
+                );
     }
 
     public RelationType<?> getRelationType(ListIterable<? extends CoreInstance> params, int i)

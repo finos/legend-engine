@@ -47,16 +47,17 @@ public class TestFunctionTester extends PureExpressionTest
     public void sortOnTdsWithVariant()
     {
         compileTestSource("fromString.pure",
-                "function test():Any[*]\n" +
+                "import meta::pure::functions::variant::convert::*;\n" +
+                        "function test():Any[*]\n" +
                         "{" +
-                        "print(#TDS\n" +
-                        "            id, payload:meta::pure::metamodel::variant::Variant\n" +
-                        "            1, \"[1,2,3]\"\n" +
-                        "            2, \"[4,5,6]\"\n" +
-                        "            3, \"[7,8,9]\"\n" +
-                        "            4, \"[10,11,12]\"\n" +
-                        "            5, \"[13,14,15]\"\n" +
-                        "    #->extend(~abc:x|$x.payload->meta::pure::functions::variant::navigation::get(0))->sort(~id->ascending())->toString(), 1);\n" +
+                        "   println(#TDS\n" +
+                        "     id, payload:meta::pure::metamodel::variant::Variant\n" +
+                        "     1, \"[1,2,3]\"\n" +
+                        "     2, \"[4,5,6]\"\n" +
+                        "     3, \"[7,8,9]\"\n" +
+                        "     4, \"[10,11,12]\"\n" +
+                        "     5, \"[13,14,15]\"\n" +
+                        "   #->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse()->toVariant()));\n" +
                         "}");
         try
         {

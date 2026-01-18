@@ -24,12 +24,12 @@ function meta::external::query::sql::reversePCT::tests::relation::slice::slice::
                       [
                         rev(
                           '|#TDS{\n'+
-                          'val,str\n'+
+                          'val:Integer[0..1],str:String[0..1]\n'+
                           '1,a\n'+
                           '3,ewe\n'+
                           '4,qw\n'+
                           '5,wwe\n'+
-                          '6,weq}#->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::slice(1, 3)',
+                          '6,weq\n}#->meta::pure::functions::relation::sort(~val->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::slice(1, 3)',
                           'select val, str from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') offset 1 limit 2'
                         )
                       ]
@@ -39,12 +39,12 @@ function meta::external::query::sql::reversePCT::tests::relation::slice::slice::
                       [
                         revError(
                           '|let t = #TDS{\n'+
-                          'val,str\n'+
+                          'val:Integer[0..1],str:String[0..1]\n'+
                           '1,a\n'+
                           '3,ewe\n'+
                           '4,qw\n'+
                           '5,wwe\n'+
-                          '6,weq}#;\n'+
+                          '6,weq\n}#;\n'+
                           ' let t2 = $t->meta::pure::functions::relation::slice(1, 4);\n'+
                           ' $t2->meta::pure::functions::relation::slice(0, 2);\n',
                           '',

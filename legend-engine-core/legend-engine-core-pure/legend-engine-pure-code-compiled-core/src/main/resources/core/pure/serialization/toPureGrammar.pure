@@ -534,7 +534,7 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::conve
 
 function meta::pure::metamodel::serialization::grammar::printRelationType(rType:meta::pure::metamodel::relation::RelationType<Any>[1]):String[1]
 {
-    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne()->convertIdentifier())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType())->joinStrings(', ')+')';
+    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne()->convertIdentifier())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType()+'['+$x.classifierGenericType.multiplicityArguments->at(0)->printMultiplicity()+']')->joinStrings(', ')+')';
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionSignature(func:Function<Any>[1]):String[1]

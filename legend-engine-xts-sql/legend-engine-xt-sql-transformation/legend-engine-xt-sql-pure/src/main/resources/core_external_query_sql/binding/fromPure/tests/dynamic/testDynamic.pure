@@ -26,7 +26,7 @@ import meta::external::query::sql::transformation::queryToPure::tests::dynamic::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicCSV():Boolean[1]
 {
-  assertEquals('|#TDS{\na,b\n1,2\n2,3}#->meta::pure::functions::relation::select(~[a])',
+  assertEquals('|#TDS{\na:Integer[0..1],b:Integer[0..1]\n1,2\n2,3\n}#->meta::pure::functions::relation::select(~[a])',
                 transform('select a from csv(\'a,b\n1,2\n2,3\')',[]));
 }
 
@@ -46,7 +46,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   let lambda = meta::external::query::sql::transformation::queryToPure::sqlToPure('select id from variant(\'a\')', $source, [], ^Map<String, ValueSpecification>())->cast(@FunctionDefinition<Any>);
 
-  assertEquals('|#TDS{\nid,payload:meta::pure::metamodel::variant::Variant\n1,"[1,2,3]"\n2,"[4,5,6]"}#->meta::pure::functions::relation::select(~[id])',
+  assertEquals('|#TDS{\nid:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1]\n1,"[1,2,3]"\n2,"[4,5,6]"\n}#->meta::pure::functions::relation::select(~[id])',
               $lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
   );
 }
@@ -61,7 +61,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   let value = 2;
 
-  assertEquals('|$rel->meta::pure::functions::relation::filter(x: (a:Integer, b:Integer)[1]|$x.b == $value)',
+  assertEquals('|$rel->meta::pure::functions::relation::filter(x: (a:Integer[0..1], b:Integer[0..1])[1]|$x.b == $value)',
                 transform('select * from var(\'rel\') where b = var(\'value\')',[], newMap([
                   pair('rel', $rel->deactivate()),
                   pair('value', $value->deactivate())
@@ -77,7 +77,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicTableUsingCTE():Boolean[1]
 {
   assertEquals('|let tab = #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n]);\n'+
-               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200))[1]|$x.n == \'a\');\n',
+               ' $tab->meta::pure::functions::relation::filter(x: (n:meta::pure::precisePrimitives::Varchar(200)[0..1])[1]|$x.n == \'a\');\n',
               transform('with tab as (select n from tb(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb\')) select n from tab where n = \'a\'',[]));
 }
 
