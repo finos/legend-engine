@@ -94,21 +94,18 @@ public class Project extends Shared
 
                 if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.String, processorSupport))
                 {
-                    colResType = DataType.STRING;
-                    colRes = vals.toArray(new String[0]);
+                    colRes = vals.toArray(new Object[0]);
                 }
                 if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Integer, processorSupport))
                 {
-                    colResType = DataType.LONG;
-                    colRes = vals.stream().mapToLong(x -> ((Number) x).longValue()).toArray();
+                    colRes = vals.toArray(new Object[0]);
                 }
                 if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Float, processorSupport))
                 {
-                    colResType = DataType.DOUBLE;
-                    colRes = vals.stream().mapToDouble(x -> (Double) x).toArray();
+                    colRes = vals.toArray(new Object[0]);
                 }
 
-                TestTDS resTDS = tds.addColumn(names.get(i++), colResType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), colRes);
+                TestTDS resTDS = tds.addColumn(names.get(i++), functionType._returnType(), functionType._returnMultiplicity(), colRes);
                 if (vals.isEmpty())
                 {
                     resTDS = resTDS.setNull();
@@ -136,7 +133,7 @@ public class Project extends Shared
         }
         else if (type == _Package.getByUserPath("Integer", processorSupport))
         {
-            val = PrimitiveUtilities::getIntegerValue;
+            val = x -> PrimitiveUtilities.getIntegerValue(x).longValue();
         }
         else if (type == _Package.getByUserPath("Float", processorSupport))
         {

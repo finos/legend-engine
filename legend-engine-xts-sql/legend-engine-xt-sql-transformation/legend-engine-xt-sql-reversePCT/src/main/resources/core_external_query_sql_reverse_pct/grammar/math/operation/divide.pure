@@ -79,6 +79,9 @@ function meta::external::query::sql::reversePCT::tests::grammar::math::operation
                  revsForTest(
                       'meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_',
                       [
+                        rev('|1.1D / 2.1D',
+                            'select ((1.0 * 1.1) / 2.1)'
+                        ),
                         rev('|1.0D / 2.0',
                             'select ((1.0 * 1) / 2.0)'
                         ),

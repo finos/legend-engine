@@ -15,8 +15,14 @@
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
 import io.deephaven.csv.parsers.DataType;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Stack;
+
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.FixedSizeList;
@@ -49,6 +55,8 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
@@ -177,45 +185,57 @@ public class ProjectExtend extends AggregationShared
         {
             String[] finalRes = new String[(int) source.getOne().getRowCount()];
             processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.STRING, type, multiplicity, finalRes);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Integer, processorSupport)))
         {
-            long[] finalRes = new long[(int) source.getOne().getRowCount()];
+            Long[] finalRes = new Long[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.LONG, type, multiplicity, finalRes, nulls);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).longValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Boolean, processorSupport)))
         {
-            boolean[] finalRes = new boolean[(int) source.getOne().getRowCount()];
+            Boolean[] finalRes = new Boolean[ (int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getBooleanValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.BOOLEAN_AS_BYTE, type, multiplicity, finalRes, nulls);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Float, processorSupport)))
         {
-            double[] finalRes = new double[(int) source.getOne().getRowCount()];
+            Double[] finalRes = new Double[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.DOUBLE, type, multiplicity, finalRes, nulls);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Date, processorSupport)))
+        {
+            PureDate[] finalRes = new PureDate[(int) source.getOne().getRowCount()];
+            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () ->
+            {
+                PureDate date = PrimitiveUtilities.getDateValue(val);
+                finalRes[j] = DateFunctions.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), date.getSubsecond().substring(0, 3));
+            }), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Variant, processorSupport)))
         {
             Variant[] finalRes = new Variant[(int) source.getOne().getRowCount()];
             processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : (Variant) val, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.CUSTOM, type, multiplicity, finalRes);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Decimal, processorSupport)))
         {
-            double[] finalRes = new double[(int) source.getOne().getRowCount()];
+            BigDecimal[] finalRes = new BigDecimal[(int) source.getOne().getRowCount()];
             boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
             Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, DataType.DOUBLE, type, multiplicity, finalRes);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getDecimalValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
         else
         {

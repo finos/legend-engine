@@ -82,19 +82,19 @@ public abstract class AggregationShared extends Shared
         {
             String[] finalRes = new String[size];
             performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.STRING, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes);
+            return new ColumnValue(name, functionType._returnType(), functionType._returnMultiplicity(), finalRes);
         }
         else if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
-            long[] finalRes = new long[size];
-            performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.LONG, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes, nulls);
+            Long[] finalRes = new Long[size];
+            performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).longValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
+            return new ColumnValue(name, functionType._returnType(), functionType._returnMultiplicity(), finalRes);
         }
         else if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Float, processorSupport) || functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Number, processorSupport))
         {
-            double[] finalRes = new double[size];
+            Double[] finalRes = new Double[size];
             performAggregation(aggregationScope, sortInfos, window, mapF, reduceF, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, mapFVarContext, reduceFVarContext, compress, twoParamsFunc, sourceTDSType);
-            return new ColumnValue(name, DataType.DOUBLE, functionType._returnType()._rawType(), functionType._returnMultiplicity(), finalRes, nulls);
+            return new ColumnValue(name, functionType._returnType(), functionType._returnMultiplicity(), finalRes);
         }
         else
         {
@@ -123,7 +123,7 @@ public abstract class AggregationShared extends Shared
 
     protected void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> orderedSource, MutableList<SortInfo> sortInfos, Window window, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, VariableContext mapFVarContext, VariableContext reduceFVarContext, boolean compress, boolean twoParamFunc, GenericType sourceTDSType)
     {
-        FixedSizeList<CoreInstance> mapParameters = twoParamFunc ? Lists.fixedSize.with((CoreInstance) null,(CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
+        FixedSizeList<CoreInstance> mapParameters = twoParamFunc ? Lists.fixedSize.with((CoreInstance) null, (CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
         FixedSizeList<CoreInstance> reduceParameters = Lists.fixedSize.with((CoreInstance) null);
         int size = orderedSource.getTwo().size();
         ProjectExtend.RepoPrimitiveHandler repoPrimitiveHandler = new ProjectExtend.RepoPrimitiveHandler(repository);
@@ -342,9 +342,9 @@ public abstract class AggregationShared extends Shared
                             else // RANGE BETWEEN INTERVAL N PRECEDING/FOLLOWING AND INTERVAL N PRECEDING/FOLLOWING
                             {
                                 PureDate lowerBound = sortDirection == SortDirection.ASC ? AdjustDate.adjustDate(currentRowValue, offsetFrom, offsetFromDurationUnit, functionExpressionCallStack)
-                                                                                         : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetTo), offsetToDurationUnit, functionExpressionCallStack);
+                                        : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetTo), offsetToDurationUnit, functionExpressionCallStack);
                                 PureDate upperBound = sortDirection == SortDirection.ASC ? AdjustDate.adjustDate(currentRowValue, offsetTo, offsetToDurationUnit, functionExpressionCallStack)
-                                                                                         : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetFrom), offsetFromDurationUnit, functionExpressionCallStack);
+                                        : AdjustDate.adjustDate(currentRowValue, repoPrimitiveHandler.minus(0, offsetFrom), offsetFromDurationUnit, functionExpressionCallStack);
                                 if (currentPartitionValueAsObject != null)
                                 {
                                     PureDate currentPartitionValue = (PureDate) currentPartitionValueAsObject;

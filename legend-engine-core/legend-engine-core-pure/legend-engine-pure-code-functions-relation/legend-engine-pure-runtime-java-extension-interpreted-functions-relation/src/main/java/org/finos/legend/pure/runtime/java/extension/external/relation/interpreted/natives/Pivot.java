@@ -149,36 +149,10 @@ public class Pivot extends Shared
         // populate the generic type for the return at execution time since it cannot be reasoned out at compile time
         GenericType returnGenericType = (GenericType) getReturnGenericType(resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, processorSupport);
         returnGenericType._typeArguments(Lists.mutable.with(
-                ((GenericType) processorSupport.newGenericType(null, returnGenericType, true))._rawType(_RelationType.build(result.getColumnWithTypes().collect(c ->
+                ((GenericType) processorSupport.newGenericType(null, returnGenericType, true))._rawType(_RelationType.build(result.getPureTypesByColumnName().keyValuesView().collect(c ->
                 {
-                    String type;
-                    switch (c.getTwo())
-                    {
-                        case BOOLEAN_AS_BYTE:
-                        {
-                            type = M3Paths.Boolean;
-                            break;
-                        }
-                        case DOUBLE:
-                        {
-                            type = M3Paths.Decimal;
-                            break;
-                        }
-                        case LONG:
-                        {
-                            type = M3Paths.Integer;
-                            break;
-                        }
-                        case STRING:
-                        {
-                            type = M3Paths.String;
-                            break;
-                        }
-                        default:
-                            throw new RuntimeException("ERROR " + c.getTwo() + " not supported in pivot!");
-                    }
-                    return _Column.getColumnInstance(c.getOne(), false, type, (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport);
-                }), functionExpressionCallStack.peek().getSourceInformation(), processorSupport))
+                    return _Column.getColumnInstance(c.getOne(), false, (GenericType) processorSupport.newGenericType(null, c.getTwo(), true), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(0, 1, processorSupport), null, processorSupport);
+                }).toList(), functionExpressionCallStack.peek().getSourceInformation(), processorSupport))
         ));
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(result, returnGenericType, repository, processorSupport), false, processorSupport);
@@ -209,19 +183,19 @@ public class Pivot extends Shared
         }
         if (functionType._returnType()._rawType() == _Package.getByUserPath("Integer", processorSupport))
         {
-            long[] finalRes = new long[size];
-            performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).intValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
+            Long[] finalRes = new Long[size];
+            performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).longValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.LONG;
             _finalRes = finalRes;
         }
         if (functionType._returnType()._rawType() == _Package.getByUserPath("Float", processorSupport))
         {
-            double[] finalRes = new double[size];
+            Double[] finalRes = new Double[size];
             performAggregation(sorted, mapF, reduceF, (j, val) -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue(), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, size, parameters, mapFVarContext, reduceFVarContext);
             resType = DataType.DOUBLE;
             _finalRes = finalRes;
         }
-        return tds == null ? sorted.getOne()._distinct(sorted.getTwo()).addColumn(name, resType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), _finalRes) : tds.addColumn(name, resType, functionType._returnType()._rawType(), functionType._returnMultiplicity(), _finalRes);
+        return tds == null ? sorted.getOne()._distinct(sorted.getTwo()).addColumn(name, functionType._returnType(), functionType._returnMultiplicity(), _finalRes) : tds.addColumn(name, functionType._returnType(), functionType._returnMultiplicity(), _finalRes);
     }
 
     private void performAggregation(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> res, LambdaFunction<CoreInstance> mapF, LambdaFunction<CoreInstance> reduceF, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, RelationType<?> relationType, int size, FixedSizeList<CoreInstance> parameters, VariableContext mapFVarContext, VariableContext reduceFVarContext)

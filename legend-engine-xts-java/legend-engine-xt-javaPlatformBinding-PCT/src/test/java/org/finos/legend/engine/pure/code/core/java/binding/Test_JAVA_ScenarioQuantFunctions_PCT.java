@@ -31,7 +31,12 @@ public class Test_JAVA_ScenarioQuantFunctions_PCT extends PCTReportConfiguration
     private static final Adapter adapter = CoreJavaPlatformBindingCodeRepositoryProvider.javaAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::external::scenario::quant::testMinuteLogReturn_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"")
+            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+            one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+            one("meta::external::scenario::quant::maxDrawDown::testMaxDrawDown_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+            one("meta::external::scenario::quant::sma::testSimpleMovingAverage5Days_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""),
+            one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"")
      );
 
     public static Test suite()

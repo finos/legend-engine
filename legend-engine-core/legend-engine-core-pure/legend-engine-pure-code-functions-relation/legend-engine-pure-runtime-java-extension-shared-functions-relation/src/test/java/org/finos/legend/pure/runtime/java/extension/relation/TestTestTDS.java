@@ -426,4 +426,58 @@ public class TestTestTDS
                 "1, NULL, 1\n" +
                 "1, 2000-10-31T06:33:00.000+0000, 1", res.toString());
     }
+
+    @org.junit.Test
+    public void testDecimalFromLong()
+    {
+        String resTDS = "id,date,val:Decimal\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1\n" +
+                "1, 2000-10-31T01:31:00.000-05:00, 1\n" +
+                "1,, 1\n" +
+                "1, 2000-10-31T01:33:00.000-05:00, 1\n";
+
+        TestTDS res = new TestTDSImpl(resTDS);
+
+        Assert.assertEquals("id, date, val\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1\n" +
+                "1, 2000-10-31T06:31:00.000+0000, 1\n" +
+                "1, NULL, 1\n" +
+                "1, 2000-10-31T06:33:00.000+0000, 1", res.toString());
+    }
+
+    @org.junit.Test
+    public void testDecimalFromFloat()
+    {
+        String resTDS = "id,date,val:Decimal\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1.2\n" +
+                "1, 2000-10-31T01:31:00.000-05:00, 1\n" +
+                "1,, NULL\n" +
+                "1, 2000-10-31T01:33:00.000-05:00, 1.3\n";
+
+        TestTDS res = new TestTDSImpl(resTDS);
+
+        Assert.assertEquals("id, date, val\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1.2\n" +
+                "1, 2000-10-31T06:31:00.000+0000, 1.0\n" +
+                "1, NULL, NULL\n" +
+                "1, 2000-10-31T06:33:00.000+0000, 1.3", res.toString());
+    }
+
+    @org.junit.Test
+    public void testNumeric()
+    {
+        String resTDS = "id,date,val:meta::pure::precisePrimitives::Numeric(10,2)\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1.223\n" +
+                "1, 2000-10-31T01:31:00.000-05:00, 1.342\n" +
+                "1,, NULL\n" +
+                "1, 2000-10-31T01:33:00.000-05:00, 1.434322\n";
+
+        TestTDS res = new TestTDSImpl(resTDS);
+
+        Assert.assertEquals("id, date, val\n" +
+                "1, 2000-10-25T06:30:00.000+0000, 1.22\n" +
+                "1, 2000-10-31T06:31:00.000+0000, 1.34\n" +
+                "1, NULL, NULL\n" +
+                "1, 2000-10-31T06:33:00.000+0000, 1.43", res.toString());
+    }
 }

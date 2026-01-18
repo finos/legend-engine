@@ -18,7 +18,7 @@ import meta::pure::test::pct::*;
 import meta::pure::functions::flow::*;
 import meta::pure::metamodel::relation::*;
 
-function <<PCT.function>> meta::external::scenario::quant::logReturn(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,4)[1], high:Numeric(19,4)[1], low:Numeric(19,4)[1], close:Numeric(19,4)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], close:Numeric(19,4)[1], logReturn:Float[1])>[1]
+function <<PCT.function>> meta::external::scenario::quant::return::logReturn::logReturn(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], close:Numeric(19,2)[1], logReturn:Float[1])>[1]
 {
     $rel->select(~[symbol, time, close])
         ->extend(
@@ -27,12 +27,12 @@ function <<PCT.function>> meta::external::scenario::quant::logReturn(rel:Relatio
         );
 }
 
-function <<PCT.test>> meta::external::scenario::quant::testMinuteLogReturn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::external::scenario::quant::return::logReturn::testMinuteLogReturn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = 
       {
         | #TDS
-            time:Date[1], symbol:String[1], open:Numeric(19,4)[1], high:Numeric(19,4)[1], low:Numeric(19,4)[1], close:Numeric(19,4)[1], volume:Integer[1]
+            time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1]
             2026-01-06T09:30:00.000000000+0000, AAPL, 185.00, 185.25, 184.90, 185.10, 12500
             2026-01-06T09:30:00.000000000+0000, GOOGL, 140.50, 140.60, 140.20, 140.25, 8200
             2026-01-06T09:31:00.000000000+0000, AAPL, 185.10, 185.40, 185.05, 185.35, 9800
@@ -53,34 +53,36 @@ function <<PCT.test>> meta::external::scenario::quant::testMinuteLogReturn<T|m>(
             2026-01-06T09:38:00.000000000+0000, GOOGL, 140.25, 140.55, 140.25, 140.50, 6800
             2026-01-06T09:39:00.000000000+0000, AAPL, 186.45, 186.60, 186.40, 186.55, 9500
             2026-01-06T09:39:00.000000000+0000, GOOGL, 140.50, 140.60, 140.45, 140.55, 3900
-        #->meta::external::scenario::quant::logReturn();
+        #->meta::external::scenario::quant::return::logReturn::logReturn();
       };
 
     let res =  $f->eval($expr);
-
-    assertEquals(
-      '#TDS\n'+
-      '   symbol,time,close,logReturn\n'+
-      '   AAPL,2026-01-06T09:30:00.000+0000,185.1,0.0\n'+
-      '   AAPL,2026-01-06T09:31:00.000+0000,185.35,0.00134971\n'+
-      '   AAPL,2026-01-06T09:32:00.000+0000,185.55,0.001078458\n'+
-      '   AAPL,2026-01-06T09:33:00.000+0000,185.7,0.0008080808\n'+
-      '   AAPL,2026-01-06T09:34:00.000+0000,185.65,-0.0002692878\n'+
-      '   AAPL,2026-01-06T09:35:00.000+0000,185.9,0.0013457141\n'+
-      '   AAPL,2026-01-06T09:36:00.000+0000,186.05,0.00080656\n'+
-      '   AAPL,2026-01-06T09:37:00.000+0000,186.2,0.0008059101\n'+
-      '   AAPL,2026-01-06T09:38:00.000+0000,186.45,0.0013417418\n'+
-      '   AAPL,2026-01-06T09:39:00.000+0000,186.55,0.000536193\n'+
-      '   GOOGL,2026-01-06T09:30:00.000+0000,140.25,0.0\n'+
-      '   GOOGL,2026-01-06T09:31:00.000+0000,140.4,0.0010689472\n'+
-      '   GOOGL,2026-01-06T09:32:00.000+0000,140.35,-0.0003561888\n'+
-      '   GOOGL,2026-01-06T09:33:00.000+0000,140.65,0.0021352322\n'+
-      '   GOOGL,2026-01-06T09:34:00.000+0000,140.45,-0.0014229814\n'+
-      '   GOOGL,2026-01-06T09:35:00.000+0000,140.15,-0.002138276\n'+
-      '   GOOGL,2026-01-06T09:36:00.000+0000,140.3,0.0010697095\n'+
-      '   GOOGL,2026-01-06T09:37:00.000+0000,140.25,-0.0003564427\n'+
-      '   GOOGL,2026-01-06T09:38:00.000+0000,140.5,0.0017809444\n'+
-      '   GOOGL,2026-01-06T09:39:00.000+0000,140.55,0.0003558086\n'+
-      '#', $res->sort([~symbol->ascending(), ~time->ascending()])->toString()
+    
+    meta::pure::functions::relation::assertTdsEquivalent(
+            #TDS
+              symbol,time,close,logReturn
+              AAPL,2026-01-06T09:30:00.000+0000,185.10,0.0
+              AAPL,2026-01-06T09:31:00.000+0000,185.35,0.00134971
+              AAPL,2026-01-06T09:32:00.000+0000,185.55,0.001078458
+              AAPL,2026-01-06T09:33:00.000+0000,185.70,0.0008080808
+              AAPL,2026-01-06T09:34:00.000+0000,185.65,-0.0002692878
+              AAPL,2026-01-06T09:35:00.000+0000,185.90,0.0013457141
+              AAPL,2026-01-06T09:36:00.000+0000,186.05,0.00080656
+              AAPL,2026-01-06T09:37:00.000+0000,186.20,0.0008059101
+              AAPL,2026-01-06T09:38:00.000+0000,186.45,0.0013417418
+              AAPL,2026-01-06T09:39:00.000+0000,186.55,0.000536193
+              GOOGL,2026-01-06T09:30:00.000+0000,140.25,0.0
+              GOOGL,2026-01-06T09:31:00.000+0000,140.40,0.0010689472
+              GOOGL,2026-01-06T09:32:00.000+0000,140.35,-0.0003561888
+              GOOGL,2026-01-06T09:33:00.000+0000,140.65,0.0021352322
+              GOOGL,2026-01-06T09:34:00.000+0000,140.45,-0.0014229814
+              GOOGL,2026-01-06T09:35:00.000+0000,140.15,-0.002138276
+              GOOGL,2026-01-06T09:36:00.000+0000,140.30,0.0010697095
+              GOOGL,2026-01-06T09:37:00.000+0000,140.25,-0.0003564427
+              GOOGL,2026-01-06T09:38:00.000+0000,140.50,0.0017809444
+              GOOGL,2026-01-06T09:39:00.000+0000,140.55,0.0003558086
+            #,
+            $res->sort([~symbol->ascending(), ~time->ascending()]),
+            0.00001
     );
 }

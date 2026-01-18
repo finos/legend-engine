@@ -285,7 +285,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsExtend::testDecimal():Bo
       simpleRelationalMapping,
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-  assertEquals('select 1 as "decimal", 1 + 1 as "plus" from personTable as "root"', $result->sqlRemoveFormatting());
+  assertEquals('select cast(1 as Decimal(32,16)) as "decimal", cast(1 as Decimal(32,16)) + 1 as "plus" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 
