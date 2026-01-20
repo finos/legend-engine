@@ -14,10 +14,53 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 public class PureModelContextPointerCombination extends PureModelContext
 {
     public List<PureModelContextPointer> pointers = Collections.emptyList();
+
+    @JsonIgnore
+    private Set<PureModelContextPointer> pointerSet;
+
+    private Set<PureModelContextPointer> getPointerSet()
+    {
+        if (this.pointerSet == null)
+        {
+            this.pointerSet = Collections.unmodifiableSet(
+                    new LinkedHashSet<>(this.pointers)
+            );
+        }
+        return this.pointerSet;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        PureModelContextPointerCombination that =
+                (PureModelContextPointerCombination) o;
+
+        return Objects.equals(this.getPointerSet(), that.getPointerSet());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(this.getPointerSet());
+    }
 }

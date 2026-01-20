@@ -121,7 +121,8 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
             alloySDLCS.forEach(sdlc ->
             {
                 List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
-                if (!missingPaths.isEmpty()) {
+                if (!missingPaths.isEmpty())
+                {
                     throw new EngineException("The following entities:" + missingPaths + " do not exist in the project data loaded from the metadata server. " +
                             "Please make sure the corresponding Gitlab pipeline for version " + (this.alloyLoader.isLatestRevision(sdlc) ? "latest" : sdlc.version) + " has completed and also metadata server has updated with corresponding entities " +
                             "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(clientVersion) + "\"/> this API </a>.");
