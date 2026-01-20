@@ -18,6 +18,11 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -40,6 +45,41 @@ public class AlloySDLCLoader
     public PureModelContextData loadAlloyProject(Identity identity, AlloySDLC alloySDLC, String clientVersion, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         return SDLCLoader.loadMetadataFromHTTPURL(identity, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(identity, alloySDLC, clientVersion), httpClientProvider);
+    }
+
+    public PureModelContextData loadAlloyProjects(Identity identity, List<AlloySDLC> sdlcs, String clientVersion, Function<Identity, CloseableHttpClient> httpClientProvider)
+    {
+        return SDLCLoader.loadMetadataFromHTTPURL(identity, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(clientVersion), httpClientProvider, x -> prepareHttpRequest(x, sdlcs));
+    }
+
+    public String getMetaDataApiUrl(String clientVersion)
+    {
+        return this.metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/dependencies/pureModelContextData?convertToNewProtocol=false&clientVersion=" + clientVersion;
+    }
+
+    private HttpPost prepareHttpRequest(String url, List<AlloySDLC> alloySDLCS)
+    {
+        List<ProjectVersion> projectVersions = alloySDLCS.stream().map(alloySDLC ->
+        {
+            Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
+            Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
+            String version = alloySDLC.version == null || alloySDLC.version.equals("none") ? "master-SNAPSHOT" : alloySDLC.version;
+            return new ProjectVersion(alloySDLC.groupId, alloySDLC.artifactId, version);
+        }).collect(Collectors.toList());
+
+        HttpPost httpRequest;
+        httpRequest = new HttpPost(url);
+        try
+        {
+            httpRequest.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(projectVersions)));
+            httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException();
+        }
+
+        return httpRequest;
     }
 
     public String getMetaDataApiUrl(Identity identity, AlloySDLC alloySDLC, String clientVersion)
@@ -67,5 +107,19 @@ public class AlloySDLCLoader
     public PureModelContext getCacheKey(PureModelContext context)
     {
         return context;
+    }
+
+    private static class ProjectVersion
+    {
+        String groupId;
+        String artifactId;
+        String versionId;
+
+        ProjectVersion(String groupId, String artifactId, String versionId)
+        {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.versionId = versionId;
+        }
     }
 }

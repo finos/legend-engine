@@ -21,9 +21,12 @@ import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.procedure.Procedure;
@@ -41,6 +44,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCo
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointerCombination;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -129,8 +134,9 @@ public class ModelManager
             PureModelContextData globalContext;
             if (!pointers.isEmpty())
             {
-                PureModelContextData initial = resolvePointerAndCache(pointers.get(0), identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity));
-                PureModelContextData aggregated = pointers.subList(1, pointers.size()).injectInto(initial, (a, b) -> a.combine(resolvePointerAndCache(b, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity))));
+                PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
+                pureModelContextPointerCombination.pointers = pointers;
+                PureModelContextData aggregated = (PureModelContextData) loadModelOrData(pureModelContextPointerCombination, clientVersion, identity, pointerCache, mayCompileFunction);
                 globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
             }
             else if (!concretes.isEmpty())
@@ -146,6 +152,33 @@ public class ModelManager
         else if (context instanceof PureModelContextConcrete)
         {
             return mayCompileFunction.apply(transformToData((PureModelContextConcrete) context));
+        }
+        else if (context instanceof PureModelContextPointerCombination)
+        {
+            List<PureModelContextPointer> pointers = new ArrayList<>(((PureModelContextPointerCombination) context).pointers);
+            List<PureModelContextPointer> alloyPointers = pointers.stream().filter(p -> p.sdlcInfo instanceof AlloySDLC).collect(Collectors.toList());
+            if (alloyPointers.size() > 1)
+            {
+                pointers.removeAll(alloyPointers);
+            }
+            else
+            {
+                // PS: if only one alloy present, go through the normal flow
+                alloyPointers = new ArrayList<>();
+            }
+            PureModelContextData globalContext = null;
+            if (!pointers.isEmpty())
+            {
+                globalContext = pointers.stream().map(p -> resolvePointerAndCache(p, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity))).reduce((a,b) -> a.combine(b)).get();
+            }
+            if (!alloyPointers.isEmpty())
+            {
+                PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
+                pureModelContextPointerCombination.pointers = alloyPointers;
+                PureModelContextData alloyContext = resolvePointerAndCache(pureModelContextPointerCombination, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity));
+                globalContext = globalContext == null ? alloyContext : globalContext.combine(alloyContext);
+            }
+            return mayCompileFunction.apply(globalContext);
         }
         else
         {
