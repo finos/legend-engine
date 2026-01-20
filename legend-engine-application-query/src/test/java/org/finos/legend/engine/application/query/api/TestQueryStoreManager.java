@@ -442,6 +442,96 @@ public class TestQueryStoreManager
     }
 
     @Test
+    public void testGetAllQueries() throws Exception
+    {
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withLegacyExecutionContext().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("3", "query3", currentUser).withLegacyExecutionContext().build(), currentUser);
+
+        List<Query> allQueries = store.getAllQueries(0, 2);
+        Assert.assertEquals(3, allQueries.size());
+        Assert.assertEquals("1", allQueries.get(0).id);
+        Assert.assertEquals("2", allQueries.get(1).id);
+        Assert.assertEquals("3", allQueries.get(2).id);
+
+        List<Query> subQueries = store.getAllQueries(1, 3);
+        Assert.assertEquals(2, subQueries.size());
+        Assert.assertEquals("2", subQueries.get(0).id);
+        Assert.assertEquals("3", subQueries.get(1).id);
+
+        // Test pagination limit
+        int max = 100;
+        Assert.assertThrows(ApplicationQueryException.class, () -> store.getAllQueries(0, max + 1));
+    }
+
+    @Test
+    public void testGetAllQueriesEdgeCases() throws Exception
+    {
+        String currentUser = "user";
+        int max = 100;
+        for (int i = 0; i < max; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withLegacyExecutionContext().build(), currentUser);
+        }
+
+        List<Query> queries = store.getAllQueries(0, max - 1);
+        List<String> expectedIds = new ArrayList<>();
+        for (int i = 0; i < max; i++)
+        {
+            expectedIds.add(String.valueOf(i));
+        }
+        expectedIds.sort(String::compareTo);
+        Assert.assertEquals(max, queries.size());
+        for (int i = 0; i < expectedIds.size() - 1; i++)
+        {
+            Assert.assertEquals(String.valueOf(expectedIds.get(i)), queries.get(i).id);
+        }
+        // Test exception if range exceeds max limit
+        Assert.assertThrows(ApplicationQueryException.class, () -> store.getAllQueries(0, max + 1));
+        // Test from == to
+        Assert.assertEquals(1, store.getAllQueries(10, 10).size());
+    }
+
+    @Test
+    public void testGetAllQueriesUserWorkflow() throws Exception
+    {
+        String currentUser = "user";
+        int totalQueries = 10;
+        int batchSize = 3;
+        List<String> expectedIds = new ArrayList<>();
+        for (int i = 0; i < totalQueries; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withLegacyExecutionContext().build(), currentUser);
+            expectedIds.add(String.valueOf(i));
+        }
+        expectedIds.sort(String::compareTo);
+
+        int from = 0;
+        int fetched = 0;
+        while (from < totalQueries)
+        {
+            int to = Math.min(from + batchSize - 1, totalQueries);
+            List<Query> batch = store.getAllQueries(from, to);
+            Assert.assertTrue(batch.size() <= batchSize);
+
+            for (int i = 0; i < batch.size(); i++)
+            {
+                Assert.assertEquals(expectedIds.get(from + i), batch.get(i).id);
+            }
+            fetched += batch.size();
+            from += batchSize;
+        }
+        Assert.assertEquals(totalQueries, fetched);
+    }
+
+    @Test
+    public void testGetQueriesWithNullAndEmptyList()
+    {
+        Assert.assertTrue(store.getAllQueries(0, 5).isEmpty());
+    }
+
+    @Test
     public void testMatchExactNameQuery() throws Exception
     {
         String currentUser = "testUser";

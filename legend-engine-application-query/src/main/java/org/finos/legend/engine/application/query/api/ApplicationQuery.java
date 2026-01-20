@@ -118,6 +118,26 @@ public class ApplicationQuery
         }
     }
 
+    @GET
+    @Path("allQueries")
+    @ApiOperation(value = "Get all queries within the specified index range [from, to], inclusive")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getAllQueries(@QueryParam("from") int from, @QueryParam("to") int to)
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getAllQueries(from, to)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, null);
+        }
+    }
+
     @POST
     @ApiOperation(value = "Create a new query")
     @Consumes({MediaType.APPLICATION_JSON})
