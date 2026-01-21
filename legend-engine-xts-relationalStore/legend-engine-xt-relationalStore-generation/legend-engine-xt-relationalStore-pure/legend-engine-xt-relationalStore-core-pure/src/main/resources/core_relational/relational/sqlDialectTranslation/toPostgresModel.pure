@@ -69,12 +69,23 @@ function meta::relational::functions::toPostgresModel::convertSelectSqlQuery(sel
   ^Query(queryBody = $select->convertElement($state)->cast(@QueryBody));
 }
 
+function meta::relational::functions::toPostgresModel::printDataType(d:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+  $d->match(
+    [
+      d:meta::relational::metamodel::datatype::Decimal[1]|'Decimal('+$d.precision->toString() + ',' + $d.scale->toString() + ')',
+      a:Any[1]|$a->genericType().rawType.name->toOne()
+    ]
+  )
+}
+
 function meta::relational::functions::toPostgresModel::convertElement(r:RelationalOperationElement[1], state:ModelConversionState[1]):Node[1]
 {
   $r->match(
     $state.extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeConverters)->map(f | $f->eval($state))->concatenate(
       [
         d:DynaFunction[1]|                    convertDynaFunction($d, $state);,
+        d:DataTypeInfo[1]|                    ^ColumnType(name=$d.dataType->toOne()->printDataType()),
         v:VarPlaceHolder[1]|                  ^InClauseVariablePlaceholder(name = $v.name);,
         v:VarSetPlaceHolder[1]|               ^TablePlaceholder(name = $v.varName);,
         v:VarCrossSetPlaceHolder[1]|          ^TablePlaceholder(name = $v.varName);,
@@ -277,6 +288,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('cbrt',                      functionCall('cbrt')),
     pair('ceiling',                   {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('ceiling', $p), 'bigint')}),
     pair('floor',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('floor', $p), 'bigint')}),
+    pair('cast',                      {p:meta::external::query::sql::metamodel::Expression[*]| castExpression($p->at(0), $p->at(1)->cast(@ColumnType).name)}),
     pair('sign',                      functionCall('sign')),
     pair('exp',                       functionCall('exp')),
     pair('log',                       functionCall('ln')),

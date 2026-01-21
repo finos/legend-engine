@@ -149,6 +149,7 @@ public class Test_Relational_SqlServer_GrammarFunctions_PCT extends PCTReportCon
 
             // Divide
             one("meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_", "\"\nexpected: 0.010416666666666666\nactual:   0.010416\""),
+            one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "\"\nexpected: 0.5238095238095238\nactual:   0.523809\""),
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\"", AdapterQualifier.needsInvestigation),

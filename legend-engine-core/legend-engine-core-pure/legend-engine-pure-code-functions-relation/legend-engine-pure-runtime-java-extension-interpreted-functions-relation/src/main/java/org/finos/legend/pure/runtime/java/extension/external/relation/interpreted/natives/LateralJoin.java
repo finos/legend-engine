@@ -64,7 +64,8 @@ public class LateralJoin extends Shared
         RelationType<?> lateralResult = (RelationType<?>) ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getOnly()._rawType())._returnType()._typeArguments().getOnly()._rawType();
 
         TestTDS agg = lateralResult._columns().injectInto(sourceTds.newEmptyTDS(), (t, x) ->
-                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast()._rawType(), x._classifierGenericType()._multiplicityArguments().getFirst()));
+                t.addColumn(x._name(), x._classifierGenericType()._typeArguments().getLast(), x._classifierGenericType()._multiplicityArguments().getFirst())
+        );
 
         for (int i = 0; i < sourceTds.getRowCount(); i++)
         {

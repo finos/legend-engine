@@ -23,9 +23,9 @@ public class TestPCTReportScenarioQuantFunctions
     @Test
     public void canFindPCTReport()
     {
-        Assert.assertEquals(6, PCTReportProviderLoader.gatherFunctions().size());
-        Assert.assertEquals("essential, grammar, relation, scenario_quant, unclassified, variant", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
-        Assert.assertEquals(12, PCTReportProviderLoader.gatherReports().size());
-        Assert.assertEquals("essential/Native, grammar/Native, relation/Native, scenario_quant/Native, unclassified/Native, variant/Native", PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module + "/" + c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(7, PCTReportProviderLoader.gatherFunctions().size());
+        Assert.assertEquals("essential, grammar, relation, scenario_quant, standard, unclassified, variant", PCTReportProviderLoader.gatherFunctions().collect(c -> c.reportScope.module).distinct().sortThis().makeString(", "));
+        Assert.assertEquals(14, PCTReportProviderLoader.gatherReports().size());
+        Assert.assertEquals("essential/Native, grammar/Native, relation/Native, scenario_quant/Native, standard/Native, unclassified/Native, variant/Native", PCTReportProviderLoader.gatherReports().collect(c -> c.reportScope.module + "/" + c.adapterKey.adapter.name).distinct().sortThis().makeString(", "));
     }
 }

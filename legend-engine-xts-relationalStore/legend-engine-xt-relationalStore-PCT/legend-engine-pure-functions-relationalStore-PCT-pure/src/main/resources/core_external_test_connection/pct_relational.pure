@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::serialization::grammar::*;
 import meta::relational::grammar::serialization::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
@@ -148,6 +149,9 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   $resultFinal;,
                 |
                   let resultFinal = meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);
+
+                  let relType = $resultFinal->genericType().typeArguments.rawType->cast(@RelationType<Any>)->toOne();
+
                   print(if($debug.debug,|$resultFinal->match(
                                             [
                                               x:meta::pure::metamodel::relation::Relation<Any>[1]|'\nResult Final:\n'+$x->toString(true),

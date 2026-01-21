@@ -39,7 +39,7 @@ jobs:
     # NOTE: Only run this when not in fork as those likely do not have access to larger runners and will fail on normal runner due to resource limitation
     # Also, skip this build for release commits
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
       profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}

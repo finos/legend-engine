@@ -147,20 +147,6 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
                       ]
                  ),
                  revsForTest(
-                      'meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_',
-                      [
-                        revError('|#TDS{\n'+
-                            'val:Integer[0..1],str:String[0..1]\n'+
-                            '1,a\n'+
-                            '3,ewe\n'+
-                            '4,qw\n}#->meta::pure::functions::relation::size() > 0',
-                            'select count(*) > 0 from csv(\'val,str\n 1,a\n 3,ewe\n 4,qw\') as "table0_0"',
-                            'Boolean is not supported yet!',
-                            'investigation required'
-                        )
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_',
                       [
                         rev('|let t = #TDS{\n'+

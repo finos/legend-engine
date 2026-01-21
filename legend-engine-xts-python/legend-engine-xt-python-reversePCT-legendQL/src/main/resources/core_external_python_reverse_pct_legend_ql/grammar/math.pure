@@ -56,7 +56,8 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       ),
       meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_->testRev(
         [
-          noRev('|1.0D / 2.0')
+          noRev('|1.0D / 2.0'),
+          noRev('|1.1D / 2.1D')
         ]
       )
     ]->combine(),

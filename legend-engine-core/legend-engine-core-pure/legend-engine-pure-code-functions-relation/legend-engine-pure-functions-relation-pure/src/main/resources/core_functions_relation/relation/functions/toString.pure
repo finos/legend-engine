@@ -28,12 +28,20 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toS
     '   '+$cols->map(c| let name = $c.name->toOne()->trim();
                         let isSimple = $name->startsWith('\'') || $name->matches('^[a-zA-Z0-9_]+$');
                         let nameContainsSpace = $name->contains(' ');
-                        if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'') + if($typesAndMuls,|':'+$c->genericType().typeArguments->at(1).rawType->toOne()->elementToPath()+'['+$c->genericType().multiplicityArguments->at(0)->printMul()+']',|'');
+                        if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'') + if($typesAndMuls,|':' + $c->genericType().typeArguments->at(1)->_printGenericType() + '['+$c->genericType().multiplicityArguments->at(0)->printMul() + ']',|'');
                     )->joinStrings(',')+'\n'+
          $rel->map(x|'   '+$cols->map(c|s($c->eval($x)->first(), $c.classifierGenericType.typeArguments->at(1).rawType))->joinStrings(',');)->joinStrings('\n')+'\n'+
     '#';
 }
 
+function meta::pure::functions::relation::_printGenericType(genericType:GenericType[1]):String[1]
+{
+  $genericType.rawType->toOne()->elementToPath() +
+  if ($genericType.typeVariableValues->isNotEmpty(),
+    |'('+$genericType.typeVariableValues->evaluateAndDeactivate()->cast(@InstanceValue)->map(x|$x.values->toOne()->toRepresentation())->joinStrings(', ')+')',
+    |''
+  );
+}
 
 function <<test.Test>> meta::pure::functions::relation::tests::toString::testToString():Boolean[1]
 {

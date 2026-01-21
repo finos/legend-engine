@@ -36,6 +36,7 @@ public class Test_Relational_MemSQL_ScenarioQuantFunctions_PCT extends PCTReport
     private static final Adapter adapter = CoreRelationalMemSQLCodeRepositoryProvider.memsqlAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
     );
 
     public static Test suite()
