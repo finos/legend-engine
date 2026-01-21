@@ -461,7 +461,7 @@ public class TestQueryStoreManager
         Assert.assertEquals("3", subQueries.get(1).id);
 
         // Test pagination limit
-        int max = 100;
+        int max = 1000;
         Assert.assertThrows(ApplicationQueryException.class, () -> store.getAllQueries(0, max + 1));
     }
 
@@ -469,7 +469,7 @@ public class TestQueryStoreManager
     public void testGetAllQueriesEdgeCases() throws Exception
     {
         String currentUser = "user";
-        int max = 100;
+        int max = 1000;
         for (int i = 0; i < max; i++)
         {
             store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withLegacyExecutionContext().build(), currentUser);
