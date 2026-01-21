@@ -20,11 +20,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "**/Dockerfile"
-  pull_request:
-    paths:
-      - "**/Dockerfile"
   workflow_dispatch: {}
 
 jobs:
@@ -37,21 +32,24 @@ jobs:
         module:
           - parent: legend-engine-config/legend-engine-server
             name: legend-engine-server-http-server
-          - parent: legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide
-            name: legend-engine-pure-ide-light-http-server
+
+          - parent: legend-engine-xts-sql
+            name: legend-engine-xt-sql-postgres-server
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build simplified Docker image for checks
-        # NOTE: if this gets more complicated, consider having this as a bash script
-        run: mkdir -p ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target && touch ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target/${{ matrix.module.name }}-dummy.jar && docker build --quiet --tag local/${{ matrix.module.name }}:${{ github.sha }} ./${{ matrix.module.parent }}/${{ matrix.module.name }}
+        uses: actions/checkout@v4
+
+      - name: Generate tarball from image
+        run: |
+          docker pull finos/${{ matrix.module.name }}:snapshot
+          docker save -o /github/workspace/vuln-image.tar finos/${{ matrix.module.name }}:snapshot
+
       - name: Scan image for security issues
-        uses: aquasecurity/trivy-action@0.2.2
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          # TODO: we should probably also setup misconfiguration scanning
-          # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code
-          scan-type: image
-          image-ref: local/${{ matrix.module.name }}:${{ github.sha }}
+          scanners: vuln,secret,misconfig,license
+          input: /github/workspace/vuln-image.tar
           format: table
           exit-code: 1
           # Ignore unpatched/unfixed vulnerabilities/CVEs
