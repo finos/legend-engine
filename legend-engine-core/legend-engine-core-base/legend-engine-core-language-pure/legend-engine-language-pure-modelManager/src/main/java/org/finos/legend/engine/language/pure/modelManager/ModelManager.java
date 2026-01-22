@@ -136,7 +136,7 @@ public class ModelManager
             {
                 PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
                 pureModelContextPointerCombination.pointers = pointers;
-                PureModelContextData aggregated = (PureModelContextData) loadModelOrData(pureModelContextPointerCombination, clientVersion, identity, pointerCache, mayCompileFunction);
+                PureModelContextData aggregated = getPMCDFromPointers(pureModelContextPointerCombination, clientVersion, identity);
                 globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
             }
             else if (!concretes.isEmpty())
@@ -155,36 +155,41 @@ public class ModelManager
         }
         else if (context instanceof PureModelContextPointerCombination)
         {
-            List<PureModelContextPointer> pointers = new ArrayList<>(((PureModelContextPointerCombination) context).pointers);
-            List<PureModelContextPointer> alloyPointers = pointers.stream().filter(p -> p.sdlcInfo instanceof AlloySDLC).collect(Collectors.toList());
-            if (alloyPointers.size() > 1)
-            {
-                pointers.removeAll(alloyPointers);
-            }
-            else
-            {
-                // PS: if only one alloy present, go through the normal flow
-                alloyPointers = new ArrayList<>();
-            }
-            PureModelContextData globalContext = null;
-            if (!pointers.isEmpty())
-            {
-                globalContext = pointers.stream().map(p -> resolvePointerAndCache(p, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion == null ? p.serializer.version : clientVersion, identity))).reduce((a,b) -> a.combine(b)).get();
-            }
-            if (!alloyPointers.isEmpty())
-            {
-                PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
-                pureModelContextPointerCombination.pointers = alloyPointers;
-                String finalClientVersion = clientVersion == null ? alloyPointers.get(0).serializer.version : clientVersion;
-                PureModelContextData alloyContext = resolvePointerAndCache(pureModelContextPointerCombination, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, finalClientVersion, identity));
-                globalContext = globalContext == null ? alloyContext : globalContext.combine(alloyContext);
-            }
+            PureModelContextData globalContext = getPMCDFromPointers((PureModelContextPointerCombination) context, clientVersion, identity);
             return mayCompileFunction.apply(globalContext);
         }
         else
         {
             return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
         }
+    }
+
+    private PureModelContextData getPMCDFromPointers(PureModelContextPointerCombination context, String clientVersion, Identity identity)
+    {
+        List<PureModelContextPointer> pointers = new ArrayList<>(context.pointers);
+        List<PureModelContextPointer> alloyPointers = pointers.stream().filter(p -> p.sdlcInfo instanceof AlloySDLC).collect(Collectors.toList());
+        if (alloyPointers.size() > 1)
+        {
+            pointers.removeAll(alloyPointers);
+        }
+        else
+        {
+            // PS: if only one alloy present, go through the normal flow
+            alloyPointers = new ArrayList<>();
+        }
+        PureModelContextData globalContext = null;
+        if (!pointers.isEmpty())
+        {
+            globalContext = pointers.stream().map(p -> resolvePointerAndCache(p, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity))).reduce((a, b) -> a.combine(b)).get();
+        }
+        if (!alloyPointers.isEmpty())
+        {
+            PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
+            pureModelContextPointerCombination.pointers = alloyPointers;
+            PureModelContextData alloyContext = resolvePointerAndCache(pureModelContextPointerCombination, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity));
+            globalContext = globalContext == null ? alloyContext : globalContext.combine(alloyContext);
+        }
+        return globalContext;
     }
 
 

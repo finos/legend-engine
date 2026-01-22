@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointerCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -89,7 +90,7 @@ public class TestModelManagerPureModelCaching
                         "   name : String[1];" +
                         "}");
 
-        MutableMap<PureModelContextPointer, PureModelContextData> vals = Maps.mutable.with(pointerA, blockA);
+        MutableMap<PureModelContext, PureModelContextData> vals = Maps.mutable.with(pointerA, blockA);
 
         PureModelContextData blockB = PureGrammarParser.newInstance().parseModel(
                 "Class x::B\n" +
@@ -155,7 +156,10 @@ public class TestModelManagerPureModelCaching
                         "   name : x::A[1];" +
                         "}");
 
-        MutableMap<PureModelContextPointer, PureModelContextData> vals = Maps.mutable.with(pointerA, blockA, pointerC, blockC);
+        PureModelContextPointerCombination pointerCombination = new PureModelContextPointerCombination();
+        pointerCombination.pointers = Lists.fixedSize.of(pointerA, pointerC);
+
+        MutableMap<PureModelContext, PureModelContextData> vals = Maps.mutable.with(pointerCombination, blockA.combine(blockC));
 
         PureModelContextCombination subCombination = new PureModelContextCombination();
         subCombination.contexts = Lists.mutable.with(pointerC, blockD);
@@ -172,9 +176,9 @@ public class TestModelManagerPureModelCaching
 
     private static class MockModelLoader implements ModelLoader
     {
-        private final MutableMap<PureModelContextPointer, PureModelContextData> contexts;
+        private final MutableMap<PureModelContext, PureModelContextData> contexts;
 
-        public MockModelLoader(MutableMap<PureModelContextPointer, PureModelContextData> vals)
+        public MockModelLoader(MutableMap<PureModelContext, PureModelContextData> vals)
         {
             contexts = vals;
         }
@@ -194,9 +198,23 @@ public class TestModelManagerPureModelCaching
         @Override
         public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
         {
-            PureModelContextPointer pointer = (PureModelContextPointer) context;
             PureModelContextData res = contexts.get(context);
-            return res != null ? res : PureModelContextData.newPureModelContextData(pointer.serializer, pointer, Lists.mutable.empty());
+            if (res != null)
+            {
+                return res;
+            }
+            if (context instanceof PureModelContextPointer)
+            {
+                PureModelContextPointer pointer = (PureModelContextPointer) context;
+                return PureModelContextData.newPureModelContextData(pointer.serializer, pointer, Lists.mutable.empty());
+            }
+            else if (context instanceof PureModelContextPointerCombination)
+            {
+                return ((PureModelContextPointerCombination) context).pointers.stream()
+                        .map(p -> load(identity, context, clientVersion, parentSpan))
+                        .reduce((a,b) -> a.combine(b)).orElse(null);
+            }
+            return null;
         }
 
         @Override

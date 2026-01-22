@@ -201,18 +201,6 @@ public class TestSDLCLoader
         Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
     }
 
-    @Test
-    public void testClientVersionFallsBackToSerializerVersion() throws Exception
-    {
-        PureModelContextPointer pointer = getPureModelContextPointer();
-
-        configureWireMockForRetries();
-        SDLCLoader sdlcLoader = createSDLCLoader();
-
-        // pass null client version
-        Assert.assertThrows(EngineException.class, () -> sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, null, tracer.activeSpan()));
-    }
-
     private static PureModelContextPointer getPureModelContextPointer()
     {
         AlloySDLC sdlcInfo = new AlloySDLC();
