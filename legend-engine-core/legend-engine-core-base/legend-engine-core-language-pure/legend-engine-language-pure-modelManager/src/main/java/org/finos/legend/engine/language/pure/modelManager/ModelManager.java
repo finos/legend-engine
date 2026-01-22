@@ -38,6 +38,7 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProcessParameter;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextConcrete;
@@ -126,6 +127,7 @@ public class ModelManager
 
     private <T> T loadModelOrData(PureModelContext context, String clientVersion, Identity identity, Cache<PureModelContext, T> pointerCache, Function<PureModelContextData, T> mayCompileFunction)
     {
+        String finalClientVersion = clientVersion == null ? PureClientVersions.production : clientVersion;
         if (context instanceof PureModelContextCombination)
         {
             Pair<MutableList<PureModelContextData>, MutableList<PureModelContextPointer>> concreteVsPointer = recursivelyDiscriminateDataAndPointersLeaves((PureModelContextCombination) context);
@@ -136,7 +138,7 @@ public class ModelManager
             {
                 PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
                 pureModelContextPointerCombination.pointers = pointers;
-                PureModelContextData aggregated = getPMCDFromPointers(pureModelContextPointerCombination, clientVersion, identity);
+                PureModelContextData aggregated = getPMCDFromPointers(pureModelContextPointerCombination, finalClientVersion, identity);
                 globalContext = concretes.injectInto(aggregated, (a, b) -> a.combine(b));
             }
             else if (!concretes.isEmpty())
@@ -155,12 +157,12 @@ public class ModelManager
         }
         else if (context instanceof PureModelContextPointerCombination)
         {
-            PureModelContextData globalContext = getPMCDFromPointers((PureModelContextPointerCombination) context, clientVersion, identity);
+            PureModelContextData globalContext = getPMCDFromPointers((PureModelContextPointerCombination) context, finalClientVersion, identity);
             return mayCompileFunction.apply(globalContext);
         }
         else
         {
-            return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
+            return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, finalClientVersion, identity)));
         }
     }
 
