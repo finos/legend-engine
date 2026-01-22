@@ -19,6 +19,7 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::json::*;
 
+// TODO: This should be revisited, as it should be extending meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::Result instead
 Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult extends meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenResult
 {
    objects: Map<String, Any>[*];

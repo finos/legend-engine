@@ -85,14 +85,14 @@ function meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephav
 {
    newMap([
       pair(Integer, ^meta::external::store::deephaven::metamodel::type::LongType()),
-      pair(Decimal, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
       pair(Float, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
-      pair(Number, ^meta::external::store::deephaven::metamodel::type::DoubleType()),
       pair(String, ^meta::external::store::deephaven::metamodel::type::StringType()),
-      pair(Date, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
       pair(DateTime, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
-      pair(StrictDate, ^meta::external::store::deephaven::metamodel::type::DateTimeType()),
       pair(Boolean, ^meta::external::store::deephaven::metamodel::type::BooleanType())
+      // pair(Decimal, ),
+      // pair(Number, ),
+      // pair(Date, ),
+      // pair(StrictDate, )
    ]);
 }
 

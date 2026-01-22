@@ -52,10 +52,7 @@ public class DeephavenTestContainer
             .userAgent(BarrageSessionFactoryConfig.userAgent(Collections.singletonList("deephaven-barrage-examples")))
             .build();
 
-    public static final BufferAllocator bufferAllocator = new RootAllocator();
-
     public static GenericContainer<?> deephavenContainer;
-    public static BarrageSession deephavenSession;
 
     public static boolean startDeephaven(String versionTag)
     {
@@ -104,7 +101,7 @@ public class DeephavenTestContainer
         return deephavenContainer;
     }
 
-    private static BarrageSession buildSession(GenericContainer<?> container)
+    public static BarrageSession buildSession(GenericContainer<?> container, BufferAllocator bufferAllocator)
     {
         final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
@@ -116,8 +113,7 @@ public class DeephavenTestContainer
                 .build()
                 .factory();
 
-        deephavenSession = factory.newBarrageSession(sessionConfig());
-        return deephavenSession;
+        return factory.newBarrageSession(sessionConfig());
     }
 
     private static SessionConfig sessionConfig()
@@ -131,8 +127,10 @@ public class DeephavenTestContainer
     {
         try
         {
-            deephavenContainer = startDeephavenContainerForPCT(versionTag);
-            deephavenSession = buildSession(deephavenContainer);
+            if (deephavenContainer == null || !deephavenContainer.isRunning())
+            {
+                deephavenContainer = startDeephavenContainerForPCT(versionTag);
+            }
             return true;
         }
         catch (Exception e)
@@ -165,22 +163,6 @@ public class DeephavenTestContainer
 
     public static boolean stopDeephaven()
     {
-        if (deephavenSession != null)
-        {
-            try
-            {
-                deephavenSession.close();
-            }
-            catch (Exception e)
-            {
-                LOGGER.warn("Error closing Deephaven session", e);
-            }
-            finally
-            {
-                deephavenSession = null;
-            }
-        }
-
         if (deephavenContainer != null && deephavenContainer.isRunning())
         {
             try

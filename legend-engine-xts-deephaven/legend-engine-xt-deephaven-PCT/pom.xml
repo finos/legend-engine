@@ -30,26 +30,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-code-core-extension</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-executionPlan</dependency>
-                                <dependency>io.deephaven:deephaven-java-client-session</dependency>
-                                <dependency>io.deephaven:deephaven-engine-api</dependency>
-                                <dependency>io.deephaven:deephaven-qst</dependency>
-                            </ignoredUnusedDeclaredDependencies>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
@@ -261,9 +241,8 @@
                             <mode>Compiled</mode>
                             <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                             <PCTTestSuites>
-                                <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_RelationFunctions_PCT
-                                </PCTTestSuite>
+                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_RelationFunctions_PCT</PCTTestSuite>
+                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_EssentialFunctions_PCT</PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
                         <executions>
@@ -382,6 +361,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-core-extension</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -426,16 +406,19 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-store</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-engine-api</artifactId>
             <version>${deephaven.version}</version>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.jetbrains</groupId>
@@ -451,11 +434,13 @@
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-qst</artifactId>
             <version>${deephaven.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-java-client-session</artifactId>
             <version>${deephaven.version}</version>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.errorprone</groupId>
@@ -486,6 +471,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-deephaven-executionPlan</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>

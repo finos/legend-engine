@@ -45,8 +45,6 @@
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-planExecution-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-grammar</dependency>
-                                <dependency>io.deephaven:deephaven-log-to-slf4j</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -336,6 +334,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-deephaven-grammar</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -420,6 +419,7 @@
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-log-to-slf4j</artifactId>
             <version>${deephaven.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>

@@ -33,6 +33,7 @@ public class Core_Deephaven_PCTReportProvider implements PCTReportProvider
     public MutableList<AdapterReport> getAdapterReports()
     {
         return PCTReportProviderTool.load(Core_Deephaven_PCTReportProvider.class.getClassLoader(), AdapterReport.class,
+                "pct-reports/ADAPTER_essential_compiled_Deephaven.json",
                 "pct-reports/ADAPTER_relation_compiled_Deephaven.json"
         );
     }

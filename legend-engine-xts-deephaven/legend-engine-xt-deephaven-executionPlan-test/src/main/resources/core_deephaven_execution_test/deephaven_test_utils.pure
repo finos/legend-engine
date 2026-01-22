@@ -17,6 +17,6 @@ native function meta::external::store::deephaven::executionTest::utils::startDee
 
 native function meta::external::store::deephaven::executionTest::utils::stopDeephaven(imageTag: String[1]): Nil[0];
 
-native function meta::external::store::deephaven::executionTest::utils::createTableFromCSV(tableName: String[1], csv: String[1]): Nil[0];
+native function meta::external::store::deephaven::executionTest::utils::createTableFromCSV(tableName: String[1], csv: String[1]): Boolean[1];
 
 native function meta::external::store::deephaven::executionTest::utils::getDeephavenTestConnection(): meta::external::store::deephaven::metamodel::runtime::DeephavenConnection[1];

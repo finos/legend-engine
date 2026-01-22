@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test.shared;
 
+import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.BarrageSnapshot;
 import io.deephaven.client.impl.TableHandle;
 import io.deephaven.csv.util.CsvReaderException;
@@ -22,6 +23,8 @@ import io.deephaven.engine.util.TableTools;
 import io.deephaven.extensions.barrage.util.BarrageUtil;
 import io.deephaven.qst.table.TicketTable;
 import org.apache.arrow.flight.FlightStream;
+import org.apache.arrow.memory.BufferAllocator;
+import org.apache.arrow.memory.RootAllocator;
 import org.finos.legend.engine.plan.execution.stores.deephaven.test.DeephavenTestContainer;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL_Impl;
@@ -33,7 +36,7 @@ public class DeephavenCommands
     private static final int DEEPHAVEN_PORT = 10000;
     public static final String START_SERVER_FUNCTION = "startDeephaven_String_1__URL_1_";
     public static final String STOP_SERVER_FUNCTION = "stopDeephaven_String_1__Nil_0_";
-    public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__Nil_0_";
+    public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__Boolean_1_";
     public static final String GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION = "getDeephavenTestConnection__DeephavenConnection_1_";
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
@@ -73,48 +76,86 @@ public class DeephavenCommands
         DeephavenTestContainer.stopDeephaven();
     }
 
-    public static void createTableFromCSV(String tableName, String csv)
+    public static boolean createTableFromCSV(String tableName, String csv)
     {
-        DeephavenTestContainer.LOGGER.info("Creating table '{}' from CSV data using session: {}", tableName, DeephavenTestContainer.deephavenSession);
+        try (
+                BufferAllocator bufferAllocator = new RootAllocator();
+                BarrageSession barrageSession = DeephavenTestContainer.buildSession(DeephavenTestContainer.deephavenContainer, bufferAllocator))
+        {
+            DeephavenTestContainer.LOGGER.info("Creating table '{}' from CSV data using session: {}", tableName, barrageSession);
 
-        CsvToNewTable csvToNewTable = null;
-        try
-        {
-            csvToNewTable = new CsvToNewTable(csv);
-        }
-        catch (CsvReaderException e)
-        {
-            throw new RuntimeException("Failed to parse CSV for table '" + tableName + "'", e);
-        }
-        try
-        {
-            csvToNewTable.publish(tableName, DeephavenTestContainer.bufferAllocator, DeephavenTestContainer.deephavenSession);
-            DeephavenTestContainer.LOGGER.info("Successfully published table '{}'", tableName);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException("Failed to publish table '" + tableName + "' to Deephaven. Session may be closed or invalid.", e);
-        }
+            CsvToNewTable csvToNewTable;
+            try
+            {
+                csvToNewTable = new CsvToNewTable(csv);
+            }
+            catch (CsvReaderException e)
+            {
+                DeephavenTestContainer.LOGGER.error("Failed to parse CSV for table '{}'", tableName, e);
+                return false;
+            }
 
-        TableHandle queryTableHandle = DeephavenTestContainer.deephavenSession.session().batch().of(TicketTable.fromQueryScopeField(tableName));
-        FlightStream stream = DeephavenTestContainer.deephavenSession.stream(queryTableHandle);
+            try
+            {
+                csvToNewTable.publish(tableName, bufferAllocator, barrageSession);
+                DeephavenTestContainer.LOGGER.info("Successfully published table '{}'", tableName);
+            }
+            catch (Exception e)
+            {
+                DeephavenTestContainer.LOGGER.error("Failed to publish table '{}' to Deephaven. Session may be closed or invalid.", tableName, e);
+                return false;
+            }
 
-        while (stream.next())
-        {
-            DeephavenTestContainer.LOGGER.info("row count: " + stream.getRoot().getRowCount());
-        }
+            TicketTable ticketTable = TicketTable.fromQueryScopeField(tableName);
+            TableHandle queryTableHandle = barrageSession.session().batch().of(ticketTable);
 
-        BarrageSnapshot snapshot = DeephavenTestContainer.deephavenSession.snapshot(queryTableHandle, BarrageUtil.DEFAULT_SNAPSHOT_OPTIONS);
-        Table tableFuture = null;
-        try
-        {
-            tableFuture = snapshot.entireTable().get();
-        }
-        catch (InterruptedException | ExecutionException e)
-        {
-            throw new RuntimeException("Failed to verify table creation for '" + tableName + "'", e);
-        }
+            FlightStream stream = null;
+            try
+            {
+                stream = barrageSession.stream(queryTableHandle);
+                while (stream.next())
+                {
+                    DeephavenTestContainer.LOGGER.info("row count: " + stream.getRoot().getRowCount());
+                }
+            }
+            catch (Exception e)
+            {
+                DeephavenTestContainer.LOGGER.error("Failed to stream table '{}'", tableName, e);
+                return false;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    try
+                    {
+                        stream.close();
+                    }
+                    catch (Exception e)
+                    {
+                        DeephavenTestContainer.LOGGER.error("Failed to close stream for table '{}'", tableName, e);
+                    }
+                }
+            }
 
-        TableTools.show(tableFuture);
+            BarrageSnapshot snapshot = barrageSession.snapshot(queryTableHandle, BarrageUtil.DEFAULT_SNAPSHOT_OPTIONS);
+            try
+            {
+                Table tableFuture = snapshot.entireTable().get();
+                TableTools.show(tableFuture);
+            }
+            catch (InterruptedException | ExecutionException e)
+            {
+                DeephavenTestContainer.LOGGER.error("Failed to verify table creation for '{}'", tableName, e);
+                return false;
+            }
+
+            return true;
+        }
+        catch (InterruptedException e)
+        {
+            DeephavenTestContainer.LOGGER.error("Failed to close BarrageSession for table '{}'", tableName, e);
+            return false;
+        }
     }
 }

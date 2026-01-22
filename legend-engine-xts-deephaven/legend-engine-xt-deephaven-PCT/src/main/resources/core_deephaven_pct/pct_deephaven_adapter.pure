@@ -44,15 +44,15 @@ function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X
 
   print(if($debug.debug, | 'Building execution plan', | ''));
 
-  if ( $deephavenTables->size() == $csvs->size(),
-     | $deephavenTables->size()->range()->map(i |
-         let tableName = $deephavenTables->at($i).name;
-         let csv = $csvs->at($i);
-         meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv);
-         '';
-       );,
-     | fail('There must be one csv per table!')
+  let createTableResult = if ($deephavenTables->size() == $csvs->size(),
+                              | $deephavenTables->size()->range()->forAll(i |
+                                  let tableName = $deephavenTables->at($i).name;
+                                  let csv = $csvs->at($i);
+                                  meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv);
+                                );,
+                              | fail('There must be one csv per table!') // TODO: Revisit this assumption, as there doesn't have to be a csv for non-TDS operations
   );
+  if($createTableResult == false, | fail('Failed to create a table from csv. Check Deephaven logs for detailed error messages.'), | '');
 
   let resultJson = meta::legend::execute($newFunction, [], ^meta::pure::runtime::ExecutionContext(), $extensions);
 
@@ -133,8 +133,23 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(f:Func
 
             let allReprocessed = $reprocessed->tail()->fold({prev, reproc |meta::external::store::deephaven::tests::pct::process::merge($prev, $reproc)}, $reprocessed->head()->toOne());
 
-            let code = '\n###Deephaven\n' +
-                       $allReprocessed.deephavenStore->toOne()->meta::external::store::deephaven::grammar::serialization::printDeephavenStore() +
+            let deephavenStore = $allReprocessed.deephavenStore->toOne();
+
+            let deephavenStoreGrammar = '\n###Deephaven\n' +
+                                        if($deephavenStore.tables->isEmpty(),
+                                           | let dummyTable = ^meta::external::store::deephaven::metamodel::store::Table
+                                             (
+                                                name = 'DummyTable',
+                                                columns = ^meta::external::store::deephaven::metamodel::store::Column(
+                                                            name = 'dummyColumn',
+                                                            type = ^meta::external::store::deephaven::metamodel::type::IntType()
+                                                          )
+                                             );
+                                             ^$deephavenStore(tables = $dummyTable)->meta::external::store::deephaven::grammar::serialization::printDeephavenStore();,
+                                           | $deephavenStore->meta::external::store::deephaven::grammar::serialization::printDeephavenStore();
+                                        );
+
+            let code = $deephavenStoreGrammar +
                        '\n###Pure\n' +
                        'function test::lambdaContainer():Any[*]{\n' +
                        '  ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n' +
@@ -227,7 +242,7 @@ function meta::external::store::deephaven::tests::pct::process::processTDS(tds:m
   let rand = random() * 10000000;
   let table = ^meta::external::store::deephaven::metamodel::store::Table
   (
-    name = 'tb_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
+    name = 'Tb_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
     columns = $cols->map(c |
                      ^meta::external::store::deephaven::metamodel::store::Column(
                        name = $c.name->toOne(),

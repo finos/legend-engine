@@ -24,7 +24,7 @@ import java.net.URI;
 
 public class DeephavenTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
-    private static final String IMAGE_TAG = "0.37.4";
+    private static final String IMAGE_TAG = "0.40.7";
     private final DeephavenConnection connection = new DeephavenConnection();
 
     @Override
@@ -55,11 +55,13 @@ public class DeephavenTestConnectionIntegration implements TestConnectionIntegra
     @Override
     public void shutDown() throws Exception
     {
+        this.cleanup();
     }
 
     @Override
     public void start() throws Exception
     {
+        this.setup();
     }
 }
 

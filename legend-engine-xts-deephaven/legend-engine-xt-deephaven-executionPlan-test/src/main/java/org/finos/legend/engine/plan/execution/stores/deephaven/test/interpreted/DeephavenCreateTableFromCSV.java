@@ -59,7 +59,7 @@ public class DeephavenCreateTableFromCSV extends NativeFunction
         CoreInstance csvCoreInstance = params.get(1);
         String tableName = Instance.getValueForMetaPropertyToOneResolved(tableNameCoreInstance, M3Properties.values, processorSupport).getName();
         String csv = Instance.getValueForMetaPropertyToOneResolved(csvCoreInstance, M3Properties.values, processorSupport).getName();
-        DeephavenCommands.createTableFromCSV(tableName, csv);
-        return ValueSpecificationBootstrap.wrapValueSpecification(Lists.immutable.with(), true, processorSupport);
+        boolean result = DeephavenCommands.createTableFromCSV(tableName, csv);
+        return ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newBooleanCoreInstance(result), true, processorSupport);
     }
 }
