@@ -34,6 +34,7 @@ import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointerCombination;
 import org.finos.legend.engine.server.Server;
 import org.finos.legend.engine.server.ServerConfiguration;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -88,20 +89,22 @@ public class PostgresServerGenericTest
     @Test
     public void testSimpleQueryMultipleProjects() throws Exception
     {
+        PureModelContextPointerCombination pointerCombination = new PureModelContextPointerCombination();
+        pointerCombination.pointers = Lists.fixedSize.of(buildPointer("t_group", "t_name", "t_version"), buildPointer("t_group", "t_name2", "t_version"));
         loader.setData(Maps.mutable.with(
-                buildPointer("t_group", "t_name", "t_version"),
+                pointerCombination,
                 PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::DB\n" +
                         "(\n" +
                         "    include pack::otherDB\n" +
                         "    Table myTab(id INT, name VARCHAR(200))\n" +
-                        ")\n"),
-                buildPointer("t_group", "t_name2", "t_version"),
-                PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        ")\n")
+                        .combine
+                (PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::otherDB\n" +
                         "(\n" +
                         "    Table otherTab(fid INT, oName VARCHAR(200))\n" +
-                        ")\n")));
+                        ")\n"))));
 
         updateDB(Lists.mutable.with(
                 "drop table if exists myTab",
