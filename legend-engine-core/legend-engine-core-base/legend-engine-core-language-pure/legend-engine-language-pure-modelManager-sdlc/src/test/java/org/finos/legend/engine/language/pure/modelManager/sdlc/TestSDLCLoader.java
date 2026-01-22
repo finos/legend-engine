@@ -123,41 +123,6 @@ public class TestSDLCLoader
     }
 
     @Test
-    public void testPureModelContextPointerCombination() throws JsonProcessingException
-    {
-        configureWireMockForMultipleAlloyDeps();
-
-        PureModelContextPointer p1 = new PureModelContextPointer();
-        AlloySDLC a1 = new AlloySDLC();
-        a1.groupId = "dep1";
-        a1.artifactId = "art1";
-        a1.version = "1.0.0";
-        p1.sdlcInfo = a1;
-
-        PureModelContextPointer p2 = new PureModelContextPointer();
-        AlloySDLC a2 = new AlloySDLC();
-        a2.groupId = "dep2";
-        a2.artifactId = "art2";
-        a2.version = "2.0.0";
-        p2.sdlcInfo = a2;
-
-        PureModelContextPointerCombination combo = new PureModelContextPointerCombination();
-        combo.pointers = Lists.fixedSize.with(p1, p2);
-
-        SDLCLoader loader = createSDLCLoader();
-
-        PureModelContextData pmcd = loader.load(Identity.getAnonymousIdentity(), combo, CLIENT_VERSION, tracer.activeSpan());
-
-        Assert.assertEquals(2, pmcd.getElements().size());
-
-        List<String> paths = pmcd.getElements().stream().map(PackageableElement::getPath).sorted().collect(Collectors.toList());
-
-        Assert.assertEquals("pkg::pkg::myClass", paths.get(0));
-        Assert.assertEquals("pkg::pkg::myAnotherClass", paths.get(1));
-    }
-
-
-    @Test
     public void testSdlcLoaderForWorkspacesWithoutDependency() throws Exception
     {
         WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
@@ -202,6 +167,52 @@ public class TestSDLCLoader
         Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
     }
 
+    @Test
+    public void testPureModelContextPointerCombination() throws JsonProcessingException
+    {
+        configureWireMockForMultipleAlloyDeps();
+
+        PureModelContextPointer p1 = new PureModelContextPointer();
+        AlloySDLC a1 = new AlloySDLC();
+        a1.groupId = "dep1";
+        a1.artifactId = "art1";
+        a1.version = "1.0.0";
+        p1.sdlcInfo = a1;
+
+        PureModelContextPointer p2 = new PureModelContextPointer();
+        AlloySDLC a2 = new AlloySDLC();
+        a2.groupId = "dep2";
+        a2.artifactId = "art2";
+        a2.version = "2.0.0";
+        p2.sdlcInfo = a2;
+
+        PureModelContextPointerCombination combo = new PureModelContextPointerCombination();
+        combo.pointers = Lists.fixedSize.with(p1, p2);
+
+        SDLCLoader loader = createSDLCLoader();
+
+        PureModelContextData pmcd = loader.load(Identity.getAnonymousIdentity(), combo, CLIENT_VERSION, tracer.activeSpan());
+
+        Assert.assertEquals(2, pmcd.getElements().size());
+
+        List<String> paths = pmcd.getElements().stream().map(PackageableElement::getPath).sorted().collect(Collectors.toList());
+
+        Assert.assertEquals("pkg::pkg::myAnotherClass", paths.get(0));
+        Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
+    }
+
+    @Test
+    public void testClientVersionFallsBackToSerializerVersion() throws Exception
+    {
+        PureModelContextPointer pointer = getPureModelContextPointer();
+
+        configureWireMockForRetries();
+        SDLCLoader sdlcLoader = createSDLCLoader();
+
+        // pass null client version
+        Assert.assertThrows(EngineException.class, () -> sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, null, tracer.activeSpan()));
+    }
+
     private static PureModelContextPointer getPureModelContextPointer()
     {
         AlloySDLC sdlcInfo = new AlloySDLC();
@@ -235,20 +246,6 @@ public class TestSDLCLoader
         serverConfiguration.sdlc.scheme = "http";
 
         return new SDLCLoader(serverConfiguration, Subject::new);
-    }
-
-    @Test
-    public void testClientVersionFallsBackToSerializerVersion() throws Exception
-    {
-        PureModelContextPointer pointer = getPureModelContextPointer();
-
-        configureWireMockForRetries();
-        SDLCLoader sdlcLoader = createSDLCLoader();
-
-        // pass null client version
-        PureModelContextData pmcdLoaded = sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, null, tracer.activeSpan());
-
-        Assert.assertNotNull(pmcdLoaded);
     }
 
     private static void configureWireMockForRetries() throws JsonProcessingException
