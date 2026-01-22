@@ -169,13 +169,14 @@ public class ModelManager
             PureModelContextData globalContext = null;
             if (!pointers.isEmpty())
             {
-                globalContext = pointers.stream().map(p -> resolvePointerAndCache(p, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity))).reduce((a,b) -> a.combine(b)).get();
+                globalContext = pointers.stream().map(p -> resolvePointerAndCache(p, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion == null ? p.serializer.version : clientVersion, identity))).reduce((a,b) -> a.combine(b)).get();
             }
             if (!alloyPointers.isEmpty())
             {
                 PureModelContextPointerCombination pureModelContextPointerCombination = new PureModelContextPointerCombination();
                 pureModelContextPointerCombination.pointers = alloyPointers;
-                PureModelContextData alloyContext = resolvePointerAndCache(pureModelContextPointerCombination, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, clientVersion, identity));
+                String finalClientVersion = clientVersion == null ? alloyPointers.get(0).serializer.version : clientVersion;
+                PureModelContextData alloyContext = resolvePointerAndCache(pureModelContextPointerCombination, identity, pureModelContextCache, cacheKey -> loadModelDataFromStorage(cacheKey, finalClientVersion, identity));
                 globalContext = globalContext == null ? alloyContext : globalContext.combine(alloyContext);
             }
             return mayCompileFunction.apply(globalContext);

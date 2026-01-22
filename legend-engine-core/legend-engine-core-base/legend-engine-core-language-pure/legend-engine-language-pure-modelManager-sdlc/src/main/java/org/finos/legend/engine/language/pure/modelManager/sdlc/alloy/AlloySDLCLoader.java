@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.alloy;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpPost;
@@ -31,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
 public class AlloySDLCLoader
@@ -71,12 +75,12 @@ public class AlloySDLCLoader
         httpRequest = new HttpPost(url);
         try
         {
-            httpRequest.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(projectVersions)));
+            httpRequest.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(projectVersions), ContentType.APPLICATION_JSON.toString(), StandardCharsets.UTF_8.toString()));
             httpRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         }
         catch (Exception e)
         {
-            throw new RuntimeException();
+            throw new EngineException("Unable to serialize project versions due to error: " + e.getMessage());
         }
 
         return httpRequest;
@@ -115,11 +119,27 @@ public class AlloySDLCLoader
         String artifactId;
         String versionId;
 
-        ProjectVersion(String groupId, String artifactId, String versionId)
+        @JsonCreator
+        ProjectVersion(@JsonProperty("groupId") String groupId, @JsonProperty("artifactId") String artifactId, @JsonProperty("versionId") String versionId)
         {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.versionId = versionId;
+        }
+
+        public String getGroupId()
+        {
+            return groupId;
+        }
+
+        public String getArtifactId()
+        {
+            return artifactId;
+        }
+
+        public String getVersionId()
+        {
+            return versionId;
         }
     }
 }
