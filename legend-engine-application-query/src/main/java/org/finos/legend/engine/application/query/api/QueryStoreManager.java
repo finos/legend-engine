@@ -49,6 +49,7 @@ public class QueryStoreManager
 
     private static final int MAX_NUMBER_OF_QUERIES = 100;
     private static final int MAX_NUMBER_OF_EVENTS = 1000;
+    private static final int QUERY_BATCH_SIZE = 1000;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
@@ -354,6 +355,19 @@ public class QueryStoreManager
             throw new ApplicationQueryException(notFoundQueries.makeString("Can't find queries for the following ID(s):\\n", "\\n", ""), Response.Status.INTERNAL_SERVER_ERROR);
         }
         return matchingQueries;
+    }
+
+    public List<Query> getAllQueries(int from, int to)
+    {
+        if (to - from + 1 > QUERY_BATCH_SIZE)
+        {
+            throw new ApplicationQueryException("Can't fetch more than " + QUERY_BATCH_SIZE + " queries at a time", Response.Status.BAD_REQUEST);
+        }
+        else if (from < 0 || to < from)
+        {
+            throw new ApplicationQueryException("Invalid pagination range", Response.Status.BAD_REQUEST);
+        }
+        return LazyIterate.collect(this.getQueryCollection().find().sort(Sorts.ascending("id")).skip(from).limit(to - from + 1), this::documentToQuery).toList();
     }
 
     public Query getQuery(String queryId)

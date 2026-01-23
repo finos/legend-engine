@@ -36,7 +36,9 @@ public class Test_Relational_Snowflake_ScenarioQuantFunctions_PCT extends PCTRep
     private static final Adapter adapter = CoreRelationalSnowflakeCodeRepositoryProvider.snowflakeAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-    );
+                one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 597\nSliding window frame unsupported for function LAG"),
+                one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"#TDS\n   symbol:String[0..1],month:Date[0..1],closeByVolSum:Float[0..1],volumeSum:Integer[0..1],vwap:Float[0..1]\n   AAPL,2026-01-01T00:00:00.000+0000,168177755000.0,872700000,192.71\n   AAPL,2026-02-01T00:00:00.000+0000,227944933333.33,1097000000,207.79\n   AAPL,2026-03-01T00:00:00.000+0000,140986233333.33,637000000,221.33\n#\n is not equivalent to:\n#TDS\n   symbol:String[0..1],month:DateTime[0..1],closeByVolSum:Number[0..1],volumeSum:Integer[0..1],vwap:Float[0..1]\n   AAPL,2026-01-01T00:00:00.000+0000,168177754999.87,872700000,192.71\n   AAPL,2026-02-01T00:00:00.000+0000,227944933332.55,1097000000,207.79\n   AAPL,2026-03-01T00:00:00.000+0000,140986233333.05,637000000,221.33\n#\"")
+            );
 
     public static Test suite()
     {

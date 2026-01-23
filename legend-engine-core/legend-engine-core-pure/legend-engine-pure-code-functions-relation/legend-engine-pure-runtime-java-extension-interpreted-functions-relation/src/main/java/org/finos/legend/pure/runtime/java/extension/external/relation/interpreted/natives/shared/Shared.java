@@ -55,7 +55,7 @@ public abstract class Shared extends NativeFunction
                 ((TDSCoreInstance) value).getTDS() :
                 new TestTDSInterpreted(
                         TestTDS.readCsv((value.getValueForMetaPropertyToOne("csv")).getName()),
-                        ((RelationType<?>)((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType)value.getValueForMetaPropertyToOne("classifierGenericType"))._typeArguments().getFirst()._rawType())._columns().collect(c -> _Column.getColumnType(c)._rawType()).toList(),
+                        ((RelationType<?>)((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType)value.getValueForMetaPropertyToOne("classifierGenericType"))._typeArguments().getFirst()._rawType())._columns().collect(_Column::getColumnType).toList(),
                         repository,
                         processorSupport
                 );

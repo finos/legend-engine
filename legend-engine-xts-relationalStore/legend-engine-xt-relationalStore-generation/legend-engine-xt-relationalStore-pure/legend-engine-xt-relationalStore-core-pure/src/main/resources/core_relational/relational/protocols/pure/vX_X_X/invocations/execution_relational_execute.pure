@@ -59,10 +59,12 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
   // We lose column type info after pivot, so need to compensate from protocol.
   let columns = if ($funcReturnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
                     | $funcReturnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x |                        
-                        let multiplicity = $x->functionReturnMultiplicity();
-                        manageName($x.name) + ':'+$x->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath()+'['+if ($multiplicity == ZeroMany,|PureOne, |$multiplicity)->printMultiplicity()+']';
+                        let multiplicity = $x->functionReturnMultiplicity();                       
+                        manageName($x.name) + ':'+$x->functionReturnType()->printGenericType(true)+'['+if ($multiplicity == ZeroMany,|PureOne, |$multiplicity)->printMultiplicity()+']';
                       ),
-                    | $cols->map(c | $c.type->map(t | if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t))->map(t | manageName($c.name) + ':' + $t))
+                    | $cols->map(c | $c.type->map(t | 
+                        if($t == 'meta::pure::precisePrimitives::Varchar', |'String', |$t);
+                      )->map(t | manageName($c.name) + ':' + $t));
                 );
 
   let tdsString = $columns->joinStrings(',') + '\n' +
@@ -73,7 +75,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                                         a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
                                       ]);
                                   )->makeString(',')
-                                )->joinStrings('\n');
+                                )->joinStrings('\n');    
   $tdsString->stringToTDS();
 }
 

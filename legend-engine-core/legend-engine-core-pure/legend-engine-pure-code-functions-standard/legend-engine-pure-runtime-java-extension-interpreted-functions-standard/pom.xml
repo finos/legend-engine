@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Pure - Runtime - Java Extension - Interpreted - Functions - Base</name>
+    <name>Legend Pure - Runtime - Java Extension - Interpreted - Functions - Standard</name>
 
     <build>
         <plugins>

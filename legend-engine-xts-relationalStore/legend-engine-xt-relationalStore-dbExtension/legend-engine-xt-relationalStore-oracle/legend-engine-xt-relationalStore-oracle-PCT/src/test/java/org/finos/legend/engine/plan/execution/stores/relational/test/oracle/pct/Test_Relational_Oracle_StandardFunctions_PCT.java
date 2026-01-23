@@ -88,13 +88,6 @@ public class Test_Relational_Oracle_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-
 
             // Bitwise
             pack("meta::pure::functions::math::tests::bitAnd", "\"[unsupported-api] The function 'bitAnd' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
@@ -108,12 +101,10 @@ public class Test_Relational_Oracle_StandardFunctions_PCT extends PCTReportConfi
 
             // Corr
             one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"CORR(%s, %s)\"\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,valA,valB,newCol\n   1,1,10,1.0\n   1,2,20,1.0\n   2,2,40,-1.0\n   2,4,15,-1.0\n#'\nactual:   '#TDS\n   id,valA,valB,newCol\n   1,1,10,1\n   1,2,20,1\n   2,2,40,-1\n   2,4,15,-1\n#'\"", AdapterQualifier.needsInvestigation),
 
             // Covar
             one("meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\"\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_", "\"Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\"\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,valA,valB,newCol\n   1,1,10,5.0\n   1,2,20,5.0\n   2,2,40,-25.0\n   2,4,15,-25.0\n#'\nactual:   '#TDS\n   id,valA,valB,newCol\n   1,1,10,5\n   1,2,20,5\n   2,2,40,-25\n   2,4,15,-25\n#'\"", AdapterQualifier.needsInvestigation),
 
             //Max
             one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
@@ -128,11 +119,6 @@ public class Test_Relational_Oracle_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
@@ -177,11 +163,6 @@ public class Test_Relational_Oracle_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::variance::testSimpleGroupByVarianceSample_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,newCol\n   1,1.0\n   2,4.0\n#'\nactual:   '#TDS\n   id,newCol\n   1,1\n   2,4\n#'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
-
-            // WAVG
-            one("meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg_Function_1__Boolean_1_", "class [J cannot be cast to class [D ([J and [D are in module java.base of loader 'bootstrap')", AdapterQualifier.needsInvestigation),
 
             //Guid
             one("meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuidWithRelation_Function_1__Boolean_1_", "\"[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
