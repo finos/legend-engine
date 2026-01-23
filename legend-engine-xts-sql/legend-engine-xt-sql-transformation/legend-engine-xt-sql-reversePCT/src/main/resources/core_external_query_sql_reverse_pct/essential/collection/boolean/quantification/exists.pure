@@ -42,20 +42,30 @@ function meta::external::query::sql::reversePCT::tests::essential::collection::b
                  revsForTest(
                       'meta::pure::functions::collection::tests::exists::testExistsInSelect_Function_1__Boolean_1_',
                       [
-                        rev('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p1\')).legalName',
-                            'select "root".legalName from leSchema.CO_Firm5576311_1765476911633 as "root" left outer join (select distinct "co_person4264944_1765476911640_1".CO_Firm_employees__ from leSchema.CO_Person4264944_1765476911640 as "co_person4264944_1765476911640_1" where "co_person4264944_1765476911640_1".lastName = Text\'p1\') as "co_person4264944_1765476911640_0" on ("root".pureId__ = "co_person4264944_1765476911640_0".CO_Firm_employees__) where "co_person4264944_1765476911640_0".CO_Firm_employees__ is not null'
+                        revError('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p1\')).legalName',
+                            'select "root".legalName from leSchema.CO_Firm5576311_1765476911633 as "root" left outer join (select distinct "co_person4264944_1765476911640_1".CO_Firm_employees__ from leSchema.CO_Person4264944_1765476911640 as "co_person4264944_1765476911640_1" where "co_person4264944_1765476911640_1".lastName = Text\'p1\') as "co_person4264944_1765476911640_0" on ("root".pureId__ = "co_person4264944_1765476911640_0".CO_Firm_employees__) where "co_person4264944_1765476911640_0".CO_Firm_employees__ is not null',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function leSchema"',
+                            ''
                         ),
-                        rev('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p2\')).legalName',
-                            'select "root".legalName from leSchema.CO_Firm4064644_1765476914725 as "root" left outer join (select distinct "co_person4443267_1765476914731_1".CO_Firm_employees__ from leSchema.CO_Person4443267_1765476914731 as "co_person4443267_1765476914731_1" where "co_person4443267_1765476914731_1".lastName = Text\'p2\') as "co_person4443267_1765476914731_0" on ("root".pureId__ = "co_person4443267_1765476914731_0".CO_Firm_employees__) where "co_person4443267_1765476914731_0".CO_Firm_employees__ is not null'
+                        revError('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p2\')).legalName',
+                            'select "root".legalName from leSchema.CO_Firm4064644_1765476914725 as "root" left outer join (select distinct "co_person4443267_1765476914731_1".CO_Firm_employees__ from leSchema.CO_Person4443267_1765476914731 as "co_person4443267_1765476914731_1" where "co_person4443267_1765476914731_1".lastName = Text\'p2\') as "co_person4443267_1765476914731_0" on ("root".pureId__ = "co_person4443267_1765476914731_0".CO_Firm_employees__) where "co_person4443267_1765476914731_0".CO_Firm_employees__ is not null',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function leSchema"',
+                            ''
                         ),
-                        rev('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p3\')).legalName',
-                            'select "root".legalName from leSchema.CO_Firm9667746_1765476917752 as "root" left outer join (select distinct "co_person4456224_1765476917758_1".CO_Firm_employees__ from leSchema.CO_Person4456224_1765476917758 as "co_person4456224_1765476917758_1" where "co_person4456224_1765476917758_1".lastName = Text\'p3\') as "co_person4456224_1765476917758_0" on ("root".pureId__ = "co_person4456224_1765476917758_0".CO_Firm_employees__) where "co_person4456224_1765476917758_0".CO_Firm_employees__ is not null'
+                        revError('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p3\')).legalName',
+                            'select "root".legalName from leSchema.CO_Firm9667746_1765476917752 as "root" left outer join (select distinct "co_person4456224_1765476917758_1".CO_Firm_employees__ from leSchema.CO_Person4456224_1765476917758 as "co_person4456224_1765476917758_1" where "co_person4456224_1765476917758_1".lastName = Text\'p3\') as "co_person4456224_1765476917758_0" on ("root".pureId__ = "co_person4456224_1765476917758_0".CO_Firm_employees__) where "co_person4456224_1765476917758_0".CO_Firm_employees__ is not null',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function leSchema"',
+                            ''
                         ),
-                        rev('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p4\')).legalName',
-                            'select "root".legalName from leSchema.CO_Firm6098918_1765476920814 as "root" left outer join (select distinct "co_person4037331_1765476920820_1".CO_Firm_employees__ from leSchema.CO_Person4037331_1765476920820 as "co_person4037331_1765476920820_1" where "co_person4037331_1765476920820_1".lastName = Text\'p4\') as "co_person4037331_1765476920820_0" on ("root".pureId__ = "co_person4037331_1765476920820_0".CO_Firm_employees__) where "co_person4037331_1765476920820_0".CO_Firm_employees__ is not null'
+                        revError('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p4\')).legalName',
+                            'select "root".legalName from leSchema.CO_Firm6098918_1765476920814 as "root" left outer join (select distinct "co_person4037331_1765476920820_1".CO_Firm_employees__ from leSchema.CO_Person4037331_1765476920820 as "co_person4037331_1765476920820_1" where "co_person4037331_1765476920820_1".lastName = Text\'p4\') as "co_person4037331_1765476920820_0" on ("root".pureId__ = "co_person4037331_1765476920820_0".CO_Firm_employees__) where "co_person4037331_1765476920820_0".CO_Firm_employees__ is not null',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function leSchema"',
+                            ''
                         ),
-                        rev('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p32\'))',
-                            'select "root".pureId__ as "pk_0", "root".legalName as "legalName" from leSchema.CO_Firm226551_1765476923816 as "root" left outer join (select distinct "co_person6339634_1765476923822_1".CO_Firm_employees__ from leSchema.CO_Person6339634_1765476923822 as "co_person6339634_1765476923822_1" where "co_person6339634_1765476923822_1".lastName = Text\'p32\') as "co_person6339634_1765476923822_0" on ("root".pureId__ = "co_person6339634_1765476923822_0".CO_Firm_employees__) where "co_person6339634_1765476923822_0".CO_Firm_employees__ is not null'
+                        revError('|$s->meta::pure::functions::collection::filter(f|$f.employees->meta::pure::functions::collection::exists(e: meta::pure::functions::collection::tests::model::CO_Person[1]|$e.lastName == \'p32\'))',
+                            'select "root".pureId__ as "pk_0", "root".legalName as "legalName" from leSchema.CO_Firm226551_1765476923816 as "root" left outer join (select distinct "co_person6339634_1765476923822_1".CO_Firm_employees__ from leSchema.CO_Person6339634_1765476923822 as "co_person6339634_1765476923822_1" where "co_person6339634_1765476923822_1".lastName = Text\'p32\') as "co_person6339634_1765476923822_0" on ("root".pureId__ = "co_person6339634_1765476923822_0".CO_Firm_employees__) where "co_person6339634_1765476923822_0".CO_Firm_employees__ is not null',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function leSchema"',
+                            ''
                         )
                       ]
                  )
@@ -63,8 +73,8 @@ function meta::external::query::sql::reversePCT::tests::essential::collection::b
   )
 }
 
-function meta::external::query::sql::reversePCT::tests::essential::collection::boolean::quantification::exists::exec():Boolean[1]
-{
+//function meta::external::query::sql::reversePCT::tests::essential::collection::boolean::quantification::exists::exec():Boolean[1]
+//{
    //meta::pure::functions::collection::tests::exists::testExists(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::collection::tests::exists::testExistsInSelect(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-}
+   //meta::pure::functions::collection::tests::exists::testExistsInSelect(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+//}
