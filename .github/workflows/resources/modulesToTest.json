@@ -124,7 +124,8 @@
     {
       "name": "deephaven",
       "modules": [
-        "legend-engine-xt-deephaven-executionPlan-test"
+        "legend-engine-xt-deephaven-executionPlan-test",
+        "legend-engine-xt-deephaven-PCT"
       ]
     },
     {
