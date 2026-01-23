@@ -6485,7 +6485,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 {
   let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
   let select = $mainQuery.select;
-  let newElement = $expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne();
+  let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
+  let newElement = if($expressionToRoute->instanceOf(FunctionExpression),
+                     |$expressionToRoute->cast(@FunctionExpression)->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                     |processTdsLambda($expressionToRoute, $mainQuery.select.columns, false, $vars, $state, $currentPropertyMapping, $paths, $context)->at(0)
+                     );
 
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
