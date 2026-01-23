@@ -51,8 +51,8 @@ public class Test_Relational_Snowflake_VariantFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"", AdapterQualifier.assertErrorMismatch),
 
             // toVariant
-            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "Function OBJECT_CONSTRUCT does not support MAP(VARCHAR(1024), NUMBER(38,0)) argument type", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "Function OBJECT_CONSTRUCT does not support MAP(VARCHAR(1024), NUMBER(38,0)) argument type", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "Function OBJECT_CONSTRUCT does not support MAP(VARCHAR(1024), NUMBER(38,0)) argument type", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_", "Function OBJECT_CONSTRUCT does not support MAP(VARCHAR(1024), NUMBER(38,0)) argument type", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_", "\"\nexpected: '[[[1]]]'\nactual:   '[1]'\"", AdapterQualifier.needsInvestigation),
 
 

@@ -33,7 +33,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Add
-            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "Type error: 'meta::pure::metamodel::type::Any' is not a subtype of 'String'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_", "Type error: 'meta::pure::metamodel::type::Any' is not a subtype of 'String'", AdapterQualifier.needsInvestigation),
 
             // Concatenate
             one("meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 0 where the collection is of size 0\"", AdapterQualifier.needsInvestigation),
@@ -42,7 +42,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Can't find a match for function 'contains(ClassWithoutEquality[*],ClassWithoutEquality[1],ConcreteFunctionDefinition<{ClassWithoutEquality[1], ClassWithoutEquality[1]->Boolean[1]}>[1])'.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "Can't find a match for function 'contains(ClassWithoutEquality[*],ClassWithoutEquality[1],ConcreteFunctionDefinition<{ClassWithoutEquality[1], ClassWithoutEquality[1]->Boolean[1]}>[1])'.", AdapterQualifier.needsInvestigation),
 
             // Drop
             one("meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_", "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)", AdapterQualifier.needsImplementation),
@@ -52,8 +52,8 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\"", AdapterQualifier.needsInvestigation),
 
             // Find (Not Supported Yet)
-            pack("meta::pure::functions::collection::tests::find", "Can't find variable class for variable '", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'find(CO_Person[3],LambdaFunction<{CO_Person[1]->Boolean[1]}>[1])'", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::collection::tests::find", "Can't find variable class for variable '", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'find(CO_Person[3],LambdaFunction<{CO_Person[1]->Boolean[1]}>[1])'", AdapterQualifier.needsInvestigation),
 
             one("meta::pure::functions::collection::tests::get::testGet_Function_1__Boolean_1_", "\"get_Map_1__U_1__V_$0_1$_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_", "\"keys_Map_1__U_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
@@ -66,9 +66,9 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_", "\"values_Map_1__V_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Fold
-            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_", "Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'", AdapterQualifier.needsInvestigation),
 
             // ForAll
             one("meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation),
@@ -170,7 +170,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::metamodel::function::NativeFunction\"", AdapterQualifier.needsInvestigation),
 
             // Date
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'.", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
@@ -182,7 +182,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_", "Error in 'test::testFunction': Can't find a match for function 'match(String[1],LambdaFunction<{Nil[1], String[1]->String[1]}>[*],String[1])'."),
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Function does not exist 'deactivate(Any[1])'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Function does not exist 'deactivate(Any[1])'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:", AdapterQualifier.needsInvestigation)
     );
 

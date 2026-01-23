@@ -56,10 +56,10 @@ public class Test_Relational_DuckDB_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\"", AdapterQualifier.assertErrorMismatch),
             one("meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_", "Integer is not managed yet!", AdapterQualifier.needsInvestigation),
 
-            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Person"),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet"),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person")
+            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Person", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()
