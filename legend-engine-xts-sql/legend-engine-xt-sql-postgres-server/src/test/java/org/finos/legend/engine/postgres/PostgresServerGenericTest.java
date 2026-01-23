@@ -99,8 +99,8 @@ public class PostgresServerGenericTest
                         "    include pack::otherDB\n" +
                         "    Table myTab(id INT, name VARCHAR(200))\n" +
                         ")\n")
-                        .combine
-                (PureGrammarParser.newInstance().parseModel("###Relational\n" +
+                        .combine(
+                PureGrammarParser.newInstance().parseModel("###Relational\n" +
                         "Database pack::otherDB\n" +
                         "(\n" +
                         "    Table otherTab(fid INT, oName VARCHAR(200))\n" +
