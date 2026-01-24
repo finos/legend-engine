@@ -1,0 +1,186 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::eq::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/platform/pure/grammar/functions/boolean/equality/eq.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqInteger_Function_1__Boolean_1_',
+                      [
+                        rev('|6->meta::pure::functions::boolean::eq(6)',
+                            'select 6 = 6'
+                        ),
+                        rev('|6->meta::pure::functions::boolean::eq(3 + 3)',
+                            'select 6 = (3 + 3)'
+                        ),
+                        rev('|6->meta::pure::functions::boolean::eq(7)',
+                            'select 6 = 7'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqFloat_Function_1__Boolean_1_',
+                      [
+                        rev('|6.3->meta::pure::functions::boolean::eq(6.3)',
+                            'select 6.3 = 6.3'
+                        ),
+                        rev('|6.3->meta::pure::functions::boolean::eq(6.3 + 0.0)',
+                            'select 6.3 = (6.3 + 0.0)'
+                        ),
+                        rev('|6.3->meta::pure::functions::boolean::eq(7.8)',
+                            'select 6.3 = 7.8'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqString_Function_1__Boolean_1_',
+                      [
+                        rev('|\'ab\'->meta::pure::functions::boolean::eq(\'ab\')',
+                            'select Text\'ab\' = Text\'ab\''
+                        ),
+                        rev('|\'ab\'->meta::pure::functions::boolean::eq(\'a\' + \'b\')',
+                            'select Text\'ab\' = concat(Text\'\', Text\'a\', Text\'b\', Text\'\')'
+                        ),
+                        rev('|\'ab\'->meta::pure::functions::boolean::eq(\'cd\')',
+                            'select Text\'ab\' = Text\'cd\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_',
+                      [
+                        revError('|%2014->meta::pure::functions::boolean::eq(%2014)',
+                                 '',
+                                 'Unexpected token',
+                                 'Ensure the target system understands Year or Year-month semantic.'
+                        ),
+                        revError('|%2014-02-27T05:01:35.231+0000->meta::pure::functions::boolean::eq(%2014-02-27T05:01:35.231+0000)',
+                                 '',
+                                 'Unexpected token',
+                                 'Ensure the target system understands Year or Year-month semantic.'
+                        ),
+                        revError('|%2014->meta::pure::functions::boolean::eq(%2013)',
+                                 '',
+                                 'Unexpected token',
+                                 'Ensure the target system understands Year or Year-month semantic.'
+                        ),
+                        revError('|%2014->meta::pure::functions::boolean::eq(%2014-01-01)',
+                                 '',
+                                 'Unexpected token',
+                                 'Ensure the target system understands Year or Year-month semantic.'
+                        ),
+                        revError('|%2014-02-27T05:01:35.231+0000->meta::pure::functions::boolean::eq(%2014-02-27T10:01:35.231+0000)',
+                                 '',
+                                 'Unexpected token',
+                                 'Ensure the target system understands Year or Year-month semantic.'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqBoolean_Function_1__Boolean_1_',
+                      [
+                        rev('|true->meta::pure::functions::boolean::eq(true)',
+                            'select Boolean\'true\' = Boolean\'true\''
+                        ),
+                        rev('|false->meta::pure::functions::boolean::eq(false)',
+                            'select Boolean\'false\' = Boolean\'false\''
+                        ),
+                        rev('|true->meta::pure::functions::boolean::eq(false)',
+                            'select Boolean\'true\' = Boolean\'false\''
+                        ),
+                        rev('|false->meta::pure::functions::boolean::eq(true)',
+                            'select Boolean\'false\' = Boolean\'true\''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_',
+                      [
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.FIRST)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2.SECOND)'),
+                        noRev('|meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST->meta::pure::functions::boolean::eq(1)'),
+                        noRev('|\'a\'->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)'),
+                        noRev('|$x->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.FIRST)'),
+                        noRev('|$x->meta::pure::functions::boolean::eq(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1.SECOND)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_',
+                      [
+                        noRev('|$x->meta::pure::functions::boolean::eq($x)'),
+                        noRev('|$instance->meta::pure::functions::boolean::eq($instance)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_',
+                      [
+                        noRev('|$side1->meta::pure::functions::boolean::eq($side1)'),
+                        noRev('|$side1->meta::pure::functions::boolean::eq($side2)'),
+                        noRev('|$side2->meta::pure::functions::boolean::eq($side1)'),
+                        noRev('|$side1->meta::pure::functions::boolean::eq($side3)'),
+                        noRev('|$side3->meta::pure::functions::boolean::eq($side1)'),
+                        noRev('|$side1->meta::pure::functions::boolean::eq($side4)'),
+                        noRev('|$left11->meta::pure::functions::boolean::eq($left11)'),
+                        noRev('|$left11->meta::pure::functions::boolean::eq($left12)'),
+                        noRev('|$left12->meta::pure::functions::boolean::eq($left11)'),
+                        noRev('|$left11->meta::pure::functions::boolean::eq($left21)'),
+                        noRev('|$left21->meta::pure::functions::boolean::eq($left11)'),
+                        noRev('|$right11->meta::pure::functions::boolean::eq($right11)'),
+                        noRev('|$right11->meta::pure::functions::boolean::eq($right12)'),
+                        noRev('|$right12->meta::pure::functions::boolean::eq($right11)'),
+                        noRev('|$right11->meta::pure::functions::boolean::eq($right21)'),
+                        noRev('|$right21->meta::pure::functions::boolean::eq($right22)'),
+                        noRev('|$right21->meta::pure::functions::boolean::eq($right23)'),
+                        noRev('|$left11->meta::pure::functions::boolean::eq($right11)'),
+                        noRev('|$bot11->meta::pure::functions::boolean::eq($bot11)'),
+                        noRev('|$bot11->meta::pure::functions::boolean::eq($bot12)'),
+                        noRev('|$bot11->meta::pure::functions::boolean::eq($bot21)'),
+                        noRev('|$left11->meta::pure::functions::boolean::eq($bot11)')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_',
+                      [
+                        noRev('|1->meta::pure::functions::boolean::eq(1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+                        noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(1)'),
+                        noRev('|1->meta::pure::functions::boolean::eq(2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+                        noRev('|2->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(1)'),
+                        noRev('|^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1)->meta::pure::functions::boolean::eq(1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger))'),
+                        noRev('|1->meta::pure::functions::lang::cast(@meta::pure::functions::boolean::tests::equalitymodel::ExtendedInteger)->meta::pure::functions::boolean::eq(^meta::pure::functions::boolean::tests::equalitymodel::SideClass(stringId=\'firstSide\', intId=1))')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::eq::exec():Boolean[1]
+{
+   meta::pure::functions::boolean::tests::equality::eq::testEqInteger(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::eq::testEqFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::eq::testEqString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::eq::testEqDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::boolean::tests::equality::eq::testEqBoolean(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::eq::testEqEnum(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

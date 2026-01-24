@@ -17,6 +17,8 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::unclassified::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::unclassified::hash::hash::reverses(),
+
     meta::external::query::sql::reversePCT::tests::unclassified::string::ascii::ascii::reverses(),
     meta::external::query::sql::reversePCT::tests::unclassified::string::ascii::char::reverses(),
 
@@ -32,6 +34,9 @@ function meta::external::query::sql::reversePCT::tests::unclassified::reverses()
 
     meta::external::query::sql::reversePCT::tests::unclassified::string::split::splitPart::reverses(),
 
-    meta::external::query::sql::reversePCT::tests::unclassified::tbd::coalesce::reverses()
+    meta::external::query::sql::reversePCT::tests::unclassified::string::transformation::toLowerFirstCharacter::reverses(),
+    meta::external::query::sql::reversePCT::tests::unclassified::string::transformation::toUpperFirstCharacter::reverses(),
+
+    meta::external::query::sql::reversePCT::tests::unclassified::flow::coalesce::reverses()
   ]
 }
