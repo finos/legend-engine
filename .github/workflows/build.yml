@@ -224,7 +224,7 @@ jobs:
 
       - name: Generate PCT Report
         run: |
-          mvn exec:java -pl org.finos.legend.engine:legend-engine-pure-ide-light-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.PCT_to_SimpleHTML"
+          mvn exec:java -pl org.finos.legend.engine:legend-engine-pure-ide-light-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.GeneratePCTFiles"
 
       - name: Upload PCT HTML Report
         uses: actions/upload-artifact@v4
@@ -246,7 +246,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p legend-docs/website/static/pct/
-          cp -rvT target/ok.html legend-docs/website/static/pct/PCT_Report_Compatibility.html
+          cp -rvT target/pct/. legend-docs/website/static/pct/
 
       - name: Check for new documentation files
         id: newFiles
