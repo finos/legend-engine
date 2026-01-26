@@ -55,10 +55,10 @@ function meta::protocols::pure::v1_33_0::extension::store::deephaven::deephavenS
                     ^meta::protocols::pure::v1_33_0::metamodel::executionPlan::store::deephaven::DeephavenStore(
                         name = $s.name->toOne(),
                         package = $s.package->map(p | $p->elementToPath()),
-                        tables = $s.tables->map(i |
+                        tables = $s.tables->toOneMany()->map(i |
                             ^meta::protocols::pure::v1_33_0::metamodel::executionPlan::store::deephaven::Table(
                                 name = $i.name,
-                                columns = $i.columns->map(c |
+                                columns = $i.columns->toOneMany()->map(c |
                                     ^meta::protocols::pure::v1_33_0::metamodel::executionPlan::store::deephaven::Column(
                                         name = $c.name,
                                         type = $c.type
@@ -101,7 +101,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::connecti
         | [],
         | ^meta::protocols::pure::v1_33_0::metamodel::executionPlan::store::deephaven::Table(
             name = $table->toOne().name,
-            columns = $table->toOne().columns->map(c |
+            columns = $table->toOne().columns->toOneMany()->map(c |
                 ^meta::protocols::pure::v1_33_0::metamodel::executionPlan::store::deephaven::Column(
                     name = $c.name,
                     type = $c.type

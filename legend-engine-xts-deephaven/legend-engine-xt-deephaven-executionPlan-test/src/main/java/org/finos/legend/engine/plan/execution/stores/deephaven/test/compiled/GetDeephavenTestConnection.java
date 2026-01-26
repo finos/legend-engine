@@ -15,28 +15,43 @@
 package org.finos.legend.engine.plan.execution.stores.deephaven.test.compiled;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.stores.deephaven.test.shared.DeephavenCommands;
-import org.finos.legend.pure.m3.navigation.Instance;
-import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.engine.plan.execution.stores.deephaven.test.shared.GetDeephavenTestConnectionShared;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_runtime_DeephavenConnection;
+import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
 
 public class GetDeephavenTestConnection extends AbstractNative
 {
     public GetDeephavenTestConnection()
     {
-        super(DeephavenCommands.START_SERVER_FUNCTION);
+        super(DeephavenCommands.GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION);
     }
 
     @Override
     public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
     {
-        final ProcessorSupport processorSupport = processorContext.getSupport();
-        final ListIterable<? extends CoreInstance> parametersValues = Instance.getValueForMetaPropertyToManyResolved(functionExpression, M3Properties.parametersValues, processorSupport);
-        String code = ValueSpecificationProcessor.processValueSpecification(topLevelElement, parametersValues.get(0), processorContext);
-        return DeephavenCommands.class.getCanonicalName() + ".startServer("  + transformedParams.makeString(", ") + ")";
+        return GetDeephavenTestConnection.class.getCanonicalName() + ".compileExec(es)";
+    }
+
+    public static Root_meta_external_store_deephaven_metamodel_runtime_DeephavenConnection compileExec(final ExecutionSupport es)
+    {
+        PackageableConnection connection = new PackageableConnection();
+        connection._package = "toGetValue";
+        connection.name = "DeephavenTestConn";
+        connection.connectionValue = GetDeephavenTestConnectionShared.getDatabaseConnection();
+        PureModelContextData data = PureModelContextData.newPureModelContextData(null, null, Lists.mutable.with(connection));
+        PureModel pureModel = Compiler.compile(data, DeploymentMode.PROD, Identity.getAnonymousIdentity().getName(), "", ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata());
+        return (Root_meta_external_store_deephaven_metamodel_runtime_DeephavenConnection) pureModel.getConnection("toGetValue::DeephavenTestConn", null);
     }
 }

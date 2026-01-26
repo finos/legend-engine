@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::protocols::pure::vX_X_X::invocation::execution::execute::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
+import meta::json::*;
+
+// TODO: This should be revisited, as it should be extending meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::Result instead
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult extends meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenResult
+{
+   objects: Map<String, Any>[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenResult
+{
+   builder : meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenStreamBuilder[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenStreamBuilder
+{
+   _type : String[1];
+}
+
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::manageNameForDeephaven(_name:String[0..1]):String[1]
+{
+    let name = $_name->toOne()->trim();
+    let isSimple = $name->startsWith('\'') || $name->matches('^[a-zA-Z0-9_]+$');
+    if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'');
+}
+
+function meta::protocols::pure::vX_X_X::invocation::execution::execute::getDeephavenTDSResultFromProtocol(
+   result: meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult[1],
+   returnType: GenericType[1],
+   extensions: Extension[*]
+): Any[*]
+{
+   let objects = $result.objects;
+
+   let columnNames = if ($returnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                          | $returnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns->map(x |
+                              manageNameForDeephaven($x.name);
+                            ),
+                          | []
+                     );
+
+   let columns = if ($returnType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType),
+                     | let tdsColumns = $returnType.typeArguments->at(0).rawType->cast(@RelationType<Any>).columns;
+                       range($columnNames->size())->map(i |
+                         let currentColumn = $tdsColumns->at($i);
+                         let multiplicity = $currentColumn->functionReturnMultiplicity();
+                         $columnNames->at($i) + ':' + $currentColumn->functionReturnType().rawType->toOne()->bypassExtendedPrimitives()->elementToPath() + '[' + if ($multiplicity == ZeroMany,|PureOne, |$multiplicity)->meta::pure::metamodel::serialization::grammar::printMultiplicity()+']';
+                       );,
+                     | []
+                 );
+
+   let tdsString = $columns->joinStrings(',') + '\n' +
+                   $objects->map(obj |
+                     $columnNames->map(colName |
+                       let value = $obj->get($colName);
+                       if($value->isEmpty() || $value->toOne()->instanceOf(TDSNull),
+                          | 'null',
+                          | $value->toOne()->match([
+                              s: String[1] | $s->meta::pure::functions::relation::toCSVString(),
+                              a: Any[1] | $a->toString()
+                            ])
+                       );
+                     )->makeString(',')
+                   )->joinStrings('\n');
+  
+   $tdsString->stringToTDS();
+}

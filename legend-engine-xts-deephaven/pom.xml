@@ -33,6 +33,6 @@
         <module>legend-engine-xt-deephaven-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-deephaven-protocol</module>
         <module>legend-engine-xt-deephaven-pure</module>
-<!--        <module>legend-engine-xt-deephaven-PCT</module>-->
+        <module>legend-engine-xt-deephaven-PCT</module>
     </modules>
 </project>
