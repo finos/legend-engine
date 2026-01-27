@@ -776,6 +776,178 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
         ]
       )
 
+    ]->combine(),
+
+
+    // tbd ----------------------------------
+    [
+      meta::pure::functions::math::tests::bitOr::testBitOr_SmallNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitOr(0)','c(1) | c(0)'),
+          rev('|0->meta::pure::functions::math::bitOr(0)','c(0) | 0'),
+          rev('|5->meta::pure::functions::math::bitOr(6)','5 | c(6)'),
+          rev('|25->meta::pure::functions::math::bitOr(11)','c(25) | c(11)'),
+          rev('|137->meta::pure::functions::math::bitOr(670)','c(137) | c(670)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::bitOr::testBitOr_NegativeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::bitOr(-1, 0)','c(-1) | c(0)'),
+          rev('|meta::pure::functions::math::bitOr(-5, 6)','-c(5) | 6'),
+          rev('|5->meta::pure::functions::math::bitOr(-6)','5 | c(-6)'),
+          rev('|meta::pure::functions::math::bitOr(-5, -6)','c(-5) | c(-6)'),
+          rev('|meta::pure::functions::math::bitOr(-25, 11)','-25 | c(11)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1000000000->meta::pure::functions::math::bitOr(0)','c(1000000000) | 0'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitOr(9223372036854775806)','9223372036854775807 | c(9223372036854775806)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitOr(922807)','c(9223372036854775807) | c(922807)'),
+          rev('|meta::pure::functions::math::bitOr(-1000000000, 0)','c(-1000000000) | c(0)'),
+          rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitOr(-999999999)','c(-9223372036854775808) | c(-999999999)'),
+          rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitOr(999999999)','c(-9223372036854775808) | c(999999999)')
+        ]
+      )
+
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::bitShiftRight(0)', '0 >> c(0)'),
+          rev('|1->meta::pure::functions::math::bitShiftRight(0)', 'c(1) >> 0'),
+          rev('|1->meta::pure::functions::math::bitShiftRight(1)', 'c(1) >> c(1)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitShiftRight(10)', 'c(9223372036854775807) >> c(10)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitShiftRight(20)', 'c(9223372036854775807) >> c(20)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitShiftRight(46)', 'c(9223372036854775807) >> c(46)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitShiftRight(62)', 'c(9223372036854775807) >> c(62)'),
+          rev('|5->meta::pure::functions::math::bitShiftRight(0)', '5 >> c(0)'),
+          rev('|25->meta::pure::functions::math::bitShiftRight(11)', 'c(25) >> c(11)'),
+          rev('|1024->meta::pure::functions::math::bitShiftRight(5)', '1024 >> c(5)')
+        ]
+      ),
+      meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitShiftRight(63)', 'c(1) >> 63')
+        ]
+      )
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::bitAnd::testBitAnd_SmallNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitAnd(0)', '1 & c(0)'),
+          rev('|0->meta::pure::functions::math::bitAnd(0)', '0 & c(0)'),
+          rev('|5->meta::pure::functions::math::bitAnd(6)', '5 & c(6)'),
+          rev('|25->meta::pure::functions::math::bitAnd(11)', 'c(25) & c(11)'),
+          rev('|137->meta::pure::functions::math::bitAnd(670)', 'c(137) & c(670)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::bitAnd::testBitAnd_NegativeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::bitAnd(-1, 0)', 'c(-1) & c(0)'),
+          rev('|meta::pure::functions::math::bitAnd(-5, 6)', 'c(-5) & c(6)'),
+          rev('|5->meta::pure::functions::math::bitAnd(-6)', '5 & c(-6)'),
+          rev('|meta::pure::functions::math::bitAnd(-5, -6)', 'c(-5) & c(-6)'),
+          rev('|meta::pure::functions::math::bitAnd(-25, 11)', 'c(-25) & c(11)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1000000000->meta::pure::functions::math::bitAnd(0)', 'c(1000000000) & c(0)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitAnd(9223372036854775806)', 'c(9223372036854775807) & c(9223372036854775806)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitAnd(922807)', 'c(9223372036854775807) & c(922807)'),
+          rev('|meta::pure::functions::math::bitAnd(-1000000000, 0)', 'c(-1000000000) & c(0)'),
+          rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitAnd(-999999999)', 'c(-9223372036854775808) & c(-999999999)'),
+          rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitAnd(999999999)', 'c(-9223372036854775808) & c(999999999)')
+        ]
+      )
+
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|0->meta::pure::functions::math::bitShiftLeft(0)', 'c(0) << c(0)'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(0)', '1 << c(0)'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(1)', 'c(1) << 1'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(10)', '1 << c(10)'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(20)', '1 << c(20)'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(46)', '1 << c(46)'),
+          rev('|1->meta::pure::functions::math::bitShiftLeft(62)', '1 << c(62)'),
+          rev('|5->meta::pure::functions::math::bitShiftLeft(0)', '5 << c(0)'),
+          rev('|25->meta::pure::functions::math::bitShiftLeft(11)', 'c(25) << c(11)'),
+          rev('|1024->meta::pure::functions::math::bitShiftLeft(5)', '1024 << c(5)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitShiftLeft(63)', '1 << c(63)')
+        ]
+      )
+
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::bitXor::testBitXor_SmallNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitXor(0)', '1 ^ c(0)'),
+          rev('|0->meta::pure::functions::math::bitXor(0)', 'c(0) ^ c(0)'),
+          rev('|5->meta::pure::functions::math::bitXor(6)', 'c(5) ^ 6'),
+          rev('|25->meta::pure::functions::math::bitXor(11)', 'c(25) ^ c(11)'),
+          rev('|137->meta::pure::functions::math::bitXor(670)', 'c(137) ^ c(670)')
+        ]
+      ),
+      meta::pure::functions::math::tests::bitXor::testBitXor_NegativeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::bitXor(-1, 0)', 'c(-1) ^ c(0)'),
+          rev('|meta::pure::functions::math::bitXor(-5, 6)', 'c(-5) ^ 6'),
+          rev('|5->meta::pure::functions::math::bitXor(-6)', '5 ^ c(-6)'),
+          rev('|meta::pure::functions::math::bitXor(-5, -6)', 'c(-5) ^ c(-6)'),
+          rev('|meta::pure::functions::math::bitXor(-25, 11)', 'c(-25) ^ c(11)')
+        ]
+      ),
+      meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_->testRev(
+      [
+        rev('|1000000000->meta::pure::functions::math::bitXor(0)', 'c(1000000000) ^ c(0)'),
+        rev('|9223372036854775807->meta::pure::functions::math::bitXor(9223372036854775806)', 'c(9223372036854775807) ^ c(9223372036854775806)'),
+        rev('|9223372036854775807->meta::pure::functions::math::bitXor(922807)', 'c(9223372036854775807) ^ c(922807)'),
+        rev('|meta::pure::functions::math::bitXor(-1000000000, 0)', 'c(-1000000000) ^ c(0)'),
+        rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitXor(-999999999)', 'c(-9223372036854775808) ^ c(-999999999)'),
+        rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitXor(999999999)', 'c(-9223372036854775808) ^ c(999999999)')
+      ]
+    )
+    ]->combine(),
+    [
+      meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1->meta::pure::functions::math::bitNot()', '~c(1)'),
+          rev('|0->meta::pure::functions::math::bitNot()', '~c(0)'),
+          rev('|5->meta::pure::functions::math::bitNot()', '~c(5)'),
+          rev('|25->meta::pure::functions::math::bitNot()', '~c(25)'),
+          rev('|137->meta::pure::functions::math::bitNot()', '~c(137)')
+        ]
+      ),
+      meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::math::bitNot(-1)', '~c(-1)'),
+          rev('|meta::pure::functions::math::bitNot(-5)', '~c(-5)'),
+          rev('|meta::pure::functions::math::bitNot(-105)', '~c(-105)'),
+          rev('|meta::pure::functions::math::bitNot(-25)', '~c(-25)')
+        ]
+      ),
+      meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1000000000->meta::pure::functions::math::bitNot()', '~c(1000000000)'),
+          rev('|9223372036854775807->meta::pure::functions::math::bitNot()', '~c(9223372036854775807)'),
+          rev('|922807->meta::pure::functions::math::bitNot()', '~c(922807)'),
+          rev('|meta::pure::functions::math::bitNot(-1000000000)', '~c(-1000000000)'),
+          rev('|\'-9223372036854775808\'->meta::pure::functions::string::parseInteger()->meta::pure::functions::math::bitNot()', '~c(-9223372036854775808)'),
+          rev('|meta::pure::functions::math::bitNot(-922807)', '~c(-922807)')
+        ]
+      )
     ]->combine()
     
   ]
