@@ -376,10 +376,6 @@
                     <artifactId>arrow-format</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.google.flatbuffers</groupId>
-                    <artifactId>flatbuffers-java</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.jetbrains</groupId>
                     <artifactId>annotations</artifactId>
                 </exclusion>
