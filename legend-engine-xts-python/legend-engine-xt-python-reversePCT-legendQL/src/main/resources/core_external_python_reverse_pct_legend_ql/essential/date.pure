@@ -164,7 +164,304 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_->testRev(
         noRev('|meta::pure::functions::date::year_Date_1__Integer_1_->meta::pure::functions::lang::eval(%2015-04-15)')
       )
-    ]->combine()
+    ]->combine(),
     // ------------------------------------------------------------------
+    [
+      meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2015->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2015->meta::pure::functions::date::adjust(12, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2015->meta::pure::functions::date::adjust(-4, meta::pure::functions::date::DurationUnit.YEARS)'),
+          rev('|%2015-02-28->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2015,2,28)).timedelta(1,"YEARS")'),
+          rev('|%2012-02-29->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2012,2,29)).timedelta(1,"YEARS")'),
+          rev('|%2012-02-29->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.YEARS)','c(date(2012,2,29)).timedelta(4,"YEARS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::eval(%2015-02-28, 1, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::evaluate([^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=%2015-02-28), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=1), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=meta::pure::functions::date::DurationUnit.YEARS)])')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2012-03->meta::pure::functions::date::adjust(36, meta::pure::functions::date::DurationUnit.MONTHS)'),
+          noRev('|%2012-03->meta::pure::functions::date::adjust(-36, meta::pure::functions::date::DurationUnit.MONTHS)'),
+          rev('|%2012-03-31->meta::pure::functions::date::adjust(24, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,3,31)).timedelta(24,"MONTHS")'),
+          rev('|%2012-02-28->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,2,28)).timedelta(24,"MONTHS")'),
+          rev('|%2012-02-29->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,2,29)).timedelta(-24,"MONTHS")'),
+          rev('|%2012-03-31->meta::pure::functions::date::adjust(25, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,3,31)).timedelta(25,"MONTHS")'),
+          rev('|%2012-02-28->meta::pure::functions::date::adjust(-25, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,2,28)).timedelta(-25,"MONTHS")'),
+          rev('|%2012-02-29->meta::pure::functions::date::adjust(-25, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2012,2,29)).timedelta(-25,"MONTHS")'),
+          rev('|%2015-01-31->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,31)).timedelta(1,"MONTHS")'),
+          rev('|%2015-01-31T13:55:21+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2015, 1, 31, 13, 55, 21)).timedelta(1,"MONTHS")'),
+          rev('|%2015-01-31->meta::pure::functions::date::adjust(2, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,31)).timedelta(2,"MONTHS")'),
+          rev('|%2015-01-31->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,31)).timedelta(3,"MONTHS")'),
+          rev('|%2015-01-31->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,31)).timedelta(4,"MONTHS")'),
+          rev('|%2015-02-28->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,2,28)).timedelta(1,"MONTHS")'),
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,29)).timedelta(1,"MONTHS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(9600000000, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,29)).timedelta(9600000000,"MONTHS")'),
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(-9600000000, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,29)).timedelta(-9600000000,"MONTHS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByWeeks_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,4,16)).timedelta(1,"WEEKS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,4,16)).timedelta(-1,"WEEKS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(2, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,4,16)).timedelta(2,"WEEKS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(-2, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,4,16)).timedelta(-2,"WEEKS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,4,16)).timedelta(3,"WEEKS")'),
+          rev('|%2015-05-16->meta::pure::functions::date::adjust(3, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,5,16)).timedelta(3,"WEEKS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2016,2,29)).timedelta(12345678912,"WEEKS")'),
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2016,2,29)).timedelta(-12345678912,"WEEKS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByDays_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(4, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,4,16)).timedelta(4,"DAYS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(-4, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,4,16)).timedelta(-4,"DAYS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(16, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,4,16)).timedelta(16,"DAYS")'),
+          rev('|%2015-05-16->meta::pure::functions::date::adjust(16, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,5,16)).timedelta(16,"DAYS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(-16, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,4,16)).timedelta(-16,"DAYS")'),
+          rev('|%2015-04-16->meta::pure::functions::date::adjust(-17, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,4,16)).timedelta(-17,"DAYS")'),
+          rev('|%2014-03-30->meta::pure::functions::date::adjust(365, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2014,3,30)).timedelta(365,"DAYS")'),
+          rev('|%2014-03-30->meta::pure::functions::date::adjust(-365, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2014,3,30)).timedelta(-365,"DAYS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2016,2,29)).timedelta(12345678912,"DAYS")'),
+          rev('|%2016-02-29->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2016,2,29)).timedelta(-12345678912,"DAYS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByHours_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(1,"HOURS")'),
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(-1,"HOURS")'),
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(24, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(24,"HOURS")'),
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-24, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(-24,"HOURS")'),
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(36, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(36,"HOURS")'),
+          rev('|%2015-04-15T12:12:11+0000->meta::pure::functions::date::adjust(-36, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015, 4, 15, 12, 12, 11)).timedelta(-36,"HOURS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(12345678912,"HOURS")'),
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(-12345678912,"HOURS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMinutes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(1,"MINUTES")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-1,"MINUTES")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(61,"MINUTES")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-61,"MINUTES")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1441, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(1441,"MINUTES")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1441, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-1441,"MINUTES")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(12345678912,"MINUTES")'),
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.MINUTES)', 'c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(-12345678912,"MINUTES")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustBySeconds_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(1,"SECONDS")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-1,"SECONDS")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(61,"SECONDS")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-61,"SECONDS")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(3601,"SECONDS")'),
+          rev('|%2015-04-15T13:11:11+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2015, 4, 15, 13, 11, 11)).timedelta(-3601,"SECONDS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(12345678912,"SECONDS")'),
+          rev('|%2016-02-29T00:00:00+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.SECONDS)', 'c(datetime(2016, 2, 29, 0, 0, 0)).timedelta(-12345678912,"SECONDS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMicroseconds_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338000+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.MICROSECONDS)')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%1970-01-01T00:00:00.0000000+0000->meta::pure::functions::date::adjust(1624268257499000, meta::pure::functions::date::DurationUnit.MICROSECONDS)'),
+          noRev('|%1970-01-01T00:00:00.0000000+0000->meta::pure::functions::date::adjust(meta::pure::functions::math::floor(1624268257499000000 / 1000), meta::pure::functions::date::DurationUnit.MICROSECONDS)')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMilliseconds_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(1, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-1, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(61, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-61, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(3601, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2015-04-15T13:11:11.338+0000->meta::pure::functions::date::adjust(-3601, meta::pure::functions::date::DurationUnit.MILLISECONDS)')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testAdjustByMillisecondsBigNumber_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2016-02-29T00:00:00.000+0000->meta::pure::functions::date::adjust(12345678912, meta::pure::functions::date::DurationUnit.MILLISECONDS)'),
+          noRev('|%2016-02-29T00:00:00.000+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.MILLISECONDS)')
+        ]
+      )
+
+    ]->combine(),
+    [
+      meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|%2015->meta::pure::functions::date::dateDiff(%2016, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2016->meta::pure::functions::date::dateDiff(%2015, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2000->meta::pure::functions::date::dateDiff(%2020, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2020->meta::pure::functions::date::dateDiff(%2000, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|%2015->meta::pure::functions::date::dateDiff(%2015, meta::pure::functions::date::DurationUnit.YEARS)'),
+          rev('|%2015-01-01T00:00:00+0000->meta::pure::functions::date::dateDiff(%2015-12-31T23:59:59+0000, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2015, 1, 1, 0, 0, 0)).diff(datetime(2015, 12, 31, 23, 59, 59),"YEARS")'),
+          rev('|%2015-12-31T23:59:59+0000->meta::pure::functions::date::dateDiff(%2016-01-01T00:00:01+0000, meta::pure::functions::date::DurationUnit.YEARS)','c(datetime(2015, 12, 31, 23, 59, 59)).diff(datetime(2016, 1, 1, 0, 0, 1),"YEARS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffMonths_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2016-02-01->meta::pure::functions::date::dateDiff(%2016-02-01, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,1)).diff(date(2016,2,1),"MONTHS")'),
+          rev('|%2016-02-01->meta::pure::functions::date::dateDiff(%2016-02-29, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,1)).diff(date(2016,2,29),"MONTHS")'),
+          rev('|%2016-02-01->meta::pure::functions::date::dateDiff(%2016-03-01, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,2,1)).diff(date(2016,3,1),"MONTHS")'),
+          rev('|%2016-03-01->meta::pure::functions::date::dateDiff(%2016-02-01, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,3,1)).diff(date(2016,2,1),"MONTHS")'),
+          rev('|%2015-01-29->meta::pure::functions::date::dateDiff(%2016-01-29, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,29)).diff(date(2016,1,29),"MONTHS")'),
+          rev('|%2015-01-29->meta::pure::functions::date::dateDiff(%2016-03-29, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2015,1,29)).diff(date(2016,3,29),"MONTHS")'),
+          rev('|%2016-03-29->meta::pure::functions::date::dateDiff(%2015-01-29, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,3,29)).diff(date(2015,1,29),"MONTHS")'),
+          rev('|%2014-12-01T00:00:00+0000->meta::pure::functions::date::dateDiff(%2014-12-01T23:59:59+0000, meta::pure::functions::date::DurationUnit.MONTHS)','c(datetime(2014,12,1,0,0,0)).diff(datetime(2014,12,1,23,59,59),"MONTHS")'),
+          rev('|%2016-01-01->meta::pure::functions::date::dateDiff(%2016-12-31, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,1,1)).diff(date(2016,12,31),"MONTHS")'),
+          rev('|%2016-01-31->meta::pure::functions::date::dateDiff(%2016-12-31, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,1,31)).diff(date(2016,12,31),"MONTHS")'),
+          rev('|%2016-01-01->meta::pure::functions::date::dateDiff(%2017-01-01, meta::pure::functions::date::DurationUnit.MONTHS)','c(date(2016,1,1)).diff(date(2017,1,1),"MONTHS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-05->meta::pure::functions::date::dateDiff(%2015-07-05, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,5)).diff(date(2015,7,5),"WEEKS")'),
+          rev('|%2015-07-03->meta::pure::functions::date::dateDiff(%2015-07-04, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,3)).diff(date(2015,7,4),"WEEKS")'),
+          rev('|%2015-07-04->meta::pure::functions::date::dateDiff(%2015-07-05, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,4)).diff(date(2015,7,5),"WEEKS")'),
+          rev('|%2015-07-05->meta::pure::functions::date::dateDiff(%2015-07-04, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,5)).diff(date(2015,7,4),"WEEKS")'),
+          rev('|%2015-07-05->meta::pure::functions::date::dateDiff(%2015-07-12, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,5)).diff(date(2015,7,12),"WEEKS")'),
+          rev('|%2015-07-12->meta::pure::functions::date::dateDiff(%2015-07-05, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,12)).diff(date(2015,7,5),"WEEKS")'),
+          rev('|%2015-07-12->meta::pure::functions::date::dateDiff(%2015-07-06, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,12)).diff(date(2015,7,6),"WEEKS")'),
+          rev('|%2015-07-05->meta::pure::functions::date::dateDiff(%2015-08-02, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,7,5)).diff(date(2015,8,2),"WEEKS")'),
+          rev('|%2015-08-02->meta::pure::functions::date::dateDiff(%2015-07-05, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,8,2)).diff(date(2015,7,5),"WEEKS")'),
+          rev('|%2015-08-02->meta::pure::functions::date::dateDiff(%2015-07-06, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,8,2)).diff(date(2015,7,6),"WEEKS")'),
+          rev('|%2014-12-28->meta::pure::functions::date::dateDiff(%2015-01-04, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2014,12,28)).diff(date(2015,1,4),"WEEKS")'),
+          rev('|%2015-01-01->meta::pure::functions::date::dateDiff(%2016-01-01, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2015,1,1)).diff(date(2016,1,1),"WEEKS")'),
+          rev('|%2016-01-01->meta::pure::functions::date::dateDiff(%2016-12-31, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2016,1,1)).diff(date(2016,12,31),"WEEKS")'),
+          rev('|%2016-01-01->meta::pure::functions::date::dateDiff(%2017-01-01, meta::pure::functions::date::DurationUnit.WEEKS)','c(date(2016,1,1)).diff(date(2017,1,1),"WEEKS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffDays_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-07->meta::pure::functions::date::dateDiff(%2015-07-07, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,7,7)).diff(date(2015,7,7),"DAYS")'),
+          rev('|%2015-07-07->meta::pure::functions::date::dateDiff(%2015-07-08, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,7,7)).diff(date(2015,7,8),"DAYS")'),
+          rev('|%2015-07-08->meta::pure::functions::date::dateDiff(%2015-07-07, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,7,8)).diff(date(2015,7,7),"DAYS")'),
+          rev('|%2015-01-01->meta::pure::functions::date::dateDiff(%2016-01-01, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,1,1)).diff(date(2016,1,1),"DAYS")'),
+          rev('|%2016-01-01->meta::pure::functions::date::dateDiff(%2017-01-01, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2016,1,1)).diff(date(2017,1,1),"DAYS")'),
+          rev('|%2014-01-31->meta::pure::functions::date::dateDiff(%2015-03-01, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2014,1,31)).diff(date(2015,3,1),"DAYS")'),
+          rev('|%2016-01-31->meta::pure::functions::date::dateDiff(%2017-03-01, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2016,1,31)).diff(date(2017,3,1),"DAYS")'),
+          rev('|%2017-03-01->meta::pure::functions::date::dateDiff(%2016-01-31, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2017,3,1)).diff(date(2016,1,31),"DAYS")'),
+          rev('|%2014-12-28->meta::pure::functions::date::dateDiff(%2015-01-04, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2014,12,28)).diff(date(2015,1,4),"DAYS")'),
+          rev('|%2015-01-04->meta::pure::functions::date::dateDiff(%2014-12-28, meta::pure::functions::date::DurationUnit.DAYS)','c(date(2015,1,4)).diff(date(2014,12,28),"DAYS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,0),"HOURS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T14:00:00+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,14,0,0),"HOURS")'),
+          rev('|%2015-07-07T14:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015,7,7,14,0,0)).diff(datetime(2015,7,7,13,0,0),"HOURS")'),
+          rev('|%2015-07-07T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-08T01:00:00+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015,7,7,23,0,0)).diff(datetime(2015,7,8,1,0,0),"HOURS")'),
+          rev('|%2015-07-07T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-08T01:59:59+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2015,7,7,23,0,0)).diff(datetime(2015,7,8,1,59,59),"HOURS")'),
+          rev('|%2014-12-31T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-01-01T23:00:00+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2014,12,31,23,0,0)).diff(datetime(2015,1,1,23,0,0),"HOURS")'),
+          rev('|%2014-12-01T00:00:00+0000->meta::pure::functions::date::dateDiff(%2014-12-01T00:59:59+0000, meta::pure::functions::date::DurationUnit.HOURS)','c(datetime(2014,12,1,0,0,0)).diff(datetime(2014,12,1,0,59,59),"HOURS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffMinutes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,0),"MINUTES")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:00+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,0),"MINUTES")'),
+          rev('|%2015-07-07T13:01:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,13,1,0)).diff(datetime(2015,7,7,13,0,0),"MINUTES")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:01+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,1),"MINUTES")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T14:01:00+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,14,1,0),"MINUTES")'),
+          rev('|%2015-07-07T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-08T01:00:00+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2015,7,7,23,0,0)).diff(datetime(2015,7,8,1,0,0),"MINUTES")'),
+          rev('|%2014-12-01T00:00:00+0000->meta::pure::functions::date::dateDiff(%2014-12-01T00:00:59+0000, meta::pure::functions::date::DurationUnit.MINUTES)','c(datetime(2014,12,1,0,0,0)).diff(datetime(2014,12,1,0,0,59),"MINUTES")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffSeconds_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,0),"SECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:01+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,1),"SECONDS")'),
+          rev('|%2015-07-07T13:00:01+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,1)).diff(datetime(2015,7,7,13,0,0),"SECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:00+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,0),"SECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:01+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,1),"SECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T14:01:01+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,14,1,1),"SECONDS")'),
+          rev('|%2015-07-07T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-08T01:00:00+0000, meta::pure::functions::date::DurationUnit.SECONDS)','c(datetime(2015,7,7,23,0,0)).diff(datetime(2015,7,8,1,0,0),"SECONDS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffMilliseconds_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,0),"MILLISECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:01+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,0,1),"MILLISECONDS")'),
+          rev('|%2015-07-07T13:00:01+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:00:00+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,1)).diff(datetime(2015,7,7,13,0,0),"MILLISECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:00+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,0),"MILLISECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T13:01:01+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,13,1,1),"MILLISECONDS")'),
+          rev('|%2015-07-07T13:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-07T14:01:01+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,13,0,0)).diff(datetime(2015,7,7,14,1,1),"MILLISECONDS")'),
+          rev('|%2015-07-07T23:00:00+0000->meta::pure::functions::date::dateDiff(%2015-07-08T01:00:00+0000, meta::pure::functions::date::DurationUnit.MILLISECONDS)','c(datetime(2015,7,7,23,0,0)).diff(datetime(2015,7,8,1,0,0),"MILLISECONDS")')
+        ]
+      ),
+
+      meta::pure::functions::date::tests::testDateDiffWithDifferentTimeZones_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.YEARS)'),
+          noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.MONTHS)'),
+          noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.HOURS)'),
+          noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.MINUTES)'),
+          noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.SECONDS)')
+        ]
+      )
+
+    ]->combine()
   ]
 }
