@@ -65,7 +65,7 @@ public class Flatten extends Shared
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         ListIterable<? extends CoreInstance> toFlatten = Instance.getValueForMetaPropertyToManyResolved(params.get(0), M3Properties.values, processorSupport);
-        CoreInstance toFlattenType = Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.genericType, processorSupport);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType toFlattenType = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType) Instance.getValueForMetaPropertyToOneResolved(params.get(0), M3Properties.genericType, processorSupport);
 
         CoreInstance colSpec = Instance.getValueForMetaPropertyToOneResolved(params.get(1), M3Properties.values, processorSupport);
 
@@ -83,32 +83,26 @@ public class Flatten extends Shared
         CoreInstance returnGenericType = newRelationGenericType(returnRelationType, processorSupport);
 
         CoreInstance type = Instance.getValueForMetaPropertyToOneResolved(toFlattenType, M3Properties.rawType, processorSupport);
-        DataType colResType;
         Object colRes;
 
         if (type == _Package.getByUserPath(M3Paths.String, processorSupport))
         {
-            colResType = DataType.STRING;
             colRes = toFlatten.collect(PrimitiveUtilities::getStringValue).toArray(new String[0]);
         }
         else if (type == _Package.getByUserPath(M3Paths.Integer, processorSupport))
         {
-            colResType = DataType.LONG;
-            colRes = toFlatten.collectLong(x -> PrimitiveUtilities.getIntegerValue(x).longValue()).toArray();
+            colRes = toFlatten.collect(x -> PrimitiveUtilities.getIntegerValue(x).longValue()).toArray(new Long[0]);
         }
         else if (type == _Package.getByUserPath(M3Paths.Float, processorSupport))
         {
-            colResType = DataType.DOUBLE;
-            colRes = toFlatten.collectDouble(x -> PrimitiveUtilities.getFloatValue(x).doubleValue()).toArray();
+            colRes = toFlatten.collect(PrimitiveUtilities::getFloatValue).toArray(new Double[0]);
         }
         else if (type == _Package.getByUserPath(M3Paths.Boolean, processorSupport))
         {
-            colResType = DataType.BOOLEAN_AS_BYTE;
-            colRes = toFlatten.collectByte(x -> PrimitiveUtilities.getBooleanValue(x) ? (byte) 1 : (byte) 0).toArray();
+            colRes = toFlatten.collect(PrimitiveUtilities::getBooleanValue).toArray();
         }
         else if (type == _Package.getByUserPath(M3Paths.Variant, processorSupport))
         {
-            colResType = DataType.CUSTOM;
             colRes = toFlatten.toArray(new Variant[0]);
         }
         else
@@ -117,7 +111,7 @@ public class Flatten extends Shared
         }
 
         TestTDSInterpreted tds = new TestTDSInterpreted(this.repository, processorSupport);
-        tds.addColumn(columnInstance._name(), colResType, (Type) type, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, processorSupport), colRes);
+        tds.addColumn(columnInstance._name(), toFlattenType, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity) Multiplicity.newMultiplicity(0, 1, processorSupport), colRes);
 
         return ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(tds, returnGenericType, repository, processorSupport), true, processorSupport);
     }

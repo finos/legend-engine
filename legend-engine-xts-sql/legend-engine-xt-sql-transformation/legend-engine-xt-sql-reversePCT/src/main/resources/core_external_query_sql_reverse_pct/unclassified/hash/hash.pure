@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::unclassified::hash::hash::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_unclassified/hash/hash.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_',
+                      [
+                        rev('|\'Hello, World!\'->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5)',
+                            'select md5(Text\'Hello, World!\')'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_',
+                      [
+                        revError('|\'Hello, World!\'->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.SHA1)',
+                            'select encode(digest(Text\'Hello, World!\', \'sha1\'), \'hex\')',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function digest"',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_',
+                      [
+                        revError('|\'Hello, World!\'->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.SHA256)',
+                            'select encode(digest(Text\'Hello, World!\', \'sha256\'), \'hex\')',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function digest"',
+                            ''
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::unclassified::hash::hash::exec():Boolean[1]
+{
+   meta::pure::functions::hash::tests::testMD5Hash(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+  //  meta::pure::functions::hash::tests::testSHA1Hash(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+  //  meta::pure::functions::hash::tests::testSHA256Hash(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

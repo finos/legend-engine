@@ -19,7 +19,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalDatabricksCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
@@ -73,9 +72,9 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
 
             //filter
             one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks", AdapterQualifier.needsImplementation),
 
             //first
             one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "Expected at most one object, but found many", AdapterQualifier.needsInvestigation),
@@ -90,48 +89,42 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code", AdapterQualifier.unsupportedFeature),
 
             //range
-            one("meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_", "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             //size
-            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
 
-            //compare
-            one("meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testCompareMixedTypes_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testFloatCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testIntegerCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testNumberCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testStringCompare_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            // Compare
+            pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'.", AdapterQualifier.unsupportedFeature),
 
             //letFn
             one("meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_", "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'.", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.needsInvestigation),
 
             //divide
             one("meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_", "\nexpected: 0.010416666666666666\nactual:   0.010417", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "\"\nexpected: 0.5238095238095238\nactual:   0.52381\""),
 
             //minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\nexpected: -4.0D\nactual:   -4.0", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "[PARSE_SYNTAX_ERROR] org.apache.spark.sql.catalyst.parser.ParseException: \n[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 1, pos 10)", AdapterQualifier.needsInvestigation),
 
             //plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\nexpected: 6.0D\nactual:   6.0", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
 
             //times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\nexpected: 353791.470D\nactual:   353791.47", AdapterQualifier.needsInvestigation),
@@ -139,7 +132,7 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
 
             //string-plus
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification", AdapterQualifier.needsInvestigation)
     );
 

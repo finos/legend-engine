@@ -38,7 +38,7 @@ public class Test_Relational_Snowflake_GrammarFunctions_PCT extends PCTReportCon
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Not
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\"", AdapterQualifier.needsImplementation),
 
             // Eq
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
@@ -74,32 +74,32 @@ public class Test_Relational_Snowflake_GrammarFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:", AdapterQualifier.unsupportedFeature),
 
             // Compare
-            pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
 
             // Divide
             one("meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_", "\"\nexpected: 0.010416666666666666\nactual:   0.010417\"", AdapterQualifier.needsInvestigation),
 
             // Minus
-            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4D\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\""),
             one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "For input string: \"-9223372036854775850\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 10 unexpected '<EOF>'.", AdapterQualifier.needsInvestigation),
 
             // Plus
-            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6D\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "For input string: \"9223372036854775826\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\"\nexpected: 6.0D\nactual:   6.0\""),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "For input string: \"9223372036854775826\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::plus::testPlusNumber_Function_1__Boolean_1_", "\"\nexpected: 32.0\nactual:   32\"", AdapterQualifier.needsInvestigation),
 
             // Times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\"\nexpected: 353791.470D\nactual:   353791.47\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "For input string: \"18446744073709551614\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "For input string: \"18446744073709551614\"", AdapterQualifier.needsInvestigation),
 
             // Plus (String)
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification", AdapterQualifier.needsInvestigation),
 
             // Let

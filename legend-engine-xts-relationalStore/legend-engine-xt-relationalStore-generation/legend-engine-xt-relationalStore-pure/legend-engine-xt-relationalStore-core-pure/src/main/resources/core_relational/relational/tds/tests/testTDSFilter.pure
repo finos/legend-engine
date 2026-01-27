@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDeci
 {
    let result = execute(|Person.all()->project(col(p | 1.0d, 'decimal'))->filter({l|$l.getDecimal('decimal') == 2.0d}), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 0);
-   assertEquals('select 1.0 as "decimal" from personTable as "root" where 1.0 = 2.0', $result->sqlRemoveFormatting());
+   assertEquals('select cast(1.0 as Decimal(32,16)) as "decimal" from personTable as "root" where cast(1.0 as Decimal(32,16)) = cast(2.0 as Decimal(32,16))', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterTwoExpressions():Boolean[1]

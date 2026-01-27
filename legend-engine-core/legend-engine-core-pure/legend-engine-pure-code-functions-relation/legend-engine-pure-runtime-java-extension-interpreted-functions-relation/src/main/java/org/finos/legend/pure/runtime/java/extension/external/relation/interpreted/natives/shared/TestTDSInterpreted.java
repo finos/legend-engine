@@ -14,7 +14,6 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared;
 
-import io.deephaven.csv.parsers.DataType;
 import io.deephaven.csv.reading.CsvReader;
 
 import java.math.BigDecimal;
@@ -22,6 +21,7 @@ import java.math.BigDecimal;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -39,15 +39,15 @@ public class TestTDSInterpreted extends TestTDS
 {
     protected ModelRepository modelRepository;
 
-    public TestTDSInterpreted(CsvReader.Result result, MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypes, ModelRepository repository, ProcessorSupport processorSupport)
+    public TestTDSInterpreted(CsvReader.Result result, MutableList<GenericType> pureTypes, ModelRepository repository, ProcessorSupport processorSupport)
     {
         super(result, pureTypes, processorSupport);
         this.modelRepository = repository;
     }
 
-    private TestTDSInterpreted(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypesByColumnName, int rows, ModelRepository repository, ProcessorSupport processorSupport)
+    private TestTDSInterpreted(MutableList<String> columnOrdered, MutableMap<String, GenericType> pureTypesByColumnName, int rows, ModelRepository repository, ProcessorSupport processorSupport)
     {
-        super(columnOrdered, columnType, pureTypesByColumnName, rows, processorSupport);
+        super(columnOrdered, pureTypesByColumnName, rows, processorSupport);
         this.modelRepository = repository;
         this.pureTypesByColumnName = pureTypesByColumnName;
     }
@@ -59,9 +59,9 @@ public class TestTDSInterpreted extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type> pureTypesByColumnName, int rows)
+    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, GenericType> pureTypesByColumnName, int rows)
     {
-        return new TestTDSInterpreted(columnOrdered, columnType, pureTypesByColumnName, rows, this.modelRepository, this.processorSupport);
+        return new TestTDSInterpreted(columnOrdered, pureTypesByColumnName, rows, this.modelRepository, this.processorSupport);
     }
 
     public CoreInstance getValueAsCoreInstance(String columnName, int rowNum)
@@ -71,55 +71,44 @@ public class TestTDSInterpreted extends TestTDS
         {
             throw new RuntimeException("The column " + columnName + " can't be found in the TDS");
         }
-        boolean[] isNull = isNullByColumn.get(columnName);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type pureType = pureTypesByColumnName.get(columnName)._rawType();
         CoreInstance result;
-        switch (columnType.get(columnName))
+        Object[] data = (Object[]) dataAsObject;
+        if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Integer)))
         {
-            case LONG:
-            {
-                long[] data = (long[]) dataAsObject;
-                long value = data[rowNum];
-                result = !isNull[rowNum] ? newIntegerLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Integer, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case CUSTOM:
-            {
-                Variant[] data = (Variant[]) dataAsObject;
-                Variant value = data[rowNum];
-                result = value != null ? wrapValueSpecification(value, true, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Variant, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case STRING:
-            {
-                String[] data = (String[]) dataAsObject;
-                String value = data[rowNum];
-                result = value != null ? newStringLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case BOOLEAN_AS_BYTE:
-            {
-                boolean[] data = (boolean[]) dataAsObject;
-                result = !isNull[rowNum] ? newBooleanLiteral(modelRepository, data[rowNum], processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case DOUBLE:
-            {
-                double[] data = (double[]) dataAsObject;
-                String pureType = pureTypesByColumnName.get(columnName) == null ? null : pureTypesByColumnName.get(columnName).getValueForMetaPropertyToOne("name").getName();
-                result = !isNull[rowNum] ?
-                        ("Decimal".equals(pureType) ? wrapValueSpecification(modelRepository.newDecimalCoreInstance(BigDecimal.valueOf(data[rowNum])), true, processorSupport) : newFloatLiteral(modelRepository, BigDecimal.valueOf(data[rowNum]), processorSupport)) :
-                        ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath("Decimal".equals(pureType) ? M3Paths.Decimal : M3Paths.Float, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            case DATETIME_AS_LONG:
-            {
-                PureDate[] data = (PureDate[]) dataAsObject;
-                PureDate value = data[rowNum];
-                result = value != null ? newDateLiteral(modelRepository, value, processorSupport) : ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport);
-                break;
-            }
-            default:
-                throw new RuntimeException("ERROR " + columnType.get(columnName) + " not supported in getValue");
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Integer, processorSupport), processorSupport), true, processorSupport) : newIntegerLiteral(modelRepository, (Long) data[rowNum], processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Variant)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Variant, processorSupport), processorSupport), true, processorSupport) : wrapValueSpecification((Variant) data[rowNum], true, processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.String)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.String, processorSupport), processorSupport), true, processorSupport) : newStringLiteral(modelRepository, (String) data[rowNum], processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Boolean)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Boolean, processorSupport), processorSupport), true, processorSupport) : newBooleanLiteral(modelRepository, (Boolean) data[rowNum], processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Float)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Float, processorSupport), processorSupport), true, processorSupport) : newFloatLiteral(modelRepository, BigDecimal.valueOf((Double) data[rowNum]), processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Date)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Date, processorSupport), processorSupport), true, processorSupport) : newDateLiteral(modelRepository, (PureDate) data[rowNum], processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Decimal)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Decimal, processorSupport), processorSupport), true, processorSupport) : wrapValueSpecification(modelRepository.newDecimalCoreInstance((BigDecimal) data[rowNum]), true, processorSupport);
+        }
+        else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Number)))
+        {
+            result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Number, processorSupport), processorSupport), true, processorSupport) : wrapValueSpecification((data[rowNum] instanceof BigDecimal ? modelRepository.newDecimalCoreInstance((BigDecimal) data[rowNum]) : modelRepository.newFloatCoreInstance(BigDecimal.valueOf((double) data[rowNum]))), true, processorSupport);
+        }
+        else
+        {
+            throw new RuntimeException("Error " + pureType._name());
         }
         return result;
     }

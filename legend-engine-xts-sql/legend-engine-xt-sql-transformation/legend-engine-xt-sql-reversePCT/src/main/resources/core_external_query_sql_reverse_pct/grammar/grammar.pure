@@ -17,6 +17,7 @@ import meta::pure::test::pct::reversePCT::framework::*;
 function meta::external::query::sql::reversePCT::tests::grammar::reverses():ReversesForSource[*]
 {
   [
+    meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::eq::reverses(),
     meta::external::query::sql::reversePCT::tests::grammar::boolean::equality::equal::reverses(),
 
     meta::external::query::sql::reversePCT::tests::grammar::boolean::inequality::greaterThan::reverses(),

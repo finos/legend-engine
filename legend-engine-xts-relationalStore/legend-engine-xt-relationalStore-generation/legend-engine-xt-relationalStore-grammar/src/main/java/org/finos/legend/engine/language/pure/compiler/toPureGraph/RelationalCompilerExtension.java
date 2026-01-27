@@ -1195,4 +1195,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 ._from(tbl);
         return tblMapper;
     }
+
+    @Override
+    public MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
+    {
+        return Maps.mutable.with("cov_tds_TabularDataSet", Sets.mutable.with("TableTDS"));
+    }
 }

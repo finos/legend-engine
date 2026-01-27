@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-pure</artifactId>
-        <version>4.118.2-SNAPSHOT</version>
+        <version>4.118.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
@@ -54,6 +54,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -93,6 +98,11 @@
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
                         </artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -196,6 +206,11 @@
                         <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -213,6 +228,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -278,7 +298,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
         <!-- TEST -->
         <!--        <dependency>-->
         <!--            <groupId>junit</groupId>-->

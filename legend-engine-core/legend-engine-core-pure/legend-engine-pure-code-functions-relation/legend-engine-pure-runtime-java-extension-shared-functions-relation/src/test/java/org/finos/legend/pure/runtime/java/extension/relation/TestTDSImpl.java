@@ -14,27 +14,57 @@
 
 package org.finos.legend.pure.runtime.java.extension.relation;
 
-import io.deephaven.csv.parsers.DataType;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDS;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
+import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
+import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
+import org.finos.legend.pure.m3.serialization.runtime.IncrementalCompiler;
+import org.finos.legend.pure.m3.serialization.runtime.SourceRegistry;
+import org.finos.legend.pure.m3.statelistener.ExecutionActivityListener;
+import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
+import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryFileManager;
+import org.finos.legend.pure.runtime.java.compiled.delta.MetadataProvider;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
+import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
+import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 public class TestTDSImpl extends TestTDS
 {
-    public TestTDSImpl()
+    static ProcessorSupport ps;
+
+    static
     {
-        super(null);
+        RichIterable<CodeRepository> codeRepos = CodeRepositoryProviderHelper.findCodeRepositories().select((r) -> !r.getName().equals("test_generic_repository") && !r.getName().equals("other_test_generic_repository"));
+        ClassLoader classLoader = TestTDSImpl.class.getClassLoader();
+        CompiledExecutionSupport cs = new CompiledExecutionSupport(new JavaCompilerState((MemoryFileManager) null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, codeRepos.collect(CodeRepository::getName)), Sets.mutable.empty()), (SourceRegistry) null, new CompositeCodeStorage(new RepositoryCodeStorage[]{new ClassLoaderCodeStorage(classLoader, codeRepos)}), (IncrementalCompiler) null, (ExecutionActivityListener) null, new ConsoleCompiled(), (MetadataProvider) null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
+        ps = cs.getProcessorSupport();
     }
 
     public TestTDSImpl(String csv)
     {
-        super(csv, null);
+        super(ps);
+        TDS<?> tds = TDSExtension.parse(csv, null, ps);
+        this.build(readCsv(tds._csv()), ((RelationType<?>) tds._classifierGenericType()._typeArguments().getFirst()._rawType())._columns().collect(_Column::getColumnType).toList(), ps);
     }
 
-    public TestTDSImpl(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumn, int rows)
+    public TestTDSImpl(MutableList<String> columnOrdered, MutableMap<String, GenericType> pureTypesByColumn, int rows)
     {
-        super(columnOrdered, columnType, pureTypesByColumn, rows, null);
+        super(columnOrdered, pureTypesByColumn, rows, null);
     }
 
     @Override
@@ -44,8 +74,8 @@ public class TestTDSImpl extends TestTDS
     }
 
     @Override
-    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, DataType> columnType, MutableMap<String, Type> pureTypesByColumn, int rows)
+    public TestTDS newTDS(MutableList<String> columnOrdered, MutableMap<String, GenericType> pureTypesByColumn, int rows)
     {
-        return new TestTDSImpl(columnOrdered, columnType, pureTypesByColumn, rows);
+        return new TestTDSImpl(columnOrdered, pureTypesByColumn, rows);
     }
 }

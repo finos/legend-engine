@@ -5,6 +5,7 @@
     "platform",
     "platform_precise_primitives",
     "core_functions_relation",
-    "core_functions_unclassified"
+    "core_functions_unclassified",
+    "core_functions_standard"
   ]
 }

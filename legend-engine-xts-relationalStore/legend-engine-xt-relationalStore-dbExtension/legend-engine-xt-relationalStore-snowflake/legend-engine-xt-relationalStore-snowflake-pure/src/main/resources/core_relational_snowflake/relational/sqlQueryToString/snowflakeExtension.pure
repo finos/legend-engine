@@ -644,11 +644,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   ) +
 
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumnsForSnowflake($s.columns, $dbConfig, $format->indent(), $extensions)->makeString(',')) +
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if (eq($qualifyStr, ''), |'', | ' ' + $format.separator + 'qualify ' + $qualifyStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
   processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processGroupByColumnsForSnowflake(groupByColumns:RelationalOperationElement[*], selectColumns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[*]
+{ 
+   let selectColNames = $selectColumns->map(c | $c->match([
+                                                    a: Alias[1] | $a.name, 
+                                                    any: Any[*] | $any
+                                                  ])
+                                           );
+   $groupByColumns->map(c | $c->match([
+                                a:Alias[1] | ($selectColNames->indexOf($a.name) + 1)->toString(),
+                                c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
+                               ])
+                       );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processPivotForSnowflake(s:SelectSQLQuery[1], p:Pivot[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]

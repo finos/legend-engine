@@ -7,6 +7,23 @@
       ]
     },
     {
+      "name": "core",
+      "modules": [
+        "legend-engine-pure-code-compiled-core",
+        "legend-engine-pure-code-scenario-quant-pure",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-unclassified",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-unclassified",        
+        "legend-engine-pure-runtime-java-extension-compiled-functions-json",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-json",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-relation",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-relation",      
+        "legend-engine-pure-runtime-java-extension-compiled-functions-standard",
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-standard",
+        "legend-engine-pure-runtime-java-extension-compiled-functions-variant",            
+        "legend-engine-pure-runtime-java-extension-interpreted-functions-variant"
+      ]
+    },      
+    {
       "name": "javaBinding",
       "modules": [
         "legend-engine-xt-javaPlatformBinding-PCT",
@@ -19,17 +36,26 @@
       "modules": [
         "legend-engine-xt-sql-expression-grammar",
         "legend-engine-xt-sql-pure",
-        "legend-engine-xt-sql-http-api"
+        "legend-engine-xt-sql-http-api",
+        "legend-engine-xt-sql-reversePCT",  
+        "legend-engine-xt-sql-postgres-server"        
       ]
     },
     {
       "name": "graphql",
       "modules": [
         "legend-engine-xt-graphQL-http-api",
-        "legend-engine-xt-graphQL-grammar-integration",
-        "legend-engine-xt-sql-http-api"
+        "legend-engine-xt-graphQL-grammar-integration"        
       ]
-    },
+    },    
+    {
+      "name": "relationalStore",
+      "modules": [
+        "legend-engine-xt-relationalStore-core-pure",
+        "legend-engine-xt-relationalStore-executionPlan",
+        "legend-engine-xt-relationalStore-executionPlan-connection"
+      ]
+    },    
     {
       "name": "h2",
       "modules": [
@@ -98,7 +124,8 @@
     {
       "name": "deephaven",
       "modules": [
-        "legend-engine-xt-deephaven-executionPlan-test"
+        "legend-engine-xt-deephaven-executionPlan-test",
+        "legend-engine-xt-deephaven-PCT"
       ]
     },
     {

@@ -26,7 +26,9 @@ public class DeephavenTestInterpretedExtension extends BaseInterpretedExtension
     {
         super(Lists.mutable.with(
                 Tuples.pair(DeephavenCommands.START_SERVER_FUNCTION, DeephavenStartCommand::new),
-                Tuples.pair(DeephavenCommands.STOP_SERVER_FUNCTION, DeephavenStopCommand::new)
+                Tuples.pair(DeephavenCommands.STOP_SERVER_FUNCTION, DeephavenStopCommand::new),
+                Tuples.pair(DeephavenCommands.CREATE_TABLE_FROM_CSV_FUNCTION, DeephavenCreateTableFromCSV::new),
+                Tuples.pair(DeephavenCommands.GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION, GetDeephavenTestConnection::new)
         ));
     }
 

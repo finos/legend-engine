@@ -1,0 +1,387 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::json::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::variant::*;
+import meta::core::runtime::*;
+import meta::pure::test::pct::*;
+import meta::pure::extension::*;
+import meta::external::store::deephaven::tests::pct::*;
+import meta::external::store::deephaven::tests::pct::process::*;
+
+function <<PCT.adapter>> {PCT.adapterName='Deephaven'} meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
+{
+  meta::external::store::deephaven::tests::pct::testAdapterForExecution(
+      $f,
+      meta::external::store::deephaven::executionPlan::platformBinding::legendJava::deephavenOnlyLegendJavaPlatformBindingExtensions()
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X|o>(f:Function<{->X[o]}>[1], extensions:Extension[*]):X[o]
+{
+  let debug = noDebug();
+
+  let reprocessed = $f->meta::external::store::deephaven::tests::pct::process::reprocess($debug);
+  let newFunction = $reprocessed.first;
+  let state = $reprocessed.second;
+  let deephavenTables = $state.deephavenStore.tables;
+  let csvs = $state.csvs;
+
+  print(if($debug.debug, | 'Reprocessed function:\n' + $newFunction->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n', | ''));
+
+  print(if($debug.debug, | 'Building execution plan', | ''));
+
+  let createTableResult = if ($deephavenTables->size() == $csvs->size(),
+                              | $deephavenTables->size()->range()->forAll(i |
+                                  let tableName = $deephavenTables->at($i).name;
+                                  let csv = $csvs->at($i);
+                                  meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv);
+                                );,
+                              | fail('There must be one csv per table!') // TODO: Revisit this assumption, as there doesn't have to be a csv for non-TDS operations
+  );
+  if($createTableResult == false, | fail('Failed to create a table from csv. Check Deephaven logs for detailed error messages.'), | '');
+
+  let resultJson = meta::legend::execute($newFunction, [], ^meta::pure::runtime::ExecutionContext(), $extensions);
+
+  print(if($debug.debug, | '\nResult JSON:\n' + $resultJson + '\n', | ''));
+
+  let resultType = $f->functionReturnType().rawType->toOne();
+  let json = $resultJson->meta::json::parseJSON();
+  if (!$json->instanceOf(JSONObject),
+      | $json->meta::json::fromJSON($resultType),
+      | if ($json->cast(@JSONObject).keyValuePairs->filter(k|$k.key.value=='objects').value->isNotEmpty(),
+            | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__Type', failOnUnknownProperties=false, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DeephavenTDSResult)->toOne();
+              let resultTDS = meta::protocols::pure::vX_X_X::invocation::execution::execute::getDeephavenTDSResultFromProtocol($res, $f->functionReturnType(), $extensions);,
+            | []
+        )
+     )->cast(@X)->toMultiplicity(@[o]);
+}
+
+Class meta::external::store::deephaven::tests::pct::process::DeephavenProcessingState
+{
+   deephavenStore : meta::external::store::deephaven::metamodel::store::DeephavenStore[1];
+   runtime : Runtime[1];
+   current : Any[0..1];
+   replaced : Pair<meta::pure::metamodel::relation::TDS<Any>, meta::pure::store::RelationStoreAccessor<Any>>[*];
+   openVars : Map<String,Any>[0..1];
+   csvs : String[*];
+}
+
+function meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime(): Runtime[1]
+{
+    ^Runtime(
+        connectionStores = ^ConnectionStore(
+            element = 'meta::external::store::deephaven::tests::pct::process::DeephavenStore',
+            connection = meta::external::store::deephaven::executionTest::utils::getDeephavenTestConnection()
+        )
+    );
+}
+
+function meta::external::store::deephaven::tests::pct::process::initState(openVars:Map<String,Any>[0..1], runtime:Runtime[1]):meta::external::store::deephaven::tests::pct::process::DeephavenProcessingState[1]
+{
+  ^meta::external::store::deephaven::tests::pct::process::DeephavenProcessingState
+  (
+    deephavenStore = ^meta::external::store::deephaven::metamodel::store::DeephavenStore
+    (
+      name = 'DeephavenStore',
+      package = meta::external::store::deephaven::tests::pct::process
+    ),
+    runtime = $runtime,
+    openVars = $openVars
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::reprocess(f:Function<Any>[1], debug: DebugContext[1]):Pair<FunctionDefinition<Any>,DeephavenProcessingState>[1]
+{
+  let dhConfig = ^meta::pure::metamodel::serialization::grammar::Configuration
+            (
+              fullPath = true,
+              extensions = meta::external::store::deephaven::grammar::serialization::deephavenGrammarExtension()
+            );
+
+  $f->match(
+    [
+      z:FunctionDefinition<Any>[1]|
+            print(if($debug.debug, | 'BEFORE: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($z, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n', | ''));
+
+            let deephavenRuntime = meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime();
+            let initState = meta::external::store::deephaven::tests::pct::process::initState($z->openVariableValues(), $deephavenRuntime);
+            
+            let reprocessed = $z.expressionSequence->evaluateAndDeactivate()->map(expr|$expr->meta::external::store::deephaven::tests::pct::process::reprocess($initState));
+
+            let newFunction = ^$z(expressionSequence = $reprocessed.current->cast(@ValueSpecification)->toOneMany())
+                   ->meta::external::store::deephaven::tests::pct::process::addWith($deephavenRuntime);
+
+            print(if($debug.debug, | '\nAFTER: ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n', | ''));
+
+            let otherFuncs = $reprocessed.current->map(r | $r->meta::external::store::deephaven::tests::pct::process::extractDependentFunctions())->distinct();
+
+            print(if($debug.debug, | 'Got ' + $otherFuncs->size()->makeString() + ' other functions' + '\n', | ''));
+
+            let allReprocessed = $reprocessed->tail()->fold({prev, reproc |meta::external::store::deephaven::tests::pct::process::merge($prev, $reproc)}, $reprocessed->head()->toOne());
+
+            let deephavenStore = $allReprocessed.deephavenStore->toOne();
+
+            let deephavenStoreGrammar = '\n###Deephaven\n' +
+                                        if($deephavenStore.tables->isEmpty(),
+                                           | let dummyTable = ^meta::external::store::deephaven::metamodel::store::Table
+                                             (
+                                                name = 'DummyTable',
+                                                columns = ^meta::external::store::deephaven::metamodel::store::Column(
+                                                            name = 'dummyColumn',
+                                                            type = ^meta::external::store::deephaven::metamodel::type::IntType()
+                                                          )
+                                             );
+                                             ^$deephavenStore(tables = $dummyTable)->meta::external::store::deephaven::grammar::serialization::printDeephavenStore();,
+                                           | $deephavenStore->meta::external::store::deephaven::grammar::serialization::printDeephavenStore();
+                                        );
+
+            let code = $deephavenStoreGrammar +
+                       '\n###Pure\n' +
+                       'function test::lambdaContainer():Any[*]{\n' +
+                       '  ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n' +
+                       '}';
+
+            let alloyCompiled = meta::legend::compile($code)->filter(x|$x.name == 'lambdaContainer__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@FunctionDefinition<Any>);
+
+            pair($alloyCompiled, $allReprocessed);
+    ]
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::reprocess(a:Any[1], state:DeephavenProcessingState[1]):DeephavenProcessingState[1]
+{
+  $a->match(
+    [
+      z:FunctionExpression[1] | if (!$z.func->in(
+                                              [
+                                                  meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpecArray2_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::funcColSpec2_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpecArray2_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                              ]),
+                                    | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
+                                      ^$state
+                                      (
+                                          current = ^$z(parametersValues = if ($z->cast(@FunctionExpression).func == write_Relation_1__RelationElementAccessor_1__Integer_1_,
+                                                                              | let reproCurrent = $repro.current->cast(@ValueSpecification);
+                                                                                let tds = $reproCurrent->at(1)->cast(@FunctionExpression).parametersValues->at(0);
+                                                                                $reproCurrent->at(0)->concatenate($tds);,
+                                                                              | $repro.current->cast(@ValueSpecification))
+                                                       )->evaluateAndDeactivate(),
+                                          replaced = $repro.replaced,
+                                          csvs = $repro.csvs
+                                      );,
+                                    | ^$state
+                                      (
+                                        current = $z
+                                      )
+                                  );,
+      ix:InstanceValue[1] | let i = $ix->evaluateAndDeactivate();
+                            let type = $i.genericType.rawType->toOne();
+                            let hasClass = $i.values->find(x|$x->instanceOf(Class))->isNotEmpty();
+                            // Primitive pass through
+                            let repro = $i.values->map(x|$x->reprocess($state));
+                            ^$state
+                            (
+                              current = ^$i
+                                        (
+                                          genericType = if($repro.current->isEmpty(),|$i.genericType, |$repro.current->genericType()),
+                                          values = $repro.current
+                                        ),
+                              replaced = $repro.replaced,
+                              csvs = $repro.csvs
+                            );,
+      z:LambdaFunction<Any>[1] | let repro = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($state));
+                                 ^$state
+                                 (
+                                    current=^$z(expressionSequence = $repro.current->cast(@ValueSpecification)->toOneMany()),
+                                    replaced=$repro.replaced,
+                                    csvs = $repro.csvs
+                                 );,
+      v:VariableExpression[1] | let openVar = $state.openVars->toOne()->get($v.name);
+                                if ($openVar->isEmpty(),
+                                  |^$state
+                                   (
+                                      current = $v
+                                   ),
+                                  |reprocess( ^InstanceValue
+                                              (
+                                                genericType = $openVar->toOne()->cast(@List<Any>).values->at(0)->genericType()->toOne(),
+                                                multiplicity = PureOne,
+                                                values = $openVar->toOne()->cast(@List<Any>).values
+                                              ), $state)
+                                  );,
+      x:meta::pure::metamodel::relation::TDS<Any>[1] | processTDS($x, $state),
+      x:Any[1] | ^$state(current = $x);
+    ]
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::processTDS(tds:meta::pure::metamodel::relation::TDS<Any>[1], state:DeephavenProcessingState[1]):DeephavenProcessingState[1]
+{
+  let map = meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType();
+  let cols = $tds->columns();
+  let rand = random() * 10000000;
+  let table = ^meta::external::store::deephaven::metamodel::store::Table
+  (
+    name = 'Tb_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
+    columns = $cols->map(c |
+                     ^meta::external::store::deephaven::metamodel::store::Column(
+                       name = $c.name->toOne(),
+                       type = $map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne()
+                     )
+                   )
+  );
+  let store = $state.deephavenStore;
+  let storeWithTable = ^$store(tables += $table);
+  $state.deephavenStore->mutateAdd('tables', $table);
+  
+  let relAccessor = ^meta::pure::store::RelationStoreAccessor<Any>
+  (
+    store = $storeWithTable,
+    sourceElement = $table
+  );
+
+  let csv = $cols->map(x | $x.name)->joinStrings(',') + '\n' +
+            $tds->map(
+              x | $cols->map(c | $c->eval($x)->match(
+                                 [
+                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                   s : Variant[1] | '"' + $s->toString() + '"',
+                                   z : Any[1] | $z->toString(),
+                                   n : Any[0] | ''
+                                 ]
+                  ))->joinStrings(',')
+            )->joinStrings('\n');
+
+  ^$state
+  (
+    current = $relAccessor,
+    replaced = pair($tds, $relAccessor),
+    csvs += $csv
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::extractDependentFunctions(f:Any[1]):Function<Any>[*]
+{
+  $f->extractDependentFunctionsImpl([]);
+}
+
+function meta::external::store::deephaven::tests::pct::process::extractDependentFunctionsImpl(f:Any[1], visitedFuncs : Function<Any>[*]):Function<Any>[*]
+{
+  if ($f->in($visitedFuncs),
+    | [],
+    |  $f->match([
+        z:FunctionDefinition<Any>[1] |
+                    if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
+                      ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
+        x:SimpleFunctionExpression[1]|
+                    let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
+                    $x.func->extractDependentFunctionsImpl($visitedFuncs)->concatenate($res);,
+        i: InstanceValue[1] | $i.values->map(p|$p->extractDependentFunctionsImpl($visitedFuncs)),
+        a:Any[1] | []
+      ]);
+    );
+}
+
+function meta::external::store::deephaven::tests::pct::process::merge(s1:DeephavenProcessingState[1], s2:DeephavenProcessingState[1]):DeephavenProcessingState[1]
+{
+  ^$s1
+  (
+    replaced += $s2.replaced,
+    csvs += $s2.csvs,
+    openVars = if($s1.openVars->isEmpty(), | $s1.openVars, | $s2.openVars)
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::addWith(func: FunctionDefinition<Any>[1], runtime: Runtime[1]): FunctionDefinition<Any>[1]
+{
+  let returnGenericType = $func->functionReturnType();
+  let returnMultiplicity = $func->functionReturnMultiplicity();
+
+  $func.expressionSequence->evaluateAndDeactivate()->match([
+    vs: ValueSpecification[1] |
+      let withWith = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = from_T_m__Runtime_1__T_m_,
+        functionName = 'from',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues = [
+          $vs,
+          ^InstanceValue
+          (
+            genericType = ^GenericType(rawType=Runtime),
+            multiplicity = PureOne,
+            values = $runtime
+          )
+        ],
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+      ^$func(expressionSequence = $withWith);
+    ,
+    multi: ValueSpecification[1..*] |
+      let eval = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = eval_Function_1__V_m_,
+        functionName = 'eval',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    ^InstanceValue(
+                                              genericType = $func->genericType()->toOne(),
+                                              multiplicity = PureOne,
+                                              values = $func
+                                            ),
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+
+      let from = ^SimpleFunctionExpression
+      (
+        importGroup=system::imports::coreImport,
+        func = from_T_m__Runtime_1__T_m_,
+        functionName = 'from',
+        genericType = $returnGenericType,
+        multiplicity = $returnMultiplicity,
+        parametersValues =    ^InstanceValue(
+                                              genericType = $func->genericType()->toOne(),
+                                              multiplicity = PureOne,
+                                              values = $eval
+                                            )
+                              ->concatenate(^InstanceValue
+                                            (
+                                              genericType = ^GenericType(rawType=Runtime),
+                                              multiplicity = PureOne,
+                                              values = $runtime
+                                            )
+                              )
+                          ,
+        resolvedMultiplicityParameters = $returnMultiplicity,
+        resolvedTypeParameters = $returnGenericType
+      );
+
+      ^$func(expressionSequence = $from);,
+      a: Any[*] | fail('not supported: ' + $a->type()->elementToPath() + ': ' + $a->size()->toString()); $func;
+  ]);
+}

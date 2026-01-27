@@ -164,8 +164,7 @@ public class DeephavenExecutionNodeExecutor implements ExecutionNodeVisitor<Resu
                     try
                     {
                         Optional<DeephavenSession> providedSession = provider.provide(pskSpec, connection.sourceSpec);
-                        providedSession.ifPresent(s -> System.out.println("Session created successfully for " + connection.sourceSpec.url));
-                        providedSession.ifPresent(s -> LOGGER.info("Session created successfully for {}" + connection.sourceSpec.url));
+                        providedSession.ifPresent(s -> LOGGER.info("Session created successfully for " + connection.sourceSpec.url));
                         return providedSession;
                     }
                     catch (Exception e)

@@ -19,12 +19,12 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-standard</artifactId>
-        <version>4.118.2-SNAPSHOT</version>
+        <version>4.118.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-standard</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Pure - Runtime - Java Extension - Interpreted - Functions - Base</name>
+    <name>Legend Pure - Runtime - Java Extension - Interpreted - Functions - Standard</name>
 
     <build>
         <plugins>

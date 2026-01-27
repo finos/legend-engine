@@ -36,6 +36,8 @@ public class Test_Relational_H2_ScenarioQuantFunctions_PCT extends PCTReportConf
     private static final Adapter adapter = CoreRelationalH2PCTCodeRepositoryProvider.H2Adapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"LAG"),
+            one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - time_bucket\"")
     );
 
     public static Test suite()

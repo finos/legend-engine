@@ -1,0 +1,893 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::transformation::extend::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/transformation/extend.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.str->meta::pure::functions::multiplicity::toOne() + $c.val->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString())',
+                            'select "table0_0".val as "val", "table0_0".str as "str", concat(Text\'\', "table0_0".str, cast("table0_0".val as varchar), Text\'\') as "name" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.str->meta::pure::functions::multiplicity::toOne() + $c.val->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString());\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0") \n'+
+                            'select "t_0"."val", "t_0"."str", concat(Text\'\', "t_0"."str", cast("t_0"."val" as varchar), Text\'\') as "name" from t as "t_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendInt_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.val->meta::pure::functions::multiplicity::toOne() + 1)',
+                            'select "table0_0".val as "val", "table0_0".str as "str", ("table0_0".val + 1) as "name" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.val->meta::pure::functions::multiplicity::toOne() + 1);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0") \n'+
+                            'select "t_0"."val", "t_0"."str", ("t_0"."val" + 1) as "name" from t as "t_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val:Integer[0..1],doub:Float[0..1]\n'+
+                            '1,1.2\n'+
+                            '3,2.3\n'+
+                            '4,4.2\n'+
+                            '5,4.2\n'+
+                            '6,4.5\n'+
+                            '}#->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], doub:Float[0..1])[1]|$c.doub->meta::pure::functions::multiplicity::toOne() + 1.0)',
+                            'select "table0_0".val as "val", "table0_0".doub as "doub", ("table0_0".doub + 1.0) as "name" from csv(\'val,doub\n1,1.2\n3,2.3\n4,4.2\n5,4.2\n6,4.5\') as "table0_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'val:Integer[0..1],doub:Float[0..1]\n'+
+                            '1,1.2\n'+
+                            '3,2.3\n'+
+                            '4,4.2\n'+
+                            '5,4.2\n'+
+                            '6,4.5\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~name:c: (val:Integer[0..1], doub:Float[0..1])[1]|$c.doub->meta::pure::functions::multiplicity::toOne() + 1.0);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".doub as "doub" from csv(\'val,doub\n1,1.2\n3,2.3\n4,4.2\n5,4.2\n6,4.5\') as "table0_0") \n'+
+                            'select "t_0"."val", "t_0"."doub", ("t_0"."doub" + 1.0) as "name" from t as "t_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#->meta::pure::functions::relation::extend(~[name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.val->meta::pure::functions::multiplicity::toOne() + 1,other:x: (val:Integer[0..1], str:String[0..1])[1]|$x.str->meta::pure::functions::multiplicity::toOne() + \'_ext\'])',
+                            'select "table0_0".val as "val", "table0_0".str as "str", ("table0_0".val + 1) as "name", concat(Text\'\', "table0_0".str, Text\'_ext\', Text\'\') as "other" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'val:Integer[0..1],str:String[0..1]\n'+
+                            '1,a\n'+
+                            '3,ewe\n'+
+                            '4,qw\n'+
+                            '5,wwe\n'+
+                            '6,weq\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~[name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.val->meta::pure::functions::multiplicity::toOne() + 1,other:x: (val:Integer[0..1], str:String[0..1])[1]|$x.str->meta::pure::functions::multiplicity::toOne() + \'_ext\']);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".val as "val", "table0_0".str as "str" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0") \n'+
+                            'select "t_0"."val", "t_0"."str", ("t_0"."val" + 1) as "name", concat(Text\'\', "t_0"."str", Text\'_ext\', Text\'\') as "other" from t as "t_0"',
+                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER () as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus());\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER () as "newCol" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~[newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus(),other:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.grp:y: Integer[*]|$y->plus()])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER () as "newCol", sum("table0_0".grp) OVER () as "other" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~[newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus(),other:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.grp:y: Integer[*]|$y->plus()]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER () as "newCol", sum("t_0"."grp") OVER () as "other" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus(),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.grp}:y: Integer[*]|$y->plus()])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol", sum("table0_0".grp) OVER (Partition By "table0_0".grp) as "other" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus(),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.grp}:y: Integer[*]|$y->plus()]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER (Partition By "t_0"."grp") as "newCol", sum("t_0"."grp") OVER (Partition By "t_0"."grp") as "other" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::descending()->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Order By "table0_0".id DESC) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::descending()->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus());\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER (Order By "t_0"."id" DESC) as "newCol" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", string_agg("t_0"."name", Text\'\') OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "newCol" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus())',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus());\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "newCol" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "newCol", sum("table0_0".id) OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "other" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", string_agg("t_0"."name", Text\'\') OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "newCol", sum("t_0"."id") OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "other" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],height:Integer[0..1]\n'+
+                            '1,2,A,11\n'+
+                            '2,1,B,12\n'+
+                            '3,3,C,12\n'+
+                            '4,3,B,11\n'+
+                            '5,2,B,13\n'+
+                            '6,1,C,12\n'+
+                            '7,3,A,13\n'+
+                            '8,1,B,14\n'+
+                            '9,1,C,11\n'+
+                            '10,2,D,11\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over([~name->meta::pure::functions::relation::ascending(), ~height->meta::pure::functions::relation::ascending()]), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])',
+                                 '',
+                                 'Unexpected token',
+                                 'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1],height:Integer[0..1]\n'+
+                            '1,2,A,11\n'+
+                            '2,1,B,12\n'+
+                            '3,3,C,12\n'+
+                            '4,3,B,11\n'+
+                            '5,2,B,13\n'+
+                            '6,1,C,12\n'+
+                            '7,3,A,13\n'+
+                            '8,1,B,14\n'+
+                            '9,1,C,11\n'+
+                            '10,2,D,11\n'+
+                            '}#->meta::pure::functions::relation::filter(x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$x.id < 9)->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over([~name->meta::pure::functions::relation::ascending(), ~height->meta::pure::functions::relation::ascending()]), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])',
+                                 '',
+                                 'Unexpected token',
+                                 'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", lead("table0_0".id) OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "newCol", first_value("table0_0".name) OVER (Partition By "table0_0".grp Order By "table0_0".id DESC) as "other" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"',
+                            'Execution error at ??, "Error during dynamic reactivation: Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_"',
+                            'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", lead("t_0"."id") OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "newCol", first_value("t_0"."name") OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC) as "other" from t as "t_0"',
+                            'Execution error at ??, "Error during dynamic reactivation: Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_"',
+                            'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus())->meta::pure::functions::relation::extend(~other:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Integer[1])[1]|meta::pure::functions::math::floor($x.newCol->meta::pure::functions::multiplicity::toOne() / $x.id->meta::pure::functions::multiplicity::toOne()))',
+                            'select "subselect"."id" as "id", "subselect"."grp" as "grp", "subselect"."name" as "name", "subselect"."newCol" as "newCol", cast(floor(((1.0 * "subselect"."newCol") / "subselect"."id")) as INTEGER) as "other" from (select "table0_1".id as "id", "table0_1".grp as "grp", "table0_1".name as "name", sum("table0_1".id) OVER () as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_1") as "subselect"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' let t2 = $t->meta::pure::functions::relation::extend(~newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus());\n'+
+                            ' $t2->meta::pure::functions::relation::extend(~other:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Integer[1])[1]|meta::pure::functions::math::floor($x.newCol->meta::pure::functions::multiplicity::toOne() / $x.id->meta::pure::functions::multiplicity::toOne()));\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"), \n'+
+                            't2 AS (select "t_0"."id", "t_0"."grp", "t_0"."name", sum("t_0"."id") OVER () as "newCol" from t as "t_0") \n'+
+                            'select "t2_0"."id", "t2_0"."grp", "t2_0"."name", "t2_0"."newCol", cast(floor(((1.0 * "t2_0"."newCol") / "t2_0"."id")) as INTEGER) as "other" from t2 as "t2_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        revError('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],grp2:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,2,A\n'+
+                            '2,1,1,B\n'+
+                            '3,3,3,C\n'+
+                            '4,4,4,D\n'+
+                            '5,2,2,E\n'+
+                            '6,1,2,F\n'+
+                            '7,3,3,G\n'+
+                            '8,1,1,H\n'+
+                            '9,5,5,I\n'+
+                            '10,0,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~[grp,grp2]->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".grp2 as "grp2", "table0_0".name as "name", lead("table0_0".id) OVER (Partition By "table0_0".grp,"table0_0".grp2 Order By "table0_0".id DESC) as "newCol", first_value("table0_0".name) OVER (Partition By "table0_0".grp,"table0_0".grp2 Order By "table0_0".id DESC) as "other" from csv(\'id,grp,grp2,name\n1,2,2,A\n2,1,1,B\n3,3,3,C\n4,4,4,D\n5,2,2,E\n6,1,2,F\n7,3,3,G\n8,1,1,H\n9,5,5,I\n10,0,0,J\') as "table0_0"',
+                            'Execution error at ??, "Error during dynamic reactivation: Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_"',
+                            'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        revError('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],grp2:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,2,A\n'+
+                            '2,1,1,B\n'+
+                            '3,3,3,C\n'+
+                            '4,4,4,D\n'+
+                            '5,2,2,E\n'+
+                            '6,1,2,F\n'+
+                            '7,3,3,G\n'+
+                            '8,1,1,H\n'+
+                            '9,5,5,I\n'+
+                            '10,0,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~[grp,grp2]->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".grp2 as "grp2", "table0_0".name as "name" from csv(\'id,grp,grp2,name\n1,2,2,A\n2,1,1,B\n3,3,3,C\n4,4,4,D\n5,2,2,E\n6,1,2,F\n7,3,3,G\n8,1,1,H\n9,5,5,I\n10,0,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."grp2", "t_0"."name", lead("t_0"."id") OVER (Partition By "t_0"."grp","t_0"."grp2" Order By "t_0"."id" DESC) as "newCol", first_value("t_0"."name") OVER (Partition By "t_0"."grp","t_0"."grp2" Order By "t_0"."id" DESC) as "other" from t as "t_0"',
+                            'Execution error at ??, "Error during dynamic reactivation: Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_"',
+                            'Not Implemented for function: first_Relation_1___Window_1__T_1__T_$0_1$_'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp Order By "table0_0".id DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::ascending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp Order By "table0_0".id ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") \n'+
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", string_agg("t_0"."name", Text\'\') OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_',
+                      [
+                        rev('|#TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", string_agg("table0_0".name, Text\'\') OVER (Partition By "table0_0".grp Order By "table0_0".id DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol", sum("table0_0".id) OVER (Partition By "table0_0".grp Order By "table0_0".id DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "other" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_',
+                      [
+                        rev('|let t = #TDS{\n'+
+                            'id:Integer[0..1],grp:Integer[0..1],name:String[0..1]\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J\n'+
+                            '}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()]);\n'+
+                            '',
+                            'WITH t AS (select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name" from csv(\'id,grp,name\n1,2,A\n2,1,B\n3,3,C\n4,4,D\n5,2,E\n6,1,F\n7,3,G\n8,1,H\n9,5,I\n10,0,J\') as "table0_0") '+ 
+                            'select "t_0"."id", "t_0"."grp", "t_0"."name", string_agg("t_0"."name", Text\'\') OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "newCol", sum("t_0"."id") OVER (Partition By "t_0"."grp" Order By "t_0"."id" DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "other" from t as "t_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_',
+                      [
+                        rev('|$tds->meta::pure::functions::relation::extend(~passthru:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload)->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", "table0_0".payload as "passthru" from csv(\'id,payload\n     1,"[1,2,3]"\n     2,"[4,5,6]"\n     3,"[7,8,9]"\n     4,"[10,11,12]"\n     5,"[13,14,15]"\') as "table0_0" order by "id"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_',
+                      [
+                        rev('|$tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(0))->meta::pure::functions::relation::extend(~atCol1:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], atCol0:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(1))',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->0) as TEXT) as JSON) as "atCol0", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->1) as TEXT) as JSON) as "atCol1" from csv(\'id,payload\n     1,"[1,2,3]"\n     2,"[4,5,6]"\n     3,"[7,8,9]"\n     4,"[10,11,12]"\n     5,"[13,14,15]"\') as "table0_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_',
+                      [
+                        revError('|$tds->meta::pure::functions::relation::extend(~[booleanKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'boolean\'),integerKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'integer\'),stringKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'string\')])',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast(json_extract_path("table0_0".payload, Text\'boolean\') as TEXT) as JSON) as "booleanKey", cast(cast(json_extract_path("table0_0".payload, Text\'integer\') as TEXT) as JSON) as "integerKey", cast(cast(json_extract_path("table0_0".payload, Text\'string\') as TEXT) as JSON) as "stringKey" from csv(\'id,payload\n     1,"{""boolean"":true, ""integer"":1,""string"":""hello""}"\n     2,"{""boolean"":false,""integer"":2,""string"":""world""}"\n     3,"{""boolean"":true, ""integer"":3,""string"":""world""}"\') as "table0_0"',
+                            'Can\'t find a match for function \'meta::pure::functions::variant::navigation::get(String[0..1],String[1])\'.\nFunctions that can match if parameter types or multiplicities are changed:\n		get(Map<U, V>[1],U[1]):V[0..1]\n		get(Variant[0..1],String[1]):Variant[0..1]\n		get(Variant[0..1],Integer[1]):Variant[0..1]\n',
+                            ''
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_',
+                      [
+                        noRev('|$tds->meta::pure::functions::relation::extend(~divBy2:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::filter(t|$t->meta::pure::functions::math::mod(2) == 0)->meta::pure::functions::variant::convert::toVariant())')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_',
+                      [
+                        noRev('|$tds->meta::pure::functions::relation::extend(~payloadMod:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::map(t: Integer[1]|$t->meta::pure::functions::math::mod(2))->meta::pure::functions::variant::convert::toVariant())')
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_',
+                      [
+                        noRev('|$tds->meta::pure::functions::relation::extend(~payloadFoldMult:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::fold({t: Integer[1], v: Integer[1]|$t * $v}, 1))')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::transformation::extend::exec():Boolean[1]
+{
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendInt(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendFloat(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testVariantColumn(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testVariantColumn_filter(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testVariantColumn_map(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::relation::tests::extend::testVariantColumn_fold(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -33,3 +33,8 @@ function meta::external::query::sql::reversePCT::tests::relation::iteration::fil
                  ]
     )
 }
+
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::exec():Boolean[1]
+{
+   meta::pure::functions::relation::tests::filter::testSimpleFilterShared(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

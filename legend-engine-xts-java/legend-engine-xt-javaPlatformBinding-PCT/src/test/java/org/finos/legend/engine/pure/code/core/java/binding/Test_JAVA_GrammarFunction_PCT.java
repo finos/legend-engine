@@ -79,6 +79,9 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\"", AdapterQualifier.needsInvestigation),
 
+            // Divide
+            one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "\"\nexpected: 0.5238095238095238\nactual:   0.5\""),
+
             // String plus
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"", AdapterQualifier.needsInvestigation)

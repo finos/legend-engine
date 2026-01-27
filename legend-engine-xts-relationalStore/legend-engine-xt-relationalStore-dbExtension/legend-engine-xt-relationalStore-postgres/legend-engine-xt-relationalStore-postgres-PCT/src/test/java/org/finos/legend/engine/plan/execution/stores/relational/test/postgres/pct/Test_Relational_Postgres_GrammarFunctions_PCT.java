@@ -38,7 +38,7 @@ public class Test_Relational_Postgres_GrammarFunctions_PCT extends PCTReportConf
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Not
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\"", AdapterQualifier.needsImplementation),
 
             // Eq
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
@@ -62,9 +62,9 @@ public class Test_Relational_Postgres_GrammarFunctions_PCT extends PCTReportConf
 
             // Filter
             one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres", AdapterQualifier.needsImplementation),
 
             // First
             one("meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_", "Expected at most one object, but found many", AdapterQualifier.needsImplementation),
@@ -79,22 +79,20 @@ public class Test_Relational_Postgres_GrammarFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_", "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:", AdapterQualifier.unsupportedFeature),
 
             // Range
-            one("meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_", "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
 
             // Size
-            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet", AdapterQualifier.needsImplementation),
+            one("meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             // Compare
-            pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::lang::tests::compare", "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
 
             // Minus
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\"\nexpected: -4.0D\nactual:   -4.0\"", AdapterQualifier.needsInvestigation),
@@ -113,7 +111,7 @@ public class Test_Relational_Postgres_GrammarFunctions_PCT extends PCTReportConf
 
             // Plus (String)
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification", AdapterQualifier.needsInvestigation),
 
             // Let

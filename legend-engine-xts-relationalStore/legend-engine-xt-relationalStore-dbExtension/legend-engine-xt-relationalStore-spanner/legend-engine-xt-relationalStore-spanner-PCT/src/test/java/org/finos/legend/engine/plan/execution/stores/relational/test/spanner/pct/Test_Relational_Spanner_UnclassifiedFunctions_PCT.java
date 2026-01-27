@@ -39,7 +39,7 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //hash
-            one("meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function md5(text) is not supported - Statement: 'select md5(Text'Hello, World!')'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function md5(text) is not supported - Statement: 'select md5(Text'Hello, World!')'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function sha1(text) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select sha1(Text'Hello, World!')'", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function sha256(text) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select sha256(Text'Hello, World!')'", AdapterQualifier.needsInvestigation),
 
@@ -68,19 +68,19 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_", "\"[unsupported-api] The function 'encodeBase64' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             //jaroWinklersimilarity
-            pack("meta::pure::functions::string::tests::jaroWinklerSimilarity", "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::jaroWinklerSimilarity", "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             //levenshteindistance
-            pack("meta::pure::functions::string::tests::levenshteinDistance", "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::levenshteinDistance", "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             //lpad
-            one("meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: Third argument (pad pattern) for LPAD/RPAD cannot be empty - Statement: 'select lpad(Text'abcd', 10, Text'')'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: Third argument (pad pattern) for LPAD/RPAD cannot be empty - Statement: 'select lpad(Text'abcd', 10, Text'')'", AdapterQualifier.needsInvestigation),
 
             //rpad
-            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: Third argument (pad pattern) for LPAD/RPAD cannot be empty - Statement: 'select rpad(Text'abcd', 10, Text'')'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: Third argument (pad pattern) for LPAD/RPAD cannot be empty - Statement: 'select rpad(Text'abcd', 10, Text'')'", AdapterQualifier.needsInvestigation),
 
             //matches
-            pack("meta::pure::functions::string::tests::matches", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\"", AdapterQualifier.unsupportedFeature),
+            pack("meta::pure::functions::string::tests::matches", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
 
             //splitpart
             pack("meta::pure::functions::string::tests::splitPart", "NOT_FOUND: [ERROR] function split_part", AdapterQualifier.needsInvestigation),
@@ -96,7 +96,7 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation),
 
             //currentUserId
-            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: [ERROR] syntax error at or near \"(\" - Statement: 'select CURRENT_USER()'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: [ERROR] syntax error at or near \"(\" - Statement: 'select CURRENT_USER()'", AdapterQualifier.needsInvestigation),
 
             // regexp
             pack("meta::pure::functions::string::tests::regexpCount", "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation),
