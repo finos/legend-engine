@@ -685,12 +685,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-arrow-runtime</artifactId>
             <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.flatbuffers</groupId>
-                    <artifactId>flatbuffers-java</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

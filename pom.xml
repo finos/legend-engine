@@ -174,6 +174,7 @@
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
         <dropwizard.version>1.3.29</dropwizard.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
+        <flatbuffers-java.version>24.3.25</flatbuffers-java.version>
         <freemarker.version>2.3.34</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
@@ -3848,6 +3849,12 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpcore</artifactId>
                 <version>${httpcore.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Needed to resolve dependency convergence issue -->
+                <groupId>com.google.flatbuffers</groupId>
+                <artifactId>flatbuffers-java</artifactId>
+                <version>${flatbuffers-java.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.freemarker</groupId>
