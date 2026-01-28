@@ -14,22 +14,24 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement;
 
-import java.security.PrivilegedAction;
-import javax.security.auth.Subject;
-
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSet;
-import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
+import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+import java.util.Optional;
 
 public class LegendStatement implements PostgresStatement
 {
 
-    private LegendExecution client;
+    private final LegendExecution client;
     private LegendResultSet legendResultSet;
-    private Identity identity;
+    private final Identity identity;
     private final String database;
     private final String options;
 
@@ -44,13 +46,19 @@ public class LegendStatement implements PostgresStatement
     @Override
     public boolean execute(String query) throws Exception
     {
-        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        Optional<LegendKerberosCredential> legendKerberosCredential = identity.getCredential(LegendKerberosCredential.class);
+        Optional<LegendConstrainedKerberosCredential> legendConstrainedKerberosCreds = identity.getCredential(LegendConstrainedKerberosCredential.class);
+        if (legendKerberosCredential.isPresent())
         {
-            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            LegendKerberosCredential credential = legendKerberosCredential.get();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) () ->
-            {
-                return executePrivate(query);
-            });
+                    executePrivate(query));
+        }
+        else if (legendConstrainedKerberosCreds.isPresent())
+        {
+            LegendConstrainedKerberosCredential credential = legendConstrainedKerberosCreds.get();
+            return Subject.doAs(credential.getMergedSubject(), (PrivilegedAction<Boolean>) () ->
+                    executePrivate(query));
         }
         else
         {
@@ -77,7 +85,6 @@ public class LegendStatement implements PostgresStatement
         if (legendResultSet != null)
         {
             legendResultSet.close();
-            ;
         }
     }
 }

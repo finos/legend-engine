@@ -115,7 +115,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.73.0</legend.pure.version>
-        <legend.shared.version>0.30.0</legend.shared.version>
+        <legend.shared.version>0.31.3</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.12.0</legend.pylegend.version>
 
@@ -205,6 +205,7 @@
         <logback.version>1.2.3</logback.version>
         <minio.version>8.5.5</minio.version>
         <mockito-core.version>4.4.0</mockito-core.version>
+        <mockito-inline.version>5.2.0</mockito-inline.version>
         <mongodb.version>5.3.1</mongodb.version>
         <opencsv.version>4.6</opencsv.version>
         <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
@@ -3419,6 +3420,12 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito-inline.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
