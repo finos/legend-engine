@@ -350,7 +350,10 @@ function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar
   $v->match(
     [
       s:SimpleFunctionExpression[1]| ^$s(parametersValues = $s.parametersValues->map(p| $p->reprocessVar($oldVar))->cast(@ValueSpecification)),
-      v:VariableExpression[1]| if(($oldVar->isNotEmpty() && $v.genericType.rawType == $oldVar->toOne().second.rawType) && $v.name=='this' ,| ^$v(name=$oldVar->toOne().first);, |$v);,
+      v:VariableExpression[1]| if($oldVar->isNotEmpty() && $v.name=='this' ,
+                                  | assert($v.genericType.rawType == $oldVar->toOne().second.rawType, 'Cannot replace var $' + $v.name + ' of type ' + $v.genericType.rawType.name->toOne() + ' with var $' + $oldVar->toOne().first + ' of type ' +   $oldVar->toOne().second.rawType.name->toOne());
+                                    ^$v(name=$oldVar->toOne().first);, 
+                                  | $v);,
       srv: StoreMappingRoutedValueSpecification[1]|  ^$srv(value= $srv.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
       f:FunctionRoutedValueSpecification[1]|^$f(value=$f.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
       l:LambdaFunction<Any>[1]|^$l(expressionSequence=$l.expressionSequence->map(es| $es->reprocessVar($oldVar))->cast(@ValueSpecification));,
@@ -400,6 +403,8 @@ function meta::pure::mapping::modelToModel::chain::inlineQualifiedProperties(vs:
 
                               ),
       ve : VariableExpression[1] | let resolved = $ve->resolve($vars, $openVars); if($resolved->isEmpty(), | $ve, | $resolved->toOne());,
+      srv: StoreMappingRoutedValueSpecification[1]|  let value = $srv.value->inlineQualifiedProperties($vars, $openVars, $oldVar, $extensions);
+                                                     ^$srv(value = $value);,
       v  : ValueSpecification[1] | $v
    ]);
 }
