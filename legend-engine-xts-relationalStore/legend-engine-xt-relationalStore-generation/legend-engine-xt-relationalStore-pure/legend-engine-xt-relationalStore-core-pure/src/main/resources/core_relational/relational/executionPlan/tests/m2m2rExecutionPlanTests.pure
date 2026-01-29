@@ -20,7 +20,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   let runtime = getM2M2RRuntime();
   let mapping = ModelToModelMapping;
   let plan = planToString($query, $mapping, $runtime);
-  let expected = 'Relational\n(\n  type = TDS[(fullName, String, VARCHAR(8192), "")]\n  resultColumns = [("fullName", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) as "fullName" from S.Person as "root"\n  connection = DatabaseConnection(type = "H2")\n)\n';
+  let expected = 'Relational\n(\n  type = TDS[(fullName, String, VARCHAR(8192), "")]\n  resultColumns = [("fullName", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) as "fullName" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
   assertEquals($expected, $plan);
 }
 
@@ -30,7 +30,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   let runtime = getM2M2RRuntime();
   let mapping = ModelToModelMapping;
   let plan = planToString($query, $mapping, $runtime);
-  let expected = 'Relational\n(\n  type = TDS[(isPeterSmith, Boolean, BIT, "")]\n  resultColumns = [("isPeterSmith", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) = \'name\' as "isPeterSmith" from S.Person as "root"\n  connection = DatabaseConnection(type = "H2")\n)\n';
+  let expected = 'Relational\n(\n  type = TDS[(isPeterSmith, Boolean, BIT, "")]\n  resultColumns = [("isPeterSmith", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) = \'Peter Smith\' as "isPeterSmith" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
   assertEquals($expected, $plan);
 }
 
@@ -70,8 +70,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
     '                   (\n' +
     '                     type = meta::pure::metamodel::type::Any\n' +
     '                     resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("lastName", VARCHAR(200))]\n' +
-    '                     sql = select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from S.Person as "root"\n' +
-    '                     connection = DatabaseConnection(type = "H2")\n' +
+    '                     sql = select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from Person as "root"\n' +
+    '                     connection = TestDatabaseConnection(type = "H2")\n' +
     '                   )\n' +
     '                children = [\n' +
     '                   \n' +
@@ -103,7 +103,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   let runtime = getM2M2RRuntime();
   let mapping = ModelToModelMapping;
   let plan = planToString($query, $mapping, $runtime);
-  let expected = 'Relational\n(\n  type = TDS[(firstName, String, VARCHAR(8192), "")]\n  resultColumns = [("firstName", VARCHAR(200))]\n  sql = select "root".firstName as "firstName" from S.Person as "root"\n  connection = DatabaseConnection(type = "H2")\n)\n';
+  let expected = 'Relational\n(\n  type = TDS[(firstName, String, VARCHAR(8192), "")]\n  resultColumns = [("firstName", VARCHAR(200))]\n  sql = select "root".firstName as "firstName" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
   assertEquals($expected, $plan);
 }
 
@@ -113,8 +113,55 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   let runtime = getM2M2RRuntime();
   let mapping = ModelToModelMapping;
   let plan = planToString($query, $mapping, $runtime);
-  let expected = 'Relational\n(\n  type = TDS[(isPeterSmith, Boolean, BIT, "")]\n  resultColumns = [("isPeterSmith", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) = \'name\' as "isPeterSmith" from S.Person as "root"\n  connection = DatabaseConnection(type = "H2")\n)\n';
+  let expected = 'Relational\n(\n  type = TDS[(isPeterSmith, Boolean, BIT, "")]\n  resultColumns = [("isPeterSmith", "")]\n  sql = select concat("root".firstName, \' \', "root".lastName) = \'Peter Smith\' as "isPeterSmith" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
   assertEquals($expected, $plan);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithNestedDerivedProperty() : Boolean[1]
+{
+  let query = {|PersonPeterSmith.all()->project(
+    [
+      x|$x.details.firstName,
+      x|$x.details.lastName,
+      x|$x.isPeterSmith
+    ], 
+    [
+      'firstName',
+      'lastName',
+      'isPeterSmith'
+    ])};
+  let runtime = getM2M2RRuntime();
+  let mapping = ModelToModelMapping;
+  let setupData = [
+    'DROP TABLE IF EXISTS Person;',
+    'CREATE TABLE Person(id INT, firstName VARCHAR(200), lastName VARCHAR(200));',
+    'INSERT INTO Person(id, firstName, lastName) values (1, \'Grace\', \'Davis\');',
+    'INSERT INTO Person(id, firstName, lastName) values (2, \'Alice\', \'Johnson\');',
+    'INSERT INTO Person(id, firstName, lastName) values (3, \'Bob\', \'Williams\');',
+    'INSERT INTO Person(id, firstName, lastName) values (4, \'Charlie\', \'Brown\');',
+    'INSERT INTO Person(id, firstName, lastName) values (5, \'Diana\', \'Jones\');',
+    'INSERT INTO Person(id, firstName, lastName) values (6, \'Eve\', \'Garcia\');',
+    'INSERT INTO Person(id, firstName, lastName) values (7, \'Frank\', \'Miller\');',
+    'INSERT INTO Person(id, firstName, lastName) values (8, \'Peter\', \'Smith\');',
+    'INSERT INTO Person(id, firstName, lastName) values (9, \'Henry\', \'Rodriguez\');',
+    'INSERT INTO Person(id, firstName, lastName) values (10, \'Ivy\', \'Martinez\');',
+    'INSERT INTO Person(id, firstName, lastName) values (11, \'Jack\', \'Hernandez\');'
+  ];
+  let response = generateAndExecutePlan($query, $mapping, $runtime, $setupData);
+  let expected =  '['+
+                  '{"firstName":"Grace","lastName":"Davis","isPeterSmith":false},'+
+                  '{"firstName":"Alice","lastName":"Johnson","isPeterSmith":false},'+
+                  '{"firstName":"Bob","lastName":"Williams","isPeterSmith":false},'+
+                  '{"firstName":"Charlie","lastName":"Brown","isPeterSmith":false},'+
+                  '{"firstName":"Diana","lastName":"Jones","isPeterSmith":false},'+
+                  '{"firstName":"Eve","lastName":"Garcia","isPeterSmith":false},'+
+                  '{"firstName":"Frank","lastName":"Miller","isPeterSmith":false},'+
+                  '{"firstName":"Peter","lastName":"Smith","isPeterSmith":true},'+
+                  '{"firstName":"Henry","lastName":"Rodriguez","isPeterSmith":false},'+
+                  '{"firstName":"Ivy","lastName":"Martinez","isPeterSmith":false},'+
+                  '{"firstName":"Jack","lastName":"Hernandez","isPeterSmith":false}'+
+                  ']';
+  assertEquals($expected, $response);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::planGraphFetchWithNestedDerivedProperty() : Boolean[1]
@@ -153,8 +200,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
     '                   (\n' +
     '                     type = meta::pure::metamodel::type::Any\n' +
     '                     resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("lastName", VARCHAR(200))]\n' +
-    '                     sql = select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from S.Person as "root"\n' +
-    '                     connection = DatabaseConnection(type = "H2")\n' +
+    '                     sql = select "root".id as "pk_0", "root".firstName as "firstName", "root".lastName as "lastName" from Person as "root"\n' +
+    '                     connection = TestDatabaseConnection(type = "H2")\n' +
     '                   )\n' +
     '                children = [\n' +
     '                   \n' +
@@ -186,6 +233,15 @@ function  meta::pure::executionPlan::m2m2r::tests::planToString(query: FunctionD
   ->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions())
 }
 
+function  meta::pure::executionPlan::m2m2r::tests::generateAndExecutePlan(query: FunctionDefinition<Any>[1], mapping: meta::pure::mapping::Mapping[1], runtime: meta::core::runtime::Runtime[1], dbSetupSql: String[*]) : String[1]
+{
+  let connection = $runtime.connectionStores->at(1);
+  $dbSetupSql->map(sqlString | $sqlString->meta::relational::metamodel::execute::executeInDb($connection));
+  let plan = meta::pure::executionPlan::executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
+  $plan->meta::pure::executionPlan::execute([], meta::relational::extension::relationalExtensions()).values->cast(@TabularDataSet)->toOne()->meta::json::tdsToJSONKeyValueObjectString()->makeString();
+}
+
+
 Class meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith
 {
   details : Person[1];
@@ -205,7 +261,7 @@ Class meta::pure::executionPlan::m2m2r::tests::Person
   } : String[1];
   isName(name : String[1])
   {
-    $this.fullName == 'name'
+    $this.fullName == $name
   } : Boolean[1];
 }
 
@@ -218,8 +274,6 @@ Class meta::pure::executionPlan::m2m2r::tests::_Person
 ###Relational
 Database meta::pure::executionPlan::m2m2r::tests::DB
 (
-  Schema S
-  (
     Table Person
     (
       id INTEGER PRIMARY KEY,
@@ -252,8 +306,8 @@ Mapping meta::pure::executionPlan::m2m2r::tests::RelationalMapping
 (
   _Person : Relational
   {
-    firstName : [DB] S.Person.firstName,
-    lastName : [DB] S.Person.lastName
+    firstName : [DB] Person.firstName,
+    lastName : [DB] Person.lastName
   }
 )
 
@@ -263,7 +317,9 @@ Mapping meta::pure::executionPlan::m2m2r::tests::RelationalMapping
 //-------------
 function meta::pure::executionPlan::m2m2r::tests::getH2Connection(): meta::external::store::relational::runtime::DatabaseConnection[1]
 {
-  ^meta::external::store::relational::runtime::DatabaseConnection(type=meta::relational::runtime::DatabaseType.H2)
+  ^meta::external::store::relational::runtime::TestDatabaseConnection(
+      type=meta::relational::runtime::DatabaseType.H2
+   )
 }
 
 function meta::pure::executionPlan::m2m2r::tests::getModelChainConnection(): meta::external::store::model::ModelChainConnection[1]
