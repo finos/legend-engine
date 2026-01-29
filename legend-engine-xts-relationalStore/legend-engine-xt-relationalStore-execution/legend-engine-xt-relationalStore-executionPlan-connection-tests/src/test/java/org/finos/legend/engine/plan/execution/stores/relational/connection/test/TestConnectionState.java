@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_AnonymousCredential", server.getPort());
         IdentityState identityState = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertEquals("testuser1", identityState.getIdentity().getName());
         assertNotNull(identityState.getCredentialSupplier());
@@ -97,7 +96,7 @@ public class TestConnectionState
         this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_AnonymousCredential", server.getPort());
         DataSourceWithStatistics identityState1 = ConnectionStateManager.getInstance().getDataSourceByPoolName(poolName);
         assertEquals("testuser1", identityState1.getIdentity().getName());
         assertNotNull(identityState1.getCredentialSupplier());
@@ -124,7 +123,7 @@ public class TestConnectionState
         Connection connection = this.connectionManagerSelector.getDatabaseConnection(identity, database1);
 
         //verify connection state for user1 exists
-        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential", server.getPort());
+        String poolName = String.format("DBPool_Static_host:127.0.0.1_port:%d_db:db1_type:TestDB_testuser1_AnonymousCredential", server.getPort());
         IdentityState identityState1 = ConnectionStateManager.getInstance().getConnectionStateManagerPOJO(poolName);
         assertEquals("testuser1", identityState1.getIdentity().getName());
         assertNotNull(identityState1.getCredentialSupplier());

@@ -52,9 +52,9 @@ public class TestPoolName extends TestConnectionManagement
         DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
 
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
-        assertTrue(pool1.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool1_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
+        assertTrue(pool1.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool1_AnonymousCredential"));
 
         String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
-        assertTrue(pool2.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool2_org\\.finos\\.legend\\.engine\\.shared\\.core\\.identity\\.credential\\.AnonymousCredential"));
+        assertTrue(pool2.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool2_AnonymousCredential"));
     }
 }

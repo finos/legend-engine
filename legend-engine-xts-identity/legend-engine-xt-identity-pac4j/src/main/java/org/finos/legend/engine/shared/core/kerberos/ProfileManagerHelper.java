@@ -24,7 +24,6 @@ import org.pac4j.core.profile.UserProfile;
 
 import javax.security.auth.Subject;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ProfileManagerHelper
 {
@@ -49,11 +48,8 @@ public class ProfileManagerHelper
     {
         if (pm != null)
         {
-            Optional<T> profile = pm.get(true);
-            if (profile.isPresent())
-            {
-                return Lists.fixedSize.with(profile.get());
-            }
+            return Lists.fixedSize.ofAll(pm.getAll(true));
+
         }
         return Lists.fixedSize.empty();
     }

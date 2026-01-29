@@ -22,12 +22,14 @@ import org.finos.legend.engine.identity.extension.kerberos.KerberosSubjectIdenti
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.pac4j.core.profile.CommonProfile;
 
-import java.util.List;
+import javax.security.auth.Subject;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class KerberosProfileIdentityFactory implements Pac4jIdentityFactory
@@ -45,7 +47,10 @@ public class KerberosProfileIdentityFactory implements Pac4jIdentityFactory
         Optional<KerberosProfile> kerberosProfileHolder = Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
         if (kerberosProfileHolder.isPresent())
         {
-            return new KerberosSubjectIdentityFactory().makeIdentity(kerberosProfileHolder.get().getSubject());
+            Map<String, Subject> subjects = new HashMap<>();
+            subjects.put(KerberosSubjectIdentityFactory.USER_SUBJECT, kerberosProfileHolder.get().getSubject());
+            subjects.put(KerberosSubjectIdentityFactory.SERVICE_SUBJECT, kerberosProfileHolder.get().getServiceSubject());
+            return new KerberosSubjectIdentityFactory().makeIdentity(subjects);
         }
 
         return Optional.empty();
@@ -63,6 +68,13 @@ public class KerberosProfileIdentityFactory implements Pac4jIdentityFactory
                 LegendKerberosCredential kerberosCredential = (LegendKerberosCredential) credential;
                 profiles.add(new KerberosProfile(kerberosCredential.getSubject(), null));
             }
+
+            else  if (credential instanceof LegendConstrainedKerberosCredential)
+            {
+                LegendConstrainedKerberosCredential kerberosCredential = (LegendConstrainedKerberosCredential) credential;
+                profiles.add(new KerberosProfile(kerberosCredential.getMergedSubject(), null));
+            }
+
             else if (credential instanceof AnonymousCredential)
             {
                 CommonProfile profile = new CommonProfile();
