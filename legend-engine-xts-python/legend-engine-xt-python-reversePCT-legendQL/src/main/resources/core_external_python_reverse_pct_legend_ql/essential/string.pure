@@ -307,6 +307,50 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
           rev('|1->meta::pure::functions::string::toString()', 'c(1).to_string()'),
           rev('|meta::pure::functions::string::toString(-1)', 'c(-1).to_string()')
         ]
+      ),
+      meta::pure::functions::string::tests::toString::testDateToString_Function_1__Boolean_1_->testRev(
+        [
+          rev('|%2014-01-01->meta::pure::functions::string::toString()','c(date(2014,1,1)).to_string()'),
+          noRev('|%2014-01->meta::pure::functions::string::toString()'),
+          noRev('|%2014->meta::pure::functions::string::toString()')
+        ]
+      ),
+      meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|^meta::pure::functions::collection::Pair<String, String>(first=\'a\', second=\'b\')->meta::pure::functions::string::toString()'),
+          noRev('|^meta::pure::functions::collection::Pair<String, Integer>(first=\'a\', second=1)->meta::pure::functions::string::toString()')
+        ]
+      ),
+
+      meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|\'(\' + $pairs->meta::pure::functions::collection::map(p: meta::pure::functions::collection::Pair<String, meta::pure::metamodel::type::Any>[1]|$p.toString())->meta::pure::functions::string::joinStrings(\',\') + \')\'')
+        ]
+      ),
+
+      meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|$str->meta::pure::functions::string::startsWith(\'Anonymous_\') || $str->meta::pure::functions::string::startsWith(\'@_\')')
+        ]
+      ),
+
+      meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::string::tests::toString::STR_Person->meta::pure::functions::string::toString()')
+        ]
+      ),
+
+      meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|meta::pure::functions::string::tests::toString::STR_GeographicEntityType->meta::pure::functions::string::toString()'),
+          noRev('|meta::pure::functions::string::tests::toString::STR_GeographicEntityType.CITY->meta::pure::functions::string::toString()')
+        ]
+      ),
+
+      meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|^meta::pure::functions::string::tests::toString::ClassWithComplexToString(errorType=meta::pure::functions::string::tests::toString::ErrorType.NoTonic, errorMessage=\'Sad times\')->meta::pure::functions::string::toString()')
+        ]
       )
     ]->combine()
   ]

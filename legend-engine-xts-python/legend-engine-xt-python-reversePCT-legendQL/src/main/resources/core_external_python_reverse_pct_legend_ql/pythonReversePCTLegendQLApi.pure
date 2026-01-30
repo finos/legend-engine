@@ -102,11 +102,15 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
     ->concatenate(
       pythonLegendQLReversesStandardBoolean()
     )
+    ->concatenate(
+      pythonLegendQLReversesStandardDate()
+    )
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
 {
   pythonLegendQLReversesUnclassifiedString()
+    ->concatenate(pythonLegendQLReversesUnclassifiedTbd())
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVariant(): ReversesForSource[*]
