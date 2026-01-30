@@ -350,8 +350,9 @@ function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar
   $v->match(
     [
       s:SimpleFunctionExpression[1]| ^$s(parametersValues = $s.parametersValues->map(p| $p->reprocessVar($oldVar))->cast(@ValueSpecification)),
-      v:VariableExpression[1]| if($oldVar->isNotEmpty() && $v.name=='this' ,
-                                  | assert($v.genericType.rawType == $oldVar->toOne().second.rawType, 'Cannot replace var $' + $v.name + ' of type ' + $v.genericType.rawType.name->toOne() + ' with var $' + $oldVar->toOne().first + ' of type ' +   $oldVar->toOne().second.rawType.name->toOne());
+      v:VariableExpression[1]| if(($oldVar->isNotEmpty() && $v.genericType.rawType == $oldVar->toOne().second.rawType) && $v.name=='this' ,
+                                  | //TODO: Consider adding assert here instead of silently avoiding replacement
+                                    //assert($v.genericType.rawType == $oldVar->toOne().second.rawType, 'Cannot replace var $' + $v.name + ' of type ' + $v.genericType.rawType.name->toOne() + ' with var $' + $oldVar->toOne().first + ' of type ' +   $oldVar->toOne().second.rawType.name->toOne());
                                     ^$v(name=$oldVar->toOne().first);, 
                                   | $v);,
       srv: StoreMappingRoutedValueSpecification[1]|  ^$srv(value= $srv.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
