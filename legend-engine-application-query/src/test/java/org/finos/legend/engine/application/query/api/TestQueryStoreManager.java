@@ -450,15 +450,13 @@ public class TestQueryStoreManager
         store.createQuery(TestQueryBuilder.create("3", "query3", currentUser).withLegacyExecutionContext().build(), currentUser);
 
         List<Query> allQueries = store.getAllQueries(0, 2);
-        Assert.assertEquals(3, allQueries.size());
+        Assert.assertEquals(2, allQueries.size());
         Assert.assertEquals("1", allQueries.get(0).id);
         Assert.assertEquals("2", allQueries.get(1).id);
-        Assert.assertEquals("3", allQueries.get(2).id);
 
-        List<Query> subQueries = store.getAllQueries(1, 3);
-        Assert.assertEquals(2, subQueries.size());
+        List<Query> subQueries = store.getAllQueries(1, 2);
+        Assert.assertEquals(1, subQueries.size());
         Assert.assertEquals("2", subQueries.get(0).id);
-        Assert.assertEquals("3", subQueries.get(1).id);
 
         // Test pagination limit
         int max = 1000;
@@ -482,7 +480,7 @@ public class TestQueryStoreManager
             expectedIds.add(String.valueOf(i));
         }
         expectedIds.sort(String::compareTo);
-        Assert.assertEquals(max, queries.size());
+        Assert.assertEquals(max - 1, queries.size());
         for (int i = 0; i < expectedIds.size() - 1; i++)
         {
             Assert.assertEquals(String.valueOf(expectedIds.get(i)), queries.get(i).id);
@@ -490,7 +488,7 @@ public class TestQueryStoreManager
         // Test exception if range exceeds max limit
         Assert.assertThrows(ApplicationQueryException.class, () -> store.getAllQueries(0, max + 1));
         // Test from == to
-        Assert.assertEquals(1, store.getAllQueries(10, 10).size());
+        Assert.assertEquals(0, store.getAllQueries(10, 10).size());
     }
 
     @Test
@@ -511,7 +509,7 @@ public class TestQueryStoreManager
         int fetched = 0;
         while (from < totalQueries)
         {
-            int to = Math.min(from + batchSize - 1, totalQueries);
+            int to = Math.min(from + batchSize, totalQueries);
             List<Query> batch = store.getAllQueries(from, to);
             Assert.assertTrue(batch.size() <= batchSize);
 
