@@ -120,7 +120,7 @@ public class ApplicationQuery
 
     @GET
     @Path("allQueries")
-    @ApiOperation(value = "Get all queries within the specified index range [from, to], inclusive")
+    @ApiOperation(value = "Get all queries within the specified index range [from, to)")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response getAllQueries(@QueryParam("from") int from, @QueryParam("to") int to)
     {

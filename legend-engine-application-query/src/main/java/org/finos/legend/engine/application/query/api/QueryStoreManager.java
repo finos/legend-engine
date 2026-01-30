@@ -359,15 +359,18 @@ public class QueryStoreManager
 
     public List<Query> getAllQueries(int from, int to)
     {
-        if (to - from + 1 > QUERY_BATCH_SIZE)
+        if (to - from > QUERY_BATCH_SIZE)
         {
             throw new ApplicationQueryException("Can't fetch more than " + QUERY_BATCH_SIZE + " queries at a time", Response.Status.BAD_REQUEST);
         }
         else if (from < 0 || to < from)
         {
             throw new ApplicationQueryException("Invalid pagination range", Response.Status.BAD_REQUEST);
+        } else if (from == to)
+        {
+            return new ArrayList<>();
         }
-        return LazyIterate.collect(this.getQueryCollection().find().sort(Sorts.ascending("id")).skip(from).limit(to - from + 1), this::documentToQuery).toList();
+        return LazyIterate.collect(this.getQueryCollection().find().sort(Sorts.ascending("id")).skip(from).limit(to - from), this::documentToQuery).toList();
     }
 
     public Query getQuery(String queryId)
