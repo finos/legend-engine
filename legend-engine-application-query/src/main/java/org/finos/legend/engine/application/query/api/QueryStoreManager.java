@@ -366,7 +366,8 @@ public class QueryStoreManager
         else if (from < 0 || to < from)
         {
             throw new ApplicationQueryException("Invalid pagination range", Response.Status.BAD_REQUEST);
-        } else if (from == to)
+        }
+        else if (from == to)
         {
             return new ArrayList<>();
         }
