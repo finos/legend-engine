@@ -33,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.Pack
 import org.finos.legend.engine.query.sql.api.schema.AddressableRelation;
 import org.finos.legend.engine.query.sql.api.schema.SchemaResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 import javax.security.auth.Subject;
@@ -42,6 +43,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.finos.legend.engine.postgres.protocol.wire.serialization.types.PGTypes.SQL_TO_PG_TYPES;
@@ -59,10 +61,17 @@ public class CatalogManager
         this.connection = connection;
 
         SchemaResult schemaResult;
-        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        Optional<LegendKerberosCredential> legendKerberosCredential = identity.getCredential(LegendKerberosCredential.class);
+        Optional<LegendConstrainedKerberosCredential> legendConstrainedKerberosCreds = identity.getCredential(LegendConstrainedKerberosCredential.class);
+        if (legendKerberosCredential.isPresent())
         {
-            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            LegendKerberosCredential credential = legendKerberosCredential.get();
             schemaResult = Subject.doAs(credential.getSubject(), (PrivilegedAction<SchemaResult>) () -> legendExecution.getProjectSchema(databaseFromConnectionString));
+        }
+        else if (legendConstrainedKerberosCreds.isPresent())
+        {
+            LegendConstrainedKerberosCredential credential = legendConstrainedKerberosCreds.get();
+            schemaResult = Subject.doAs(credential.getMergedSubject(), (PrivilegedAction<SchemaResult>) () -> legendExecution.getProjectSchema(databaseFromConnectionString));
         }
         else
         {

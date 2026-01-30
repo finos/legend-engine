@@ -14,33 +14,42 @@
 
 package org.finos.legend.engine.shared.core.identity.credential;
 
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.security.auth.Subject;
 import java.security.PrivilegedActionException;
-import java.util.Objects;
 
 public class KerberosUtils
 {
 
     public static <T> T doAs(final Identity identity, final java.security.PrivilegedAction<T> action)
     {
-        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
-        return Subject.doAs(wrapper.getSubject(), action);
+        Subject subject = getSubjectFromIdentity(identity);
+        return Subject.doAs(subject, action);
     }
 
     public static <T> T doAs(final Identity identity, final java.security.PrivilegedExceptionAction<T> action) throws PrivilegedActionException
     {
-        LegendKerberosCredential wrapper = identity.getCredential(LegendKerberosCredential.class).get();
-        return Subject.doAs(wrapper.getSubject(), action);
+        Subject subject = getSubjectFromIdentity(identity);
+        return Subject.doAs(subject, action);
     }
 
     public static Subject getSubjectFromIdentity(Identity identity)
     {
-        return LazyIterate.selectInstancesOf(identity.getCredentials(), LegendKerberosCredential.class)
-                .select(Objects::nonNull)
-                .collect(LegendKerberosCredential::getSubject)
-                .getFirst();
+
+        return identity.getCredentials().stream()
+                .filter(credential -> credential instanceof LegendKerberosCredential
+                        || credential instanceof LegendConstrainedKerberosCredential)
+                .map(credential ->
+                {
+                    if (credential instanceof LegendKerberosCredential)
+                    {
+                        return  ((LegendKerberosCredential) credential).getSubject();
+                    }
+                    return ((LegendConstrainedKerberosCredential) credential).getMergedSubject();
+                })
+                .findFirst()
+                .orElse(null);
+
     }
-}
+    }
