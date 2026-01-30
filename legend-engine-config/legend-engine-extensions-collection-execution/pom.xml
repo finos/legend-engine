@@ -70,6 +70,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-clickhouse-execution</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-databricks-execution</artifactId>
         </dependency>
         <dependency>
