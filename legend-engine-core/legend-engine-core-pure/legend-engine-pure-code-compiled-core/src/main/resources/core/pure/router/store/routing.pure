@@ -921,6 +921,13 @@ function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1],
     $vs->evaluateAndDeactivate()->match([e: StoreMappingRoutedValueSpecification[1] | let castClass   = $subTypeSets->at(0).class;
                                                                                       let routedClass = $e.genericType.rawType->toOne();
                                                                                       if($castClass->_subTypeOf($routedClass),| ^$e(sets=$subTypeSets, id=$subTypeId, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $extensions));,|$e);,
+                                         f: FunctionRoutedValueSpecification[1] | let updatedValue = $f.value->evaluateAndDeactivate()->match([
+                                                                                                          i: InstanceValue[1] | ^$i(values = $i.values->map(v |
+                                                                                                                                      $v->match([
+                                                                                                                                          fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence = $fd.expressionSequence->map(e|$e->propogateSubType($subTypeId, $subTypeSets, $extensions)))
+                                                                                                                                              ]))
+                                                                                                                                    )]);
+                                                                                  ^$f(value = $updatedValue);,
                                          f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
                                                                             |$f,
                                                                             |let func = $f.func;
