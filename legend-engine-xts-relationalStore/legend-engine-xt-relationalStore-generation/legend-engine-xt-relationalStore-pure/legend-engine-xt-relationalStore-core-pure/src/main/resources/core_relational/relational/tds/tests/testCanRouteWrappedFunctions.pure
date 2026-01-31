@@ -25,6 +25,8 @@ Class meta::relational::tests::tds::window::routing::ACCOUNT
 
 }
 
+// Test reflects GROUP BY subselect isolation when window partition/order references
+// computed expressions (char_length("root".id) in ORDER BY is not a simple TableAliasColumn)
 function <<test.Test>> meta::relational::tests::tds::window::routing::testExecutionPlanGeneration():Boolean[1]
 {
   let plan =  {limit:Integer[1]|$limit->function1()->function2()->function3()}
@@ -41,8 +43,8 @@ function <<test.Test>> meta::relational::tests::tds::window::routing::testExecut
                     '    Relational\n'+
                     '    (\n'+
                     '      type = TDS[(firstName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(200), ""), (id, Integer, BIGINT, ""), (ageSum, Integer, INT, ""), (olapcolumn, Integer, INT, "")]\n'+
-                    '      resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200)), ("id", ""), ("ageSum", ""), ("olapcolumn", "")]\n'+
-                    '      sql = select "root".firstname as "firstName", "root".lastname as "lastName", char_length("root".id) as "id", sum("root".age) as "ageSum", count(sum("root".age)) over (partition by "root".firstname, "root".lastname order by char_length("root".id) asc nulls last) as "olapcolumn" from AccountSchema.AccountTable as "root" where "root".age > ${limit} and "root".firstname like \'D%\' group by "firstName", "lastName", "id"\n'+
+                    '      resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200)), ("id", INT), ("ageSum", INT), ("olapcolumn", "")]\n'+
+                    '      sql = select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."id" as "id", "subselect"."ageSum" as "ageSum", count("subselect"."ageSum") over (partition by "subselect"."firstName", "subselect"."lastName" order by "subselect"."id" asc nulls last) as "olapcolumn" from (select "root".firstname as "firstName", "root".lastname as "lastName", char_length("root".id) as "id", sum("root".age) as "ageSum" from AccountSchema.AccountTable as "root" where "root".age > ${limit} and "root".firstname like \'D%\' group by "firstName", "lastName", "id") as "subselect"\n'+
                     '      connection = TestDatabaseConnection(type = "H2")\n'+
                     '    )\n'+
                     '  )\n'+
