@@ -56,7 +56,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
             NYC,USA,15000,5000,15200
             SAN,USA,2000,2600,null
         #,
-        $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->sort([ascending(~city)]),
+        $res->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)->sort([ascending(~city)]),
         0.00001
     );
 }
@@ -89,7 +89,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
                 NYC,USA,15000,5000,15200
                 SAN,USA,2000,2600,null
             #,
-            $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)->sort([ascending(~city)]),
+            $res->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)->sort([ascending(~city)]),
             0.00001
     );
 }
@@ -120,7 +120,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
               2011,3000,5000,2600
               2012,null,15200,null
           #,
-          $res->cast(@Relation<(year:Integer,'UK__|__LDN__|__sum':Integer,'USA__|__NYC__|__sum':Integer,'USA__|__SAN__|__sum':Integer)>)->sort([ascending(~year)]),
+          $res->cast(@Relation<(year:Integer,'\'UK__|__LDN__|__sum\'':Integer,'\'USA__|__NYC__|__sum\'':Integer,'\'USA__|__SAN__|__sum\'':Integer)>)->sort([ascending(~year)]),
           0.00001
     );
 }
@@ -153,7 +153,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
               2011,3000,5000,2600
               2012,null,15200,null
           #,
-          $res->cast(@Relation<(year:Number,'UK__|__LDN__|__sum':Number,'USA__|__NYC__|__sum':Number,'USA__|__SAN__|__sum':Number)>)->sort([ascending(~year)]),
+          $res->cast(@Relation<(year:Number,'\'UK__|__LDN__|__sum\'':Number,'\'USA__|__NYC__|__sum\'':Number,'\'USA__|__SAN__|__sum\'':Number)>)->sort([ascending(~year)]),
           0.00001
       );
 }
@@ -184,8 +184,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
             NYC,USA,15000,2,5000,1,15200,2
             SAN,USA,2000,1,2600,2,null,null
         #,
-        $res->cast(@Relation<(city:String,country:String,'2000__|__sum':Integer,'2000__|__count':Integer,'2011__|__sum':Integer,'2011__|__count':Integer,'2012__|__sum':Integer,'2012__|__count':Integer)>)
-            ->select(~[city, country, '2000__|__sum', '2000__|__count', '2011__|__sum', '2011__|__count', '2012__|__sum', '2012__|__count'])
+        $res->cast(@Relation<(city:String,country:String,'\'2000__|__sum\'':Integer,'\'2000__|__count\'':Integer,'\'2011__|__sum\'':Integer,'\'2011__|__count\'':Integer,'\'2012__|__sum\'':Integer,'\'2012__|__count\'':Integer)>)
+            ->select(~[city, country, '\'2000__|__sum\'', '\'2000__|__count\'', '\'2011__|__sum\'', '\'2011__|__count\'', '\'2012__|__sum\'', '\'2012__|__count\''])
             ->sort([ascending(~city)]),
         0.00001
       );
@@ -219,8 +219,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
             NYC,USA,15000,2,5000,1,15200,2
             SAN,USA,2000,1,2600,2,null,null
         #,
-        $res->cast(@Relation<(city:String,country:String,'2000__|__sum':Integer,'2000__|__count':Integer,'2011__|__sum':Integer,'2011__|__count':Integer,'2012__|__sum':Integer,'2012__|__count':Integer)>)
-            ->select(~[city, country, '2000__|__sum', '2000__|__count', '2011__|__sum', '2011__|__count', '2012__|__sum', '2012__|__count'])
+        $res->cast(@Relation<(city:String,country:String,'\'2000__|__sum\'':Integer,'\'2000__|__count\'':Integer,'\'2011__|__sum\'':Integer,'\'2011__|__count\'':Integer,'\'2012__|__sum\'':Integer,'\'2012__|__count\'':Integer)>)
+            ->select(~[city, country, '\'2000__|__sum\'', '\'2000__|__count\'', '\'2011__|__sum\'', '\'2011__|__count\'', '\'2012__|__sum\'', '\'2012__|__count\''])
             ->sort([ascending(~city)]),
         0.00001
       );
@@ -252,8 +252,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
            NYC,USA,30000,2,5000,1,22800,2
            SAN,USA,2000,1,2700,2,null,null
         #,
-        $res->cast(@Relation<(city:String,country:String,'2000__|__sum':Integer,'2000__|__count':Integer,'2011__|__sum':Integer,'2011__|__count':Integer,'2012__|__sum':Integer,'2012__|__count':Integer)>)
-            ->select(~[city, country, '2000__|__sum', '2000__|__count', '2011__|__sum', '2011__|__count', '2012__|__sum', '2012__|__count'])
+        $res->cast(@Relation<(city:String,country:String,'\'2000__|__sum\'':Integer,'\'2000__|__count\'':Integer,'\'2011__|__sum\'':Integer,'\'2011__|__count\'':Integer,'\'2012__|__sum\'':Integer,'\'2012__|__count\'':Integer)>)
+            ->select(~[city, country, '\'2000__|__sum\'', '\'2000__|__count\'', '\'2011__|__sum\'', '\'2011__|__count\'', '\'2012__|__sum\'', '\'2012__|__count\''])
             ->sort([ascending(~city)]),
         0.00001
       );
@@ -285,8 +285,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
              2011,3000,1,5000,1,2600,2
              2012,null,null,15200,2,null,null
           #,
-          $res->cast(@Relation<(year:Integer,'UK__|__LDN__|__sum':Integer,'UK__|__LDN__|__count':Integer,'USA__|__NYC__|__sum':Integer,'USA__|__NYC__|__count':Integer,'USA__|__SAN__|__sum':Integer,'USA__|__SAN__|__count':Integer)>)
-              ->select(~[year, 'UK__|__LDN__|__sum', 'UK__|__LDN__|__count', 'USA__|__NYC__|__sum', 'USA__|__NYC__|__count', 'USA__|__SAN__|__sum', 'USA__|__SAN__|__count'])
+          $res->cast(@Relation<(year:Integer,'\'UK__|__LDN__|__sum\'':Integer,'\'UK__|__LDN__|__count\'':Integer,'\'USA__|__NYC__|__sum\'':Integer,'\'USA__|__NYC__|__count\'':Integer,'\'USA__|__SAN__|__sum\'':Integer,'\'USA__|__SAN__|__count\'':Integer)>)
+              ->select(~[year, '\'UK__|__LDN__|__sum\'', '\'UK__|__LDN__|__count\'', '\'USA__|__NYC__|__sum\'', '\'USA__|__NYC__|__count\'', '\'USA__|__SAN__|__sum\'', '\'USA__|__SAN__|__count\''])
               ->sort([ascending(~year)]),
           0.00001
     );
@@ -320,8 +320,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
              2011,3000,1,5000,1,2600,2
              2012,null,null,15200,2,null,null
           #,
-          $res->cast(@Relation<(year:Integer,'UK__|__LDN__|__sum':Integer,'UK__|__LDN__|__count':Integer,'USA__|__NYC__|__sum':Integer,'USA__|__NYC__|__count':Integer,'USA__|__SAN__|__sum':Integer,'USA__|__SAN__|__count':Integer)>)
-              ->select(~[year, 'UK__|__LDN__|__sum', 'UK__|__LDN__|__count', 'USA__|__NYC__|__sum', 'USA__|__NYC__|__count', 'USA__|__SAN__|__sum', 'USA__|__SAN__|__count'])
+          $res->cast(@Relation<(year:Integer,'\'UK__|__LDN__|__sum\'':Integer,'\'UK__|__LDN__|__count\'':Integer,'\'USA__|__NYC__|__sum\'':Integer,'\'USA__|__NYC__|__count\'':Integer,'\'USA__|__SAN__|__sum\'':Integer,'\'USA__|__SAN__|__count\'':Integer)>)
+              ->select(~[year, '\'UK__|__LDN__|__sum\'', '\'UK__|__LDN__|__count\'', '\'USA__|__NYC__|__sum\'', '\'USA__|__NYC__|__count\'', '\'USA__|__SAN__|__sum\'', '\'USA__|__SAN__|__count\''])
               ->sort([ascending(~year)]),
           0.00001
       );
@@ -353,8 +353,8 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
                      2011,6000,1,5000,1,2700,2
                      2012,null,null,22800,2,null,null
                    #,
-                   $res->cast(@Relation<(year:Number,'UK__|__LDN__|__sum':Number,'UK__|__LDN__|__count':Number,'USA__|__NYC__|__sum':Number,'USA__|__NYC__|__count':Number,'USA__|__SAN__|__sum':Number,'USA__|__SAN__|__count':Number)>)
-                           ->select(~[year, 'UK__|__LDN__|__sum', 'UK__|__LDN__|__count', 'USA__|__NYC__|__sum', 'USA__|__NYC__|__count', 'USA__|__SAN__|__sum', 'USA__|__SAN__|__count'])
+                   $res->cast(@Relation<(year:Number,'\'UK__|__LDN__|__sum\'':Number,'\'UK__|__LDN__|__count\'':Number,'\'USA__|__NYC__|__sum\'':Number,'\'USA__|__NYC__|__count\'':Number,'\'USA__|__SAN__|__sum\'':Number,'\'USA__|__SAN__|__count\'':Number)>)
+                           ->select(~[year, '\'UK__|__LDN__|__sum\'', '\'UK__|__LDN__|__count\'', '\'USA__|__NYC__|__sum\'', '\'USA__|__NYC__|__count\'', '\'USA__|__SAN__|__sum\'', '\'USA__|__SAN__|__count\''])
                            ->sort([ascending(~year)])
                    ,0.00001
     );
@@ -388,7 +388,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticP
              NYC,USA,15000.0,5000.0
              SAN,USA,2000.0,2600.0
           #,
-          $res->cast(@Relation<(city:String,country:String,'2000__|__newCol':Number,'2011__|__newCol':Number)>)->sort([ascending(~city)]),
+          $res->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Number,'\'2011__|__newCol\'':Number)>)->sort([ascending(~city)]),
           0.00001
       ); // New pivoted columns should be cast to Integer
 }
@@ -424,7 +424,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testStaticP
              Week1,10,null,12.0
              Week1,11,15.0,null
           #,
-          $res->cast(@Relation<(week:String,numWorkers:Number,'MONDAY__|__newCol':Number,'TUESDAY__|__newCol':Number)>)->sort([ascending(~numWorkers)]),
+          $res->cast(@Relation<(week:String,numWorkers:Number,'\'MONDAY__|__newCol\'':Number,'\'TUESDAY__|__newCol\'':Number)>)->sort([ascending(~numWorkers)]),
           0.00001
     );
 }
