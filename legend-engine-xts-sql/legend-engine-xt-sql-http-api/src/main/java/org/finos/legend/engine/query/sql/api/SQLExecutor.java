@@ -377,7 +377,7 @@ public class SQLExecutor
             pureModelContext = resolved.injectInto(PureModelContextData.newPureModelContextData(), (p, p2) -> PureModelContextData.combine(p, PureModelContextData.newPureModelContextData(), ListIterate.collect(p2.getPureModelContexts(), c -> modelManager.loadData(c, PureClientVersions.production, identity)).toArray(new PureModelContextData[]{})));
         }
         RichIterable<SQLSource> sources = resolved.flatCollect(SQLSourceResolvedContext::getSources);
-        return Tuples.pair(sources, pureModelContext);
+        return Tuples.pair(sources, pureModelContext == null ? PureModelContextData.newPureModelContextData() : pureModelContext);
     }
 
 

@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.sql.metamodel.Table;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
 import org.finos.legend.engine.protocol.sql.metamodel.TableSubquery;
 import org.finos.legend.engine.protocol.sql.metamodel.Union;
+import org.finos.legend.engine.protocol.sql.visitors.BaseNodeModifierVisitor;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Map;
 
@@ -95,7 +97,12 @@ public class QueryRealiaser extends BaseNodeModifierVisitor
 
         if (result.name.parts.size() == 2)
         {
-            result.name.parts = FastList.newListWith(realiases.get(result.name.parts.get(0)), result.name.parts.get(1));
+            String realias = realiases.get(result.name.parts.get(0));
+            if (realias == null)
+            {
+                throw new EngineException("no named relation found for '" + result.name.parts.get(0) + "', ensure you have aliased the correct table/subquery");
+            }
+            result.name.parts = FastList.newListWith(realias, result.name.parts.get(1));
         }
 
         return result;

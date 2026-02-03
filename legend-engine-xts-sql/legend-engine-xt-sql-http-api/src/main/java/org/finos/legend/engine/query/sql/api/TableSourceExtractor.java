@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.NullLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.StringLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
+import org.finos.legend.engine.protocol.sql.visitors.BaseNodeCollectorVisitor;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
 import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
 

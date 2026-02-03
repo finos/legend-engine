@@ -18,6 +18,7 @@ package org.finos.legend.engine.query.sql.api;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.to.SQLGrammarComposer;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -71,6 +72,14 @@ public class TestQueryRealiaser
                 "select * from (select a from (select * from myTable as t1 left outer join myTable2 as t2 on (t1.a = t2.b)) as myTable_3) as myTable");
     }
 
+    @Test
+    public void testNonExistingReferencedAlias()
+    {
+        String error = "no named relation found for 't1', ensure you have aliased the correct table/subquery";
+        testError("select t1.a from myTable as t2", error);
+        testError("select t1.a from myTable", error);
+    }
+
     private void test(String input)
     {
         test(input, input);
@@ -85,5 +94,10 @@ public class TestQueryRealiaser
         String grammar = SQLGrammarComposer.newInstance().renderNode(output);
 
         Assert.assertEquals(expected.toLowerCase(), grammar.toLowerCase());
+    }
+
+    private void testError(String input, String error)
+    {
+        Assert.assertThrows(error, EngineException.class, () -> test(input));
     }
 }

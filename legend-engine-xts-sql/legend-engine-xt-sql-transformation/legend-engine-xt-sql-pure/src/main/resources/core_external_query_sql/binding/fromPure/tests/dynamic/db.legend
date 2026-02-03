@@ -9,3 +9,10 @@ Database legend::includeForTest
 (
   Table otherTb(a Varchar(200), b INT)
 )
+
+
+###Pure
+function legend::testFunc():Relation<Any>[1]
+{
+  #>{legend::db.myTb}#
+}

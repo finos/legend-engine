@@ -14,7 +14,7 @@
 //
 
 
-package org.finos.legend.engine.query.sql.api;
+package org.finos.legend.engine.protocol.sql.visitors;
 
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.sql.metamodel.AliasedRelation;
