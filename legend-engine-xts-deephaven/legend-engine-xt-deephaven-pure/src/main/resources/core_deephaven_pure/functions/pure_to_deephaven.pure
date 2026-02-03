@@ -268,9 +268,8 @@ function meta::external::store::deephaven::pureToDeephaven::processIn(vs : Funct
   let debug = $initReq.debug;
 
   let leftSide = $vs.parametersValues->at(0)->processValueSpecification($operation, $initReq)->toOne();
-  let rightSide = $vs.parametersValues->at(1)->processValueSpecification($operation, $initReq);
-  let combinedRightSide = ^LiteralList(values = $rightSide->map(r | $r->cast(@Literal)));
-  let mergedSQL = ^InOperatorExpression(expressions=[$leftSide, $combinedRightSide]);
+  let rightSide = $vs.parametersValues->at(1)->processValueSpecification($operation, $initReq)->cast(@LiteralList)->toOne();
+  let mergedSQL = ^InOperatorExpression(expressions=[$leftSide, $rightSide]);
   $mergedSQL;
 }
 

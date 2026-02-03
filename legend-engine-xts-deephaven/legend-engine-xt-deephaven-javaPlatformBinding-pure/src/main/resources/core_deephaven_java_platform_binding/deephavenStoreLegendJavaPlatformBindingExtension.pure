@@ -357,15 +357,15 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                                                           in1: InOperatorExpression[1] | //$filterInClass->j_invoke('of', [generateOperand($in1.expressions->at(0))]->concatenate($in1.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::Literal).value->map(v | generateOperand(^meta::external::store::deephaven::metamodel::store::Literal(value=[$v])))), $filterInClass)
                                                                                          // ->j_invoke('invert', [], $filterNotClass),
                                                                                          let column = generateOperand($in1.expressions->at(0));
-                                                                                         let values = $in1.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::Literal).value;
-                                                                                         let neConditions = $values->map(v | $filterComparisonClass->j_invoke('neq', [$column, generateOperand(^meta::external::store::deephaven::metamodel::store::Literal(value=[$v]))], $filterComparisonClass));
+                                                                                         let values = $in1.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::LiteralList).values;
+                                                                                         let neConditions = $values->map(v | $filterComparisonClass->j_invoke('neq', [$column, $v->generateOperand()], $filterComparisonClass));
                                                                                          $filterAndClass->j_invoke('of', $neConditions, $filterAndClass);,
                                                           other: FilterExpression[1]   | $filterNotClass->j_invoke('of', [generateFilterCondition($other)], $filterNotClass)
                                                       ]);,
-               
+
       or: OrOperatorExpression[1] | $filterOrClass->j_invoke('of', $or.expressions->map(e | generateFilterCondition($e->cast(@FilterExpression))), $filterOrClass),
-               
-      in: InOperatorExpression[1] | $filterInClass->j_invoke('of', [generateOperand($in.expressions->at(0))]->concatenate($in.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::Literal).value->map(v | generateOperand(^meta::external::store::deephaven::metamodel::store::Literal(value=[$v])))), $filterInClass),
+
+      in: InOperatorExpression[1] | $filterInClass->j_invoke('of', [generateOperand($in.expressions->at(0))]->concatenate($in.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::LiteralList).values->map(v | $v->generateOperand())), $filterInClass),
                                           
       comp: ComparisonOperatorExpression[1] | $filterComparisonClass->j_invoke('gt', [
                                                                                         generateOperand($comp.expressions->at(0)),
