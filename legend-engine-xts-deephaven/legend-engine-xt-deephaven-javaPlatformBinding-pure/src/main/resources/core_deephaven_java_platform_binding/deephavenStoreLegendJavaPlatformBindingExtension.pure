@@ -210,24 +210,17 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteralList(literalList: meta::external::store::deephaven::metamodel::store::LiteralList[1]): Code[1]
 {
-  // let valueStrings = $literalList.values->map(v | $v.value->generateLiteralAsString());
-  let literalValues = $literalList.values->map(v | $v.value->convertPureToJavaType());
+  let literalValues = $literalList.values->map(v | $v.value->generateLiteralAsString());
   let javaType = if($literalList.values->isEmpty(),
                     | javaObject(),
                     | $literalList.values->at(0).value->getJavaTypeForLiteral()
                  );
-  // let arrayTypeStr = $javaType->match([
-  //                      p: meta::external::language::java::metamodel::PrimitiveType[1] | $p.simpleName,
-  //                      c: meta::external::language::java::metamodel::Class[1] | $c.simpleName,
-  //                      t: meta::external::language::java::metamodel::Type[1] | 'Object'
-  //                    ]);
-  let javaArrayType = javaList($javaType);
-  // let arrayLiteralStr = $javaArrayType->j_invoke('of', $literalValues, $javaArrayType)->meta::external::language::java::serialization::codeToString();
-  let arrayLiteralStr = javaArrays()->j_invoke('asList', $literalValues, javaList(javaClass($javaType)))->meta::external::language::java::serialization::codeToString();
-  // let arrayLiteralStr = 'new ' + $arrayTypeStr + '[]{' + $valueStrings->joinStrings(', ') + '}';
-  // $arrayLiteralStr->generateRawString();
-  let rawStringClass = javaClass('io.deephaven.api.RawString');
-  $rawStringClass->j_invoke('of', j_string($arrayLiteralStr), $rawStringClass);
+  let arrayTypeStr = $javaType->match([
+                       p: meta::external::language::java::metamodel::PrimitiveType[1] | $p.simpleName,
+                       a: Any[1] | fail('Unhandled array type for Deephaven: ' + $a->class()->elementToPath()); []->toOne();
+                     ]);
+  let arrayLiteralStr = 'new ' + $arrayTypeStr + '[]{' + $literalValues->joinStrings(', ') + '}';
+  $arrayLiteralStr->generateRawString();
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::getJavaTypeForLiteral(value: Any[1]): meta::external::language::java::metamodel::Type[1]
@@ -242,28 +235,27 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   ]);
 }
 
-// function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteralAsString(value: Any[1]): String[1]
-// {
-//   $value->match([
-//     s: String[1]   | '\'' + $s->toString() + '\'',
-//     d: DateTime[1] | '\'' + $d->toString()->substring(0, 19) + 'Z\'',
-//     b: Boolean[1]  | $b->toString(),
-//     i: Integer[1]  | $i->toString(),
-//     f: Float[1]    | $f->toString(),
-//     d: Decimal[1]  | $d->toString(),
-//     a: Any[*]      | fail('Unhandled Deephaven Literal value: ' + $a->class()->elementToPath()); '';
-//   ]);
-// }
-
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPureToJavaType(value: Any[1]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteralAsString(value: Any[1]): String[1]
 {
   $value->match([
-                  s: String[1]   | j_string($s->toString()),
-                  d: DateTime[1] | j_string('\'' + $d->toString()->substring(0, 19) + 'Z\''), // TODO: Fix this hack,
-                  b: Boolean[1]  | j_boolean($b->toString()),
-                  i: Integer[1]  | j_int($i->toString()),
-                  f: Float[1]    | j_float($f->toString()),
-                  d: Decimal[1]  | j_bigDecimal($d->toString()),
+    s: String[1]   | $s->toString(),
+    d: DateTime[1] | '\'' + $d->toString()->substring(0, 19) + 'Z\'', // TODO: Fix this hack,
+    b: Boolean[1]  | $b->toString(),
+    i: Integer[1]  | $i->toString(),
+    f: Float[1]    | $f->toString(),
+    d: Decimal[1]  | $d->toString()
+  ]);
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitiveToJavaPrimitive(value: Any[1]): Code[1]
+{
+  $value->match([
+                  s: String[1]   | j_string($s->generateLiteralAsString()),
+                  d: DateTime[1] | j_string($d->generateLiteralAsString()),
+                  b: Boolean[1]  | j_boolean($b->generateLiteralAsString()),
+                  i: Integer[1]  | j_int($i->generateLiteralAsString()),
+                  f: Float[1]    | j_float($f->generateLiteralAsString()),
+                  d: Decimal[1]  | j_bigDecimal($d->generateLiteralAsString()),
                   a: Any[*]      | fail('Unhandled Deephaven Literal: ' + $a->class()->elementToPath()); []->toOne();
                 ]);
 }
@@ -276,7 +268,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteral(value: Any[1]): Code[1]
 {
   let literalClass = javaClass('io.deephaven.api.literal.Literal');
-  let javaPrimitive = $value->convertPureToJavaType();
+  let javaPrimitive = $value->convertPurePrimitiveToJavaPrimitive();
   $literalClass->j_invoke('of', $javaPrimitive, $literalClass);
 }
 
