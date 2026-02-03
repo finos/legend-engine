@@ -181,6 +181,11 @@ function meta::relational::tests::mapping::inheritance::createTablesAndFillDb():
 {
    let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
+   executeInDb('Drop table if exists Holdable;', $connection);
+   executeInDb('Create Table Holdable (id INT);', $connection);
+   executeInDb('insert into Holdable (id) values (1);', $connection);
+   executeInDb('insert into Holdable (id) values (2);', $connection);
+
    executeInDb('Drop table if exists Person;', $connection);
    executeInDb('Create Table Person (id INT, name VARCHAR(200));', $connection);
    executeInDb('insert into Person (id, name) values (1, \'David Scott\');', $connection);
@@ -221,6 +226,11 @@ function meta::relational::tests::mapping::inheritance::createTablesAndFillDb():
 
 Database meta::relational::tests::mapping::inheritance::myDB
 (
+    Table Holdable
+    (
+      ID INT PRIMARY KEY
+    )
+
     Table Person
     (
         ID INT PRIMARY KEY,
@@ -270,6 +280,7 @@ Database meta::relational::tests::mapping::inheritance::myDB
         name VARCHAR(200)
     )
 
+    Join PersonHoldable(Person.ID = Holdable.ID)
     Join CarOwner(Car.ID = Owner.VEHICLE_ID)
     Join BicycleOwner(Bicycle.ID = Owner.VEHICLE_ID)
     Join PersonCar(Person.ID = Car.c_PersonID)
