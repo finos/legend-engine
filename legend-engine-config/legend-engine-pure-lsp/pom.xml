@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2022 Goldman Sachs
+ Copyright 2024 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -17,21 +17,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-config</artifactId>
         <version>4.118.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-config</artifactId>
+    <artifactId>legend-engine-pure-lsp</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Config</name>
+    <name>Legend Engine - Pure LSP</name>
 
     <modules>
-        <module>legend-engine-configuration</module>
-        <module>legend-engine-extensions-collection-execution</module>
-        <module>legend-engine-extensions-collection-generation</module>
-        <module>legend-engine-server</module>
-        <module>legend-engine-repl</module>
-        <module>legend-engine-pure-lsp</module>
+        <module>legend-engine-pure-lsp-server</module>
     </modules>
 </project>

@@ -1,0 +1,111 @@
+{
+  "name": "legend-pure-vscode",
+  "displayName": "Legend Pure Language",
+  "description": "Language support for the Pure programming language (Legend Engine)",
+  "version": "0.1.0",
+  "publisher": "finos",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-engine"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "pure",
+    "legend",
+    "finos",
+    "data modeling"
+  ],
+  "activationEvents": [
+    "onLanguage:pure"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "pure",
+        "aliases": [
+          "Pure",
+          "pure"
+        ],
+        "extensions": [
+          ".pure"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pure",
+        "scopeName": "source.pure",
+        "path": "./syntaxes/pure.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Pure Language Server",
+      "properties": {
+        "pureLsp.server.path": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Pure LSP server JAR file. If empty, uses bundled server."
+        },
+        "pureLsp.server.args": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional arguments to pass to the LSP server."
+        },
+        "pureLsp.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the Pure language server."
+        },
+        "pureLsp.java.home": {
+          "type": "string",
+          "default": "",
+          "description": "Path to Java home directory. If empty, uses JAVA_HOME environment variable."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "pureLsp.restartServer",
+        "title": "Pure: Restart Language Server"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.75.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "eslint": "^8.x",
+    "typescript": "^5.x",
+    "@vscode/vsce": "^2.x"
+  }
+}
