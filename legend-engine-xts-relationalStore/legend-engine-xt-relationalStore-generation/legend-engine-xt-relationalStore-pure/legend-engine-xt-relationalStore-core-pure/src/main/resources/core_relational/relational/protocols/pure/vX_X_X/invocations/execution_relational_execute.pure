@@ -48,8 +48,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::processT
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::manageName(_name:String[0..1]):String[1]
 {
     let name = $_name->toOne()->trim();
-    let isSimple = $name->startsWith('\'') || $name->matches('^[a-zA-Z0-9_]+$');
-    if ($isSimple,|'',|'\'') + $name + if ($isSimple,|'',|'\'');
+    $name->meta::pure::functions::string::toRepresentation();
 }
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], funcReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]): Any[1]
@@ -75,7 +74,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                                         a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
                                       ]);
                                   )->makeString(',')
-                                )->joinStrings('\n');    
+                                )->joinStrings('\n');
+
   $tdsString->stringToTDS();
 }
 
