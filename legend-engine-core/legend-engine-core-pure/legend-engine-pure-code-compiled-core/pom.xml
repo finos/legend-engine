@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,11 +48,16 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-pure</dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
+                                <dependency>
+                                    org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store
+                                </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-json-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-path-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-path-java
+                                </dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -75,58 +81,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-json-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -212,7 +166,8 @@
 
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -383,6 +338,11 @@
             <artifactId>legend-pure-runtime-java-extension-compiled-dsl-tds</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-diagram</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -392,12 +352,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-relation</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-diagram</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -446,6 +400,14 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
+
+        <!-- precisePrimitives really should be coming in as a transitive dependency in the POM, because it does
+         in Pure, but there's no great place to put it at the moment, so leaving it here. -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>
@@ -469,13 +431,19 @@
                                 <configuration>
                                     <target name="protocol">
                                         <copy todir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}">
-                                            <fileset dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}" />
+                                            <fileset
+                                                    dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}"/>
                                         </copy>
-                                        <replace dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+                                        <replace
+                                                dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
                                         <copy todir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}">
-                                            <fileset dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}" />
+                                            <fileset
+                                                    dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}"/>
                                         </copy>
-                                        <replace dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+                                        <replace
+                                                dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
                                     </target>
                                 </configuration>
                             </execution>

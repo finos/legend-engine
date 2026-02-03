@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-sql-transformation</artifactId>
@@ -30,6 +31,20 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
@@ -39,7 +54,9 @@
                         <repository>core_external_query_sql_reverse_pct</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_query_sql_reverse_pct.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_external_query_sql_reverse_pct.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -50,38 +67,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-sql-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -126,7 +111,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -143,12 +129,24 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_EssentialFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_EssentialFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_GrammarFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_RelationFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_StandardFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_UnclassifiedFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.query.sql.reversePCT.Test_Query_SQL_VariantFunctions_Reverse_PCT
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -188,7 +186,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -315,6 +314,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
         </dependency>
 
         <dependency>

@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-generation</artifactId>
@@ -28,35 +29,38 @@
     <name>Legend Engine - Language Pure - DSL Generation - PAR/JAVA</name>
 
     <profiles>
-    <profile>
-    <id>generate-protocol-version</id>
-        <properties>
-            <folderPath>core_generation/generation/protocol</folderPath>
-        </properties>
-        <build>
+        <profile>
+            <id>generate-protocol-version</id>
+            <properties>
+                <folderPath>core_generation/generation/protocol</folderPath>
+            </properties>
+            <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions>
-                        <execution>
-                            <id>create-protocol-file</id>
-                            <phase>generate-sources</phase>
-                            <goals>
-                                <goal>run</goal>
-                            </goals>
-                            <configuration>
-                                <target name="protocol">
-                                    <copy file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.SourceVersion}.pure" tofile="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure" />
-                                    <replace file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
-                                </target>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+                            <execution>
+                                <id>create-protocol-file</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target name="protocol">
+                                        <copy file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.SourceVersion}.pure"
+                                              tofile="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure"/>
+                                        <replace
+                                                file="${basedir}/src/main/resources/${folderPath}/protocol_${protocol.TargetVersion}.pure"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
-        </build>
-    </profile>
+            </build>
+        </profile>
     </profiles>
 
 
@@ -72,7 +76,8 @@
                         <repository>core_generation</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_generation.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_generation.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -83,23 +88,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -134,7 +122,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

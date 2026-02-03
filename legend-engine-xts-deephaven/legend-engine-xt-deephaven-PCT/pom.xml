@@ -14,7 +14,8 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
@@ -39,7 +40,8 @@
                         <repository>core_deephaven_pct</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_deephaven_pct.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_deephaven_pct.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -50,68 +52,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-executionPlan-test</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-javaPlatformBinding-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-planExecution-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-core-extension</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -186,22 +126,26 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -235,7 +179,8 @@
                             <reuseForks>false</reuseForks>
                             <argLine>--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED</argLine>
                             <systemPropertyVariables>
-                                <pct.external.resources.properties>${env.PCT_EXTERNAL_RESOURCES_PROPERTIES}</pct.external.resources.properties>
+                                <pct.external.resources.properties>${env.PCT_EXTERNAL_RESOURCES_PROPERTIES}
+                                </pct.external.resources.properties>
                             </systemPropertyVariables>
                         </configuration>
                     </plugin>
@@ -246,8 +191,12 @@
                             <mode>Compiled</mode>
                             <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                             <PCTTestSuites>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_RelationFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_EssentialFunctions_PCT</PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_RelationFunctions_PCT
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_EssentialFunctions_PCT
+                                </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
                         <executions>
@@ -282,12 +231,15 @@
                             </dependency>
                             <dependency>
                                 <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation
+                                </artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.finos.legend.engine</groupId>
-                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                                <artifactId>
+                                    legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                                </artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                             <dependency>

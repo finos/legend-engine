@@ -114,7 +114,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.74.3</legend.pure.version>
+        <legend.pure.version>5.75.0</legend.pure.version>
         <legend.shared.version>0.32.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.14.0</legend.pylegend.version>
@@ -1953,7 +1953,16 @@
                 <artifactId>legend-engine-xt-text-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-tds-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-tds-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-http-api</artifactId>
