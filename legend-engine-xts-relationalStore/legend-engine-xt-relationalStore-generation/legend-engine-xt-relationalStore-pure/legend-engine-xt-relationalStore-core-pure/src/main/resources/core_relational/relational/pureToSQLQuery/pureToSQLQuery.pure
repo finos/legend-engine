@@ -6087,9 +6087,11 @@ function meta::relational::functions::pureToSqlQuery::processPivot(expression:Fu
 
 function meta::relational::functions::pureToSqlQuery::processStaticPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let inputQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let baseQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let inputQuery = isolateTdsSelect($baseQuery, $extensions);
   let inputSelect = $inputQuery.select->cast(@TdsSelectSqlQuery);
   let inputQueryAlias = 'pivotInput_' + $nodeId;
+
   let pivotColumnName = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
       s:String[*]|$s,
       v:meta::pure::metamodel::relation::ColSpec<Any>[1]|$v.name
