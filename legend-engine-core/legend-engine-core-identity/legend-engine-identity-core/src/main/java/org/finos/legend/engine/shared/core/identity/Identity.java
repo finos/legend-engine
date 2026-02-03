@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,15 +18,11 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 
-import javax.security.auth.Subject;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -74,29 +70,13 @@ public class Identity
     public <T extends Credential> Optional<T> getCredential(Class<T> credentialType)
     {
         // TODO : Can there be more than one cred of the same type ??
-        Optional<Credential> holder = this.credentials.stream().filter(c -> credentialType.isInstance(c)).findFirst();
+        Optional<Credential> holder = this.credentials.stream().filter(credentialType::isInstance).findFirst();
         if (!holder.isPresent())
         {
             return Optional.empty();
         }
         Credential raw = holder.get();
         return Optional.of(credentialType.cast(raw));
-    }
-
-    public Credential getFirstCredential()
-    {
-        if (this.credentials.isEmpty())
-        {
-            String message = String.format("Invalid method call. Calling code assumes single credential but none was found");
-            throw new RuntimeException(message);
-        }
-        if (this.credentials.size() > 1)
-        {
-            String credentialNames = this.credentials.stream().map(c -> c.getClass().getCanonicalName()).collect(Collectors.joining(","));
-            String message = String.format("Invalid method call. Cannot return 'first' credential when the identity has more than one credential. Credentials=%s", credentialNames);
-            throw new RuntimeException(message);
-        }
-        return this.credentials.get(0);
     }
 
     public int countCredentials()
@@ -111,7 +91,7 @@ public class Identity
 
     public boolean hasValidCredentials()
     {
-        return credentials.isEmpty() || credentials.stream().allMatch(c -> c.isValid());
+        return credentials.isEmpty() || credentials.stream().allMatch(Credential::isValid);
     }
 
     public static Identity makeUnknownIdentity()
@@ -121,10 +101,21 @@ public class Identity
 
     public static Identity makeIdentity(Object authenticationSource)
     {
-        return FACTORIES.collect(f -> f.makeIdentity(authenticationSource))
+        List<Identity> identities = FACTORIES.collect(f -> f.makeIdentity(authenticationSource))
                 .stream().filter(Optional::isPresent)
                 .map(Optional::get)
-                .findFirst()
-                .orElse(makeUnknownIdentity());
+                .collect(Collectors.toList());
+        if (identities.isEmpty())
+        {
+            return makeUnknownIdentity();
+        }
+
+        String name = identities.get(0).getName();
+        List<Credential> allCredentials = identities.stream()
+                .flatMap(identity -> identity.getCredentials().stream())
+                .collect(Collectors.toList());
+
+        return new Identity(name, allCredentials);
+
     }
 }

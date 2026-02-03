@@ -82,6 +82,14 @@ public abstract class DatabaseManager
         return new Properties();
     }
 
+    /*
+    * These properties will be put directly on the datasource object instead of the jdbc string and are useful for when the properties  are not primitive  types
+     */
+    public Properties getObjectDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    {
+        return new Properties();
+    }
+
     public abstract String getDriver();
 
     public abstract RelationalDatabaseCommands relationalDatabaseSupport();

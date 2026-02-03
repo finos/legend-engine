@@ -32,6 +32,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.st
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.slf4j.Logger;
 
@@ -147,8 +148,9 @@ public abstract class DataSourceSpecification
     public Connection getConnectionUsingIdentity(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplierHolder)
     {
         Optional<LegendKerberosCredential> kerberosCredentialHolder = identity.getCredential(LegendKerberosCredential.class);
+        Optional<LegendConstrainedKerberosCredential> constrainedKerberosCredentialHolder = identity.getCredential(LegendConstrainedKerberosCredential.class);
         Supplier<DataSource> dataSourceBuilder;
-        if (kerberosCredentialHolder.isPresent())
+        if (kerberosCredentialHolder.isPresent() || constrainedKerberosCredentialHolder.isPresent())
         {
             dataSourceBuilder = () -> KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identity));
         }
@@ -223,6 +225,7 @@ public abstract class DataSourceSpecification
             jdbcConfig.setPoolName(poolName);
             jdbcConfig.setMaximumPoolSize(maxPoolSize);
             jdbcConfig.setMinimumIdle(minPoolSize);
+            jdbcConfig.setDataSourceProperties(this.databaseManager.getObjectDataSourceProperties(this.authenticationStrategy, identity));
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", "false");
