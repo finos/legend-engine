@@ -62,7 +62,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitStatements(StatementsContext ctx)
     {
-        return unsupported();
+        return unsupported("Statements");
     }
 
     @Override
@@ -76,43 +76,43 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitBegin(SqlBaseParser.BeginContext context)
     {
-        return unsupported();
+        return unsupported("Begin");
     }
 
     @Override
     public Node visitStartTransaction(SqlBaseParser.StartTransactionContext context)
     {
-        return unsupported();
+        return unsupported("Start Transaction");
     }
 
     @Override
     public Node visitAnalyze(SqlBaseParser.AnalyzeContext ctx)
     {
-        return unsupported();
+        return unsupported("Analyze");
     }
 
     @Override
     public Node visitDeclare(DeclareContext ctx)
     {
-        return unsupported();
+        return unsupported("Declare");
     }
 
     @Override
     public Node visitFetch(FetchContext ctx)
     {
-        return unsupported();
+        return unsupported("Fetch");
     }
 
     @Override
     public Node visitClose(CloseContext ctx)
     {
-        return unsupported();
+        return unsupported("Close");
     }
 
     @Override
     public Node visitDiscard(DiscardContext ctx)
     {
-        return unsupported();
+        return unsupported("Discard");
     }
 
     //TODO re-consider where to do parsing
@@ -155,205 +155,205 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitCommit(SqlBaseParser.CommitContext context)
     {
-        return unsupported();
+        return unsupported("Commit");
     }
 
     @Override
     public Node visitOptimize(SqlBaseParser.OptimizeContext context)
     {
-        return unsupported();
+        return unsupported("Optimize");
     }
 
     @Override
     public Node visitCreateTable(SqlBaseParser.CreateTableContext context)
     {
-        return unsupported();
+        return unsupported("Create Table");
     }
 
     @Override
     public Node visitCreateTableAs(SqlBaseParser.CreateTableAsContext context)
     {
-        return unsupported();
+        return unsupported("Create Table As");
     }
 
     @Override
     public Node visitAlterClusterSwapTable(SqlBaseParser.AlterClusterSwapTableContext ctx)
     {
-        return unsupported();
+        return unsupported("Alter Cluster Swap Table");
     }
 
     @Override
     public Node visitAlterClusterGCDanglingArtifacts(SqlBaseParser.AlterClusterGCDanglingArtifactsContext ctx)
     {
-        return unsupported();
+        return unsupported("Alter Cluster GC Dangling Artifacts");
     }
 
     @Override
     public Node visitAlterClusterDecommissionNode(SqlBaseParser.AlterClusterDecommissionNodeContext ctx)
     {
-        return unsupported();
+        return unsupported("Alter Cluster Decommission Node");
     }
 
     @Override
     public Node visitCreateView(SqlBaseParser.CreateViewContext ctx)
     {
-        return unsupported();
+        return unsupported("Create View");
     }
 
     @Override
     public Node visitDropView(SqlBaseParser.DropViewContext ctx)
     {
-        return unsupported();
+        return unsupported("Drop View");
     }
 
     @Override
     public Node visitCreateBlobTable(SqlBaseParser.CreateBlobTableContext context)
     {
-        return unsupported();
+        return unsupported("Create Blob Table");
     }
 
     @Override
     public Node visitCreateRepository(SqlBaseParser.CreateRepositoryContext context)
     {
-        return unsupported();
+        return unsupported("Create Repository");
     }
 
     @Override
     public Node visitCreateSnapshot(SqlBaseParser.CreateSnapshotContext context)
     {
-        return unsupported();
+        return unsupported("Create Snapshot");
     }
 
     @Override
     public Node visitCreateAnalyzer(SqlBaseParser.CreateAnalyzerContext context)
     {
-        return unsupported();
+        return unsupported("Create Analyzer");
     }
 
     @Override
     public Node visitDropAnalyzer(SqlBaseParser.DropAnalyzerContext ctx)
     {
-        return unsupported();
+        return unsupported("Drop Analyzer");
     }
 
     @Override
     public Node visitCreateUser(SqlBaseParser.CreateUserContext context)
     {
-        return unsupported();
+        return unsupported("Create User");
     }
 
     @Override
     public Node visitDropUser(SqlBaseParser.DropUserContext context)
     {
-        return unsupported();
+        return unsupported("Drop User");
     }
 
     @Override
     public Node visitGrantPrivilege(SqlBaseParser.GrantPrivilegeContext context)
     {
-        return unsupported();
+        return unsupported("Grant Privilege");
     }
 
     @Override
     public Node visitDenyPrivilege(SqlBaseParser.DenyPrivilegeContext context)
     {
-        return unsupported();
+        return unsupported("Deny Privilege");
     }
 
     @Override
     public Node visitRevokePrivilege(SqlBaseParser.RevokePrivilegeContext context)
     {
-        return unsupported();
+        return unsupported("Revoke Privilege");
     }
 
     @Override
     public Node visitCharFilters(SqlBaseParser.CharFiltersContext context)
     {
-        return unsupported();
+        return unsupported("Char Filters");
     }
 
     @Override
     public Node visitTokenFilters(SqlBaseParser.TokenFiltersContext context)
     {
-        return unsupported();
+        return unsupported("Token Filters");
     }
 
     @Override
     public Node visitTokenizer(SqlBaseParser.TokenizerContext context)
     {
-        return unsupported();
+        return unsupported("Tokenizer");
     }
 
     @Override
     public Node visitNamedProperties(SqlBaseParser.NamedPropertiesContext context)
     {
-        return unsupported();
+        return unsupported("Named Properties");
     }
 
     @Override
     public Node visitRestore(SqlBaseParser.RestoreContext context)
     {
-        return unsupported();
+        return unsupported("Restore");
     }
 
     @Override
     public Node visitShowCreateTable(SqlBaseParser.ShowCreateTableContext context)
     {
-        return unsupported();
+        return unsupported("Show Create Table");
     }
 
     @Override
     public Node visitShowTransaction(SqlBaseParser.ShowTransactionContext context)
     {
-        return unsupported();
+        return unsupported("Show Transaction");
     }
 
     @Override
     public Node visitShowSessionParameter(SqlBaseParser.ShowSessionParameterContext ctx)
     {
-        return unsupported();
+        return unsupported("Show Session Parameter");
     }
 
     @Override
     public Node visitDropTable(SqlBaseParser.DropTableContext context)
     {
-        return unsupported();
+        return unsupported("Drop Table");
     }
 
     @Override
     public Node visitDropRepository(SqlBaseParser.DropRepositoryContext context)
     {
-        return unsupported();
+        return unsupported("Drop Repository");
     }
 
     @Override
     public Node visitDropBlobTable(SqlBaseParser.DropBlobTableContext context)
     {
-        return unsupported();
+        return unsupported("Drop Blob Table");
     }
 
     @Override
     public Node visitDropSnapshot(SqlBaseParser.DropSnapshotContext context)
     {
-        return unsupported();
+        return unsupported("Drop Snapshot");
     }
 
     @Override
     public Node visitCopyFrom(SqlBaseParser.CopyFromContext context)
     {
-        return unsupported();
+        return unsupported("Copy From");
     }
 
     @Override
     public Node visitCopyTo(SqlBaseParser.CopyToContext context)
     {
-        return unsupported();
+        return unsupported("Copy To");
     }
 
     @Override
     public Node visitInsert(SqlBaseParser.InsertContext context)
     {
-        return unsupported();
+        return unsupported("Insert");
     }
 
     @Override
@@ -369,103 +369,103 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitDelete(SqlBaseParser.DeleteContext context)
     {
-        return unsupported();
+        return unsupported("Delete");
     }
 
     @Override
     public Node visitUpdate(SqlBaseParser.UpdateContext context)
     {
-        return unsupported();
+        return unsupported("Update");
     }
 
     @Override
     public Node visitSet(SqlBaseParser.SetContext context)
     {
-        return unsupported();
+        return unsupported("Set");
     }
 
     @Override
     public Node visitSetGlobal(SqlBaseParser.SetGlobalContext context)
     {
-        return unsupported();
+        return unsupported("Set Global");
     }
 
     @Override
     public Node visitSetLicense(SqlBaseParser.SetLicenseContext ctx)
     {
-        return unsupported();
+        return unsupported("Set License");
     }
 
     @Override
     public Node visitSetTimeZone(SqlBaseParser.SetTimeZoneContext ctx)
     {
-        return unsupported();
+        return unsupported("Set Time Zone");
     }
 
     @Override
     public Node visitSetTransaction(SetTransactionContext ctx)
     {
-        return unsupported();
+        return unsupported("Set Transaction");
     }
 
     @Override
     public Node visitResetGlobal(SqlBaseParser.ResetGlobalContext context)
     {
-        return unsupported();
+        return unsupported("Reset Global");
     }
 
     @Override
     public Node visitSetSessionAuthorization(SqlBaseParser.SetSessionAuthorizationContext context)
     {
-        return unsupported();
+        return unsupported("Set Session Authorization");
     }
 
     @Override
     public Node visitResetSessionAuthorization(SqlBaseParser.ResetSessionAuthorizationContext ctx)
     {
-        return unsupported();
+        return unsupported("Reset Session Authorization");
     }
 
     @Override
     public Node visitKill(SqlBaseParser.KillContext context)
     {
-        return unsupported();
+        return unsupported("Kill");
     }
 
     @Override
     public Node visitDeallocate(SqlBaseParser.DeallocateContext context)
     {
-        return unsupported();
+        return unsupported("Deallocate");
     }
 
     @Override
     public Node visitExplain(SqlBaseParser.ExplainContext context)
     {
-        return unsupported();
+        return unsupported("Explain");
     }
 
     @Override
     public Node visitShowTables(SqlBaseParser.ShowTablesContext context)
     {
-        return unsupported();
+        return unsupported("Show Tables");
     }
 
     @Override
     public Node visitShowSchemas(SqlBaseParser.ShowSchemasContext context)
     {
-        return unsupported();
+        return unsupported("Show Schemas");
     }
 
     @Override
     public Node visitShowColumns(SqlBaseParser.ShowColumnsContext context)
     {
-        return unsupported();
+        return unsupported("Show Columns");
     }
 
     @Override
     public Node visitRefreshTable(SqlBaseParser.RefreshTableContext context)
     {
-        return unsupported();
+        return unsupported("Refresh Table");
     }
 
     @Override
@@ -480,55 +480,55 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitTableWithPartition(SqlBaseParser.TableWithPartitionContext context)
     {
-        return unsupported();
+        return unsupported("Table With Partition");
     }
 
     @Override
     public Node visitCreateFunction(SqlBaseParser.CreateFunctionContext context)
     {
-        return unsupported();
+        return unsupported("Create Function");
     }
 
     @Override
     public Node visitDropFunction(SqlBaseParser.DropFunctionContext context)
     {
-        return unsupported();
+        return unsupported("Drop Function");
     }
 
     @Override
     public Node visitCreatePublication(SqlBaseParser.CreatePublicationContext ctx)
     {
-        return unsupported();
+        return unsupported("Create Publication");
     }
 
     @Override
     public Node visitDropPublication(SqlBaseParser.DropPublicationContext ctx)
     {
-        return unsupported();
+        return unsupported("Drop Publication");
     }
 
     @Override
     public Node visitAlterPublication(SqlBaseParser.AlterPublicationContext ctx)
     {
-        return unsupported();
+        return unsupported("Alter Publication");
     }
 
     @Override
     public Node visitCreateSubscription(SqlBaseParser.CreateSubscriptionContext ctx)
     {
-        return unsupported();
+        return unsupported("Create Subscription");
     }
 
     @Override
     public Node visitDropSubscription(SqlBaseParser.DropSubscriptionContext ctx)
     {
-        return unsupported();
+        return unsupported("Drop Subscription");
     }
 
     @Override
     public Node visitAlterSubscription(SqlBaseParser.AlterSubscriptionContext ctx)
     {
-        return unsupported();
+        return unsupported("Alter Subscription");
     }
 
     @Override
@@ -557,133 +557,133 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitColumnDefinition(SqlBaseParser.ColumnDefinitionContext context)
     {
-        return unsupported();
+        return unsupported("Column Definition");
     }
 
     @Override
     public Node visitColumnConstraintPrimaryKey(SqlBaseParser.ColumnConstraintPrimaryKeyContext context)
     {
-        return unsupported();
+        return unsupported("Column Constraint Primary Key");
     }
 
     @Override
     public Node visitColumnConstraintNotNull(SqlBaseParser.ColumnConstraintNotNullContext context)
     {
-        return unsupported();
+        return unsupported("Column Constraint Not Null");
     }
 
     @Override
     public Node visitPrimaryKeyConstraint(SqlBaseParser.PrimaryKeyConstraintContext context)
     {
-        return unsupported();
+        return unsupported("Primary Key Constraint");
     }
 
     @Override
     public Node visitTableCheckConstraint(SqlBaseParser.TableCheckConstraintContext context)
     {
-        return unsupported();
+        return unsupported("Table Check Constraint");
     }
 
     @Override
     public Node visitColumnCheckConstraint(SqlBaseParser.ColumnCheckConstraintContext context)
     {
-        return unsupported();
+        return unsupported("Column Check Constraint");
     }
 
     @Override
     public Node visitDropCheckConstraint(SqlBaseParser.DropCheckConstraintContext context)
     {
-        return unsupported();
+        return unsupported("Drop Check Constraint");
     }
 
     @Override
     public Node visitColumnIndexOff(SqlBaseParser.ColumnIndexOffContext context)
     {
-        return unsupported();
+        return unsupported("Column Index Off");
     }
 
     @Override
     public Node visitColumnIndexConstraint(SqlBaseParser.ColumnIndexConstraintContext context)
     {
-        return unsupported();
+        return unsupported("Column Index Constraint");
     }
 
     @Override
     public Node visitIndexDefinition(SqlBaseParser.IndexDefinitionContext context)
     {
-        return unsupported();
+        return unsupported("Index Definition");
     }
 
     @Override
     public Node visitColumnStorageDefinition(SqlBaseParser.ColumnStorageDefinitionContext ctx)
     {
-        return unsupported();
+        return unsupported("Column Storage Definition");
     }
 
     @Override
     public Node visitPartitionedBy(SqlBaseParser.PartitionedByContext context)
     {
-        return unsupported();
+        return unsupported("Partitioned By");
     }
 
     @Override
     public Node visitClusteredBy(SqlBaseParser.ClusteredByContext context)
     {
-        return unsupported();
+        return unsupported("Clustered By");
     }
 
     @Override
     public Node visitBlobClusteredInto(SqlBaseParser.BlobClusteredIntoContext ctx)
     {
-        return unsupported();
+        return unsupported("Blob Clustered Into");
     }
 
     @Override
     public Node visitFunctionArgument(SqlBaseParser.FunctionArgumentContext context)
     {
-        return unsupported();
+        return unsupported("Function Argument");
     }
 
     @Override
     public Node visitRerouteMoveShard(SqlBaseParser.RerouteMoveShardContext context)
     {
-        return unsupported();
+        return unsupported("Reroute Move Shard");
     }
 
     @Override
     public Node visitReroutePromoteReplica(SqlBaseParser.ReroutePromoteReplicaContext ctx)
     {
-        return unsupported();
+        return unsupported("Reroute Promote Replica");
     }
 
     @Override
     public Node visitRerouteAllocateReplicaShard(SqlBaseParser.RerouteAllocateReplicaShardContext context)
     {
-        return unsupported();
+        return unsupported("Reroute Allocate Replica Shard");
     }
 
     @Override
     public Node visitRerouteCancelShard(SqlBaseParser.RerouteCancelShardContext context)
     {
-        return unsupported();
+        return unsupported("Reroute Cancel Shard");
     }
 
     @Override
     public Node visitWithGenericProperties(SqlBaseParser.WithGenericPropertiesContext context)
     {
-        return unsupported();
+        return unsupported("With Generic Properties");
     }
 
     @Override
     public Node visitGenericProperties(SqlBaseParser.GenericPropertiesContext context)
     {
-        return unsupported();
+        return unsupported("Generic Properties");
     }
 
     @Override
     public Node visitGenericProperty(SqlBaseParser.GenericPropertyContext context)
     {
-        return unsupported();
+        return unsupported("Generic Property");
     }
 
     // Amending tables
@@ -691,67 +691,67 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitAlterTableProperties(SqlBaseParser.AlterTablePropertiesContext context)
     {
-        return unsupported();
+        return unsupported("Alter Table Properties");
     }
 
     @Override
     public Node visitAlterBlobTableProperties(SqlBaseParser.AlterBlobTablePropertiesContext context)
     {
-        return unsupported();
+        return unsupported("Alter Blob Table Properties");
     }
 
     @Override
     public Node visitAddColumn(SqlBaseParser.AddColumnContext context)
     {
-        return unsupported();
+        return unsupported("Add Column");
     }
 
     @Override
     public Node visitAddColumnDefinition(SqlBaseParser.AddColumnDefinitionContext context)
     {
-        return unsupported();
+        return unsupported("Add Column Definition");
     }
 
     @Override
     public Node visitAlterTableOpenClose(SqlBaseParser.AlterTableOpenCloseContext context)
     {
-        return unsupported();
+        return unsupported("Alter Table Open Close");
     }
 
     @Override
     public Node visitAlterTableRename(SqlBaseParser.AlterTableRenameContext context)
     {
-        return unsupported();
+        return unsupported("Alter Table Rename");
     }
 
     @Override
     public Node visitAlterTableReroute(SqlBaseParser.AlterTableRerouteContext context)
     {
-        return unsupported();
+        return unsupported("Alter Table Reroute");
     }
 
     @Override
     public Node visitAlterClusterRerouteRetryFailed(SqlBaseParser.AlterClusterRerouteRetryFailedContext context)
     {
-        return unsupported();
+        return unsupported("Alter Cluster Reroute Retry Failed");
     }
 
     @Override
     public Node visitAlterUser(SqlBaseParser.AlterUserContext context)
     {
-        return unsupported();
+        return unsupported("Alter User");
     }
 
     @Override
     public Node visitSetGlobalAssignment(SqlBaseParser.SetGlobalAssignmentContext context)
     {
-        return unsupported();
+        return unsupported("Set Global Assignment");
     }
 
     @Override
     public Node visitAssignment(SqlBaseParser.AssignmentContext context)
     {
-        return unsupported();
+        return unsupported("Assignment");
     }
 
     // Query specification
@@ -877,7 +877,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitArraySubquery(SqlBaseParser.ArraySubqueryContext ctx)
     {
-        return unsupported();
+        return unsupported("Array Subquery");
     }
 
     @Override
@@ -1215,7 +1215,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitArrayLike(SqlBaseParser.ArrayLikeContext context)
     {
-        return unsupported();
+        return unsupported("Array Like");
     }
 
     @Override
@@ -1257,26 +1257,26 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitExists(SqlBaseParser.ExistsContext context)
     {
 //        return new ExistsPredicate((Query) visit(context.query()));
-        return unsupported();
+        return unsupported("Exists");
     }
 
     @Override
     public Node visitQuantifiedComparison(SqlBaseParser.QuantifiedComparisonContext context)
     {
         //TODO
-        return unsupported();
+        return unsupported("Quantified Comparison");
     }
 
     @Override
     public Node visitMatch(SqlBaseParser.MatchContext context)
     {
-        return unsupported();
+        return unsupported("Match");
     }
 
     @Override
     public Node visitMatchPredicateIdent(SqlBaseParser.MatchPredicateIdentContext context)
     {
-        return unsupported();
+        return unsupported("Match Predicate Ident");
     }
 
     // Value expressions
@@ -1416,7 +1416,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         if (context.TRY_CAST() != null)
         {
-            return unsupported();
+            return unsupported("Cast");
         }
         else
         {
@@ -1469,7 +1469,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitAtTimezone(SqlBaseParser.AtTimezoneContext context)
     {
-        return unsupported();
+        return unsupported("At Timezone");
     }
 
     @Override
@@ -1498,19 +1498,19 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitCurrentSchema(SqlBaseParser.CurrentSchemaContext context)
     {
-        return unsupported();
+        return unsupported("Current Schema");
     }
 
     @Override
     public Node visitCurrentUser(SqlBaseParser.CurrentUserContext ctx)
     {
-        return unsupported();
+        return unsupported("Current User");
     }
 
     @Override
     public Node visitSessionUser(SqlBaseParser.SessionUserContext ctx)
     {
-        return unsupported();
+        return unsupported("Session User");
     }
 
     @Override
@@ -1523,7 +1523,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitSubqueryExpression(SqlBaseParser.SubqueryExpressionContext context)
     {
 //        return new SubqueryExpression((Query) visit(context.query()));
-        return unsupported();
+        return unsupported("Subquery Expression");
     }
 
     @Override
@@ -1552,7 +1552,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitRecordSubscript(SqlBaseParser.RecordSubscriptContext ctx)
     {
-        return unsupported();
+        return unsupported("Record Subscript");
     }
 
     @Override
@@ -1580,7 +1580,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitSubscriptSafe(SqlBaseParser.SubscriptSafeContext context)
     {
-        return unsupported();
+        return unsupported("Subscript Safe");
     }
 
     @Override
@@ -1616,7 +1616,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitIfCase(SqlBaseParser.IfCaseContext context)
     {
-        return unsupported();
+        return unsupported("If Case");
     }
 
     @Override
@@ -1660,7 +1660,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitBitString(BitStringContext ctx)
     {
-        return unsupported();
+        return unsupported("Bit String");
     }
 
     @Override
@@ -1738,7 +1738,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitEscapedCharsStringLiteral(SqlBaseParser.EscapedCharsStringLiteralContext ctx)
     {
-        return unsupported();
+        return unsupported("Escaped Chars String Literal");
     }
 
     @Override
@@ -1794,7 +1794,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitObjectLiteral(SqlBaseParser.ObjectLiteralContext context)
     {
-        return unsupported();
+        return unsupported("Object Literal");
     }
 
     @Override
@@ -1838,7 +1838,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitObjectTypeDefinition(SqlBaseParser.ObjectTypeDefinitionContext context)
     {
-        return unsupported();
+        return unsupported("Object Type Definition");
     }
 
     @Override
@@ -2212,8 +2212,8 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         }
     }
 
-    private Node unsupported()
+    private Node unsupported(String feature)
     {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(feature);
     }
 }
