@@ -97,22 +97,16 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
      ^DynamicSQLSource(
           type = 'csv',
           func = x:String[1]|1,
-          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1] |
             meta::legend::compileVS('#TDS{\n'+$x.functionCall.arguments->cast(@StringLiteral)->toOne().value+'}#');
           }
      ),
      ^DynamicSQLSource(
           type = 'tb',
           func = x:String[1]|1,
-          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1] |
               let param = normalizeDynamicTableSourceParam($x, 'tb');
-              
-              let store = $x->match(
-                [
-                  a:meta::external::query::sql::expression::AccessorTableFunction[1]|$a.store,
-                  a:Any[1]| extractElement($param->split('.')->at(0), 'Database', $s.extraPackageableElements, @meta::relational::metamodel::Database)
-                ]
-              );
+              let store = extractElement($param->split('.')->at(0), 'Database', $s.extraPackageableElements, @meta::relational::metamodel::Database);
 
               let databaseStr = $store
                                 ->scanDependencies([], meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraScanDependenciesType)
@@ -128,14 +122,48 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
 
               meta::legend::compile($code)->filter(x|$x.name == 'container__Any_MANY_')->cast(@FunctionDefinition<Any>).expressionSequence->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne();
           }
+     ),
+     ^DynamicSQLSource(
+          type = 'func',
+          func = x:String[1]|1,
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1] |
+            let param = normalizeDynamicTableSourceParam($x, 'func');
+
+            let func = extractElement($param->split('.')->at(0), 'Function', $s.extraPackageableElements, @ConcreteFunctionDefinition<Any>);
+
+            assert($func->isRelation(), | 'function sources must return a Relation');
+
+            let arguments = $x.functionCall.arguments->extractSourceArguments();
+
+            assertNoMissingArguments($arguments, $func);
+
+            let parameters = $func->getParameters()->evaluateAndDeactivate();
+
+            let parameterValues = $parameters->map(p | 
+              let argument = $arguments->filter(a | $a.name == $p.name)->first();
+              createParameterValue($p, $argument.value, $s);
+            );
+
+            sfe($func, $parameterValues);
+          }
      )
     ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraDynamicSQLSources);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let parameters = $func->getParameters()->evaluateAndDeactivate();
+  let requiredParameters = $parameters->filter(p | $p.multiplicity == PureOne)->evaluateAndDeactivate().name;
+
+  let missingParameters = $requiredParameters->filter(p | !$arguments.name->contains($p));
+
+  assert($missingParameters->isEmpty(), | 'missing required parameter values ' + $missingParameters->joinStrings('[', ', ', ']') + ' for source ');
 }
 
 function meta::external::query::sql::transformation::queryToPure::normalizeDynamicTableSourceParam(t:TableFunction[1], type:String[1]):String[1]
 {
   let functionName = $t.functionCall.name.parts->at(0);
-  let originalParameter = $t.functionCall.arguments->cast(@StringLiteral)->toOne().value;
+  let originalParameter = $t.functionCall.arguments->at(0)->cast(@StringLiteral).value;
 
   if ($functionName->startsWith($type + '__'),
     |$functionName->substring($type->length() + 2)->replace('_','::')->replace('::::', '_') + '.' + $originalParameter,
@@ -189,11 +217,17 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 //NOTE: this is currently only used in the sql grammar flow, not traditional.
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true)
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1]):Function<Any>[1]
+{
   let extensions = meta::relational::extension::relationalExtensions();
   let _context = rootContext($sources, $extensions);
   let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
-  let pureFunc = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
+  let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
+  let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
 //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
   // SQL to Pure ---
   $pureFunc;
@@ -440,7 +474,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processUnion(union: Union[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
-
   debug(|'processUnion', $context.debug);
 
   let left = wrapWithFrom(processRelation($union.left, ^$context(root = false, id = $context.id + 1)));
@@ -1505,12 +1538,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let arguments = $tableFunc.functionCall.arguments->extractSourceArguments();
 
   let source = $context.source($type, $arguments);
+
   $source->match(
     [
       d:DynamicSQLSource[1] |
         //HERE
         let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
-        let columns = $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns;
+
+        let columns = $vs->match([
+          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
+          v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
+        ]);
+
         ^$context
         (
           columns = $columns->map(c | ^QueryColumn(
@@ -1627,18 +1666,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createLambdaParameter(p:VariableExpression[1], expressions:Any[*], suffix:String[0..1], context: SqlTransformContext[1]):SQLLambdaParameter[*]
 {
-    let value = if ($expressions->isEmpty(),
-      | iv([]),
-      | $expressions->match([
-          e:meta::external::query::sql::metamodel::Expression[1] | $e->processExpression(rowExpressionContext($context), $context)->convertValueSpecification($p.genericType.rawType->toOne()),
-          a:Any[*] | iv(convertValue($a, $p->evaluateAndDeactivate().genericType.rawType->toOne()))
-        ]);
-    );
+    let value = createParameterValue($p, $expressions, $context);
 
     let name = if ($suffix->isNotEmpty(), | $p.name + '_' + $suffix->toOne(), | $p.name);
 
     ^SQLLambdaParameter(variable = ^$p(name = $name), value = $value);
 }
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  if ($expressions->isEmpty(),
+      | iv([]),
+      | $expressions->match([
+          e:meta::external::query::sql::metamodel::Expression[1] | $e->processExpression(rowExpressionContext($context), $context)->convertValueSpecification($p.genericType.rawType->toOne()),
+          a:Any[*] | iv(convertValue($a, $p->evaluateAndDeactivate().genericType.rawType->toOne()))
+        ]);
+  )
+} 
 
 
 function meta::external::query::sql::transformation::queryToPure::convertValueSpecification(v:ValueSpecification[1], type:Type[0..1]):ValueSpecification[1]

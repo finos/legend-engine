@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,25 +14,30 @@
 
 package org.finos.legend.engine.sql.compiler;
 
-import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_TableFunction;
+import org.finos.legend.engine.protocol.sql.visitors.BaseNodeCollectorVisitor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public interface TableFunctionCompilerExtension
+class TableFunctionElementExtractor extends BaseNodeCollectorVisitor<Set<? extends PackageableElement>>
 {
-    @Deprecated
-    default Root_meta_external_query_sql_metamodel_TableFunction translate(TableFunction tablefunction, PureModel pureModel)
+    private final PureModel pureModel;
+
+    public TableFunctionElementExtractor(PureModel pureModel)
     {
-        return null;
+        super(values -> values.stream().flatMap(Collection::stream).collect(Collectors.toSet()), Sets.mutable.empty());
+
+        this.pureModel = pureModel;
     }
 
-    //TODO make non default once dependencies updated
-    default List<PackageableElement> extractElements(TableFunction tableFunction, PureModel pureModel)
+    @Override
+    public Set<? extends PackageableElement> visit(TableFunction tableFunction)
     {
-        return Lists.mutable.empty();
+        return TableFunctionCompilerExtensionLoader.extensions().flatCollect(x -> x.extractElements(tableFunction, pureModel)).toSet();
     }
 }
