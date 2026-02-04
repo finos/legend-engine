@@ -790,7 +790,7 @@ function meta::pure::router::clustering::clusteredGetAll(set: SetImplementation[
       genericType= $sourceType, id = '1', multiplicity = ZeroMany, runtime = $runtime, mapping = $mapping, executionContext = $exeCtx, sets = $set,
       value = ^SimpleFunctionExpression
               (
-                func = getAll_Class_1__T_MANY_, functionName = 'getAll', importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup), genericType = $sourceType, multiplicity = ZeroMany,
+                func = getAll_Class_1__T_MANY_, functionName = 'getAll', importGroup = system::imports.children->at(0)->cast(@ImportGroup), genericType = $sourceType, multiplicity = ZeroMany,
                 parametersValues = ^StoreMappingRoutedValueSpecification
                 (
                     genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), id = '1', multiplicity = PureOne, runtime = $runtime, sets = $set, mapping = $mapping, executionContext = $exeCtx,
