@@ -19,12 +19,14 @@ import io.deephaven.api.ConcurrencyControl;
 import io.deephaven.api.JoinAddition;
 import io.deephaven.api.JoinMatch;
 import io.deephaven.api.Pair;
+import io.deephaven.api.RawString;
 import io.deephaven.api.Selectable;
 import io.deephaven.api.SortColumn;
 import io.deephaven.api.SortSpec;
 import io.deephaven.api.TableOperations;
 import io.deephaven.api.TableOperationsDefaults;
 import io.deephaven.api.expression.Expression;
+import io.deephaven.api.expression.Method;
 import io.deephaven.api.filter.Filter;
 import io.deephaven.api.filter.FilterAnd;
 import io.deephaven.api.filter.FilterBase;
@@ -48,6 +50,7 @@ import io.deephaven.client.impl.ConfigService;
 import io.deephaven.client.impl.TableService;
 import io.deephaven.client.impl.TableHandleManager;
 import io.deephaven.qst.TableCreator;
+import io.deephaven.qst.table.EmptyTable;
 import io.deephaven.qst.table.TableSpec;
 import io.deephaven.qst.table.TicketTable;
 import io.deephaven.qst.table.TableBase;
@@ -73,6 +76,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.ColumnName", ColumnName.class);
         DEPENDENCIES.put("io.deephaven.api.ConcurrencyControl", ConcurrencyControl.class);
         DEPENDENCIES.put("io.deephaven.api.expression.Expression", Expression.class);
+        DEPENDENCIES.put("io.deephaven.api.expression.Method", Method.class);
         DEPENDENCIES.put("io.deephaven.api.filter.Filter", Filter.class);
         DEPENDENCIES.put("io.deephaven.api.filter.FilterAnd", FilterAnd.class);
         DEPENDENCIES.put("io.deephaven.api.filter.FilterBase", FilterBase.class);
@@ -85,6 +89,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.literal.Literal", Literal.class);
         DEPENDENCIES.put("io.deephaven.api.literal.LiteralFilter", LiteralFilter.class);
         DEPENDENCIES.put("io.deephaven.api.Pair", Pair.class);
+        DEPENDENCIES.put("io.deephaven.api.RawString", RawString.class);
         DEPENDENCIES.put("io.deephaven.api.Selectable", Selectable.class);
         DEPENDENCIES.put("io.deephaven.api.SortColumn", SortColumn.class);
         DEPENDENCIES.put("io.deephaven.api.SortSpec", SortSpec.class);
@@ -111,6 +116,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.qst.table.TableSchema", TableSchema.class);
         DEPENDENCIES.put("io.deephaven.qst.table.TableSpec", TableSpec.class);
         DEPENDENCIES.put("io.deephaven.qst.table.TicketTable", TicketTable.class);
+        DEPENDENCIES.put("io.deephaven.qst.table.EmptyTable", EmptyTable.class);
 
         DEPENDENCIES.put(PURE_PACKAGE + "IDeephavenExecutionNodeSpecifics", IDeephavenExecutionNodeSpecifics.class);
     }
