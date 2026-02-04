@@ -4672,6 +4672,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
 {
    let isIfTrueFalseStmt = $f.func == if_Boolean_1__Function_1__Function_1__T_m_ || $state.inIf == true;
    let paramIsIfTrueFalseStmt = {paramIndex:Integer[1]|$state.inIf == true && $paramIndex->in([1,2])};
+   let funcParameters = $f.func->genericType().typeArguments.rawType->cast(@FunctionType).parameters;
 
    let processedParams = if($f->isIfForEnum($state.inFilter),| processIfForEnum($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
                                                             ,| let zippedParameters = $f.parametersValues->size()->range()->zip($f.parametersValues);
@@ -4699,8 +4700,8 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
    let res = ^$operation(select = $state.inFilter->if(
                            | let unSupportedBiTemporalProcessing = $mergedSQL.filteringOperation->isEmpty() && $operation.milestoningContext->isNotEmpty() && $operation.milestoningContext->toOne()->isBiTemporalMilestoningTopLevelAnd($f.func);
                              if($unSupportedBiTemporalProcessing ,| $mergedSQL
-                                                                 ,| ^$mergedSQL(filteringOperation = newDynaFunction($name, $dynaFuncParameterProcessor->eval(if($parameterSQL->isEmpty(), | [], |$mergedSQL.filteringOperation)))));,
-                           | ^$mergedSQL(columns = newDynaFunction($name, $dynaFuncParameterProcessor->eval($mergedSQL.columns)))
+                                                                 ,| ^$mergedSQL(filteringOperation = newDynaFunction($name, $dynaFuncParameterProcessor->eval(if($parameterSQL->isEmpty() || $funcParameters->isEmpty(), |[], |$mergedSQL.filteringOperation)))));,
+                           | ^$mergedSQL(columns = newDynaFunction($name, $dynaFuncParameterProcessor->eval(if($funcParameters->isEmpty(), |[], |$mergedSQL.columns))))
                         ),
                         currentTreeNode = [],
                         positionBeforeLastApplyJoinTreeNode = []
