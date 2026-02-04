@@ -79,6 +79,22 @@ public class Identity
         return Optional.of(credentialType.cast(raw));
     }
 
+    public Credential getFirstCredential()
+    {
+        if (this.credentials.isEmpty())
+        {
+            String message = "Invalid method call. Calling code assumes single credential but none was found";
+            throw new RuntimeException(message);
+        }
+        if (this.credentials.size() > 1)
+        {
+            String credentialNames = this.credentials.stream().map(c -> c.getClass().getCanonicalName()).collect(Collectors.joining(","));
+            String message = String.format("Invalid method call. Cannot return 'first' credential when the identity has more than one credential. Credentials=%s", credentialNames);
+            throw new RuntimeException(message);
+        }
+        return this.credentials.get(0);
+    }
+
     public int countCredentials()
     {
         return this.credentials.size();
