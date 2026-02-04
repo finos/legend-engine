@@ -17,19 +17,23 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
+import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.Optional;
 import java.util.Properties;
 
-public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenticationStrategy
+public class DelegatedKerberosAuthenticationStrategy extends AuthenticationStrategy
 {
     private final String serverPrincipal;
 
@@ -47,13 +51,14 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
         Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
-        if (!kerberosHolder.isPresent())
+        Optional<LegendConstrainedKerberosCredential> constrainedHolder = identity.getCredential(LegendConstrainedKerberosCredential.class);
+        if (!kerberosHolder.isPresent() && !constrainedHolder.isPresent())
         {
             throw new UnsupportedOperationException("Expected Kerberos credential was not found");
         }
         Properties properties = ds.getProperties();
-        LegendKerberosCredential legendKerberosCredential = this.resolveCredential(properties);
-        return getConnectionUsingKerberos(ds.getDataSource(), legendKerberosCredential.getSubject());
+        Subject subject = this.resolveSubject(properties);
+        return getConnectionUsingKerberos(ds.getDataSource(), subject);
     }
 
     @Override
@@ -62,16 +67,35 @@ public class DelegatedKerberosAuthenticationStrategy extends InteractiveAuthenti
         return Tuples.pair(url, properties);
     }
 
-    private LegendKerberosCredential resolveCredential(Properties properties)
+    Subject resolveSubject(Properties properties)
     {
         IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
         if (identityState.getCredentialSupplier().isPresent())
         {
-            return (LegendKerberosCredential) super.getDatabaseCredential(identityState);
+            Credential credential = super.getDatabaseCredential(identityState);
+            if (credential instanceof LegendKerberosCredential)
+            {
+                return ((LegendKerberosCredential) credential).getSubject();
+            }
+            if (credential instanceof LegendConstrainedKerberosCredential)
+            {
+                return ((LegendConstrainedKerberosCredential) credential).getMergedSubject();
+            }
+            throw new UnsupportedOperationException("Unsupported credential type returned by supplier: " + credential.getClass());
         }
         else
         {
-            return identityState.getIdentity().getCredential(LegendKerberosCredential.class).get();
+            Optional<LegendKerberosCredential> kerberos = identityState.getIdentity().getCredential(LegendKerberosCredential.class);
+            if (kerberos.isPresent())
+            {
+                return kerberos.get().getSubject();
+            }
+            Optional<LegendConstrainedKerberosCredential> constrained = identityState.getIdentity().getCredential(LegendConstrainedKerberosCredential.class);
+            if (constrained.isPresent())
+            {
+                return constrained.get().getMergedSubject();
+            }
+            throw new UnsupportedOperationException("Expected Kerberos credential was not found on identity state");
         }
     }
 

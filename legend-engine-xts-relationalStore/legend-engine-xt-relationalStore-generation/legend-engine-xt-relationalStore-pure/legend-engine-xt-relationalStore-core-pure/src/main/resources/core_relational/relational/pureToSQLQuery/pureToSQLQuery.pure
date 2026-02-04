@@ -2615,7 +2615,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
                 c|
                   let colName = $c.name->toOne();
                   let colType = $c.classifierGenericType.typeArguments->at(1);
-                  let mayQuotePivotColNames = if ($colName->contains('__|__'),|'\''+$colName+'\'',|$colName);
+                  let mayQuotePivotColNames = if ($colName->contains('__|__') && !$colName->startsWith('\'') && !$colName->endsWith('\''),|'\''+$colName+'\'',|$colName);
                   ^Alias(name=$colName->addQuotesIfNecessary(),relationalElement=^TableAliasColumn(alias=$alias,column=^Column(name=$mayQuotePivotColNames->addQuotesIfNecessary(), type=meta::relational::transform::fromPure::pureTypeToDataType($colType)->toOne())));
               );
 }
@@ -6907,7 +6907,8 @@ function meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newA
                       relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))
                   );
             ]);,
-        tac: TableAliasColumn[1] | ^Alias(name=$tac.columnName->orElse($tac.column.name), relationalElement=^$tac(alias =$newAlias))
+        tac: TableAliasColumn[1] | ^Alias(name=$tac.columnName->orElse($tac.column.name), relationalElement=^$tac(alias =$newAlias)),
+        cn:ColumnName[1] | ^Alias(name=$cn.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())))
       ]);
    );
 }

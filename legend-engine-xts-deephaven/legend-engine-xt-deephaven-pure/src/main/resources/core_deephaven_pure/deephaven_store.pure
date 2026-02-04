@@ -36,5 +36,10 @@ Class meta::external::store::deephaven::metamodel::store::Column extends meta::e
 // TODO - add the sourceInformation fields to all classes for Deephaven such that the parser can add metadata back into the pojos/pmcd
 Class meta::external::store::deephaven::metamodel::store::Literal extends meta::external::store::deephaven::metamodel::DeephavenOperationElement
 {
-   <<equality.Key>> value:Any[*];
+   <<equality.Key>> value : Any[1];
+}
+
+Class meta::external::store::deephaven::metamodel::store::LiteralList extends meta::external::store::deephaven::metamodel::DeephavenOperationElement
+{
+   <<equality.Key>> values : Literal[*];
 }

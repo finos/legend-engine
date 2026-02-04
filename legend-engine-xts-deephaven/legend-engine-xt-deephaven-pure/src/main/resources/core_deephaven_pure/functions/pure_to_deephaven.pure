@@ -32,9 +32,9 @@ import meta::external::store::deephaven::pureToDeephaven::*;
 
 Class meta::external::store::deephaven::metamodel::DeephavenQuery extends DeephavenOperationElement
 {
-  source : meta::external::store::deephaven::metamodel::store::Table[1];
+  source : meta::external::store::deephaven::metamodel::store::Table[0..1];
   operations: QueryOperation[*];
-  selectQueryExists: Boolean[0..1]; // to ommit unecessary selecty clause
+  selectQueryExists: Boolean[0..1]; // to omit unnecessary select clause
 }
 
 Class meta::external::store::deephaven::metamodel::QueryOperation extends DeephavenOperationElement
@@ -61,6 +61,13 @@ Class meta::external::store::deephaven::metamodel::JoinOperation extends QueryOp
   rightTable: meta::external::store::deephaven::metamodel::store::Table[1];
   joinType: meta::external::store::deephaven::metamodel::JoinKind[1];
   conditions: JoinCondition[*];
+}
+
+Class meta::external::store::deephaven::metamodel::NumericOperation extends QueryOperation
+{
+  methodObjectName: String[1] = 'io.deephaven.function.Numeric';
+  methodName: String[1];
+  methodArguments : DeephavenOperationElement[*];
 }
 
 Enum meta::external::store::deephaven::metamodel::JoinKind
@@ -158,8 +165,11 @@ function meta::external::store::deephaven::pureToDeephaven::process(sq:StoreQuer
     supportedRoutingFunctions = supportedRoutingFunctions(),
     supportedSimpleValueFunctions = supportedSimpleValueFunctions()
   );
-  let processedReq = $sq.vs->processValueSpecification(^DeephavenOperationElement(), $req);
-  ^$req(dhQuery = $processedReq->toOne()->cast(@DeephavenQuery));
+  let processedReq = $sq.vs->processValueSpecification(^DeephavenOperationElement(), $req)->toOne();
+  $processedReq->match([
+                         dhQuery: DeephavenQuery[1] | ^$req(dhQuery = $dhQuery);,
+                         queryOp: QueryOperation[1] | ^$req(dhQuery = ^DeephavenQuery(operations = $queryOp));
+  ]);
 }
 
 
@@ -218,20 +228,28 @@ function meta::external::store::deephaven::pureToDeephaven::processInstanceValue
 function meta::external::store::deephaven::pureToDeephaven::processValue(vals: Any[*], operation: DeephavenOperationElement[1], req: State[1]): DeephavenOperationElement[*]
 {
   let res = if ($vals->isEmpty(), 
-        | $req.dhQuery, 
-        | $vals->map(v | $v->match([
-                                    s:String[1] | ^Literal(value=$s);,
-                                    i:Integer[1] | ^Literal(value=$i),
-                                    b:Boolean[1] | ^Literal(value=$b),
-                                    d:DateTime[1] | ^Literal(value=$d),
-                                    x:meta::pure::store::RelationStoreAccessor<Any>[1] | let relation = $x.sourceElement->cast(@Table);
-                                                                                         ^DeephavenQuery(source = $relation, operations = ^SelectOperation(columns = $relation.columns));
-                                   ])); );
+                | $req.dhQuery, 
+                | let processedVals = $vals->map(v | $v->match([
+                                                                s:String[1] | ^Literal(value=$s);,
+                                                                i:Integer[1] | ^Literal(value=$i),
+                                                                f:Float[1] | ^Literal(value=$f),
+                                                                d:Decimal[1] | ^Literal(value=$d),
+                                                                b:Boolean[1] | ^Literal(value=$b),
+                                                                d:DateTime[1] | ^Literal(value=$d),
+                                                                x:meta::pure::store::RelationStoreAccessor<Any>[1] | let relation = $x.sourceElement->cast(@Table);
+                                                                                                                    ^DeephavenQuery(source = $relation, operations = ^SelectOperation(columns = $relation.columns));,
+                                                                v:ValueSpecification[1] | $v->processValueSpecification($operation, $req)
+                                                              ]));
+                  $processedVals->match([
+                    literal: Literal[1] | $literal,
+                    literals: Literal[1..*] | ^LiteralList(values = $literals),
+                    d: DeephavenOperationElement[*] | $d
+                  ]);
+            );
   $res;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////////////// Boolean Operatyion Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////// Boolean Operation Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function meta::external::store::deephaven::pureToDeephaven::processEqual(vs : FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
@@ -250,9 +268,8 @@ function meta::external::store::deephaven::pureToDeephaven::processIn(vs : Funct
   let debug = $initReq.debug;
 
   let leftSide = $vs.parametersValues->at(0)->processValueSpecification($operation, $initReq)->toOne();
-  let rightSide = $vs.parametersValues->at(1)->processValueSpecification($operation, $initReq);
-  let combinedRightSide = ^Literal(value = $rightSide->map(r | $r->cast(@Literal).value));
-  let mergedSQL = ^InOperatorExpression(expressions=[$leftSide, $combinedRightSide]);
+  let rightSide = $vs.parametersValues->at(1)->processValueSpecification($operation, $initReq)->cast(@LiteralList)->toOne();
+  let mergedSQL = ^InOperatorExpression(expressions=[$leftSide, $rightSide]);
   $mergedSQL;
 }
 
@@ -300,7 +317,7 @@ function meta::external::store::deephaven::pureToDeephaven::processGreaterThan(v
   $mergedSQL;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////// Relation Operatyion Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////// Relation Operation Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function meta::external::store::deephaven::pureToDeephaven::processTdsLambda(mapFn:ValueSpecification[1], operation: DeephavenOperationElement[1], initReq: State[1]): JoinCondition[1]
 {
@@ -441,6 +458,229 @@ function meta::external::store::deephaven::pureToDeephaven::translateJoinKind(jk
                   | meta::external::store::deephaven::metamodel::JoinKind.OUTER)))
 }
 
+///////////////////////////////////////////////////////////////////////////////////////// Numeric Operation Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function meta::external::store::deephaven::pureToDeephaven::processNumericOperation(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1], pureFunctionName: String[1], deephavenMethodName: String[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> ' + $pureFunctionName);
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^NumericOperation(methodName = $deephavenMethodName, methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processLog(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'log', 'log');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processLog10(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'log10', 'log10');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processExp(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'exp', 'exp');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAbs(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'abs', 'abs');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMod(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'mod', 'floorMod');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processRem(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'rem', 'IEEEremainder');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processSign(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'sign', 'signum');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCbrt(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'cbrt', 'cbrt');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processPow(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'pow', 'pow');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processSqrt(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'sqrt', 'sqrt');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCeiling(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'ceiling', 'ceil');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processFloor(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'floor', 'floor');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processRound(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'round', 'round');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processRoundWithScale(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  fail('Round with scale needs to be implemented');
+  $vs->processNumericOperation($operation, $initReq, 'round', 'placeholder'); // BigDecimal.divide() with RoundingMode?
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAcos(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'acos', 'acos');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAsin(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'asin', 'asin');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAtan(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'atan', 'atan');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAtan2(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'atan2', 'atan2');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCos(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'cos', 'cos');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCot(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'cot', 'cot');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processSin(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'sin', 'sin');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processTan(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'tan', 'tan');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCosh(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'cosh', 'cosh');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processSinh(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'sinh', 'sinh');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processTanh(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'tanh', 'tanh');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processToDegrees(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'toDegrees', 'toDegrees');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processToRadians(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'toRadians', 'toRadians');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMedian(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'median', 'median');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processAverage(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'average', 'avg');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processSum(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'sum', 'sum');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMax(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'max', 'max');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMin(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'min', 'min');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processPercentile(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'percentile', 'percentile');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processWavg(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'wavg', 'wavg');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCorr(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'corr', 'cor');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processVariance(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  let params = $vs.parametersValues;
+  let isBiasCorrected = $params->at(1)->evaluateAndDeactivate()->cast(@InstanceValue).values->toOne()->cast(@Boolean);
+  if($isBiasCorrected,
+     | ^$vs(parametersValues = $params->init())->processNumericOperation($operation, $initReq, 'variance', 'var'),
+     | fail('Variance population is not supported yet in Deephaven extension'); []->toOne(););
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processVarianceSample(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'varianceSample', 'var');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processPlus(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'plus', 'sum');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  let inputSize = $vs.parametersValues->toOne()->size();
+  if([pair(| $inputSize == 1, | $vs->processNumericOperation($operation, $initReq, 'minus', 'negateExact'))],
+      // pair(| $inputSize == 2, | $vs->processNumericOperation($operation, $initReq, 'minus', 'subtractExact'))],
+      | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne(););
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processTimes(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'times', 'product');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processRange(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $vs->processNumericOperation($operation, $initReq, 'range', 'sequence');
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////// Supported Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -456,7 +696,104 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_),  processTdsRestrict_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_),      processFilter_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_),     processSort_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    pair(supportedIfEqual(meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_),     processJoin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_)
+    pair(supportedIfEqual(meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_),     processJoin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::math::log_Number_1__Float_1_),     processLog_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::log10_Number_1__Float_1_),     processLog10_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::exp_Number_1__Float_1_),     processExp_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::abs_Integer_1__Integer_1_),     processAbs_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::abs_Number_1__Number_1_),     processAbs_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::abs_Float_1__Float_1_),     processAbs_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::abs_Decimal_1__Decimal_1_),     processAbs_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_),     processMod_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::rem_Number_1__Number_1__Number_1_),     processRem_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sign_Number_1__Integer_1_),     processSign_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::cbrt_Number_1__Float_1_),     processCbrt_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::pow_Number_1__Number_1__Number_1_),     processPow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sqrt_Number_1__Float_1_),     processSqrt_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::ceiling_Number_1__Integer_1_),     processCeiling_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::floor_Number_1__Integer_1_),     processFloor_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::round_Number_1__Integer_1_),     processRound_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle round with scale
+    pair(supportedIfEqual(meta::pure::functions::math::round_Float_1__Integer_1__Float_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle round with scale
+    pair(supportedIfEqual(meta::pure::functions::math::acos_Number_1__Float_1_),     processAcos_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::asin_Number_1__Float_1_),     processAsin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::atan_Number_1__Float_1_),     processAtan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_),     processAtan2_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::cos_Number_1__Float_1_),     processCos_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::cot_Number_1__Float_1_),     processCot_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sin_Number_1__Float_1_),     processSin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::tan_Number_1__Float_1_),     processTan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::cosh_Number_1__Float_1_),     processCosh_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sinh_Number_1__Float_1_),     processSinh_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::tanh_Number_1__Float_1_),     processTanh_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::toDegrees_Number_1__Float_1_),     processToDegrees_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::toRadians_Number_1__Float_1_),     processToRadians_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::pi_Number_1__Float_1_),     processPi_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Static variable in Numeric
+    pair(supportedIfEqual(meta::pure::functions::math::median_Integer_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::median_Float_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::median_Number_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::mode_Integer_MANY__Float_1_),     processMode_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::mode_Float_MANY__Float_1_),     processMode_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::mode_Number_MANY__Float_1_),     processMode_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    pair(supportedIfEqual(meta::pure::functions::math::average_Integer_MANY__Float_1_),     processAverage_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::average_Float_MANY__Float_1_),     processAverage_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::average_Number_MANY__Float_1_),     processAverage_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sum_Integer_MANY__Integer_1_),     processSum_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sum_Float_MANY__Float_1_),     processSum_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::sum_Number_MANY__Number_1_),     processSum_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Float_MANY__Float_$0_1$_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Float_$1_MANY$__Float_1_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Number_MANY__Number_$0_1$_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::max_Number_$1_MANY$__Number_1_),     processMax_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_),     processMaxBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::maxBy_T_MANY__Number_MANY__Integer_1__T_MANY_),     processMaxBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::maxBy_RowMapper_MANY__T_$0_1$_),     processMaxBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::maxBy_RowMapper_MANY__Integer_1__T_MANY_),     processMaxBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    pair(supportedIfEqual(meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::min_Float_MANY__Float_$0_1$_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::min_Float_$1_MANY$__Float_1_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::min_Number_MANY__Number_$0_1$_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::min_Number_$1_MANY$__Number_1_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::minBy_T_MANY__Number_MANY__Integer_1__T_MANY_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::minBy_RowMapper_MANY__T_$0_1$_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::minBy_RowMapper_MANY__Integer_1__T_MANY_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    pair(supportedIfEqual(meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_),     processPercentile_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    pair(supportedIfEqual(meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::wavgUtility::wavgRowMapper_Number_$0_1$__Number_$0_1$__WavgRowMapper_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    pair(supportedIfEqual(meta::pure::functions::math::corr_Number_MANY__Number_MANY__Number_$0_1$_),     processCorr_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::corr_RowMapper_MANY__Number_$0_1$_),     processCorr_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::covarPopulation_Number_MANY__Number_MANY__Number_$0_1$_),     processCovarPopulation_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::covarPopulation_RowMapper_MANY__Number_$0_1$_),     processCovarPopulation_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::covarSample_Number_MANY__Number_MANY__Number_$0_1$_),     processCovarSample_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::covarSample_RowMapper_MANY__Number_$0_1$_),     processCovarSample_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
+    // pair(supportedIfEqual(meta::pure::functions::math::stdDevSample_Number_MANY__Number_1_),     processStdDevSample_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not stopping routing at stdDevSample
+    // pair(supportedIfEqual(meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_),     processStdDevPopulation_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    pair(supportedIfEqual(meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_),     processVariance_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::varianceSample_Number_MANY__Number_1_),     processVarianceSample_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_),     processCorr_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    pair(supportedIfEqual(meta::pure::functions::math::plus_Float_MANY__Float_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::plus_Integer_MANY__Integer_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::plus_Number_MANY__Number_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::plus_Decimal_MANY__Decimal_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::minus_Float_MANY__Float_1_),     processMinus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::minus_Integer_MANY__Integer_1_),     processMinus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::minus_Number_MANY__Number_1_),     processMinus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::minus_Decimal_MANY__Decimal_1_),     processMinus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::times_Float_MANY__Float_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::times_Integer_MANY__Integer_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::times_Number_MANY__Number_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::times_Decimal_MANY__Decimal_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    // pair(supportedIfEqual(meta::pure::functions::math::divide_Number_1__Number_1__Float_1_),     processTan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_),     processTan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of numeric
+    pair(supportedIfEqual(meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_),     processRange_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_)
   ];
 }
 

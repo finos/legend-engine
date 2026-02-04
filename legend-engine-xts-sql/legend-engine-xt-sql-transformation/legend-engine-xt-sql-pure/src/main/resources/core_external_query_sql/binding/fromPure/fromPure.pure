@@ -1684,6 +1684,17 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   )
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  if ($expressions->isEmpty(),
+      | iv([]),
+      | $expressions->match([
+          e:meta::external::query::sql::metamodel::Expression[1] | $e->processExpression(rowExpressionContext($context), $context)->convertValueSpecification($p.genericType.rawType->toOne()),
+          a:Any[*] | iv(convertValue($a, $p->evaluateAndDeactivate().genericType.rawType->toOne()))
+        ]);
+  )
+} 
+
 
 function meta::external::query::sql::transformation::queryToPure::convertValueSpecification(v:ValueSpecification[1], type:Type[0..1]):ValueSpecification[1]
 {
