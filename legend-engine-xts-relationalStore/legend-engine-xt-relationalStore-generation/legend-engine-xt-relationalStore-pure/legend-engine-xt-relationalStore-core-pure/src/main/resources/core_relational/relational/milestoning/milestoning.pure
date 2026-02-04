@@ -150,7 +150,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredArrayFlattenRelation[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
                     t:TableFunctionParamPlaceHolder[1] | $t,
-                    dt:DataTypeInfo[1] | $dt
+                    dt:DataTypeInfo[1] | $dt,
+                    swc:meta::relational::functions::pureToSqlQuery::SelectWithCursor[1] | $swc.select->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)
                   ]);
 }
 
