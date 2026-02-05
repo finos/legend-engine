@@ -6459,8 +6459,23 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let select = $mainQuery.select;
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
   let newElement = $expressionToRoute->match([
-                                              f:FunctionExpression[1]|$f->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
-                                              i:InstanceValue[1]|$i->processInstanceValue($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0)
+                                              f:FunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                              i:InstanceValue[1] | let transformedValues = $i.values->map(v | $v->match([
+                                                                                                                          s:String[1] | ^Literal(value=$s),
+                                                                                                                          n:Number[1] | ^Literal(value=$n),
+                                                                                                                          d:Date[1] | ^Literal(value=$d),
+                                                                                                                          b:Boolean[1] | ^Literal(value=$b),
+                                                                                                                          e:Enum[1] | ^Literal(value=$e),
+                                                                                                                          e:Enumeration<Any>[1] | ^Literal(value=$e),
+                                                                                                                          f:SimpleFunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                                                                                                          i:InstanceValue[1] | $i->processInstanceValue($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0),
+                                                                                                                          v:PlanVarPlaceHolder[1] | ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
+                                                                                                                        ])
+                                                                                                          );
+                                                                   if($transformedValues->isNotEmpty(),
+                                                                     | $transformedValues->toOne(),
+                                                                     | ^Literal(value = ^SQLNull())
+                                                                   );
                                             ]);
 
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
@@ -8205,7 +8220,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationVariableAri
 {
   let select = $operation.select;
   let columns = $expression.parametersValues->map(p | $p->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions))->map(v | $v->match([s:SelectWithCursor[1]|$s.select.columns, w:WindowColumn[1]|$w]));
-  ^$operation(select = ^$select(columns = newDynaFunction($expression.functionName->toOne(), $columns)));
+  ^$operation(select = ^$select(columns = newDynaFunction($expression.func.functionName->toOne(), $columns)));
 }
 
 function meta::relational::functions::pureToSqlQuery::processVariableArity(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

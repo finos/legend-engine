@@ -285,6 +285,7 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", AdapterQualifier.needsInvestigation),
             one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::relation::tests::project::testSimpleRelationProjectLiterals_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\"", AdapterQualifier.needsInvestigation),
 
             one("meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_\"", AdapterQualifier.needsInvestigation),
 

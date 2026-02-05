@@ -20,6 +20,7 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 import meta::pure::functions::relation::tests::composition::*;
 import meta::pure::functions::collection::*;
+import meta::pure::functions::flow::*;
 
 Class meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests
 {
@@ -1415,3 +1416,60 @@ meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Ali
                 '   D,1\n'+
                 '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectCoalesce<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+        [
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Johnson'),
+            ^PersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Hill'),
+            ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen'),
+            ^PersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Roberts')
+        ]->project(~[
+            first : x | $x.firstName,
+            last  : x | $x.lastName->coalesce('anonymous');
+        ]);
+        // ->extend(over(~first, ~last->ascending()), ~[leadLast:{p,w,r|$p->lead($r).last}, lagLast:{p,w,r|$p->lag($r).last}])
+        // ->sort([ascending(~first), ascending(~last)]);
+    };
+
+        let res =  $f->eval($expr);
+true;
+        // assertEquals( '#TDS\n' +
+        //               '   legalName,firstName\n' +
+        //               '   Firm X,Anthony\n' +
+        //               '   Firm X,John\n' +
+        //               '   Firm X,John\n' +
+        //               '   Firm X,Peter\n' +
+        //               '#', $res->sort(~firstName->ascending())->toString());
+}
+//     let expr = {
+//                 | ^TypeForProjectTest
+//                   (
+//                     name = 'ok',
+//                     addresses = [
+//                         ^Address(val='no'),
+//                         ^Address(val='other')
+//                     ],
+//                     values = [
+//                       ^PrimitiveContainer(val=1),
+//                       ^PrimitiveContainer(val=2),
+//                       ^PrimitiveContainer(val=3)
+//                     ]
+//                   )->project(~name:x|$x.name->coalesce(''))
+//             };
+
+//     let res =  $f->eval($expr);
+
+//     true;
+
+//     // assertEquals( '#TDS\n'+
+//     //               '   val3\n'+
+//     //               '   3\n'+
+//     //               '   8\n'+
+//     //               '   13\n'+
+//     //               '   19\n'+
+//     //               '   26\n'+
+//     //               '#', $res->sort([~val3->ascending()])->toString());
+// }

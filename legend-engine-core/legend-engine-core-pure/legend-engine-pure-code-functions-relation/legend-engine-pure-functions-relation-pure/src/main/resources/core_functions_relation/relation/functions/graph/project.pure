@@ -155,7 +155,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpl
 }
 
 
-function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleRelationProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::project::testSimpleRelationProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -180,4 +180,31 @@ function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpl
                   '   weq6\n'+
                   '   wwe5\n'+
                   '#', $res->sort([~name->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::project::testSimpleRelationProjectLiterals<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id
+                  1
+                  2
+                  3
+                #->project(~[
+                      id:x|$x.id,
+                      string:x|'abc',
+                      integer:x|1,
+                      float:x|1.2,
+                      boolean:x|true
+                    ])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,string,integer,float,boolean\n'+
+                  '   1,abc,1,1.2,true\n'+
+                  '   2,abc,1,1.2,true\n'+
+                  '   3,abc,1,1.2,true\n'+
+                  '#', $res->sort(~id->ascending())->toString());
 }
