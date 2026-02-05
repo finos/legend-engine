@@ -86,7 +86,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
                                                                   );
                                                       let exp = ^SimpleFunctionExpression(func = $spm.property,
                                                                                           genericType = $spm.property.genericType,
-                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          importGroup = system::imports.children->at(0)->cast(@ImportGroup),
                                                                                           multiplicity = $spm.property.multiplicity,
                                                                                           parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
                                                                                           propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
@@ -107,7 +107,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
                                                                   );
                                                       let exp = ^SimpleFunctionExpression(func = $epm.property,
                                                                                           genericType = $epm.property.genericType,
-                                                                                          importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                          importGroup = system::imports.children->at(0)->cast(@ImportGroup),
                                                                                           multiplicity = $epm.property.multiplicity,
                                                                                           parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
                                                                                           propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));

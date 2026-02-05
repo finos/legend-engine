@@ -534,6 +534,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           p:ProcedureVariablePlaceHolder[1] | $dbConfig.tableFunctionParamProcessor($p, $sgc),
                                           v: VariableDeclaration[1]| $dbConfig.variableDeclarationProcessor($v, $sgc),
                                           bf: BatchFilterQueryIsolation[1] | '( '+ $bf.op->processOperation($dbConfig, $format, $config, $extensions)+ ' )',
+                                          swc:meta::relational::functions::pureToSqlQuery::SelectWithCursor[1] | $swc.select->processOperation($dbConfig, $format, $config, $extensions),
                                           {f:Any[1]| assert(false, 'Don\'t know how to handle %s', $f->type()); 'TO DO'; }
                                        ])->toOneMany()
                                      );
@@ -1058,7 +1059,6 @@ Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
                           |$this.toSql.transform->toOne()->eval($processedParams),
                           | $this.toSql.contextAwareTransform->toOne()->eval($processedParams,$sgcs->at(0)))
                       );
-
       format($this.toSql.format, $params);
    }:String[1];
 }

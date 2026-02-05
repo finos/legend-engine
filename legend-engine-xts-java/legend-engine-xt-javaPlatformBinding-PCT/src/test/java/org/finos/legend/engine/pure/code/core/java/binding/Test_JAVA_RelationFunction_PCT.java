@@ -55,6 +55,7 @@ public class Test_JAVA_RelationFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::relation::tests::pivot", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
             pack("meta::pure::functions::relation::tests::project", "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::relation::tests::project::testSimpleRelationProjectLiterals_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
             pack("meta::pure::functions::relation::tests::rename", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
             pack("meta::pure::functions::relation::tests::select", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
             pack("meta::pure::functions::relation::tests::size", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),

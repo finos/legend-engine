@@ -188,7 +188,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 |#TDS
@@ -203,7 +203,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                     NYC, USA, 2012, 7600
                     NYC, USA, 2012, 7600
                  #->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
-                 ->cast(@Relation<(city:String,country:String,'2000__|__newCol':Integer,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
+                 ->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
                  ->filter(x|$x.city=='NYC')
                };
 
@@ -235,7 +235,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->select(~[city,country,year,treePlanted])
                   ->groupBy(~[city,country], ~[year:x|$x.year:x|$x->plus(), treePlanted:x|$x.treePlanted:x|$x->plus()])
                   ->pivot(~[year], ~['newCol' : x|$x.treePlanted:x|$x->plus()])
-                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'4022__|__newCol':Integer,'6035__|__newCol':Integer)>)
+                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'4022__|__newCol\'':Integer,'\'6035__|__newCol\'':Integer)>)
                   ->sort(ascending(~city))
                };
 
@@ -269,7 +269,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->select(~[city,country,year,treePlanted])
                   ->groupBy(~[year,city,country], ~treePlanted:x|$x.treePlanted:x|$x->plus())
                   ->pivot(~[year], ~['newCol' : x | $x.treePlanted : y | $y->plus()])
-                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
+                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
                   ->extend(~newCol:x|$x.city->toOne() + '_0')
                   ->sort(ascending(~city))
                   ->limit(3)
@@ -304,8 +304,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   ->filter(x|$x.yr > 10)
                   ->select(~[city,country,year,treePlanted])
                   ->pivot(~[year], ~['newCol':x|$x.treePlanted:x|$x->plus()])
-                  ->cast(@Relation<(city:String,country:String,'2011__|__newCol':Integer,'2012__|__newCol':Integer)>)
-                  ->groupBy(~[country], ~['2011__|__newCol':x|$x.'2011__|__newCol':x|$x->plus(),'2012__|__newCol':x|$x.'2012__|__newCol':x|$x->plus()])
+                  ->cast(@Relation<(city:String,country:String,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)
+                  ->groupBy(~[country], ~['\'2011__|__newCol\'':x|$x.'\'2011__|__newCol\'':x|$x->plus(),'\'2012__|__newCol\'':x|$x.'\'2012__|__newCol\'':x|$x->plus()])
                   ->extend(~newCol:x|$x.country->toOne() + '_0')
                   ->sort(ascending(~country))
                };
@@ -1347,6 +1347,34 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort([~id->ascending()])->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+
+  let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #->pivot(~year, [2000, 2011], ~newCol : x | $x.treePlanted : y | $y->plus())
+                 ->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer)>)
+                 ->filter(x|$x.city=='NYC')
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   city,country,\'2000__|__newCol\',\'2011__|__newCol\'\n' +
+                  '   NYC,USA,15000,5000\n' +
+                  '#', $res->toString());
+}
+
 function 
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
   {
@@ -1386,4 +1414,33 @@ meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Ali
                 '   C,1\n'+
                 '   D,1\n'+
                 '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation>>
+  {
+    doc.doc='Verify processing with joins including currentUserId'
+  }
+meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let t1 = #TDS
+              id, col, user
+              1, More Test 1, user1
+              2, More Test 2, root
+            #;
+    let t2 = #TDS
+              id2, name
+              3, Pierre
+            #;
+    $t1->join($t2, JoinKind.LEFT, {x,y| $x.user == meta::pure::functions::runtime::currentUserId();});
+  };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,col,user,id2,name\n'+
+                '   1,More Test 1,user1,null,null\n'+
+                '   2,More Test 2,root,null,null\n'+
+                '#', $res->sort(~id->ascending())->toString());
 }

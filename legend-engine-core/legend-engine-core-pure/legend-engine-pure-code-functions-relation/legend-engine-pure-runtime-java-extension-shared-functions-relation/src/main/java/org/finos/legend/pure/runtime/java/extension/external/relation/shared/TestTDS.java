@@ -886,7 +886,7 @@ public abstract class TestTDS
             this.aggColumnName = aggColumnName;
             this.pureType = pureType;
             // TODO: we might need to rethink this column naming strategy, it could break in some edge cases
-            this.columnName = ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__");
+            this.columnName = "'" + ListIterate.collect(columnValues, Pair::getTwo).with(aggColumnName).select(Objects::nonNull).makeString("__|__") + "'";
         }
 
         public String getColumnName()

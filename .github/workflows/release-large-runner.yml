@@ -20,7 +20,7 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx16g
+  MAVEN_OPTS: -Xmx33g
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -74,4 +74,4 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -Dorg.slf4j.simpleLogger.showThreadName=true -DargLine="-Xmx12g"' -P release,docker,pct-cloud-test
+        run: mvn -B -e release:perform -Darguments='-B -e -T 2 -Dorg.slf4j.simpleLogger.showThreadName=true -DargLine="-Xmx6g"' -P release,docker,pct-cloud-test

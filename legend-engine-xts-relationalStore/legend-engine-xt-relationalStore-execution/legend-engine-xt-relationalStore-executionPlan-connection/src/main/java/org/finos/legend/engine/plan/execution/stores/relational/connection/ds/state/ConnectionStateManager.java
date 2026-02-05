@@ -267,7 +267,8 @@ public class ConnectionStateManager implements Closeable
 
     public String poolNameFor(Identity identity, ConnectionKey key)
     {
-        return DBPOOL + key.shortId() + SEPARATOR + identity.getName() + SEPARATOR + identity.getFirstCredential().getClass().getCanonicalName();
+        String credentials = identity.getCredentials().stream().map(credential -> credential.getClass().getSimpleName()).collect(Collectors.joining("_"));
+        return DBPOOL + key.shortId() + SEPARATOR + identity.getName() + SEPARATOR + credentials;
     }
 
     public ConnectionStateManagerPOJO getConnectionStateManagerPOJO()

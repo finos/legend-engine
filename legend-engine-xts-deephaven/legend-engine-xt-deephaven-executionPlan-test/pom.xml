@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
-        <version>4.118.4-SNAPSHOT</version>
+        <version>4.118.8-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -376,10 +376,6 @@
                     <artifactId>arrow-format</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>com.google.flatbuffers</groupId>
-                    <artifactId>flatbuffers-java</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.jetbrains</groupId>
                     <artifactId>annotations</artifactId>
                 </exclusion>
@@ -413,7 +409,6 @@
         <dependency>
             <groupId>io.deephaven</groupId>
             <artifactId>deephaven-csv</artifactId>
-            <version>${deephaven-csv.version}</version>
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>

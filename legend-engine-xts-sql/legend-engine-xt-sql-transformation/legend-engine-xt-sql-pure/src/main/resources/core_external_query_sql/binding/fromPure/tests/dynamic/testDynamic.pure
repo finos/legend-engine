@@ -19,6 +19,8 @@ Database meta::external::query::sql::transformation::queryToPure::tests::dynamic
 )
 
 ###Pure
+import meta::external::store::relational::postgresSql::parser::*;
+import meta::pure::precisePrimitives::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -102,6 +104,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 transform('select * from tb(\'legend::db.myTb\')', meta::legend::compile(readFile('/core_external_query_sql/binding/fromPure/tests/dynamic/db.legend')->toOne())));
 }
 
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicFunc():Boolean[1]
+{
+  assertEquals('|meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSource()',
+              transform('select n from func(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSource__Relation_1_\')',[]));
+
+  assertEquals('|123->meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSourceWithParam([])',
+              transform('select * from func(\'meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSourceWithParam_Integer_1__Integer_$0_1$__Relation_1_\', param => 123)',[]));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSource():meta::pure::metamodel::relation::Relation<(n:Varchar(200))>[1]
+{
+  #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->select(~[n])
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::testFuncSourceWithParam(param:Integer[1], param2:Integer[0..1]):meta::pure::metamodel::relation::Relation<(n:Varchar(200))>[1]
+{
+  #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->filter(x | ($x.n->toOne()->length() == $param > $param) && ($x.n->toOne()->length() < $param2))->select(~[n])
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*]):String[1]
 {
   transform($sql, $extraPacks, ^Map<String, ValueSpecification>());
@@ -109,5 +131,6 @@ function meta::external::query::sql::transformation::queryToPure::tests::dynamic
 
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):String[1]
 {
-  meta::external::query::sql::transformation::queryToPure::sqlToPure($sql, $extraPacks, $scopeVariables)->cast(@FunctionDefinition<Any>)->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
+  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false)->cast(@FunctionDefinition<Any>);
+  $transformed->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
 }

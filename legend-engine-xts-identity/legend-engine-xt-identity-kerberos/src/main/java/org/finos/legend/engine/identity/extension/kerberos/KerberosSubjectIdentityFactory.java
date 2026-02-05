@@ -15,32 +15,57 @@
 package org.finos.legend.engine.identity.extension.kerberos;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
-import java.security.PrivilegedAction;
+import java.util.Map;
 import java.util.Optional;
 
 public class KerberosSubjectIdentityFactory implements IdentityFactory
 {
+
+    public static final String USER_SUBJECT = "USER_SUBJECT";
+    public static final String SERVICE_SUBJECT = "SERVICE_SUBJECT";
+
     @Override
     public Optional<Identity> makeIdentity(Object authenticationSource)
     {
-        if (authenticationSource == null || !(authenticationSource instanceof  Subject))
+        Principal userPrincipal = null;
+        Subject userSubject = null;
+        Subject serviceSubject = null;
+        if (authenticationSource instanceof Subject)
+        {
+            userSubject = (Subject) authenticationSource;
+            userPrincipal = SubjectTools.getPrincipalFromSubject(userSubject);
+
+        }
+        else if (authenticationSource instanceof Map)
+        {
+            Map<String,Subject> mapOfSubjects = (Map<String,Subject>) authenticationSource;
+            userSubject = mapOfSubjects.get(USER_SUBJECT);
+            serviceSubject = mapOfSubjects.get(SERVICE_SUBJECT);
+            userPrincipal = SubjectTools.getPrincipalFromSubject(userSubject);
+        }
+        if (userSubject == null)
         {
             return Optional.empty();
         }
-        Subject subject = (Subject) authenticationSource;
-        Principal principal = SubjectTools.getPrincipalFromSubject(subject);
-        if (principal == null)
+        if (userPrincipal == null)
         {
             return Optional.of(Identity.makeUnknownIdentity());
         }
-        String name = principal != null ? principal.getName().split("@")[0] : null;
-        return Optional.of(new Identity(name, new LegendKerberosCredential(subject)));
+        String principalName = userPrincipal.getName();
+        int atIndex = principalName.indexOf('@');
+        String name = atIndex >= 0 ? principalName.substring(0, atIndex) : principalName;
+        if (userSubject.getPrivateCredentials().isEmpty())
+        {
+            return Optional.of(new Identity(name, new LegendConstrainedKerberosCredential(userSubject,serviceSubject)));
+        }
+
+        return Optional.of(new Identity(name, new LegendKerberosCredential(userSubject)));
     }
 }

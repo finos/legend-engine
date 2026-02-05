@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement;
 
-import java.security.PrivilegedAction;
-import java.sql.ParameterMetaData;
-import javax.security.auth.Subject;
-
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.LegendExecution;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSet;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendResultSetMetaData;
@@ -25,7 +21,13 @@ import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepare
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+
+import javax.security.auth.Subject;
+import java.security.PrivilegedAction;
+import java.sql.ParameterMetaData;
+import java.util.Optional;
 
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {
@@ -56,10 +58,18 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     @Override
     public PostgresResultSetMetaData getMetaData() throws Exception
     {
-        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        Optional<LegendKerberosCredential> legendKerberosCredential = identity.getCredential(LegendKerberosCredential.class);
+        Optional<LegendConstrainedKerberosCredential> legendConstrainedKerberosCreds = identity.getCredential(LegendConstrainedKerberosCredential.class);
+        if (legendKerberosCredential.isPresent())
         {
-            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            LegendKerberosCredential credential = legendKerberosCredential.get();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<LegendResultSetMetaData>) () ->
+                    new LegendResultSetMetaData(client.getSchema(query, database)));
+        }
+        else if (legendConstrainedKerberosCreds.isPresent())
+        {
+            LegendConstrainedKerberosCredential credential = legendConstrainedKerberosCreds.get();
+            return Subject.doAs(credential.getMergedSubject(), (PrivilegedAction<LegendResultSetMetaData>) () ->
                     new LegendResultSetMetaData(client.getSchema(query, database)));
         }
         else
@@ -105,10 +115,17 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     public boolean execute()
     {
         isExecuted = true;
-        if (identity.getFirstCredential() instanceof LegendKerberosCredential)
+        Optional<LegendKerberosCredential> legendKerberosCredential = identity.getCredential(LegendKerberosCredential.class);
+        Optional<LegendConstrainedKerberosCredential> legendConstrainedKerberosCreds = identity.getCredential(LegendConstrainedKerberosCredential.class);
+        if (legendKerberosCredential.isPresent())
         {
-            LegendKerberosCredential credential = (LegendKerberosCredential) identity.getFirstCredential();
+            LegendKerberosCredential credential = legendKerberosCredential.get();
             return Subject.doAs(credential.getSubject(), (PrivilegedAction<Boolean>) this::executePrivate);
+        }
+        else if (legendConstrainedKerberosCreds.isPresent())
+        {
+            LegendConstrainedKerberosCredential credential = legendConstrainedKerberosCreds.get();
+            return Subject.doAs(credential.getMergedSubject(),(PrivilegedAction<Boolean>) this::executePrivate);
         }
         else
         {

@@ -24,7 +24,7 @@ public class CompiledPrimitiveHandler implements Frame.PrimitiveHandler
     @Override
     public CoreInstance build(String val)
     {
-        return new ValCoreInstance(val, "String");
+        return ValCoreInstance.newVal(val, "String");
     }
 
     @Override

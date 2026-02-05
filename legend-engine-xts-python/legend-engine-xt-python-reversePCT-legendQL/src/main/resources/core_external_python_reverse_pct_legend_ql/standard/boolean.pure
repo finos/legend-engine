@@ -95,6 +95,26 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
       ]
     )
 
+    ]->combine(),
+    [
+      meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::boolean::xor(true)','c(True) ^ True'),
+          rev('|false->meta::pure::functions::boolean::xor(false)','False ^ c(False)'),
+          rev('|true->meta::pure::functions::boolean::xor(false)','c(True) ^ c(False)'),
+          rev('|false->meta::pure::functions::boolean::xor(true)','c(False) ^ c(True)')
+        ]
+      ),
+
+      meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::boolean::xor(1 == 1, meta::pure::functions::boolean::not(2 == 3))','c(1==1) ^ ~c(2==3)'),
+          rev('|meta::pure::functions::boolean::xor(1 == 2, meta::pure::functions::boolean::not(2 == 3))','(1==2) ^ ~c(2==3)'),
+          rev('|true->meta::pure::functions::boolean::xor(meta::pure::functions::boolean::not(2 == 3))','c(True) ^ ~c(2==3)'),
+          rev('|meta::pure::functions::boolean::xor(1 == 2, true)','c(1==2) ^ True')
+        ]
+      )
+
     ]->combine()
   ]
 }

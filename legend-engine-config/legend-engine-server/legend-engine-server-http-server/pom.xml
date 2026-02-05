@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-server</artifactId>
-        <version>4.118.4-SNAPSHOT</version>
+        <version>4.118.8-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-http-server</artifactId>
@@ -215,6 +215,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler-http-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -685,12 +690,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-arrow-runtime</artifactId>
             <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.flatbuffers</groupId>
-                    <artifactId>flatbuffers-java</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -1238,6 +1237,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-PCT</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
@@ -1279,11 +1283,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-server-shared</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

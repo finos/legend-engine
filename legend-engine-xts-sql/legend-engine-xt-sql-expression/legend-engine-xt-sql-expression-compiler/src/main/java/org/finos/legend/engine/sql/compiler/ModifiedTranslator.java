@@ -17,40 +17,27 @@ package org.finos.legend.engine.sql.compiler;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
-import org.finos.legend.engine.protocol.sql.metamodel.StringLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_expression_AccessorTableFunction_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_TableFunction;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Objects;
 
+@Deprecated //remove once all extensions have been migrated to use the new extension mechanism
 public class ModifiedTranslator extends ProtocolToMetamodelTranslator
 {
     @Override
     public Root_meta_external_query_sql_metamodel_TableFunction translate(TableFunction tablefunction, PureModel pureModel)
     {
-        if ("tb".equals(tablefunction.functionCall.name.parts.get(0)))
+        MutableList<Root_meta_external_query_sql_metamodel_TableFunction> result = TableFunctionCompilerExtensionLoader.extensions().collect(x -> x.translate(tablefunction, pureModel)).select(Objects::nonNull);
+        if (result.size() > 1)
         {
-            String param = ((StringLiteral) tablefunction.functionCall.arguments.get(0)).value;
-            String[] val = param.split("\\.");
-            Store store = (Store) pureModel.getPackageableElement(val[0]);
-            return new Root_meta_external_query_sql_expression_AccessorTableFunction_Impl("", null, pureModel.getType("meta::external::query::sql::expression::AccessorTableFunction"))
-                    ._functionCall(this.translate(tablefunction.functionCall, pureModel))
-                    ._store(store);
+            throw new RuntimeException("Error, " + result.size() + " table function handlers found for  '" + tablefunction.functionCall.name.parts.get(0) + "'");
         }
-        else
+        if (result.size() == 1)
         {
-            MutableList<Root_meta_external_query_sql_metamodel_TableFunction> result = TableFunctionCompilerExtensionLoader.extensions().collect(x -> x.translate(tablefunction, pureModel)).select(Objects::nonNull);
-            if (result.size() > 1)
-            {
-                throw new RuntimeException("Error, " + result.size() + " table function handlers found for  '" + tablefunction.functionCall.name.parts.get(0) + "'");
-            }
-            if (result.size() == 1)
-            {
-                return result.get(0);
-            }
+            return result.get(0);
         }
+
         return super.translate(tablefunction, pureModel);
     }
 }

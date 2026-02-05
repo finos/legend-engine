@@ -14,11 +14,25 @@
 
 package org.finos.legend.engine.sql.compiler;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_TableFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+
+import java.util.List;
 
 public interface TableFunctionCompilerExtension
 {
-    Root_meta_external_query_sql_metamodel_TableFunction translate(TableFunction tablefunction, PureModel pureModel);
+    @Deprecated
+    default Root_meta_external_query_sql_metamodel_TableFunction translate(TableFunction tablefunction, PureModel pureModel)
+    {
+        return null;
+    }
+
+    //TODO make non default once dependencies updated
+    default List<PackageableElement> extractElements(TableFunction tableFunction, PureModel pureModel)
+    {
+        return Lists.mutable.empty();
+    }
 }
