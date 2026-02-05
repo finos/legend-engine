@@ -44,12 +44,21 @@ public class KerberosSubjectIdentityFactoryTest
     }
 
     @Test
-    void shouldReturnUnknownEntityIfPrincipleIsNull()
+    void shouldReturnUnknownEntityIfPrincipleIsNull1()
     {
         Subject subject = new Subject();
         Map<String,Subject> subjects = new HashMap<>();
         subjects.put(USER_SUBJECT,subject);
         Optional<Identity> result = factory.makeIdentity(subjects);
+        assertTrue(result.isPresent());
+        assertEquals("_UNKNOWN_",result.get().getName());
+    }
+
+    @Test
+    void shouldReturnUnknownEntityIfPrincipleIsNull2()
+    {
+        Subject subject = new Subject();
+        Optional<Identity> result = factory.makeIdentity(subject);
         assertTrue(result.isPresent());
         assertEquals("_UNKNOWN_",result.get().getName());
     }
@@ -83,6 +92,20 @@ public class KerberosSubjectIdentityFactoryTest
         Map<String,Subject> subjects = new HashMap<>();
         subjects.put(USER_SUBJECT,subject);
         Optional<Identity> result = factory.makeIdentity(subjects);
+
+        assertTrue(result.isPresent());
+        Identity identity = result.get();
+        assertEquals("user", identity.getName());
+        assertInstanceOf(LegendKerberosCredential.class, identity.getCredentials().stream().findFirst().get());
+    }
+
+    @Test
+    void shouldCreateIdentityWithInputSubject()
+    {
+        Subject subject = new Subject();
+        subject.getPrincipals().add(new KerberosPrincipal("user@REALM"));
+        subject.getPrivateCredentials().add(new Object());
+        Optional<Identity> result = factory.makeIdentity(subject);
 
         assertTrue(result.isPresent());
         Identity identity = result.get();

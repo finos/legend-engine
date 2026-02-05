@@ -34,26 +34,38 @@ public class KerberosSubjectIdentityFactory implements IdentityFactory
     @Override
     public Optional<Identity> makeIdentity(Object authenticationSource)
     {
-        if (!(authenticationSource instanceof Map))
+        Principal userPrincipal = null;
+        Subject userSubject = null;
+        Subject serviceSubject = null;
+        if (authenticationSource instanceof Subject)
+        {
+            userSubject = (Subject) authenticationSource;
+            userPrincipal = SubjectTools.getPrincipalFromSubject(userSubject);
+
+        }
+        else if (authenticationSource instanceof Map)
+        {
+            Map<String,Subject> mapOfSubjects = (Map<String,Subject>) authenticationSource;
+            userSubject = mapOfSubjects.get(USER_SUBJECT);
+            serviceSubject = mapOfSubjects.get(SERVICE_SUBJECT);
+            userPrincipal = SubjectTools.getPrincipalFromSubject(userSubject);
+        }
+        if (userSubject == null)
         {
             return Optional.empty();
         }
-        Map<String,Subject> mapOfSubjects = (Map<String,Subject>) authenticationSource;
-        Subject subject = mapOfSubjects.get(USER_SUBJECT);
-        Subject serviceSubject = mapOfSubjects.get(SERVICE_SUBJECT);
-        Principal principal = SubjectTools.getPrincipalFromSubject(subject);
-        if (principal == null)
+        if (userPrincipal == null)
         {
             return Optional.of(Identity.makeUnknownIdentity());
         }
-        String principalName = principal.getName();
+        String principalName = userPrincipal.getName();
         int atIndex = principalName.indexOf('@');
         String name = atIndex >= 0 ? principalName.substring(0, atIndex) : principalName;
-        if (subject.getPrivateCredentials().isEmpty())
+        if (userSubject.getPrivateCredentials().isEmpty())
         {
-            return Optional.of(new Identity(name, new LegendConstrainedKerberosCredential(subject,serviceSubject)));
+            return Optional.of(new Identity(name, new LegendConstrainedKerberosCredential(userSubject,serviceSubject)));
         }
 
-        return Optional.of(new Identity(name, new LegendKerberosCredential(subject)));
+        return Optional.of(new Identity(name, new LegendKerberosCredential(userSubject)));
     }
 }
