@@ -282,7 +282,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                                     (
                                                                                                                        func = meta::pure::functions::collection::agg_FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_,
                                                                                                                        functionName = 'agg',
-                                                                                                                       importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                                                                                       importGroup = system::imports.children->at(0)->cast(@ImportGroup),
                                                                                                                        genericType = ^GenericType(rawType=meta::pure::functions::collection::AggregateValue,
                                                                                                                                                      typeArguments=[$fInputType,
                                                                                                                                                                     $agg.mapFn->functionReturnType(),

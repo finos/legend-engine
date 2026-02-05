@@ -87,7 +87,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
               (
                  func = filter_T_MANY__Function_1__T_MANY_,
                  functionName = 'filter',
-                 importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                 importGroup = system::imports.children->at(0)->cast(@ImportGroup),
                  genericType = $returnType,
                  multiplicity = ZeroMany,
                  parametersValues = [
@@ -104,7 +104,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                   (
                                                      func = getAll_Class_1__T_MANY_,
                                                      functionName = 'getAll',
-                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
+                                                     importGroup = system::imports.children->at(0)->cast(@ImportGroup),
                                                      genericType = $returnType,
                                                      multiplicity = ZeroMany,
                                                      parametersValues = ^StoreMappingRoutedValueSpecification
