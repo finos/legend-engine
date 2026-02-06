@@ -39,12 +39,12 @@ public class Test_JAVA_UnclassifiedFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::string::tests::char", "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!", AdapterQualifier.unsupportedFeature),
 
             // coalesce
-            one("meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
+            one("meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
+            one("meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_", "error: invalid method declaration; return type required\n    public static ? execute(IExecutionNodeContext context)"),
 
             //repeatString
-            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_", "error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String"),
 
             // regexp
             pack("meta::pure::functions::string::tests::regexpCount", "\"meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),

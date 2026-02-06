@@ -42,16 +42,26 @@ public class ExpectedFailuresBuilder
             return Lists.mutable.empty();
         }
         return reverses.toList().flatCollect(x ->
-                x._reverses().collect(z ->
+                x._reverses().<ExclusionSpecification>collect(z ->
                         {
                             Root_meta_pure_test_pct_reversePCT_framework_Reverse rev = z._reverses().select(r -> r._expectedError() != null || !r._shouldBeSupported()).getFirst();
                             if (rev != null)
                             {
-                                return (ExclusionSpecification) new ExclusionOneTest(
-                                        z._testFunction(),
-                                        !rev._shouldBeSupported() ? "\"Should not be supported\"" : rev._expectedError(),
-                                        rev._shouldBeSupported() ? AdapterQualifier.needsInvestigation : AdapterQualifier.unsupportedFeature
-                                );
+                                if (rev._shouldBeSupported())
+                                {
+                                    return new ExclusionOneTest(
+                                            z._testFunction(),
+                                            rev._expectedError()
+                                    );
+                                }
+                                else
+                                {
+                                    return new ExclusionOneTest(
+                                            z._testFunction(),
+                                            "\"Should not be supported\"",
+                                            AdapterQualifier.unsupportedFeature
+                                    );
+                                }
                             }
                             return null;
                         }
@@ -64,7 +74,7 @@ public class ExpectedFailuresBuilder
         collectTests(ts.tests(), allTests);
         RichIterable<String> managedTests = collectManagedTests(reverseInfo);
         allTests.removeAll(managedTests.toList());
-        return allTests.collect(x -> new ExclusionOneTest(x, "", AdapterQualifier.needsImplementation));
+        return allTests.collect(x -> new ExclusionOneTest(x, ""));
     }
 
     public static RichIterable<String> collectManagedTests(RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverses)
