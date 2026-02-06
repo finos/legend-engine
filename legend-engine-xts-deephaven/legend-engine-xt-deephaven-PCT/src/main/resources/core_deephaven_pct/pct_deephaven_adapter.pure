@@ -32,7 +32,7 @@ function <<PCT.adapter>> {PCT.adapterName='Deephaven'} meta::external::store::de
 
 function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X|o>(f:Function<{->X[o]}>[1], extensions:Extension[*]):X[o]
 {
-  let debug = debug();
+  let debug = noDebug();
 
   let reprocessed = $f->meta::external::store::deephaven::tests::pct::process::reprocess($debug);
   let newFunction = $reprocessed.first;

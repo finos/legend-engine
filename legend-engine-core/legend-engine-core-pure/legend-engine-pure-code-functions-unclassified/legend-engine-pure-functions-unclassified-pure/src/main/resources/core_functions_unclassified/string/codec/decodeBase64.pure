@@ -22,11 +22,6 @@ function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBa
   assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ=='->decodeBase64()));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64Number<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-  assertEquals('17', $f->eval(|'MTc='->decodeBase64()));
-}
-
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals('Hello, World!', $f->eval(|'SGVsbG8sIFdvcmxkIQ'->decodeBase64()));

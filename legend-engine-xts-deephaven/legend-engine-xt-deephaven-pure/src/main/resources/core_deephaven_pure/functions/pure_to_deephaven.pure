@@ -678,17 +678,6 @@ function meta::external::store::deephaven::pureToDeephaven::processPlus(vs: Func
 
 function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
-  // let inputSize = $vs.parametersValues->toOne()->size();
-  // if([pair(| $inputSize == 1, | 
-  //     if($vs.func == meta::pure::functions::math::minus_Integer_MANY__Integer_1_,
-  //       | $vs->processNumericOperation($operation, $initReq, 'minus', 'negateExact'),
-  //       | let debug = $initReq.debug;
-  //         let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
-  //         ^NumericOperation(methodName = 'product', methodArguments = [^meta::external::store::deephaven::metamodel::store::Literal(value = -1)]->concatenate($methodArguments));
-  //     ))],
-  //     // pair(| $inputSize == 2, | $vs->processNumericOperation($operation, $initReq, 'minus', 'subtractExact'))],
-  //     | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne(););
-
   let inputSize = $vs.parametersValues->size();
   if([
        pair(| $inputSize == 1,
@@ -697,7 +686,6 @@ function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: Fun
               ^NegationOperation(methodArgument = $methodArgument);
        )
      ],
-      // pair(| $inputSize == 2, | $vs->processNumericOperation($operation, $initReq, 'minus', 'subtractExact'))],
      | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne();
     );
 }
