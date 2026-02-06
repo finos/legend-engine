@@ -14,17 +14,17 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::mean(numbers:Number[*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mean(numbers:Number[*]):Float[1]
 {
     $numbers->average();
 }
 
-function <<PCT.function>> meta::pure::functions::math::mean(numbers:Integer[*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mean(numbers:Integer[*]):Float[1]
 {
     $numbers->average();
 }
 
-function <<PCT.function>> meta::pure::functions::math::mean(numbers:Float[*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mean(numbers:Float[*]):Float[1]
 {
     $numbers->average();
 }

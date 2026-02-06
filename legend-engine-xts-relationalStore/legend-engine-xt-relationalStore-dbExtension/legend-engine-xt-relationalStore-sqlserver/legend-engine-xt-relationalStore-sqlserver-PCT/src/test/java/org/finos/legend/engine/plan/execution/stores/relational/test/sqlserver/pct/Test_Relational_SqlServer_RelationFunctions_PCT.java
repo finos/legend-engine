@@ -249,7 +249,9 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             // flatten
             pack("meta::pure::functions::relation::variant::tests::flatten", "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer", AdapterQualifier.needsImplementation),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_", "\"[unsupported-api] Lateral operation not supported for Database Type: SqlServer\""),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_", "\"[unsupported-api] Lateral operation not supported for Database Type: SqlServer\"")
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_", "\"[unsupported-api] Lateral operation not supported for Database Type: SqlServer\""),
+
+            one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "Not supported data type :'DOUBLE' for Pure type: 'Integer'", AdapterQualifier.needsImplementation)
     );
 
     public static Test suite()

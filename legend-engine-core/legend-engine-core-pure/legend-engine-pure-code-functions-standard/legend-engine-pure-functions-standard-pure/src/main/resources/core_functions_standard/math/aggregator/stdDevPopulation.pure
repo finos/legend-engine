@@ -15,7 +15,7 @@
 import meta::pure::test::pct::*;
 
 function
-<<PCT.function>>
+<<PCT.function, functionType.ReducerFunction>>
     {
         doc.doc='Returns the population standard deviation (square root of variance) of non-NULL values.'
     }
@@ -24,7 +24,7 @@ meta::pure::functions::math::stdDevPopulation(numbers:Number[*]):Number[1]
     meta::pure::functions::math::stdDev($numbers->toOneMany(), false);
 }
 
-function <<PCT.function>> meta::pure::functions::math::stdDevPopulation(numbers:Number[1..*]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::stdDevPopulation(numbers:Number[1..*]):Number[1]
 {
     meta::pure::functions::math::stdDev($numbers, false);
 }

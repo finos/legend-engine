@@ -14,7 +14,7 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>>  meta::pure::functions::math::varianceSample(numbers:Number[*]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>>  meta::pure::functions::math::varianceSample(numbers:Number[*]):Number[1]
 {
    variance($numbers, true);
 }

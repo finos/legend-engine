@@ -14,17 +14,17 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::sum(numbers:Number[*]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Number[*]):Number[1]
 {
     $numbers->plus();
 }
 
-function <<PCT.function>> meta::pure::functions::math::sum(numbers:Integer[*]):Integer[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Integer[*]):Integer[1]
 {
     $numbers->plus();
 }
 
-function <<PCT.function>> meta::pure::functions::math::sum(numbers:Float[*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Float[*]):Float[1]
 {
     $numbers->plus();
 }

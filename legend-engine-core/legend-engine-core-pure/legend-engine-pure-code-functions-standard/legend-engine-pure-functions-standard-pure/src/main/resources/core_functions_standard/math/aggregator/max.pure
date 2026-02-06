@@ -14,47 +14,47 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::max(left:Integer[1], right:Integer[1]):Integer[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(left:Integer[1], right:Integer[1]):Integer[1]
 {
     if($left < $right, | $right, | $left)
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(left:Float[1], right:Float[1]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(left:Float[1], right:Float[1]):Float[1]
 {
     if($left < $right, | $right, | $left)
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(left:Number[1], right:Number[1]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(left:Number[1], right:Number[1]):Number[1]
 {
     if($left < $right, | $right, | $left)
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(ints:Integer[*]):Integer[0..1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(ints:Integer[*]):Integer[0..1]
 {
     $ints->fold({i, m | max($i, $m->toOne())}, $ints->first())
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(ints:Integer[1..*]):Integer[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(ints:Integer[1..*]):Integer[1]
 {
     $ints->fold({i, m | max($i, $m)}, $ints->at(0))
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(floats:Float[*]):Float[0..1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(floats:Float[*]):Float[0..1]
 {
     $floats->fold({f, m | max($f, $m->toOne())}, $floats->first())
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(floats:Float[1..*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(floats:Float[1..*]):Float[1]
 {
     $floats->fold({f, m | max($f, $m)}, $floats->at(0))
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(numbers:Number[*]):Number[0..1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(numbers:Number[*]):Number[0..1]
 {
     $numbers->fold({n, m | max($n, $m->toOne())}, $numbers->first())
 }
 
-function <<PCT.function>> meta::pure::functions::math::max(numbers:Number[1..*]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::max(numbers:Number[1..*]):Number[1]
 {
     $numbers->fold({n, m | max($n, $m)}, $numbers->at(0))
 }
