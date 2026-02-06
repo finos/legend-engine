@@ -30,7 +30,7 @@ public class DeephavenTestConnectionIntegration implements TestConnectionIntegra
     @Override
     public void setup() throws Exception
     {
-        Root_meta_pure_functions_io_http_URL url = DeephavenCommands.startServerForPCT(IMAGE_TAG);
+        Root_meta_pure_functions_io_http_URL url = DeephavenCommands.startServer(IMAGE_TAG);
         URI uri = new URI("http", null, url._host(), (int) url._port(), url._path(), null, null);
         this.connection._sourceSpec(new org.finos.legend.engine.protocol.deephaven.metamodel.runtime.DeephavenSourceSpecification()._url(uri))
                 ._authSpec(new PSKAuthenticationSpecification("myStaticPSK"));

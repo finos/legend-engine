@@ -22,19 +22,13 @@ import io.deephaven.client.impl.ClientConfig;
 import io.deephaven.client.impl.SessionConfig;
 import io.deephaven.uri.DeephavenTarget;
 import org.apache.arrow.memory.BufferAllocator;
-import org.apache.arrow.memory.RootAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
-import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,9 +38,6 @@ public class DeephavenTestContainer
     public static final Logger LOGGER = LoggerFactory.getLogger(DeephavenTestContainer.class);
     private static final int PORT = 10_000;
     private static final String PSK = "myStaticPSK";
-    private static final String APP_DIR = "/app.d";
-    private static final String START_OPTS = "-Xmx4g -Dauthentication.psk=" + PSK + " -Ddeephaven.application.dir=" + APP_DIR;
-    private static final String SCRIPT_RESOURCE = "testDataSetup.py";
 
     private static final ClientChannelFactory CLIENT_CHANNEL_FACTORY = ClientChannelFactoryDefaulter.builder()
             .userAgent(BarrageSessionFactoryConfig.userAgent(Collections.singletonList("deephaven-barrage-examples")))
@@ -54,38 +45,7 @@ public class DeephavenTestContainer
 
     public static GenericContainer<?> deephavenContainer;
 
-    public static boolean startDeephaven(String versionTag)
-    {
-        if (deephavenContainer != null && deephavenContainer.isRunning())
-        {
-            stopDeephaven();
-        }
-        try
-        {
-            Path tempDir = createTempAppDirectory();
-            DockerImageName imageName = DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "ghcr.io") + "/deephaven/server:" + versionTag)
-                    .asCompatibleSubstituteFor("ghcr.io/deephaven/server:" + versionTag);
-
-            deephavenContainer = new GenericContainer<>(imageName)
-                    .withExposedPorts(PORT)
-                    .withPrivilegedMode(true)
-                    .withCopyFileToContainer(MountableFile.forHostPath(tempDir), APP_DIR)
-                    .withCopyFileToContainer(MountableFile.forClasspathResource(SCRIPT_RESOURCE),APP_DIR + "/testDataSetup.py")
-                    .withEnv("START_OPTS", START_OPTS)
-                    .withLogConsumer(new Slf4jLogConsumer(LOGGER).withPrefix("Deephaven"))
-                    .waitingFor(Wait.forHttp("/").forPort(PORT).forStatusCode(200).withStartupTimeout(java.time.Duration.ofMinutes(2)));
-
-            deephavenContainer.start();
-            return true;
-        }
-        catch (Exception e)
-        {
-            stopDeephaven();
-            return false;
-        }
-    }
-
-    private static GenericContainer<?> startDeephavenContainerForPCT(String versionTag)
+    private static GenericContainer<?> startDeephavenContainer(String versionTag)
     {
         DockerImageName imageName = DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", "ghcr.io") + "/deephaven/server:" + versionTag)
                 .asCompatibleSubstituteFor("ghcr.io/deephaven/server:" + versionTag);
@@ -123,41 +83,21 @@ public class DeephavenTestContainer
         return builder.build();
     }
 
-    public static boolean startDeephavenForPCT(String versionTag)
+    public static boolean startDeephaven(String versionTag)
     {
         try
         {
             if (deephavenContainer == null || !deephavenContainer.isRunning())
             {
-                deephavenContainer = startDeephavenContainerForPCT(versionTag);
+                deephavenContainer = startDeephavenContainer(versionTag);
             }
             return true;
         }
         catch (Exception e)
         {
-            LOGGER.error("Failed to start Deephaven for PCT", e);
+            LOGGER.error("Failed to start Deephaven container", e);
             stopDeephaven();
             return false;
-        }
-    }
-
-    private static Path createTempAppDirectory()
-    {
-        try
-        {
-            Path tempDir = Files.createTempDirectory("deephaven-app");
-            String appConfig = "type=script\n" +
-                                "scriptType=python\n" +
-                                "enabled=true\n" +
-                                "id=test-app\n" +
-                                "name=Test App\n" +
-                                "file_0=./testDataSetup.py";
-            Files.write(tempDir.resolve("test.app"), appConfig.getBytes(StandardCharsets.UTF_8));
-            return tempDir;
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException("Failed to create temp app directory", e);
         }
     }
 

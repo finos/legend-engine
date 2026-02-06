@@ -49,6 +49,7 @@ import io.deephaven.client.impl.ObjectService;
 import io.deephaven.client.impl.ConfigService;
 import io.deephaven.client.impl.TableService;
 import io.deephaven.client.impl.TableHandleManager;
+import io.deephaven.function.Numeric;
 import io.deephaven.qst.TableCreator;
 import io.deephaven.qst.table.EmptyTable;
 import io.deephaven.qst.table.TableSpec;
@@ -95,6 +96,7 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.SortSpec", SortSpec.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperations", TableOperations.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperationsDefaults", TableOperationsDefaults.class);
+        DEPENDENCIES.put("io.deephaven.function", Numeric.class);
 
         DEPENDENCIES.put("io.deephaven.client.impl.ApplicationService", ApplicationService.class);
         DEPENDENCIES.put("io.deephaven.client.impl.BarrageSession", BarrageSession.class);

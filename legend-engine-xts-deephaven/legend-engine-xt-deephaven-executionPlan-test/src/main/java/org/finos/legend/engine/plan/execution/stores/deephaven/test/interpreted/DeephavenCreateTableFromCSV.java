@@ -18,7 +18,6 @@ package org.finos.legend.engine.plan.execution.stores.deephaven.test.interpreted
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.deephaven.test.shared.DeephavenCommands;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;

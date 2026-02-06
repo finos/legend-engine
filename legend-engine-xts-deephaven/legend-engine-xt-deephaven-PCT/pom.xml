@@ -176,6 +176,11 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-deephaven-javaPlatformBinding-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                         <version>${project.version}</version>
                     </dependency>
@@ -298,6 +303,11 @@
                             <dependency>
                                 <groupId>org.finos.legend.engine</groupId>
                                 <artifactId>legend-engine-xt-deephaven-executionPlan-test</artifactId>
+                                <version>${project.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.finos.legend.engine</groupId>
+                                <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
                                 <version>${project.version}</version>
                             </dependency>
                         </dependencies>

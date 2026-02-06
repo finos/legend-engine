@@ -65,9 +65,18 @@ Class meta::external::store::deephaven::metamodel::JoinOperation extends QueryOp
 
 Class meta::external::store::deephaven::metamodel::NumericOperation extends QueryOperation
 {
-  methodObjectName: String[1] = 'io.deephaven.function.Numeric';
   methodName: String[1];
   methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::RoundWithScaleOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::NegationOperation extends QueryOperation
+{
+  methodArgument : DeephavenOperationElement[1];
 }
 
 Enum meta::external::store::deephaven::metamodel::JoinKind
@@ -536,8 +545,11 @@ function meta::external::store::deephaven::pureToDeephaven::processRound(vs: Fun
 
 function meta::external::store::deephaven::pureToDeephaven::processRoundWithScale(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
-  fail('Round with scale needs to be implemented');
-  $vs->processNumericOperation($operation, $initReq, 'round', 'placeholder'); // BigDecimal.divide() with RoundingMode?
+  $initReq.debug(|'Processing -> round with scale');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^RoundWithScaleOperation(methodArguments = $methodArguments);
 }
 
 function meta::external::store::deephaven::pureToDeephaven::processAcos(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
@@ -666,10 +678,28 @@ function meta::external::store::deephaven::pureToDeephaven::processPlus(vs: Func
 
 function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
-  let inputSize = $vs.parametersValues->toOne()->size();
-  if([pair(| $inputSize == 1, | $vs->processNumericOperation($operation, $initReq, 'minus', 'negateExact'))],
+  // let inputSize = $vs.parametersValues->toOne()->size();
+  // if([pair(| $inputSize == 1, | 
+  //     if($vs.func == meta::pure::functions::math::minus_Integer_MANY__Integer_1_,
+  //       | $vs->processNumericOperation($operation, $initReq, 'minus', 'negateExact'),
+  //       | let debug = $initReq.debug;
+  //         let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  //         ^NumericOperation(methodName = 'product', methodArguments = [^meta::external::store::deephaven::metamodel::store::Literal(value = -1)]->concatenate($methodArguments));
+  //     ))],
+  //     // pair(| $inputSize == 2, | $vs->processNumericOperation($operation, $initReq, 'minus', 'subtractExact'))],
+  //     | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne(););
+
+  let inputSize = $vs.parametersValues->size();
+  if([
+       pair(| $inputSize == 1,
+            | let debug = $initReq.debug;
+              let methodArgument = $vs.parametersValues->toOne()->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+              ^NegationOperation(methodArgument = $methodArgument);
+       )
+     ],
       // pair(| $inputSize == 2, | $vs->processNumericOperation($operation, $initReq, 'minus', 'subtractExact'))],
-      | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne(););
+     | fail('Minus operations with more than 1 number are not supported yet in Deephaven extension!'); []->toOne();
+    );
 }
 
 function meta::external::store::deephaven::pureToDeephaven::processTimes(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
@@ -680,6 +710,32 @@ function meta::external::store::deephaven::pureToDeephaven::processTimes(vs: Fun
 function meta::external::store::deephaven::pureToDeephaven::processRange(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
   $vs->processNumericOperation($operation, $initReq, 'range', 'sequence');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processEvaluate(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> evaluate');
+  let debug = $initReq.debug;
+
+  if($vs.parametersValues->size() == 1,
+      | processValueSpecification($vs.parametersValues->at(0), $operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();,
+      | let filterFunctionExpression = $vs.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->match(
+          [
+            f:FunctionDefinition<Any>[1]|
+                $f.expressionSequence->at(0),
+            n:NativeFunction<Any>[1]|
+                ^FunctionExpression
+                (
+                    func = $n,
+                    importGroup = ^ImportGroup(),
+                    multiplicity=PureOne,
+                    genericType=$n->functionReturnType(),
+                    parametersValues = $vs.parametersValues->tail()->evaluateAndDeactivate()
+                )->evaluateAndDeactivate();
+          ]
+        );
+        processValueSpecification($filterFunctionExpression, $operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+      );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////// Supported Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -697,6 +753,11 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_),      processFilter_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_),     processSort_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_),     processJoin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    // Eval functions
+    pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__T_n__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
 
     pair(supportedIfEqual(meta::pure::functions::math::log_Number_1__Float_1_),     processLog_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::log10_Number_1__Float_1_),     processLog10_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),

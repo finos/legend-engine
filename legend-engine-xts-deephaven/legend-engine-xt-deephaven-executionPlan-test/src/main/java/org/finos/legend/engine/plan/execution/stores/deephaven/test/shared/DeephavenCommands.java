@@ -34,30 +34,12 @@ import java.util.concurrent.ExecutionException;
 public class DeephavenCommands
 {
     private static final int DEEPHAVEN_PORT = 10000;
-    public static final String START_SERVER_FUNCTION = "startDeephaven_String_1__URL_1_";
-    public static final String STOP_SERVER_FUNCTION = "stopDeephaven_String_1__Nil_0_";
     public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__Boolean_1_";
     public static final String GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION = "getDeephavenTestConnection__DeephavenConnection_1_";
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
     {
         if (!DeephavenTestContainer.startDeephaven(imageTag))
-        {
-            throw new RuntimeException("Failed to start Deephaven container");
-        }
-
-        Root_meta_pure_functions_io_http_URL_Impl url = new Root_meta_pure_functions_io_http_URL_Impl("deephavenUrl");
-        String host = DeephavenTestContainer.deephavenContainer.getHost();
-        int mappedPort = DeephavenTestContainer.deephavenContainer.getMappedPort(DEEPHAVEN_PORT);
-        url._host(host);
-        url._port(mappedPort);
-        url._path("/");
-        return url;
-    }
-
-    public static Root_meta_pure_functions_io_http_URL startServerForPCT(String imageTag)
-    {
-        if (!DeephavenTestContainer.startDeephavenForPCT(imageTag))
         {
             throw new RuntimeException("Failed to start Deephaven container");
         }

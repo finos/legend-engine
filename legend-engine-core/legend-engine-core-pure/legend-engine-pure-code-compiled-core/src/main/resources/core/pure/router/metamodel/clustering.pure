@@ -75,7 +75,7 @@ function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(s
       r:Runtime[0..1] | $r
     ]);
     let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, vs=$vs, inScopeVars=$inScopeVars);
-    let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
+    let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, debug());
     ^$res(fromCluster=$sc);
 }
 
