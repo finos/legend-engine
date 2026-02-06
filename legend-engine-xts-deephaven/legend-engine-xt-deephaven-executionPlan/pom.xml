@@ -132,6 +132,17 @@
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-engine-function</artifactId>
+            <version>${deephaven.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jetbrains</groupId>
+                    <artifactId>annotations</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.deephaven</groupId>
             <artifactId>deephaven-qst</artifactId>
             <version>${deephaven.version}</version>
         </dependency>

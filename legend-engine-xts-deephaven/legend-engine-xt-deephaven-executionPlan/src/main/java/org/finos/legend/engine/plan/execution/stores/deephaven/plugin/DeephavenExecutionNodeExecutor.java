@@ -49,6 +49,8 @@ import org.apache.arrow.vector.types.pojo.Schema;
 
 import java.time.Instant;
 import java.util.Spliterator;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -232,6 +234,13 @@ public class DeephavenExecutionNodeExecutor implements ExecutionNodeVisitor<Resu
                                 long nanos = (Long) value;
                                 Instant instant = convertToInstant(nanos, timestampType);
                                 row.put(colName, instant.toString());
+                            }
+                            else if (value instanceof byte[])
+                            {
+                                byte[] bytes = (byte[]) value;
+                                BigInteger unscaledValue = new BigInteger(bytes);
+                                BigDecimal decimalValue = new BigDecimal(unscaledValue);
+                                row.put(colName, decimalValue);
                             }
                             else
                             {

@@ -29,8 +29,6 @@ public class DeephavenTestCompiledExtension extends BaseCompiledExtension
     {
         super("core_deephaven_execution_test",
                 () -> Lists.fixedSize.with(
-                        new DeephavenStartCommand(),
-                        new DeephavenStopCommand(),
                         new DeephavenCreateTableFromCSVCommand(),
                         new GetDeephavenTestConnection()
                 ),
@@ -42,34 +40,6 @@ public class DeephavenTestCompiledExtension extends BaseCompiledExtension
     public static CompiledExtension extension()
     {
         return new DeephavenTestCompiledExtension();
-    }
-
-    private static class DeephavenStartCommand extends AbstractNative
-    {
-        public DeephavenStartCommand()
-        {
-            super(DeephavenCommands.START_SERVER_FUNCTION);
-        }
-
-        @Override
-        public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
-        {
-            return DeephavenCommands.class.getCanonicalName() + ".startServer(" + transformedParams.makeString(", ") + ")";
-        }
-    }
-
-    private static class DeephavenStopCommand extends AbstractNative
-    {
-        public DeephavenStopCommand()
-        {
-            super(DeephavenCommands.STOP_SERVER_FUNCTION);
-        }
-
-        @Override
-        public String build(CoreInstance topLevelElement, CoreInstance functionExpression, ListIterable<String> transformedParams, ProcessorContext processorContext)
-        {
-            return DeephavenCommands.class.getCanonicalName() + ".stopServer(" + transformedParams.makeString(", ") + ")";
-        }
     }
 
     private static class DeephavenCreateTableFromCSVCommand extends AbstractNative

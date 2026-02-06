@@ -632,6 +632,11 @@ Class meta::external::language::java::metamodel::New extends Code
    <<equality.Key>> arguments      : Code[*];
 }
 
+Class meta::external::language::java::metamodel::NewArray extends Code
+{
+   <<equality.Key>> arguments      : Code[*];
+}
+
 Class meta::external::language::java::metamodel::NewAnonymous extends New
 {
    <<equality.Key>> methods  : meta::external::language::java::metamodel::CodeMethod[*];

@@ -106,10 +106,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
   // TODO - Try to add to import only if it is needed
   let columnNameClass = javaClass('io.deephaven.api.ColumnName');
-  let rawStringClass = javaClass('io.deephaven.api.RawString');
   let sortColumnClass = javaClass('io.deephaven.api.SortColumn');
-  let selectableClass = javaClass('io.deephaven.api.Selectable');
-  let methodClass = javaClass('io.deephaven.api.expression.Method');
   let filterClass = javaClass('io.deephaven.api.filter.Filter');
   let filterInClass = javaClass('io.deephaven.api.filter.FilterIn');
   let filterNotClass = javaClass('io.deephaven.api.filter.FilterNot');
@@ -118,6 +115,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   let filterComparisonClass = javaClass('io.deephaven.api.filter.FilterComparison');
   let literalClass = javaClass('io.deephaven.api.literal.Literal');
   let sessionClass = javaClass('io.deephaven.client.impl.Session');
+  let numericClass = javaClass('io.deephaven.function.Numeric');
 
   let rand = random() * 10000000;
   let uniqueClassName = 'Execute_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
@@ -126,8 +124,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                                  ->imports($conventions->standardImports())
                                  ->imports([
                                               $ticketTableClass, $emptyTableClass, $tableSpecClass, $tableHandleClass, $barrageSessionClass,
-                                              $columnNameClass, $rawStringClass, $sortColumnClass, $selectableClass,
-                                              $methodClass,
+                                              $columnNameClass, $sortColumnClass, $numericClass,
                                               $filterClass, $filterInClass, $filterNotClass, $filterOrClass, $filterAndClass,
                                               $filterComparisonClass, $literalClass
                                            ])
@@ -197,30 +194,30 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
         $result;,
       | let queryOperations = $query.operations;
-        range($queryOperations->size())->map(i | let currentOp = $queryOperations->at($i);
-                                                 let columnName = generateColumnName('Result' + $i->toString());
-                                                 let expression = generateNonTDSOperation($currentOp);
-                                                 let selectable = generateSelectable($columnName, $expression);
-                                                 let selectableCollection = javaArrays()->j_invoke('asList', $selectable, javaList(javaClass('io.deephaven.api.Selectable')));
-                                                 let emptyTable = generateEmptyTable();
-                                                 $emptyTable->j_invoke('update', $selectableCollection, $tableSpecClass);
-        )->toOne(); // TODO: Revisit this assumption that there is only one query operation
+        let javaQueryStrings = range($queryOperations->size())->map(i | let currentOp = $queryOperations->at($i);
+                                                                        let columnName = generateColumnName('Result' + $i->toString());
+                                                                        let expression = generateNonTDSOperation($currentOp);
+                                                                        let javaQuery = 'Result' + $i->toString() + ' = ' + $expression->meta::external::language::java::serialization::codeToString();
+                                                                        $javaQuery->replace('\n', '')->j_string();
+        );
+        let emptyTable = generateEmptyTable();
+        $emptyTable->j_invoke('update', $javaQueryStrings, $tableSpecClass);
   );
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteralList(literalList: meta::external::store::deephaven::metamodel::store::LiteralList[1]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertLiteralListToJavaPrimitives(literalList: meta::external::store::deephaven::metamodel::store::LiteralList[1]): Code[1]
 {
-  let literalValues = $literalList.values->map(v | $v.value->generateLiteralAsString());
-  let javaType = if($literalList.values->isEmpty(),
+  $literalList.values->convertPurePrimitivesToJavaPrimitives();
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitivesToJavaPrimitives(values: Any[*]): Code[1]
+{
+  let literalValues = $values->map(v | $v->convertPurePrimitiveToJavaPrimitive());
+  let javaType = if($values->isEmpty(),
                     | javaObject(),
-                    | $literalList.values->at(0).value->getJavaTypeForLiteral()
+                    | $values->at(0)->getJavaTypeForLiteral()
                  );
-  let arrayTypeStr = $javaType->match([
-                       p: meta::external::language::java::metamodel::PrimitiveType[1] | $p.simpleName,
-                       a: Any[1] | fail('Unhandled array type for Deephaven: ' + $a->class()->elementToPath()); []->toOne();
-                     ]);
-  let arrayLiteralStr = 'new ' + $arrayTypeStr + '[]{' + $literalValues->joinStrings(', ') + '}';
-  $arrayLiteralStr->generateRawString();
+  let newArray = j_new(javaArray($javaType), $literalValues);
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::getJavaTypeForLiteral(value: Any[1]): meta::external::language::java::metamodel::Type[1]
@@ -235,11 +232,11 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   ]);
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLiteralAsString(value: Any[1]): String[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitiveToString(value: Any[1]): String[1]
 {
   $value->match([
     s: String[1]   | $s->toString(),
-    d: DateTime[1] | '\'' + $d->toString()->substring(0, 19) + 'Z\'', // TODO: Fix this hack,
+    d: DateTime[1] | '\'' + $d->toString()->substring(0, 19) + 'Z\'', // TODO: Fix this hack
     b: Boolean[1]  | $b->toString(),
     i: Integer[1]  | $i->toString(),
     f: Float[1]    | $f->toString(),
@@ -247,15 +244,22 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   ]);
 }
 
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertLiteralToJavaPrimitive(literal: meta::external::store::deephaven::metamodel::store::Literal[1]): Code[1]
+{
+  $literal.value->convertPurePrimitiveToJavaPrimitive();
+}
+
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitiveToJavaPrimitive(value: Any[1]): Code[1]
 {
+  let valueAsString = $value->convertPurePrimitiveToString();
+  $valueAsString->println();
   $value->match([
-                  s: String[1]   | j_string($s->generateLiteralAsString()),
-                  d: DateTime[1] | j_string($d->generateLiteralAsString()),
-                  b: Boolean[1]  | j_boolean($b->generateLiteralAsString()),
-                  i: Integer[1]  | j_int($i->generateLiteralAsString()),
-                  f: Float[1]    | j_float($f->generateLiteralAsString()),
-                  d: Decimal[1]  | j_bigDecimal($d->generateLiteralAsString()),
+                  s: String[1]   | j_string($valueAsString),
+                  d: DateTime[1] | j_string($valueAsString),
+                  b: Boolean[1]  | j_boolean($valueAsString),
+                  i: Integer[1]  | j_int($valueAsString),
+                  f: Float[1]    | j_float($valueAsString),
+                  d: Decimal[1]  | j_bigDecimal($valueAsString),
                   a: Any[*]      | fail('Unhandled Deephaven Literal: ' + $a->class()->elementToPath()); []->toOne();
                 ]);
 }
@@ -272,25 +276,6 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $literalClass->j_invoke('of', $javaPrimitive, $literalClass);
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateRawString(str: String[1]): Code[1]
-{
-  let rawStringClass = javaClass('io.deephaven.api.RawString');
-  $rawStringClass->j_invoke('of', j_string($str), $rawStringClass);
-}
-
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateMethod(methodObject: Code[1], methodName: Code[1], methodArguments: Code[*]): Code[1]
-{
-  let methodClass = javaClass('io.deephaven.api.expression.Method');
-  let argumentsList = javaArrays()->j_invoke('asList', $methodArguments, javaList(javaClass('io.deephaven.api.expression.Expression')));
-  $methodClass->j_invoke('of', [$methodObject, $methodName, $argumentsList], $methodClass);
-}
-
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateSelectable(columnName: Code[1], expression: Code[1]): Code[1]
-{
-  let selectableClass = javaClass('io.deephaven.api.Selectable');
-  $selectableClass->j_invoke('of', [$columnName, $expression], $selectableClass);
-}
-
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateEmptyTable(): Code[1]
 {
 
@@ -298,26 +283,47 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $emptyTableClass->j_invoke('of', [j_long(1)], $emptyTableClass);
 }
 
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateDeephavenOperationElement(e: DeephavenOperationElement[1]): Code[1]
+{
+  $e->match([
+              queryOp: QueryOperation[1] | $queryOp->generateNonTDSOperation(),
+              literalList: meta::external::store::deephaven::metamodel::store::LiteralList[1] | $literalList->convertLiteralListToJavaPrimitives(),
+              literal: meta::external::store::deephaven::metamodel::store::Literal[1] | $literal->convertLiteralToJavaPrimitive(),
+              dhOpEle: DeephavenOperationElement[1] | fail('Unhandled Deephaven Operation Element: ' + $dhOpEle->class()->elementToPath()); []->toOne();
+            ]);
+}
+
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateNonTDSOperation(op: QueryOperation[1]): Code[1]
 {
   $op->match([
                numericOp: NumericOperation[1] | $numericOp->generateNumericOperation(),
+               roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp->generateRoundWithScaleOperation(),
+               negationOp: NegationOperation[1] | $negationOp->generateNegationOperation(),
                op: QueryOperation[1] | fail('Unhandled non-TDS Deephaven QueryOperation: ' + $op->class()->elementToPath()); []->toOne();
              ]);
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateNumericOperation(op: NumericOperation[1]): Code[1]
 {
-  let methodObject = generateRawString($op.methodObjectName);
-  let methodName = j_string($op.methodName);
-  let methodArguments = $op.methodArguments->map(a | $a->match([
-                                                                 queryOp: QueryOperation[1] | $queryOp->generateNonTDSOperation(),
-                                                                 literalList: meta::external::store::deephaven::metamodel::store::LiteralList[1] | $literalList->generateLiteralList(),
-                                                                 literal: meta::external::store::deephaven::metamodel::store::Literal[1] | $literal->generateLiteral(),
-                                                                 dhOpEle: DeephavenOperationElement[1] | fail('Unhandled Deephaven Operation Element: ' + $dhOpEle->class()->elementToPath()); []->toOne();
-                                                               ])
-                                                );
-  generateMethod($methodObject, $methodName, $methodArguments);
+  let numericClass = javaClass('io.deephaven.function.Numeric');
+  let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
+  $numericClass->j_invoke($op.methodName, $methodArguments, javaNumber());
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateRoundWithScaleOperation(op: RoundWithScaleOperation[1]): Code[1]
+{
+  let bigDecimalClass = javaBigDecimal();
+  let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
+  let numberToRound = $methodArguments->at(0)->toOne();
+  let scale = $methodArguments->at(1)->toOne();
+  let roundingMode = javaRoundingMode()->j_field('HALF_UP');
+  $bigDecimalClass->j_invoke('valueOf', $numberToRound, $bigDecimalClass)->j_invoke('setScale', [$scale, $roundingMode], $bigDecimalClass);
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateNegationOperation(op: NegationOperation[1]): Code[1]
+{
+  let methodArgument = $op.methodArgument->generateDeephavenOperationElement();
+  $methodArgument->j_minus();
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateSelectOperation(op: SelectOperation[1], chain: Code[1], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
@@ -362,9 +368,9 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                                                                                          $filterAndClass->j_invoke('of', $neConditions, $filterAndClass);,
                                                           other: FilterExpression[1]   | $filterNotClass->j_invoke('of', [generateFilterCondition($other)], $filterNotClass)
                                                       ]);,
-
+               
       or: OrOperatorExpression[1] | $filterOrClass->j_invoke('of', $or.expressions->map(e | generateFilterCondition($e->cast(@FilterExpression))), $filterOrClass),
-
+               
       in: InOperatorExpression[1] | $filterInClass->j_invoke('of', [generateOperand($in.expressions->at(0))]->concatenate($in.expressions->at(1)->cast(@meta::external::store::deephaven::metamodel::store::LiteralList).values->map(v | $v->generateOperand())), $filterInClass),
                                           
       comp: ComparisonOperatorExpression[1] | $filterComparisonClass->j_invoke('gt', [

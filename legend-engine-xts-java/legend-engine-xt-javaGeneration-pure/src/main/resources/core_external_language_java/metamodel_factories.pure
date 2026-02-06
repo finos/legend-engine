@@ -1960,6 +1960,7 @@ function meta::external::language::java::factory::j_new(type:meta::external::lan
 {
    $type->match([
       pt:meta::external::language::java::metamodel::ParameterizedType[1] | ^New(type=$pt.rawType, typeArguments=$pt.typeArguments, arguments=$args),
+      ar:meta::external::language::java::metamodel::Array[1]             | ^NewArray(type=$ar, arguments=$args),
       cl:meta::external::language::java::metamodel::Class[1]             | ^New(type=$cl, arguments=$args)
    ]);
 }

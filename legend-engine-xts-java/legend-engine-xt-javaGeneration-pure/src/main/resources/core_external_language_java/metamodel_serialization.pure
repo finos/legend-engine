@@ -509,6 +509,7 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       c:Return[1]                   | $sfer->addWord('return')->ifNotEmpty($c.expression, {s, e| $s->doCode($e->toOne())})->semicolon()->newLine(),
       c:Throw[1]                    | $sfer->addWord('throw')->doCode($c.expression)->semicolon(),
       c:New[1]                      | $sfer->doCodeNew($c),
+      c:NewArray[1]                 | $sfer->doCodeNewArray($c),
       c:CodeMethod[1]               | $sfer->doModifiers($c.modifiers)->doType($c.type)->space()->addText($c.name)->doParameters($c.parameters)->newLine()->doCode($c.body),
       c:CastProxy[1]                | $sfer->doCode($c.proxy),
       c:Cast[1]                     | $sfer->addText('(')->doType($c.type)->addText(')')->space()->maybeParentheses($c.expression, $c),
@@ -536,6 +537,16 @@ function <<access.private>> meta::external::language::java::serialization::doCod
       a: NewAnonymous[1] | $newAndArgs->startAnonymousInnerClass()->forEach($a.methods, {s, m| $s->doCode($m)})->endAnonymousInnerClass(),
       n: New[1]          | $newAndArgs
    ]);
+}
+
+function <<access.private>> meta::external::language::java::serialization::doCodeNewArray(sfer:Stringifier[1], c:NewArray[1]): Stringifier[1]
+{
+   let newAndArgs = $sfer
+      ->addWord('new')
+      ->doType($c.type)
+      ->addText('{')
+      ->joiningFoldable($c.arguments, {s,a| $s->doCode($a)}, '', ', ', '')
+      ->addText('}');
 }
 
 function <<access.private>> meta::external::language::java::serialization::doLambdaExpression(sfer:Stringifier[1], code: Code[1]): Stringifier[1]
