@@ -5653,7 +5653,10 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
    let reprocessedCollectionArg = if($singleProcessedCollectionArg,
                                      | $processedCollectionArg->toOne(),
                                      | let processedCollection = if($state.inFilter, |$processedCollectionArg->map(s | $s.select.filteringOperation), |$processedCollectionArg->map(s | $s.select.columns));
-                                       assert($processedCollection->forAll(pc | $pc->instanceOf(Literal) || ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'minus' && $pc->cast(@DynaFunction).parameters->size() == 1)), 'IN is supported only for literal values or negative numbers');
+                                       assert($processedCollection->forAll(pc | $pc->instanceOf(Literal)
+                                       || ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'minus' && $pc->cast(@DynaFunction).parameters->size() == 1)
+                                       || ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'cast')
+                                       ), 'IN is supported only for literal values or negative numbers');
                                        let list = ^LiteralList(values=$processedCollection->map(m| $m->processLiteralOrMinusDynaFunction()));
                                        let first = $processedCollectionArg->at(0);
                                        let firstSelect = $first.select;
@@ -5788,7 +5791,10 @@ function meta::relational::functions::pureToSqlQuery::processLiteralOrMinusDynaF
 {
    $input->match([
       l:Literal[1] | $l,
-      f:DynaFunction[1] | ^Literal(value = 0 - $f.parameters->toOne()->cast(@Literal).value->toString()->parseInteger())
+      f:DynaFunction[1] | if($f.name=='minus',
+                        | ^Literal(value = 0 - $f.parameters->toOne()->cast(@Literal).value->toString()->parseInteger()),
+                        | $f.parameters->first()->toOne()->cast(@Literal))
+
    ]);
 }
 

@@ -66,6 +66,11 @@ function <<PCT.test>> meta::pure::functions::collection::tests::in::testInIsEmpt
    assertFalse($f->eval(|[]->in(['a', 'b'])));
 }
 
+function <<PCT.test>> meta::pure::functions::collection::tests::in::testInForDecimal<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assert($f->eval(|1d->in([1d, 2d])));
+}
+
 function <<PCT.test, meta::pure::functions::relation::PCTRelationQualifier.relation>> meta::pure::functions::collection::tests::in::testIn_relation_extend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
