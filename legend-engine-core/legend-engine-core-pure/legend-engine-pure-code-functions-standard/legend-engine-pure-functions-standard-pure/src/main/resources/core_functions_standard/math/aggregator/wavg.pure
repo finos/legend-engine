@@ -16,7 +16,7 @@ import meta::pure::test::pct::*;
 import meta::pure::tds::extensions::*;
 
 function 
-<<PCT.function>> 
+<<PCT.function, functionType.ReducerFunction>> 
     {
         doc.doc='Performs weighted average on a given data field with its respective weight field',
         PCT.grammarDoc='wavg is used by wavg(Number[*], Number[*])'

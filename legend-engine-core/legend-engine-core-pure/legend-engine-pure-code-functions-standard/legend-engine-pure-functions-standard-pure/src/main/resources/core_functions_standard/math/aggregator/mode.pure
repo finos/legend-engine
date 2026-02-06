@@ -23,7 +23,7 @@ Class <<access.private>> meta::pure::functions::math::Accumulator
 }
 
 function
-<<PCT.function>>
+<<PCT.function, functionType.ReducerFunction>>
     {
         doc.doc='Returns the most frequent value for the values within expr1. NULL values are ignored.'
     }
@@ -40,7 +40,7 @@ meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
     $res.numMax->cast(@Number);
 }
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Float[*]):Float[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mode(numbers:Float[*]):Float[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();
      let res = $sortedNumbers->fold({x, y | let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
@@ -53,7 +53,7 @@ function <<PCT.function>> meta::pure::functions::math::mode(numbers:Float[*]):Fl
 }
 
 
-function <<PCT.function>> meta::pure::functions::math::mode(numbers:Integer[*]):Integer[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mode(numbers:Integer[*]):Integer[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();
      let res = $sortedNumbers->fold({x, y | let currCount =  if($x == $y.prev, |$y.prevCount + 1,|1);
