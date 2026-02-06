@@ -5653,9 +5653,9 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
    let reprocessedCollectionArg = if($singleProcessedCollectionArg,
                                      | $processedCollectionArg->toOne(),
                                      | let processedCollection = if($state.inFilter, |$processedCollectionArg->map(s | $s.select.filteringOperation), |$processedCollectionArg->map(s | $s.select.columns));
-                                       assert($processedCollection->forAll(pc | $pc->instanceOf(Literal) ||
-                                       ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'minus' && $pc->cast(@DynaFunction).parameters->size() == 1)
-                                       ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'cast')
+                                       assert($processedCollection->forAll(pc | $pc->instanceOf(Literal)
+                                       || ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'minus' && $pc->cast(@DynaFunction).parameters->size() == 1)
+                                       || ($pc->instanceOf(DynaFunction) && $pc->cast(@DynaFunction).name == 'cast')
                                        ), 'IN is supported only for literal values or negative numbers');
                                        let list = ^LiteralList(values=$processedCollection->map(m| $m->processLiteralOrMinusDynaFunction()));
                                        let first = $processedCollectionArg->at(0);
