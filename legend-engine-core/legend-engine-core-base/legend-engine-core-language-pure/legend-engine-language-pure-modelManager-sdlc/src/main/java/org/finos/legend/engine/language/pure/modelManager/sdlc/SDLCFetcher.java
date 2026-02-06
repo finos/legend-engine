@@ -20,6 +20,7 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -107,6 +108,27 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
             PureModelContextData loadedProject = this.workspaceLoader.loadWorkspace(identity, sdlc, this.httpClientProvider);
             PureModelContextData sdlcDependenciesPMCD = this.workspaceLoader.getSDLCDependenciesPMCD(identity, this.clientVersion, sdlc, this.httpClientProvider);
             return loadedProject.combine(sdlcDependenciesPMCD);
+        }
+    }
+
+    public PureModelContextData fetchAlloyMetadata(List<AlloySDLC> alloySDLCS)
+    {
+        parentSpan.setTag("sdlc", "alloy");
+        try (Scope ignore = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
+        {
+            PureModelContextData loadedProject = this.alloyLoader.loadAlloyProjects(identity, alloySDLCS, clientVersion, this.httpClientProvider);
+            loadedProject.origin.sdlcInfo.packageableElementPointers = alloySDLCS.stream().flatMap(sdlc -> sdlc.packageableElementPointers.stream()).collect(Collectors.toList());
+            alloySDLCS.forEach(sdlc ->
+            {
+                List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
+                if (!missingPaths.isEmpty())
+                {
+                    throw new EngineException("The following entities:" + missingPaths + " do not exist in the project data loaded from the metadata server. " +
+                            "Please make sure the corresponding Gitlab pipeline for version " + (this.alloyLoader.isLatestRevision(sdlc) ? "latest" : sdlc.version) + " has completed and also metadata server has updated with corresponding entities " +
+                            "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(clientVersion) + "\"/> this API </a>.");
+                }
+            });
+            return loadedProject;
         }
     }
 }

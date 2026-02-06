@@ -20,9 +20,11 @@ import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -45,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointerCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -128,7 +131,15 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean shouldCache(PureModelContext context)
     {
-        return this.supports(context) && (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo));
+       if (this.supports(context))
+       {
+           if (context instanceof PureModelContextPointer)
+           {
+               return (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo));
+           }
+           return ((PureModelContextPointerCombination)context).pointers.stream().allMatch(pointer -> isCacheableAlloySDLC(pointer.sdlcInfo));
+       }
+       return false;
     }
 
     private boolean isCacheablePureSDLC(SDLC sdlc)
@@ -148,14 +159,22 @@ public class SDLCLoader implements ModelLoader
     @Override
     public PureModelContext cacheKey(PureModelContext context, Identity identity)
     {
-        if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
+        if (context instanceof PureModelContextPointer)
         {
-            final Subject executionSubject = getSubject();
-            Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, identity, executionSubject);
-            return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+            if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
+            {
+                final Subject executionSubject = getSubject();
+                Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, identity, executionSubject);
+                return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
+            }
+            else
+            {
+                return this.alloyLoader.getCacheKey(context);
+            }
         }
         else
         {
+            // pointer combination to work only for alloy sdlc pointers
             return this.alloyLoader.getCacheKey(context);
         }
     }
@@ -163,15 +182,13 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean supports(PureModelContext context)
     {
-        return context instanceof PureModelContextPointer;
+        return context instanceof PureModelContextPointer || context instanceof PureModelContextPointerCombination;
     }
 
     @Override
     public PureModelContextData load(Identity identity, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
-        PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
-
         SDLCFetcher fetcher = new SDLCFetcher(
                 parentSpan,
                 clientVersion,
@@ -182,17 +199,26 @@ public class SDLCLoader implements ModelLoader
                 this.workspaceLoader
         );
 
-        Subject subject = getSubject();
-        PureModelContextData metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
-
-        if (metaData.origin != null)
+        if (ctx instanceof PureModelContextPointer)
         {
-            Assert.assertTrue("none".equals(metaData.origin.sdlcInfo.version), () -> "Version can't be set in the pointer");
-            metaData.origin.sdlcInfo.version = metaData.origin.sdlcInfo.baseVersion;
-            metaData.origin.sdlcInfo.baseVersion = null;
-        }
+            PureModelContextPointer context = (PureModelContextPointer) ctx;
+            Subject subject = getSubject();
+            PureModelContextData metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
 
-        return metaData;
+            if (metaData.origin != null)
+            {
+                Assert.assertTrue("none".equals(metaData.origin.sdlcInfo.version), () -> "Version can't be set in the pointer");
+                metaData.origin.sdlcInfo.version = metaData.origin.sdlcInfo.baseVersion;
+                metaData.origin.sdlcInfo.baseVersion = null;
+            }
+
+            return metaData;
+        }
+        else
+        {
+            List<AlloySDLC> alloySDLCs = ((PureModelContextPointerCombination) ctx).pointers.stream().map(p -> (AlloySDLC) p.sdlcInfo).collect(Collectors.toList());
+            return getSubject() == null ? fetcher.fetchAlloyMetadata(alloySDLCs) : exec(getSubject(), () -> fetcher.fetchAlloyMetadata(alloySDLCs));
+        }
     }
 
     public static PureModelContextData loadMetadataFromHTTPURL(Identity identity, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
