@@ -212,7 +212,7 @@ jobs:
         working-directory: target/checkout
         run: |
           mkdir -p central-staging/org/finos/legend
-          cp -R ~/.m2/repository/org/finos/legend/shared central-staging/org/finos/legend
+          cp -R ~/.m2/repository/org/finos/legend/engine central-staging/org/finos/legend
           find central-staging -type f \( -name "*.xml" -o -name "*.repositories" \) -delete
           find central-staging -type f ! -name "*.md5" ! -name "*.sha1" ! -name "*.sha256" ! -name "*.sha512" ! -name "*.asc" | while read -r file; do
             md5sum "$file" | awk '{print $1}' > "$file.md5"
