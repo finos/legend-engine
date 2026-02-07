@@ -259,7 +259,7 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             pack("meta::pure::functions::math::tests::toFloat", "function not supported yet: meta::pure::functions::math::toFloat_Number_1__Float_1_"),
 
             one("meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
-            one("meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException", // cotangent is not part of Numeric library. Need to write expression manually using "Numeric.cos(x) / Numeric.sin(x)"
+            one("meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"), // cotangent is not part of Numeric library. Need to write expression manually using "Numeric.cos(x) / Numeric.sin(x)"
 
             pack("meta::pure::functions::string::tests::contains", "function not supported yet: meta::pure::functions::string::contains_String_1__String_1__Boolean_1_"),
             
