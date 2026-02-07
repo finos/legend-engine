@@ -23,7 +23,6 @@ import org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryPro
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalDatabricksCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -37,8 +36,8 @@ public class Test_Relational_Databricks_ScenarioQuantFunctions_PCT extends PCTRe
     private static final Adapter adapter = CoreRelationalDatabricksCodeRepositoryProvider.databricksAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-                one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [_LEGACY_ERROR_TEMP_1035] org.apache.spark.sql.AnalysisException: Cannot specify window frame for lag function.\n", AdapterQualifier.needsInvestigation),
-                one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"", AdapterQualifier.needsImplementation)
+                one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [_LEGACY_ERROR_TEMP_1035] org.apache.spark.sql.AnalysisException: Cannot specify window frame for lag function.\n"),
+                one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
             );
 
     public static Test suite()
