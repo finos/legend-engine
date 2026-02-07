@@ -64,6 +64,15 @@ jobs:
         with:
           theme: dark
 
+      - name: Compute next development version
+        run: |
+          releaseVersion=${{ github.event.inputs.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
+
       - name: Prepare release
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
