@@ -1343,7 +1343,10 @@ public class Handlers
         register(h("meta::pure::functions::collection::init_T_MANY__T_MANY_", "init", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> Lists.fixedSize.with(ps.get(0)._genericType()), ps -> true));
 
         register("meta::pure::functions::meta::enumName_Enumeration_1__String_1_", "enumName", true, ps -> res("String", "one"));
-        register("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", "extractEnumValue", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"));
+
+        register(h("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_", "extractEnumValue", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "one"), ps -> typeOne(ps.get(1), "String")),
+                h("meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_$0_1$__T_$0_1$_", "extractEnumValue", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroOne"), ps -> typeZeroOne(ps.get(1), "String")));
+
         register("meta::pure::functions::meta::enumValues_Enumeration_1__T_MANY_", "enumValues", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
         register(h("meta::pure::tds::drop_TabularDataSet_1__Integer_1__TabularDataSet_1_", "drop", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
