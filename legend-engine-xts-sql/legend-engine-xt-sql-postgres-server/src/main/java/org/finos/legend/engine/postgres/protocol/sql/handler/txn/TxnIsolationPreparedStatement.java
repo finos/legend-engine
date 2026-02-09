@@ -143,6 +143,12 @@ public class TxnIsolationPreparedStatement implements PostgresPreparedStatement
             {
                 // txn isolation result set doesn't require closure
             }
+
+            @Override
+            public void finished() throws Exception
+            {
+
+            }
         };
     }
 

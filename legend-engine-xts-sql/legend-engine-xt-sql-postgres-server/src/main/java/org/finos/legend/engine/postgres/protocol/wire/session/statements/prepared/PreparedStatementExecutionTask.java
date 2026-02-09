@@ -52,6 +52,7 @@ public class PreparedStatementExecutionTask implements Callable<Boolean>
 
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
+        PostgresResultSet rs = null;
         try (Scope ignored = span.makeCurrent())
         {
             boolean results = true;
@@ -66,7 +67,7 @@ public class PreparedStatementExecutionTask implements Callable<Boolean>
             }
             else
             {
-                PostgresResultSet rs = preparedStatement.getResultSet();
+                rs = preparedStatement.getResultSet();
                 int maxRows = preparedStatement.getMaxRows();
                 resultSetReceiver.sendResultSet(rs, maxRows);
                 if (maxRows == 0)
@@ -87,10 +88,21 @@ public class PreparedStatementExecutionTask implements Callable<Boolean>
             resultSetReceiver.fail(e);
             OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
             OpenTelemetryUtil.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
-
         }
         finally
         {
+            try
+            {
+                if (rs != null)
+                {
+                    rs.finished();
+                }
+            }
+            catch (Exception e)
+            {
+                //ignore
+            }
+
             span.end();
             OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
         }

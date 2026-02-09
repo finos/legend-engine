@@ -251,6 +251,10 @@ public class PostgresServer
         this.registry = new PrometheusRegistry();
         this.userMetrics = new PrometheusUserMetrics(registry);
         this.connectionCount = Gauge.builder().name("serverLiveConnections").help("Total live connections count").register(this.registry);
+
+        // Register HikariCP metrics
+        sqlManager.registerHikariMetrics(this.registry);
+
         ServletContextHandler prometheusServletContext = new ServletContextHandler();
         prometheusServletContext.setContextPath("/");
         prometheusServletContext.addServlet(new ServletHolder(new PrometheusMetricsServlet(this.registry)), "/prometheus");
@@ -320,5 +324,3 @@ public class PostgresServer
         public long free;
     }
 }
-
-

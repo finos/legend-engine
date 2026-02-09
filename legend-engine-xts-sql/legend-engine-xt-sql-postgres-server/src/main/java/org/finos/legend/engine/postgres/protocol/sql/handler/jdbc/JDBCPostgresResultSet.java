@@ -26,10 +26,12 @@ class JDBCPostgresResultSet implements PostgresResultSet
 {
 
     private final ResultSet resultSet;
+    private final Runnable onFinished;
 
-    public JDBCPostgresResultSet(ResultSet resultSet)
+    public JDBCPostgresResultSet(ResultSet resultSet, Runnable onFinished)
     {
         this.resultSet = resultSet;
+        this.onFinished = onFinished;
     }
 
     @Override
@@ -66,5 +68,11 @@ class JDBCPostgresResultSet implements PostgresResultSet
         {
             resultSet.close();
         }
+    }
+
+    @Override
+    public void finished() throws Exception
+    {
+        this.onFinished.run();
     }
 }

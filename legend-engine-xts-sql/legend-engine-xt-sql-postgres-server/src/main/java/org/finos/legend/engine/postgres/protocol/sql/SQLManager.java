@@ -25,6 +25,11 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
+import io.prometheus.metrics.core.metrics.Gauge;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
@@ -58,17 +63,18 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class SQLManager
 {
     private static final Logger logger = LoggerFactory.getLogger(SQLManager.class);
+    private static final int METADATA_MAX_CONNECTIONS = 100;
     private final MutableList<LegendExecution> clients;
 
     private final MutableMap<Integer, CatalogManager> catalogManagersBySession = new ConcurrentHashMap<>();
 
-    private final String host;
-    private final int port;
-    private final MutableMap<Integer, Connection> connectionsBySession = new ConcurrentHashMap<>();
+    private final HikariDataSource dataSource;
 
     public SQLManager(MutableList<LegendExecution> clients)
     {
@@ -86,7 +92,7 @@ public class SQLManager
             DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                     .dockerHost(config.getDockerHost())
                     .sslConfig(config.getSSLConfig())
-                    .maxConnections(100)
+                    .maxConnections(METADATA_MAX_CONNECTIONS)
                     .connectionTimeout(Duration.ofSeconds(30))
                     .responseTimeout(Duration.ofSeconds(45))
                     .build();
@@ -112,24 +118,37 @@ public class SQLManager
 
             dockerClient.startContainerCmd(container.getId()).exec();
 
-            this.port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
+            int port = Integer.parseInt(dockerClient.inspectContainerCmd(container.getId()).exec()
                     .getNetworkSettings()
                     .getPorts().getBindings().values().iterator().next()[0].getHostPortSpec());
 
             String givenHost = System.getenv("TESTCONTAINERS_HOST_OVERRIDE");
-            this.host = givenHost == null ? "localhost" : givenHost;
-            logger.info("Connecting using host: {}", this.host);
+            String host = givenHost == null ? "localhost" : givenHost;
+            String baseUrl = "jdbc:postgresql://" + host + ":" + port;
+            logger.info("Connecting using host: {}", host);
 
             logger.info("Waiting for initialization");
-            waitInitialization("jdbc:postgresql://" + this.host + ":" + this.port + "/postgres", "postgres", "");
+            waitInitialization(baseUrl + "/postgres", "postgres", "");
 
             // Create metadata database
-            try (Connection connection = DriverManager.getConnection("jdbc:postgresql://" + this.host + ":" + this.port + "/postgres", "postgres", "");
+            try (Connection connection = DriverManager.getConnection(baseUrl + "/postgres", "postgres", "");
                  PreparedStatement preparedStatement = connection.prepareStatement("CREATE DATABASE legend_m;"))
             {
-                logger.info("Postgres initialized on port " + this.port);
+                logger.info("Postgres initialized on port " + port);
                 preparedStatement.execute();
             }
+
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(baseUrl + "/legend_m");
+            hikariConfig.setUsername("postgres");
+            hikariConfig.setPassword("");
+            hikariConfig.setMaximumPoolSize(METADATA_MAX_CONNECTIONS - 10); //leave some connections free for other DB operations
+            hikariConfig.setMinimumIdle(10);
+            hikariConfig.setPoolName("LegendMetadataPool");
+
+            this.dataSource = new HikariDataSource(hikariConfig);
+
+            logger.info("HikariCP connection pool initialized with max pool size: {}", hikariConfig.getMaximumPoolSize());
         }
         catch (Exception e)
         {
@@ -165,12 +184,15 @@ public class SQLManager
                     case Legend:
                         return new LegendPreparedStatement(query, findClient(clients, session.getDatabaseName()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
                     case Metadata_Generic:
+                    {
                         // We still want to rewrite things like the current_database function.
-                        return new JDBCPostgresPreparedStatement(connectionsBySession.get(session.getId()).prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, null))));
+                        return new JDBCPostgresPreparedStatement(this::getMetadataConnection, CatalogManager.reprocessQuery(query, new SQLRewrite(session, null)));
+                    }
                     case Metadata_User_Specific:
-                        Connection connection = connectionsBySession.get(session.getId());
-                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
-                        return new JDBCPostgresPreparedStatement(connection.prepareStatement(CatalogManager.reprocessQuery(query, new SQLRewrite(session, catalogManager))));
+                    {
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), this::getMetadataConnection));
+                        return new JDBCPostgresPreparedStatement(this::getMetadataConnection, CatalogManager.reprocessQuery(query, new SQLRewrite(session, catalogManager)));
+                    }
                     case TX:
                         return new TxnIsolationPreparedStatement();
                 }
@@ -196,11 +218,10 @@ public class SQLManager
                     case Legend:
                         return new LegendStatement(findClient(clients, session.getDatabaseName()), session.getDatabaseName(), session.getOptions(), session.getIdentity());
                     case Metadata_Generic:
-                        return new JDBCPostgresStatement(connectionsBySession.get(session.getId()).createStatement(), new SQLRewrite(session, null));
+                        return new JDBCPostgresStatement(this::getMetadataConnection, new SQLRewrite(session, null));
                     case Metadata_User_Specific:
-                        Connection connection = connectionsBySession.get(session.getId());
-                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), connection));
-                        return new JDBCPostgresStatement(connection.createStatement(), new SQLRewrite(session, catalogManager));
+                        CatalogManager catalogManager = catalogManagersBySession.getIfAbsentPut(session.getId(), () -> new CatalogManager(session.getIdentity(), session.getDatabaseName(), findClient(clients, session.getDatabaseName()), () -> getMetadataConnection()));
+                        return new JDBCPostgresStatement(this::getMetadataConnection, new SQLRewrite(session, catalogManager));
                     case TX:
                         return new TxnIsolationStatement();
                 }
@@ -211,6 +232,18 @@ public class SQLManager
             throw new PostgresServerException(e);
         }
         return null;
+    }
+
+    private Connection getMetadataConnection()
+    {
+        try
+        {
+            return dataSource.getConnection();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private LegendExecution findClient(MutableList<LegendExecution> clients, String database)
@@ -246,19 +279,6 @@ public class SQLManager
         while (initializing);
     }
 
-
-    public void sessionCreated(Session session)
-    {
-        try
-        {
-            connectionsBySession.put(session.getId(), DriverManager.getConnection("jdbc:postgresql://" + host + ":" + port + "/legend_m", "postgres", ""));
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void sessionClosing(Session session) throws SQLException
     {
         CatalogManager cm = this.catalogManagersBySession.remove(session.getId());
@@ -266,7 +286,45 @@ public class SQLManager
         {
             cm.close();
         }
-        connectionsBySession.get(session.getId()).close();
     }
 
+    public void registerHikariMetrics(PrometheusRegistry registry)
+    {
+        HikariPoolMXBean poolMXBean = dataSource.getHikariPoolMXBean();
+        String poolName = dataSource.getPoolName();
+
+        Gauge activeConnections = Gauge.builder()
+                .name("legend_metadata_hikari_active_connections")
+                .help("Active connections in the HikariCP pool")
+                .labelNames("pool")
+                .register(registry);
+
+        Gauge idleConnections = Gauge.builder()
+                .name("legend_metadata_hikari_idle_connections")
+                .help("Idle connections in the HikariCP pool")
+                .labelNames("pool")
+                .register(registry);
+
+        Gauge totalConnections = Gauge.builder()
+                .name("legend_metadata_hikari_total_connections")
+                .help("Total connections in the HikariCP pool")
+                .labelNames("pool")
+                .register(registry);
+
+        Gauge threadsAwaiting = Gauge.builder()
+                .name("legend_metadata_hikari_threads_awaiting_connection")
+                .help("Number of threads awaiting a connection from the HikariCP pool")
+                .labelNames("pool")
+                .register(registry);
+
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() ->
+        {
+            activeConnections.labelValues(poolName).set(poolMXBean.getActiveConnections());
+            idleConnections.labelValues(poolName).set(poolMXBean.getIdleConnections());
+            totalConnections.labelValues(poolName).set(poolMXBean.getTotalConnections());
+            threadsAwaiting.labelValues(poolName).set(poolMXBean.getThreadsAwaitingConnection());
+        }, 0, 10, TimeUnit.SECONDS);
+
+        logger.info("HikariCP metrics registered with Prometheus for pool: {}", poolName);
+    }
 }

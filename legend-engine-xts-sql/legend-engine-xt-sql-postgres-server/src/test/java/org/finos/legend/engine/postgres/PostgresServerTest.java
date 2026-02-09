@@ -18,12 +18,12 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
-import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
+import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
+import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
 import org.junit.AfterClass;
@@ -44,6 +44,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
 
 public class PostgresServerTest
@@ -61,9 +62,6 @@ public class PostgresServerTest
     @BeforeClass
     public static void setUp()
     {
-//        LegendTdsTestClient client = new LegendTdsTestClient(resources);
-//        LegendSessionFactory legendSessionFactory = new LegendSessionFactory(new LegendExecutionService(client));
-
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
         serverConfig.setHttpPort(0);
@@ -110,6 +108,30 @@ public class PostgresServerTest
         {
             ParameterMetaData parameterMetaData = statement.getParameterMetaData();
             Assert.assertEquals(0, parameterMetaData.getParameterCount());
+        }
+    }
+
+    @Test
+    public void testMultipleParameterMetadata() throws SQLException
+    {
+        try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace where 1 = ? and 2 = ?")
+        )
+        {
+            statement.setInt(1, 2);
+            statement.setInt(2, 2);
+            ParameterMetaData parameterMetaData = statement.getParameterMetaData();
+            ResultSet resultSet = statement.executeQuery();
+
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(0, rows);
+            Assert.assertEquals(2, parameterMetaData.getParameterCount());
         }
     }
 
@@ -557,6 +579,160 @@ public class PostgresServerTest
             Assert.assertNotNull(serverErrorMessage.getMessage());
             Assert.assertTrue(serverErrorMessage.getMessage().endsWith("\"no column found named: 'some_random_column_name'. Available columns: [Id, Name, Employee Type, Full Name, Derived Name]\""));
         }
+    }
+
+    @Test
+    public void testLotsOfConnectionsBadConnectionManagementPreparedStatement() throws SQLException
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            //deliberately not closing connections or statement to simulate bad connection management
+            Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy");
+
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
+
+            int numberOfColumns = statement.getMetaData().getColumnCount();
+            Assert.assertEquals(4, numberOfColumns);
+
+            //we do twice to ensure reuse works as expected
+            testLotsOfConnections(statement.executeQuery());
+            testLotsOfConnections(statement.executeQuery());
+        }
+    }
+
+
+    @Test
+    public void testLotsOfConnectionsGoodConnectionManagementPreparedStatement() throws SQLException
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            try (
+                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                        "dummy", "dummy");
+
+                PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
+            )
+            {
+                int numberOfColumns = statement.getMetaData().getColumnCount();
+                Assert.assertEquals(4, numberOfColumns);
+
+                //we do twice to ensure reuse works as expected
+                testLotsOfConnections(statement.executeQuery());
+                testLotsOfConnections(statement.executeQuery());
+            }
+        }
+    }
+
+    @Test
+    public void testLotsOfConnectionsBadConnectionManagementStatement() throws SQLException
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            //deliberately not closing connections or statement to simulate bad connection management
+            Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy");
+
+            Statement statement = connection.createStatement();
+
+            //we do twice to ensure reuse works as expected
+            testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+            testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+        }
+    }
+
+
+    @Test
+    public void testLotsOfConnectionsGoodConnectionManagementStatement() throws SQLException
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            try (
+                    Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                            "dummy", "dummy");
+
+                    Statement statement = connection.createStatement();
+            )
+            {
+                //we do twice to ensure reuse works as expected
+                testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+                testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+            }
+        }
+    }
+
+    @Test
+    public void testLotsOfConcurrentConnectionsGoodConnectionManagementStatement() throws SQLException
+    {
+        for (int i = 0; i < 500; i++)
+        {
+            try (
+                    Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                            "dummy", "dummy");
+
+                    Statement statement = connection.createStatement();
+            )
+            {
+                //we do twice to ensure reuse works as expected
+                testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+                testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+            }
+        }
+    }
+
+    @Test
+    public void testLotsOfConcurrentConnectionsBadConnectionManagementStatement() throws SQLException
+    {
+        List<Connection> connections = Lists.mutable.empty();
+        for (int i = 0; i < 500; i++)
+        {
+            //deliberately not closing connections or statement to simulate bad connection management
+            connections.add(DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy"));
+        }
+
+        for (Connection connection : connections)
+        {
+            Statement statement = connection.createStatement();
+            testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+        }
+    }
+
+    @Test
+    public void testLotsOfConcurrentConnectionsBadConnectionManagementPreparedStatement() throws SQLException
+    {
+        List<Connection> connections = Lists.mutable.empty();
+        for (int i = 0; i < 500; i++)
+        {
+            //deliberately not closing connections or statement to simulate bad connection management
+            connections.add(DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy"));
+
+        }
+
+        for (Connection connection : connections)
+        {
+            Statement statement = connection.createStatement();
+            testLotsOfConnections(statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace"));
+        }
+    }
+
+    private void testLotsOfConnections(ResultSet resultSet)
+    {
+        try
+        {
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(2, rows);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @AfterClass

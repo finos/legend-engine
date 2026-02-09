@@ -18,39 +18,77 @@ import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.Catalo
 import org.finos.legend.engine.postgres.protocol.sql.handler.jdbc.catalog.SQLRewrite;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.regular.PostgresStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 {
-    private final Statement postgresStatement;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCPostgresPreparedStatement.class);
+
+    private final Supplier<Connection> connectionSupplier;
     private final SQLRewrite sqlRewrite;
 
-    public JDBCPostgresStatement(Statement postgresStatement, SQLRewrite sqlRewrite) throws SQLException
+    public JDBCPostgresStatement(Supplier<Connection> connectionSupplier, SQLRewrite sqlRewrite) throws SQLException
     {
-        this.postgresStatement = postgresStatement;
+        this.connectionSupplier = connectionSupplier;
         this.sqlRewrite = sqlRewrite;
     }
 
     @Override
     public boolean execute(String query) throws Exception
     {
-        return postgresStatement.execute(CatalogManager.reprocessQuery(query, sqlRewrite));
+        try
+        {
+            ensureStatement();
+            return postgresStatement.execute(CatalogManager.reprocessQuery(query, sqlRewrite));
+        }
+        catch (Exception e)
+        {
+            closeConnectionAndStatement();
+            throw e;
+        }
     }
 
     @Override
     public PostgresResultSet getResultSet() throws Exception
     {
-        return new JDBCPostgresResultSet(postgresStatement.getResultSet());
+        return new JDBCPostgresResultSet(postgresStatement.getResultSet(), this::closeConnectionAndStatement);
     }
 
     @Override
     public void close() throws Exception
     {
-        if (postgresStatement != null)
+        closeConnectionAndStatement();
+    }
+
+    private synchronized void closeConnectionAndStatement()
+    {
+        try
         {
-            postgresStatement.close();
+            if (postgresStatement != null)
+            {
+                postgresStatement.close();
+            }
+        }
+        catch (SQLException e)
+        {
+            LOGGER.info("Error closing Statement", e);
+        }
+
+        try
+        {
+            if (connection != null && !connection.isClosed())
+            {
+                connection.close();
+            }
+        }
+        catch (SQLException e)
+        {
+            LOGGER.info("Error closing Statement", e);
         }
     }
 

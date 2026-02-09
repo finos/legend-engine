@@ -629,8 +629,6 @@ public class PostgresWireProtocol
     {
         this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
 
-        sqlManager.sessionCreated(session);
-
         sessionStats.name = authenticatedUser.getName();
         PrometheusUserMetrics prometheusUserMetrics = server.getUserMetrics();
         String label = sessionStats.name.replaceAll("[^a-zA-Z0-9_]", "_");

@@ -54,6 +54,7 @@ public class StatementExecutionTask implements Callable<Boolean>
 
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Statement ExecutionTask Execute").startSpan();
+        PostgresResultSet rs = null;
         try (Scope ignored = span.makeCurrent())
         {
             boolean results = statement.execute(query);
@@ -64,7 +65,7 @@ public class StatementExecutionTask implements Callable<Boolean>
             }
             else
             {
-                PostgresResultSet rs = statement.getResultSet();
+                rs = statement.getResultSet();
                 resultSetReceiver.sendResultSet(rs, 0);
                 resultSetReceiver.allFinished();
             }
@@ -80,6 +81,18 @@ public class StatementExecutionTask implements Callable<Boolean>
         }
         finally
         {
+            if (rs != null)
+            {
+                try
+                {
+                    rs.finished();
+                }
+                catch (Exception e)
+                {
+                    //ignore
+                }
+            }
+
             span.end();
             OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
         }
