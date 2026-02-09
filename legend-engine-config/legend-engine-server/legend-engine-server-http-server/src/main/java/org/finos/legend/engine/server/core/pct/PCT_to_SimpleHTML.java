@@ -304,7 +304,7 @@ public class PCT_to_SimpleHTML
     {
         if (adapterQualifiers.isEmpty())
         {
-            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature.name()) && !test.qualifiers.contains(AdapterQualifier.assertErrorMismatch.name());
+            return !test.qualifiers.contains(AdapterQualifier.unsupportedFeature.name());
         }
 
         return adapterQualifiers.contains("all") || !Collections.disjoint(test.qualifiers, adapterQualifiers);

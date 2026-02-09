@@ -23,7 +23,6 @@ import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalH2PCTCodeRepositoryProvider;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -38,27 +37,27 @@ public class Test_Relational_H2_UnclassifiedFunctions_PCT extends PCTReportConfi
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //ascii
-            one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\""),
 
             //tolowerfirstcharacter
-            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'xXoXoXoX'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\""),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\""),
+            one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'xoXoXoX'\nactual:   'xXoXoXoX'\""),
 
             //toupperfirstcharacter
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\"", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\"", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\""),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_", "\"\nexpected: '1isOne'\nactual:   '11isOne'\""),
+            one("meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_", "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\""),
 
             //currentUserId
             one("meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\""),
 
             // regexp
-            pack("meta::pure::functions::string::tests::regexpCount", "\"Couldn't find DynaFunction to Postgres model translation for regexpCount().\"", AdapterQualifier.needsImplementation),
-            pack("meta::pure::functions::string::tests::regexpExtract", "\"Couldn't find DynaFunction to Postgres model translation for regexpExtract().\"", AdapterQualifier.needsImplementation),
-            pack("meta::pure::functions::string::tests::regexpIndexOf", "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\"", AdapterQualifier.needsImplementation),
-            pack("meta::pure::functions::string::tests::regexpLike", "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\"", AdapterQualifier.needsImplementation),
-            pack("meta::pure::functions::string::tests::regexpReplace", "\"Couldn't find DynaFunction to Postgres model translation for regexpReplace().\"", AdapterQualifier.needsImplementation)
+            pack("meta::pure::functions::string::tests::regexpCount", "\"Couldn't find DynaFunction to Postgres model translation for regexpCount().\""),
+            pack("meta::pure::functions::string::tests::regexpExtract", "\"Couldn't find DynaFunction to Postgres model translation for regexpExtract().\""),
+            pack("meta::pure::functions::string::tests::regexpIndexOf", "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""),
+            pack("meta::pure::functions::string::tests::regexpLike", "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""),
+            pack("meta::pure::functions::string::tests::regexpReplace", "\"Couldn't find DynaFunction to Postgres model translation for regexpReplace().\"")
     );
 
     public static Test suite()
