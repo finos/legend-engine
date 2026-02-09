@@ -6310,7 +6310,7 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
                           $name,
                           $f.parametersValues->map(p|$p->processAggFn($params, $state))
                     ););
-                    if ($state.currentWindow->isEmpty() || $f.func->cast(@ElementWithStereotypes)->hasStereotype('ReducerFunction',meta::pure::profiles::functionType),
+                    if ($state.currentWindow->isEmpty() || !$f.func->cast(@ElementWithStereotypes)->hasStereotype('ReducerFunction',meta::pure::profiles::functionType),
                       |$aggFunc,
                       |let win = $state.currentWindow->toOne();
                        ^$win(func=$aggFunc);
