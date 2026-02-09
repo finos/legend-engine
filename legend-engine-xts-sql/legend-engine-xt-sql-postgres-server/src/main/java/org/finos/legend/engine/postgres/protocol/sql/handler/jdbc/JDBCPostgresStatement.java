@@ -103,7 +103,6 @@ public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
         {
             this.connection = connectionSupplier.get();
             this.postgresStatement = connection.createStatement();
-
         }
     }
 
