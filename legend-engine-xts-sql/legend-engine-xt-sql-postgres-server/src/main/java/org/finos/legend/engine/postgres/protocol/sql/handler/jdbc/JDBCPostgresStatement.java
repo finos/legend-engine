@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 {
@@ -31,6 +33,9 @@ public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
 
     private final Supplier<Connection> connectionSupplier;
     private final SQLRewrite sqlRewrite;
+
+    private Connection connection;
+    private Statement postgresStatement;
 
     public JDBCPostgresStatement(Supplier<Connection> connectionSupplier, SQLRewrite sqlRewrite) throws SQLException
     {
@@ -89,6 +94,16 @@ public class JDBCPostgresStatement implements PostgresStatement, AutoCloseable
         catch (SQLException e)
         {
             LOGGER.info("Error closing Statement", e);
+        }
+    }
+
+    private synchronized void ensureStatement() throws SQLException
+    {
+        if (postgresStatement == null || connection == null || connection.isClosed())
+        {
+            this.connection = connectionSupplier.get();
+            this.postgresStatement = connection.createStatement();
+
         }
     }
 
