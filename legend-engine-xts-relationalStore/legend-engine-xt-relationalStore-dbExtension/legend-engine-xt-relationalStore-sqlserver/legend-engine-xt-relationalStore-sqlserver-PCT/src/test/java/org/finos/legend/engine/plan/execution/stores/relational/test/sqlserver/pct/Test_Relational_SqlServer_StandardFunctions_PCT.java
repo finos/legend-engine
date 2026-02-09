@@ -67,6 +67,7 @@ public class Test_Relational_SqlServer_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
             one("meta::pure::functions::collection::tests::in::testIn_relation_extend_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::in::testInForDecimal_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
 
             one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "Error while executing: insert into leSchema.tb_"),
 
