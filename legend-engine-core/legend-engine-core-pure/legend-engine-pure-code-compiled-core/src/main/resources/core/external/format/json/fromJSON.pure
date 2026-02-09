@@ -217,13 +217,12 @@ function <<access.private>> meta::json::createObjectValue<T>(json:JSONObject[1],
 
       let typeArguments = $generics->map(g | ^GenericType(rawType=$g.second));
 
-      let genericType = ^KeyValue(key='classifierGenericType', value=^GenericType(rawType=$actualClass, typeArguments=$typeArguments));
-
-       
-      if ($config.constraintsHandler->isEmpty()
-          ,|$actualClass->dynamicNew($properties->add($genericType));
-          ,|$actualClass->dynamicNew($properties->add($genericType),[],[],[], $config.constraintsHandler->toOne().constraintsManager);
-         );
+      let gt = ^GenericType(rawType=$actualClass, typeArguments=$typeArguments);                                                                                                                                                            
+                                                                                                                                                                                                                                        
+      if ($config.constraintsHandler->isEmpty(),                                                                                                                                                                                            
+        | dynamicNew($gt, $properties);,                                                                                                                                                                                                   
+        | dynamicNew($gt, $properties, [], [], [], $config.constraintsHandler->toOne().constraintsManager);                                                                                                                               
+      );    
    );
 }
 
