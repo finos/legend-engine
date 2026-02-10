@@ -1757,6 +1757,26 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPreprocessFunctionO
   assertEquals('select top 10 "persontable_0".FIRSTNAME as "FIRSTNAME" from personTable as "persontable_0"', $rawPlan.rootExecutionNode.executionNodes->cast(@SQLExecutionNode).sqlQuery);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testPreprocessFunctionOnWithoutFromFunction():Boolean[1]
+{
+  let lambda = {|#>{meta::relational::tests::dbInc.personTable}#->select(~[FIRSTNAME])};
+  let con = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.H2);
+  let runtime = ^meta::pure::runtime::PackageableRuntime
+                (
+                  runtimeValue = ^meta::core::runtime::EngineRuntime
+                  (
+                    preprocessFunction = addLimit_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_,
+                    connectionStores=^ConnectionStore
+                                      (
+                                        connection=$con,
+                                        element = ^Database(name = 'dummyDatabase')
+                                      )
+                  )
+                );
+  let rawPlan = meta::pure::executionPlan::executionPlan($lambda, meta::relational::tests::simpleRelationalMappingInc, $runtime.runtimeValue, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+  assertEquals('select top 10 "persontable_0".FIRSTNAME as "FIRSTNAME" from personTable as "persontable_0"', $rawPlan.rootExecutionNode.executionNodes->cast(@SQLExecutionNode).sqlQuery);
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulationLegacy():Boolean[1]
 {
    let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.H2, testDataSetupCsv = '')));

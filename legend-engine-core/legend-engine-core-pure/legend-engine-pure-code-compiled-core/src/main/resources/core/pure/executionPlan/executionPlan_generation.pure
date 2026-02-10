@@ -128,16 +128,54 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
     tdsColumns: TDSColumn[*];
 }
 
+function meta::pure::executionPlan::addFrom(lambda : FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1]):FunctionDefinition<Any>[1]
+{
+  let returnGenericType = $lambda->functionReturnType();
+  let returnMultiplicity = $lambda->functionReturnMultiplicity();
+  let withFrom = ^SimpleFunctionExpression
+  (
+    importGroup=system::imports::coreImport,
+    func = from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+    functionName = 'from',
+    genericType = $returnGenericType,
+    multiplicity = $returnMultiplicity,
+    parametersValues =    $lambda.expressionSequence->evaluateAndDeactivate()
+                          ->concatenate(^InstanceValue
+                                        (
+                                          genericType = ^GenericType(rawType=Mapping),
+                                          multiplicity = PureOne,
+                                          values = $m
+                                        )
+                          )
+                          ->concatenate(^InstanceValue
+                                        (
+                                          genericType = ^GenericType(rawType=meta::pure::runtime::PackageableRuntime),
+                                          multiplicity = PureOne,
+                                          values =^meta::pure::runtime::PackageableRuntime(runtimeValue=$runtime->cast(@EngineRuntime))
+                                        )
+                          )
+                      ,
+    resolvedMultiplicityParameters = $returnMultiplicity,
+    resolvedTypeParameters = $returnGenericType
+  );
+  let final = ^$lambda(expressionSequence=$withFrom);
+}
+
+function meta::pure::executionPlan::getFromExpressionsForFunction(f:FunctionDefinition<Any>[1]):FunctionExpression[*]
+{
+  $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__Runtime_1__T_m_,
+                                                                       from_T_m__PackageableRuntime_1__T_m_,
+                                                                       from_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                       from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                       from_FunctionDefinition_1__Runtime_1__T_m_,
+                                                                       from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
+                                                                       from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+                                                                       from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_]);
+}
+
 function meta::pure::executionPlan::preprocessFunction(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):FunctionDefinition<Any>[1]
 {
-  let fromExpr = $f->findExpressionsForFunctionInFunctionDefinition([from_T_m__Runtime_1__T_m_,
-                                                                     from_T_m__PackageableRuntime_1__T_m_,
-                                                                     from_T_m__Mapping_1__Runtime_1__T_m_,
-                                                                     from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
-                                                                     from_FunctionDefinition_1__Runtime_1__T_m_,
-                                                                     from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
-                                                                     from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
-                                                                     from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_]);
+  let fromExpr = $f->getFromExpressionsForFunction();
   if(!$fromExpr->isEmpty(),
         | let runtime = $fromExpr->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
                         ->map(v | $v->match([ runtime:Runtime[1] | $runtime,
@@ -157,8 +195,16 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
-   let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
-   meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
+   if($runtime.preprocessFunction->isEmpty(),
+     |let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
+     meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);,
+     |let fromExpr = $f->getFromExpressionsForFunction();
+      if($fromExpr->isEmpty(),
+      |let fromFunction = $f->meta::pure::executionPlan::addFrom($m, $runtime);
+       meta::pure::executionPlan::executionPlan($fromFunction, $context, $extensions, $debugContext);,
+      |meta::pure::executionPlan::executionPlan($f, $context, $extensions, $debugContext);
+      );
+     )
 }
 
 function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]

@@ -414,7 +414,7 @@ function <<access.private>> meta::pure::functions::meta::findExpressionsForFunct
                                                          k : KeyExpression[1] | $k.expression->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);,
                                                          l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs));,
                                                          a:Any[1] | []]););,
-               ve:VariableExpression[1] | []]
+               ve:ValueSpecification[1] | []]
           );
 
 }
