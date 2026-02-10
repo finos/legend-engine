@@ -47,10 +47,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.arrow.vector.types.pojo.Schema;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Spliterator;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -95,18 +98,22 @@ public class DeephavenExecutionNodeExecutor implements ExecutionNodeVisitor<Resu
             {
                 IDeephavenExecutionNodeSpecifics specifics = createSpecifics(node);
                 TableHandle table = specifics.execute(session);
-                FlightStream flightStream = session.stream(table.ticketId());
+                try (FlightStream flightStream = session.stream(table.ticketId()))
+                {
+                    Stream<Map<String, Object>> rowStream = StreamSupport.stream(new DeephavenRowSpliterator(flightStream), false);
+                    List<Map<String, Object>> results = rowStream.collect(Collectors.toList());
+                    while (flightStream.next())
+                    {
+                        flightStream.getRoot().clear();
+                    }
+                    Stream<Map<String, Object>> resultStream = results.stream();
 
-                Stream<Map<String, Object>> rowStream = StreamSupport.stream(new DeephavenRowSpliterator(flightStream), false);
-                List<Map<String, Object>> results = rowStream.collect(Collectors.toList());
-                flightStream.close();
-                Stream<Map<String, Object>> resultStream = results.stream();
-
-                String query = FriendlyString.of(specifics.getTableSpec());
-                DeephavenExecutionActivity activity = new DeephavenExecutionActivity(query);
-                List<org.finos.legend.engine.plan.execution.result.ExecutionActivity> activities = Collections.singletonList(activity);
-                DeephavenStreamingResult deephavenResult = new DeephavenStreamingResult(activities);
-                return new StreamingObjectResult<>(resultStream, deephavenResult.getResultBuilder(), deephavenResult);
+                    String query = FriendlyString.of(specifics.getTableSpec());
+                    DeephavenExecutionActivity activity = new DeephavenExecutionActivity(query);
+                    List<org.finos.legend.engine.plan.execution.result.ExecutionActivity> activities = Collections.singletonList(activity);
+                    DeephavenStreamingResult deephavenResult = new DeephavenStreamingResult(activities);
+                    return new StreamingObjectResult<>(resultStream, deephavenResult.getResultBuilder(), deephavenResult);
+                }
             }
         }
         catch (EngineException e)
@@ -238,9 +245,12 @@ public class DeephavenExecutionNodeExecutor implements ExecutionNodeVisitor<Resu
                             else if (value instanceof byte[])
                             {
                                 byte[] bytes = (byte[]) value;
-                                BigInteger unscaledValue = new BigInteger(bytes);
-                                BigDecimal decimalValue = new BigDecimal(unscaledValue);
-                                row.put(colName, decimalValue);
+                                ByteBuffer buf = ByteBuffer.wrap(bytes, 0, 4).order(ByteOrder.LITTLE_ENDIAN);
+                                int scale = buf.getInt();
+                                byte[] unscaledBytes = Arrays.copyOfRange(bytes, 4, bytes.length);
+                                BigInteger unscaled = new BigInteger(unscaledBytes);
+                                BigDecimal result = new BigDecimal(unscaled, scale);
+                                row.put(colName, result);
                             }
                             else
                             {

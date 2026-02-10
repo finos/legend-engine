@@ -248,6 +248,7 @@
                             <PCTTestSuites>
                                 <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_RelationFunctions_PCT</PCTTestSuite>
                                 <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_EssentialFunctions_PCT</PCTTestSuite>
+                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_StandardFunctions_PCT</PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
                         <executions>
@@ -355,6 +356,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
