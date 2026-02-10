@@ -1,4 +1,4 @@
-# Copyright 2022 Goldman Sachs
+# Copyright 2026 Goldman Sachs
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,9 +87,9 @@ jobs:
 
       - name: Build Release Tag
         working-directory: target/checkout
-        run: mvn -B -e -T 4 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
+        run: mvn -B -e -T 5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
         env:
-          MAVEN_OPTS: -Xmx36g
+          MAVEN_OPTS: -Xmx48g
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
@@ -195,27 +195,12 @@ jobs:
       - test
       - test-modules
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
 
-      - name: Before Test
-        uses: ./.github/workflows/actions/before-test
-
-      - name: Configure git
-        run: |
-          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
-          git config --global user.name "FINOS Administrator"
-
-      - name: Set up Maven Central
-        uses: actions/setup-java@v4
+      - name: Restore build output artifacts
+        uses: actions/download-artifact@v4
         with:
-          distribution: "zulu"
-          java-version: "11"
-          server-id: central
-          server-username: CI_DEPLOY_USERNAME
-          server-password: CI_DEPLOY_PASSWORD
-          gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
-          gpg-passphrase: CI_GPG_PASSPHRASE
+          name: build-output
+          path: ~/
 
       - name: Create bundle to publish
         working-directory: target/checkout
