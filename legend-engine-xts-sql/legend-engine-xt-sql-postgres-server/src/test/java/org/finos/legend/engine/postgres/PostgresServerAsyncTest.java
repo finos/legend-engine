@@ -157,6 +157,30 @@ public class PostgresServerAsyncTest
     }
 
     @Test
+    public void testPreparedStatementBadConnectionManagement() throws Exception
+    {
+        executeAsyncTest("testPreparedStatement", () ->
+        {
+            Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy");
+            PreparedStatement statement = connection.prepareStatement("SELECT * FROM pg_catalog.pg_tablespace");
+
+            int numberOfColumns = statement.getMetaData().getColumnCount();
+            Assert.assertEquals(4, numberOfColumns);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            int rows = 0;
+            while (resultSet.next())
+            {
+                rows++;
+            }
+            Assert.assertEquals(2, rows);
+            return null;
+        });
+    }
+
+    @Test
     public void testSimpleStatement() throws Exception
     {
         executeAsyncTest("testSimpleStatement", () ->
@@ -175,6 +199,25 @@ public class PostgresServerAsyncTest
                 }
                 Assert.assertEquals(4, rows);
             }
+            return null;
+        });
+    }
+
+    @Test
+    public void testSimpleStatementBadConnectionManagement() throws Exception
+    {
+        executeAsyncTest("testSimpleStatement", () ->
+        {
+            Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/postgres",
+                    "dummy", "dummy");
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM pg_catalog.pg_tablespace");
+                int rows = 0;
+                while (resultSet.next())
+                {
+                    rows++;
+                }
+                Assert.assertEquals(2, rows);
             return null;
         });
     }

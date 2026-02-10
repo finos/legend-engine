@@ -18,14 +18,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.logging.Logger;
 
 public class PostgresServerSimpleTestClient
 {
-
-    private static final Logger LOGGER = Logger.getLogger(PostgresServerSimpleTestClient.class.getName());
-
-
     public static void main(String[] args) throws Exception
     {
 

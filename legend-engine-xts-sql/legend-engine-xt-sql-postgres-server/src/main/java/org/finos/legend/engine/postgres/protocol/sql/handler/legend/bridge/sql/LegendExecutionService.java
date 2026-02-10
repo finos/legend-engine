@@ -54,7 +54,7 @@ public class LegendExecutionService implements LegendExecution
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
-        try (Scope scope = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
+        try (Scope ignored = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
         {
             span.setAttribute("query", query);
             JsonNode jsonNode = mapper.readTree(inputStream);
@@ -81,7 +81,7 @@ public class LegendExecutionService implements LegendExecution
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();
-        try (Scope scope = span.makeCurrent();)
+        try (Scope ignored = span.makeCurrent();)
         {
             span.setAttribute("query", query);
             InputStream inputStream = executionClient.executeQueryApi(query);

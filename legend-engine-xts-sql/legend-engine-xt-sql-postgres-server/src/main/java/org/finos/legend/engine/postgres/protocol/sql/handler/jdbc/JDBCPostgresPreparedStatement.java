@@ -17,58 +17,91 @@ package org.finos.legend.engine.postgres.protocol.sql.handler.jdbc;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.prepared.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSet;
 import org.finos.legend.engine.postgres.protocol.wire.session.statements.result.PostgresResultSetMetaData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement, AutoCloseable
 {
-    private final PreparedStatement preparedStatement;
-    private boolean isExecuted = false;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDBCPostgresPreparedStatement.class);
 
-    public JDBCPostgresPreparedStatement(PreparedStatement preparedStatement) throws SQLException
+    private final Supplier<Connection> connectionSupplier;
+    private final String query;
+
+    private Connection connection;
+    private PreparedStatement preparedStatement;
+    private boolean isExecuted = false;
+    private int maxRows = 0;
+
+    // Store parameters to replay them when PreparedStatement is recreated
+    private final Map<Integer, Object> parameters = new HashMap<>();
+
+    public JDBCPostgresPreparedStatement(Supplier<Connection> connectionSupplier, String query) throws SQLException
     {
-        this.preparedStatement = preparedStatement;
+        this.connectionSupplier = connectionSupplier;
+        this.query = query;
     }
 
     @Override
     public void setObject(int i, Object o) throws Exception
     {
-        preparedStatement.setObject(i, o);
+        // Store parameter for replay if PreparedStatement is recreated
+        parameters.put(i, o);
     }
 
     @Override
     public PostgresResultSetMetaData getMetaData() throws Exception
     {
-        return new JDBCPostgresResultSetMetaData(preparedStatement.getMetaData());
+        ensurePreparedStatement();
+        try
+        {
+            return new JDBCPostgresResultSetMetaData(preparedStatement.getMetaData());
+        }
+        finally
+        {
+            // Close connection after metadata retrieval - it will be re-acquired if execute() is called
+            closeConnectionAndStatement();
+        }
     }
 
     @Override
     public ParameterMetaData getParameterMetaData() throws Exception
     {
-        return preparedStatement.getParameterMetaData();
+        ensurePreparedStatement();
+        try
+        {
+            return preparedStatement.getParameterMetaData();
+        }
+        finally
+        {
+            // Close connection after metadata retrieval - it will be re-acquired if execute() is called
+            closeConnectionAndStatement();
+        }
     }
 
     @Override
     public void close() throws Exception
     {
-        if (preparedStatement != null)
-        {
-            preparedStatement.close();
-        }
+        closeConnectionAndStatement();
     }
 
     @Override
     public void setMaxRows(int maxRows) throws Exception
     {
-        preparedStatement.setMaxRows(maxRows);
+        this.maxRows = maxRows;
     }
 
     @Override
     public int getMaxRows() throws Exception
     {
-        return preparedStatement.getMaxRows();
+        return maxRows;
     }
 
     @Override
@@ -80,13 +113,73 @@ public class JDBCPostgresPreparedStatement implements PostgresPreparedStatement,
     @Override
     public boolean execute() throws Exception
     {
-        isExecuted = true;
-        return preparedStatement.execute();
+        try
+        {
+            ensurePreparedStatement();
+            isExecuted = true;
+            return preparedStatement.execute();
+        }
+        catch (Exception e)
+        {
+            // If execution fails, return connection immediately
+            closeConnectionAndStatement();
+            throw e;
+        }
     }
 
     @Override
     public PostgresResultSet getResultSet() throws Exception
     {
-        return new JDBCPostgresResultSet(preparedStatement.getResultSet());
+        return new JDBCPostgresResultSet(preparedStatement.getResultSet(), this::closeConnectionAndStatement);
+    }
+
+    private synchronized void ensurePreparedStatement() throws SQLException
+    {
+        if (preparedStatement == null || connection == null || connection.isClosed())
+        {
+            this.connection = connectionSupplier.get();
+            this.preparedStatement = connection.prepareStatement(query);
+
+            // Replay stored parameters on the new PreparedStatement
+            for (Map.Entry<Integer, Object> entry : parameters.entrySet())
+            {
+                preparedStatement.setObject(entry.getKey(), entry.getValue());
+            }
+
+            // Replay maxRows setting
+            if (maxRows > 0)
+            {
+                preparedStatement.setMaxRows(maxRows);
+            }
+        }
+    }
+
+    private synchronized void closeConnectionAndStatement()
+    {
+        try
+        {
+            if (preparedStatement != null)
+            {
+                preparedStatement.close();
+                preparedStatement = null;
+            }
+        }
+        catch (SQLException e)
+        {
+            LOGGER.info("Error closing PreparedStatement", e);
+        }
+
+        try
+        {
+            if (connection != null && !connection.isClosed())
+            {
+                connection.close();
+                connection = null;
+            }
+        }
+        catch (SQLException e)
+        {
+            LOGGER.info("Error closing Connection", e);
+        }
     }
 }

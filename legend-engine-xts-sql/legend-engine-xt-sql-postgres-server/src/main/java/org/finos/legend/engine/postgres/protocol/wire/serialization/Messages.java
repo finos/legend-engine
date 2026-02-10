@@ -455,7 +455,8 @@ public class Messages
             throw new IllegalArgumentException("Too many parameters. Max supported: " + Short.MAX_VALUE);
         }
         buffer.writeShort(parameters.getParameterCount());
-        for (int i = 0; i < parameters.getParameterCount(); i++)
+        //sql is 1 index based, hence start from 1
+        for (int i = 1; i < parameters.getParameterCount() + 1; i++)
         {
             int pgTypeId = PGTypes.get(parameters.getParameterType(i), parameters.getParameterTypeName(i), parameters.getScale(i)).oid();
             buffer.writeInt(pgTypeId);

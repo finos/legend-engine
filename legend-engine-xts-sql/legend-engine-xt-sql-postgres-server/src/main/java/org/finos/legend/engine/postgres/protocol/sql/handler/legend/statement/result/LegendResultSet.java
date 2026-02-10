@@ -148,6 +148,11 @@ public class LegendResultSet implements PostgresResultSet
         }
     }
 
+    @Override
+    public void finished()
+    {
+    }
+
 
     private static MutableMap<String, Function2<LegendColumn, Object, Object>> registerProcessors()
     {

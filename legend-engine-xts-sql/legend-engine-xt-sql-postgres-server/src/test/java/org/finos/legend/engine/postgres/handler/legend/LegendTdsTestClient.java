@@ -52,6 +52,6 @@ public class LegendTdsTestClient extends LegendHttpClient
     {
         Invocation.Builder builder = resourceTestRule.target(path).request();
         Response response = builder.post(Entity.text(query));
-        return handleResponse(query, () -> (InputStream) response.getEntity(), response::getStatus);
+        return handleResponse(query, () -> (InputStream) response.getEntity(), response::getStatus, null);
     }
 }

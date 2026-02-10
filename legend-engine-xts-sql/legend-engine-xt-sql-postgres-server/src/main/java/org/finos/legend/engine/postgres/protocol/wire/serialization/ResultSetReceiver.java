@@ -97,7 +97,7 @@ public class ResultSetReceiver
                     rowCount++;
                     messages.sendDataRow(directChannel, rs, columnTypes, null);
                     if ((maxRows != 0 && rowCount % maxRows == 0) || rowCount % 10000 == 0)
-                    {   //TODO REMOVE FLASH FROM essages.sendDataRow
+                    {   //TODO REMOVE FLASH FROM messages.sendDataRow
                         directChannel.flush();
                         span.addEvent("sentRows", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
                     }

@@ -25,6 +25,7 @@ import io.opentelemetry.semconv.SemanticAttributes;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -48,9 +49,9 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 public class LegendHttpClient implements LegendClient
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendHttpClient.class);
-    private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
+    private static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final TextMapSetter<HttpRequest> TEXT_MAP_SETTER = (httpRequest, key, value) -> Objects.requireNonNull(httpRequest).addHeader(new BasicHeader(key, value));
+    private static final int DEFAULT_RETRIES = 5;
 
     private final String protocol;
     private final String host;
@@ -80,6 +81,11 @@ public class LegendHttpClient implements LegendClient
 
     private InputStream executeApi(String query, String apiPath)
     {
+        return executeApi(query, apiPath, DEFAULT_RETRIES);
+    }
+
+    private InputStream executeApi(String query, String apiPath, int retries)
+    {
         String uri = protocol + "://" + this.host + ":" + this.port + apiPath;
         HttpPost req = new HttpPost(uri);
 
@@ -98,7 +104,7 @@ public class LegendHttpClient implements LegendClient
             OpenTelemetryUtil.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
             HttpClient client = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse res = client.execute(req);
-            return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
+            return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode(), retries != 0 ? () -> executeApi(query, apiPath, retries - 1) : null);
 
         }
         catch (IOException e)
@@ -112,20 +118,26 @@ public class LegendHttpClient implements LegendClient
     }
 
 
-    protected static InputStream handleResponse(String query, Callable<InputStream> responseContentSupplier, IntSupplier responseStatusCodeSupplier)
+    protected static InputStream handleResponse(String query, Callable<InputStream> responseContentSupplier, IntSupplier responseStatusCodeSupplier, Callable<InputStream> retryCallable)
     {
         String errorResponse = null;
         try
         {
             InputStream in = responseContentSupplier.call();
-            if (responseStatusCodeSupplier.getAsInt() == 200)
+            int code = responseStatusCodeSupplier.getAsInt();
+            if (code == HttpStatus.SC_OK)
             {
                 return in;
+            }
+            else if (retryCallable != null && code == HttpStatus.SC_BAD_GATEWAY)
+            {
+                LOGGER.info("Retrying query due to bad gateway response");
+                return  retryCallable.call();
             }
             else
             {
                 errorResponse = IOUtils.toString(in, UTF_8);
-                ExceptionError exceptionError = mapper.readValue(errorResponse, ExceptionError.class);
+                ExceptionError exceptionError = MAPPER.readValue(errorResponse, ExceptionError.class);
                 String errorMessage;
                 if ("error".equalsIgnoreCase(exceptionError.status))
                 {
@@ -146,7 +158,7 @@ public class LegendHttpClient implements LegendClient
         catch (Exception e)
         {
             String message = String.format("Unable to parse json. Execution API response status[%s]", responseStatusCodeSupplier.getAsInt());
-            if (responseStatusCodeSupplier.getAsInt() != 200)
+            if (responseStatusCodeSupplier.getAsInt() != HttpStatus.SC_OK)
             {
                 message = String.format("%s, response: [%s]", message, errorResponse);
             }
