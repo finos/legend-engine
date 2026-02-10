@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-variant</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.119.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
