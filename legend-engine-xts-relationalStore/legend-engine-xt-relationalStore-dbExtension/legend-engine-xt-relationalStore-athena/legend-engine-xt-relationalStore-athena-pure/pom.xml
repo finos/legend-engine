@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-athena</artifactId>
@@ -57,7 +58,8 @@
                         <repository>core_relational_athena</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_relational_athena.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_relational_athena.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -68,33 +70,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -248,8 +223,8 @@
             <artifactId>jackson-core</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
         <!-- TEST -->
+    </dependencies>
 
     <profiles>
         <profile>
@@ -272,9 +247,12 @@
                                 <configuration>
                                     <target name="protocol">
                                         <copy todir="${basedir}/src/main/resources/${folderPath}/${protocol.TargetVersion}">
-                                            <fileset dir="${basedir}/src/main/resources/${folderPath}/${protocol.SourceVersion}" />
+                                            <fileset
+                                                    dir="${basedir}/src/main/resources/${folderPath}/${protocol.SourceVersion}"/>
                                         </copy>
-                                        <replace dir="${basedir}/src/main/resources/${folderPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+                                        <replace
+                                                dir="${basedir}/src/main/resources/${folderPath}/${protocol.TargetVersion}"
+                                                token="${protocol.SourceVersion}" value="${protocol.TargetVersion}"/>
                                     </target>
                                 </configuration>
                             </execution>

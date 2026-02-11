@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-python</artifactId>
@@ -30,6 +31,21 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-python-functions-execution-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
@@ -39,7 +55,9 @@
                         <repository>core_external_python_reverse_pct_legend_ql</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_python_reverse_pct_legend_ql.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_external_python_reverse_pct_legend_ql.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -50,23 +68,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-python-functions-execution-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -101,7 +102,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
+                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -119,12 +121,24 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_EssentialFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_RelationFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_StandardFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.external.python.Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_EssentialFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_RelationFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_StandardFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -149,7 +163,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
+                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -187,6 +202,26 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-python-functions-execution-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-variant-pure</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -206,26 +241,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-variant-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
