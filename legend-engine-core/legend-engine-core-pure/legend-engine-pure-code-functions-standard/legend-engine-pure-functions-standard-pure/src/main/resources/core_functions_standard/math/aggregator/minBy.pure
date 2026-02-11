@@ -17,7 +17,7 @@ import meta::pure::functions::math::mathUtility::*;
 import meta::pure::test::pct::*;
 
 function 
-<<PCT.function>> 
+<<PCT.function, functionType.ReducerFunction>>
     {
         doc.doc='Finds the row(s) containing the minimum value for a column and returns the value of another column in that row.'
     } 
@@ -26,18 +26,18 @@ meta::pure::functions::math::minBy<T>(col_to_return:T[*], col_containing_minimum
   minBy($col_to_return, $col_containing_minimum, 1)->head();
 }
 
-function <<PCT.function>> meta::pure::functions::math::minBy<T>(col_to_return:T[*], col_containing_minimum:Number[*], n:Integer[1]): T[*]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::minBy<T>(col_to_return:T[*], col_containing_minimum:Number[*], n:Integer[1]): T[*]
 {
   $col_to_return->zip($col_containing_minimum)->sort({x, y | $x.second->compare($y.second)})->slice(0, $n).first;
 }
 
 
-function  meta::pure::functions::math::minBy<T>(colRows: meta::pure::functions::math::mathUtility::RowMapper<T, Number>[*]):T[0..1]
+function <<functionType.ReducerFunction>> meta::pure::functions::math::minBy<T>(colRows: meta::pure::functions::math::mathUtility::RowMapper<T, Number>[*]):T[0..1]
 {
   minBy($colRows.rowA, $colRows.rowB);
 }
 
-function  meta::pure::functions::math::minBy<T>(colRows: meta::pure::functions::math::mathUtility::RowMapper<T, Number>[*], n:Integer[1]): T[*]
+function <<functionType.ReducerFunction>> meta::pure::functions::math::minBy<T>(colRows: meta::pure::functions::math::mathUtility::RowMapper<T, Number>[*], n:Integer[1]): T[*]
 {
   minBy($colRows.rowA, $colRows.rowB, $n);
 }

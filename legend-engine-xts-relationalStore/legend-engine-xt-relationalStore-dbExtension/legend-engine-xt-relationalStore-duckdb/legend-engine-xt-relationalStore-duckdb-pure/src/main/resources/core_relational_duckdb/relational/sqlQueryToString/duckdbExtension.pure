@@ -232,7 +232,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='regexp_matches(%s)', transform={p:String[3]|$p->transformRegexpLike()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='regexp_replace(%s)', transform={p:String[5]|$p->transformRegexpReplace()})),
     dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
-    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='%s', transform={p:String[1..2]|$p->transformRoundForDuckDB()})),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s,%s,%s)', transform=processPaddingParams_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
@@ -648,4 +648,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    + $j.alias
          ->map(a|^$a(name = '"' + $a.name + '"'))
          ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRoundForDuckDB(p:String[1..2]):String[1]
+{
+   if ($p->size() == 2,
+       | 'round(%s, %s)'->format([$p->at(0), $p->at(1)]),
+       | 'cast(round(%s, 0) as BIGINT)'->format($p->at(0));
+   )
 }
