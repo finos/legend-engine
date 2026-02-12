@@ -39,7 +39,7 @@ jobs:
     # NOTE: Only run this when not in fork as those likely do not have access to larger runners and will fail on normal runner due to resource limitation
     # Also, skip this build for release commits
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
       profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}
@@ -95,23 +95,17 @@ jobs:
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
-          MAVEN_OPTS: "-Xmx32g"
+          MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }} -T4
+          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: "-Xmx32g"
-        # NOTE: here we publish snapshot to a staging Maven registry
-        # some registry like Maven Central requires javadoc, but for now we
-        # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
-        # as the latter binds to generate-sources which runs before compile phase
-        # and can cause problem with some code generators
-        # See https://github.com/finos/legend-engine/pull/924
-        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test -T4
+          MAVEN_OPTS: "-Xmx8g"
+        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4

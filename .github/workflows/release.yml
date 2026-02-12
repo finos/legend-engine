@@ -87,9 +87,9 @@ jobs:
 
       - name: Build Release Tag
         working-directory: target/checkout
-        run: mvn -B -e -T 5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
+        run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
         env:
-          MAVEN_OPTS: -Xmx48g
+          MAVEN_OPTS: -Xmx36g
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
