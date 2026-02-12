@@ -97,7 +97,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx10g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }} -T2
+          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -105,7 +105,7 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: "-Xmx10g"
-        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test -T2
+        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
