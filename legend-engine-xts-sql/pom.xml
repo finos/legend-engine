@@ -26,6 +26,11 @@
     <packaging>pom</packaging>
     <name>Legend Engine - XTS - SQL</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
     <modules>
         <module>legend-engine-xt-sql-expression</module>
         <module>legend-engine-xt-sql-postgres-server</module>
