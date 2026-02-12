@@ -70,3 +70,8 @@ runs:
       with:
         name: build-output
         path: ~/
+
+    - name: Collect Workflow Telemetry
+      uses: runforesight/workflow-telemetry-action@v1
+      with:
+        theme: dark
