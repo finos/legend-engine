@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
@@ -39,7 +39,8 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-mapping-java
+                                </dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -70,28 +71,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-authentication-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -236,7 +215,6 @@
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
-
     </dependencies>
 
     <profiles>

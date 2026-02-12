@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-relationalStore</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,7 +38,9 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure</dependency>
+                                <dependency>
+                                    org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure
+                                </dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -67,38 +69,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>
@@ -129,7 +99,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
 
@@ -156,7 +127,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -184,11 +156,11 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                        <dependency>
-                            <groupId>org.finos.legend.pure</groupId>
-                            <artifactId>legend-pure-m3-core</artifactId>
-                            <version>${legend.pure.version}</version>
-                        </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m3-core</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-platform-precisePrimitives-java</artifactId>

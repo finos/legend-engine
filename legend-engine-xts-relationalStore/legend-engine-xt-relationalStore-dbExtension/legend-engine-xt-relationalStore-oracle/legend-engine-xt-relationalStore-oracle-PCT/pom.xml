@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-oracle</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,7 +38,13 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure
+                                </dependency>
+                                <dependency>
+                                    org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure
+                                </dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -54,7 +60,9 @@
                         <repository>core_relational_oracle_pct</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_relational_oracle_pct.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_relational_oracle_pct.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -65,38 +73,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -151,7 +127,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -168,13 +145,27 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_StandardFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_EssentialFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_RelationFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_UnclassifiedFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_VariantFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_ScenarioQuantFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_StandardFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_EssentialFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_GrammarFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_RelationFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_UnclassifiedFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_VariantFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.oracle.pct.Test_Relational_Oracle_ScenarioQuantFunctions_PCT
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -219,7 +210,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -287,7 +279,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -304,6 +295,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-oracle-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -330,11 +329,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

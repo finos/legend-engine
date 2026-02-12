@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-deephaven</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -39,12 +39,19 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure</dependency>
+                                <dependency>
+                                    org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure
+                                </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-json-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-planExecution-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-planExecution-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure
+                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-javaPlatformBinding-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -70,59 +77,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-javaPlatformBinding-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-json-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-planExecution-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-deephaven-grammar</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -193,7 +147,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -203,7 +158,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -322,6 +278,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-deephaven-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-deephaven-javaPlatformBinding-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

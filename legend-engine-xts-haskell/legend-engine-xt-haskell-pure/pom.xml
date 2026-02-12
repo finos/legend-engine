@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-haskell</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -55,7 +55,9 @@
                         <repository>core_external_language_haskell</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_language_haskell.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_external_language_haskell.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -66,29 +68,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>

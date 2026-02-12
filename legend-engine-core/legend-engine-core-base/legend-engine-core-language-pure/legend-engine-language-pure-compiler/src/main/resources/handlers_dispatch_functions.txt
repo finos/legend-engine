@@ -710,6 +710,7 @@ meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_
 meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_
 meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_
 meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_
+meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_$0_1$__T_$0_1$_
 meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_
 meta::pure::functions::lang::orElse_T_$0_1$__T_1__T_1_
 meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_

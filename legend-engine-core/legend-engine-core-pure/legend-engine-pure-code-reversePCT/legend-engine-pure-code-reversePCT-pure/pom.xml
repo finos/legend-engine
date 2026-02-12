@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-reversePCT</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
@@ -32,13 +32,29 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-pureExtensions-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_reverse_pct.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_reverse_pct.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -49,18 +65,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-pureExtensions-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -90,7 +94,8 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions</artifactId>
+                        <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-pureExtensions
+                        </artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -127,6 +132,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-pureExtensions-pure</artifactId>
         </dependency>
 
         <dependency>

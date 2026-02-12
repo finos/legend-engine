@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -405,11 +405,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-sql-http-api</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

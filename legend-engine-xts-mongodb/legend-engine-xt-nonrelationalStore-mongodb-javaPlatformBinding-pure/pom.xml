@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.118.10-SNAPSHOT</version>
+        <version>4.120.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</artifactId>
@@ -36,7 +36,9 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</dependency>
+                                <dependency>
+                                    org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
+                                </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
@@ -53,7 +55,9 @@
                         <repository>core_nonrelational_mongodb_java_platform_binding</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_nonrelational_mongodb_java_platform_binding.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_nonrelational_mongodb_java_platform_binding.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -64,58 +68,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-json-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-json-javaPlatformBinding-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
