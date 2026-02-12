@@ -3288,7 +3288,19 @@ function meta::relational::functions::pureToSqlQuery::processRelationWindowColum
 
    let shouldIsolateDistinct = $selectQuery.distinct->orElse(false);
 
-   let mainQuery = if($shouldIsolateDistinct, |$selectQuery->isolateTdsSelect($topQuery, $extensions), |$topQuery)->cast(@SelectWithCursor);
+   // Isolate into subselect when GROUP BY is present and the window's partition/order columns
+   // reference computed expressions (not simple table columns). This prevents invalid SQL where
+   // PARTITION BY contains raw expressions like extract(month from ...) alongside GROUP BY.
+   let shouldIsolateGroupBy = if($selectQuery.groupBy->isNotEmpty(),
+      | let allWindowColumnNames = $partitionKeys->concatenate($sortInfo.column);
+        let windowColumnAliases = $allWindowColumnNames->map(cn | findAlias($cn, $selectQuery.columns))->filter(a | $a->isNotEmpty())->map(a | $a->toOne());
+        $windowColumnAliases->exists(alias | !$alias.relationalElement->instanceOf(TableAliasColumn));,
+      | false
+   );
+
+   let shouldIsolate = $shouldIsolateDistinct || $shouldIsolateGroupBy;
+
+   let mainQuery = if($shouldIsolate, |$selectQuery->isolateTdsSelect($topQuery, $extensions), |$topQuery)->cast(@SelectWithCursor);
    let mainSelect = $mainQuery.select->cast(@TdsSelectSqlQuery);
 
    assert(!$mainSelect.columns->map(col | $col->extractColumnName())->contains($newColumnName), | 'Attempting to reuse the same column name: '+ $newColumnName);
