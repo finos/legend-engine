@@ -10,6 +10,11 @@
     <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
     <name>Legend Engine - XT - SQL - Postgres - Server</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
     <profiles>
         <profile>
             <id>docker-snapshot</id>
