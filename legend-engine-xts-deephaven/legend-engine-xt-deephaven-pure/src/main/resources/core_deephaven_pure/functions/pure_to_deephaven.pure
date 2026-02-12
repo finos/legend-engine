@@ -79,6 +79,16 @@ Class meta::external::store::deephaven::metamodel::NegationOperation extends Que
   methodArgument : DeephavenOperationElement[1];
 }
 
+Class meta::external::store::deephaven::metamodel::DivisionOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::DivisionWithScaleOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
 Enum meta::external::store::deephaven::metamodel::JoinKind
 {
   JOIN, LEFT, RIGHT, OUTER
@@ -678,11 +688,13 @@ function meta::external::store::deephaven::pureToDeephaven::processPlus(vs: Func
 
 function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
-  let inputSize = $vs.parametersValues->size();
+  $initReq.debug(|'Processing -> minus');
+  let debug = $initReq.debug;
+
+  let inputSize = $vs.parametersValues->toOne()->size();
   if([
        pair(| $inputSize == 1,
-            | let debug = $initReq.debug;
-              let methodArgument = $vs.parametersValues->toOne()->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+            | let methodArgument = $vs.parametersValues->toOne()->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
               ^NegationOperation(methodArgument = $methodArgument);
        )
      ],
@@ -693,6 +705,24 @@ function meta::external::store::deephaven::pureToDeephaven::processMinus(vs: Fun
 function meta::external::store::deephaven::pureToDeephaven::processTimes(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
   $vs->processNumericOperation($operation, $initReq, 'times', 'product');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processDivide(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> divide');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^DivisionOperation(methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processDivideWithScale(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> divide with scale');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^DivisionWithScaleOperation(methodArguments = $methodArguments);
 }
 
 function meta::external::store::deephaven::pureToDeephaven::processRange(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
@@ -778,7 +808,6 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::math::tanh_Number_1__Float_1_),     processTanh_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::toDegrees_Number_1__Float_1_),     processToDegrees_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::toRadians_Number_1__Float_1_),     processToRadians_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    // pair(supportedIfEqual(meta::pure::functions::math::pi_Number_1__Float_1_),     processPi_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Static variable in Numeric
     pair(supportedIfEqual(meta::pure::functions::math::median_Integer_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::median_Float_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::median_Number_MANY__Float_1_),     processMedian_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
@@ -812,7 +841,7 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     // pair(supportedIfEqual(meta::pure::functions::math::minBy_RowMapper_MANY__T_$0_1$_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
     // pair(supportedIfEqual(meta::pure::functions::math::minBy_RowMapper_MANY__Integer_1__T_MANY_),     processMinBy_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
     pair(supportedIfEqual(meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_),     processPercentile_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    // pair(supportedIfEqual(meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_),     processMin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_),     processPercentile_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
     pair(supportedIfEqual(meta::pure::functions::math::wavg_Number_MANY__Number_MANY__Float_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     // pair(supportedIfEqual(meta::pure::functions::math::wavg_RowMapper_MANY__Float_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
     // pair(supportedIfEqual(meta::pure::functions::math::mathUtility::rowMapper_T_$0_1$__U_$0_1$__RowMapper_1_),     processWavg_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle RowMapper
@@ -827,7 +856,7 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     // pair(supportedIfEqual(meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_),     processStdDevPopulation_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
     pair(supportedIfEqual(meta::pure::functions::math::variance_Number_MANY__Boolean_1__Number_1_),     processVariance_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::varianceSample_Number_MANY__Number_1_),     processVarianceSample_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    // pair(supportedIfEqual(meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_),     processCorr_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
+    // pair(supportedIfEqual(meta::pure::functions::math::variancePopulation_Number_MANY__Number_1_),     processVariancePopulation_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of Numeric
     pair(supportedIfEqual(meta::pure::functions::math::plus_Float_MANY__Float_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::plus_Integer_MANY__Integer_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::plus_Number_MANY__Number_1_),     processPlus_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
@@ -840,8 +869,8 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::math::times_Integer_MANY__Integer_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::times_Number_MANY__Number_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::times_Decimal_MANY__Decimal_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    // pair(supportedIfEqual(meta::pure::functions::math::divide_Number_1__Number_1__Float_1_),     processTan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of numeric
-    // pair(supportedIfEqual(meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_),     processTan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Not part of numeric
+    pair(supportedIfEqual(meta::pure::functions::math::divide_Number_1__Number_1__Float_1_),     processDivide_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_),     processDivideWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_),     processRange_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_)
   ];
 }
