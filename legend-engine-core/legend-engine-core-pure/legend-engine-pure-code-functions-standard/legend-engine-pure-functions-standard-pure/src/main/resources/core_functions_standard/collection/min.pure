@@ -15,7 +15,7 @@
 import meta::pure::test::pct::*;
 
 function
-  <<PCT.function>>
+  <<PCT.function, functionType.ReducerFunction>>
   {
       doc.doc='min returns smallest value from the list by type order'
   }
@@ -25,7 +25,7 @@ meta::pure::functions::collection::min<X>(values : X[1..*]):X[1]
 }
 
 function
-  <<PCT.function>>
+  <<PCT.function, functionType.ReducerFunction>>
   {
       doc.doc='min returns smallest value from the list by type order'
   }
@@ -35,7 +35,7 @@ meta::pure::functions::collection::min<X>(values : X[*]):X[0..1]
 }
 
 function
-  <<PCT.function>>
+  <<PCT.function, functionType.ReducerFunction>>
   {
       doc.doc='min returns smallest value from the list by type order based on the supplied comp function'
   }

@@ -14,7 +14,7 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1]): Number[0..1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1]): Number[0..1]
 [
   ($percentile >= 0) && ($percentile <= 1)
 ]
@@ -22,7 +22,7 @@ function <<PCT.function>> meta::pure::functions::math::percentile(numbers: Numbe
   percentile($numbers, $percentile, true, true)
 }
 
-function <<PCT.function>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1], ascending: Boolean[1], continuous: Boolean[1]): Number[0..1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1], ascending: Boolean[1], continuous: Boolean[1]): Number[0..1]
 [
   ($percentile >= 0) && ($percentile <= 1)
 ]

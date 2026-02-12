@@ -14,7 +14,7 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1]
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1]
 {
     sqrt(variance($numbers, $isBiasCorrected));
 }
