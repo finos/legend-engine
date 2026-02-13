@@ -75,8 +75,10 @@ import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Measure;
@@ -578,11 +580,11 @@ public class PureModel implements IPureModel
 
     private void initializeMultiplicities()
     {
-        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureZero"));
-        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::PureOne"));
-        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroOne"));
-        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::OneMany"));
-        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, "Root::meta::pure::metamodel::multiplicity::ZeroMany"));
+        this.multiplicitiesIndex.put("zero", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.PureZero));
+        this.multiplicitiesIndex.put("one", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.PureOne));
+        this.multiplicitiesIndex.put("zeroone", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.ZeroOne));
+        this.multiplicitiesIndex.put("onemany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.OneMany));
+        this.multiplicitiesIndex.put("zeromany", (PackageableMultiplicity) this.executionSupport.getMetadata(M3Paths.PackageableMultiplicity, M3Paths.ZeroMany));
     }
 
     private void initializePrimitiveTypes()
@@ -936,7 +938,7 @@ public class PureModel implements IPureModel
         }
 
         // Search for system types in the Pure graph
-        type = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
+        type = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
         if (type != null)
         {
             this.immutables.add(fullPathWithPrefix);
@@ -977,7 +979,7 @@ public class PureModel implements IPureModel
             throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = getAssociation_safe(fullPath);
+        Association association = getAssociation_safe(fullPath);
         if (association == null)
         {
             throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
@@ -1016,22 +1018,22 @@ public class PureModel implements IPureModel
         return (Unit) type;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation(String fullPath)
+    public Association getAssociation(String fullPath)
     {
         return this.getAssociation(fullPath, SourceInformation.getUnknownSourceInformation());
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation(String fullPath, SourceInformation sourceInformation)
+    public Association getAssociation(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = this.getAssociation_safe(fullPath);
+        Association association = this.getAssociation_safe(fullPath);
         Assert.assertTrue(association != null, () -> "Can't find association '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return association;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> getGraphFunctions(String fullPath)
+    public PackageableFunction<?> getGraphFunctions(String fullPath)
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
+        PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
         if (packageableFunction == NULL_ELEMENT_SENTINEL)
         {
             return null;
@@ -1048,10 +1050,10 @@ public class PureModel implements IPureModel
         return packageableFunction;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association getAssociation_safe(String fullPath)
+    public Association getAssociation_safe(String fullPath)
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = lookupAndCastPackageableElement(fullPathWithPrefix, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association.class);
+        Association association = lookupAndCastPackageableElement(fullPathWithPrefix, Association.class);
         if (association == NULL_ELEMENT_SENTINEL)
         {
             return null;
@@ -1059,7 +1061,7 @@ public class PureModel implements IPureModel
         if (association == null)
         {
             // Search for system types in the Pure graph
-            association = tryGetFromMetadataAccessor("Root::" + fullPath, MetadataAccessor::getAssociation);
+            association = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getAssociation);
             if (association != null)
             {
                 this.immutables.add(fullPathWithPrefix);
@@ -1095,7 +1097,7 @@ public class PureModel implements IPureModel
         }
         if (profile == null)
         {
-            profile = tryGetFromMetadataAccessor("Root::" + pathWithTypeReference, MetadataAccessor::getProfile);
+            profile = tryGetFromMetadataAccessor(pathWithTypeReference, MetadataAccessor::getProfile);
             if (profile != null)
             {
                 this.packageableElementsIndex.put(pathWithTypeReference, profile);
@@ -1108,20 +1110,20 @@ public class PureModel implements IPureModel
         return profile;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(Function function)
+    public ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(Function function)
     {
         String packageString = this.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
         return this.getConcreteFunctionDefinition(packageString, function.sourceInformation);
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
+    public ConcreteFunctionDefinition<?> getConcreteFunctionDefinition(String fullPath, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> func = getConcreteFunctionDefinition_safe(fullPath);
+        ConcreteFunctionDefinition<?> func = getConcreteFunctionDefinition_safe(fullPath);
         Assert.assertTrue(func != null, () -> "Can't find function '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return func;
     }
 
-    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> getConcreteFunctionDefinition_safe(String fullPath)
+    public ConcreteFunctionDefinition<?> getConcreteFunctionDefinition_safe(String fullPath)
     {
         return lookupAndCastPackageableElement(fullPath, ConcreteFunctionDefinition.class);
     }
@@ -1382,8 +1384,7 @@ public class PureModel implements IPureModel
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> getFunction(String functionName, boolean isNative)
     {
         MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
-        String metadataId = "Root::" + functionName;
-        return isNative ? metadataAccessor.getNativeFunction(metadataId) : metadataAccessor.getConcreteFunctionDefinition(metadataId);
+        return isNative ? metadataAccessor.getNativeFunction(functionName) : metadataAccessor.getConcreteFunctionDefinition(functionName);
     }
 
     public DeploymentMode getDeploymentMode()

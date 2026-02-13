@@ -42,15 +42,15 @@ public class SingleValueTDS extends TestTDSCompiled
     @Override
     public GenericType getClassifierGenericType()
     {
-        Multiplicity m = new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, es.getMetadataAccessor().getClass("Root::" + M3Paths.Multiplicity))
-                ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, es.getMetadataAccessor().getClass("Root::" + M3Paths.MultiplicityValue))._value(1L))
-                ._upperBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, es.getMetadataAccessor().getClass("Root::" + M3Paths.MultiplicityValue))._value(1L));
+        Multiplicity m = new Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl("", null, es.getMetadataAccessor().getClass(M3Paths.Multiplicity))
+                ._lowerBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, es.getMetadataAccessor().getClass(M3Paths.MultiplicityValue))._value(1L))
+                ._upperBound(new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("", null, es.getMetadataAccessor().getClass(M3Paths.MultiplicityValue))._value(1L));
 
-        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, es.getMetadataAccessor().getClass("Root::" + M3Paths.GenericType))
-                ._rawType(es.getMetadataAccessor().getClass("Root::meta::pure::metamodel::relation::TDS"))
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, es.getMetadataAccessor().getClass(M3Paths.GenericType))
+                ._rawType(es.getMetadataAccessor().getClass("meta::pure::metamodel::relation::TDS"))
                 ._typeArguments(
                         Lists.mutable.with(
-                                new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, es.getMetadataAccessor().getClass("Root::" + M3Paths.GenericType))
+                                new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, es.getMetadataAccessor().getClass(M3Paths.GenericType))
                                         ._rawType(_RelationType.build(
                                                 Lists.mutable.with(
                                                         _Column.getColumnInstance("value", false, genericType, m, null, es.getProcessorSupport())

@@ -15,6 +15,7 @@
 package org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.meta;
 
 import org.eclipse.collections.api.list.ListIterable;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
@@ -25,7 +26,7 @@ import java.text.MessageFormat;
 public class NewLambdaFunction extends AbstractNative
 {
     private static final String TEMPLATE = "new " + FullJavaPaths.LambdaFunction_Impl + "<Object>(\"NOID\")" +
-            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"Root::meta::pure::metamodel::function::LambdaFunction\"))" +
+            "._classifierGenericType(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType((" + FullJavaPaths.Class + "<Object>)((CompiledExecutionSupport)es).getMetadataAccessor().getClass(\"" + M3Paths.LambdaFunction + "\"))" +
             "._typeArguments(Lists.immutable.of(new " + FullJavaPaths.GenericType_Impl + "(\"NOID\")._rawType({0}))))";
 
     public NewLambdaFunction()
