@@ -98,9 +98,9 @@ import org.finos.legend.engine.language.snowflake.grammar.from.SnowflakeGrammarP
 import org.finos.legend.engine.language.snowflake.grammar.to.SnowflakeGrammarComposer;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUdfArtifactGenerationExtension;
-import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionProtocolExtension;
 import org.finos.legend.engine.language.sql.expression.grammar.parser.SQLExpressionGrammarParserExtension;
 import org.finos.legend.engine.language.sql.expression.grammar.serializer.SQLExpressionGrammarComposerExtension;
+import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionProtocolExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
@@ -299,7 +299,7 @@ public class TestExtensions
                 {
                     try
                     {
-                        return metadataLazy.getMetadata(M3Paths.Class, "Root::" + cl) == null;
+                        return metadataLazy.getMetadata(M3Paths.Class, cl) == null;
                     }
                     catch (DistributedBinaryGraphDeserializer.UnknownInstanceException ignore)
                     {
