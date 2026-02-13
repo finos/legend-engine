@@ -1375,6 +1375,35 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #
+                 ->project(~[newCity:c|$c.city->toOne(), newCountry:c|$c.country->toOne(), newYear:c|$c.year->toOne(), newTreePlanted:c|$c.treePlanted->toOne()])
+                 ->filter(x|$x.newCity=='NYC')
+                 ->pivot(~newYear, [2000, 2011], ~'newCol' : x | $x.newTreePlanted : y | $y->plus())
+                 ->cast(@Relation<(newCity:String,newCountry:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer)>)
+               };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   newCity,newCountry,\'2000__|__newCol\',\'2011__|__newCol\'\n' +
+                '   NYC,USA,15000,5000\n' +
+                '#', $res->toString());
+}
+
 function 
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
   {
