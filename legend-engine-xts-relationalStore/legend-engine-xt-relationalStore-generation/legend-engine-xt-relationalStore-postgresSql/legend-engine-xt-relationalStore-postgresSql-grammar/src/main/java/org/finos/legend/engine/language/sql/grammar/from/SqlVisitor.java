@@ -2214,6 +2214,6 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 
     private Node unsupported(String feature)
     {
-        throw new UnsupportedOperationException(feature);
+        throw new UnsupportedOperationException("Unsupported Operation: " + feature);
     }
 }
