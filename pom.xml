@@ -219,7 +219,8 @@
         <snakeyaml.version>1.33</snakeyaml.version>
         <swagger.annotation.version>1.5.20</swagger.annotation.version>
         <test.mongodb.version>1.46.0</test.mongodb.version>
-        <testcontainers.version>1.18.3</testcontainers.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <docker-java-api.version>3.4.2</docker-java-api.version>
         <wiremock.version>2.35.2</wiremock.version>
         <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
         <jline.version>3.26.3</jline.version>
@@ -4029,7 +4030,22 @@
             <dependency>
                 <groupId>com.github.docker-java</groupId>
                 <artifactId>docker-java-api</artifactId>
-                <version>3.3.0</version>
+                <version>${docker-java-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-core</artifactId>
+                <version>${docker-java-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-transport</artifactId>
+                <version>${docker-java-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.docker-java</groupId>
+                <artifactId>docker-java-transport-httpclient5</artifactId>
+                <version>${docker-java-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents.client5</groupId>
