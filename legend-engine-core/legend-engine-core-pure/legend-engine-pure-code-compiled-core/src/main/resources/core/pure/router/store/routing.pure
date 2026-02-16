@@ -918,19 +918,34 @@ function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:Routin
 
 function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
+    $vs->propagateSubTypeConditional($subTypeId, $subTypeSets, $extensions, false);
+}
+
+function meta::pure::router::routing::propagateSubTypeConditional(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::extension::Extension[*], operationSetOnly:Boolean[1]): ValueSpecification[1]
+{
     $vs->evaluateAndDeactivate()->match([e: StoreMappingRoutedValueSpecification[1] | let castClass   = $subTypeSets->at(0).class;
                                                                                       let routedClass = $e.genericType.rawType->toOne();
-                                                                                      if($castClass->_subTypeOf($routedClass),| ^$e(sets=$subTypeSets, id=$subTypeId, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $extensions));,|$e);,
+                                                                                      if($castClass->_subTypeOf($routedClass) && (!$operationSetOnly || $e.sets->toOne()->instanceOf(OperationSetImplementation)),
+                                                                                        | ^$e(sets=$subTypeSets, id=$subTypeId, value=$e.value->evaluateAndDeactivate()->propagateSubTypeConditional($subTypeId, $subTypeSets, $extensions, $operationSetOnly));,
+                                                                                        | $e
+                                                                                      );,
+                                         f: FunctionRoutedValueSpecification[1] | let updatedValue = $f.value->evaluateAndDeactivate()->match([
+                                                                                                          i: InstanceValue[1] | ^$i(values = $i.values->map(v |
+                                                                                                                                      $v->match([
+                                                                                                                                          fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence = $fd.expressionSequence->map(e|$e->propagateSubTypeConditional($subTypeId, $subTypeSets, $extensions, true)));
+                                                                                                                                              ]))
+                                                                                                                                    );]);
+                                                                                  ^$f(value = $updatedValue);,
                                          f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
                                                                             |$f,
                                                                             |let func = $f.func;
                                                                              let newFunc = if($func->instanceOf(FunctionDefinition),
                                                                                               |let fd=$func->cast(@FunctionDefinition<Any>);
-                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $extensions));
+                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propagateSubTypeConditional($subTypeId,$subTypeSets, $extensions, $operationSetOnly));
                                                                                                ^$fd(expressionSequence=$newEs);,
                                                                                               |$func
                                                                                             );
-                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $extensions))););,
+                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propagateSubTypeConditional($subTypeId,$subTypeSets, $extensions, $operationSetOnly))););,
                                          vs: ValueSpecification[1] | $vs
                                        ])->cast(@ValueSpecification);
 }
