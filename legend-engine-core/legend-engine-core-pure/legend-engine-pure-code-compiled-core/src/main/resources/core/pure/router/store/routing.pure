@@ -932,9 +932,11 @@ function meta::pure::router::routing::propagateSubTypeConditional(vs:ValueSpecif
                                          f: FunctionRoutedValueSpecification[1] | let updatedValue = $f.value->evaluateAndDeactivate()->match([
                                                                                                           i: InstanceValue[1] | ^$i(values = $i.values->map(v |
                                                                                                                                       $v->match([
-                                                                                                                                          fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence = $fd.expressionSequence->map(e|$e->propagateSubTypeConditional($subTypeId, $subTypeSets, $extensions, true)));
+                                                                                                                                          fd: FunctionDefinition<Any>[1] | ^$fd(expressionSequence = $fd.expressionSequence->map(e|$e->propagateSubTypeConditional($subTypeId, $subTypeSets, $extensions, true)));,
+                                                                                                                                          a: Any[1] | $a
                                                                                                                                               ]))
-                                                                                                                                    );]);
+                                                                                                                                    );,
+                                                                                                          v: ValueSpecification[1] | $v]);
                                                                                   ^$f(value = $updatedValue);,
                                          f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
                                                                             |$f,
