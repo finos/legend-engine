@@ -365,30 +365,30 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                 
                   let srcSets   = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[*]|[]->cast(@SetImplementation)]);
                   let isPropertyAutoMapped = $srcSets->isPropertyAutoMapped($p, $extensions, $mapping);
-                  if (!$v.shouldBeRouted || !$preLast.shouldBeRouted || $isPropertyAutoMapped,
+                  let param = $fe.parametersValues->at(0).genericType.rawType;
+                  let canDeterministicallyRoute = $srcSets->isEmpty() && $param->isNotEmpty() && $param->toOne()->instanceOf(Class) && $mapping->rootClassMappingByClass($param->toOne()->cast(@Class<Any>))->isNotEmpty();
+                  if ($isPropertyAutoMapped || ((!$v.shouldBeRouted || !$preLast.shouldBeRouted) && !$canDeterministicallyRoute),
                       | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())), shouldBeRouted=false)->evaluateAndDeactivate();,
-                      | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
-
+                      | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne(), shouldBeRouted = true);
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
                         let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
                         if($targetType->instanceOf(DataType),
-                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
-                            let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
+                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne()->cast(@Class<Any>);
+                            let subTypes = $sourceClass->getMappedLeafClasses($mapping, $v);
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
                             let classMappings = $classes->map( c | $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c->cast(@Class<Any>)));
 
                             let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
                                                       | //look for direct mapping of base class, as none of the sub types have mappings
                                                         //Ideally (per Pierre) these mappings should not be allowed
-                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass->cast(@Class<Any>)),
+                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass),
                                                       | $classMappings);
 
                             let resolvedClassMappings = if($classMapping->isNotEmpty(),
                                                             | $classMapping,
                                                             | $subTypes->map(s|$s->cast(@Class<Any>)->getClassMappings($v))->removeDuplicates()
                                                         );
-                            assert($resolvedClassMappings->isNotEmpty(), | 'The class \''+$sourceClass.name->toOne()+'\' can\'t be found in the mapping \''+$mapping.name->toOne()+'\'');
-                            let updatedClassMappingAndRoutingStrategy = $resolvedClassMappings->potentiallyRouteRelationFunctionSets($sourceClass->cast(@Class<Any>), $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne(), $extensions);
+                            let updatedClassMappingAndRoutingStrategy = $resolvedClassMappings->potentiallyRouteRelationFunctionSets($sourceClass, $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne(), $extensions);
 
                             let r = ^StoreMappingRoutedValueSpecification(
                                       genericType = $fe.genericType,
@@ -401,7 +401,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                       value = ^$fe(parametersValues = $newPV),
                                       routingStrategy = $updatedClassMappingAndRoutingStrategy.second
                                     );
-                            ^$last(value = $r, routingStrategy = $updatedClassMappingAndRoutingStrategy.second);,
+                            ^$last(value = $r, routingStrategy = $updatedClassMappingAndRoutingStrategy.second, shouldBeRouted = true);,
                           | let propId = $v.lambdaContext->toOne()+$fe->propToString($vars, $inScopeVars);
                             let found = $v.propertyMap.v->filter(p|$p.first == $propId);
                             if (!$found->isEmpty(),
@@ -409,7 +409,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                   ^$last(
                                     value= $routed
                                   );,
-                                | let foundSets = $p->findMappingsFromProperty($mapping, $srcSets, $v, $extensions); //is this for embedded?
+                                | let foundSets = $p->findMappingsFromProperty($mapping, $srcSets, ^$v(shouldBeRouted = true), $extensions); //is this for embedded?
                                   let updatedClassMappingAndRoutingStrategy = $foundSets->potentiallyRouteRelationFunctionSets($p->functionReturnType().rawType->toOne()->cast(@Class<Any>), $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne(), $extensions);
                                   let updatedFoundSets = $updatedClassMappingAndRoutingStrategy.first.values;
                                   if ($updatedFoundSets->isEmpty(),

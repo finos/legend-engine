@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::testable::*;
+import meta::relational::tests::semistructured::derived::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::derived::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let t1 =
+      'S\n' +
+      'TRADE\n' +
+      'ID,ENTITY_ID,UDF\n' +
+      '1,1,"{\\"tradeName\\": \\"Trade A\\"}"\n' +
+      '2,2,"{\\"tradeName\\": \\"Trade B\\"}"\n' +
+      '3,3,"{\\"tradeName\\": \\"Trade C\\"}"\n';
+  let t2 =
+      'S\n' +
+      'ENTITY\n' +
+      'ID,NAME\n' +
+      '1,Entity One\n' +
+      '2,Entity Two\n' +
+      '3,Entity Three\n';
+  let t3 =
+      'S\n' +
+      'ENTITY_ALIAS\n' +
+      'ENTITY_ID,ALIAS_NAME\n' +
+      '1,Alias A1\n' +
+      '2,\n';
+  let csv = [$t1, $t2, $t3];
+
+    let model = '/core_relational/relational/tests/semistructured/model/semiStructuredAndDerivedPrimitiveMapping.legend';
+    let mapping = 'derived::mapping::derivedPropertyMapping';
+    let store = 'derived::store::DB';
+
+    meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+}
+
+function meta::relational::tests::semistructured::derived::testSemiStructuredAndDerivedPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'derived::semiStructuredAndDerivedPrimitivePropertyAccess__TabularDataSet_1_',
+    'Id,TradeName,EntityName\n' +
+    '1,Trade A,Alias A1\n' +
+    '2,Trade B,Entity Two\n' +
+    '3,Trade C,Entity Three'
+  );
+}
+
+function meta::relational::tests::semistructured::derived::testSemiStructuredAndPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'derived::semiStructuredAndPrimitivePropertyAccess__TabularDataSet_1_',
+    'Id,TradeName\n' +
+    '1,Trade A\n' +
+    '2,Trade B\n' +
+    '3,Trade C'
+  );
+}
+
+function meta::relational::tests::semistructured::derived::testDerivedPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'derived::derivedPrimitivePropertyAccess__TabularDataSet_1_',
+    'Id,EntityName\n' +
+    '1,Alias A1\n' +
+    '2,Entity Two\n' +
+    '3,Entity Three'
+  );
+}

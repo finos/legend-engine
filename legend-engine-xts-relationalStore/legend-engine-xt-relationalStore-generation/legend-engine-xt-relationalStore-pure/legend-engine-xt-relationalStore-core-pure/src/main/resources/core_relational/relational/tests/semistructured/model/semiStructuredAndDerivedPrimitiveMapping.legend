@@ -1,0 +1,166 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+Class derived::model::Udf
+{
+  tradeName: String[0..1];
+}
+
+Class derived::model::Trade
+{
+  id: Integer[1];
+  udf: derived::model::Udf[1];
+  entity: derived::model::Entity[1];
+}
+
+Class derived::model::Entity
+{
+  id: Integer[1];
+  name: String[0..1];
+  aliases: derived::model::Alias[*];
+  displayName() {if(
+  $this.aliases.name->isNotEmpty(),
+  |$this.aliases.name->first(),
+  |$this.name
+)->first()}: String[0..1];
+}
+
+Class derived::model::Alias
+{
+  name: String[1];
+}
+
+
+###ExternalFormat
+Binding derived::store::UdfBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    derived::model::Udf
+  ];
+}
+
+
+###Mapping
+Mapping derived::mapping::derivedPropertyMapping
+(
+  derived::model::Trade: Relational
+  {
+    ~primaryKey
+    (
+      [derived::store::DB]S.TRADE.ID
+    )
+    ~mainTable [derived::store::DB]S.TRADE
+    id: [derived::store::DB]S.TRADE.ID,
+    udf: Binding derived::store::UdfBinding : [derived::store::DB]S.TRADE.UDF,
+    entity: [derived::store::DB]@trade_entity
+  }
+  derived::model::Entity: Relational
+  {
+    ~primaryKey
+    (
+      [derived::store::DB]S.ENTITY.ID
+    )
+    ~mainTable [derived::store::DB]S.ENTITY
+    id: [derived::store::DB]S.ENTITY.ID,
+    name: [derived::store::DB]S.ENTITY.NAME,
+    aliases: [derived::store::DB]@entity_alias
+  }
+  derived::model::Alias: Relational
+  {
+    ~primaryKey
+    (
+      [derived::store::DB]S.ENTITY_ALIAS.ENTITY_ID,
+      [derived::store::DB]S.ENTITY_ALIAS.ALIAS_NAME
+    )
+    ~mainTable [derived::store::DB]S.ENTITY_ALIAS
+    name: [derived::store::DB]S.ENTITY_ALIAS.ALIAS_NAME
+  }
+)
+
+
+###Relational
+Database derived::store::DB
+(
+  Schema S
+  (
+    Table TRADE
+    (
+      ID INTEGER PRIMARY KEY,
+      ENTITY_ID INTEGER,
+      UDF SEMISTRUCTURED
+    )
+    Table ENTITY
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(50)
+    )
+    Table ENTITY_ALIAS
+    (
+      ENTITY_ID INTEGER,
+      ALIAS_NAME VARCHAR(50)
+    )
+  )
+
+  Join trade_entity(S.TRADE.ENTITY_ID = S.ENTITY.ID)
+  Join entity_alias(S.ENTITY.ID = S.ENTITY_ALIAS.ENTITY_ID)
+)
+
+
+###Pure
+function derived::semiStructuredAndDerivedPrimitivePropertyAccess(): TabularDataSet[1]
+{
+  derived::model::Trade.all()->project(
+    [
+      x|$x.id,
+      x|$x.udf.tradeName,
+      x|$x.entity.displayName
+    ],
+    [
+      'Id',
+      'TradeName',
+      'EntityName'
+    ]
+  )
+}
+
+function derived::semiStructuredAndPrimitivePropertyAccess(): TabularDataSet[1]
+{
+  derived::model::Trade.all()->project(
+    [
+      x|$x.id,
+      x|$x.udf.tradeName
+    ],
+    [
+      'Id',
+      'TradeName'
+    ]
+  )
+}
+
+function derived::derivedPrimitivePropertyAccess(): TabularDataSet[1]
+{
+  derived::model::Trade.all()->project(
+    [
+      x|$x.id,
+      x|$x.entity.displayName
+    ],
+    [
+      'Id',
+      'EntityName'
+    ]
+  )
+}
