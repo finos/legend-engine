@@ -23,7 +23,7 @@ function meta::relational::functions::sqlQueryToString::clickhouse::buildDummyCo
     ^RelationalDatabaseConnection
     (
         type =  DatabaseType.ClickHouse,
-        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::ClickHouseDatasourceSpecification(),
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(host='localhost', port=8123, databaseName='default'),
         authenticationStrategy = ^TestDatabaseAuthenticationStrategy()
     )
 }

@@ -18,11 +18,17 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 
 public class ClickHouseTestConnectionIntegration implements TestConnectionIntegration, TestServerResource
 {
     public CustomClickHouseContainer clickHouseContainer = new CustomClickHouseContainer("clickhouse/clickhouse-server:25.1.1-alpine");
+    private TestVaultImplementation vault;
+    private static final String USERNAME_REFERENCE = "clickhouse_username";
+    private static final String PASSWORD_REFERENCE = "clickhouse_password";
+    private static final String DEFAULT_DATABASE_NAME = "default";
 
     @Override
     public MutableList<String> group()
@@ -40,6 +46,12 @@ public class ClickHouseTestConnectionIntegration implements TestConnectionIntegr
     public void setup()
     {
         this.clickHouseContainer.start();
+
+        this.vault =
+                new TestVaultImplementation()
+                        .withValue(USERNAME_REFERENCE, clickHouseContainer.getUsername())
+                        .withValue(PASSWORD_REFERENCE, clickHouseContainer.getPassword());
+        Vault.INSTANCE.registerImplementation(this.vault);
     }
 
     @Override
@@ -52,11 +64,11 @@ public class ClickHouseTestConnectionIntegration implements TestConnectionIntegr
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification datasourceSpec = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification();
         datasourceSpec.host = clickHouseContainer.getHost();
         datasourceSpec.port = clickHouseContainer.getFirstMappedPort();
-        datasourceSpec.databaseName = "default";
+        datasourceSpec.databaseName = DEFAULT_DATABASE_NAME;
 
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy authSpec = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy();
-        authSpec.userNameVaultReference = clickHouseContainer.getUsername();
-        authSpec.passwordVaultReference = clickHouseContainer.getPassword();
+        authSpec.userNameVaultReference = USERNAME_REFERENCE;
+        authSpec.passwordVaultReference = PASSWORD_REFERENCE;
 
         RelationalDatabaseConnection conn = new RelationalDatabaseConnection(datasourceSpec, authSpec, DatabaseType.ClickHouse);
         conn.type = DatabaseType.ClickHouse;
@@ -71,6 +83,7 @@ public class ClickHouseTestConnectionIntegration implements TestConnectionIntegr
         {
             this.clickHouseContainer.stop();
         }
+        Vault.INSTANCE.unregisterImplementation(this.vault);
     }
 
     @Override

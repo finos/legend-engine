@@ -32,7 +32,6 @@
         <module>legend-engine-xt-relationalStore-clickhouse-connection</module>
         <module>legend-engine-xt-relationalStore-clickhouse-execution</module>
         <module>legend-engine-xt-relationalStore-clickhouse-PCT</module>
-        <module>legend-engine-xt-relationalStore-clickhouse-protocol</module>
     </modules>
 
 </project>

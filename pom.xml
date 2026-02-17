@@ -155,7 +155,7 @@
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <snowflake.version>3.13.5</snowflake.version>
         <duckdb.version>1.3.0.0</duckdb.version>
-        <clickhouse.version>0.9.4</clickhouse.version>
+        <clickhouse.version>0.9.6</clickhouse.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
@@ -1486,11 +1486,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-clickhouse-connection</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-clickhouse-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

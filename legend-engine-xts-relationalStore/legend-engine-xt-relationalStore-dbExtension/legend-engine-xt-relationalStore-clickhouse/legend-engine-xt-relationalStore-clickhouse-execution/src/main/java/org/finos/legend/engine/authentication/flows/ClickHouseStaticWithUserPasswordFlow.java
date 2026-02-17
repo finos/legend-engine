@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
 public class ClickHouseStaticWithUserPasswordFlow implements DatabaseAuthenticationFlow<StaticDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
 {
@@ -45,8 +46,10 @@ public class ClickHouseStaticWithUserPasswordFlow implements DatabaseAuthenticat
     @Override
     public Credential makeCredential(Identity identity, StaticDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy)
     {
-        String userName = "default";
-        String password = "";
+        String userNameVaultKey = authStrategy.baseVaultReference == null ? authStrategy.userNameVaultReference : authStrategy.baseVaultReference + authStrategy.userNameVaultReference;
+        String passwordVaultKey = authStrategy.baseVaultReference == null ? authStrategy.passwordVaultReference : authStrategy.baseVaultReference + authStrategy.passwordVaultReference;
+        String userName = Vault.INSTANCE.getValue(userNameVaultKey);
+        String password = Vault.INSTANCE.getValue(passwordVaultKey);
 
         return new PlaintextUserPasswordCredential(userName, password);
     }
