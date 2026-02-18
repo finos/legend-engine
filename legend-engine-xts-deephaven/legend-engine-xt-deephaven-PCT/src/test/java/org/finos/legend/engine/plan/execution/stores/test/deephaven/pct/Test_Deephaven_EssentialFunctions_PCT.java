@@ -22,7 +22,6 @@ import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreDeephavenPCTCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
-import org.finos.legend.pure.m3.pct.reports.config.exclusion.AdapterQualifier;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
@@ -247,8 +246,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::math::tests::rem::testRemWithNegativeIntegers_Function_1__Boolean_1_", "\"\nexpected: -2\nactual:   -2.0\""),
             one("meta::pure::functions::math::tests::rem::testRem_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
 
-            one("meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_", "\"\nexpected: 3.14D\nactual:   2199023255866D\""),
-            one("meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_", "\"\nexpected: -17.4\nactual:   1099511693138.0\""),
             one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"\nexpected: -18\nactual:   -17\""),
             one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\"\nexpected: 16\nactual:   17\""),
 
