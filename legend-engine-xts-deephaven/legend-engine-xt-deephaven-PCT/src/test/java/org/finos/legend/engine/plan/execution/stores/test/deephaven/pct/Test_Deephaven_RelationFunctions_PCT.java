@@ -96,6 +96,10 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::size_Relation_1__Integer_1_\""),
             one("meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_"),
             one("meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
+            one("meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::size_Any_MANY__Integer_1_\""),
+            one("meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::composition::testTDSPlusTimesMinus_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""),
 
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),

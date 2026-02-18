@@ -8230,30 +8230,30 @@ function meta::relational::functions::pureToSqlQuery::processUnary(expression:Fu
    );
 }
 
-function meta::relational::functions::pureToSqlQuery::processRelationVariableArity(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+function meta::relational::functions::pureToSqlQuery::processCoalesce(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let select = $operation.select;
-  let columns = $expression.parametersValues->map(p | $p->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions))->map(v | $v->match([s:SelectWithCursor[1]|$s.select.columns, w:WindowColumn[1]|$w]));
-  ^$operation(select = ^$select(columns = newDynaFunction($expression.func.functionName->toOne(), $columns)));
+  if($state.currentWindow->isEmpty(),
+    | processDynaFunction($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+    | let select = $operation.select;
+      let columns = $expression.parametersValues->map(p | $p->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions))->map(v | $v->match([s:SelectWithCursor[1]|$s.select.columns, w:WindowColumn[1]|$w]));
+      ^$operation(select = ^$select(columns = newDynaFunction($expression.func.functionName->toOne(), $columns)));
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::processVariableArity(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  if($state.inRelation,
-    | processRelationVariableArity($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-    | let select = $operation.select; 
-      let source = ^$operation(select=^$select(filteringOperation = []));
-      let args = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $source, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions);
-      let mergedSQL = mergeSQLQueryData($args->concatenate($source)->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
-      let currentTreeNode = $mergedSQL.data;
-      ^SelectWithCursor(
-        select = $state.inFilter->if(
-                                | ^$mergedSQL(filteringOperation = newDynaFunction($expression.functionName->toOne(), $mergedSQL.filteringOperation));,
-                                | let existingColsCount = $mergedSQL.columns->size() - $args->size();
-                                  ^$mergedSQL(columns = $mergedSQL.columns->take($existingColsCount)->concatenate(newDynaFunction($expression.functionName->toOne(), $mergedSQL.columns->drop($existingColsCount))));
-                            ),
-        currentTreeNode = $currentTreeNode
-      );
+  let select = $operation.select;
+  let source = ^$operation(select=^$select(filteringOperation = []));
+  let args = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $source, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions);
+  let mergedSQL = mergeSQLQueryData($args->concatenate($source)->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
+  let currentTreeNode = $mergedSQL.data;
+  ^SelectWithCursor(
+    select = $state.inFilter->if(
+                            | ^$mergedSQL(filteringOperation = newDynaFunction($expression.func.functionName->toOne(), $mergedSQL.filteringOperation));,
+                            | let existingColsCount = $mergedSQL.columns->size() - $args->size();
+                              ^$mergedSQL(columns = $mergedSQL.columns->take($existingColsCount)->concatenate(newDynaFunction($expression.func.functionName->toOne(), $mergedSQL.columns->drop($existingColsCount))));
+                        ),
+    currentTreeNode = $currentTreeNode
   );
 }
 
@@ -9799,12 +9799,12 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         
         
         
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processRelationVariableArity_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,second=meta::relational::functions::pureToSqlQuery::processCoalesce_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::greaterThan_Number_1__Number_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::greaterThan_String_1__String_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::greaterThan_Date_1__Date_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
