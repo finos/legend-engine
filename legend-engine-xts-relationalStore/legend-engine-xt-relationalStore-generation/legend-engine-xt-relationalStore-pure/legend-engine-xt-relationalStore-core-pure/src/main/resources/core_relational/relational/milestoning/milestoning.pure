@@ -151,6 +151,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
                     t:TableFunctionParamPlaceHolder[1] | $t,
                     dt:DataTypeInfo[1] | $dt,
+                    rl:RelationalLambda[1] | ^$rl(parameters = $rl.parameters->map(p|$p->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))->cast(@RelationalLambdaParameter), body = $rl.body->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
+                    rlp:RelationalLambdaParameter[1] | ^$rlp(value= $rlp.value->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     swc:meta::relational::functions::pureToSqlQuery::SelectWithCursor[1] | $swc.select->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)
                   ]);
 }
