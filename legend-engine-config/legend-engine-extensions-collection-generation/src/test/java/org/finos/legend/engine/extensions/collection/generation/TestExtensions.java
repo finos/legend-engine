@@ -656,6 +656,7 @@ public class TestExtensions
                 .with("core_relational_trino")
                 .with("core_relational_snowflake")
                 .with("core_relational_redshift")
+                .with("core_relational_clickhouse")
                 .with("core_relational_databricks")
                 .with("core_relational_postgres")
                 .with("core_relational_hive")
