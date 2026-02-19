@@ -40,7 +40,7 @@ public class Test_Interpreted_RelationFunctions_PCT extends PCTReportConfigurati
             // empty vs null
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,fromRow,toRow,sliced\n   0,\"null\",1,2,\"null\"\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"[]\"\n#'\nactual:   '#TDS\n   id,payload,fromRow,toRow,sliced\n   0,\"null\",1,2,\"null\"\n   1,\"[1,2,3,4,5,6]\",2,3,\"3\"\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"null\"\n#'\""),
 
-            one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "Execution error at (resource:/core_functions_relation/relation/tests/composition.pure line:1565 column:24)")
+            one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "Execution error at (resource:/core_functions_relation/relation/tests/composition.pure")
     );
 
     public static Test suite()
