@@ -228,8 +228,10 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_\""),
 
             one("meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
+            one("meta::pure::functions::math::tests::exp::testNumberExpLowPrecision_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
 
             one("meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
+            one("meta::pure::functions::math::tests::log::testNumberLogLowPrecision_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
 
             one("meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
 
