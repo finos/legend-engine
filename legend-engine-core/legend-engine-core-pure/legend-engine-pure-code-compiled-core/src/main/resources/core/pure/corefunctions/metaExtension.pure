@@ -55,7 +55,6 @@ function meta::pure::functions::meta::instanceValuesAtParameter(expression : Fun
 function meta::pure::functions::meta::resolveInstanceValuesAtParameter(expression : ValueSpecification[1], parentFunc:Function<Any>[1], vars:Map<VariableExpression, ValueSpecification>[0..1], inScopeVars:Map<String, List<Any>>[0..1]) : Any[*]
 {
    $expression->match([
-                        c:meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1]|$c.val->resolveInstanceValuesAtParameter($parentFunc, $vars, $inScopeVars),
                         r:meta::pure::router::RoutedValueSpecification[1]|$r.value->resolveInstanceValuesAtParameter($parentFunc, $vars, $inScopeVars),
                         s:SimpleFunctionExpression[1]|$s,
                         i:InstanceValue[1]|$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->resolveInstanceValuesAtParameter($parentFunc, $vars, $inScopeVars), a:Any[1]|$a])),
