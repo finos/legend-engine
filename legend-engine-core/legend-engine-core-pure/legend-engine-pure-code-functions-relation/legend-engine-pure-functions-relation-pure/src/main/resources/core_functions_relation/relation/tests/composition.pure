@@ -22,18 +22,16 @@ import meta::pure::functions::relation::*;
 import meta::pure::functions::relation::tests::composition::*;
 import meta::pure::functions::collection::*;
 
+Class meta::pure::functions::relation::tests::composition::FirmTypeForCompositionTests
+{
+  legalName : String[1];
+  employees : PersonTypeForCompositionTests[*];
+}
+
 Class meta::pure::functions::relation::tests::composition::PersonTypeForCompositionTests
 {
   firstName : String[0..1];
   lastName  : String[0..1];
-}
-
-Class meta::pure::functions::relation::tests::composition::SimpleNumbersTypeForCompositionTests
-{
-  id : Integer[1];
-  val1 : Number[1];
-  val2 : Number[1];
-  val3 : Number[1];
 }
 
 Class meta::pure::functions::relation::tests::composition::SimpleNumbersTypeForCompositionTests
