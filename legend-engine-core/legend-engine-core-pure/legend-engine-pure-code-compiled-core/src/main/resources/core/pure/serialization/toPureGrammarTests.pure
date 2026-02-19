@@ -1,5 +1,5 @@
 import meta::pure::metamodel::serialization::grammar::*;
-import meta::pure::metamodel::serialization::grammar::tests::testNew::*;
+import meta::pure::metamodel::serialization::grammar::tests::*;
 
 Enum meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum
 {
@@ -14,13 +14,13 @@ Class meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass
   c : Integer[1];
   d : Float[1];
   e : Date[1];
-  f : MyEnum[1];
+  f : meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum[1];
   g : Decimal[1];
 }
 
 function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testNew::simple():Boolean[1]
 {
-  let val = ^TestClass(a = 'ok', b = true, c = 1, d = 1.0, e=%2015-04-15T17:09:21.398, f = MyEnum.Other, g = 10D);
+  let val = ^meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass(a = 'ok', b = true, c = 1, d = 1.0, e=%2015-04-15T17:09:21.398, f = meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum.Other, g = 10D);
   assertEquals('^meta::pure::metamodel::serialization::grammar::tests::testNew::TestClass(a=\'ok\',b=true,c=1,d=1.0,e=%2015-04-15T17:09:21.398+0000,f=meta::pure::metamodel::serialization::grammar::tests::testNew::MyEnum.Other,g=10D)', $val->printNew());
   true;
 }
@@ -33,6 +33,11 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
 
   meta::pure::metamodel::serialization::grammar::tests::functionTest(meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_, 'meta::pure::metamodel::serialization::grammar::tests::testFunction(): String[1]\n{\n  \'abc\'\n}', true);
   meta::pure::metamodel::serialization::grammar::tests::functionTest(meta::pure::metamodel::serialization::grammar::tests::testFunction__String_1_, 'testFunction(): String[1]\n{\n  \'abc\'\n}', false);
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testAndVariations():Boolean[1]
+{
+  functionTest(testAnd__Boolean_1_, 'meta::pure::metamodel::serialization::grammar::tests::testAnd(): Boolean[1]\n{\n  let x = false && true;\n  let y = false && true;\n  $x && $y && false;\n}', true);
 }
 
 function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameReference():Boolean[1] 
@@ -104,4 +109,11 @@ function meta::pure::metamodel::serialization::grammar::tests::testFunction():St
 function meta::pure::metamodel::serialization::grammar::tests::testFunctionWithParams(a:String[1]):String[1]
 {
   'abc';
+}
+
+function meta::pure::metamodel::serialization::grammar::tests::testAnd():Boolean[1]
+{
+  let x = false && true;
+  let y = false->and(true);
+  [$x, $y, false]->and();
 }

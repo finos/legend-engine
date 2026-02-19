@@ -117,6 +117,7 @@ function meta::pure::metamodel::serialization::grammar::printValueSpecification(
                     d:Decimal[1] | $d->toRepresentation(),
                     f:Float[1] | $f->toRepresentation(),
                     s:String[1] | $s->toRepresentation(),
+                    b:Boolean[1] | $b->toRepresentation(),
                     a:Any[1] | 'UNKNOWN: ' + $a->type()->toOne()->id()
                 ]
              );
@@ -279,9 +280,9 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
           pair(|$name == 'colSpecArray' || $name == 'colSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->map(z|$z->toString()->printColName())->joinStrings(',')+']'),
           pair(|$name == 'aggColSpecArray' || $name == 'aggColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $context))->joinStrings(',')+']'),
           pair(|$name == 'funcColSpecArray' || $name == 'funcColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $context))->joinStrings(',')+']'),
-          pair(|!$special->get($name)->isEmpty(),|let vals = if ($name->in(['plus', 'minus', 'times']),
+          pair(|!$special->get($name)->isEmpty(),|let vals = if ($name->in(['plus', 'minus', 'times', 'and', 'or']),
                                                                   |$functionExpression.parametersValues->match([
-                                                                    i:InstanceValue[1] | $i.values,
+                                                                    i:InstanceValue[*] | $i.values,
                                                                     v:ValueSpecification[1] | $v
                                                                   ]),
                                                                   |$functionExpression.parametersValues
