@@ -939,6 +939,10 @@ public class PureModel implements IPureModel
 
         // Search for system types in the Pure graph
         type = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
+        if (type == null)
+        {
+            type = tryGetUnitByLegacyId(fullPath);
+        }
         if (type != null)
         {
             this.immutables.add(fullPathWithPrefix);
@@ -950,6 +954,25 @@ public class PureModel implements IPureModel
             this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, NULL_ELEMENT_SENTINEL);
         }
         return type;
+    }
+
+    private Unit tryGetUnitByLegacyId(String legacyId)
+    {
+        int unitDelimiterIndex = legacyId.lastIndexOf('~');
+        if (unitDelimiterIndex != -1)
+        {
+            String measurePath = legacyId.substring(0, unitDelimiterIndex);
+            Measure measure = tryGetFromMetadataAccessor(measurePath, MetadataAccessor::getMeasure);
+            if (measure != null)
+            {
+                String unitName = legacyId.substring(unitDelimiterIndex + 1);
+                Unit canonicalUnit = measure._canonicalUnit();
+                return ((canonicalUnit != null) && unitName.equals(canonicalUnit._name())) ?
+                       canonicalUnit :
+                       measure._nonCanonicalUnits().detect(ncu -> unitName.equals(ncu._name()));
+            }
+        }
+        return null;
     }
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> getClass(String fullPath)
