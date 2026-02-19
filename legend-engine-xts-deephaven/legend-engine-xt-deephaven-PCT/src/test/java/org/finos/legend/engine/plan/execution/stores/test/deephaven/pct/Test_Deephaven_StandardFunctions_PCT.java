@@ -107,6 +107,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
             one("meta::pure::functions::math::tests::bitAnd::testBitAnd_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
