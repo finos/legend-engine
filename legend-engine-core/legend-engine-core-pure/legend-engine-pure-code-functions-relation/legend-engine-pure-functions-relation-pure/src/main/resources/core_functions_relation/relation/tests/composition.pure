@@ -1590,3 +1590,89 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
       0.01
     );
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtend_GroupBy_Project<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->groupBy(
+                      ~[
+                        id,
+                        fullName
+                      ],
+                      ~[
+                        totalAges: x|$x.age :y|$y->plus()
+                      ]
+                )->project(
+                  ~[
+                    finalId: x|$x.id,
+                    finalTotalAges: x|$x.totalAges,
+                    finalFullName: x|$x.fullName
+                  ]
+                )->sort(~finalId->ascending());
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalTotalAges,finalFullName\n' +
+                  '   1,25,aaa ttt\n'+
+                  '   2,30,bbb uuu\n'+
+                  '   3,35,ccc vvv\n'+
+                  '   4,40,ddd xxx\n'+
+                  '   5,45,eee yyy\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtend_GroupBy_Extend_Select<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->groupBy(
+                      ~[
+                        id,
+                        fullName
+                      ],
+                      ~[
+                        totalAges: x|$x.age :y|$y->plus()
+                      ]
+                )->extend(
+                  ~[
+                    finalId: x|$x.id,
+                    finalTotalAges: x|$x.totalAges,
+                    finalFullName: x|$x.fullName
+                  ]
+                )->select(
+                  ~[
+                    finalId,
+                    finalFullName,
+                    finalTotalAges
+                  ]
+                )->sort(~finalId->ascending());
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalFullName,finalTotalAges\n' +
+                  '   1,aaa ttt,25\n'+
+                  '   2,bbb uuu,30\n'+
+                  '   3,ccc vvv,35\n'+
+                  '   4,ddd xxx,40\n'+
+                  '   5,eee yyy,45\n'+
+                  '#', $res->toString());
+}
