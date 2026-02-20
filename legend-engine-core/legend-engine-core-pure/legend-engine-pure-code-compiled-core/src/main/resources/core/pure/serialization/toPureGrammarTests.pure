@@ -37,7 +37,7 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
 
 function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testAndVariations():Boolean[1]
 {
-  functionTest(testAnd__Boolean_1_, 'meta::pure::metamodel::serialization::grammar::tests::testAnd(): Boolean[1]\n{\n  let x = false && true;\n  let y = false && true;\n  $x && $y && false;\n}', true);
+  functionTest(testAnd__Boolean_1_, 'meta::pure::metamodel::serialization::grammar::tests::testAnd(): Boolean[1]\n{\n  let x = false && true;\n  let y = false && true;\n  $x && $y && false;\n  and([$x, $y, false]->meta::pure::functions::collection::map(x: Boolean[1]|!$x));\n}', true);
 }
 
 function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testFunctionNameReference():Boolean[1] 
@@ -84,6 +84,9 @@ function meta::pure::metamodel::serialization::grammar::tests::functionTest(func
 {
   let config = ^Configuration(fullPath = $fullPath);
 
+  // Verify generated function compiles
+  meta::legend::compileLegendGrammar(printPackageableElements($func, $config));
+
   assertEquals('###Pure\nfunction ' + $expected, printPackageableElements($func, $config));
   assertEquals('###Pure\nfunction ' + $expected, printPackageableElements(^$func(functionName = $func.package->toOne()->elementToPath() + '::' + $func.functionName->toOne()), $config));
 
@@ -116,4 +119,5 @@ function meta::pure::metamodel::serialization::grammar::tests::testAnd():Boolean
   let x = false && true;
   let y = false->and(true);
   [$x, $y, false]->and();
+  [$x, $y, false]->map(x|!$x)->and();
 }

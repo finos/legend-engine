@@ -209,7 +209,8 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::speci
       pair('times', '*'),
       pair('divide', '/'),
       pair('and', '&&'),
-      pair('or', '||')
+      pair('or', '||'),
+      pair('not', '!')
    ]->newMap()
 }
 
@@ -290,8 +291,9 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                                                   if ([
                                                         pair(|$name == 'divide' && $vals->size() == 3, | $name + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $configuration, $context))->joinStrings('(', ', ', ')')),
                                                         pair(|$name == 'minus' && $vals->size() == 1, | $special->get($name)->toOne() + mayWrapInParenthesis($functionExpression.parametersValues->at(0), $configuration, $context)),
+                                                        pair(|$name == 'not', | $special->get($name)->toOne() + $vals->at(0)->printValueSpecification($configuration, $context)),
                                                         pair(|$vals->size() == 1 && $vals->at(0)->instanceOf(VariableExpression), | $functionExpression.parametersValues->at(0)->printValueSpecification($configuration, $context)+'->'+$name+'()'),
-                                                        pair(|$name->in(['and', 'or']) && $vals->size() == 1, |$name + $vals->at(0)->mayWrapInParenthesis($configuration, $context)),
+                                                        pair(|$name->in(['and', 'or']) && $vals->size() == 1, |$name + '(' + $vals->at(0)->printValueSpecification($configuration, $context) + ')'),
                                                         pair(|$vals->size() > 1, |mayWrapInParenthesis($vals->at(0), $configuration, $context) + ' ' + $vals->tail()->map(x|$special->get($name)->toOne() + ' ' + mayWrapInParenthesis($x, $configuration, $context))->joinStrings(' '))
                                                       ],
                                                       |$special->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($configuration, $context)+')'
