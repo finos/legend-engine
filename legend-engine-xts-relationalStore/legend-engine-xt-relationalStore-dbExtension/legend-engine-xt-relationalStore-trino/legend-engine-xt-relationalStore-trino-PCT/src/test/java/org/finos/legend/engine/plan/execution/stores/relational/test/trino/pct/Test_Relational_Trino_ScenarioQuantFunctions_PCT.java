@@ -36,6 +36,22 @@ public class Test_Relational_Trino_ScenarioQuantFunctions_PCT extends PCTReportC
     private static final Adapter adapter = CoreRelationalTrinoPCTCodeRepositoryProvider.trinoAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // Gap
+            one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "(time,symbol,open,high,low,close,volume) values (timestamp '2026-01-07T09:30:00.000','AAPL',190.50,192.10,190.10,191.45,55400200)"),
+
+            // MaxDrawDown
+            one("meta::external::scenario::quant::maxDrawDown::testMaxDrawDown_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+
+            // LogReturn
+            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+
+            // SMA
+            one("meta::external::scenario::quant::sma::testSimpleMovingAverage5Days_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+
+            // Volatility
+            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+
+            // VWAP
             one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
     );
 
