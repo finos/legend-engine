@@ -104,3 +104,30 @@ function <<test.Test>> meta::relational::tests::tds::tdsWindow::testDistinctAfte
   meta::relational::functions::asserts::assertSameSQL('select distinct "subselect"."source" as "source", "subselect"."target" as "target", "subselect"."testCol1" as "testCol1" from (select "persontable_0".FIRSTNAME as "source", "persontable_1".FIRSTNAME as "target", count("persontable_1".FIRSTNAME) over (partition by "persontable_0".FIRSTNAME) as "testCol1" from interactionTable as "root" left outer join personTable as "persontable_0" on ("root".sourceId = "persontable_0".ID) left outer join personTable as "persontable_1" on ("root".targetId = "persontable_1".ID)) as "subselect"', $result);
   assertSameElements(['Anthony|Fabrice|6', 'Anthony|John|6', 'Anthony|Oliver|6', 'Anthony|Peter|6', 'Fabrice|Anthony|2', 'Fabrice|Oliver|2', 'John|David|2', 'John|Oliver|2', 'Peter|Anthony|4', 'Peter|John|4'], $values.rows->map(r|$r.values->makeString('|')));
 }
+
+// Test for groupBy with computed expressions followed by olapGroupBy
+// This was previously failing with "Column must be in GROUP BY list" errors
+// because the PARTITION BY clause was using raw expressions instead of column references
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testGroupByWithComputedExpressionFollowedByOlapGroupBy():Boolean[1]
+{
+   // Test groupBy with a computed expression (monthNumber) followed by olapGroupBy partitioning by that column
+   let result = meta::pure::router::execute(
+      {|
+         Trade.all()
+            ->project([col(t|$t.date->monthNumber(), 'month'), col(t|$t.quantity, 'quantity')])
+            ->groupBy(['month'], agg('totalQty', x|$x.getFloat('quantity'), y|$y->sum()))
+            ->olapGroupBy(['month'], func('totalQty', y|$y->count()), 'monthCount')
+      },
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+
+   // The key assertion is that the SQL wraps the groupBy in a subselect so that
+   // the PARTITION BY references the subselect column, not the raw expression
+   meta::relational::functions::asserts::assertSameSQL(
+      'select "subselect"."month" as "month", "subselect"."totalQty" as "totalQty", count("subselect"."totalQty") over (partition by "subselect"."month") as "monthCount" from (select extract(month from "root".tradeDate) as "month", sum("root".quantity) as "totalQty" from tradeTable as "root" group by "month") as "subselect"',
+      $result
+   );
+   true;
+}
