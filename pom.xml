@@ -155,6 +155,7 @@
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <snowflake.version>3.13.5</snowflake.version>
         <duckdb.version>1.3.0.0</duckdb.version>
+        <clickhouse.version>0.9.6</clickhouse.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
@@ -179,7 +180,7 @@
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
         <grpc.version>1.65.1</grpc.version>
-        <guava.version>30.0-jre</guava.version>
+        <guava.version>33.4.6-jre</guava.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
         <hk2.version>2.5.0-b32</hk2.version>
@@ -1475,6 +1476,27 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-bigquery-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-clickhouse-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-clickhouse-connection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-clickhouse-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-clickhouse-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4012,6 +4034,12 @@
                 <version>${mariadb.version}</version>
                 <scope>runtime</scope>
             </dependency>
+            <dependency>
+                <groupId>com.clickhouse</groupId>
+                <artifactId>clickhouse-jdbc</artifactId>
+                <version>${clickhouse.version}</version>
+                <scope>runtime</scope>
+            </dependency>
             <!-- Database -->
 
             <!-- Test Containers -->
@@ -4050,7 +4078,7 @@
             <dependency>
                 <groupId>org.apache.httpcomponents.client5</groupId>
                 <artifactId>httpclient5</artifactId>
-                <version>5.1.3</version>
+                <version>5.4.4</version>
             </dependency>
             <dependency>
                 <groupId>io.minio</groupId>
@@ -4318,6 +4346,17 @@
                 <artifactId>checker-qual</artifactId>
                 <version>3.49.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.ow2.asm</groupId>
+                <artifactId>asm</artifactId>
+                <version>9.7</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>failureaccess</artifactId>
+                <version>1.0.3</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
