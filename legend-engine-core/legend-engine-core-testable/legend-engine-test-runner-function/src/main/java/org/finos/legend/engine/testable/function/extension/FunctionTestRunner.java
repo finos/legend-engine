@@ -393,7 +393,7 @@ public class FunctionTestRunner implements TestRunner
 
     public org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime getRuntimesInFunction(PureModel pureModel)
     {
-            RichIterable<org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime> runtimes =  org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(this.functionDefinition, pureModel.getExecutionSupport());
+            RichIterable<? extends org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime> runtimes =  org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(this.functionDefinition, pureModel.getExecutionSupport());
             if (runtimes.isEmpty())
             {
                 return null;
