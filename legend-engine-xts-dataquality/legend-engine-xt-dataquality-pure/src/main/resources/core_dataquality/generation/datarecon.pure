@@ -1,0 +1,455 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::mapping::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::functions::meta::*;
+import meta::external::dataquality::*;
+import meta::external::dataquality::datarecon::*;
+import system::imports::*;
+
+/*
+  This method will:
+    1) select only columns required for hash + keys
+    2) for each column create new column suffixed with "_source" or "_target" and normalize it based on the data type (e.g. round floats to 2dp)
+    3) create hash for row or use hash column if specified
+    4) select only hash col and keys
+    5) optional group by and create aggregated hash - making sure hashes are sorted before
+    6) join 2 datasets using keys
+    7) filter where source and target hash are different
+    TODO - see if we can leverage helper methods in compileUtils to create sfe/iv etc and then use compileViaGrammar to add type info
+*/
+function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1]): LambdaFunction<Any>[1]
+{  
+  let baseLambda = $reconInput.source;
+  let sourceDataset = prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol);
+  let targetDataset = prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol);
+
+  //join by keys
+  let withJoin = buildJoinExpression($sourceDataset, $targetDataset, JoinKind.FULL, getJoinColumns($reconInput.keys), $reconInput.sourceHashCol, $reconInput.targetHashCol);
+  let joinRelType = getRelType($withJoin);
+
+  //filter where hash is different
+  let sourceHashCol = if ($reconInput.sourceHashCol->isNotEmpty() && !$reconInput.aggregatedHash, | $reconInput.sourceHashCol->toOne() + '_SOURCE', | 'DIGEST_SOURCE');
+  let targetHashCol = if ($reconInput.targetHashCol->isNotEmpty() && !$reconInput.aggregatedHash, | $reconInput.targetHashCol->toOne() + '_TARGET', | 'DIGEST_TARGET');
+  let filterCondition = negatedFunctionExpression(buildComparisonExpression(equal_Any_MANY__Any_MANY__Boolean_1_, 'row', $joinRelType, $sourceHashCol, 'row', $joinRelType, $targetHashCol, ^GenericType(rawType=String)));
+  let withFilter = buildFilterExpression($withJoin, $joinRelType, $filterCondition);
+
+  ^$baseLambda(expressionSequence=$withFilter);
+}
+
+function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1]): ValueSpecification[1]
+{  
+  validateColumns($dataset, $type, $keys, $colsForHash, $hashCol);
+  let input = $dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne();
+  let suffix = '_' + $type->toUpper();
+    
+  //select relevant columns before normalization
+  let withSelectBeforeNormalize = if ($colsForHash->isEmpty() && $hashCol->isEmpty(),
+    | $input, //if no cols given for hash then we will calculate hash on all columns
+    | let colsRequiredForHash = if ($hashCol->isNotEmpty(), | $hashCol, | $colsForHash);
+      let selectColsBeforeNormalize = $keys->union($colsRequiredForHash)->distinct();
+      buildSelectExpression($input, getRelType($input), $selectColsBeforeNormalize);
+  );
+  
+  //normalize cols  
+  let withNormalizedCols = normalizeColumns($withSelectBeforeNormalize, $suffix);
+
+  //create hash
+  let withHash = if ($hashCol->isNotEmpty(), 
+    | $withNormalizedCols,
+    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, getRelType($withNormalizedCols));
+      //select only hash col + keys
+      let selectCols = $keys->map(col | $col + $suffix)->union('DIGEST' + $suffix)->distinct();
+      let withSelect = buildSelectExpression($withRowHash, getRelType($withRowHash), $selectCols);
+  );
+
+  //create aggregated hash
+  let hashColumn = if ($hashCol->isNotEmpty(), | $hashCol->toOne(), | 'DIGEST') + $suffix;
+  if ($aggregatedHash,
+    | buildAggregatedHash($withHash, getRelType($withHash), $hashColumn, $keys->map(col | $col + $suffix), $suffix, $type),
+    | $withHash
+  );
+}
+
+function meta::external::dataquality::datarecon::validateColumns(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], colsForHash: String[*], hashCol: String[0..1]): Boolean[*]
+{  
+  let relType = getRelType($dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne());
+  validateColumnExists($relType, $keys, $type, 'keys');
+  validateColumnExists($relType, $colsForHash, $type, 'column to include for generated hash');
+  validateColumnExists($relType, $hashCol, $type, 'column with pre-calculated hash');
+}
+
+function meta::external::dataquality::datarecon::validateColumnExists(relType: RelationType<Any>[1], columns: String[*], type: String[1], field: String[1]): Boolean[*]
+{
+  $columns->map(column | assert($relType.columns->exists(col | $col.name->toOne() == $column), 'Expected ' + $type + ' table to contain field ' + $column + ' which was specified as ' + $field));
+}
+
+function meta::external::dataquality::datarecon::normalizeColumns(input: ValueSpecification[1], suffix: String[1]):ValueSpecification[1]
+{
+  let withNormalized = getRelType($input).columns->fold({col, acc |
+    let colName = $col.name->toOne() + $suffix;
+    let relType = getRelType($acc);
+    let colGenericType = $col.classifierGenericType.typeArguments->at(1)->toOne();
+    let type = $colGenericType.rawType->toOne();
+    let withNormalize = buildNormalizeExpression(buildGetValueAtColumnFunctionExpression($relType, $col.name->toOne(), 'row', $colGenericType), $type);
+    $acc->buildExtendExpression($colName, $withNormalize, 'row', $relType, getRelTypeWithNormalizedCol($relType, $col, $colName, $withNormalize), $type);
+  }, $input);
+
+  //select only normalized columns
+  let relType = getRelType($withNormalized);
+  let selectCols = $relType.columns.name->filter(col | $col->toOne()->endsWith($suffix));
+  let withSelect = buildSelectExpression($withNormalized, $relType, $selectCols);
+}
+
+function meta::external::dataquality::datarecon::buildAggregatedHash(input: ValueSpecification[1], relType: RelationType<Any>[1], hashColumn: String[1], groupingCols: String[*], suffix: String[1], type: String[1]):ValueSpecification[1]
+{
+  //sort by hash column to ensure aggregated hash created in determinstic manner. 
+  //TODO- the correct order by is not used in the generated SQL, we need the order by to be within the group in the aggregation to ensure consistency across different sql engines
+  let sortingCol = buildColSpecExpression(^RelationType<Nil>(columns = $relType.columns->filter(col | ($col.name->toOne() == $hashColumn))), $hashColumn, String);
+  let sortingInfo = buildSortingInfoExpression(SortType.ASC, $relType, $sortingCol);
+  let sort = buildSortExpression($relType, $input, $sortingInfo);
+
+  //group by grouping keys and aggregate all hashes into single string
+  let relTypeWithAggHashCount = $relType->addColumns(~[AGG_HASH: String[1]])->evaluateAndDeactivate();
+  let relTypeWithOnlyAggHash = ^RelationType<Nil>(columns = $relTypeWithAggHashCount.columns->filter(col | 'AGG_HASH' == ($col.name->toOne())));
+  let groupingFunction = buildAggColSpecJoinStringsExpression($sort, $relType, $relTypeWithOnlyAggHash, $hashColumn, ^GenericType(rawType=String), getColGenericType($relType, $hashColumn));
+  let groupingRelType = ^RelationType<Nil>(columns = $relTypeWithAggHashCount.columns->filter(col | $col.name->toOne()->in(['AGG_HASH']->concatenate($groupingCols))));
+  let groupBy = buildGroupByExpression($groupingRelType, $sort, buildColSpecArrayExpression($relType, $groupingCols), $groupingFunction);
+
+  //calculate hash of hashes
+  let aggHash = buildRowHash($groupBy, $suffix, $type, $groupingRelType);
+
+  //select only grouping cols and hash col
+  let selectCols = $groupingCols->union('DIGEST' + $suffix);
+  buildSelectExpression($aggHash, getRelType($aggHash), $selectCols);
+}
+
+function meta::external::dataquality::datarecon::buildAggColSpecJoinStringsExpression(rel: ValueSpecification[1], relType: RelationType<Any>[1], newRelType: RelationType<Any>[1], aggCol: String[1], aggColType: GenericType[1], hashColType: GenericType[1]):FunctionExpression[1]
+{
+  let param1 = buildAggColSpecJoinStringsExpressionFirstParam($relType, $aggCol, $aggColType);
+  let param2 = buildAggColSpecJoinStringsExpressionSecondParam($hashColType);
+  ^SimpleFunctionExpression
+  (
+      func = aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = AggColSpec, typeArguments = [$param1.genericType, $param2.genericType, ^GenericType(rawType=$newRelType)]),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $param1,
+        $param2,
+        ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'AGG_HASH')->evaluateAndDeactivate(),
+        ^InstanceValue(genericType = ^GenericType(rawType = $newRelType), multiplicity = PureOne)->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildAggColSpecJoinStringsExpressionFirstParam(relType: RelationType<Any>[1], aggCol: String[1], aggColType: GenericType[1]):InstanceValue[1]
+{
+  let expression = ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = $relType), multiplicity = PureOne);
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String)))),
+      multiplicity = PureOne,
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String), parameters = $expression), buildGetValueAtColumnFunctionExpression($relType, $aggCol, 'x', $aggColType))
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildAggColSpecJoinStringsExpressionSecondParam(type: GenericType[1]):InstanceValue[1]
+{
+  let joinStringsExpression = ^SimpleFunctionExpression
+  (
+      func = joinStrings_String_MANY__String_1__String_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = String),
+      importGroup  = coreImport,
+      parametersValues = [
+        ^VariableExpression(name = 'y', genericType = $type, multiplicity = ZeroMany),
+        ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values='')->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+  let expression = ^VariableExpression(name = 'y', genericType = $type, multiplicity = ZeroMany);
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String)))),
+      multiplicity = PureOne,
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String), parameters = $expression), $joinStringsExpression)
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], relType: RelationType<Any>[1]):FunctionExpression[1]
+{
+  let relParamName = 'row';
+  let hashColName = 'DIGEST' + $suffix;
+  let newRelTypeWithHash = if ($type == 'source', 
+    | $relType->addColumns(~[DIGEST_SOURCE: String[1]])->evaluateAndDeactivate(),
+    | $relType->addColumns(~[DIGEST_TARGET: String[1]])->evaluateAndDeactivate()
+  );
+  $input->buildExtendExpression($hashColName, buildHashFunctionExpression($relType, $relType.columns.name->sort(), $relParamName), $relParamName, $relType, $newRelTypeWithHash, String);
+}
+
+function meta::external::dataquality::datarecon::buildColSpecArrayExpression(newRelType: RelationType<Any>[1], selectedCols: String[*]):FunctionExpression[1]
+{
+  let selectFunction = ^SimpleFunctionExpression
+  (
+      func = colSpecArray_String_MANY__T_1__ColSpecArray_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=ColSpecArray, typeArguments = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType))),
+      importGroup  = coreImport,
+      parametersValues = [
+        ^InstanceValue(genericType = ^GenericType(rawType=String), multiplicity = ZeroMany, values = $selectedCols),
+        ^InstanceValue(genericType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)), multiplicity = PureOne)
+      ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildGroupByExpression(relType:RelationType<Any>[1], input:ValueSpecification[1], groupingColSpec: FunctionExpression[1], groupingFunction: FunctionExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+   (
+      func = groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),
+      importGroup  = coreImport,
+      parametersValues =
+      [  $input,
+         $groupingColSpec,
+         $groupingFunction
+      ]
+   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildSelectExpression(input: ValueSpecification[1], relType: RelationType<Any>[1], selectedCols: String[*]):FunctionExpression[1]
+{
+  let newRelType = ^RelationType<Nil>(columns = $relType.columns->filter(col | $selectedCols->contains($col.name->toOne())));
+  let selectFunction = ^SimpleFunctionExpression
+  (
+      func = select_Relation_1__ColSpecArray_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelType)),
+      importGroup  = coreImport,
+      parametersValues = [
+        $input,
+        buildColSpecArrayExpression($newRelType, $selectedCols)
+      ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildJoinFunction(joinFields: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], relTypeParam1: RelationType<Any>[1], relTypeParam2: RelationType<Any>[1]):InstanceValue[1]
+{
+  let rel1 = ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = $relTypeParam1), multiplicity = PureOne);
+  let rel2 = ^VariableExpression(name = 'y', genericType = ^GenericType(rawType = $relTypeParam2), multiplicity = PureOne);
+  let joinCondition = $joinFields->map(field | 
+    let sourceCol = if ($field == 'DIGEST' && $sourceHashCol->isNotEmpty(), | $sourceHashCol->toOne(), | $field) + '_SOURCE';
+    let targetCol = if ($field == 'DIGEST' && $targetHashCol->isNotEmpty(), | $targetHashCol->toOne(), | $field) + '_TARGET';
+    buildComparisonExpression(equal_Any_MANY__Any_MANY__Boolean_1_, 'x', $relTypeParam1, $sourceCol, 'y', $relTypeParam2, $targetCol, getColGenericType($relTypeParam1, $sourceCol));
+  );
+  let andCondition = $joinCondition->tail()->fold({val1, val2 | buildAndExpression($val1->evaluateAndDeactivate(), $val2->evaluateAndDeactivate())}, $joinCondition->head()->toOne()->evaluateAndDeactivate());
+
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = [$rel1, $rel2], returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)))),
+      multiplicity = PureOne,
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [$rel1, $rel2]), $andCondition)
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildJoinExpression(param1: ValueSpecification[1], param2: ValueSpecification[1], joinKind: JoinKind[1], joinFields: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]): FunctionExpression[1]
+{
+  let sourceRelType = getRelType($param1);
+  let targetRelType = getRelType($param2);
+  let relType = getCombinedRelType($sourceRelType, $targetRelType);
+  let joinKindExpression = buildJoinKindExpression($joinKind);
+  let joinFunction = buildJoinFunction($joinFields, $sourceHashCol, $targetHashCol, $sourceRelType, $targetRelType);
+  ^SimpleFunctionExpression
+  (
+    func = join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,
+    multiplicity = ZeroOne,
+    genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),
+    importGroup  = coreImport,
+    parametersValues =
+    [
+     $param1,
+     $param2,
+     $joinKindExpression,
+     $joinFunction
+    ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildJoinKindExpression(joinKind: JoinKind[1]): FunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = extractEnumValue_Enumeration_1__String_1__T_1_,
+    multiplicity = ZeroOne,
+    genericType  = ^GenericType(rawType=JoinKind),
+    importGroup  = coreImport,
+    parametersValues =
+    [
+      ^InstanceValue(values=JoinKind, genericType=^GenericType(rawType=Enumeration, typeArguments=^GenericType(rawType=JoinKind)), multiplicity=PureOne),
+      ^InstanceValue(values=$joinKind->toString(), genericType=^GenericType(rawType=String), multiplicity=PureOne)
+    ]
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildSortExpression(relType:RelationType<Any>[1], input: ValueSpecification[1], sortingInfo: FunctionExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = sort_Relation_1__SortInfo_MANY__Relation_1_,
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType)),
+    importGroup  = coreImport,
+    parametersValues = [
+      $input,
+      $sortingInfo
+    ]
+  )->evaluateAndDeactivate()
+}
+
+function meta::external::dataquality::datarecon::buildSortingInfoExpression(sortType: SortType[1], relType:RelationType<Any>[1], colSpecToSort: FunctionExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = if ($sortType == SortType.ASC, | ascending_ColSpec_1__SortInfo_1_, | descending_ColSpec_1__SortInfo_1_),
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=SortInfo, typeArguments = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType))),
+    importGroup  = coreImport,
+    parametersValues = [
+      $colSpecToSort
+    ]
+  )->evaluateAndDeactivate()
+}
+
+function meta::external::dataquality::datarecon::buildColSpecExpression(relType:RelationType<Any>[1], colName: String[1], colType: Type[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = colSpec_String_1__T_1__ColSpec_1_,
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=ColSpec, typeArguments=^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relType))),
+    importGroup  = coreImport,
+    parametersValues =
+    [
+      ^InstanceValue(values=$colName, genericType=^GenericType(rawType=$colType), multiplicity=PureOne)->evaluateAndDeactivate(),
+      ^InstanceValue(genericType=^GenericType(rawType=$relType), multiplicity=PureOne)->evaluateAndDeactivate()
+    ]
+  )->evaluateAndDeactivate()
+}
+
+function meta::external::dataquality::datarecon::buildFilterExpression(input:ValueSpecification[1], relationType:RelationType<Any>[1], comparisonExpression: ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+    ^SimpleFunctionExpression
+   (
+      func = filter_Relation_1__Function_1__Relation_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$relationType)),
+      importGroup  = coreImport,
+      parametersValues =
+      [  $input,
+         ^InstanceValue (
+            genericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=^FunctionType(parameters=^VariableExpression(name='row', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne), returnMultiplicity=PureOne, returnType=^GenericType(rawType=Boolean)))),
+            multiplicity = PureOne,
+            values = lambda(
+                      ^FunctionType(returnMultiplicity= PureOne, returnType = ^GenericType(rawType = Boolean), parameters = ^VariableExpression(name='row', genericType=^GenericType(rawType=$relationType), multiplicity=PureOne)),
+                      $comparisonExpression
+                    )
+         )->evaluateAndDeactivate()
+      ]
+   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::datarecon::buildComparisonExpression(func: Function<Any>[1], param1Name: String[1], relTypeParam1:RelationType<Any>[1], colNameParam1: String[1], param2Name: String[1], relTypeParam2:RelationType<Any>[1], colNameParam2: String[1], colType: GenericType[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = $func,
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=Boolean),
+    importGroup  = coreImport,
+    parametersValues = [
+      buildGetValueAtColumnFunctionExpression($relTypeParam1, $colNameParam1, $param1Name, $colType),
+      buildGetValueAtColumnFunctionExpression($relTypeParam2, $colNameParam2, $param2Name, $colType)
+    ]
+  )->evaluateAndDeactivate()
+}
+
+function meta::external::dataquality::datarecon::buildAndExpression(param1: FunctionExpression[1], param2: FunctionExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+    func = and_Boolean_1__Boolean_1__Boolean_1_,
+    multiplicity = PureOne,
+    genericType  = ^GenericType(rawType=Boolean),
+    importGroup  = coreImport,
+    parametersValues = [
+      $param1,
+      $param2
+    ]
+  )->evaluateAndDeactivate()
+}
+
+function meta::external::dataquality::datarecon::buildNormalizeExpression(input: ValueSpecification[1], type: Type[1]):ValueSpecification[1]
+{
+  let func = if ([
+      pair(| $type->subTypeOf(Decimal), | normalizeDecimal_Decimal_1__Decimal_1_),
+      pair(| $type->subTypeOf(Float), | normalizeFloat_Float_1__Float_1_),
+      pair(| $type->subTypeOf(DateTime), | normalizeDateTime_DateTime_1__DateTime_1_)
+    ],
+    | []
+  );
+
+  if ($func->isEmpty(), 
+    | $input,
+    | ^SimpleFunctionExpression
+      (
+        func = $func->toOne(),
+        multiplicity = PureOne,
+        genericType  = $func->toOne()->functionReturnType(),
+        importGroup  = coreImport,
+        parametersValues = [
+          $input
+        ]
+      )->evaluateAndDeactivate();
+  );
+}
+
+function meta::external::dataquality::datarecon::getRelTypeWithNormalizedCol(relType: RelationType<Any>[1], col: Column<Nil,Any|*>[1], normalizedColName: String[1], normalizeExpression: ValueSpecification[1]): RelationType<Any>[1]
+{
+  let existingColType = $col.classifierGenericType->toOne();
+  let normalizedColType = ^$existingColType(typeArguments=[$existingColType.typeArguments->first()->toOne(), $normalizeExpression.genericType]);
+  ^RelationType<Nil>(columns = $relType.columns->union(^$col(name=$normalizedColName, classifierGenericType=$normalizedColType)));
+}
+
+function meta::external::dataquality::datarecon::getJoinColumns(keys: String[*]): String[*]
+{ 
+  if ($keys->isNotEmpty(), 
+    | $keys, 
+    | 'DIGEST'
+  );
+}
+
+function meta::external::dataquality::datarecon::getColGenericType(relType: RelationType<Any>[1], column: String[1]):GenericType[1]
+{
+  $relType.columns->filter(x|$x.name == $column)->toOne().classifierGenericType.typeArguments->at(1);
+}
+
+function meta::external::dataquality::datarecon::getRelType(input: ValueSpecification[1]): RelationType<Any>[1]
+{  
+  $input.genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+}
+  
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]): DataQualityReconInput[1]
+{
+  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol);
+}

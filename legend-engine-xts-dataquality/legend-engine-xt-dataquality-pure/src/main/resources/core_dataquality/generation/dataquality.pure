@@ -352,7 +352,7 @@ function meta::external::dataquality::generateConstraintNegatedQuery<T>(c:Class<
    )->evaluateAndDeactivate();
 }
 
-function <<access.private>> {doc.doc = 'Genrates a "!$f" query'}
+function {doc.doc = 'Genrates a "!$f" query'}
 meta::external::dataquality::negatedFunctionExpression(f: ValueSpecification[1]):ValueSpecification[1]
 {
    if($f->instanceOf(SimpleFunctionExpression) && $f->cast(@SimpleFunctionExpression).func->evaluateAndDeactivate() == not_Boolean_1__Boolean_1_,
@@ -577,9 +577,7 @@ function meta::external::dataquality::buildUnionExpression(param1: FunctionExpre
 {
   let inputRelType1 = $param1.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
   let inputRelType2 = $param2.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
-  let colsToAdd = $inputRelType2.columns->filter(col | !$inputRelType1.columns.name->contains($col.name->toOne()));
-  let allCols = $inputRelType1.columns->concatenate($colsToAdd);
-  let newRelTypeWithAllCols = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $allCols);
+  let newRelTypeWithAllCols = getCombinedRelType($inputRelType1, $inputRelType2);
 
   let concatFunction = ^SimpleFunctionExpression
   (
@@ -592,6 +590,13 @@ function meta::external::dataquality::buildUnionExpression(param1: FunctionExpre
         $param2
       ]
   )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::getCombinedRelType(relType1: meta::pure::metamodel::relation::RelationType<Any>[1], relType2: meta::pure::metamodel::relation::RelationType<Any>[1]): meta::pure::metamodel::relation::RelationType<Any>[1]
+{
+  let colsToAdd = $relType2.columns->filter(col | !$relType1.columns.name->contains($col.name->toOne()));
+  let allCols = $relType1.columns->concatenate($colsToAdd);
+  let newRelTypeWithAllCols = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $allCols);
 }
 
 
@@ -1044,19 +1049,19 @@ function meta::external::dataquality::buildIsEmptyFunctionExpression(relType: me
         ^InstanceValue (
           genericType = ^GenericType(rawType=Any),
           multiplicity = ZeroOne,
-          values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName)]
+          values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName, ^GenericType(rawType=Any))]
         )
      ]
    )->evaluateAndDeactivate();
 }
 
-function meta::external::dataquality::buildGetValueAtColumnFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1]):FunctionExpression[1]
+function meta::external::dataquality::buildGetValueAtColumnFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1], colType: GenericType[1]):FunctionExpression[1]
 {
    ^SimpleFunctionExpression
    (
       func = $relType.columns->filter(x|$x.name == $column)->toOne(),
       multiplicity = ZeroOne,
-      genericType  = ^GenericType(rawType=Any),
+      genericType  = $colType,
       importGroup  = system::imports::coreImport,
       parametersValues =
       [
@@ -1110,7 +1115,7 @@ function meta::external::dataquality::buildToStringToOneFunctionExpression(relTy
               importGroup  = system::imports::coreImport,
               parametersValues =
               [
-                ^InstanceValue (genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName)])
+                ^InstanceValue (genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName, ^GenericType(rawType=Any))])
               ]
            )->evaluateAndDeactivate()
       ]

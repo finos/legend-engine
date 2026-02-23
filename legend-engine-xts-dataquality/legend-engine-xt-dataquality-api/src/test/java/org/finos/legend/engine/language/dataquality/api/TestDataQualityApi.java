@@ -152,6 +152,24 @@ public class TestDataQualityApi
         assertEquals(mapper.writeValueAsString(results), mapper.writeValueAsString(expected));
     }
 
+    @Test
+    public void testDataQualityRecon()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)");
+        input.target = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertNotNull(resultAsString);
+    }
+
     private LambdaFunction lambda(String code)
     {
         return PureGrammarParser.newInstance().parseLambda(code, "", false);
