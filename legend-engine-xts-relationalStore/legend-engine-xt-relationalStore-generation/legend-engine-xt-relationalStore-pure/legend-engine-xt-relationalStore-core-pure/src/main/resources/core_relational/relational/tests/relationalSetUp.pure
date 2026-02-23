@@ -260,6 +260,15 @@ Database meta::relational::tests::dbForDatabricks
 )
 
 ###Relational
+Database meta::relational::tests::dbForClickHouse
+(
+   Schema schema
+   (
+      Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT)
+   )
+)
+
+###Relational
 Database meta::relational::tests::dbForMemSQL
 (
    Table personTable (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
@@ -526,6 +535,19 @@ Mapping meta::relational::tests::simpleRelationalMappingPersonForDatabricks
    Person : Relational
    {
       scope([dbForDatabricks])
+      (
+         firstName : schema.personTable.FIRSTNAME,
+         lastName: schema.personTable.LASTNAME,
+         age : schema.personTable.AGE
+      )
+   }
+)
+
+Mapping meta::relational::tests::simpleRelationalMappingPersonForClickHouse
+(
+   Person : Relational
+   {
+      scope([dbForClickHouse])
       (
          firstName : schema.personTable.FIRSTNAME,
          lastName: schema.personTable.LASTNAME,
