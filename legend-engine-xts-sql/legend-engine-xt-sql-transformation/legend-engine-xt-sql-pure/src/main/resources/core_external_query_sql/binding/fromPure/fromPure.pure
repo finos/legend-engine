@@ -32,6 +32,7 @@ import meta::pure::executionPlan::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
 import meta::pure::functions::relation::*;
+import meta::pure::functions::meta::*;
 
 Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
 {
@@ -2098,6 +2099,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     s:SimpleCaseExpression[1] | processSimpleCaseExpression($s, $expContext, $context),
     s:SearchedCaseExpression[1] | processSearchedCaseExpression($s, $expContext, $context),
     s:SubscriptExpression[1] | processSubscriptExpression($s, $expContext, $context),
+    s:SubqueryExpression[1] | processSubqueryExpression($s.query, $context),
     t:Trim[1] | processTrim($t, $expContext, $context),
     e:meta::external::query::sql::metamodel::Expression[*] | fail('Expression type not yet supported'); iv(1);
   ])->evaluateAndDeactivate();
@@ -2554,6 +2556,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let index = $s.index->realignBase1toBase0()->processExpression($expContext, $context);
 
   sfe(at_T_MANY__Integer_1__T_1_, [$value, $index]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSubqueryExpression(query: Query[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let subQueryCtx = processQuery($query, $context);
+
+  let lambda = $subQueryCtx.lambda(true);
+
+  iv($lambda);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processArraySliceExpression(a:ArraySliceExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
