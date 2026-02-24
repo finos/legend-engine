@@ -17,7 +17,6 @@ package org.finos.legend.engine.authentication.flows;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.TrinoDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -25,12 +24,12 @@ import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPass
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 public class TrinoWithUserPasswordFlow
-        implements DatabaseAuthenticationFlow<StaticDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
+        implements DatabaseAuthenticationFlow<TrinoDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
 {
     @Override
-    public Class<StaticDatasourceSpecification> getDatasourceClass()
+    public Class<TrinoDatasourceSpecification> getDatasourceClass()
     {
-        return StaticDatasourceSpecification.class;
+        return TrinoDatasourceSpecification.class;
     }
 
     @Override
@@ -46,7 +45,7 @@ public class TrinoWithUserPasswordFlow
     }
 
     @Override
-    public Credential makeCredential(Identity identity, StaticDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy) throws Exception
+    public Credential makeCredential(Identity identity, TrinoDatasourceSpecification datasourceSpecification, UserNamePasswordAuthenticationStrategy authStrategy) throws Exception
     {
         String userNameVaultKey = authStrategy.baseVaultReference == null ? authStrategy.userNameVaultReference : authStrategy.baseVaultReference + authStrategy.userNameVaultReference;
         String passwordVaultKey = authStrategy.baseVaultReference == null ? authStrategy.passwordVaultReference : authStrategy.baseVaultReference + authStrategy.passwordVaultReference;
