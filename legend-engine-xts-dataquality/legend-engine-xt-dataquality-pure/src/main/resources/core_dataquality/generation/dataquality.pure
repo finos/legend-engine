@@ -1049,10 +1049,15 @@ function meta::external::dataquality::buildIsEmptyFunctionExpression(relType: me
         ^InstanceValue (
           genericType = ^GenericType(rawType=Any),
           multiplicity = ZeroOne,
-          values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName, ^GenericType(rawType=Any))]
+          values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName)]
         )
      ]
    )->evaluateAndDeactivate();
+}
+
+function meta::external::dataquality::buildGetValueAtColumnFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1]):FunctionExpression[1]
+{
+   buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName, ^GenericType(rawType=Any));
 }
 
 function meta::external::dataquality::buildGetValueAtColumnFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1], colType: GenericType[1]):FunctionExpression[1]
@@ -1115,7 +1120,7 @@ function meta::external::dataquality::buildToStringToOneFunctionExpression(relTy
               importGroup  = system::imports::coreImport,
               parametersValues =
               [
-                ^InstanceValue (genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName, ^GenericType(rawType=Any))])
+                ^InstanceValue (genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [meta::external::dataquality::buildGetValueAtColumnFunctionExpression($relType, $column, $relParamName)])
               ]
            )->evaluateAndDeactivate()
       ]
