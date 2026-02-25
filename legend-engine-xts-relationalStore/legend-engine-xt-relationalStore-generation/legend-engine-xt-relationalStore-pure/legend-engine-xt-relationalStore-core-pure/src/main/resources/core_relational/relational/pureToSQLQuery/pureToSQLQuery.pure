@@ -6526,19 +6526,41 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
       );
 }
 
+//this function collapses chained renames to avoid unnecessary nested subqueries
+function meta::relational::functions::pureToSqlQuery::collapseTDSRename(v:ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], columns:Map<String,String>[1]):Pair<ValueSpecification, Map<String, String>>[1]
+{
+  $v->match([
+    f:FunctionExpression[1] |
+      if ($f.func->in([renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_, rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_]),
+        | let pairs = $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
+              c:meta::pure::metamodel::relation::ColSpec<Any>[1] |
+                let newName = $f->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne();
+                pair($c.name->toOne(), $newName);,
+              p:Pair<String,String>[*] | $p,
+              vss:ValueSpecification[*] | $vss->map(vs|$vs->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->cast(@Pair<String,String>))
+          ]);
+          collapseTDSRename($f.parametersValues->at(0), $vars, $state, resolveAndRemoveChainedRenames($pairs, $columns));,
+        | pair($v, $columns)),
+    v:ValueSpecification[1] | pair($v, $columns)
+  ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::resolveAndRemoveChainedRenames(pairs:Pair<String,String>[*], columns:Map<String,String>[1]):Map<String,String>[1]
+{
+  $columns->keyValues()
+          ->filter(kv | !$kv.first->in($pairs.second))
+          ->newMap()
+          ->putAll($pairs->map(pr | pair($pr.first, $columns->get($pr.second)->orElse($pr.second))));
+}
+
 function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+   let collapsed = collapseTDSRename($expression, $vars, $state, ^Map<String, String>());
+
+   let mainQuery = processValueSpecification($collapsed.first, [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
 
-   let projectColPairNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
-              c:meta::pure::metamodel::relation::ColSpec<Any>[1] |pair (
-                                                                $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne(),
-                                                                $expression->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne()
-                                                             ),
-              p:Pair<String,String>[*] | $p,
-              vss:ValueSpecification[*] | $vss->map(vs|$vs->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->cast(@Pair<String,String>));
-                                          ]);
+   let projectColPairNames = $collapsed.second->keyValues();
 
    let projectColNamesMap = $projectColPairNames->map(p|^$p(first = $p.first->addQuotesIfNecessary(), second = $p.second->addQuotesIfNecessary()))->newMap();
    let noWrappedProjectColNamesMap = $projectColPairNames->map(p|^$p(first = $p.first->stripMatchingQuotes(), second = $p.second))->newMap();

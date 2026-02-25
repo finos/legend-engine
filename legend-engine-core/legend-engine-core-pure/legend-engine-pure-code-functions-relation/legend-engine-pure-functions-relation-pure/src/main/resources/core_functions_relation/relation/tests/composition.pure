@@ -923,13 +923,15 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testM
                 #->rename(~colOneNum, ~_col_one_num)
                  ->rename(~Col_two_letter, ~colTwoLetter)
                  ->rename(~_col_3Mix, ~Col_3mix)
-                 ->filter(x|$x._col_one_num > 2 && $x.colTwoLetter == 'C' && $x.Col_3mix == 3)
+                 ->rename(~Col_3mix, ~Col_3mix_)
+                 ->rename(~Col_3mix_, ~_Col_3mix_)
+                 ->filter(x|$x._col_one_num > 2 && $x.colTwoLetter == 'C' && $x._Col_3mix_ == 3)
               };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   _col_one_num,colTwoLetter,Col_3mix\n'+
+                  '   _col_one_num,colTwoLetter,_Col_3mix_\n'+
                   '   9,C,3\n'+
                   '#', $res->toString());
 }
