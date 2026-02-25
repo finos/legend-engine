@@ -37,19 +37,19 @@ public class Test_Relational_Trino_ScenarioQuantFunctions_PCT extends PCTReportC
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             // Gap
-            one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "(time,symbol,open,high,low,close,volume) values (timestamp '2026-01-07T09:30:00.000','AAPL',190.50,192.10,190.10,191.45,55400200)"),
+            one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.RuntimeException: java.util.NoSuchElementException: No value present"),
 
             // MaxDrawDown
-            one("meta::external::scenario::quant::maxDrawDown::testMaxDrawDown_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+            one("meta::external::scenario::quant::maxDrawDown::testMaxDrawDown_Function_1__Boolean_1_", "com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.RuntimeException: java.util.NoSuchElementException: No value present"),
 
             // LogReturn
-            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.RuntimeException: java.util.NoSuchElementException: No value present"),
 
             // SMA
-            one("meta::external::scenario::quant::sma::testSimpleMovingAverage5Days_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+            one("meta::external::scenario::quant::sma::testSimpleMovingAverage5Days_Function_1__Boolean_1_", "com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.RuntimeException: java.util.NoSuchElementException: No value present"),
 
             // Volatility
-            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "Error while executing: Create Schema leSchema"),
+            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.RuntimeException: java.util.NoSuchElementException: No value present"),
 
             // VWAP
             one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")

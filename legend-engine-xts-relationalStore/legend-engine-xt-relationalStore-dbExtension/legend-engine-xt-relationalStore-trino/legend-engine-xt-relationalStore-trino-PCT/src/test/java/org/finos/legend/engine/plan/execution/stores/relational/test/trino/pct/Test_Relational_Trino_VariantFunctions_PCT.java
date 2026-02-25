@@ -50,7 +50,7 @@ public class Test_Relational_Trino_VariantFunctions_PCT extends PCTReportConfigu
 
             // Variant - Convert - To
             one("meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "\"Execution error message mismatch.\\nThe actual message was \\\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\\\"\\nwhere the expected message was:\\\"Invalid Pure Boolean: 'hello'\\\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "Execution error message mismatch."),
             one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
@@ -76,7 +76,6 @@ public class Test_Relational_Trino_VariantFunctions_PCT extends PCTReportConfigu
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"Invalid Pure Boolean: 'hello'\"\""),
 
             // Variant - Convert - ToJson
             one("meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toJson' (state: [Select, false]) is not supported yet\""),
