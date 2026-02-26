@@ -118,6 +118,13 @@
         </dependency>
         <!-- LOG -->
 
+        <!-- COMMONS-LANG -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- COMMONS-LANG -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

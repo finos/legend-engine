@@ -219,7 +219,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
         }
         LambdaFunction<?> relationQuery = HelperValueSpecificationBuilder.buildLambda(dataqualityRelationValidation.query, compileContext);
         String relationQueryReturnType = getLambdaFunctionRawReturnTypeName(relationQuery);
-        if (!(relationQuery._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !"Relation".equals(relationQueryReturnType))
+        if (!(relationQuery._expressionSequence().getLast() instanceof  Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) && !compileContext.pureModel.taxonomyTypes("cov_relation_Relation").contains(relationQueryReturnType))
         {
             throw new EngineException("Relation expected from lambda", dataqualityRelationValidation.query.sourceInformation, EngineErrorType.COMPILATION);
         }

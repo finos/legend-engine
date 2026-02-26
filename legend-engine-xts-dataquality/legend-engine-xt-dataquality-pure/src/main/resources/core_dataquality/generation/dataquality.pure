@@ -899,8 +899,8 @@ function meta::external::dataquality::buildRelationLimitFilterExpression(f: Valu
 
 function meta::external::dataquality::isEndingWithFromFunction(func: FunctionDefinition<Any>[1]):Boolean[1]
 {
-  let queryEndExpression = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression);
-  $queryEndExpression.func->in(meta::external::dataquality::fromFunctions());
+  let queryEndExpression = $func.expressionSequence->evaluateAndDeactivate()->last();
+  $queryEndExpression->isNotEmpty() && $queryEndExpression->toOne()->instanceOf(SimpleFunctionExpression) && $queryEndExpression->cast(@SimpleFunctionExpression).func->in(meta::external::dataquality::fromFunctions());
 }
 
 function <<access.protected>> meta::external::dataquality::fromFunctions():Function<Any>[*]
