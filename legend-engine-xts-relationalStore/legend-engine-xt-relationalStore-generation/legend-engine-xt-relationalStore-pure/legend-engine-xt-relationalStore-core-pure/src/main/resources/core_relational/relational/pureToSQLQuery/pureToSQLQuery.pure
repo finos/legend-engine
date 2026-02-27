@@ -3973,13 +3973,23 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
             ]);
          };
 
-   let pred = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-   let sides = $execSides->map(s|$s.first->processValueSpecification(if($isEnumConstantSide->eval($s.second),
+  let pred = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(pushDownEnumTransformations=false), $joinType, $nodeId, $aggFromMap, $context, $extensions);
+
+  let sides = $execSides->map(s|
+      if($isEnumConstantSide->eval($s.second) && $foundEnumPropertyMapping->isEmpty(),
+        | let enumName = $s.second.expressionSequence->toOne()->match([
+          sfe : SimpleFunctionExpression[1] | $sfe->instanceValueAtParameter(1)->cast(@String),
+          iv : InstanceValue[1] | $iv.values->toOne()->cast(@Enum).name
+      ]);
+      let sel = $operation.select;
+      ^$operation(select = ^$sel(columns = ^Literal(value = $enumName)));,
+      | $s.first->processValueSpecification(if($isEnumConstantSide->eval($s.second),
                                                                         |print(if(!$context.debug, |'', | $context.space+'  Enum in if is a constant\n'));
                                                                          $foundEnumPropertyMapping;,
                                                                         |print(if(!$context.debug, |'', | $context.space+'  Enum in if is NOT a constant\n'));
                                                                          $currentPropertyMapping;
-                                                                     ), $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
+                                                                     ), $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)));
+
    pair(^List<RelationalOperationElement>(values=$pred->concatenate($sides)),{r:RelationalOperationElement[1]|^OperationWithParentPropertyMapping(element=$r, currentPropertyMapping=$foundEnumPropertyMapping)});
 }
 
@@ -4676,7 +4686,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
 
    let processedParams = if($f->isIfForEnum($state.inFilter),| processIfForEnum($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
                                                             ,| let zippedParameters = $f.parametersValues->size()->range()->zip($f.parametersValues);
-                                                               pair(^List<RelationalOperationElement>(values=$zippedParameters->map(pv| let updatedState = if($paramIsIfTrueFalseStmt->eval($pv.first),|^$state(inIfTrueFalseStmt=true),|$state);
+                                                               pair(^List<RelationalOperationElement>(values=$zippedParameters->map(pv| let updatedState = if($f.func == if_Boolean_1__Function_1__Function_1__T_m_ && $pv.first == 0 && $state.pushDownEnumTransformations, |^$state(pushDownEnumTransformations = false), |if($paramIsIfTrueFalseStmt->eval($pv.first),|^$state(inIfTrueFalseStmt=true),|$state));
                                                                                                                                         $pv.second->processValueSpecification($currentPropertyMapping, $operation, $vars, $updatedState, $joinType, buildNodeId($nodeId,'_dy'+$pv.first->toString()), $aggFromMap, $context, $extensions);)),{res:RelationalOperationElement[1]|$res}););
 
    let parameterSQL = $processedParams.first.values->map(x | extractSelectSQLQuery($x));//$f.parametersValues->map(pv|$pv->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context))->map(x | extractSelectSQLQuery($x));
