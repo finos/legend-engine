@@ -3322,6 +3322,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'sum(Integer) OVER (Partition By String ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as "ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING", ' +
     'sum(Integer) OVER (Partition By String ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) as "ROWS_1_FOLLOWING_1_FOLLOWING", ' +
     'sum(Integer) OVER (Partition By String ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as "ROWS_UNBOUNDED_PRECEDING_CURRENT", ' +
+    'sum(Integer) OVER (Partition By String ROWS UNBOUNDED PRECEDING) as "ROWS_UNBOUNDED_PRECEDING", ' +
 
     'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) as "RANGE_CURRENT_UNBOUNDED_FOLLOWING", ' +
     'sum(Integer) OVER (Partition By String ORDER BY Integer ASC RANGE BETWEEN 1 FOLLOWING AND UNBOUNDED FOLLOWING) as "RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING", ' +
@@ -3345,6 +3346,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [], rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded())), ~[ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over(~[String], [], rows(1, 1)), ~[ROWS_1_FOLLOWING_1_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over(~[String], [], rows(meta::pure::functions::relation::unbounded(), 0)), ~[ROWS_UNBOUNDED_PRECEDING_CURRENT:{p,w,r|$r.Integer}:y|$y->sum()])
+              ->extend(over(~[String], [], rows(meta::pure::functions::relation::unbounded(), 0)), ~[ROWS_UNBOUNDED_PRECEDING:{p,w,r|$r.Integer}:y|$y->sum()])
 
               ->extend(over(~[String], [~Integer->ascending()], _range(0, meta::pure::functions::relation::unbounded())), ~[RANGE_CURRENT_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over(~[String], [~Integer->ascending()], _range(1, meta::pure::functions::relation::unbounded())), ~[RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING:{p,w,r|$r.Integer}:y|$y->sum()])
@@ -3355,7 +3357,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over([~Integer->ascending()], _range(meta::pure::functions::relation::unbounded(), 0)), ~[RANGE_UNBOUNDED_PRECEDING_CURRENT_NO_PARTITION:{p,w,r|$r.Integer}:y|$y->sum()])
               ->extend(over([~Integer->ascending()]), ~[NO_PARTITION_NO_FRAME:{p,w,r|$r.Integer}:y|$y->sum()])
 
-              ->select(~[ROWS_CURRENT_UNBOUNDED_FOLLOWING, ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING, ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, ROWS_1_FOLLOWING_1_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_CURRENT,
+              ->select(~[ROWS_CURRENT_UNBOUNDED_FOLLOWING, ROWS_1_FOLLOWING_UNBOUNDED_FOLLOWING, ROWS_1_PRECEDING_UNBOUNDED_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, ROWS_1_FOLLOWING_1_FOLLOWING, ROWS_UNBOUNDED_PRECEDING_CURRENT, ROWS_UNBOUNDED_PRECEDING,
                         RANGE_CURRENT_UNBOUNDED_FOLLOWING, RANGE_1_FOLLOWING_UNBOUNDED_FOLLOWING, RANGE_1_PRECEDING_UNBOUNDED_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_UNBOUNDED_PROCEDING, RANGE_1_FOLLOWING_1_FOLLOWING, RANGE_UNBOUNDED_PRECEDING_CURRENT,
                         RANGE_UNBOUNDED_PRECEDING_CURRENT_NO_PARTITION, NO_PARTITION_NO_FRAME
                       ])

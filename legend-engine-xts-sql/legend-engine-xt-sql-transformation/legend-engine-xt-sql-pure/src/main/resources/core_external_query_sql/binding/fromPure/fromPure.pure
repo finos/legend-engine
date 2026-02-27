@@ -990,10 +990,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::buildFrame(frame:WindowFrame[1]):SimpleFunctionExpression[1]
 {
-    assert($frame.end->isNotEmpty(), 'end frame must currently be specified');
-
     let start = createFrameBoundValue($frame.start);
-    let end = createFrameBoundValue($frame.end->toOne());
+    let end = createFrameBoundValue($frame.end->orElse(^FrameBound(type = FrameBoundType.CURRENT_ROW)));
 
     let unbounded = sfe(unbounded__UnboundedFrameValue_1_);
 
