@@ -382,10 +382,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testWindowFunctions() {
+    public void testWindowFunctions() 
+    {
         check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS UNBOUNDED PRECEDING) AS col from MyTable");
         check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED PRECEDING) AS col from MyTable");
     }
+
     @Test
     public void testSubscript()
     {
