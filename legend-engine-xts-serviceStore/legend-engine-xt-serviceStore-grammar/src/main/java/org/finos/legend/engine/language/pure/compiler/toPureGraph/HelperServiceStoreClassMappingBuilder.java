@@ -77,6 +77,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
@@ -334,10 +335,10 @@ public class HelperServiceStoreClassMappingBuilder
         }
         processedClasses.add(pureClass);
 
-        RichIterable<Property> properties = bindingDetail.mappedPropertiesForClass(pureClass, context.getExecutionSupport());
+        RichIterable<? extends AbstractProperty<?>> properties = bindingDetail.mappedPropertiesForClass(pureClass, context.getExecutionSupport());
 
-        RichIterable<Property> primitiveProperties = properties.select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
-        RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
+        RichIterable<Property> primitiveProperties = properties.selectInstancesOf(Property.class).select(prop -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
+        RichIterable<Property> nonPrimitiveProperties = properties.selectInstancesOf(Property.class).select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
         List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, Sets.mutable.withAll(processedClasses), context)).toList();

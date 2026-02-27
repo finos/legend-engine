@@ -331,7 +331,7 @@ public class HelperPersistenceBuilder
         {
             Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput graphFetchServiceOutput = new Root_meta_pure_persistence_metamodel_service_GraphFetchServiceOutput_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::GraphFetchServiceOutput"))
                 ._path(buildPath(val.path, context))
-                ._keys(ListIterate.collect(val.keys, k -> buildPath(k, context)))
+                ._keys((RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path<?, ?>>) (RichIterable<?>) ListIterate.collect(val.keys, k -> buildPath(k, context)))
                 ._datasetType(val.datasetType.accept(new DatasetTypeBuilder(context)));
 
             if (val.deduplication != null)
@@ -517,7 +517,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBased visitFieldBasedForGraphFetch(FieldBasedForGraphFetch val)
         {
             return new Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForGraphFetch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForGraphFetch"))
-                ._partitionFieldPaths((ListIterate.collect(val.partitionFieldPaths, p -> buildPath(p, context))));
+                ._partitionFieldPaths((RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path<?, ?>>) (RichIterable<?>) ListIterate.collect(val.partitionFieldPaths, p -> buildPath(p, context)));
         }
 
         @Override
