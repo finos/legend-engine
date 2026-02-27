@@ -29,6 +29,7 @@ public class ClickHouseTestConnectionIntegration implements TestConnectionIntegr
     private static final String USERNAME_REFERENCE = "clickhouse_username";
     private static final String PASSWORD_REFERENCE = "clickhouse_password";
     private static final String DEFAULT_DATABASE_NAME = "default";
+    private static final int DEFAULT_STARTUP_ATTEMPTS = 3;
 
     @Override
     public MutableList<String> group()
@@ -45,6 +46,7 @@ public class ClickHouseTestConnectionIntegration implements TestConnectionIntegr
     @Override
     public void setup()
     {
+        this.clickHouseContainer.withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
         this.clickHouseContainer.start();
 
         this.vault =
