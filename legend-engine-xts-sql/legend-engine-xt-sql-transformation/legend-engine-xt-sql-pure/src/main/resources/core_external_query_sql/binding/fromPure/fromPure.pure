@@ -476,15 +476,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processUnion', $context.debug);
 
-  let left = wrapWithFrom(processRelation($union.left, ^$context(root = false, id = $context.id + 1)));
+  let left = wrapWithFrom(processRelation($union.left, ^$context(name = $context.name->orElse('union_' + toString($context.id + 1)), root = false, id = $context.id + 1)));
 
-  let right = wrapWithFrom(processRelation($union.right, ^$context(root = false, id = $context.id + 3)));
+  let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
 
   let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue());
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
-  clone(^$context(expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
+  clone(^$context(name = $context.name->orElse('union_' + $context.id->toString()), expression = $newExp, contexts = [$left, $right], aliases = $aliases), $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQueryWithScope(queryWithScope: QueryWithScope[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1321,8 +1321,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let context = ^$_context(debug = $_context.debug->indent());
 
-  let leftContext = processRelation($join.left, ^$context(root = false, id = $context.id + 2));
-  let rightContext = processRelation($join.right, ^$context(root = false, id = $context.id + 3));
+  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('join_' + toString($context.id + 2)), root = false, id = $context.id + 2));
+  let rightContext = processRelation($join.right, ^$context(name = $context.name->orElse('join_' + toString($context.id + 3)), root = false, id = $context.id + 3));
 
   let leftColumns = $leftContext.aliases.actual();
   let rightColumns = $rightContext.aliases.actual();
@@ -1573,7 +1573,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
           assert($missingParameters->isEmpty(), | 'missing required parameter values ' + $missingParameters->joinStrings('[', ', ', ']') + ' for source ');
 
-          let scopeSuffix = if (!$context.root, | if ($context.name->isEmpty(), | $context.id->toString(), | $context.name->toOne()), | []);
+          let scopeSuffix = if (!$context.root, | $context.name->orElse($context.id->toString()), | []);
 
           let expressionSequence = $source.func.expressionSequence->evaluateAndDeactivate();
           let assignments = $expressionSequence->evaluateAndDeactivate()->init();
@@ -2726,8 +2726,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processFunctionCallAsIdentifier', $context.debug);
 
-  let name = extractNameFromExpression($f, $context);
-  let col = $context.columnByName($name, false);
+  let foundColumn = $context.columnByName(extractNameFromExpression($f, []), false);
+
+  let col = if ($foundColumn->isEmpty(),
+    | $context.columnByName(extractNameFromExpression($f, $context), false),
+    | $foundColumn);
 
   if ($col->isEmpty(),
     | processFunctionCallAsFunction($f, $expContext, $context),
@@ -3910,7 +3913,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
   toString(indent:String[1]) {
       $indent + 'id ' + $this.id->toString() + '\n' +
-      $indent + 'name: ' + if ($this.name->isEmpty(), | '[]', | $this.name->toOne()) + '\n' +
+      $indent + 'name: ' + $this.name->orElse('[]') + '\n' +
       $indent + 'root: ' + $this.root->toString() + '\n' +
       if ($this.aliases->isNotEmpty(), | $indent + 'aliases: \n' + $indent + '  ' + $this.aliases.toString()->joinStrings('\n' + $indent + '  ') + '\n', | '') +
       if ($this.contexts->isNotEmpty(), | $indent + 'contexts: \n' + $this.contexts->map(c | $c.toString($indent + '    '))->joinStrings('\n'), | '') +
