@@ -1,0 +1,160 @@
+import meta::json::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::engine::java::roadmap::*;
+Enum meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Enum 
+{
+  Enum1, Enum2
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source 
+{
+  i : Integer[1];
+  s : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target
+{
+  i:Integer[1];
+  s : meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Enum[0..1];
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Parse a simple JSON object, process it through an M2M mapping using extractEnumValue and serialize the result as JSON.'
+}
+meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::testExtractEnumValueM2MWithEmptyInput() : Boolean[1]
+{
+  let tree = #{ meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target {i, s}}#;
+  let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target.all()->graphFetch($tree)->serialize($tree),
+       meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::M,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source,
+                                url='data:application/json,{"i": 1}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+  
+  assert(jsonEquivalent('{"i": 1, "s": null}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Parse a simple JSON object, process it through an M2M mapping using extractEnumValue and serialize the result as JSON.'
+}
+meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::testExtractEnumValueM2MWithNonEmptyInput() : Boolean[1]
+{
+  let tree = #{ meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target {i, s}}#;
+  let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target.all()->graphFetch($tree)->serialize($tree),
+       meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::M,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source,
+                                url='data:application/json,{"i": 1, "s":"Enum1"}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+  println($result.values->toOne());
+  assert(jsonEquivalent('{"i": 1, "s": "Enum1"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Parse a simple JSON object, process it through an M2M mapping using extractEnumValue with empty string and serialize the result as JSON.'
+}
+meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::testExtractEnumValueM2MWithEmptyValue() : Boolean[1]
+{
+  let tree = #{ meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target {i, s}}#;
+  let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target.all()->graphFetch($tree)->serialize($tree),
+       meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::MEmpty,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source,
+                                url='data:application/json,{"i": 1, "s":"Enum1"}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+  println($result.values->toOne());
+  assert(jsonEquivalent('{"i": 1, "s": null}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Parse a simple JSON object, process it through an M2M mapping using extractEnumValue with empty string and serialize the result as JSON.'
+}
+meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::testExtractEnumValueM2MWithNonEmptyValue() : Boolean[1]
+{
+  let tree = #{ meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target {i, s}}#;
+  let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target.all()->graphFetch($tree)->serialize($tree),
+       meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::MString,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source,
+                                url='data:application/json,{"i": 1, "s":"Enum1"}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+  println($result.values->toOne());
+  assert(jsonEquivalent('{"i": 1, "s": "Enum2"}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+###Mapping 
+Mapping meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::M 
+(
+  *meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source 
+    i : $src.i,
+    s : extractEnumValue(meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Enum, $src.s)
+  }
+)
+
+###Mapping 
+Mapping meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::MEmpty
+(
+  *meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source 
+    i : $src.i,
+    s : extractEnumValue(meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Enum, [])
+  }
+)
+
+###Mapping 
+Mapping meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::MString
+(
+  *meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Target : Pure 
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Source 
+    i : $src.i,
+    s : extractEnumValue(meta::pure::mapping::modelToModel::test::alloy::extractEnumValue::Enum, 'Enum2')
+  }
+)
