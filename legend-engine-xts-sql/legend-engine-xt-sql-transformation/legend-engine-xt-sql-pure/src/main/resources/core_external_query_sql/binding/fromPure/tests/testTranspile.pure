@@ -3754,11 +3754,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     ],
 
     [
-      {id_1:String[1], ints_1:Integer[*], date_1:StrictDate[0..1]|
+      {id_union_1:String[1], ints_union_1:Integer[*], date_union_1:StrictDate[0..1]|
 
-        let const_3 = 123;
+        let const_union_3 = 123;
 
-        FlatInput.all()->filter(f | $f.idIn == $id_1 && $f.integerIn->in($ints_1) && ($f.strictDateIn > $date_1))->project(
+        FlatInput.all()->filter(f | $f.idIn == $id_union_1 && $f.integerIn->in($ints_union_1) && ($f.strictDateIn > $date_union_1))->project(
           [
             x | $x.idIn, x | $x.integerIn, x | $x.enumVal
           ],
@@ -3767,7 +3767,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ]
         )->concatenate(FlatInput.all()->project(
           [
-            x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_3
+            x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_union_3
           ],
           [
             'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
