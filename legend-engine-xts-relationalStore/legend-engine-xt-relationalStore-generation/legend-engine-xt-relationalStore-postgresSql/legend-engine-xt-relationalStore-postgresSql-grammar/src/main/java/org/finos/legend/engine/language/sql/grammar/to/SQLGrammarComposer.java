@@ -189,7 +189,7 @@ public class SQLGrammarComposer
                         ? " ORDER BY " + visit(val.orderBy, ", ")
                         : "";
 
-                String frame = val.windowFrame != null ? visit(val.windowFrame) : "";
+                String frame = val.windowFrame != null ? " " + visit(val.windowFrame) : "";
 
                 return partitions + orderBy + frame;
             }
@@ -197,7 +197,9 @@ public class SQLGrammarComposer
             @Override
             public String visit(WindowFrame val)
             {
-                return val.mode.toString() + " BETWEEN " + visit(val.start) + " AND " + visit(val.end);
+                String start = visit(val.start);
+                String end = val.end != null ? visit(val.end) : null;
+                return val.mode.toString() + (end != null ? " BETWEEN " + start + " AND " + end : " " + start);
             }
 
             @Override
