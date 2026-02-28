@@ -465,14 +465,15 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0014         {\n' +
    '      0015             return Library.adjustDate(PureDate.fromDate(new Date()),\n' +
    '      0016                                       1L,\n' +
-   '      0017                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
-   '      0018         }\n' +
-   '      0019         catch (Exception e)\n' +
-   '      0020         {\n' +
-   '      0021             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
-   '      0022         }\n' +
-   '      0023     }\n' +
-   '      0024 }\n' +
+   '      0017                                       "DAYS" == null ? null\n' +
+   '      0018                                                      : DurationUnit.getEnumFromPureName("DAYS"));\n' +      
+   '      0019         }\n' +
+   '      0020         catch (Exception e)\n' +
+   '      0021         {\n' +
+   '      0022             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0023         }\n' +
+   '      0024     }\n' +
+   '      0025 }\n' +
    ')\n';
 
    let expectedJavaNewH2 =
@@ -528,14 +529,15 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0014         {\n' +
    '      0015             return Library.adjustDate(PureDate.fromDate(new Date()),\n' +
    '      0016                                       1L,\n' +
-   '      0017                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
-   '      0018         }\n' +
-   '      0019         catch (Exception e)\n' +
-   '      0020         {\n' +
-   '      0021             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
-   '      0022         }\n' +
-   '      0023     }\n' +
-   '      0024 }\n' +
+   '      0017                                       "DAYS" == null ? null\n' + 
+   '      0018                                                      : DurationUnit.getEnumFromPureName("DAYS"));\n' +
+   '      0019         }\n' +
+   '      0020         catch (Exception e)\n' +
+   '      0021         {\n' +
+   '      0022             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0023         }\n' +
+   '      0024     }\n' +
+   '      0025 }\n' +
    ')\n';
    assertEqualsH2Compatible(
     $expectedJavaLegacyH2,
@@ -671,14 +673,15 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0013         {\n' +
    '      0014             return Library.adjustDate(PureDate.parsePureDate("2005-10-10"),\n' +
    '      0015                                       1L,\n' +
-   '      0016                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
-   '      0017         }\n' +
-   '      0018         catch (Exception e)\n' +
-   '      0019         {\n' +
-   '      0020             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
-   '      0021         }\n' +
-   '      0022     }\n' +
-   '      0023 }\n' +
+   '      0016                                       "DAYS" == null ? null\n' +
+   '      0017                                                      : DurationUnit.getEnumFromPureName("DAYS"));\n' +
+   '      0018         }\n' +
+   '      0019         catch (Exception e)\n' +
+   '      0020         {\n' +
+   '      0021             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0022         }\n' +
+   '      0023     }\n' +
+   '      0024 }\n' +
    ')\n';
 
    let expectedJavaNewH2 =
@@ -733,14 +736,15 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0013         {\n' +
    '      0014             return Library.adjustDate(PureDate.parsePureDate("2005-10-10"),\n' +
    '      0015                                       1L,\n' +
-   '      0016                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
-   '      0017         }\n' +
-   '      0018         catch (Exception e)\n' +
-   '      0019         {\n' +
-   '      0020             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
-   '      0021         }\n' +
-   '      0022     }\n' +
-   '      0023 }\n' +
+   '      0016                                       "DAYS" == null ? null\n' +
+   '      0017                                                      : DurationUnit.getEnumFromPureName("DAYS"));\n' +
+   '      0018         }\n' +
+   '      0019         catch (Exception e)\n' +
+   '      0020         {\n' +
+   '      0021             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0022         }\n' +
+   '      0023     }\n' +
+   '      0024 }\n' +
    ')\n';
    assertEqualsH2Compatible(
     $expectedJavaLegacyH2,
