@@ -32,7 +32,7 @@ function meta::external::query::sql::reversePCT::tests::unclassified::hash::hash
                       [
                         revError('|\'Hello, World!\'->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.SHA1)',
                             'select encode(digest(Text\'Hello, World!\', \'sha1\'), \'hex\')',
-                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function digest"',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "No function matches the given name \"digest\""',
                             ''
                         )
                       ]
@@ -42,7 +42,7 @@ function meta::external::query::sql::reversePCT::tests::unclassified::hash::hash
                       [
                         revError('|\'Hello, World!\'->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.SHA256)',
                             'select encode(digest(Text\'Hello, World!\', \'sha256\'), \'hex\')',
-                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "no handler found for function digest"',
+                            'Assert failure at (resource:/platform/pure/essential/tests/assertEquals.pure line:31 column:5), "No function matches the given name \"digest\""',
                             ''
                         )
                       ]
