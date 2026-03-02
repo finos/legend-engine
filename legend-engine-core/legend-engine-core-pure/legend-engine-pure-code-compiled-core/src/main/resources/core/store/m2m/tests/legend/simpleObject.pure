@@ -259,6 +259,129 @@ meta::pure::mapping::modelToModel::test::alloy::simple::supportForPrimitivesAndE
    assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a JSON object (matching a source class) that contains datetime values with timezone, and an M2M mapping with AlloySerializationConfig using dateTimeFormat with milliseconds (SSSZ)',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize with the custom dateTimeFormat.',
+   doc.doc='Then:  the datetime values are serialized with the specified timezone format including milliseconds.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::supportForDateTimeTimezone() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d, sd, dt, b, c, c2, c3} }#;
+
+
+   let config = ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type',
+    includeType=false,
+    includeEnumType=false,
+    removePropertiesWithNullValues=true,
+    removePropertiesWithEmptySets=false,
+    fullyQualifiedTypePath=false,
+    dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ'
+    );
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree, $config),
+      simpleDataMapping,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=_SomeData,
+                                url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.000Z", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.000+0000", "2019-05-30T06:29:01.234+0000"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a JSON object (matching a source class) that contains datetime values with nanosecond precision, and an M2M mapping with AlloySerializationConfig using dateTimeFormat with nanoseconds (SSSSSSSSSZ)',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize with the custom dateTimeFormat.',
+   doc.doc='Then:  the datetime values are serialized with the specified timezone format preserving nanosecond precision.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::supportForDateTimeTimezoneWithNanoseconds() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d, sd, dt, b, c, c2, c3} }#;
+
+
+   let config = ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type',
+    includeType=false,
+    includeEnumType=false,
+    removePropertiesWithNullValues=true,
+    removePropertiesWithEmptySets=false,
+    fullyQualifiedTypePath=false,
+    dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSSZ'
+    );
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree, $config),
+      simpleDataMapping,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=_SomeData,
+                                url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T13:20:21.123456789Z", "2019-05-30T04:29:01.234"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-12T15:20:21.123456789+0000", "2019-05-30T06:29:01.234+0000"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a JSON object (matching a source class) that contains datetime values with a non-UTC timezone offset (+0530 and -0800), and an M2M mapping with AlloySerializationConfig using dateTimeFormat with milliseconds',
+   doc.doc='When:  the mapping is executed using graphFetch and serialize with the custom dateTimeFormat.',
+   doc.doc='Then:  the datetime values are serialized with the specified timezone format correctly handling the non-UTC offset.'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::supportForDateTimeWithDifferentTimezone() : Boolean[1]
+{
+   let tree = #{SomeData {i, f, d, sd, dt, b, c, c2, c3} }#;
+
+
+   let config = ^meta::pure::graphFetch::execution::AlloySerializationConfig(typeKeyName='@type',
+    includeType=false,
+    includeEnumType=false,
+    removePropertiesWithNullValues=true,
+    removePropertiesWithEmptySets=false,
+    fullyQualifiedTypePath=false,
+    dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.SSSZ'
+    );
+
+   let result = execute(
+      |SomeData.all()->graphFetch($tree)->serialize($tree, $config),
+      simpleDataMapping,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=_SomeData,
+                                url='data:application/json,{"i":2, "f": 2.5, "d": [0.1, 0.2], "sd": ["2018-03-12", "2019-05-30"], "dt": ["2018-03-12T09:20:21.000%2B1200", "2019-05-31T23:29:01.234%2D0500"], "b": [true, false, true], "c":"ROUGE", "s":["BLEU", "VERT"]}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected = '{"i":4, "f": 0.4, "d": [0.2, 0.4],"sd": ["2018-03-13", "2019-05-31"], "dt": ["2018-03-11T23:20:21.000+0000", "2019-06-01T06:29:01.234+0000"], "b": [false, true, false], "c":"RED", "c2":"BLUE", "c3":["BLUE", "GREEN"]}';
+   assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a JSON object (matching a source class) that contains data for all primitive data types and an enumeration, and an M2M mapping',
