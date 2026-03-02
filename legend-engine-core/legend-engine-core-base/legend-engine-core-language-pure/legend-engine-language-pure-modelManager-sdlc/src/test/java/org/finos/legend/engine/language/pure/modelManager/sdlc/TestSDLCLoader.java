@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointerCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
@@ -166,6 +167,40 @@ public class TestSDLCLoader
         Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
     }
 
+    @Test
+    public void testPureModelContextPointerCombination() throws JsonProcessingException
+    {
+        configureWireMockForMultipleAlloyDeps();
+
+        PureModelContextPointer p1 = new PureModelContextPointer();
+        AlloySDLC a1 = new AlloySDLC();
+        a1.groupId = "dep1";
+        a1.artifactId = "art1";
+        a1.version = "1.0.0";
+        p1.sdlcInfo = a1;
+
+        PureModelContextPointer p2 = new PureModelContextPointer();
+        AlloySDLC a2 = new AlloySDLC();
+        a2.groupId = "dep2";
+        a2.artifactId = "art2";
+        a2.version = "2.0.0";
+        p2.sdlcInfo = a2;
+
+        PureModelContextPointerCombination combo = new PureModelContextPointerCombination();
+        combo.pointers = Lists.fixedSize.with(p1, p2);
+
+        SDLCLoader loader = createSDLCLoader();
+
+        PureModelContextData pmcd = loader.load(Identity.getAnonymousIdentity(), combo, CLIENT_VERSION, tracer.activeSpan());
+
+        Assert.assertEquals(2, pmcd.getElements().size());
+
+        List<String> paths = pmcd.getElements().stream().map(PackageableElement::getPath).sorted().collect(Collectors.toList());
+
+        Assert.assertEquals("pkg::pkg::myAnotherClass", paths.get(0));
+        Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
+    }
+
     private static PureModelContextPointer getPureModelContextPointer()
     {
         AlloySDLC sdlcInfo = new AlloySDLC();
@@ -253,6 +288,27 @@ public class TestSDLCLoader
 
         WireMock.stubFor(WireMock.get("/alloy/projects/org.finos.legend.dependency/models/versions/2.0.1/pureModelContextData?convertToNewProtocol=false&clientVersion=" + CLIENT_VERSION)
                 .willReturn(WireMock.okJson(pmcdJsonDep)));
+    }
+
+    private static void configureWireMockForMultipleAlloyDeps() throws JsonProcessingException
+    {
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+        Class a = new Class();
+        a.name = "myClass";
+        a._package = "pkg::pkg";
+        PureModelContextData pmcdA =
+                PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.with(a));
+
+        Class b = new Class();
+        b.name = "myAnotherClass";
+        b._package = "pkg::pkg";
+        PureModelContextData pmcdB =
+                PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.with(b));
+
+        WireMock.stubFor(WireMock.post(
+                        "/alloy/projects/dependencies/pureModelContextData?convertToNewProtocol=false&clientVersion=" + CLIENT_VERSION)
+                .willReturn(WireMock.okJson(objectMapper.writeValueAsString(pmcdA.combine(pmcdB)))));
     }
 
     private static void configureWireMockForNoRetries() throws JsonProcessingException
