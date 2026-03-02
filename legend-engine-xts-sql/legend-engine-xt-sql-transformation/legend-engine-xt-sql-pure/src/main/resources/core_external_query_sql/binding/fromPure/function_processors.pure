@@ -525,7 +525,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   | meta::external::query::sql::getSQLExtensions().udf($name),
   | $coreProcessor);
 
-  assertEquals(1, $processor->size(), | 'no handler found for function ' + $name);
+  assertEquals(1, $processor->size(), | 'No function matches the given name "' + $name + '"');
 
   $processor->toOne();
 }
@@ -550,7 +550,7 @@ function meta::external::query::sql::transformation::queryToPure::misc(name:Stri
 
 function meta::external::query::sql::transformation::queryToPure::misc(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
 {
-  processor($name, $returnType, $transform, ProcessorFunctionType.ARRAY)
+  processor($name, $returnType, $transform, ProcessorFunctionType.MISC)
 }
 
 

@@ -96,9 +96,25 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 }
 
 
+function meta::external::query::sql::transformation::queryToPure::tests::noError(sqls:String[*]):Boolean[1]
+{
+  $sqls->forAll(sql | $sql->noError());
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::noError(sql:String[1]):Boolean[1]
+{
+  processQuery($sql, relationSources(), false, true);
+  true;
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::error(sqls:String[*], error:String[1], failOnUnknown:Boolean[1]):Boolean[1]
 {
   $sqls->forAll(sql | $sql->error($error, $failOnUnknown));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::error(sql:String[1], error:String[1]):Boolean[1]
+{
+  assertError({|processQuery($sql, relationSources(), false, true)}, $error)
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::error(sql:String[1], error:String[1], failOnUnknown:Boolean[1]):Boolean[1]
