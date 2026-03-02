@@ -210,14 +210,15 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $literalList.values->convertPurePrimitivesToJavaPrimitives();
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitivesToJavaPrimitives(values: Any[*]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitivesToJavaPrimitives(literals: meta::external::store::deephaven::metamodel::store::Literal[*]): Code[1]
 {
-  let literalValues = $values->map(v | $v->convertPurePrimitiveToJavaPrimitive());
+  let values = $literals.value;
+  let javaPrimitives = $values->map(v | $v->convertPurePrimitiveToJavaPrimitive());
   let javaType = if($values->isEmpty(),
                     | javaObject(),
                     | $values->at(0)->getJavaTypeForLiteral()
                  );
-  let newArray = j_new(javaArray($javaType), $literalValues);
+  let newArray = j_new(javaArray($javaType), $javaPrimitives);
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::getJavaTypeForLiteral(value: Any[1]): meta::external::language::java::metamodel::Type[1]
@@ -252,13 +253,12 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::convertPurePrimitiveToJavaPrimitive(value: Any[1]): Code[1]
 {
   let valueAsString = $value->convertPurePrimitiveToString();
-  $valueAsString->println();
   $value->match([
                   s: String[1]   | j_string($valueAsString),
                   d: DateTime[1] | j_string($valueAsString),
                   b: Boolean[1]  | j_boolean($valueAsString),
-                  i: Integer[1]  | j_int($valueAsString),
-                  f: Float[1]    | j_float($valueAsString),
+                  i: Integer[1]  | j_long($valueAsString),
+                  f: Float[1]    | j_double($valueAsString),
                   d: Decimal[1]  | j_bigDecimal($valueAsString),
                   a: Any[*]      | fail('Unhandled Deephaven Literal: ' + $a->class()->elementToPath()); []->toOne();
                 ]);
@@ -299,6 +299,8 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                numericOp: NumericOperation[1] | $numericOp->generateNumericOperation(),
                roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp->generateRoundWithScaleOperation(),
                negationOp: NegationOperation[1] | $negationOp->generateNegationOperation(),
+               divisionOp: DivisionOperation[1] | $divisionOp->generateDivisionOperation(),
+               divisionWithScaleOp: DivisionWithScaleOperation[1] | $divisionWithScaleOp->generateDivisionWithScaleOperation(),
                op: QueryOperation[1] | fail('Unhandled non-TDS Deephaven QueryOperation: ' + $op->class()->elementToPath()); []->toOne();
              ]);
 }
@@ -324,6 +326,22 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 {
   let methodArgument = $op.methodArgument->generateDeephavenOperationElement();
   $methodArgument->j_minus();
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateDivisionOperation(op: DivisionOperation[1]): Code[1]
+{
+  let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
+  j_divide($methodArguments->at(0), $methodArguments->at(1));
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateDivisionWithScaleOperation(op: DivisionWithScaleOperation[1]): Code[1]
+{
+  let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
+  let left = $methodArguments->at(0);
+  let right = $methodArguments->at(1);
+  let scale = $methodArguments->at(2);
+  let roundingMode = javaRoundingMode()->j_field('HALF_UP');
+  $left->j_invoke('divide', [$right, $scale, $roundingMode], javaBigDecimal());
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateSelectOperation(op: SelectOperation[1], chain: Code[1], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::flow::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
@@ -31,6 +32,20 @@ Class meta::pure::functions::relation::tests::composition::PersonTypeForComposit
 {
   firstName : String[1];
   lastName  : String[1];
+}
+
+Class meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests
+{
+  firstName : String[0..1];
+  lastName  : String[0..1];
+}
+
+Class meta::pure::functions::relation::tests::composition::SimpleNumbersTypeForCompositionTests
+{
+  id : Integer[1];
+  val1 : Number[1];
+  val2 : Number[1];
+  val3 : Number[1];
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -908,13 +923,15 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testM
                 #->rename(~colOneNum, ~_col_one_num)
                  ->rename(~Col_two_letter, ~colTwoLetter)
                  ->rename(~_col_3Mix, ~Col_3mix)
-                 ->filter(x|$x._col_one_num > 2 && $x.colTwoLetter == 'C' && $x.Col_3mix == 3)
+                 ->rename(~Col_3mix, ~Col_3mix_)
+                 ->rename(~Col_3mix_, ~_Col_3mix_)
+                 ->filter(x|$x._col_one_num > 2 && $x.colTwoLetter == 'C' && $x._Col_3mix_ == 3)
               };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   _col_one_num,colTwoLetter,Col_3mix\n'+
+                  '   _col_one_num,colTwoLetter,_Col_3mix_\n'+
                   '   9,C,3\n'+
                   '#', $res->toString());
 }
@@ -1375,6 +1392,35 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {
+                |#TDS
+                    city, country, year, treePlanted
+                    NYC, USA, 2011, 5000
+                    NYC, USA, 2000, 5000
+                    SAN, USA, 2000, 2000
+                    SAN, USA, 2011, 100
+                    LDN, UK, 2011, 3000
+                    SAN, USA, 2011, 2500
+                    NYC, USA, 2000, 10000
+                    NYC, USA, 2012, 7600
+                    NYC, USA, 2012, 7600
+                 #
+                 ->project(~[newCity:c|$c.city->toOne(), newCountry:c|$c.country->toOne(), newYear:c|$c.year->toOne(), newTreePlanted:c|$c.treePlanted->toOne()])
+                 ->filter(x|$x.newCity=='NYC')
+                 ->pivot(~newYear, [2000, 2011], ~'newCol' : x | $x.newTreePlanted : y | $y->plus())
+                 ->cast(@Relation<(newCity:String,newCountry:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer)>)
+               };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   newCity,newCountry,\'2000__|__newCol\',\'2011__|__newCol\'\n' +
+                '   NYC,USA,15000,5000\n' +
+                '#', $res->toString());
+}
+
 function 
   <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
   {
@@ -1443,4 +1489,264 @@ meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId<T|m>
                 '   1,More Test 1,user1,null,null\n'+
                 '   2,More Test 2,root,null,null\n'+
                 '#', $res->sort(~id->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                     [
+                        ^OptionalPersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+                        ^OptionalPersonTypeForCompositionTests(lastName = 'Johnson'),
+                        ^OptionalPersonTypeForCompositionTests(firstName = 'Anthony'),
+                        ^OptionalPersonTypeForCompositionTests()
+                     ]
+                     ->project(~[name : x | coalesce($x.firstName, $x.lastName, 'Anonymous'), firstName : x | coalesce($x.firstName, 'Empty')])
+                  };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   name,firstName\n' +
+                  '   Peter,Peter\n' +
+                  '   Johnson,Empty\n' +
+                  '   Anthony,Anthony\n' +
+                  '   Anonymous,Empty\n' +
+                  '#', $res->sort([~name->descending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                     [
+                        ^OptionalPersonTypeForCompositionTests(firstName = 'Peter', lastName = 'Smith'),
+                        ^OptionalPersonTypeForCompositionTests(firstName = 'John', lastName = 'Johnson'),
+                        ^OptionalPersonTypeForCompositionTests(lastName = 'Peter'),
+                        ^OptionalPersonTypeForCompositionTests(firstName = 'Anthony', lastName = 'Allen')
+                     ]
+                     ->filter(x|'Peter' == coalesce($x.firstName, $x.lastName))
+                     ->size()
+                  };
+
+    let res =  $f->eval($expr);
+
+    assertEquals(2, $res);
+}
+
+function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::relation::tests::composition::testTDSPlusTimesMinus<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, val, val2
+                  1, 1, 2
+                  2, 3, 5
+                  3, 4, 9
+                  4, 5, 14
+                  5, 6, 20
+                #->project(~[
+                  plus:c|$c.val->toOne() + $c.val2->toOne(),
+                  times:c|$c.val->toOne() * $c.val2->toOne(),
+                  minus:c|$c.val->toOne() - $c.val2->toOne()
+                ])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   plus,times,minus\n'+
+                  '   3,2,-1\n'+
+                  '   8,15,-2\n'+
+                  '   13,36,-5\n'+
+                  '   19,70,-9\n'+
+                  '   26,120,-14\n'+
+                  '#', $res->sort([~plus->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                     [
+                        ^SimpleNumbersTypeForCompositionTests(id = 1, val1 = 1, val2 = 1, val3 = 1.0),
+                        ^SimpleNumbersTypeForCompositionTests(id = 2, val1 = 31, val2 = 23, val3 = 0.0),
+                        ^SimpleNumbersTypeForCompositionTests(id = 3, val1 = 7, val2 = 97, val3 = 72.0),
+                        ^SimpleNumbersTypeForCompositionTests(id = 4, val1 = 5, val2 = 3, val3 = 89.0)
+                     ]
+                     ->project(~[
+                        id:v|$v.id,
+                        plus:v|plus([$v.val1, $v.val2, $v.val3]),
+                        times:v|times([$v.val1, $v.val2, $v.val3]),
+                        minus:v|minus([$v.val1, $v.val2, $v.val3])
+                      ])
+                  };
+
+    let res =  $f->eval($expr);
+
+    meta::pure::functions::relation::assertTdsEquivalent(
+      #TDS
+         id,plus,times,minus
+         1,3.0,1.0,-1.0
+         2,54.0,0.0,8.0
+         3,176.0,48888.0,-162.0
+         4,97.0,1335.0,-87.0
+      #,
+      $res->sort(~id->ascending()),
+      0.01
+    );
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Project<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->groupBy(
+                      ~[
+                        id,
+                        fullName
+                      ],
+                      ~[
+                        totalAges: x|$x.age :y|$y->plus()
+                      ]
+                )->project(
+                  ~[
+                    finalId: x|$x.id,
+                    finalTotalAges: x|$x.totalAges,
+                    finalFullName: x|$x.fullName
+                  ]
+                );
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalTotalAges,finalFullName\n' +
+                  '   1,25,aaa ttt\n'+
+                  '   2,30,bbb uuu\n'+
+                  '   3,35,ccc vvv\n'+
+                  '   4,40,ddd xxx\n'+
+                  '   5,45,eee yyy\n'+
+                  '#', $res->sort(~finalId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->groupBy(
+                      ~[
+                        id,
+                        fullName
+                      ],
+                      ~[
+                        totalAges: x|$x.age :y|$y->plus()
+                      ]
+                )->extend(
+                  ~[
+                    finalId: x|$x.id,
+                    finalTotalAges: x|$x.totalAges,
+                    finalFullName: x|$x.fullName
+                  ]
+                )->select(
+                  ~[
+                    finalId,
+                    finalFullName,
+                    finalTotalAges
+                  ]
+                );
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalFullName,finalTotalAges\n' +
+                  '   1,aaa ttt,25\n'+
+                  '   2,bbb uuu,30\n'+
+                  '   3,ccc vvv,35\n'+
+                  '   4,ddd xxx,40\n'+
+                  '   5,eee yyy,45\n'+
+                  '#', $res->sort(~finalId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->sort(~fullName->ascending()
+                )->project(
+                  ~[
+                    finalId: x|$x.id,
+                    finalAge: x|$x.age,
+                    finalFullName: x|$x.fullName
+                  ]
+                );
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalAge,finalFullName\n' +
+                  '   1,25,aaa ttt\n'+
+                  '   2,30,bbb uuu\n'+
+                  '   3,35,ccc vvv\n'+
+                  '   4,40,ddd xxx\n'+
+                  '   5,45,eee yyy\n'+
+                  '#', $res->sort(~finalId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                  id, firstName, lastName, age
+                  1, aaa, ttt, 25
+                  2, bbb, uuu, 30
+                  3, ccc, vvv, 35
+                  4, ddd, xxx, 40
+                  5, eee, yyy, 45
+                #->extend(~fullName:x|$x.firstName->toOne() + ' ' + $x.lastName->toOne()
+                )->sort(~fullName->ascending()
+                )->extend(
+                  ~[
+                    finalId: x|$x.id,
+                    finalAge: x|$x.age,
+                    finalFullName: x|$x.fullName
+                  ]
+                )->select(
+                  ~[
+                    finalId,
+                    finalAge,
+                    finalFullName
+                  ]
+                );
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n' +
+                  '   finalId,finalAge,finalFullName\n' +
+                  '   1,25,aaa ttt\n'+
+                  '   2,30,bbb uuu\n'+
+                  '   3,35,ccc vvv\n'+
+                  '   4,40,ddd xxx\n'+
+                  '   5,45,eee yyy\n'+
+                  '#', $res->sort(~finalId->ascending())->toString());
 }

@@ -33,6 +33,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.ClickHouseConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.MemSQLConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
@@ -79,6 +80,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ConnectionExtension>>empty()
                 .with(AthenaConnectionExtension.class)
                 .with(BigQueryConnectionExtension.class)
+                .with(ClickHouseConnectionExtension.class)
                 .with(DatabricksConnectionExtension.class)
                 .with(MemSQLConnectionExtension.class)
                 .with(PostgresConnectionExtension.class)

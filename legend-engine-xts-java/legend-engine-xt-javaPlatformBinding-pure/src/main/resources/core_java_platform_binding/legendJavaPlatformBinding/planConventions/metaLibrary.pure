@@ -25,6 +25,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
       ->addFunctionCoders([
          // ----------------- Move to Grammar when possible ------------------------
          fc(extractEnumValue_Enumeration_1__String_1__T_1_,            extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(extractEnumValue_Enumeration_1__String_$0_1$__T_$0_1$_,    extractEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+
          // ----------------- Move to Grammar when possible ------------------------
          // ----------------- Move to Essential when possible ------------------------
          fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
@@ -51,10 +53,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
    let enumType  = $conventions->className($type);
 
    $params->at(1)->match([
-      iv:InstanceValue[1] | $enumType->j_invoke('getEnumFromPureName', j_string($params->at(1)->cast(@InstanceValue).values->cast(@String)->toOne()), $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));,
-      sfe:SimpleFunctionExpression[1] | let srcPropValue = $sfe->generateJava($conventions, $debug->indent());
-                                        ^StaticMethodCall(class=$enumType, methodName='getEnumFromPureName', arguments=$srcPropValue, type=$enumType);
-	]);
+        iv:InstanceValue[1] | if($iv.values->isEmpty(), 
+                                | j_null(), 
+                                | let enumName = j_string($params->at(1)->cast(@InstanceValue).values->cast(@String)->toOne());
+                                  let nonNullBranch = $enumType->j_invoke('getEnumFromPureName', $enumName, $enumType); 
+                                  j_conditional($enumName->j_eq(j_null()), j_null(), $nonNullBranch)->dependsOn(enumTypeDependency($type, $conventions, $debug));
+                              ),
+        sfe:SimpleFunctionExpression[1] | let srcPropValue = $sfe->generateJava($conventions, $debug->indent());
+                                          let nonNullBranch = ^StaticMethodCall(class=$enumType, methodName='getEnumFromPureName', arguments=$srcPropValue, type=$enumType);
+                                          j_conditional($srcPropValue->j_eq(j_null()), j_null(), $nonNullBranch);
+	 ]);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]

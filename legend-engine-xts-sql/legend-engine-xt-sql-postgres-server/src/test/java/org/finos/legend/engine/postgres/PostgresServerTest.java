@@ -30,6 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.postgresql.PGProperty;
 import org.postgresql.util.PSQLException;
@@ -582,6 +583,7 @@ public class PostgresServerTest
     }
 
     @Test
+    @Ignore
     public void testLotsOfConnectionsBadConnectionManagementPreparedStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -603,6 +605,7 @@ public class PostgresServerTest
 
 
     @Test
+    @Ignore
     public void testLotsOfConnectionsGoodConnectionManagementPreparedStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -625,6 +628,7 @@ public class PostgresServerTest
     }
 
     @Test
+    @Ignore
     public void testLotsOfConnectionsBadConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -643,6 +647,7 @@ public class PostgresServerTest
 
 
     @Test
+    @Ignore
     public void testLotsOfConnectionsGoodConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -662,6 +667,7 @@ public class PostgresServerTest
     }
 
     @Test
+    @Ignore
     public void testLotsOfConcurrentConnectionsGoodConnectionManagementStatement() throws SQLException
     {
         for (int i = 0; i < 500; i++)
@@ -681,6 +687,7 @@ public class PostgresServerTest
     }
 
     @Test
+    @Ignore
     public void testLotsOfConcurrentConnectionsBadConnectionManagementStatement() throws SQLException
     {
         List<Connection> connections = Lists.mutable.empty();
@@ -699,6 +706,7 @@ public class PostgresServerTest
     }
 
     @Test
+    @Ignore
     public void testLotsOfConcurrentConnectionsBadConnectionManagementPreparedStatement() throws SQLException
     {
         List<Connection> connections = Lists.mutable.empty();

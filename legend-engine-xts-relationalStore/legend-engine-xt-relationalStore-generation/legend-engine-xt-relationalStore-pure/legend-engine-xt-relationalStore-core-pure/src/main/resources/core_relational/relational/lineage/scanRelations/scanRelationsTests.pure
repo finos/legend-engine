@@ -848,7 +848,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTree = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, $runtime, relationalExtensions());
 
    let expectedTree = 'root\n'+
-                      '  ------> (t) personTable [FIRSTNAME, LASTNAME]\n';
+                      '  ------> (t) personTable [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
    assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 

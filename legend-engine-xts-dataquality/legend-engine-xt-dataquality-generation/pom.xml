@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine-xts-dataquality</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.121.1-SNAPSHOT</version>
+        <version>4.121.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -117,6 +117,13 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
         <!-- LOG -->
+
+        <!-- COMMONS-LANG -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <!-- COMMONS-LANG -->
 
         <!-- TEST -->
         <dependency>

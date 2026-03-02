@@ -198,3 +198,18 @@ function <<test.Test>> meta::external::dataquality::tests::rowsWithColumnDiffers
                 '   2,bt1\n'+                   
                 '#', $rel->toString());
 }
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeTest():Boolean[1]
+{
+  assertEquals(date(2026, 2, 18, 15, 30, 0), %2026-02-18T15:30:15.999->normalizeDateTime());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeFloatTest():Boolean[1]
+{
+  assertEquals(3.14, 3.144->normalizeFloat());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeDecimalTest():Boolean[1]
+{
+  assertEquals(3.14d, 3.144d->normalizeDecimal());
+}

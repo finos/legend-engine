@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.dataquality.api;
+package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.clickhouse;
 
-import org.finos.legend.engine.shared.core.operational.logs.ILoggingEventType;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
 
-public enum DataQualityProfileLoggingEventType implements ILoggingEventType
+public class ClickHouseDriver extends DriverWrapper
 {
-    DATAQUALITY_PROFILE_START,
-    DATAQUALITY_PROFILE_END,
-
-    DATAQUALITY_RULE_SUGGESTION_START,
-    DATAQUALITY_RULE_SUGGESTION_END
+    @Override
+    protected String getClassName()
+    {
+        return "com.clickhouse.jdbc.ClickHouseDriver";
+    }
 }

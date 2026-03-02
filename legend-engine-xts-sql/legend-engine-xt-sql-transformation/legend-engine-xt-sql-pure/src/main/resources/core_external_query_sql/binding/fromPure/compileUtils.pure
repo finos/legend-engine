@@ -104,7 +104,7 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
     importGroup = system::imports::coreImport,
     multiplicity = $multiplicity,
     parametersValues = $parameters
-  );
+  )->evaluateAndDeactivate();
 }
 
 function meta::external::query::sql::transformation::compile::utils::var(name:String[1]):VariableExpression[1]
@@ -170,7 +170,7 @@ function meta::external::query::sql::transformation::compile::utils::iv(value: A
 
 
 
-  ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value);
+  ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value)->evaluateAndDeactivate();
 }
 
 function meta::external::query::sql::transformation::compile::utils::gt(type:Type[1]): GenericType[1]

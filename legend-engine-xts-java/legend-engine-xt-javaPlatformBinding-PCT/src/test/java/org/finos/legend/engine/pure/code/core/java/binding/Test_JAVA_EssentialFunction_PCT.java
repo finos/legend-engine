@@ -106,9 +106,11 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
 
             // Exp
             one("meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::exp::testNumberExpLowPrecision_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Log
             one("meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::log::testNumberLogLowPrecision_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Log10
             one("meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),

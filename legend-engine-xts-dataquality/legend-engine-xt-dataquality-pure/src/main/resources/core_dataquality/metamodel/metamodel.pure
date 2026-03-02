@@ -2,8 +2,8 @@ import meta::pure::metamodel::dataSpace::*;
 import meta::pure::graphFetch::*;
 import meta::pure::metamodel::constraint::*;
 import meta::core::runtime::*;
-
-
+import meta::external::dataquality::*;
+import meta::pure::metamodel::relation::*;
 
 Class meta::external::dataquality::DataQualityRootGraphFetchTree<T> extends RootGraphFetchTree<T>
 [
@@ -21,8 +21,8 @@ Class meta::external::dataquality::DataQualityPropertyGraphFetchTree extends Pro
 
 Class meta::external::dataquality::DataQuality<T> extends PackageableElement
 {
-  context: meta::external::dataquality::DataQualityExecutionContext[1];
-  validationTree: meta::external::dataquality::DataQualityRootGraphFetchTree<T>[1];
+  context: DataQualityExecutionContext[1];
+  validationTree: DataQualityRootGraphFetchTree<T>[1];
   filter : LambdaFunction<{T[1]->Boolean[1]}>[0..1]; //typed params
 }
 
@@ -53,7 +53,7 @@ Class meta::external::dataquality::DataQualityRule
 Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement
 {
   query: LambdaFunction<Any>[1];                                         // should return a relation - enforced in compiler
-  validations: meta::external::dataquality::RelationValidation[*];
+  validations: RelationValidation[*];
 }
 
 Class meta::external::dataquality::RelationValidation
@@ -62,4 +62,21 @@ Class meta::external::dataquality::RelationValidation
   description: String[0..1];
   assertion: LambdaFunction<Any>[1];
   type: String[0..1];
+}
+
+Class meta::external::dataquality::datarecon::DataQualityReconInput
+[
+  sourceMustEndWithRuntime: $this.source->isEndingWithFromFunction(),
+  targetMustEndWithRuntime: $this.target->isEndingWithFromFunction(),
+  sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),
+  targetMustReturnRelation: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation)
+]
+{
+  source: LambdaFunction<Any>[1]; //query pointing to source dataset
+  target: LambdaFunction<Any>[1]; //query pointing to target dataset
+  keys: String[*]; //these must exist on both source and target dataset - can either be primary keys or grouping keys if aggregated hash required. If empty then hash column will be used.
+  aggregatedHash: Boolean[1]; //whether aggregated hash should be created based on the keys provided
+  colsForHash: String[*]; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns.
+  sourceHashCol: String[0..1]; //if there already exists a column on source that contains the hash that you want to use in recon
+  targetHashCol: String[0..1]; //if there already exists a column on target that contains the hash that you want to use in recon
 }

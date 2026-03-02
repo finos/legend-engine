@@ -1,0 +1,305 @@
+import meta::relational::metamodel::*;
+import meta::pure::extension::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::clickhouse::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::functions::sqlQueryToString::*;
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::clickhouse::dbExtensionLoaderForClickHouse():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.ClickHouse, loader = createDbExtensionForClickHouse__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::createDbExtensionForClickHouse():DbExtension[1]
+{
+  let reservedWords = clickHouseReservedWords();
+  let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForClickHouse());
+  let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+  let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+    getDynaFunctionToSqlForClickHouse()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+  ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForClickHouse_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForClickHouse(),
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::clickhouse::buildDummyConnection__RelationalDatabaseConnection_1_,
+      dataTypeToSqlText = meta::relational::functions::sqlQueryToString::clickhouse::dataTypeToSqlTextClickHouse_DataType_1__String_1_,
+      pureTypeToDatabaseTypeConverter = meta::relational::functions::sqlQueryToString::clickhouse::convert_GenericType_1__DataType_1_
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::clickHouseReservedWords():String[*]
+{
+  // ClickHouse keywords are not reserved. https://clickhouse.com/docs/sql-reference/syntax#keywords
+  [];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::getLiteralProcessorsForClickHouse():Map<Type,LiteralProcessor>[1]
+{
+   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
+
+   newMap([
+      pair(String,         ^LiteralProcessor(format = '\'%s\'',      transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
+      pair(Boolean,        ^LiteralProcessor(format = '\'%s\'::Bool',   transform = toString_Any_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = '\'%s\'::Date',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = '\'%s\'::DateTime64', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '\'%s\'::DateTime', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::getDynaFunctionToSqlForClickHouse(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='addDate(%s)', transform={p:String[3] | joinStrings([$p->at(0), constructInterval($p->at(2), $p->at(1))], ', ')})),
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='arrayMax(%s)')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 0, | '[]', | format('arrayMin(%s)', $p->joinStrings(',')))})),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cos(%s)/sin(%s)', transform={p:String[1] | $p->concatenate($p)})),
+    dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
+    dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForClickHouse()})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as Date)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='toDayOfMonth(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dateName(\'weekday\', (%s))')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='toDayOfWeek(%s)')),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='toDayOfYear(%s)')), 
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='base64Decode(%s)')), 
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='base64Encode(%s)')), 
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='toStartOfMonth(%s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='toStartOfQuarter(%s)')),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='toStartOfWeek(%s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='toStartOfYear(%s)')), 
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='toStartOfDay(%s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='toStartOfHour(%s)')), 
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='toStartOfMinute(%s)')), 
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='generateUUIDv4()')), 
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='toHour(%s)')), 
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='position(%s, %s)')), 
+    dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaroWinklerSimilarity(%s, %s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='concatWithSeparator(%s, %s)')),
+    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->concatenate('1')->concatenate($p)->joinStrings(', ')})),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
+    dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')), 
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='cast(match(%s, %s) as Bool)')), 
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='argMax(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(hex(MD5(%s)))')), 
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='argMin(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='toMinute(%s)')), 
+    dynaFnToSql('mode',                   $allStates,            ^ToSql(format='topK(1)(%s)[1]')), // arrays are 1-indexed
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='toMonth(%s)')), 
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='monthName(%s)')), 
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='toMonth(%s)')), 
+    dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='toBool(%s)')),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimalForClickHouse()})),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as Float32)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as Int32)')),
+    dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[4] | $p->transformPercentileForClickHouse()})),
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='range(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='toSecond(%s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(hex(SHA1(%s)))')), 
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(SHA256(%s)))')), 
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='splitByString(%s, %s)[%s]', transform={p:String[*] | $p->at(1)->concatenate($p->at(0))->concatenate($p->at(2))})),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->transformSubstringForClickHouse()})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevPop', $p)})),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevSamp', $p)})),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='cast(toStartOfInterval(%s) as DateTime64)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
+    dynaFnToSql('tanh',                   $allStates,            ^ToSql(format='(2 / (1.0 + exp(-2 * %s)) - 1)')), // ClickHouse tanh function does not provide high enough precision otherwise https://github.com/ClickHouse/ClickHouse/blob/c369d2171df2b4a27dd2adcfddd976129edc108f/src/Functions/tanh.cpp#L32C12-L32C40
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='today()')), 
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='toDecimal128(%s, 10)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='toFloat64(%s)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as String)')),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='array(%s)', transform={p:String[*] | if($p->size() == 0, | '', | $p->joinStrings(','))})),
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->last() == '\'true\'::Bool', | transformWithArrayReduceForClickHouse('varSamp', $p->init()), |transformWithArrayReduceForClickHouse('varPop', $p->init()))})),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varPop', $p)})),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varSamp', $p)})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='toISOWeek(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]
+{
+  if ($params->size() == 1,
+  | $funcName + '('+$params->toOne()+')',
+  | 'arrayReduce(\'' + $funcName + '\', '+$params->joinStrings('[',',',']')+')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSelectSQLQueryForClickHouse(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForClickHouse($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSelectSQLQueryForClickHouse(s:SelectSQLQuery[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  assertEmpty($s.pivot, 'pivot is not supported for ClickHouse');
+
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForClickHouse_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSliceOrDropForClickHouse(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
+{
+  $format.separator + if ($size == -1, | '', | ' limit %s '->format($size)) + 'offset %s'->format($s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions));
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::getDDLCommandsTranslatorForClickHouse(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForClickHouse_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                dropSchema =  translateDropSchemaStatementForClickHouse_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                createTable = translateCreateTableStatementForClickHouse_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableForClickHouse_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::translateCreateSchemaStatementForClickHouse(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if ($createSchemaSQL.schema.name == 'default',
+    | [],
+    | 'Create database if not exists ' + $createSchemaSQL.schema.name + ';';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::translateDropSchemaStatementForClickHouse(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+  if ($dropSchemaSQL.schema.name == 'default',
+    |  [],
+    | 'Drop database if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
+}
+
+function meta::relational::functions::sqlQueryToString::clickhouse::translateCreateTableStatementForClickHouse(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t= $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  dataTypeToSqlTextClickHouse($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+        ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+      + ')'
+      + ' ENGINE = MergeTree'
+      + ' ORDER BY tuple()';
+}
+
+function meta::relational::functions::sqlQueryToString::clickhouse::loadValuesToDbTableForClickHouse(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+   if ($loadTableSQL.parsedData.values->isEmpty(),
+    | [],
+    |
+      let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values';
+
+      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->meta::relational::functions::sqlQueryToString::clickhouse::convertValuesToCsvForClickHouse($loadTableSQL.columnsToLoad.type) + ')')
+        ->joinStrings($sql, ', ', ';');
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::convertValuesToCsvForClickHouse(strs : String[*], types : Any[*]): String[1]
+{
+  range($types->size())->map(x |
+    let literalStr = $strs->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x));
+    $types->at($x)->match([
+      d:Date[1] |  '\'' + if($strs->at($x)->contains('T'), | $strs->at($x)->replace('T', ' '), | $strs->at($x)) + '\'',
+      t:meta::relational::metamodel::datatype::Timestamp[1] | 'toDateTime64(\'' + if($strs->at($x)->contains('T'), | $strs->at($x)->replace('T', ' '), | $strs->at($x)) + '\', 3)',
+      a:Any[1] | $literalStr
+    ]);)->makeString(', ');
+}
+
+function meta::relational::functions::sqlQueryToString::clickhouse::constructInterval(unit:String[1], i:String[1]):String[1]
+{
+  let unitWithoutQuotes = $unit->removeQuotesIfExist();
+  let interval = $unit->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType();
+
+  format('INTERVAL %s %s', [$i, $interval]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformDateConstructionForClickHouse(params:String[*]):String[1]
+{
+  let paramsSize = $params->size();
+   assert($paramsSize != 3 || $paramsSize != 6,'Incorrect number of parameters for date construction! The correct usage is either date(<year>, <month>, <day>) or date(<year>, <month>, <day>, <hour>, <minute>, <second>)');
+   if ($paramsSize == 3,
+      |'makeDate(' + $params->joinStrings(',') + ')',
+      |let secondParam = $params->at(5)->parseDecimal();
+       let second = $secondParam->floor();
+       let nanoseconds = ($secondParam - $second) * 1000000000;
+       'makeDateTime64(' + $params->take(5)->joinStrings(',') + ',' + $second->toString() + ',' + $nanoseconds->toString() + ')';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformSubstringForClickHouse(params:String[*]):String[1]
+{
+  let paramsSize = $params->size();
+  let start = ($params->at(1)->parseInteger() + 1)->toString();
+  if ($paramsSize == 2,
+  | [$params->at(0), $start]->joinStrings(', '),
+  | let length = ($params->at(2)->parseInteger() - $params->at(1)->parseInteger())->toString();
+    [$params->at(0), $start, $length]->joinStrings(', '););
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformPercentileForClickHouse(params:String[*]):String[1]
+{
+   let trueVal  = '\'true\'::Bool';
+   let falseVal = '\'false\'::Bool';
+
+   let column     = $params->at(0);
+   let percentile = $params->at(1);
+   let ascending  = if($params->size() > 2, | $params->at(2), | $trueVal);
+   let continuous = if($params->size() > 3, | $params->at(3), | $trueVal);
+
+   assert($ascending->in([$trueVal, $falseVal]), 'Ascending argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $ascending);
+   assert($continuous->in([$trueVal, $falseVal]), 'Continuous argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $continuous);
+
+   let func  = if($continuous == $trueVal, | 'quantile', | 'quantileExact');
+   let order = if($ascending == $trueVal, | 'asc', | 'desc');
+
+   $func + '(' + $percentile + ')(' + $column + ')';
+}
+
+function meta::relational::functions::sqlQueryToString::clickhouse::transformParseDecimalForClickHouse(params:String[*]):String[1]
+{
+  if ($params->size() == 1,
+        |format('cast(%s as Decimal)', [$params->at(0)]);,
+        |format('cast(%s as Decimal(%s,%s))', [$params->at(0),$params->at(1),$params->at(2)]);
+      );
+}

@@ -108,6 +108,20 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
   $rel->filter(row | !eval($col,$row)->toOne()->matches($pattern));
 }
 
+function meta::external::dataquality::normalizeDateTime(value:DateTime[1]):DateTime[1]
+{
+  date($value->year(), $value->monthNumber(), $value->dayOfMonth(), $value->hour(), $value->minute(), 0);
+}
+
+function meta::external::dataquality::normalizeDecimal(value:Decimal[1]):Decimal[1]
+{
+  $value->round(2);
+}
+
+function meta::external::dataquality::normalizeFloat(value:Float[1]):Float[1]
+{
+  $value->round(2);
+}
 
 function <<PCT.test>> meta::external::dataquality::testRelationNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {

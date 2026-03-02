@@ -9,7 +9,10 @@ Database meta::external::dataquality::tests::domain::db
     AGE INTEGER,
     ADDRESSID INTEGER,
     FIRMID INTEGER,
-    DOB TIMESTAMP
+    DOB TIMESTAMP NOT NULL,
+    HASH VARCHAR(200),
+    CODE FLOAT NOT NULL,
+    COUPOUN DECIMAL(4, 4) NOT NULL
   )
   Table addressTable
   (

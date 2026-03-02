@@ -213,6 +213,21 @@ function meta::relational::tests::mapping::inheritance::createTablesAndFillDb():
    executeInDb('insert into CombustionCharacteristics (id, idealCompression) values (1, 100);', $connection);
    executeInDb('insert into CombustionCharacteristics (id, idealCompression) values (2, 120);', $connection);
 
+   executeInDb('Drop table if exists Holdable;', $connection);
+   executeInDb('Create Table Holdable (id INT);', $connection);
+   executeInDb('insert into Holdable (id) values (1);', $connection);
+   executeInDb('insert into Holdable (id) values (2);', $connection);
+
+   executeInDb('Drop table if exists CreditCard;', $connection);
+   executeInDb('Create Table CreditCard (CC_ID INT, business_date DATE);', $connection);
+   executeInDb('insert into CreditCard (CC_ID, business_date) values (1, \'2018-02-28\');', $connection);
+   executeInDb('insert into CreditCard (CC_ID, business_date) values (2, \'2018-02-28\');', $connection);
+
+   executeInDb('Drop table if exists Organization;', $connection);
+   executeInDb('Create Table Organization (Org_ID INT, business_date DATE);', $connection);
+   executeInDb('insert into Organization (Org_ID, business_date) values (1, \'2018-02-28\');', $connection);
+   executeInDb('insert into Organization (Org_ID, business_date) values (2, \'2018-02-28\');', $connection);
+
    true;
 }
 
@@ -270,6 +285,33 @@ Database meta::relational::tests::mapping::inheritance::myDB
         name VARCHAR(200)
     )
 
+    Table Holdable
+    (
+      ID INT PRIMARY KEY
+    )
+
+    Table CreditCard
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = business_date)
+      )
+
+      business_date DATE PRIMARY KEY,
+      CC_ID VARCHAR(64) PRIMARY KEY
+    )
+
+    Table Organization
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = business_date)
+      )
+
+      business_date DATE PRIMARY KEY,
+      Org_ID VARCHAR(64) PRIMARY KEY
+    )
+
     Join CarOwner(Car.ID = Owner.VEHICLE_ID)
     Join BicycleOwner(Bicycle.ID = Owner.VEHICLE_ID)
     Join PersonCar(Person.ID = Car.c_PersonID)
@@ -277,6 +319,9 @@ Database meta::relational::tests::mapping::inheritance::myDB
     Join AirlineCar(Airline.ID = Car.c_PersonID)
     Join AirlineBicycle(Airline.ID = Bicycle.b_PersonID)
     Join UnleadedCombustionCharacteristics(Unleaded.combustionId = CombustionCharacteristics.ID)
+    Join PersonHoldable(Person.ID = Holdable.ID)
+    Join CreditCard_Org(Organization.Org_ID = CreditCard.CC_ID)
+    Join Car_Org(Car.ID = Organization.Org_ID)
 )
 
 ###Relational

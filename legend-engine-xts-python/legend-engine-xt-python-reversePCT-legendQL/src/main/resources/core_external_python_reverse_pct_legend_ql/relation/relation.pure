@@ -1992,9 +1992,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                 '7,C,4\n'+
                 '8,A,2\n'+
                 '9,C,3\n'+
-                '10,D,1}#->meta::pure::functions::relation::rename(~colOneNum, ~_col_one_num)->meta::pure::functions::relation::rename(~Col_two_letter, ~colTwoLetter)->meta::pure::functions::relation::rename(~_col_3Mix, ~Col_3mix)->meta::pure::functions::relation::filter(x: (_col_one_num:Integer[0..1], colTwoLetter:String[0..1], Col_3mix:Integer[0..1])[1]|(($x._col_one_num > 2) && ($x.colTwoLetter == \'C\')) && ($x.Col_3mix == 3))',
+                '10,D,1}#->meta::pure::functions::relation::rename(~colOneNum, ~_col_one_num)->meta::pure::functions::relation::rename(~Col_two_letter, ~colTwoLetter)->meta::pure::functions::relation::rename(~_col_3Mix, ~Col_3mix)->meta::pure::functions::relation::rename(~Col_3mix, ~Col_3mix_)->meta::pure::functions::relation::rename(~Col_3mix_, ~_Col_3mix_)->meta::pure::functions::relation::filter(x: (_col_one_num:Integer[0..1], colTwoLetter:String[0..1], _Col_3mix_:Integer[0..1])[1]|(($x._col_one_num > 2) && ($x.colTwoLetter == \'C\')) && ($x._Col_3mix_ == 3))',
             '(lambda frame:' +
-            '  frame.rename(lambda r : (r.colOneNum , \'_col_one_num\')).rename(lambda r : (r.Col_two_letter , \'colTwoLetter\')).rename(lambda r : (r._col_3Mix , \'Col_3mix\')).filter((lambda x: ((x._col_one_num > 2) & (x.colTwoLetter == "C") & (x.Col_3mix == 3))))' +
+            '  frame.rename(lambda r : (r.colOneNum , \'_col_one_num\')).rename(lambda r : (r.Col_two_letter , \'colTwoLetter\')).rename(lambda r : (r._col_3Mix , \'Col_3mix\')).rename(lambda r : (r.Col_3mix , \'Col_3mix_\')).rename(lambda r : (r.Col_3mix_ , \'_Col_3mix_\')).filter((lambda x: ((x._col_one_num > 2) & (x.colTwoLetter == "C") & (x._Col_3mix_ == 3))))' +
             ')(csv_frame("colOneNum,Col_two_letter,_col_3Mix\\n1,A,1\\n2,A,1\\n3,B,2\\n4,D,3\\n5,B,2\\n6,A,1\\n7,C,4\\n8,A,2\\n9,C,3\\n10,D,1"))')
         ]
       ),

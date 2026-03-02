@@ -27,9 +27,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -95,7 +97,7 @@ public class TestDataQualityLambdaGenerator
                 "    ];\n" +
                 "}";
 
-        assertLambdaGeneration(validation, "validFirstName");
+        assertLambdaGeneration(validation, "validFirstName", "test");
     }
 
     @Test
@@ -115,7 +117,47 @@ public class TestDataQualityLambdaGenerator
                 "    ];\n" +
                 "}";
 
-        assertLambdaGeneration(validation, "nonEmptyDataset");
+        assertLambdaGeneration(validation, "nonEmptyDataset", "test");
+    }
+
+    @Test
+    public void testLambdaGeneration_relationValidation_noFromAndQueryType()
+    {
+        String validation = "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::dataquality::Validation\n" +
+                "{\n" +
+                "    query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());\n" +
+                "    validations: [\n" +
+                "       {" +
+                "        name: 'nonEmptyDataset';" +
+                "        description: 'dataset should NOT be empty';" +
+                "        assertion: rel| $rel->assertRelationNotEmpty();" +
+                "        type: AGGREGATE;" +
+                "       }\n" +
+                "    ];\n" +
+                "}";
+
+        assertLambdaGeneration(validation, "nonEmptyDataset", null);
+    }
+
+    @Test
+    public void testLambdaGeneration_relationValidation_noFromWithQuery_throwsException()
+    {
+        String validation = "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::dataquality::Validation\n" +
+                "{\n" +
+                "    query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->toOne(), $x.LASTNAME->toOne()]->joinStrings());\n" +
+                "    validations: [\n" +
+                "       {" +
+                "        name: 'nonEmptyDataset';" +
+                "        description: 'dataset should NOT be empty';" +
+                "        assertion: rel| $rel->assertRelationNotEmpty();" +
+                "        type: AGGREGATE;" +
+                "       }\n" +
+                "    ];\n" +
+                "}";
+
+        Assert.assertEquals("The query for the DataQualityRelationValidation 'Validation' does not end with a 'from' so unable to run query.", Assert.assertThrows(EngineException.class, () -> assertLambdaGeneration(validation, "nonEmptyDataset", "run query")).getMessage());
     }
 
     private void assertLambda(String modelString, String expected)
@@ -124,15 +166,9 @@ public class TestDataQualityLambdaGenerator
         JsonAssert.assertJsonEquals(expected, lambdaJson, JsonAssert.when(Option.IGNORING_ARRAY_ORDER));
     }
 
-    private void assertLambda(String modelString, String expected, String validationName)
+    private void assertLambdaGeneration(String modelString, String validationName, String queryType)
     {
-        String lambdaJson = generateLambda(modelString, validationName);
-        JsonAssert.assertJsonEquals(expected, lambdaJson, JsonAssert.when(Option.IGNORING_ARRAY_ORDER));
-    }
-
-    private void assertLambdaGeneration(String modelString, String validationName)
-    {
-        assertNotNull(generateLambdaDefinition(modelString, validationName));
+        assertNotNull(generateLambdaDefinition(modelString, validationName, queryType));
     }
 
     private void assertLambdaException(String modelString, String exception)
@@ -145,24 +181,15 @@ public class TestDataQualityLambdaGenerator
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null, false, null, true);
+        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null, false, null, true, "test");
         return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
     }
 
-    private String generateLambda(String modelString, String validationName)
+    private LambdaFunction generateLambdaDefinition(String modelString, String validationName, String queryType)
     {
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
-        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true);
-        return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
-    }
-
-    private LambdaFunction generateLambdaDefinition(String modelString, String validationName)
-    {
-        PureModelContextData modelData = loadWithModel(modelString);
-        PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
-        return DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true);
+        return DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true, queryType);
     }
 
     private static PureModelContextData loadWithModel(String code)
