@@ -117,6 +117,7 @@ function meta::pure::metamodel::serialization::grammar::printValueSpecification(
                     d:Decimal[1] | $d->toRepresentation(),
                     f:Float[1] | $f->toRepresentation(),
                     s:String[1] | $s->toRepresentation(),
+                    b:Boolean[1] | $b->toRepresentation(),
                     a:Any[1] | 'UNKNOWN: ' + $a->type()->toOne()->id()
                 ]
              );
@@ -208,7 +209,8 @@ function <<access.private>> meta::pure::metamodel::serialization::grammar::speci
       pair('times', '*'),
       pair('divide', '/'),
       pair('and', '&&'),
-      pair('or', '||')
+      pair('or', '||'),
+      pair('not', '!')
    ]->newMap()
 }
 
@@ -279,18 +281,19 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
           pair(|$name == 'colSpecArray' || $name == 'colSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->map(z|$z->toString()->printColName())->joinStrings(',')+']'),
           pair(|$name == 'aggColSpecArray' || $name == 'aggColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $context))->joinStrings(',')+']'),
           pair(|$name == 'funcColSpecArray' || $name == 'funcColSpecArray2', | '~['+$functionExpression.parametersValues->at(0)->cast(@InstanceValue).values->cast(@FunctionExpression)->map(z|printColSpec($z, $configuration, $context))->joinStrings(',')+']'),
-          pair(|!$special->get($name)->isEmpty(),|let vals = if ($name->in(['plus', 'minus', 'times']),
+          pair(|!$special->get($name)->isEmpty(),|let vals = if ($name->in(['plus', 'minus', 'times', 'and', 'or']),
                                                                   |$functionExpression.parametersValues->match([
-                                                                    i:InstanceValue[1] | $i.values,
-                                                                    v:ValueSpecification[1] | $v
+                                                                    i:InstanceValue[*] | $i.values,
+                                                                    v:ValueSpecification[*] | $v
                                                                   ]),
                                                                   |$functionExpression.parametersValues
                                                              );
                                                   if ([
                                                         pair(|$name == 'divide' && $vals->size() == 3, | $name + $functionExpression.parametersValues->map(vs | printValueSpecification($vs, $configuration, $context))->joinStrings('(', ', ', ')')),
                                                         pair(|$name == 'minus' && $vals->size() == 1, | $special->get($name)->toOne() + mayWrapInParenthesis($functionExpression.parametersValues->at(0), $configuration, $context)),
+                                                        pair(|$name == 'not', | $special->get($name)->toOne() + $vals->at(0)->printValueSpecification($configuration, $context)),
                                                         pair(|$vals->size() == 1 && $vals->at(0)->instanceOf(VariableExpression), | $functionExpression.parametersValues->at(0)->printValueSpecification($configuration, $context)+'->'+$name+'()'),
-                                                        pair(|$name->in(['and', 'or']) && $vals->size() == 1, |$name + $vals->at(0)->mayWrapInParenthesis($configuration, $context)),
+                                                        pair(|$name->in(['and', 'or']) && $vals->size() == 1, |$name + '(' + $vals->at(0)->printValueSpecification($configuration, $context) + ')'),
                                                         pair(|$vals->size() > 1, |mayWrapInParenthesis($vals->at(0), $configuration, $context) + ' ' + $vals->tail()->map(x|$special->get($name)->toOne() + ' ' + mayWrapInParenthesis($x, $configuration, $context))->joinStrings(' '))
                                                       ],
                                                       |$special->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($configuration, $context)+')'
