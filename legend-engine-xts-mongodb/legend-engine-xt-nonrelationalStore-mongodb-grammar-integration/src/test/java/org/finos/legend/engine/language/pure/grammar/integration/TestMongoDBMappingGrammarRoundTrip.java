@@ -32,4 +32,18 @@ public class TestMongoDBMappingGrammarRoundTrip extends TestGrammarRoundtrip.Tes
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testMongoDBMappingWithQuotedCollectionNameGrammar()
+    {
+        test("###Mapping\n" +
+                "Mapping mongo::test::mapping::QuotedCollectionMapping\n" +
+                "(\n" +
+                "  *meta::external::mongo::mapping[id1]: MongoDB\n" +
+                "  {\n" +
+                "    ~mainCollection [mongo::test::db] 'person-records'\n" +
+                "    ~binding mongo::test::binding::PersonBinding\n" +
+                "  }\n" +
+                ")\n");
+    }
 }
