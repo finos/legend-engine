@@ -1272,23 +1272,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') < $row.getInteger('count(Float)'), | 1, | 0), 'multiArg2')
           ])
           ->restrict(['Integer', 'sum', 'count', 'multiArg', 'multiArg2'])
-        }, true, false)
+        }, true, false),
 
-        //TODO x|$x does not compile
-        // c({|FlatInput.all()
-        //   ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-        //   ->groupBy(~[Integer], 
-        //     ~[sum : x|$x.Integer : y|$y->sum(), 
-        //       count : x|$x : y|$y->count(), 
-        //       'sum(Integer)' : x|$x.Integer : y|$y->sum(), 
-        //       'sum(Float)' : x|$x.Float : y|$y->sum(), 
-        //       'count(Float)' : x|$x.Float : y|$y->count()]
-        //   )
-        //   ->extend(~[
-        //     multiArg : x|if($x.'sum(Integer)' > $x.'sum(Float)', |1, |0), 
-        //     multiArg2 : x|if($x.'sum(Integer)' < $x.'count(Float)', |1, |0)])
-        //   ->select(~[Integer, sum, count, multiArg, multiArg2])
-        //   }, true, false)
+        c({|FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->groupBy(~[Integer], 
+            ~[sum : x|$x.Integer : y|$y->sum(), 
+              count : x|$x : y|$y->count(), 
+              'sum(Integer)' : x|$x.Integer : y|$y->sum(), 
+              'sum(Float)' : x|$x.Float : y|$y->sum(), 
+              'count(Float)' : x|$x.Float : y|$y->count()]
+          )
+          ->extend(~[
+            multiArg : x|if($x.'sum(Integer)' > $x.'sum(Float)', |1, |0), 
+            multiArg2 : x|if($x.'sum(Integer)' < $x.'count(Float)', |1, |0)])
+          ->select(~[Integer, sum, count, multiArg, multiArg2])
+          }, true, false)
     ]
   )
 }
@@ -1374,22 +1373,21 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             pair('String_1', 'String'),
             pair('Float_1', 'Float')
           ])
-        }, true, false)
+        }, true, false),
 
-        //TODO multiplicity needs fixing on the Column in the compiler
-        // c({|FlatInput.all()
-        //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-        //       ->extend(~[
-        //           String_1 : x|'abc', 
-        //           Float_1 : x|$x.Float->toString(), 
-        //           'Original Float' : x|$x.Float])
-        //       ->groupBy(~[String_1, Float_1, 'Original Float'], 
-        //           ~[
-        //             Count : x|$x.Integer : y|$y->count(), 
-        //             'Float Count' : x|$x.Float : y|$y->count()])
-        //       ->select(~[Count, 'Float Count', String_1, Float_1, 'Original Float'])
-        //       ->rename(~String_1, ~String)
-        //       ->rename(~Float_1, ~Float)}, true, false)  
+        c({|FlatInput.all()
+              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+              ->extend(~[
+                  String_1 : x|'abc', 
+                  Float_1 : x|$x.Float->toString(), 
+                  'Original Float' : x|$x.Float])
+              ->groupBy(~[String_1, Float_1, 'Original Float'], 
+                  ~[
+                    Count : x|$x.Integer : y|$y->count(), 
+                    'Float Count' : x|$x.Float : y|$y->count()])
+              ->select(~[Count, 'Float Count', String_1, Float_1, 'Original Float'])
+              ->rename(~String_1, ~String)
+              ->rename(~Float_1, ~Float)}, true, false)  
     ]
   )
 }
@@ -1438,18 +1436,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ])->filter(row | ($row.getInteger('count') > 0) && ($row.getInteger('count(1)') > 0) && (floor($row.getInteger('max(Integer)')) > 0))
             ->restrict(['count', 'max(Integer)'])
 
-        }, true, false)
+        }, true, false),
 
-
-      //TODO multiplicity needs fixing on the Column in the compiler - floor
-      // c({|FlatInput.all()
-      //   ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //   ->groupBy(~[String], 
-      //       ~[count : x|$x.Integer : y|$y->count(), 
-      //       'max(Integer)' : x|$x.Integer : y|$y->max(), 
-      //       'count(1)' : x|1 : y|$y->count()])
-      //   ->filter(x|(($x.count > 0) && ($x.'count(1)' > 0)) && ($x.'max(Integer)'->floor() > 0))
-      //   ->select(~[count, 'max(Integer)'])}, true, false)    
+      c({|FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->groupBy(~[String], 
+            ~[count : x|$x.Integer : y|$y->count(), 
+            'max(Integer)' : x|$x.Integer : y|$y->max(), 
+            'count(1)' : x|1 : y|$y->count()])
+        ->filter(x|(($x.count > 0) && ($x.'count(1)' > 0)) && ($x.'max(Integer)'->toOne()->floor() > 0))
+        ->select(~[count, 'max(Integer)'])}, true, false)    
     ]
   )
 }
@@ -1684,12 +1680,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ])
       }
 
-      //TODO multiplicity needs fixing on the Column in the compiler
     //   {|FlatInput.all()
     //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
     //       ->project(
     //           ~[
-    //             constant : x|'2023-01-01'->parseDate(),
+    //             constant : x|'2023-01-01'->parseDate()->cast(@StrictDate),
     //             string : x|$x.String,
     //             text : x|$x.String,
     //             date : x|$x.String->parseDate(),
@@ -1736,17 +1731,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             col(row:TDSRow[1] | parseDate('2023-01-01T10:01:01.12')->cast(@DateTime), 'constantTimestampMillis'),
             col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
           ])
-      }
+      },
 
-      //TODO multiplicity needs fixing on the Column in the compiler
-      // {|FlatInput.all()
-      //           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //           ->project(~[constantDate : x|'2023-01-01'->parseDate(),
-      //                       date : x|$x.String->parseDate(),
-      //                       constantTimestamp : x|'2023-01-01T10:01:01'->parseDate(),
-      //                       constantTimestampMillis : x|'2023-01-01T10:01:01.12'->parseDate(),
-      //                       timestamp : x|$x.String->parseDate()])
-      // }
+      {|FlatInput.all()
+                ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+                ->project(~[constantDate : x|'2023-01-01'->parseDate()->cast(@StrictDate),
+                            date : x|$x.String->parseDate(),
+                            constantTimestamp : x|'2023-01-01T10:01:01'->parseDate()->cast(@DateTime),
+                            constantTimestampMillis : x|'2023-01-01T10:01:01.12'->parseDate()->cast(@DateTime),
+                            timestamp : x|$x.String->parseDate()])
+      }
     ]
   )
 }
@@ -1862,20 +1856,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               col(row:TDSRow[1] | $row.getInteger('Integer') + $row.getFloat('Float'), 'column plus')
             ]
           )
-      }
+      },
 
-      //TODO multiplicity needs fixing on the Column in the compiler
-      // {|FlatInput.all()
-      //   ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //   ->project(~[
-      //         plus : x|1 + 2, 
-      //         minus : x|1 - 2, 
-      //         multiply : x|1 * 2, 
-      //         divide : x|1 / 2, 
-      //         mod : x|1->mod(2), 
-      //         pow : x|1->pow(2), 
-      //         'column plus' : x|$x.Integer + $x.Float])
-      //  }
+      {|FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->project(~[
+              plus : x|1 + 2, 
+              minus : x|1 - 2, 
+              multiply : x|1 * 2, 
+              divide : x|1 / 2, 
+              mod : x|1->mod(2), 
+              pow : x|1->pow(2), 
+              'column plus' : x|$x.Integer + $x.Float])
+       }
     ]
   )
 }
@@ -2596,22 +2589,21 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | firstSecondOfMinute($row.getStrictDate('StrictDate')), 'MINUTE'),
                   col(row:TDSRow[1] | firstMillisecondOfSecond($row.getStrictDate('StrictDate')), 'SECOND')
                 ])
-      }
+      },
 
-      //TODO multiplicity needs fixing on the Column in the compiler
-      // {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-      //   ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //   ->project(~[
-      //       YEAR : x|$x.StrictDate->firstDayOfYear(),
-      //       QUARTER : x|'2023-01-01'->parseDate()->firstDayOfQuarter(),
-      //       MONTH : x|$x.StrictDate->firstDayOfMonth(),
-      //       WEEK : x|$x.StrictDate->firstDayOfWeek(),
-      //       DAY : x|$x.StrictDate->firstHourOfDay(),
-      //       HOUR : x|$x.StrictDate->firstMinuteOfHour(),
-      //       MINUTE : x|$x.StrictDate->firstSecondOfMinute(),
-      //       SECOND : x|$x.StrictDate->firstMillisecondOfSecond()
-      //   ])
-      // }
+      {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->project(~[
+            YEAR : x|$x.StrictDate->firstDayOfYear(),
+            QUARTER : x|'2023-01-01'->parseDate()->cast(@StrictDate)->firstDayOfQuarter(),
+            MONTH : x|$x.StrictDate->firstDayOfMonth(),
+            WEEK : x|$x.StrictDate->firstDayOfWeek(),
+            DAY : x|$x.StrictDate->firstHourOfDay(),
+            HOUR : x|$x.StrictDate->firstMinuteOfHour(),
+            MINUTE : x|$x.StrictDate->firstSecondOfMinute(),
+            SECOND : x|$x.StrictDate->firstMillisecondOfSecond()
+        ])
+      }
     ]
   )
 }
@@ -2645,25 +2637,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | second($row.getStrictDate('StrictDate')), 'SECOND'),
                 col(row:TDSRow[1] | toEpochValue($row.getStrictDate('StrictDate')), 'EPOCH')
               ])
-      }
+      },
 
-      //TODO multiplicity needs fixing on the Column in the compiler
-      // {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-      //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //       ->project(~[
-      //           YEAR : x|$x.StrictDate->year(),
-      //           QUARTER : x|'2023-01-01'->parseDate()->quarterNumber(),
-      //           MONTH : x|$x.StrictDate->monthNumber(),
-      //           WEEK : x|$x.StrictDate->weekOfYear(),
-      //           DOW : x|$x.StrictDate->dayOfWeekNumber(),
-      //           DAY : x|$x.StrictDate->dayOfMonth(),
-      //           DOY : x|$x.StrictDate->dayOfYear(),
-      //           HOUR : x|$x.StrictDate->hour(),
-      //           MINUTE : x|$x.StrictDate->minute(),
-      //           SECOND : x|$x.StrictDate->second(),
-      //           EPOCH : x|$x.StrictDate->toEpochValue()
-      //       ])
-      // }
+      {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+            ->project(~[
+                YEAR : x|$x.StrictDate->year(),
+                QUARTER : x|'2023-01-01'->parseDate()->cast(@StrictDate)->quarterNumber(),
+                MONTH : x|$x.StrictDate->monthNumber(),
+                WEEK : x|$x.StrictDate->weekOfYear(),
+                DOW : x|$x.StrictDate->dayOfWeekNumber(),
+                DAY : x|$x.StrictDate->dayOfMonth(),
+                DOY : x|$x.StrictDate->dayOfYear(),
+                HOUR : x|$x.StrictDate->hour(),
+                MINUTE : x|$x.StrictDate->minute(),
+                SECOND : x|$x.StrictDate->second(),
+                EPOCH : x|$x.StrictDate->toEpochValue()
+            ])
+      }
     ]
   )
 }
@@ -2709,29 +2700,28 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01')->cast(@StrictDate), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
                   col(row:TDSRow[1] | dateDiff(parseDate('2023-01-01')->cast(@StrictDate), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
                 ])
-        }
+        },
 
-        //TODO multiplicity needs fixing on the Column in the compiler
-        // {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-        //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-        //       ->project(
-        //           ~[
-        //             INTERVAL_ADD : x|$x.StrictDate->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS),
-        //             INTERVAL_MULTI_ADD : x|$x.StrictDate->adjust(1, DurationUnit.DAYS)->adjust(1, DurationUnit.YEARS)>adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS),
-        //             NUMERIC_ADD : x|$x.StrictDate->adjust(1, DurationUnit.DAYS),
-        //             INTERVAL_TIMES : x|$x.StrictDate->adjust(6 * 1, DurationUnit.YEARS)->adjust(6 * 3, DurationUnit.WEEKS)->adjust(6 * 2, DurationUnit.DAYS),
-        //             INTERVAL_TIMES_NULL : x|[]->cast(@StrictDate),
-        //             INTERVAL_ADD_NULL : x|[]->cast(@StrictDate),
-        //             INTERVAL_MIX : x|'2023-01-01'->parseDate()->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS),
-        //             INTERVAL_MIX2 : x|$x.StrictDate->adjust($x.StrictDate->year() * 2, DurationUnit.YEARS)->adjust($x.StrictDate->year() * 3, DurationUnit.DAYS),
-        //             INTERVAL_MIX3 : x|$x.StrictDate->firstHourOfDay()->adjust($x.StrictDate->dayOfWeekNumber() * 1, DurationUnit.DAYS),
-        //             DATE_SUBTRACT : x|$x.StrictDate->dateDiff($x.DateTime, DurationUnit.DAYS),
-        //             INTERVAL_SUBTRACT : x|$x.StrictDate->adjust(-1, DurationUnit.DAYS),
-        //             STRING_SUBSTRACT : x|$x.StrictDate->dateDiff('2023-01-01'->parseDate(), DurationUnit.DAYS),
-        //             STRING_SUBSTRACT2 : x|'2023-01-01'->parseDate()->dateDiff($x.StrictDate, DurationUnit.DAYS)
-        //           ]
-        //       )
-        //   }
+        {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+              ->project(
+                  ~[
+                    INTERVAL_ADD : x|$x.StrictDate->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS),
+                    INTERVAL_MULTI_ADD : x|$x.StrictDate->adjust(1, DurationUnit.DAYS)->adjust(1, DurationUnit.YEARS)->adjust(3, DurationUnit.WEEKS)->adjust(2, DurationUnit.DAYS),
+                    NUMERIC_ADD : x|$x.StrictDate->adjust(1, DurationUnit.DAYS),
+                    INTERVAL_TIMES : x|$x.StrictDate->adjust(6 * 1, DurationUnit.YEARS)->adjust(6 * 3, DurationUnit.WEEKS)->adjust(6 * 2, DurationUnit.DAYS),
+                    INTERVAL_TIMES_NULL : x|[]->cast(@StrictDate),
+                    INTERVAL_ADD_NULL : x|[]->cast(@StrictDate),
+                    INTERVAL_MIX : x|'2023-01-01'->parseDate()->cast(@StrictDate)->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS),
+                    INTERVAL_MIX2 : x|$x.StrictDate->adjust($x.StrictDate->year() * 2, DurationUnit.YEARS)->adjust($x.StrictDate->year() * 3, DurationUnit.DAYS),
+                    INTERVAL_MIX3 : x|$x.StrictDate->firstHourOfDay()->adjust($x.StrictDate->dayOfWeekNumber() * 1, DurationUnit.DAYS),
+                    DATE_SUBTRACT : x|$x.StrictDate->dateDiff($x.DateTime, DurationUnit.DAYS),
+                    INTERVAL_SUBTRACT : x|$x.StrictDate->adjust(-1, DurationUnit.DAYS),
+                    STRING_SUBSTRACT : x|$x.StrictDate->dateDiff('2023-01-01'->parseDate()->cast(@StrictDate), DurationUnit.DAYS),
+                    STRING_SUBSTRACT2 : x|'2023-01-01'->parseDate()->cast(@StrictDate)->dateDiff($x.StrictDate, DurationUnit.DAYS)
+                  ]
+              )
+          }
       ]
   )
 }
@@ -3032,7 +3022,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | if ($row.getInteger('Integer') > 0, | floor($row.getInteger('Integer')), | ceiling($row.getInteger('Integer'))), 'TRUNC')
                 ])
         }
-        //TODO multiplicity needs fixing on the Column in the compiler
+        
       //   {|FlatInput.all()
       //     ->project(~[Boolean : x|$x.booleanIn,
       //                 Integer : x|$x.integerIn,
@@ -3173,16 +3163,15 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | greatest([$row.getInteger('Integer'), 1]), 'GREATEST'),
                   col(row:TDSRow[1] | least([$row.getInteger('Integer'), 1]), 'LEAST')
                 ])
-      }
+      },
 
-       //TODO multiplicity needs fixing on the Column in the compiler
-      // {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-      //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-      //       ->project(~[
-      //           COALESCE : x|[$x.Integer,1]->meta::pure::tds::extensions::firstNotNull(),
-      //           GREATEST : x|[$x.Integer,1]->greatest(),
-      //           LEAST : x|[$x.Integer,1]->least()])
-      // }
+      {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+            ->project(~[
+                COALESCE : x|[$x.Integer,1]->meta::pure::tds::extensions::firstNotNull(),
+                GREATEST : x|[$x.Integer,1]->greatest(),
+                LEAST : x|[$x.Integer,1]->least()])
+      }
     ]
   )
 }
@@ -3390,24 +3379,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
               ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
               ->restrict(['String', 'ABS', 'ROW', 'DENSE RANK', 'RANK'])
-        }, true, false)
+        }, true, false),
 
-     //TODO multiplicity needs fixing on the Column in the compiler
-      // c({|
-      //     FlatInput.all()
-      //         ->project(
-      //           ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
-      //         )
-      //         ->extend(~[
-      //           ABS: x|abs($x.Integer),
-      //           'upper(String)': x|toUpper($x.String),
-      //           'EXTRACT(\'year\' FROM StrictDate) + 10': x | year($x.StrictDate) + 10
-      //         ])
-      //         ->extend(over(~['upper(String)'], [ascending(~'EXTRACT(\'year\' FROM StrictDate) + 10')]), ~[ROW:{p,w,r| $p->rowNumber($r)}])
-      //         ->extend(over(~[String], [~Integer->descending()]), ~['DENSE RANK':{p,w,r| $p->denseRank($w, $r)}])
-      //         ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
-      //         ->select(~[string, ABS, ROW, 'DENSE RANK', RANK])
-      //   }, true, false)
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )
+              ->extend(~[
+                ABS: x|abs($x.Integer),
+                'upper(String)': x|toUpper($x.String),
+                'EXTRACT(\'year\' FROM StrictDate) + 10': x | year($x.StrictDate) + 10
+              ])
+              ->extend(over(~['upper(String)'], [ascending(~'EXTRACT(\'year\' FROM StrictDate) + 10')]), ~[ROW:{p,w,r| $p->rowNumber($r)}])
+              ->extend(over(~[String], [~Integer->descending()]), ~['DENSE RANK':{p,w,r| $p->denseRank($w, $r)}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
+              ->select(~[String, ABS, ROW, 'DENSE RANK', RANK])
+        }, true, false)
     ]
   )
 }
@@ -3531,18 +3519,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | matches($row.getString('String'), 'b'), 'REGEX_MATCHES'),
                   col(row:TDSRow[1] | not(matches($row.getString('String'), 'b')), 'REGEX_NOT_MATCHES')
                 ])
-      }
+      },
 
-      //TODO - relation multiplicity compile issue
-      // {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
-      //       ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-      //       ->project(~[
-      //             LIKE : x|$x.String == 'b',
-      //               NOT_LIKE : x|!($x.String == 'b'),
-      //               REGEX_MATCHES : x|$x.String->matches('b'),
-      //               REGEX_NOT_MATCHES : x|!($x.String->matches('b'))
-      //       ])
-      // }
+      {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+            ->project(~[
+                  LIKE : x|$x.String == 'b',
+                    NOT_LIKE : x|!($x.String == 'b'),
+                    REGEX_MATCHES : x|$x.String->matches('b'),
+                    REGEX_NOT_MATCHES : x|!($x.String->matches('b'))
+            ])
+      }
     ]
   )
 }
@@ -3881,10 +3868,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
     [
       c({|let myCTE = #TDS
-              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
-              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
-              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
-              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col, object_col_array
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}", "{"hello": {"world": [1]}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}", "{"hello": {"world": [2]}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}", "{"hello": {"world": [3]}}"
             #;
             $myCTE->select(~[id]);}, true, false, serviceToSource(Service7Relation()))    
     ], true
@@ -4085,10 +4072,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     [
       c({| 
           #TDS
-              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
-              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}"
-              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}"
-              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}"
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col, object_col_array
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}", "{"hello": {"world": [1]}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}", "{"hello": {"world": [2]}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}", "{"hello": {"world": [3]}}"
             #->project(~[
                   object_nav: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@String),
                   object_nav_cast: x | $x.object_col->toOne()->meta::pure::functions::variant::convert::fromJson()->get('hello')->get('world')->to(@Integer),
@@ -4104,37 +4091,37 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testJSON():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJSON():Boolean[1]
 {
   test(
     'select ' + 
     'cast(int_array as jsonb) -> 1 as "ARRAY_EXTRACT_JB", ' + 
     'cast(int_array as json) -> 1 as "ARRAY_EXTRACT_J", ' + 
-    'cast(object_col as json) -> \'hello\' -> \'world\' -> 0 as "PATH_ARRAY_EXTRACT", ' + 
-    'cast(object_col as jsonb) #> \'{hello, world, 0}\' as "PATH_EXTRACT", ' + 
-    'cast(object_col as jsonb) #>> \'{hello, world, 0}\' as "PATH_EXTRACT_TEXT" ' +     
+    'cast(object_col_array as json) -> \'hello\' -> \'world\' -> 0 as "PATH_ARRAY_EXTRACT", ' + 
+    'cast(object_col_array as jsonb) #> \'{hello, world, 0}\' as "PATH_EXTRACT", ' + 
+    'cast(object_col_array as jsonb) #>> \'{hello, world, 0}\' as "PATH_EXTRACT_TEXT" ' +     
     'from service."/service/service7"',
 
     [
       c({| 
           #TDS
-                  id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col
-                  1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": [1]}}"
-                  2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": [2]}}"
-                  3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": [3]}}"
+                  id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col, object_col_array
+                  1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}", "{"hello": {"world": [1]}}"
+                  2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}", "{"hello": {"world": [2]}}"
+                  3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}", "{"hello": {"world": [3]}}"
                 #->project(~[
                             ARRAY_EXTRACT_JB: x | $x.int_array->toOne()->fromJson()->get(1),
                             ARRAY_EXTRACT_J: x  | $x.int_array->toOne()->fromJson()->get(1),
-                            PATH_ARRAY_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
-                            PATH_EXTRACT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0),
-                            PATH_EXTRACT_TEXT: x | $x.object_col->toOne()->fromJson()->get('hello')->get('world')->get(0)->to(@String)
+                            PATH_ARRAY_EXTRACT: x | $x.object_col_array->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT: x | $x.object_col_array->toOne()->fromJson()->get('hello')->get('world')->get(0),
+                            PATH_EXTRACT_TEXT: x | $x.object_col_array->toOne()->fromJson()->get('hello')->get('world')->get(0)->to(@String)
                           ])
-      }, true, false)      
+      }, true, false)
     ]
   )
 }
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
 {
   error(
     [
@@ -4146,7 +4133,7 @@ function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure:
 }
 
 
-function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testFailOnclash():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFailOnclash():Boolean[1]
 {
   error(
     [
