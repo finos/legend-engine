@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,14 +15,18 @@
 package org.finos.legend.engine.application.query.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
+import org.finos.legend.engine.shared.mongo.model.StoredAuditInformation;
+import org.finos.legend.engine.shared.mongo.model.StoredVersionedAssetContent;
 
 import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Query
+public class ApplicationStoredQuery implements StoredVersionedAssetContent<String>
 {
     public String id;
     public String name;
@@ -31,28 +35,42 @@ public class Query
     public String artifactId;
     public String versionId;
     public String originalVersionId;
-    // keeping this only for backward compatibility - this will not be populated
-    @Deprecated
-    public String mapping;
-    @Deprecated
-    public String runtime;
     public QueryExecutionContext executionContext;
     public String content;
-    public Long lastUpdatedAt;
-    public Long createdAt;
-    public Long lastOpenAt;
-    public Long deletedAt;
-    public Long validUntil;
-    public Integer version;
-
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;
-
     public List<QueryParameterValue> defaultParameterValues;
-
-    // TODO: this is a very simple ownership mechanism
-    // where we only allow a single owner
-    public String owner;
-
     public Map<String, ?> gridConfig;
+    public Long lastOpenAt;
+    public StoredAuditInformation audit;
+
+    @Override
+    public String getId()
+    {
+        return id;
+    }
+
+    @Override
+    public StoredAuditInformation getAudit()
+    {
+        return audit;
+    }
+
+    @Override
+    public void setAudit(StoredAuditInformation audit)
+    {
+        this.audit = audit;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
 }
