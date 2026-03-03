@@ -390,6 +390,20 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       json('json_extract_path_text', Variant, {args, fc, expCtx, ctx |
         processVariantCast(^Cast(expression = $fc, type = ^ColumnType(name = 'TEXT')), processJSONExtractPath($args));
       }),
+      json('json_build_object', Map, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_object');
+        assert($args->size()->mod(2) == 0, | 'json_build_object requires an even number of arguments (key-value pairs)');
+
+        let pairs = range(0, $args->size(), 2)->map(i |
+          sfe(pair_U_1__V_1__Pair_1_, [$args->at($i), $args->at($i + 1)])
+        );
+
+        sfe(newMap_Pair_MANY__Map_1_, iv($pairs));
+      }),
+      json('json_build_array', List, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_array');
+        sfe(list_U_MANY__List_1_, iv($args));
+      }),
 
       //WINDOW
       window('last_value', [], {args, fc, expCtx, ctx |
