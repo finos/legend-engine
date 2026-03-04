@@ -1,0 +1,15 @@
+<configuration>
+    <!-- Route ALL logging to stderr - stdout is exclusively for MCP JSON-RPC -->
+    <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.err</target>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="WARN">
+        <appender-ref ref="STDERR"/>
+    </root>
+
+    <logger name="org.finos.legend.engine.pure.repl" level="INFO"/>
+</configuration>
