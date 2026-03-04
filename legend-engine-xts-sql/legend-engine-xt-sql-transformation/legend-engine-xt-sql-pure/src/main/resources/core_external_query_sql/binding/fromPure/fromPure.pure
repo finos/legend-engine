@@ -1544,7 +1544,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
 
         let columns = $vs->match([
-          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
+          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().func->cast(@FunctionDefinition<Any>).expressionSequence
+                                                      ->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 
