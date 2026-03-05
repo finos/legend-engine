@@ -99,6 +99,7 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "\"Cast exception: Cast cannot be cast to FunctionCall\""),
 
             // Percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"),
