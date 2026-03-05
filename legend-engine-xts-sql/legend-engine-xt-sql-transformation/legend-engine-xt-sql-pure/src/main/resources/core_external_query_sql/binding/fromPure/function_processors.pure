@@ -390,6 +390,20 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       json('json_extract_path_text', Variant, {args, fc, expCtx, ctx |
         processVariantCast(^Cast(expression = $fc, type = ^ColumnType(name = 'TEXT')), processJSONExtractPath($args));
       }),
+      json('json_build_object', Map, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_object');
+        assert($args->size()->mod(2) == 0, | 'json_build_object requires an even number of arguments (key-value pairs)');
+
+        let pairs = range(0, $args->size(), 2)->map(i |
+          sfe(pair_U_1__V_1__Pair_1_, [$args->at($i), $args->at($i + 1)])
+        );
+
+        sfe(newMap_Pair_MANY__Map_1_, iv($pairs));
+      }),
+      json('json_build_array', List, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_array');
+        sfe(list_U_MANY__List_1_, iv($args));
+      }),
 
       //WINDOW
       window('last_value', [], {args, fc, expCtx, ctx |
@@ -525,7 +539,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   | meta::external::query::sql::getSQLExtensions().udf($name),
   | $coreProcessor);
 
-  assertEquals(1, $processor->size(), | 'no handler found for function ' + $name);
+  assertEquals(1, $processor->size(), | 'No function matches the given name "' + $name + '"');
 
   $processor->toOne();
 }
@@ -550,7 +564,7 @@ function meta::external::query::sql::transformation::queryToPure::misc(name:Stri
 
 function meta::external::query::sql::transformation::queryToPure::misc(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
 {
-  processor($name, $returnType, $transform, ProcessorFunctionType.ARRAY)
+  processor($name, $returnType, $transform, ProcessorFunctionType.MISC)
 }
 
 

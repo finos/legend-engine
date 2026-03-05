@@ -20,7 +20,7 @@ import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 
-function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumns():Boolean[1]
+function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumns():Boolean[1]
 {
    let result = execute(
       |Person.all()
@@ -40,8 +40,37 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
       $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsRename::testChainedRenameColumns():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project(p|$p.firstName,'firstName')
+         ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'firstName'), col({r:TDSRow[1]|'Hello'}, 'hello')])
+         ->renameColumns([
+            ^Pair<String,String>(first = 'firstName', second = 'First Name'),
+            ^Pair<String,String>(first = 'hello', second = 'Other')
+            ])
+         ->renameColumns([
+            ^Pair<String,String>(first = 'First Name', second = 'first')
+         ])
+         ->limit(10)
+         ->renameColumns([
+          ^Pair<String,String>(first = 'Other', second = 'other')
+         ]),
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsAfterGroupBy():Boolean[1]
+   assertSize($result.values.columns, 2);
+
+   assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "persontable_0"."first" as "first", "persontable_0"."Other" as "other" from (select "subselect"."first" as "first", "subselect"."Other" as "Other" from (select top 10 "persontable_2"."firstName" as "first", "persontable_2"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_2") as "subselect") as "persontable_0"',
+      $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumnsAfterGroupBy():Boolean[1]
 {
    let result = execute(
       |Person.all()
@@ -66,7 +95,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
 }
 
 
-function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsAfterConcatenate():Boolean[1]
+function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumnsAfterConcatenate():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(col(p|$p.firstName,'firstName'))
@@ -87,7 +116,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
       $result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColumnsWithQuotes():Boolean[1]
+function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumnsWithQuotes():Boolean[1]
 {
    let queryWithoutQuotes   = {|tableToTDS(meta::relational::functions::database::tableReference(meta::relational::tests::db,'default','tableWithQuotedColumns'))
        ->project([

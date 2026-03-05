@@ -225,6 +225,20 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "      }\n" +
                 "    ];\n" +
                 "}");
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "    query: #>{meta::dataquality::db.personTable}#;\n" +
+                "    validations: [\n" +
+                "      {\n" +
+                "         name: 'nonEmptyDataset';\n" +
+                "         description: 'dataset cannot be empty';\n" +
+                "         assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "      }\n" +
+                "    ];\n" +
+                "}");
     }
 
     @Test

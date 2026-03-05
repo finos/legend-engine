@@ -3973,13 +3973,23 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
             ]);
          };
 
-   let pred = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-   let sides = $execSides->map(s|$s.first->processValueSpecification(if($isEnumConstantSide->eval($s.second),
+  let pred = $f.parametersValues->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(pushDownEnumTransformations=false), $joinType, $nodeId, $aggFromMap, $context, $extensions);
+
+  let sides = $execSides->map(s|
+      if($isEnumConstantSide->eval($s.second) && $foundEnumPropertyMapping->isEmpty(),
+        | let enumName = $s.second.expressionSequence->toOne()->match([
+          sfe : SimpleFunctionExpression[1] | $sfe->instanceValueAtParameter(1)->cast(@String),
+          iv : InstanceValue[1] | $iv.values->toOne()->cast(@Enum).name
+      ]);
+      let sel = $operation.select;
+      ^$operation(select = ^$sel(columns = ^Literal(value = $enumName)));,
+      | $s.first->processValueSpecification(if($isEnumConstantSide->eval($s.second),
                                                                         |print(if(!$context.debug, |'', | $context.space+'  Enum in if is a constant\n'));
                                                                          $foundEnumPropertyMapping;,
                                                                         |print(if(!$context.debug, |'', | $context.space+'  Enum in if is NOT a constant\n'));
                                                                          $currentPropertyMapping;
-                                                                     ), $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
+                                                                     ), $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)));
+
    pair(^List<RelationalOperationElement>(values=$pred->concatenate($sides)),{r:RelationalOperationElement[1]|^OperationWithParentPropertyMapping(element=$r, currentPropertyMapping=$foundEnumPropertyMapping)});
 }
 
@@ -4676,7 +4686,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
 
    let processedParams = if($f->isIfForEnum($state.inFilter),| processIfForEnum($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
                                                             ,| let zippedParameters = $f.parametersValues->size()->range()->zip($f.parametersValues);
-                                                               pair(^List<RelationalOperationElement>(values=$zippedParameters->map(pv| let updatedState = if($paramIsIfTrueFalseStmt->eval($pv.first),|^$state(inIfTrueFalseStmt=true),|$state);
+                                                               pair(^List<RelationalOperationElement>(values=$zippedParameters->map(pv| let updatedState = if($f.func == if_Boolean_1__Function_1__Function_1__T_m_ && $pv.first == 0 && $state.pushDownEnumTransformations, |^$state(pushDownEnumTransformations = false), |if($paramIsIfTrueFalseStmt->eval($pv.first),|^$state(inIfTrueFalseStmt=true),|$state));
                                                                                                                                         $pv.second->processValueSpecification($currentPropertyMapping, $operation, $vars, $updatedState, $joinType, buildNodeId($nodeId,'_dy'+$pv.first->toString()), $aggFromMap, $context, $extensions);)),{res:RelationalOperationElement[1]|$res}););
 
    let parameterSQL = $processedParams.first.values->map(x | extractSelectSQLQuery($x));//$f.parametersValues->map(pv|$pv->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context))->map(x | extractSelectSQLQuery($x));
@@ -6498,9 +6508,59 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   pair($alias,$path);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::processTdsProjectExtend(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], includeOriginalColumns : Boolean[1], extensions:Extension[*]):RelationalOperationElement[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::getProjectColNamesForProjectRestrict(f:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]) : String[*]
 {
-   let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
+        [
+          s:String[*]|$s,
+          csa:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$csa.names,
+          cs:meta::pure::metamodel::relation::ColSpec<Any>[1]|$cs.name,
+          cols: Any[*] | $cols->map(colx | $colx->match([
+                                        b:BasicColumnSpecification<Any>[1] | $b.name,
+                                        s:SimpleFunctionExpression[1] | $s->reactivate()->match([
+                                                                                      b:BasicColumnSpecification<Any>[1] | $b.name,
+                                                                                      col : meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1] | $col.name,
+                                                                                      cols : meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1] | $cols.funcSpecs.name
+                                                                              ]);
+                                                                          ,
+                                        col : meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1] | $col.name,
+                                        cols : meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1] |  $cols.funcSpecs->map(col | $col.name)
+                                      ])
+                                    )
+        ]
+      )->cast(@String);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::checkNoSubSelectRequiredForProjectRestrict(f:FunctionExpression[1], origSelect: SelectSQLQuery[1], projectAliasNames: String[*], origGroupByByName: String[*], origSortByByName: String[*]) : Boolean[1]
+{
+  let noSubSelectRequired = (
+                              ($origGroupByByName->isEmpty() || $projectAliasNames->containsAll($origGroupByByName))
+                                &&
+                              ($origSortByByName->isEmpty() || $projectAliasNames->containsAll($origSortByByName))
+                                &&
+                              (($origSelect.distinct->isEmpty() || !$origSelect.distinct->toOne()))
+                            );
+  $noSubSelectRequired;
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processTdsProjectExtend(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], includeOriginalColumns : Boolean[1], extensions:Extension[*]):RelationalOperationElement[1]
+{ 
+   let nestedQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+
+   let projectColNames = $f->getProjectColNamesForProjectRestrict($vars, $state);
+   let projectAliasNames = $projectColNames->map(colName| $colName->addQuotesIfNecessary());
+
+   let origSelect = $nestedQuery.select->cast(@TdsSelectSqlQuery);
+
+   let origGroupByByNames = $origSelect.groupBy->map(column| $column->extractColumnName());
+
+   let origSortByByNames = $origSelect.orderBy.column->map(column | $column->extractColumnName());
+   
+   let mainQuery = if ($includeOriginalColumns || $f->checkNoSubSelectRequiredForProjectRestrict($origSelect, $projectAliasNames, $origGroupByByNames, $origSortByByNames), 
+                        | $nestedQuery, 
+                        | isolateTdsSelect($nestedQuery, $extensions)
+                      );
+
    let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
    let funcParams = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->tail();
    let updatedState = if(!$vars->keys()->isEmpty(),|updateFunctionParamScope($state, $funcParams->evaluateAndDeactivate(),$operation),|$state);
@@ -6526,19 +6586,41 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
       );
 }
 
+//this function collapses chained renames to avoid unnecessary nested subqueries
+function meta::relational::functions::pureToSqlQuery::collapseTDSRename(v:ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], columns:Map<String,String>[1]):Pair<ValueSpecification, Map<String, String>>[1]
+{
+  $v->match([
+    f:FunctionExpression[1] |
+      if ($f.func->in([renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_, rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_]),
+        | let pairs = $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
+              c:meta::pure::metamodel::relation::ColSpec<Any>[1] |
+                let newName = $f->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne();
+                pair($c.name->toOne(), $newName);,
+              p:Pair<String,String>[*] | $p,
+              vss:ValueSpecification[*] | $vss->map(vs|$vs->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->cast(@Pair<String,String>))
+          ]);
+          collapseTDSRename($f.parametersValues->at(0), $vars, $state, resolveAndRemoveChainedRenames($pairs, $columns));,
+        | pair($v, $columns)),
+    v:ValueSpecification[1] | pair($v, $columns)
+  ]);
+}
+
+function meta::relational::functions::pureToSqlQuery::resolveAndRemoveChainedRenames(pairs:Pair<String,String>[*], columns:Map<String,String>[1]):Map<String,String>[1]
+{
+  $columns->keyValues()
+          ->filter(kv | !$kv.first->in($pairs.second))
+          ->newMap()
+          ->putAll($pairs->map(pr | pair($pr.first, $columns->get($pr.second)->orElse($pr.second))));
+}
+
 function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let mainQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+   let collapsed = collapseTDSRename($expression, $vars, $state, ^Map<String, String>());
+
+   let mainQuery = processValueSpecification($collapsed.first, [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let select = $mainQuery.select->cast(@TdsSelectSqlQuery);
 
-   let projectColPairNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
-              c:meta::pure::metamodel::relation::ColSpec<Any>[1] |pair (
-                                                                $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne(),
-                                                                $expression->instanceValuesAtParameter(2, $vars, $state.inScopeVars)->cast(@meta::pure::metamodel::relation::ColSpec<Any>).name->toOne()
-                                                             ),
-              p:Pair<String,String>[*] | $p,
-              vss:ValueSpecification[*] | $vss->map(vs|$vs->reprocessVS()->reactivate($state.inScopeVars)->evaluateAndDeactivate()->cast(@Pair<String,String>));
-                                          ]);
+   let projectColPairNames = $collapsed.second->keyValues();
 
    let projectColNamesMap = $projectColPairNames->map(p|^$p(first = $p.first->addQuotesIfNecessary(), second = $p.second->addQuotesIfNecessary()))->newMap();
    let noWrappedProjectColNamesMap = $projectColPairNames->map(p|^$p(first = $p.first->stripMatchingQuotes(), second = $p.second))->newMap();
@@ -6658,13 +6740,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 {
    let nestedQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
 
-   let projectColNames = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
-                              [
-                                s:String[*]|$s,
-                                c:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$c.names,
-                                c:meta::pure::metamodel::relation::ColSpec<Any>[1]|$c.name
-                              ]
-                          );
+   let projectColNames = $expression->getProjectColNamesForProjectRestrict($vars, $state);
    let projectAliasNames = $projectColNames->map(colName| $colName->addQuotesIfNecessary());
 
    let origSelect = $nestedQuery.select->cast(@TdsSelectSqlQuery);
@@ -6684,17 +6760,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          pair($name, $column);
       );
 
-   let noSubSelectReqiured = (
-                       ($origGroupByByName->isEmpty() || $projectAliasNames->containsAll($origGroupByByName.first))
-                     &&
-                       ($origSortByByName->isEmpty() || $projectAliasNames->containsAll($origSortByByName.first))
-                     &&
-                       (($origSelect.distinct->isEmpty() || !$origSelect.distinct->toOne()))
-                     );
-
    let newCols = $projectAliasNames->map(aliasName|let origCol = $origColumnsByNameAsMap->get($aliasName); assertNotEmpty($origCol, | 'Failed to find column ' + $aliasName + ' in ' + $origColumnsByNameAsMap->keys()->joinStrings('[', ',', ']')); $origCol->toOne(););
 
-   if($noSubSelectReqiured
+   if($expression->checkNoSubSelectRequiredForProjectRestrict($origSelect, $projectAliasNames, $origGroupByByName.first, $origSortByByName.first)
       ,|
          //The query has no group bys, or they are all being projected with at least one agg remaining
          ^$nestedQuery(select = ^$origSelect(columns = $newCols, paths = $projectColNames->map(p|$origSelect.paths->filter(z|$z.first->quoteSafeEqual($p)))));

@@ -25,24 +25,20 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[ID,FIRSTNAME,LASTNAME])
-    ->extend(~ID_SOURCE: row | $row.ID)
-    ->extend(~FIRSTNAME_SOURCE: row | $row.FIRSTNAME)
-    ->extend(~LASTNAME_SOURCE: row | $row.LASTNAME)
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
     ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |$row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[ID,FIRSTNAME,LASTNAME])
-          ->extend(~ID_TARGET: row | $row.ID)
-          ->extend(~FIRSTNAME_TARGET: row | $row.FIRSTNAME)
-          ->extend(~LASTNAME_TARGET: row | $row.LASTNAME)
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
           ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |$row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |$row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
-          ->select(~[ID_TARGET,DIGEST_TARGET]),
+          ->select(~[ID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.ID_SOURCE == $y.ID_TARGET}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
@@ -55,18 +51,16 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[ID,HASH])
-    ->extend(~ID_SOURCE: row | $row.ID)
-    ->extend(~HASH_SOURCE: row | $row.HASH)
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
     ->select(~[ID_SOURCE,HASH_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[ID,HASH])
-          ->extend(~ID_TARGET: row | $row.ID)
-          ->extend(~HASH_TARGET: row | $row.HASH)
-          ->select(~[ID_TARGET,HASH_TARGET]),
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,HASH_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.ID_SOURCE == $y.ID_TARGET}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
@@ -79,26 +73,24 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[FIRMID,HASH])
-    ->extend(~FIRMID_SOURCE: row | $row.FIRMID)
-    ->extend(~HASH_SOURCE: row | $row.HASH)
+    ->extend(~[FIRMID_SOURCE: row | $row.FIRMID, HASH_SOURCE: row | $row.HASH])
     ->select(~[FIRMID_SOURCE,HASH_SOURCE])
     ->sort(~HASH_SOURCE->ascending())
     ->groupBy(~[FIRMID_SOURCE], ~AGG_HASH : x | $x.HASH_SOURCE : y | $y->joinStrings(''))
     ->extend(~DIGEST_SOURCE: row | hash(if($row.AGG_HASH->isEmpty(), | '', |$row.AGG_HASH->toOne()->toString()) + if($row.FIRMID_SOURCE->isEmpty(), | '', |$row.FIRMID_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[FIRMID_SOURCE,DIGEST_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[FIRMID,HASH])
-          ->extend(~FIRMID_TARGET: row | $row.FIRMID)
-          ->extend(~HASH_TARGET: row | $row.HASH)
+          ->extend(~[FIRMID_TARGET: row | $row.FIRMID, HASH_TARGET: row | $row.HASH])
           ->select(~[FIRMID_TARGET,HASH_TARGET])
           ->sort(~HASH_TARGET->ascending())
           ->groupBy(~[FIRMID_TARGET], ~AGG_HASH : x | $x.HASH_TARGET : y | $y->joinStrings(''))
           ->extend(~DIGEST_TARGET: row | hash(if($row.AGG_HASH->isEmpty(), | '', |$row.AGG_HASH->toOne()->toString()) + if($row.FIRMID_TARGET->isEmpty(), | '', |$row.FIRMID_TARGET->toOne()->toString()), HashType.MD5))
-          ->select(~[FIRMID_TARGET,DIGEST_TARGET]),
+          ->select(~[FIRMID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.FIRMID_SOURCE == $y.FIRMID_TARGET}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
@@ -111,20 +103,16 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[DOB,CODE,COUPOUN])
-    ->extend(~DOB_SOURCE: row | $row.DOB->normalizeDateTime())
-    ->extend(~CODE_SOURCE: row | $row.CODE->normalizeFloat())
-    ->extend(~COUPOUN_SOURCE: row | $row.COUPOUN->normalizeDecimal())
+    ->extend(~[DOB_SOURCE: row | $row.DOB->normalizeDateTime(), CODE_SOURCE: row | $row.CODE->normalizeFloat(), COUPOUN_SOURCE: row | $row.COUPOUN->normalizeDecimal()])
     ->select(~[DOB_SOURCE,CODE_SOURCE,COUPOUN_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[DOB,CODE,COUPOUN])
-          ->extend(~DOB_TARGET: row | $row.DOB->normalizeDateTime())
-          ->extend(~CODE_TARGET: row | $row.CODE->normalizeFloat())
-          ->extend(~COUPOUN_TARGET: row | $row.COUPOUN->normalizeDecimal())
-          ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET]),
+          ->extend(~[DOB_TARGET: row | $row.DOB->normalizeDateTime(), CODE_TARGET: row | $row.CODE->normalizeFloat(), COUPOUN_TARGET: row | $row.COUPOUN->normalizeDecimal()])
+          ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| ($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET) && (($x.CODE_SOURCE == $y.CODE_TARGET) && $x.DOB_SOURCE == $y.DOB_TARGET)}
     )->filter(row | not($row.DOB_SOURCE == $row.DOB_TARGET))
@@ -139,21 +127,19 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   let query = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,LASTNAME])->from($runtime)};
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
     ->select(~[ID,LASTNAME])
-    ->from($runtime)
-    ->extend(~ID_SOURCE: row | $row.ID)
-    ->extend(~LASTNAME_SOURCE: row | $row.LASTNAME)
+    ->extend(~[ID_SOURCE: row | $row.ID, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,LASTNAME_SOURCE])
     ->extend(~DIGEST_SOURCE: row | hash(if($row.ID_SOURCE->isEmpty(), | '', |$row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
           ->select(~[ID,LASTNAME])
-          ->from($runtime)
-          ->extend(~ID_TARGET: row | $row.ID)
-          ->extend(~LASTNAME_TARGET: row | $row.LASTNAME)
+          ->extend(~[ID_TARGET: row | $row.ID, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,LASTNAME_TARGET])
           ->extend(~DIGEST_TARGET: row | hash(if($row.ID_TARGET->isEmpty(), | '', |$row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
-          ->select(~[ID_TARGET,DIGEST_TARGET]),
+          ->select(~[ID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.ID_SOURCE == $y.ID_TARGET}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
@@ -166,22 +152,20 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[FIRSTNAME,LASTNAME])
-    ->extend(~FIRSTNAME_SOURCE: row | $row.FIRSTNAME)
-    ->extend(~LASTNAME_SOURCE: row | $row.LASTNAME)
+    ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
     ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[FIRSTNAME,LASTNAME])
-          ->extend(~FIRSTNAME_TARGET: row | $row.FIRSTNAME)
-          ->extend(~LASTNAME_TARGET: row | $row.LASTNAME)
+          ->extend(~[FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[FIRSTNAME_TARGET,LASTNAME_TARGET])
           ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |$row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
-          ->select(~[DIGEST_TARGET]),
+          ->select(~[DIGEST_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.DIGEST_SOURCE == $y.DIGEST_TARGET}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
@@ -194,19 +178,18 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->from($runtime)
     ->select(~[FIRSTNAME,LASTNAME])
-    ->extend(~FIRSTNAME_SOURCE: row | $row.FIRSTNAME)
-    ->extend(~LASTNAME_SOURCE: row | $row.LASTNAME)
+    ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
     ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
+    ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->from($runtime)
           ->select(~[HASH])
-          ->extend(~HASH_TARGET: row | $row.HASH)
-          ->select(~[HASH_TARGET]),
+          ->extend(~[HASH_TARGET: row | $row.HASH])
+          ->select(~[HASH_TARGET])
+          ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.DIGEST_SOURCE == $y.HASH_TARGET}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
@@ -225,5 +208,5 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]):Boolean[1]
 {
   let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol));
-  assertLambdaEquals($expected, $actual);
+  assertLambdaEquals($expected, $actual, false);
 }

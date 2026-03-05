@@ -192,6 +192,24 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumInIfPredicateInsideProjectWithNonEnumReturn():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select case when "root".GENDER = \'male\' then \'val1\' else \'val2\' end as "conditionalVal" from personTable as "root" $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithNonEnumReturn():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumInIfPredicateInsideProjectWithEnumReturn():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select case when "root".GENDER = \'male\' then \'M\' else \'F\' end as "conditionalVal" from personTable as "root" $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithEnumReturn():TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
 //function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
 //{
 // let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
@@ -278,6 +296,19 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
     PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.lastUpdated, 'lastUpdated')])
     ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
 }
+
+function meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithNonEnumReturn():TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|if($p.gender == Gender.M, | 'val1',| 'val2'), 'conditionalVal')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithEnumReturn():TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|if($p.gender == Gender.M, | Gender.M,| Gender.F), 'conditionalVal')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
 
 function meta::external::function::activator::snowflakeApp::tests::assertSnowflakeArtifact(function: PackageableFunction<Any>[1], expected: String[1]): Boolean[1]
 {

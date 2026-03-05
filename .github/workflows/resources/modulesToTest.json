@@ -129,6 +129,12 @@
       ]
     },
     {
+      "name": "clickhouse",
+      "modules": [
+        "legend-engine-xt-relationalStore-clickhouse-PCT"
+      ]
+    },
+    {
       "name": "ide-tools",
       "modules": [
         "legend-engine-pure-runtime-java-extension-compiled-functions-javaCompiler",

@@ -1354,7 +1354,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         WindowFrame frame = new WindowFrame();
         frame.mode = getFrameType(ctx.frameType);
         frame.start = (FrameBound) visit(ctx.start);
-        frame.end = (FrameBound) visit(ctx.end);
+        frame.end = visitIfPresent(ctx.end, FrameBound.class).orElse(null);
 
         return frame;
     }

@@ -118,9 +118,14 @@ function meta::external::dataquality::tests::assertLambdaAndJSONEquals(expected:
 
 function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {
+  assertLambdaEquals($expected, $actual, true);
+}
+
+function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1], fullPath: Boolean[1]): Boolean[1]
+{
   let config = ^meta::pure::metamodel::serialization::grammar::Configuration
             (
-              fullPath = true,
+              fullPath = $fullPath,
               extensions = ^meta::pure::metamodel::serialization::grammar::GrammarExtension(
                                 extraInstanceValueHandlers =
                                   [

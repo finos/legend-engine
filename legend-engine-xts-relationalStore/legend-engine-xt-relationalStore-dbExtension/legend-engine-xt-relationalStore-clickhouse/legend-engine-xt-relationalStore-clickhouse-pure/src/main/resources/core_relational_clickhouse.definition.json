@@ -1,0 +1,12 @@
+{
+  "name": "core_relational_clickhouse",
+  "pattern": "(meta::relational::functions::sqlQueryToString::clickhouse|meta::relational::tests::sqlQueryToString::clickhouse|meta::relational::tests::query::function::clickhouse|meta::relational::functions::sqlToString::clickhouse|meta::relational::tests::functions::sqlstring::clickhouse|meta::relational::tests::mapping::function::clickhouse|meta::relational::tests::tds::clickhouse|meta::pure::executionPlan::tests::clickhouse|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core",
+    "core_relational"
+  ]
+}
