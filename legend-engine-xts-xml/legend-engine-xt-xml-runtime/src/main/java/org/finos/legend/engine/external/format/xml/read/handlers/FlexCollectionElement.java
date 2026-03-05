@@ -74,7 +74,7 @@ public class FlexCollectionElement extends Element
                         context.reader.skipElement();
                         consumableSubElementsCount++;
                     }
-                    else if (canConsumeElement(context))
+                    else if (canConsumeElement(context, true))
                     {
                         consumableSubElementsCount++;
                     }
@@ -91,7 +91,7 @@ public class FlexCollectionElement extends Element
                 // Uncommitted txn to look ahead
                 try (XmlReader.Transaction txn = context.reader.newTransaction())
                 {
-                    if (canConsumeElement(context))
+                    if (canConsumeElement(context, false))
                     {
                         type = Type.REPEATED_ELEMENT;
                     }
@@ -128,9 +128,9 @@ public class FlexCollectionElement extends Element
         }
     }
 
-    private boolean canConsumeElement(DeserializeContext<?> context)
+    private boolean canConsumeElement(DeserializeContext<?> context, boolean checkingContainerSubElements)
     {
-        if (particle != null && particle.canConsume(context))
+        if (checkingContainerSubElements && particle != null && particle.canConsume(context))
         {
             context.reader.skipElement();
             return false;
