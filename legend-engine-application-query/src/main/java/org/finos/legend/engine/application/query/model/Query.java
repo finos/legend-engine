@@ -50,4 +50,6 @@ public class Query
     public String owner;
 
     public Map<String, ?> gridConfig;
+    public List<AttributeMetadata> attributeMetadata;
+
 }
