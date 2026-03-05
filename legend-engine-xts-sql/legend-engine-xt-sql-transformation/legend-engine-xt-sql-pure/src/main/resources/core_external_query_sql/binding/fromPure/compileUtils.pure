@@ -321,7 +321,7 @@ function meta::external::query::sql::transformation::compile::utils::_extractDep
   if (!$alreadyProcessed->contains($v),
     |  let newProcessedList = $v->match([p:PackageableElement[1]|$alreadyProcessed->concatenate($p),a:Any[1]|$alreadyProcessed]);
        $v->match([
-          z:FunctionDefinition<Any>[1] |if($z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z->cast(@PackageableElement),|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->_extractDependencies($newProcessedList)));,
+          z:FunctionDefinition<Any>[1] |if($z->instanceOf(PackageableElement) && (!$z->isWithinPackage(meta) || $z->elementToPath()->contains('::tests::')),|$z->cast(@PackageableElement),|[])->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->_extractDependencies($newProcessedList)));,
           x:SimpleFunctionExpression[1]|let res = $x.parametersValues->evaluateAndDeactivate()->map(p|$p->_extractDependencies($alreadyProcessed));
                                         $res->concatenate($x.func->_extractDependencies($newProcessedList));,
           i: InstanceValue[1] | $i.values->evaluateAndDeactivate()->map(p|$p->_extractDependencies($newProcessedList)),
