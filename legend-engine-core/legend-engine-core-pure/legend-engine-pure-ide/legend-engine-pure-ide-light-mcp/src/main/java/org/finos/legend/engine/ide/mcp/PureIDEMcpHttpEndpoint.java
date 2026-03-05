@@ -8,9 +8,9 @@
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+// implied. See the License for the specific language governing
+// permissions and limitations under the License.
 
 package org.finos.legend.engine.ide.mcp;
 
@@ -26,71 +26,135 @@ import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.MutableRepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Api(tags = "MCP")
 @Path("/")
 public class PureIDEMcpHttpEndpoint
 {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper
+        OBJECT_MAPPER = new ObjectMapper();
 
-    private final LegendStatelessMcpServerOrchestrator orchestrator;
+    private final
+        LegendStatelessMcpServerOrchestrator
+        orchestrator;
 
-    public PureIDEMcpHttpEndpoint(PureRuntime pureRuntime, MutableRepositoryCodeStorage codeStorage, FunctionExecution functionExecution)
+    public PureIDEMcpHttpEndpoint(
+            PureRuntime pureRuntime,
+            MutableRepositoryCodeStorage
+                codeStorage,
+            FunctionExecution functionExecution)
     {
-        this.orchestrator = PureIDEMcpToolDefinitions.createOrchestrator(pureRuntime, codeStorage, functionExecution);
+        this.orchestrator =
+            PureIDEMcpToolDefinitions
+                .createOrchestrator(
+                    pureRuntime, codeStorage,
+                    functionExecution);
     }
 
     @POST
     @Path("mcp")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public javax.ws.rs.core.Response handleMcp(String body)
+    public javax.ws.rs.core.Response handleMcp(
+            String body)
     {
         try
         {
-            JsonNode node = OBJECT_MAPPER.readTree(body);
+            JsonNode node =
+                OBJECT_MAPPER.readTree(body);
 
             if (node.has("id"))
             {
-                Request request = OBJECT_MAPPER.treeToValue(node, Request.class);
-                Response response = this.orchestrator.handleRequest(request, Identity.getAnonymousIdentity());
-                String responseJson = OBJECT_MAPPER.writeValueAsString(response);
-                return javax.ws.rs.core.Response.ok(responseJson, MediaType.APPLICATION_JSON).build();
+                return handleRequest(node);
             }
             else
             {
-                Notification notification = OBJECT_MAPPER.treeToValue(node, Notification.class);
-                this.orchestrator.handleNotification(notification, Identity.getAnonymousIdentity());
-                return javax.ws.rs.core.Response.noContent().build();
+                return handleNotification(node);
             }
         }
         catch (Exception e)
         {
-            Map<String, Object> error = new LinkedHashMap<>();
-            error.put("jsonrpc", "2.0");
-            error.put("id", null);
-            Map<String, Object> errorObj = new LinkedHashMap<>();
-            errorObj.put("code", -32700);
-            errorObj.put("message", "Parse error: " + e.getMessage());
-            error.put("error", errorObj);
-            try
-            {
-                return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.BAD_REQUEST)
-                        .entity(OBJECT_MAPPER.writeValueAsString(error))
-                        .type(MediaType.APPLICATION_JSON)
-                        .build();
-            }
-            catch (Exception ex)
-            {
-                return javax.ws.rs.core.Response.status(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR).build();
-            }
+            return buildErrorResponse(e);
+        }
+    }
+
+    private javax.ws.rs.core.Response
+        handleRequest(JsonNode node)
+        throws Exception
+    {
+        Request request =
+            OBJECT_MAPPER.treeToValue(
+                node, Request.class);
+        Response response =
+            this.orchestrator
+                .handleRequest(request,
+                    Identity
+                        .getAnonymousIdentity());
+        String responseJson =
+            OBJECT_MAPPER
+                .writeValueAsString(response);
+        return javax.ws.rs.core.Response
+            .ok(responseJson,
+                MediaType.APPLICATION_JSON)
+            .build();
+    }
+
+    private javax.ws.rs.core.Response
+        handleNotification(JsonNode node)
+        throws Exception
+    {
+        Notification notification =
+            OBJECT_MAPPER.treeToValue(
+                node, Notification.class);
+        this.orchestrator
+            .handleNotification(
+                notification,
+                Identity
+                    .getAnonymousIdentity());
+        return javax.ws.rs.core.Response
+            .noContent().build();
+    }
+
+    private static javax.ws.rs.core.Response
+        buildErrorResponse(Exception e)
+    {
+        Map<String, Object> error =
+            new LinkedHashMap<>();
+        error.put("jsonrpc", "2.0");
+        error.put("id", null);
+        Map<String, Object> errorObj =
+            new LinkedHashMap<>();
+        errorObj.put("code", -32700);
+        errorObj.put("message",
+            "Parse error: " + e.getMessage());
+        error.put("error", errorObj);
+        try
+        {
+            return javax.ws.rs.core.Response
+                .status(
+                    javax.ws.rs.core.Response
+                        .Status.BAD_REQUEST)
+                .entity(OBJECT_MAPPER
+                    .writeValueAsString(error))
+                .type(
+                    MediaType.APPLICATION_JSON)
+                .build();
+        }
+        catch (Exception ex)
+        {
+            return javax.ws.rs.core.Response
+                .status(
+                    javax.ws.rs.core.Response
+                        .Status
+                        .INTERNAL_SERVER_ERROR)
+                .build();
         }
     }
 }
