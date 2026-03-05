@@ -443,6 +443,11 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheri
    engineType : EngineType[0..1];
 }
 
+Class  meta::relational::tests::milestoning::inheritance::CarDetails
+{
+   time: DateTime[1];
+   car: Car[0..1];
+}
 
 Enum meta::relational::tests::milestoning::inheritance::EngineType
 {
