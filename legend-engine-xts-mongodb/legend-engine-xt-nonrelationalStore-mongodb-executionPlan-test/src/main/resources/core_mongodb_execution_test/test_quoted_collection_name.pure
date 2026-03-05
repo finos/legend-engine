@@ -1,0 +1,171 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::mongodb::metamodel::pure::*;
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::store::mongodb::metamodel::*;
+import meta::external::store::mongodb::metamodel::mapping::*;
+
+// Tests for MongoDB collection name parsing (quoted vs unquoted identifiers)
+
+function <<test.Test>> meta::external::store::mongodb::executionTest::testQuotedCollectionNameParsing(): Boolean[1]
+{
+  let grammar =
+    '###MongoDB\n' +
+    'Database test::mongodb::TestDatabase\n' +
+    '(\n' +
+    '  Collection "person-records"\n' +
+    '  (\n' +
+    '    validationLevel: strict;\n' +
+    '    validationAction: warn;\n' +
+    '    jsonSchema: {\n' +
+    '      "bsonType": "object",\n' +
+    '      "properties": {\n' +
+    '        "name": {"bsonType": "string"},\n' +
+    '        "age": {"bsonType": "long"}\n' +
+    '      },\n' +
+    '      "additionalProperties": true\n' +
+    '    };\n' +
+    '  )\n' +
+    ')\n';
+
+  let compiled = meta::legend::compileLegendGrammar($grammar);
+  let mongoDb = $compiled->filter(e | $e->instanceOf(MongoDatabase))->cast(@MongoDatabase)->toOne();
+  let collection = $mongoDb.collections->toOne();
+
+  // Collection name should be 'person-records' without surrounding quotes
+  assertEquals('person-records', $collection.name);
+}
+
+function <<test.Test>> meta::external::store::mongodb::executionTest::testUnquotedCollectionNameParsing(): Boolean[1]
+{
+  let grammar =
+    '###MongoDB\n' +
+    'Database test::mongodb::TestDatabase2\n' +
+    '(\n' +
+    '  Collection PersonCollection\n' +
+    '  (\n' +
+    '    validationLevel: strict;\n' +
+    '    validationAction: warn;\n' +
+    '    jsonSchema: {\n' +
+    '      "bsonType": "object",\n' +
+    '      "properties": {\n' +
+    '        "name": {"bsonType": "string"}\n' +
+    '      }\n' +
+    '    };\n' +
+    '  )\n' +
+    ')\n';
+
+  let compiled = meta::legend::compileLegendGrammar($grammar);
+  let mongoDb = $compiled->filter(e | $e->instanceOf(MongoDatabase))->cast(@MongoDatabase)->toOne();
+  let collection = $mongoDb.collections->toOne();
+
+  assertEquals('PersonCollection', $collection.name);
+}
+
+function <<test.Test>> meta::external::store::mongodb::executionTest::testMultipleCollectionsWithMixedNaming(): Boolean[1]
+{
+  let grammar =
+    '###MongoDB\n' +
+    'Database test::mongodb::MixedDB\n' +
+    '(\n' +
+    '  Collection "firm-data"\n' +
+    '  (\n' +
+    '    validationLevel: strict;\n' +
+    '    validationAction: warn;\n' +
+    '    jsonSchema: {"bsonType": "object"};\n' +
+    '  )\n' +
+    '  Collection Address\n' +
+    '  (\n' +
+    '    validationLevel: strict;\n' +
+    '    validationAction: warn;\n' +
+    '    jsonSchema: {"bsonType": "object"};\n' +
+    '  )\n' +
+    ')\n';
+
+  let compiled = meta::legend::compileLegendGrammar($grammar);
+  let mongoDb = $compiled->filter(e | $e->instanceOf(MongoDatabase))->cast(@MongoDatabase)->toOne();
+  let collectionNames = $mongoDb.collections.name;
+
+  assertEquals(2, $collectionNames->size());
+  assert($collectionNames->contains('firm-data'));
+  assert($collectionNames->contains('Address'));
+}
+
+// Test that execution plan generation correctly uses the unquoted collection name
+function <<test.Test>> meta::external::store::mongodb::executionTest::testQuotedCollectionNameInExecutionPlan(): Boolean[1]
+{
+  let grammar =
+    '###Pure\n' +
+    'Class test::domain::Person\n' +
+    '{\n' +
+    '  name: String[1];\n' +
+    '  age: Integer[1];\n' +
+    '}\n' +
+    '\n' +
+    '###MongoDB\n' +
+    'Database test::mongodb::QuotedCollectionDB\n' +
+    '(\n' +
+    '  Collection "person-records"\n' +
+    '  (\n' +
+    '    validationLevel: strict;\n' +
+    '    validationAction: warn;\n' +
+    '    jsonSchema: {\n' +
+    '      "bsonType": "object",\n' +
+    '      "properties": {\n' +
+    '        "name": {"bsonType": "string"},\n' +
+    '        "age": {"bsonType": "long"}\n' +
+    '      },\n' +
+    '      "additionalProperties": true\n' +
+    '    };\n' +
+    '  )\n' +
+    ')\n' +
+    '\n' +
+    '###ExternalFormat\n' +
+    'Binding test::store::PersonBinding\n' +
+    '{\n' +
+    '  contentType: \'application/json\';\n' +
+    '  modelIncludes: [\n' +
+    '    test::domain::Person\n' +
+    '  ];\n' +
+    '}\n' +
+    '\n' +
+    '###Mapping\n' +
+    'Mapping test::mapping::QuotedCollectionMapping\n' +
+    '(\n' +
+    '  *test::domain::Person[Person]: MongoDB\n' +
+    '  {\n' +
+    '    ~mainCollection [test::mongodb::QuotedCollectionDB] \'person-records\'\n' +
+    '    ~binding test::store::PersonBinding\n' +
+    '  }\n' +
+    ')\n';
+
+  let compiled = meta::legend::compileLegendGrammar($grammar);
+  let mongoDb = $compiled->filter(e | $e->instanceOf(MongoDatabase))->cast(@MongoDatabase)->toOne();
+  let collection = $mongoDb.collections->toOne();
+
+  // Verify the collection name is stored without quotes
+  assertEquals('person-records', $collection.name);
+
+  // The mapping should reference the collection by its unquoted name
+  let mapping = $compiled->filter(e | $e->instanceOf(meta::pure::mapping::Mapping))->cast(@meta::pure::mapping::Mapping)->toOne();
+  let setImpl = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation);
+  let mainCollection = $setImpl.mainCollection->cast(@Collection);
+
+  // Verify the collection name in the mapping is also without quotes
+  assertEquals('person-records', $mainCollection.name);
+}
