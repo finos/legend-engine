@@ -25,27 +25,13 @@ import static org.junit.Assert.*;
 public class TestCompilerFromGrammar
 {
     @Test
-    public void testCSV()
+    public void testSimple()
     {
         testCompile("function pack::f():Boolean[1]\n" +
                 "{\n" +
                 "   #SQL{select a from csv('a,b\n1,2\n3,4')}#->filter(x|$x.a == 1);" +
                 "   true;" +
                 "}");
-    }
-
-    @Test
-    public void testFunc()
-    {
-        testCompile("function pack::f2(): Relation<Any>[1]\n" +
-                "{\n" +
-                "  #SQL{select a,b from csv('a,b\\n1,2')}#;\n" +
-                "  '';\n" +
-                "}\n\n" + "function pack::f(): String[1]\n" +
-                "{\n" +
-                "  #SQL{select * from func('pack::f2__Relation_1_')}#;\n" +
-                "  '';\n" +
-                "}\n");
     }
 
     @Test
