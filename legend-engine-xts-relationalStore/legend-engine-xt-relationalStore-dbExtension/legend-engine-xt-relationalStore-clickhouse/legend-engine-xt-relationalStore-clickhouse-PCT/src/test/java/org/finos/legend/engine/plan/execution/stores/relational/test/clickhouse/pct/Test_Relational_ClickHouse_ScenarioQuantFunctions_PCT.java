@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct;
+package org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.factory.Lists;
@@ -21,7 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.tests
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
-import org.finos.legend.pure.code.core.CoreRelationalDatabricksCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.CoreRelationalClickHousePCTCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -30,17 +30,15 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 
-public class Test_Relational_Databricks_ScenarioQuantFunctions_PCT extends PCTReportConfiguration
+public class Test_Relational_ClickHouse_ScenarioQuantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions;
-    private static final Adapter adapter = CoreRelationalDatabricksCodeRepositoryProvider.databricksAdapter;
+    private static final Adapter adapter = CoreRelationalClickHousePCTCodeRepositoryProvider.clickhouseAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-                one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\""),
-                one("meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [_LEGACY_ERROR_TEMP_1035] org.apache.spark.sql.AnalysisException: Cannot specify window frame for lag function.\n"),
-                one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\""),
-                one("meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\"")
-            );
+            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\""),
+            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\"")
+    );
 
     public static Test suite()
     {
@@ -48,7 +46,7 @@ public class Test_Relational_Databricks_ScenarioQuantFunctions_PCT extends PCTRe
                 () -> true,
                 () -> PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter),
                 () -> false,
-                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst())
+                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.ClickHouse).getFirst())
         );
     }
 
