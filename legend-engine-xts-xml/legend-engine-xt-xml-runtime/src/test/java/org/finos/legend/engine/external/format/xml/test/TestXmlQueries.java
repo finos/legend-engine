@@ -325,6 +325,19 @@ public class TestXmlQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/priceWithTextContentAndAttributeResult.json")));
     }
 
+    @Test
+    public void testInternalizeWithNestedSameNameElement()
+    {
+        String grammar = nestedSameNameModel();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data:Byte[*]|test::model::Root->internalize(test::model::Binding, $data)->serialize(#{test::model::Root{status{status}}}#)",
+                Maps.mutable.with("data", resource("queries/nestedSameName.xml")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/nestedSameNameResult.json")));
+    }
+
     private String schemalessBinding()
     {
         return "###ExternalFormat\n" +
@@ -402,6 +415,24 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "{\n" +
                 "  contentType: 'application/xml';\n" +
                 "  modelIncludes: [ test::model::Price ];\n" +
+                "}\n";
+    }
+
+    private String nestedSameNameModel()
+    {
+        return "Class test::model::Root\n" +
+                "{\n" +
+                "   status : test::model::Status[*];\n" +
+                "}\n\n" +
+                "Class test::model::Status\n" +
+                "{\n" +
+                "   status      : Integer[1];\n" +
+                "}\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::model::Binding\n" +
+                "{\n" +
+                "  contentType: 'application/xml';\n" +
+                "  modelIncludes: [ test::model ];\n" +
                 "}\n";
     }
 }

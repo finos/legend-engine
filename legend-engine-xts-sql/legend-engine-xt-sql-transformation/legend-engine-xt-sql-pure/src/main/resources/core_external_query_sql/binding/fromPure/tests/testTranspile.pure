@@ -4121,6 +4121,27 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJsonBuildFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    '   json_build_object(\'key1\', String, \'key2\', \'abc\') as obj,' +
+    '   json_build_array(Integer, Float, Decimal) as arr ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+          )
+          // ->project(~[
+          //   object: x | newMap([pair('key1', $x.String), pair('key2', 'abc')]),
+          //   array: x | list([$x.Integer, $x.Float, $x.Decimal])
+          // ])
+      }, false, false) //TODO false, false means we are not asserting, just ensuring no error, this is due to the project with newMap not compiling in IDE
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testInvalidColumnReference():Boolean[1]
 {
   error(
