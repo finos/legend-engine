@@ -55,6 +55,7 @@ public class Test_Relational_Oracle_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
+            one("meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Project_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
 
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
