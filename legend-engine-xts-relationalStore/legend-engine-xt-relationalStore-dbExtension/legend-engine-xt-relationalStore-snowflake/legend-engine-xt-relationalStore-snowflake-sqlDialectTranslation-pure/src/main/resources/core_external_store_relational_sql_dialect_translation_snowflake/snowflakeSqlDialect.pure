@@ -686,8 +686,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let params = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
-  generateFunctionCallWithArgs($sqlDialect, 'to_char', [generateFunctionCallWithArgs($sqlDialect, 'convert_timezone', [$srcTimeZone, $params->at(1), $params->at(0)], $f, $state, $config), $params->at(2)->dateFormatSpecifierForSnowflake()], $f, $state, $config);
+  let containsSrcTimeZone = $params->size() == 4;
+  let srcTimeZone = if($containsSrcTimeZone, | $params->at(1), | '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'');
+  let targetTimeZone = if($containsSrcTimeZone, | $params->at(2), | $params->at(1));
+  generateFunctionCallWithArgs($sqlDialect, 'to_char', [generateFunctionCallWithArgs($sqlDialect, 'convert_timezone', [$srcTimeZone, $targetTimeZone, $params->at(0)], $f, $state, $config), $params->last()->toOne()->dateFormatSpecifierForSnowflake()], $f, $state, $config);
 }
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForTimeBucket(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]

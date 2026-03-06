@@ -12,7 +12,8 @@ Database meta::external::dataquality::tests::domain::db
     DOB TIMESTAMP NOT NULL,
     HASH VARCHAR(200),
     CODE FLOAT NOT NULL,
-    COUPOUN DECIMAL(4, 4) NOT NULL
+    COUPOUN DECIMAL(4, 4),
+    CREATED DATE NOT NULL
   )
   Table addressTable
   (

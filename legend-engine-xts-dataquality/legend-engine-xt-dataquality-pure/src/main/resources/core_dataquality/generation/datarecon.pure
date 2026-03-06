@@ -20,6 +20,7 @@ import meta::external::dataquality::*;
 import meta::external::dataquality::datarecon::*;
 import system::imports::*;
 import meta::external::dataquality::dataprofile::*;
+import meta::relational::metamodel::datatype::*;
 
 /*
   This method will:
@@ -72,7 +73,7 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   //create hash
   let withHash = if ($hashCol->isNotEmpty(), 
     | $withNormalizedCols,
-    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type);
+    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true);
       //select only hash col + keys
       let selectCols = $keys->map(col | $col + $suffix)->union('DIGEST' + $suffix)->distinct();
       let withSelect = buildSelectExpression($withRowHash, $selectCols);
@@ -112,7 +113,7 @@ function meta::external::dataquality::datarecon::normalizeColumns(input: ValueSp
     let withNormalize = buildNormalizeExpression(col($col, var('row')), $type);
     ^FuncColSpec<Any, Any>(
       name = $colName,
-      function=lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$type), parameters=var('row')), $withNormalize)
+      function=lambda(^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=$withNormalize.second), parameters=var('row')), $withNormalize.first)
     );
   );
 
@@ -135,10 +136,13 @@ function meta::external::dataquality::datarecon::buildAggregatedHash(input: Valu
 
   //group by grouping keys and aggregate all hashes into single string
   let groupingFunction = buildAggColSpecJoinStringsExpression($relType, $hashColumn, ^GenericType(rawType=String));
-  let groupBy = buildGroupByExpression($sort, buildColSpecArrayExpression($groupingCols), $groupingFunction);
+  let groupBy = if ($groupingCols->isEmpty(),
+    | buildAggregateExpression($sort, $groupingFunction),
+    | buildGroupByExpression($sort, buildColSpecArrayExpression($groupingCols), $groupingFunction)
+  );
 
   //calculate hash of hashes
-  let aggHash = buildRowHash($groupBy, $suffix, $type);
+  let aggHash = buildRowHash($groupBy, $suffix, $type, false);
 
   //select only grouping cols and hash col
   let selectCols = $groupingCols->union('DIGEST' + $suffix);
@@ -172,10 +176,10 @@ function meta::external::dataquality::datarecon::buildExtendExpression(input: Va
   );
 }
 
-function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1]):ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1]):ValueSpecification[1]
 {
   let relType = getRelType($input->compileViaGrammar());
-  $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $relType.columns.name->sort(), 'row'));
+  $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $relType.columns.name->sort(), 'row', $includeColName, $suffix));
 }
 
 function meta::external::dataquality::datarecon::buildColSpecArrayExpression(selectedCols: String[*]):ValueSpecification[1]
@@ -188,6 +192,14 @@ function meta::external::dataquality::datarecon::buildGroupByExpression(input:Va
   sfe(
     groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_,
     [ $input, $groupingColSpec, $groupingFunction ]
+  );
+}
+
+function meta::external::dataquality::datarecon::buildAggregateExpression(input:ValueSpecification[1], groupingFunction: ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+  sfe(
+    aggregate_Relation_1__AggColSpec_1__Relation_1_,
+    [ $input, $groupingFunction ]
   );
 }
 
@@ -329,19 +341,21 @@ function meta::external::dataquality::datarecon::buildAndExpression(param1: Func
   )->evaluateAndDeactivate()
 }
 
-function meta::external::dataquality::datarecon::buildNormalizeExpression(input: ValueSpecification[1], type: Type[1]):ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildNormalizeExpression(input: ValueSpecification[1], type: Type[1]):Pair<ValueSpecification, Type>[1]
 {
   let func = if ([
-      pair(| $type->subTypeOf(Decimal), | normalizeDecimal_Decimal_1__Decimal_1_),
-      pair(| $type->subTypeOf(Float), | normalizeFloat_Float_1__Float_1_),
-      pair(| $type->subTypeOf(DateTime), | normalizeDateTime_DateTime_1__DateTime_1_)
+      pair(| $type->subTypeOf(Decimal), | normalizeDecimal_Decimal_$0_1$__String_$0_1$_),
+      pair(| $type->subTypeOf(Float), | normalizeFloat_Float_$0_1$__String_$0_1$_),
+      pair(| $type->subTypeOf(DateTime), | normalizeDateTime_DateTime_$0_1$__String_$0_1$_),
+      pair(| $type->subTypeOf(Date), | normalizeDate_Date_$0_1$__String_$0_1$_),
+      pair(| $type->subTypeOf(Binary), | normalizeBinary_Binary_$0_1$__String_$0_1$_)
     ],
     | []
   );
 
   if ($func->isEmpty(), 
-    | $input,
-    | sfe($func->toOne(),$input)
+    | ^Pair<ValueSpecification, Type>(first=$input, second=$type),
+    | ^Pair<ValueSpecification, Type>(first=sfe($func->toOne(),$input), second=$func->toOne()->functionReturnType().rawType->toOne())
   );
 }
 
