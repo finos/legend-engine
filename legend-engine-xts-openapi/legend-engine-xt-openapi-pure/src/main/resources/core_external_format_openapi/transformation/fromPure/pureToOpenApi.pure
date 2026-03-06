@@ -25,6 +25,7 @@ import meta::pure::generation::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::tests::*;
 import meta::pure::graphFetch::*;
 import meta::external::function::description::openapi::tostring::*;
+import meta::pure::metamodel::relation::*;
 
 Class meta::external::function::description::openapi::transformation::fromPure::FunctionInfo
 {
@@ -99,11 +100,15 @@ function <<access.private>> meta::external::function::description::openapi::tran
                                     let paramsExample = $fi.paramsExample;
                                     let func = $fi->getEvaluatedExecutionFunction();
                                     let ret = $fi->getReturnType();
-
-                                    let tdsColumns = if($ret->instanceOf(GenericType) && $ret->cast(@GenericType).rawType == TabularDataSet ,
-                                                          |list(meta::pure::tds::schema::resolveSchemaImpl($func.expressionSequence->evaluateAndDeactivate()->last()->toOne(), ^Map<String, List<Any>>(), $extensions).columns->map(c | ^TDSResult(column = $c.name, type = ^GenericType(rawType= $c.type)->generateOpenApiType());));,
-                                                          |[]
-                                                        );
+                                    let tdsColumns = if([
+                                                          pair(|$ret->instanceOf(GenericType) && $ret->cast(@GenericType).rawType->toOne()->_subTypeOf(TabularDataSet),
+                                                               |list(meta::pure::tds::schema::resolveSchemaImpl($func.expressionSequence->evaluateAndDeactivate()->last()->toOne(), ^Map<String, List<Any>>(), $extensions).columns->map(c | ^TDSResult(column = $c.name, type = ^GenericType(rawType= $c.type)->generateOpenApiType())));
+                                                          ),
+                                                          pair(|$ret->instanceOf(GenericType) && $ret->cast(@GenericType).rawType->toOne()->_subTypeOf(Relation),
+                                                               |list($func.expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns->map(c | ^TDSResult(column = $c.name->toOne(), type = ^GenericType(rawType=$c->genericType().typeArguments->at(1).rawType)->generateOpenApiType())));
+                                                          )],
+                                                        |[]
+                                                      );
 
                                     let responseSchema = $ret->getResponseSchema([], $tdsColumns);
                                     pair($url,
@@ -195,9 +200,12 @@ function <<access.private>> meta::external::function::description::openapi::tran
 {
   let func = $funcInfo->getEvaluatedExecutionFunction();
   let ftype = $func->functionReturnType();
-  if($ftype.rawType==TabularDataSet,|$ftype, | let expr = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@FunctionExpression);
-                                               assert($expr->cast(@FunctionExpression)->toOne()->isSerialize());
-                                               $expr.parametersValues->at(1)->cast(@InstanceValue).values->toOne(););
+  if($ftype.rawType->toOne()->_subTypeOf(TabularDataSet) || $ftype.rawType->toOne()->_subTypeOf(Relation),
+    | $ftype,
+    | let expr = $func.expressionSequence->evaluateAndDeactivate()->last()->cast(@FunctionExpression);
+      assert($expr->cast(@FunctionExpression)->toOne()->isSerialize());
+      $expr.parametersValues->at(1)->cast(@InstanceValue).values->toOne();
+  );
 }
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::returnTypesFromFunctions(funcInfos:FunctionInfo[*]):GenericType[*]
@@ -253,7 +261,7 @@ function <<access.private>> meta::external::function::description::openapi::tran
 {
   if($tree->instanceOf(GenericType),
     | $tree->cast(@GenericType)->buildComponent($m)->map(res| if($tds->isNotEmpty(),
-                                                                | let specificationExtension = newMap(pair('x-tdsResultColumns', $tds->toOne()));
+                                                                | let specificationExtension = newMap(if($tree->cast(@GenericType).rawType->toOne()->_subTypeOf(TabularDataSet), |pair('x-tdsResultColumns', $tds->toOne()), |pair('x-columns', $tds->toOne())));
                                                                   newMap(pair('application/json', ^MediaType(schema= ^$res(specificationExtensions = $specificationExtension))));,
                                                                 | newMap(pair('application/json', ^MediaType(schema= $res)));
                                                               );
