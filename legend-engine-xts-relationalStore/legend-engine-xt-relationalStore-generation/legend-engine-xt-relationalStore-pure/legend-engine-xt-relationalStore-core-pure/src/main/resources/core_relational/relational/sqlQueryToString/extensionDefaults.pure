@@ -848,6 +848,8 @@ function   meta::relational::functions::sqlQueryToString::default::defaultJavaTo
                   pair('hh', 'I2'),   // Hour in day (0-12) padded
                   pair('h', 'FMHH12'),   // Hour in day (0-12)    
                   pair('mm', 'MI'),   // Minute in hour
+                  pair('SSSSSSSSS','FF9'),
+                  pair('SSSSSS','FF6'),
                   pair('SSS','FF3'),
                   pair('ss', 'SS'),   // Second in minute
                   pair('I1', 'HH24'),   //replace intermediate placeholders

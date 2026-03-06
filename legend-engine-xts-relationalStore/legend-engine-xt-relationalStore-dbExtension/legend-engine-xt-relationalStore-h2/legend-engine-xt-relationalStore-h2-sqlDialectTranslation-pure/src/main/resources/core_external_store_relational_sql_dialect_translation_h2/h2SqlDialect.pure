@@ -493,9 +493,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let params = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let format = $params->at(2)->dateFormatSpecifierForH2();
+  let containsSrcTimeZone = $params->size() == 4;
+  let format = $params->last()->toOne()->dateFormatSpecifierForH2();
   assert($format->removeQuotes($sqlDialect)->validateDateTimeFormat(), 'Found an invalid date format');
-  let convertedTZ = generateFunctionCallWithArgs($sqlDialect, 'legend_h2_extension_convertTimeZone', [$params->at(0), $params->at(1)], $f, $state, $config);
+  let targetTimeZone = if($containsSrcTimeZone, | $params->at(2), | $params->at(1));
+  let convertedTZ = generateFunctionCallWithArgs($sqlDialect, 'legend_h2_extension_convertTimeZone', [$params->at(0), $targetTimeZone], $f, $state, $config);
   generateFunctionCallWithArgs($sqlDialect, 'formatdatetime', [$convertedTZ, $format], $f, $state, $config);
 }
 
