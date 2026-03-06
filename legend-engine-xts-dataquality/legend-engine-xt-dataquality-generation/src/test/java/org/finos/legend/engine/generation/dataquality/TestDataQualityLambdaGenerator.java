@@ -145,7 +145,7 @@ public class TestDataQualityLambdaGenerator
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null, false, null, true);
+        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", null, false, null, true, false);
         return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
     }
 
@@ -154,7 +154,7 @@ public class TestDataQualityLambdaGenerator
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = extensions();
-        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true);
+        LambdaFunction<?> lambdaFunction = DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true, false);
         return DataQualityLambdaGenerator.transformLambdaAsJson(lambdaFunction, model, routerExtensions);
     }
 
@@ -162,7 +162,7 @@ public class TestDataQualityLambdaGenerator
     {
         PureModelContextData modelData = loadWithModel(modelString);
         PureModel model = Compiler.compile(modelData, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity().getName());
-        return DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true);
+        return DataQualityLambdaGenerator.generateLambda(model, "meta::dataquality::Validation", Sets.mutable.of(validationName), false, null, true, false);
     }
 
     private static PureModelContextData loadWithModel(String code)
