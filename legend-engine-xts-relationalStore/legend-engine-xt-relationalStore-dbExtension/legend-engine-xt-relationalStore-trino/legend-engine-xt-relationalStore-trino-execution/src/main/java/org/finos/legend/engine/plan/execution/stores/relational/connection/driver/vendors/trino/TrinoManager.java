@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.trino;
 
+import com.google.common.base.Strings;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
@@ -36,6 +37,10 @@ public class TrinoManager extends DatabaseManager
     {
         String hostWithPort = host + ":" + port;
         String catalogSchema = getCatalogSchema(extraUserDataSourceProperties);
+        if (Strings.isNullOrEmpty(catalogSchema) && !Strings.isNullOrEmpty(databaseName))
+        {
+            catalogSchema = databaseName;
+        }
         return "jdbc:trino://" + hostWithPort + "/" + catalogSchema;
     }
 
