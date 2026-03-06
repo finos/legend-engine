@@ -97,6 +97,17 @@ You will see that there are three params:
 To refine our implementation and ensure proper registration, use ```TestFunction_TesterHelper_Compiled``` to execute the pure code (defined in the respective ```testHelperScratch.pure```) that calls
 your native function.
 
+#### Functions with Multiple Signatures
+If your function has multiple overloaded signatures (e.g., different parameter types or counts), **you will need a separate Java file for each signature**. Each file registers a different canonical function name.
+
+For example, `zScore` has two signatures (with and without window partitioning):
+- [`ZScore.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScore.java) — handles `zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_`
+- [`ZScoreWindow.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScoreWindow.java) — handles the windowed variant with `ColSpecArray`
+
+Similarly, `extend` and `groupBy` have multiple files for their different signatures:
+- [`Extend.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Extend.java), [`ExtendArray.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ExtendArray.java), [`ExtendAgg.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ExtendAgg.java)
+- [`GroupByColSpecAgg.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/GroupByColSpecAgg.java), [`GroupByColSpecAggArray.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/GroupByColSpecAggArray.java), etc.
+
 ### Adding the *"Interpreted"* code path
 Within the package: ```legend-engine-pure-runtime-java-extension-interpreted-functions-standard```, you will need to make changes in 2 places:
 1. in the ```natives``` package, add a *.java file, while following the same directory hierarchy as for the *.pure code for your function.
@@ -131,6 +142,56 @@ function go():Any[*]
 
 ### Example PR
 The resulting code for [*cosh.pure* can be seen in this PR.](https://github.com/finos/legend-engine/pull/3604/files#diff-e3bc3198a3951d9ac9fd31d38d4de7be98a92d5b31d648ad806d7c35b72d2ac0)
+
+---
+
+## Relation Functions (Different from Standard Functions)
+
+The examples above use **Standard functions** (like `cosh`). If you're adding a **Relation function** (functions that operate on `Relation<T>` types, like `zScore`, `extend`, `groupBy`), the process is similar but uses **different packages and helper classes**.
+
+### Key Differences for Relation Functions
+
+| Aspect | Standard Functions | Relation Functions |
+|--------|-------------------|-------------------|
+| Pure definition package | `legend-engine-pure-code-functions-standard` | `legend-engine-pure-code-functions-relation` |
+| Compiled natives package | `legend-engine-pure-runtime-java-extension-compiled-functions-standard` | `legend-engine-pure-runtime-java-extension-compiled-functions-relation` |
+| Helper class for Java impl | `StandardFunctionsHelper.java` | `RelationNativeImplementation.java` |
+| Shared logic class | `StandardFunctionsHelper.java` | `TestTDS.java` |
+| Extension class (compiled) | `StandardFunctionsExtensionCompiled.java` | `RelationExtensionCompiled.java` |
+| Extension class (interpreted) | `StandardFunctionsExtensionInterpreted.java` | `RelationExtensionInterpreted.java` |
+
+### Relation Function Examples
+- [`ZScore.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScore.java)
+- [`Extend.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Extend.java)
+- [`RelationNativeImplementation.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/RelationNativeImplementation.java)
+
+### Type Inference for Relation Functions
+Relation functions often have complex return types like `Relation<T+R>` (input columns plus new columns). These require **custom type inference** in `Handlers.java`.
+
+For example, `zScore` takes a `Relation<T>` and adds a new Float column, returning `Relation<T+R>`. The compiler needs inference logic to compute this:
+
+```
+Input:  Relation<(name:String, value:Integer)>
+Output: Relation<(name:String, value:Integer, zscore:Float)>
+```
+
+Look at existing relation function handlers in `Handlers.java` for examples of type inference (search for `zScore` or `extend`).
+
+---
+
+## Troubleshooting Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `"The function 'xxx' is not supported by this execution platform"` | Function not registered in extension class | Register in **both** `*ExtensionCompiled.java` AND `*ExtensionInterpreted.java` |
+| `"Cannot determine return type"` | Missing or incorrect type inference | Add/fix inference function in `Handlers.java` |
+| Works in Compiled mode but fails in Interpreted (or vice versa) | Only registered in one extension | Register in both compiled and interpreted extensions |
+| `"Native function not found"` | Canonical name mismatch | Verify the function signature string matches exactly (e.g., `zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_`) |
+| SQL works on Postgres but fails on SQL Server | Database-specific syntax differences | Add override in the database-specific extension file (e.g., `sqlServerExtension.pure`) |
+| Handler registered but never called | Canonical name in `Handlers.java` doesn't match Pure signature | Double-check the naming pattern: `functionName_ParamType1_Mult1__ParamType2_Mult2__ReturnType_Mult_` |
+| `"Couldn't find DynaFunction to Postgres model translation for xxx()"` | Function missing from SQL dialect translation | Add entry to `getDynaFunctionConverterMap()` in `toPostgresModel.pure` (see [Wiring How-To](wiring-howto.md#sql-dialect-translation-topostgresmodelpure)) |
+
+---
 
 ## Next Steps
 The next step is to wire your function to run on Relational Database targets. We must instruct the platform on how to "wire" (aka cross-compile) the function
