@@ -30,8 +30,7 @@ public class TrinoDatabaseAuthenticationFlowProvider
     {
         return Lists.immutable.of(
                 new TrinoWithDelegatedKerberosFlow(),
-                new TrinoWithUserPasswordFlow(),
-                new TrinoStaticWithUserPasswordFlow()
+                new TrinoWithUserPasswordFlow()
         );
     }
 
