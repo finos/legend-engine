@@ -39,30 +39,19 @@ import java.util.stream.Collectors;
 
 public class PureIDEMcpStdioServer
 {
-    private static final ObjectMapper
-        OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    public static void main(String[] args)
-        throws Exception
+    public static void main(String[] args) throws Exception
     {
-        MutableRepositoryCodeStorage codeStorage =
-            buildCodeStorage();
-
+        MutableRepositoryCodeStorage codeStorage = buildCodeStorage();
         Message message = new Message("");
-        PureRuntime pureRuntime =
-            new PureRuntimeBuilder(codeStorage)
-                .withMessage(message)
-                .setUseFastCompiler(true)
-                .build();
+        PureRuntime pureRuntime = new PureRuntimeBuilder(codeStorage).withMessage(message).setUseFastCompiler(true).build();
 
-        FunctionExecution functionExecution =
-            new FunctionExecutionInterpreted();
-        functionExecution.init(
-            pureRuntime, message);
+        FunctionExecution functionExecution = new FunctionExecutionInterpreted();
+        functionExecution.init(pureRuntime, message);
         codeStorage.initialize(message);
 
-        System.err.println(
-            "Initializing Pure runtime...");
+        System.err.println("Initializing Pure runtime...");
         pureRuntime.initialize(new Message("")
         {
             @Override
@@ -72,50 +61,29 @@ public class PureIDEMcpStdioServer
                 System.err.println(msg);
             }
         });
-        System.err.println(
-            "Pure runtime initialized.");
+        System.err.println("Pure runtime initialized.");
 
-        LegendStatelessMcpServerOrchestrator
-            orch =
-            PureIDEMcpToolDefinitions
-                .createOrchestrator(
-                    pureRuntime, codeStorage,
-                    functionExecution);
+        LegendStatelessMcpServerOrchestrator orch = PureIDEMcpToolDefinitions.createOrchestrator(pureRuntime, codeStorage, functionExecution);
 
         runStdioLoop(orch);
     }
 
-    private static MutableRepositoryCodeStorage
-        buildCodeStorage()
+    private static MutableRepositoryCodeStorage buildCodeStorage()
     {
-        List<RepositoryCodeStorage> repos =
-            CodeRepositoryProviderHelper
-                .findCodeRepositories()
-                .collect(
-                    ClassLoaderCodeStorage::new)
-                .toList()
-                .stream()
-                .map(cs ->
-                    (RepositoryCodeStorage) cs)
-                .collect(Collectors.toList());
+        List<RepositoryCodeStorage> repos = CodeRepositoryProviderHelper.findCodeRepositories().collect(ClassLoaderCodeStorage::new)
+                        .toList()
+                        .stream()
+                        .map(cs -> (RepositoryCodeStorage) cs)
+                        .collect(Collectors.toList());
 
-        return new CompositeCodeStorage(
-            repos.toArray(
-                new RepositoryCodeStorage[0]));
+        return new CompositeCodeStorage(repos.toArray(new RepositoryCodeStorage[0]));
     }
 
-    private static void runStdioLoop(
-            LegendStatelessMcpServerOrchestrator
-                orch)
-        throws Exception
+    private static void runStdioLoop(LegendStatelessMcpServerOrchestrator orch) throws Exception
     {
-        BufferedReader reader =
-            new BufferedReader(
-                new InputStreamReader(
-                    System.in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String line;
-        while ((line = reader.readLine())
-            != null)
+        while ((line = reader.readLine()) != null)
         {
             line = line.trim();
             if (line.isEmpty())
@@ -125,53 +93,33 @@ public class PureIDEMcpStdioServer
 
             try
             {
-                JsonNode node =
-                    OBJECT_MAPPER.readTree(line);
+                JsonNode node = OBJECT_MAPPER.readTree(line);
 
                 if (node.has("id"))
                 {
-                    Request request =
-                        OBJECT_MAPPER
-                            .treeToValue(node,
-                                Request.class);
-                    Response response =
-                        orch.handleRequest(
-                            request,
-                            Identity
-                                .getAnonymousIdentity());
-                    String responseJson =
-                        OBJECT_MAPPER
-                            .writeValueAsString(
-                                response);
-                    System.out.println(
-                        responseJson);
+                    Request request = OBJECT_MAPPER.treeToValue(node, Request.class);
+                    Response response = orch.handleRequest(request, Identity.getAnonymousIdentity());
+                    String responseJson = OBJECT_MAPPER.writeValueAsString(response);
+                    System.out.println(responseJson);
                     System.out.flush();
                 }
                 else
                 {
-                    Notification notification =
-                        OBJECT_MAPPER
-                            .treeToValue(node,
-                                Notification
-                                    .class);
-                    orch.handleNotification(
-                        notification,
-                        Identity
-                            .getAnonymousIdentity());
+                    Notification notification = OBJECT_MAPPER.treeToValue(node, Notification.class);
+                    orch.handleNotification(notification, Identity.getAnonymousIdentity());
                 }
             }
             catch (Exception e)
             {
-                String msg = e.getMessage()
-                    .replace("\"", "\\\"");
+                String msg = e.getMessage().replace("\"", "\\\"");
                 String errorJson =
-                    "{\"jsonrpc\":\"2.0\","
-                    + "\"id\":null,"
-                    + "\"error\":{\"code\":"
-                    + "-32700"
-                    + ",\"message\":"
-                    + "\"Parse error: "
-                    + msg + "\"}}";
+                        "{\"jsonrpc\":\"2.0\","
+                                + "\"id\":null,"
+                                + "\"error\":{\"code\":"
+                                + "-32700"
+                                + ",\"message\":"
+                                + "\"Parse error: "
+                                + msg + "\"}}";
                 System.out.println(errorJson);
                 System.out.flush();
             }
