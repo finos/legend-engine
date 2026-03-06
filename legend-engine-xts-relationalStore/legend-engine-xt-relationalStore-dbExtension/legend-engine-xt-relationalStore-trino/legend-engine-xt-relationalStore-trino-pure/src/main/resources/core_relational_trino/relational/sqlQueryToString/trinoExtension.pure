@@ -14,6 +14,11 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::t
   ^DbExtensionLoader(dbType = DatabaseType.Trino, loader = createDbExtensionForTrino__DbExtension_1_);
 }
 
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::trino::dbExtensionLoaderForAthena():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.Athena, loader = createDbExtensionForTrino__DbExtension_1_);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::createDbExtensionForTrino():DbExtension[1]
 {
    let reservedWords = defaultReservedWords();
@@ -222,14 +227,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateCreateSchemaStatementForTrino(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   // sql is enclosed in [] to signify that its failure due to schema already existing should not stop us from running other DDL commands
-   if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ']');
+   if($createSchemaSQL.schema.name == 'default', |[], |'Create Schema if not exists ' + $createSchemaSQL.schema.name);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropSchemaStatementForTrino(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[*]
 {
-   // dropping the schema is not needed for test setup
-   [];
+   if ($dropSchemaSQL.schema.name == 'default', 
+    |  [], 
+    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::translateDropTableStatementForTrino(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[*]
