@@ -384,7 +384,7 @@ public class DataQualityExecute
         {
             return DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
         }
-        return DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, queryType);
+        return DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, queryType);
     }
 
     @POST
@@ -398,7 +398,7 @@ public class DataQualityExecute
         // 1. load pure model from PureModelContext
         PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
         // 2. call DQ PURE func to generate lambda
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, null);
         LambdaFunction lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
         return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }

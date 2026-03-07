@@ -482,9 +482,9 @@ function <<access.private>> meta::external::dataquality::constraintToDqRule(cons
 }
 
 
-function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationName: String[1], defectsLimit:Integer[0..1]): LambdaFunction<Any>[1]
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1]): LambdaFunction<Any>[1]
 {
-  $dqRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $defectsLimit, true)
+  $dqRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, $defectsLimit, true)
 }
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1]): LambdaFunction<Any>[1]
@@ -493,6 +493,11 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 }
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): LambdaFunction<Any>[1]
+{
+  generateDataqualityRelationValidationLambda($dqRelationValidation, $validationNames, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom, false);
+}
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(dqRelationValidation: meta::external::dataquality::DataQualityRelationValidation[1], validationNames: String[*], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1], includeTotalDefectCount:Boolean[1]): LambdaFunction<Any>[1]
 {
   //if validation name provided only generate query for that validation else generate query for all validations
   let selectedValidations = if ($validationNames->isEmpty(),
@@ -515,7 +520,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
         | ^VariableExpression(name = 'sourceQuery', genericType = $query.genericType, multiplicity = PureOne),
         | $query
       );
-      let validationSubQueries = $selectedValidations->map(val | $queryInput->generateDataqualityRelationValidationLambda($val, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom));
+      let validationSubQueries = $selectedValidations->map(val | $queryInput->generateDataqualityRelationValidationLambda($val, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom, $includeTotalDefectCount));
       let validationsUnion = $validationSubQueries->tail()->fold({val1, val2 | buildUnionExpression($val1->evaluateAndDeactivate(), $val2->evaluateAndDeactivate())}, $validationSubQueries->head()->toOne()->evaluateAndDeactivate());
       let expressionSequence = if ($multipleValidations, 
         | [buildLetExpression('sourceQuery', $query), $validationsUnion],
@@ -531,14 +536,23 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1]): FunctionExpression[1]
 {
-  if($selectedValidation.type->isNotEmpty() && $selectedValidation.type == 'ROW_LEVEL',
-     | $query->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive), // for backward compatibility
-     | $query->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive));
+  $query->generateDataqualityRelationValidationLambda($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $removeFrom, false);
 }
 
+function meta::external::dataquality::generateDataqualityRelationValidationLambda(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], removeFrom:Boolean[1], includeTotalDefectCount:Boolean[1]): FunctionExpression[1]
+{
+  if($selectedValidation.type->isNotEmpty() && $selectedValidation.type == 'ROW_LEVEL',
+     | $query->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $includeTotalDefectCount),
+     | $query->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, $includeTotalDefectCount));
+}
 
 // row level validation for backward compatibility
 function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1]): FunctionExpression[1]
+{
+  $query->generateDataqualityRelationValidationLambda_RowLevel($selectedValidation, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, false);
+}
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_RowLevel(query: ValueSpecification[1], selectedValidation: RelationValidation[1], defectsLimit:Integer[0..1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1], includeTotalDefectCount:Boolean[1]): FunctionExpression[1]
 {
   let inputRelType = $query->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
   let withValidationFilterExpression = $query->toOne()->evaluateAndDeactivate()->buildRelationFilterExpressionForRowLevelVal($selectedValidation, $inputRelType);
@@ -546,13 +560,24 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   // assertion - enrich DQ columns
   let withDQColumnsAndNewRelationType = if($enrichDQColumns, | $withValidationFilterExpression->enrichDQColumns($inputRelType, $selectedValidation, $castDQColumnsToPrimitive), | ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withValidationFilterExpression, second=$inputRelType););
 
+  // add total defect count column if requested (computed before limit so it reflects all defects)
+  let withDefectCount = if($includeTotalDefectCount,
+    | $withDQColumnsAndNewRelationType.first->enrichTotalDefectCountColumn($withDQColumnsAndNewRelationType.second, $castDQColumnsToPrimitive);,
+    | $withDQColumnsAndNewRelationType
+  );
+
   if($defectsLimit->isEmpty(),
-    | $withDQColumnsAndNewRelationType.first,
-    | $withDQColumnsAndNewRelationType.first->buildLimitFilterExpression($defectsLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$withDQColumnsAndNewRelationType.second)))
+    | $withDefectCount.first,
+    | $withDefectCount.first->buildLimitFilterExpression($defectsLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$withDefectCount.second)))
   );
 }
 
 function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(query: ValueSpecification[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1], castDQColumnsToPrimitive:Boolean[1]): FunctionExpression[1]
+{
+  $query->generateDataqualityRelationValidationLambda_Aggregate($selectedValidation, $resultLimit, $enrichDQcolumns, $castDQColumnsToPrimitive, false);
+}
+
+function meta::external::dataquality::generateDataqualityRelationValidationLambda_Aggregate(query: ValueSpecification[1], selectedValidation: RelationValidation[1], resultLimit:Integer[0..1], enrichDQcolumns:Boolean[0..1], castDQColumnsToPrimitive:Boolean[1], includeTotalDefectCount:Boolean[1]): FunctionExpression[1]
 {
   // assertion transformation
   let poppedAssertion = $selectedValidation->popAssertionForProjection()->evaluateAndDeactivate();
@@ -563,14 +588,111 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   // assertion - enrich DQ columns by default
   let withDQColumnsAndNewRelationType = if($enrichDQcolumns->isEmpty() || $enrichDQcolumns->toOne(), | $poppedAssertion->enrichDQColumns($inputRelType, $selectedValidation, $castDQColumnsToPrimitive), | ^Pair<ValueSpecification, meta::pure::metamodel::relation::RelationType<Any>>(first=$poppedAssertion, second=$inputRelType););
 
-  // main dataset query transformation
-  let queryWithLimitExpression = if($resultLimit->isEmpty(),
-                                     | $query->evaluateAndDeactivate(),
-                                     | $query->evaluateAndDeactivate()->buildRelationLimitFilterExpression($resultLimit->toOne(), $query->genericType())
-                                  );
+  // add total defect count column if requested (computed before limit so it reflects all defects)
+  let withDefectCount = if($includeTotalDefectCount,
+    | $withDQColumnsAndNewRelationType.first->enrichTotalDefectCountColumn($withDQColumnsAndNewRelationType.second, $castDQColumnsToPrimitive);,
+    | $withDQColumnsAndNewRelationType
+  );
 
-  // compose above transformed query and assertion
-  $withDQColumnsAndNewRelationType.first->buildEvalExpression($queryWithLimitExpression->cast(@ValueSpecification), $selectedValidation, getRelationType($selectedValidation), $withDQColumnsAndNewRelationType.second);
+  // compose transformed assertion with source query (no limit on source - limit applied after)
+  let evalExpression = $withDefectCount.first->buildEvalExpression($query->evaluateAndDeactivate()->cast(@ValueSpecification), $selectedValidation, getRelationType($selectedValidation), $withDefectCount.second);
+
+  // apply limit after the eval so it limits defect rows, not source rows
+  if($resultLimit->isEmpty(),
+    | $evalExpression,
+    | $evalExpression->buildRelationLimitFilterExpression($resultLimit->toOne(), ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$withDefectCount.second)))
+  );
+}
+
+function meta::external::dataquality::enrichTotalDefectCountColumn(f:ValueSpecification[1], inputRelType:meta::pure::metamodel::relation::RelationType<Any>[1], castDQColumnsToPrimitive:Boolean[1]): Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>[1]
+{
+  let newRelTypeWithDefectCount = $inputRelType->addColumns(~[DEFECT_COUNT: Integer[1]])->evaluateAndDeactivate();
+  let newRelTypeOnlyDefectCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $newRelTypeWithDefectCount.columns->filter(col | 'DEFECT_COUNT' == ($col.name->toOne())));
+
+  // Build the first lambda: {x | $x.<firstCol>} - maps each row to the rule name
+  let aggColSpecFirstParam = buildAggColSpecDefectCountFirstParam($inputRelType);
+
+  // Get the actual column type for the second param
+  let firstCol = $inputRelType.columns->first()->toOne();
+  let firstColGenericType = $firstCol.classifierGenericType.typeArguments->at(1);
+
+  // Build the second lambda: {y | $y->size()} - counts the mapped values using size
+  let aggColSpecSecondParam = buildAggColSpecDefectCountSecondParam($firstColGenericType);
+
+  // Build the aggColSpec expression
+  let aggColSpec = ^SimpleFunctionExpression
+  (
+      func = aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_,
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = AggColSpec, typeArguments = [$aggColSpecFirstParam.genericType, $aggColSpecSecondParam.genericType, ^GenericType(rawType=$newRelTypeOnlyDefectCount)]),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $aggColSpecFirstParam,
+        $aggColSpecSecondParam,
+        ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = 'DEFECT_COUNT')->evaluateAndDeactivate(),
+        ^InstanceValue(genericType = ^GenericType(rawType = $newRelTypeOnlyDefectCount), multiplicity = PureOne)->evaluateAndDeactivate()
+      ]
+  )->evaluateAndDeactivate();
+
+  // Build the extend expression: $input->extend(aggColSpec)
+  let withDefectCount = ^SimpleFunctionExpression
+  (
+      func = extend_Relation_1__AggColSpec_1__Relation_1_,
+      functionName = 'extend',
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelTypeWithDefectCount)),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [
+        $f,
+        $aggColSpec
+      ]
+  )->evaluateAndDeactivate();
+
+  ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withDefectCount, second=$newRelTypeWithDefectCount);
+}
+
+
+// Build the first lambda for defect count: {x | $x.<firstCol>} - maps each row to the first column value
+function meta::external::dataquality::buildAggColSpecDefectCountFirstParam(relType: meta::pure::metamodel::relation::RelationType<Any>[1]):InstanceValue[1]
+{
+  let firstCol = $relType.columns->first()->toOne();
+  let firstColName = $firstCol.name->toOne();
+  let firstColGenericType = $firstCol.classifierGenericType.typeArguments->at(1);
+  let expression = ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = $relType), multiplicity = PureOne);
+  let colAccess = ^SimpleFunctionExpression
+  (
+      func = $firstCol,
+      multiplicity = ZeroOne,
+      genericType  = $firstColGenericType,
+      importGroup  = system::imports::coreImport,
+      parametersValues = [$expression],
+      propertyName = ^InstanceValue(genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [$firstColName])
+  )->evaluateAndDeactivate();
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = ZeroOne, returnType = $firstColGenericType))),
+      multiplicity = PureOne,
+      values = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = $firstColGenericType, parameters = $expression), $colAccess)
+  )->evaluateAndDeactivate();
+}
+
+// Build the second lambda for defect count: {y | $y->size()} - counts using size
+function meta::external::dataquality::buildAggColSpecDefectCountSecondParam(colGenericType: GenericType[1]):InstanceValue[1]
+{
+  let expression = ^VariableExpression(name = 'y', genericType = $colGenericType, multiplicity = ZeroMany);
+  let sizeCall = ^SimpleFunctionExpression
+  (
+      func = size_Any_MANY__Integer_1_,
+      functionName = 'size',
+      multiplicity = PureOne,
+      genericType  = ^GenericType(rawType = Integer),
+      importGroup  = system::imports::coreImport,
+      parametersValues = [$expression]
+  )->evaluateAndDeactivate();
+  ^InstanceValue(
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
+      multiplicity = PureOne,
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), $sizeCall)
+  )->evaluateAndDeactivate();
 }
 
 function meta::external::dataquality::buildUnionExpression(param1: FunctionExpression[1], param2: FunctionExpression[1]): FunctionExpression[1]
