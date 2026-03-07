@@ -432,6 +432,14 @@
         </dependency>
         <!-- Servlet -->
 
+        <!-- MCP -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-ide-light-mcp</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- MCP -->
+
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>

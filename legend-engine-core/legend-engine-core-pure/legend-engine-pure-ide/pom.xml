@@ -31,5 +31,6 @@
         <module>legend-engine-pure-ide-light-pure</module>
         <module>legend-engine-pure-ide-light-pure-debug</module>
         <module>legend-engine-pure-ide-light-interpreted-functions</module>
+        <module>legend-engine-pure-ide-light-mcp</module>
     </modules>
 </project>
