@@ -56,7 +56,7 @@ function meta::external::query::sql::transformation::compile::utils::isNull(v:Va
 
 function meta::external::query::sql::transformation::compile::utils::isZeroOne(v:ValueSpecification[1]):Boolean[1]
 {
-  $v->evaluateAndDeactivate().multiplicity == ZeroOne;
+  $v->evaluateAndDeactivate().multiplicity->isZeroOne();
 }
 
 function meta::external::query::sql::transformation::compile::utils::isZeroMany(v:ValueSpecification[1]):Boolean[1]
