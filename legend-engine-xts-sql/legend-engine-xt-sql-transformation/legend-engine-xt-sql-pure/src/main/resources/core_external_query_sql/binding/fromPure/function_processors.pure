@@ -535,8 +535,20 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 {
   let coreProcessor = $processors->filter(p | $p.name == $name->toLower());
 
-  let processor = if ($coreProcessor->isEmpty(),
+  let udfProcessor = if ($coreProcessor->isEmpty(),
   | meta::external::query::sql::getSQLExtensions().udf($name),
+  | []);
+
+  let udtfProcessor = if ($coreProcessor->isEmpty(),
+  | meta::external::query::sql::getSQLExtensions().udtf($name),
+  | []);
+  
+    let processor = if ($coreProcessor->isEmpty(),
+  | if ($udfProcessor->isEmpty(),
+    | if ($udtfProcessor->isEmpty(),
+    | [],
+    | $udtfProcessor),
+  | $udfProcessor),
   | $coreProcessor);
 
   assertEquals(1, $processor->size(), | 'No function matches the given name "' + $name + '"');

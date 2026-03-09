@@ -1522,8 +1522,12 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitSubqueryExpression(SqlBaseParser.SubqueryExpressionContext context)
     {
-//        return new SubqueryExpression((Query) visit(context.query()));
-        return unsupported("Subquery Expression");
+        Query query = (Query) visit(context.queryStatement());
+
+        SubqueryExpression expr = new SubqueryExpression();
+        expr.query = query;
+
+        return expr;
     }
 
     @Override
