@@ -116,6 +116,12 @@
       ]
     },
     {
+      "name": "trino",
+      "modules": [
+        "legend-engine-xt-relationalStore-trino-PCT"
+      ]
+    },
+    {
       "name": "elasticsearch",
       "modules": [
         "legend-engine-xt-elasticsearch-executionPlan-test"
