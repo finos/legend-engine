@@ -613,7 +613,7 @@ function meta::external::dataquality::enrichDQColumns(f:ValueSpecification[1], i
   let withRuleId = $f->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $inputRelType, $newRelTypeWithRuleId, String);
 
   let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleId->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
-  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName, false, []), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
+  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
 
   let newRelTypeWithDefectId = $newRelTypeWithLogicalDefectId->addColumns(~[DQ_DEFECT_ID: String[1]])->evaluateAndDeactivate();
   let withDefectId = $withLogicalId->buildExtendExpression('DQ_DEFECT_ID', buildGenerateGuidExpression(), $relParamName, $newRelTypeWithLogicalDefectId, $newRelTypeWithDefectId, String);
@@ -630,7 +630,7 @@ function meta::external::dataquality::enrichDQColumnsPrecise(f:ValueSpecificatio
   let withRuleId = $f->buildExtendExpression('DQ_RULE_NAME', buildVarcharCast(^InstanceValue(values=$selectedValidation.name, genericType=^GenericType(rawType=String), multiplicity=PureOne), 255), $relParamName, $inputRelType, $newRelTypeWithRuleId, String);
 
   let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleId->addColumns(~[DQ_LOGICAL_DEFECT_ID: Varchar(32)[1]])->evaluateAndDeactivate();
-  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName, false, []), 32), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
+  let withLogicalId = $withRuleId->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildVarcharCast(buildHashFunctionExpression($newRelTypeWithRuleId, $newRelTypeWithRuleId.columns.name, $relParamName), 32), $relParamName, $newRelTypeWithRuleId, $newRelTypeWithLogicalDefectId, String);
 
   ^Pair<FunctionExpression, meta::pure::metamodel::relation::RelationType<Any>>(first=$withLogicalId, second=$newRelTypeWithLogicalDefectId);
 }
@@ -954,7 +954,7 @@ function meta::external::dataquality::buildSizeExpression(queryExpression: Value
 }
 
 //TODO- This should be replaced with native/helper function on Relational when available (similar to extendWithDigestOnColumns on TDS)
-function meta::external::dataquality::buildHashFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
+function meta::external::dataquality::buildHashFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1]):FunctionExpression[1]
 {
    ^SimpleFunctionExpression
    (
@@ -964,7 +964,7 @@ function meta::external::dataquality::buildHashFunctionExpression(relType: meta:
       importGroup  = system::imports::coreImport,
       parametersValues =
       [
-        meta::external::dataquality::buildGetRowStringFunctionExpression($relType, $columns, $relParamName, $includeColName, $colSuffixToRemove),
+        meta::external::dataquality::buildGetRowStringFunctionExpression($relType, $columns, $relParamName),
         meta::external::dataquality::buildHashTypeFunctionExpression()
      ]
    )->evaluateAndDeactivate();
@@ -992,15 +992,15 @@ function meta::external::dataquality::varcharGenericType(size:Integer[1]):Generi
   ^GenericType(rawType = Varchar, typeVariableValues = ^InstanceValue(values = $size, genericType = ^GenericType(rawType = Integer), multiplicity = PureOne));
 }
 
-function meta::external::dataquality::buildGetRowStringFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
+function meta::external::dataquality::buildGetRowStringFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1]):FunctionExpression[1]
 {
   if($columns->size() == 1,
-  | meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression($relType, $columns->at(0), $relParamName, $includeColName, $colSuffixToRemove),
-  | meta::external::dataquality::buildConcatenateFunctionExpression($relType, $columns, $relParamName, $includeColName, $colSuffixToRemove)
+  | meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression($relType, $columns->at(0), $relParamName),
+  | meta::external::dataquality::buildConcatenateFunctionExpression($relType, $columns, $relParamName)
   )
 }
 
-function meta::external::dataquality::buildConcatenateFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
+function meta::external::dataquality::buildConcatenateFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], columns: String[*], relParamName: String[1]):FunctionExpression[1]
 {
    ^SimpleFunctionExpression
    (
@@ -1013,13 +1013,13 @@ function meta::external::dataquality::buildConcatenateFunctionExpression(relType
         ^InstanceValue (
           genericType = ^GenericType(rawType=String),
           multiplicity = OneMany,
-          values = [$columns->map(col | meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression($relType, $col, $relParamName, $includeColName, $colSuffixToRemove))]
+          values = [$columns->map(col | meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression($relType, $col, $relParamName))]
         )
      ]
    )->evaluateAndDeactivate();
 }
 
-function meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
+function meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1]):FunctionExpression[1]
 {
    ^SimpleFunctionExpression
    (
@@ -1031,7 +1031,7 @@ function meta::external::dataquality::buildGetStringValueOrEmptyIfNullFunctionEx
       [
         meta::external::dataquality::buildIsEmptyFunctionExpression($relType, $column, $relParamName),
         meta::external::dataquality::buildEmptyInstanceValue(),
-        meta::external::dataquality::buildToOneInstanceValue($relType, $column, $relParamName, $includeColName, $colSuffixToRemove)
+        meta::external::dataquality::buildToOneInstanceValue($relType, $column, $relParamName)
      ]
    )->evaluateAndDeactivate();
 }
@@ -1089,7 +1089,7 @@ function meta::external::dataquality::buildEmptyInstanceValue():InstanceValue[1]
    )
 }
 
-function meta::external::dataquality::buildToOneInstanceValue(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):InstanceValue[1]
+function meta::external::dataquality::buildToOneInstanceValue(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1]):InstanceValue[1]
 {
   ^InstanceValue
   (
@@ -1097,14 +1097,14 @@ function meta::external::dataquality::buildToOneInstanceValue(relType: meta::pur
     multiplicity = PureOne,
     values = lambda(
       ^FunctionType(returnMultiplicity=PureOne, returnType=^GenericType(rawType=String)),
-                    meta::external::dataquality::buildToStringToOneFunctionExpression($relType, $column, $relParamName, $includeColName, $colSuffixToRemove)
+                    meta::external::dataquality::buildToStringToOneFunctionExpression($relType, $column, $relParamName)
     )
   )
 }
 
-function meta::external::dataquality::buildToStringToOneFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1], includeColName: Boolean[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
+function meta::external::dataquality::buildToStringToOneFunctionExpression(relType: meta::pure::metamodel::relation::RelationType<Any>[1], column: String[1], relParamName: String[1]):FunctionExpression[1]
 {
-   let toOne = ^SimpleFunctionExpression
+   ^SimpleFunctionExpression
    (
       func = toString_Any_1__String_1_,
       multiplicity = PureOne,
@@ -1124,31 +1124,6 @@ function meta::external::dataquality::buildToStringToOneFunctionExpression(relTy
               ]
            )->evaluateAndDeactivate()
       ]
-   )->evaluateAndDeactivate();
-
-   if ($includeColName, | addColumnNameToValue($toOne, $column, $colSuffixToRemove), | $toOne);
-}
-
-function meta::external::dataquality::addColumnNameToValue(columnValue: ValueSpecification[1], column: String[1], colSuffixToRemove: String[0..1]):FunctionExpression[1]
-{
-  let colName = if ($colSuffixToRemove->isEmpty(),
-    | $column,
-    | $column->substring(0, $column->length() - $colSuffixToRemove->toOne()->length())
-  );
-  ^SimpleFunctionExpression
-   (
-      func = plus_String_MANY__String_1_,
-      multiplicity = PureOne,
-      genericType  = ^GenericType(rawType=String),
-      importGroup  = system::imports::coreImport,
-      parametersValues =
-      [
-        ^InstanceValue (
-          genericType = ^GenericType(rawType=String),
-          multiplicity = OneMany,
-          values = ['\\x1E\\x1F\\x1D', $colName, '\\x1E\\x1F\\x1D', $columnValue]
-        )
-     ]
    )->evaluateAndDeactivate();
 }
 

@@ -632,11 +632,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::postgres::processorForConvertTimeZone(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let containsSrcTimeZone = $processedArgs->size() == 4;
-  let srcTimeZone = if($containsSrcTimeZone, | $processedArgs->at(1), | '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'');
-  let targetTimeZone = if($containsSrcTimeZone, | $processedArgs->at(2), | $processedArgs->at(1));
-  let timeZoneArg = $processedArgs->at(0) + ' AT TIME ZONE ' + $srcTimeZone + ' AT TIME ZONE ' + $targetTimeZone;
-  $sqlDialect->generateFunctionCallWithArgs('to_char', [$timeZoneArg, $processedArgs->last()->toOne()], [], $state, $config);
+  let srcTimeZone = '\''+ if($config.dbConfig.dbTimeZone->isEmpty(), | 'GMT', |  $config.dbConfig.dbTimeZone->toOne()) + '\'';
+  let timeZoneArg = $processedArgs->at(0) + ' AT TIME ZONE ' + $srcTimeZone + ' AT TIME ZONE ' + $processedArgs->at(1);
+  $sqlDialect->generateFunctionCallWithArgs('to_char', [$timeZoneArg, $processedArgs->at(2)], [], $state, $config);
   // $sqlDialect->generateFunctionCallWithArgs('convert_from', [$decodeCall, '\'utf8\''], [], $state, $config);
 }
 

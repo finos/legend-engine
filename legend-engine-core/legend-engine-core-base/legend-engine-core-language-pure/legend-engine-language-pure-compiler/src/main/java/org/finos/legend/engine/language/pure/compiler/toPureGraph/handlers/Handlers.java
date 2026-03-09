@@ -2049,7 +2049,6 @@ public class Handlers
 
         register("meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_", "adjust", true, ps -> res("Date", "one"));
         register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", "convertTimeZone", false, ps -> res("String", "one"));
-        register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1__String_1_", "convertTimeZone", false, ps -> res("String", "one"));
 
         register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", "timeBucket", true, ps -> res("DateTime", "one"));
         register("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", "timeBucket", false, ps -> res("DateTime", "zeroOne"));
