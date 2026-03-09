@@ -36,8 +36,6 @@ public class Test_Relational_ClickHouse_ScenarioQuantFunctions_PCT extends PCTRe
     private static final Adapter adapter = CoreRelationalClickHousePCTCodeRepositoryProvider.clickhouseAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\""),
-            one("meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"((1.0 * %s) / %s)\"\"")
     );
 
     public static Test suite()

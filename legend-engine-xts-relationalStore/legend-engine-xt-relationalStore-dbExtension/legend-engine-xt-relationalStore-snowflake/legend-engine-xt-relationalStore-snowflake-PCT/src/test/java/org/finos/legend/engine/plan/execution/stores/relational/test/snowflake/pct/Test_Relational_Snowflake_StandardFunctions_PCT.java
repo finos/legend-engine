@@ -94,7 +94,6 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
-            one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid function type [ROUND] for window function."),
 
             // Percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "SQL compilation error:\nincompatible types: [ARRAY] and [NUMBER(9,0)]"),
