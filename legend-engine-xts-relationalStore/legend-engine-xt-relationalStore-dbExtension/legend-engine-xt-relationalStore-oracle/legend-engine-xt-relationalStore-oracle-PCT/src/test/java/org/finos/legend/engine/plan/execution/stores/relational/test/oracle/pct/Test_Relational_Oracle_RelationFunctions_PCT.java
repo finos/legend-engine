@@ -150,12 +150,7 @@ public class Test_Relational_Oracle_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""),
 
             // Project
-            one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"),
-
-            // zscore
-            one("meta::pure::functions::relation::tests::zscore::testZScore_Nulls_Ignored_Function_1__Boolean_1_", "\"[unsupported-api] The function 'zscore' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::relation::tests::zscore::testZScore_NoWindow_Function_1__Boolean_1_", "\"[unsupported-api] The function 'zscore' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::relation::tests::zscore::testZScore_WindowByGroup_Function_1__Boolean_1_", "\"[unsupported-api] The function 'zscore' (state: [Select, false]) is not supported yet\"")
+            one("meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/")
     );
 
     public static Test suite()
