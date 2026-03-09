@@ -57,7 +57,7 @@ function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFil
    meta::relational::milestoning::applyMilestoningFilters($jtn, {t|[]}, {t|$t}, false, $extensions);
 }
 
-function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFilters::testApplyMilestoningFiltersCatchAllRelationalOperationElement():Boolean[1]
+function <<test.Test>> meta::relational::tests::milestoning::applyMilestoningFilters::testApplyMilestoningFiltersCatchAll():Boolean[1]
 {
    let extensions = meta::relational::extension::relationalExtensions();
    let varDecl = ^VariableDeclaration(name = 'testVariable',type = 'INTEGER',value = ^Literal(value = 42));
