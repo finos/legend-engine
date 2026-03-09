@@ -370,7 +370,10 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testTableSubQuery() {check("SELECT * from ((SELECT * from myTable))");}
+    public void testTableSubQuery()
+    {
+        check("SELECT * from ((SELECT * from myTable))");
+    }
 
     @Test
     public void testCommonTableExpressionSingle()
