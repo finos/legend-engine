@@ -445,7 +445,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('median',                    {p:meta::external::query::sql::metamodel::Expression[*]| medianConverter($p)}),
     pair('mode',                      {p:meta::external::query::sql::metamodel::Expression[*]| modeConverter($p)}),
     pair('sinh',                      functionCall('sinh')),
-    pair('tanh',                      functionCall('tanh'))
+    pair('tanh',                      functionCall('tanh')),
+    pair('zscore',                    {p:meta::external::query::sql::metamodel::Expression[*] | zscoreConverter($p)})
   ];
 
   let supportedDynaFuncs = meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->enumValues().name;
@@ -608,6 +609,21 @@ function <<access.private>> meta::relational::functions::toPostgresModel::percen
       ]
     )    
   );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::zscoreConverter(p:meta::external::query::sql::metamodel::Expression[*]):Node[1]
+{
+   let col = $p->at(0);
+   let partitions = if($p->size() > 1, | $p->tail(), | []);
+   let window = ^meta::external::query::sql::metamodel::Window(partitions = $partitions);
+   let avg = ^FunctionCall(name = ^QualifiedName(parts = 'avg'), arguments = [^ArithmeticExpression(type = ArithmeticType.MULTIPLY, left = ^DecimalLiteral(value = 1.0d), right = $col)], window = $window);
+   let stddev = ^FunctionCall(name = ^QualifiedName(parts = 'stddev_pop'), arguments = [$col], window = $window);
+   let diff = ^ArithmeticExpression(type = ArithmeticType.SUBTRACT, left = $col, right = $avg);
+   let ratio = ^ArithmeticExpression(type = ArithmeticType.DIVIDE, left = $diff, right = $stddev);
+   ^SearchedCaseExpression(
+       whenClauses = [^WhenClause(operand = ^ComparisonExpression(left = $stddev, operator = ComparisonOperator.EQUAL, right = ^IntegerLiteral(value = 0)), result = ^NullLiteral())],
+       defaultValue = $ratio
+   );
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::medianConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]

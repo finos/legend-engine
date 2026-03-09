@@ -333,7 +333,13 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_"),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_"),
             one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_"),
-            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_")
+            one("meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_"),
+
+            // zscore
+            one("meta::pure::functions::relation::tests::zscore::testZScore_WindowByGroup_Function_1__Boolean_1_",  "\"function not supported yet: meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__ColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::zscore::testZScore_Nulls_Ignored_Function_1__Boolean_1_",  "\"function not supported yet: meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__ColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::zscore::testZScore_NoWindow_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_\"")
+
     );
 
     public static Test suite()

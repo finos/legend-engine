@@ -25,13 +25,15 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
-
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -49,6 +51,8 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpecArray;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -60,8 +64,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.function.Function;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
@@ -1000,5 +1004,166 @@ public abstract class TestTDS
             }
         }
         return this;
+    }
+
+    public TestTDS zScore(CoreInstance inputColsSpec, CoreInstance outputColsSpec, CoreInstance windowSpec, ProcessorSupport processorSupport)
+    {
+        List<String> inputCols = Collections.singletonList(((ColSpec<?>) inputColsSpec)._name());
+        List<String> outputCols = Collections.singletonList(((ColSpec<?>) outputColsSpec)._name());
+
+        List<String> windowCols = (windowSpec == null)
+                ? Collections.emptyList()
+                : ((ColSpecArray<?>) windowSpec)._names().collect(c -> (String) c).toList();
+
+        final int rowCount = (int) this.getRowCount();
+
+        Map<List<Object>, List<Integer>> groups = new HashMap<>();
+        for (int i = 0; i < rowCount; i++)
+        {
+            int finalI = i;
+            List<Object> key = windowCols.isEmpty()
+                    ? Collections.emptyList()
+                    : windowCols.stream().map(c -> this.getValue(c, finalI)).collect(Collectors.toList());
+            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(i);
+        }
+
+        TestTDS result = this.copy();
+
+        MutableSet<String> existing = org.eclipse.collections.impl.factory.Sets.mutable.empty();
+        for (String out : outputCols)
+        {
+            if (result.getColumnNames().contains(out))
+            {
+                existing.add(out);
+            }
+        }
+        if (!existing.isEmpty())
+        {
+            result = result.removeColumns(existing);
+        }
+
+        for (int colIdx = 0; colIdx < inputCols.size(); colIdx++)
+        {
+            String inCol = inputCols.get(colIdx);
+            String outCol = outputCols.get(colIdx);
+
+            // use boxed Double[] for Float columns expected by TestTDS
+            Double[] out = new Double[rowCount];
+            boolean[] outNulls = new boolean[rowCount];
+            Arrays.fill(outNulls, true); // Initialize all as null
+
+            for (List<Integer> indices : groups.values())
+            {
+                int n = 0;
+                double sum = 0.0;
+
+                for (int r : indices)
+                {
+                    Object v = this.getValue(inCol, r);
+                    Double dv = toDouble(v);
+                    if (dv != null)
+                    {
+                        sum += dv;
+                        n++;
+                    }
+                }
+
+                if (n == 0)
+                {
+                    continue;
+                }
+
+                double avg = sum / n;
+
+                double variance = 0.0;
+                for (int r : indices)
+                {
+                    Object value = this.getValue(inCol, r);
+                    Double dv = toDouble(value);
+                    if (dv != null)
+                    {
+                        double diff = dv - avg;
+                        variance += diff * diff;
+                    }
+                }
+                variance /= n;
+                double stdDev = Math.sqrt(variance);
+
+                for (int r : indices)
+                {
+                    Object value = this.getValue(inCol, r);
+                    Double dv = toDouble(value);
+                    if (dv == null)
+                    {
+                        continue;
+                    }
+                    if (stdDev == 0.0)
+                    {
+                        // If there is no variation, define z-score as null for numeric values
+                        out[r] = null;
+                        outNulls[r] = true;
+                        continue;
+                    }
+                    out[r] = (dv - avg) / stdDev;
+                    outNulls[r] = false;
+                }
+            }
+
+            Multiplicity zeroOne = (Multiplicity) _Package.getByUserPath("meta::pure::metamodel::multiplicity::ZeroOne", processorSupport);
+
+            GenericType elementGeneric = (GenericType) processorSupport.newAnonymousCoreInstance(null, M3Paths.GenericType);
+            elementGeneric._rawType((Type) _Package.getByUserPath(M3Paths.Float, processorSupport));
+
+            result = result.addColumn(
+                    outCol,
+                    elementGeneric,
+                    zeroOne,
+                    out,
+                    outNulls
+            );
+        }
+        return result;
+    }
+
+    private static Double toDouble(Object v)
+    {
+        if (v == null)
+        {
+            return null;
+        }
+        if (v instanceof Number)
+        {
+            return ((Number) v).doubleValue();
+        }
+        if (v instanceof String)
+        {
+            String s = ((String) v).trim();
+            if (s.isEmpty())
+            {
+                return null;
+            }
+            try
+            {
+                return Double.valueOf(s);
+            }
+            catch (NumberFormatException e)
+            {
+                return null;
+            }
+        }
+        // Fallback: try parsing the string representation
+        try
+        {
+            String s = String.valueOf(v).trim();
+            if (s.isEmpty())
+            {
+                return null;
+            }
+            return Double.valueOf(s);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
     }
 }

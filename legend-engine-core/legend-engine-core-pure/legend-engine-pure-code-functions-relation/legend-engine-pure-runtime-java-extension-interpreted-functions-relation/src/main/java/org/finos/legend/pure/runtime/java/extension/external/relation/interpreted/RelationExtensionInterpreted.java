@@ -61,6 +61,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.interprete
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Sort;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.WrapPrimitiveInTDS;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.Write;
+import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.ZScore;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSWithCursorCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
@@ -127,7 +128,9 @@ public class RelationExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", AsOfJoin::new),
                 Tuples.pair("asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", AsOfJoin::new),
                 Tuples.pair("write_Relation_1__RelationElementAccessor_1__Integer_1_", Write::new),
-                Tuples.pair("wrapPrimitiveInTDS_T_MANY__T_1__TDS_1_", WrapPrimitiveInTDS::new)
+                Tuples.pair("wrapPrimitiveInTDS_T_MANY__T_1__TDS_1_", WrapPrimitiveInTDS::new),
+                Tuples.pair("zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_", ZScore::new),
+                Tuples.pair("zScore_Relation_1__ColSpec_1__ColSpec_1__ColSpecArray_1__Relation_1_", ZScore::new)
         );
     }
 

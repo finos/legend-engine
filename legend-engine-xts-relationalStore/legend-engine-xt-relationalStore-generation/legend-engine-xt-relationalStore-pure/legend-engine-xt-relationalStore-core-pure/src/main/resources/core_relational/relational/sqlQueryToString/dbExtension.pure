@@ -1300,5 +1300,6 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   variancePopulation,
   varianceSample,
   weekOfYear,
-  year
+  year,
+  zscore
 }

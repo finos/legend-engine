@@ -17,7 +17,14 @@ package org.finos.legend.pure.runtime.java.extension.external.relation.compiled;
 import static org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS.readCsv;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
@@ -29,6 +36,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.finos.legend.pure.generated.PureCompiledLambda;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -1112,4 +1120,32 @@ public class RelationNativeImplementation
             return new RowContainer(tds, offset);
         }
     }
+
+    public static <T> Relation<? extends Object> zScore(Relation<? extends T> rel, ColSpec<?> inputCols, ColSpec<?> outputCols, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
+
+        CoreInstance inputColsSpec = (CoreInstance) inputCols;
+        CoreInstance outputColsSpec = (CoreInstance) outputCols;
+
+        TestTDS result = tds.zScore(inputColsSpec, outputColsSpec, null, ps);
+
+        return new TDSContainer((TestTDSCompiled) result, ps);
+    }
+
+    public static <T> Relation<? extends Object> zScore(Relation<? extends T> rel, ColSpec<?> inputCols, ColSpec<?> outputCols, ColSpecArray<?> windowCols, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
+
+        CoreInstance inputColsSpec = (CoreInstance) inputCols;
+        CoreInstance outputColsSpec = (CoreInstance) outputCols;
+        CoreInstance windowSpec = (CoreInstance) windowCols;
+
+        TestTDS result = tds.zScore(inputColsSpec, outputColsSpec, windowSpec, ps);
+
+        return new TDSContainer((TestTDSCompiled) result, ps);
+    }
 }
+

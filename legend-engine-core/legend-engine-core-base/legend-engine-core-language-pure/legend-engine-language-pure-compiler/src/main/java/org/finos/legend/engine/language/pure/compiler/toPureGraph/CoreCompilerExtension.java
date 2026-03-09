@@ -177,7 +177,9 @@ public class CoreCompilerExtension extends FunctionDispatchExtension implements 
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::qtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true),
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::reportEndDay_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true),
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true),
-                        new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::ytd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true)
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::ytd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true),
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> true),
+                        new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__ColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> true)
                 ));
     }
 }

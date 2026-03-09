@@ -751,7 +751,6 @@ public class Handlers
         return parameters.size() == 4 ? base.with(parameters.get(3).accept(valueSpecificationBuilder)) : base;
     };
 
-
     public static final ParametersInference JoinInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
@@ -776,6 +775,102 @@ public class Handlers
         }
         return result;
     };
+
+    public static final ParametersInference zScoreInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+        GenericType gt = firstProcessedParameter._genericType();
+
+        if (cc.pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()))
+        {
+            parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+        }
+        else if (cc.pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
+
+            List<ValueSpecification> processedInput = processRelationAndColSpecParams(Lists.mutable.with(parameters.get(0), parameters.get(1)), valueSpecificationBuilder, null);
+            result.with(processedInput.get(1));
+
+            if (parameters.size() > 2)
+            {
+                ColSpec outputCol = (ColSpec) ((ClassInstance) parameters.get(2)).value;
+                GenericType floatType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, cc.pureModel.getClass(M3Paths.GenericType))
+                        ._rawType(cc.pureModel.getType(M3Paths.Float));
+                Multiplicity oneMultiplicity = cc.pureModel.getMultiplicity("one");
+                result.with(wrapInstanceValue(buildColSpec(outputCol.name, floatType, oneMultiplicity, cc.pureModel, processorSupport), cc.pureModel));
+            }
+
+            if (parameters.size() > 3)
+            {
+                List<ValueSpecification> processedWindow = processRelationAndColSpecParams(Lists.mutable.with(parameters.get(0), parameters.get(3)), valueSpecificationBuilder, null);
+                result.with(processedWindow.get(1));
+            }
+        }
+        // Fallback: accept remaining parameters
+        else
+        {
+            parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+        }
+
+        return result;
+    };
+
+
+    public static TypeAndMultiplicity zScoreReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        // zScore preserves the input relation/TDS type and adds new columns
+        if (pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(ps.get(0)._genericType()._rawType()._name()))
+        {
+            // For TDS, return the same TDS type (columns are added dynamically)
+            return res(ps.get(0)._genericType(), "one", pureModel);
+        }
+        else if (pureModel.taxonomyTypes("cov_relation_Relation").contains(ps.get(0)._genericType()._rawType().getName()))
+        {
+            ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+            try
+            {
+                RelationType<?> originalRelType = (RelationType<?>) ps.get(0)._genericType()._typeArguments().getFirst()._rawType();
+
+                MutableList<CoreInstance> newColumns = Lists.mutable.withAll(
+                                (RichIterable<Column<?, ?>>) originalRelType._columns())
+                        .collect(c -> (CoreInstance) _Column.getColumnInstance(c._name(), false, _Column.getColumnType(c), _Column.getColumnMultiplicity(c), null, processorSupport));
+
+                // Add output columns as Float type (z-scores are always Float)
+                if (ps.size() >= 3)
+                {
+                    RelationType<?> outputColsType = (RelationType<?>) ps.get(2)._genericType()._typeArguments().getFirst()._rawType();
+                    outputColsType._columns().forEach(outCol ->
+                    {
+                        GenericType floatType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                                ._rawType(pureModel.getType(M3Paths.Float));
+                        Multiplicity oneMultiplicity = pureModel.getMultiplicity("zeroone");
+                        newColumns.add(_Column.getColumnInstance(outCol._name(), false, floatType, oneMultiplicity, null, processorSupport));
+                    });
+                }
+                RelationType<?> newRelType = _RelationType.build(newColumns, null, processorSupport);
+                return res(
+                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                                ._rawType(pureModel.getType(M3Paths.Relation))
+                                ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(newRelType))),
+                        "one",
+                        pureModel
+                );
+            }
+            catch (PureCompilationException e)
+            {
+                throw new EngineException(e.getInfo(), null, EngineErrorType.COMPILATION);
+            }
+        }
+        else
+        {
+            // Fallback to original type
+            return res(ps.get(0)._genericType(), "one", pureModel);
+        }
+    }
+
 
     public static final ParametersInference TDSAggInference = (parameters, valueSpecificationBuilder) ->
     {
@@ -1051,6 +1146,16 @@ public class Handlers
                         ),
                         // meta::pure::functions::collection::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
                         grp(LambdaAndAggInference, h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
+                )
+        );
+
+        register(m(
+                        grp(zScoreInference,
+                                h("meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_", "zScore", true, ps -> zScoreReturnInference(ps, this.pureModel), ps -> true)
+                        ),
+                        grp(zScoreInference,
+                                h("meta::pure::functions::relation::zScore_Relation_1__ColSpec_1__ColSpec_1__ColSpecArray_1__Relation_1_", "zScore", true, ps -> zScoreReturnInference(ps, this.pureModel), ps -> true)
+                        )
                 )
         );
 
@@ -1949,7 +2054,7 @@ public class Handlers
                         )
                 )
         );
-        
+
         register(h("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", "withMapping", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_mapping_Mapping"))));
         register(h("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", "withChainedMappings", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeMany(ps.get(1), pureModel.taxonomyTypes("cov_mapping_Mapping"))));
 

@@ -290,8 +290,17 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
     dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|if ($p->last() == 'true', | 'var_samp', |'var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))})),
-    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))}))
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('[', ',', ']'))})),
+    dynaFnToSql('zscore',                 $allStates,            ^ToSql(format='%s', transform={p:String[*] | zscoreToSql($p)}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::zscoreToSql(p: String[*]): String[1]
+{
+   let col = $p->at(0);
+   let partitionBy = if($p->size() > 1, | 'PARTITION BY ' + $p->tail()->joinStrings(', '), | '');
+   let over = 'OVER(' + if($partitionBy == '', |'', |' ' + $partitionBy + ' ') + ')';
+   '(' + $col + ' - avg(1.0 * ' + $col + ') ' + $over + ') / NULLIF(stddev_pop(' + $col + ') ' + $over + ', 0)';
 }
 
 function meta::relational::functions::sqlQueryToString::default::processFrameValueDirection(frameValueDirection:meta::relational::metamodel::FrameValueDirection[1]):String[1]

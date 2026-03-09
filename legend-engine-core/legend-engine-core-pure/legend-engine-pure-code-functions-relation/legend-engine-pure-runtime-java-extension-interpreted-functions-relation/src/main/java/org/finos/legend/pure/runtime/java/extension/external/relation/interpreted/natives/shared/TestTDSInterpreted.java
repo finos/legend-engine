@@ -71,7 +71,18 @@ public class TestTDSInterpreted extends TestTDS
         {
             throw new RuntimeException("The column " + columnName + " can't be found in the TDS");
         }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type pureType = pureTypesByColumnName.get(columnName)._rawType();
+        // Defensive checks: ensure we have a GenericType for the column and that its raw type is present
+        GenericType genType = pureTypesByColumnName.get(columnName);
+        if (genType == null)
+        {
+            throw new RuntimeException("No GenericType found for column '" + columnName + "' in TDS. Available columns: " + this.columnsOrdered.toString());
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type pureType = genType._rawType();
+        if (pureType == null)
+        {
+            throw new RuntimeException("The GenericType for column '" + columnName + "' does not have a raw type. GenericType: " + genType.toString());
+        }
+
         CoreInstance result;
         Object[] data = (Object[]) dataAsObject;
         if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Integer)))

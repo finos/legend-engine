@@ -135,8 +135,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='varp(%s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('zscore',                 $allStates,            ^ToSql(format='%s', transform={p:String[*] | meta::relational::functions::sqlQueryToString::sqlServer::zscoreToSql($p)}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::zscoreToSql(p: String[*]): String[1]
+{
+   let col = $p->at(0);
+   let partitionBy = if($p->size() > 1, | 'PARTITION BY ' + $p->tail()->joinStrings(', '), | '');
+   let over = 'OVER(' + if($partitionBy == '', |'', |' ' + $partitionBy + ' ') + ')';
+   '(' + $col + ' - avg(1.0 * ' + $col + ') ' + $over + ') / NULLIF(stdevp(' + $col + ') ' + $over + ', 0)';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processJoinStringsOperationForSqlServer(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
