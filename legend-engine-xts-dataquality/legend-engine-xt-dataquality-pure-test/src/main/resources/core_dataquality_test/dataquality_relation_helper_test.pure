@@ -199,17 +199,48 @@ function <<test.Test>> meta::external::dataquality::tests::rowsWithColumnDiffers
                 '#', $rel->toString());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeTest():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeWithValueTest():Boolean[1]
 {
-  assertEquals(date(2026, 2, 18, 15, 30, 0), %2026-02-18T15:30:15.999->normalizeDateTime());
+  assertEquals('2026-02-18T15:30:15.999999999', %2026-02-18T15:30:15.999999999->normalizeDateTime());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::normalizeFloatTest():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeWithoutValueTest():Boolean[1]
 {
-  assertEquals(3.14, 3.144->normalizeFloat());
+  assertEquals([], []->normalizeDateTime());
 }
 
-function <<test.Test>> meta::external::dataquality::tests::normalizeDecimalTest():Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::normalizeDateWithValueTest():Boolean[1]
 {
-  assertEquals(3.14d, 3.144d->normalizeDecimal());
+  assertEquals('2026-12-18', %2026-12-18->normalizeDate());
+  assertEquals('2026-01-09', %2026-01-09->normalizeDate());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeDateWithoutValueTest():Boolean[1]
+{
+  assertEquals([], []->normalizeDate());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeFloatWithValueTest():Boolean[1]
+{
+  assertEquals('4.560000000000000E-001', 0.456->normalizeFloat());
+  assertEquals('1.456000000000000E+000', 1.456->normalizeFloat());
+  assertEquals('9.998560000000000E+002', 999.856->normalizeFloat());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeFloatWithoutValueTest():Boolean[1]
+{
+  assertEquals([], []->normalizeFloat());
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeDecimalWithValueTest():Boolean[1]
+{
+  assertEquals('4.560000000000000E-001', 0.456d->normalizeDecimal());
+  assertEquals('1.456000000000000E+000', 1.456d->normalizeDecimal());
+  assertEquals('9.998560000000000E+002', 999.856d->normalizeDecimal());
+
+}
+
+function <<test.Test>> meta::external::dataquality::tests::normalizeDecimalWithoutValueTest():Boolean[1]
+{
+  assertEquals([], []->normalizeDecimal());
 }

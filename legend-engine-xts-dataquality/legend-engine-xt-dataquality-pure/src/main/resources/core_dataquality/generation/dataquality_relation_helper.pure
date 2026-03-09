@@ -14,9 +14,11 @@
 
 
 
+import meta::relational::metamodel::datatype::*;
 import meta::pure::test::pct::*;
 import meta::external::dataquality::*;
 import meta::pure::metamodel::relation::*;
+import meta::pure::functions::date::*;
 
 function <<PCT.function>> meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
@@ -108,19 +110,46 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
   $rel->filter(row | !eval($col,$row)->toOne()->matches($pattern));
 }
 
-function meta::external::dataquality::normalizeDateTime(value:DateTime[1]):DateTime[1]
+function meta::external::dataquality::normalizeDateTime(value:DateTime[0..1]):String[0..1]
 {
-  date($value->year(), $value->monthNumber(), $value->dayOfMonth(), $value->hour(), $value->minute(), 0);
+  if ($value->isEmpty(),
+    | [],
+    | convertTimeZone($value->toOne(), 'UTC', 'yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS')
+  );
 }
 
-function meta::external::dataquality::normalizeDecimal(value:Decimal[1]):Decimal[1]
+function meta::external::dataquality::normalizeDate(value:Date[0..1]):String[0..1]
 {
-  $value->round(2);
+  if ($value->isEmpty(),
+    | [],
+    | $value->toOne()->year()->toString() + '-' + $value->toOne()->monthNumber()->toString()->lpad(2, '0') + '-' + $value->toOne()->dayOfMonth()->toString()->lpad(2, '0')
+  );
 }
 
-function meta::external::dataquality::normalizeFloat(value:Float[1]):Float[1]
+function meta::external::dataquality::normalizeDecimal(value:Decimal[0..1]):String[0..1]
 {
-  $value->round(2);
+  //TODO - this is converting to IEEE 754 Scientific Notation but see if we can do this in-line in a more simple way
+  if ($value->isEmpty(),
+    | [],
+    | if($value->toOne() == 0, | '0.000000000000000E+000', | ($value->toOne() / pow(10, $value->toOne()->abs()->log10()->floor()))->round(15)->toString()->rpad(17, '0') + 'E' + if($value->toOne()->abs()->log10()->floor() >= 0, | '+', | '-') + $value->toOne()->abs()->log10()->floor()->abs()->toString()->lpad(3, '0'))
+  );
+}
+
+function meta::external::dataquality::normalizeFloat(value:Float[0..1]):String[0..1]
+{
+  //TODO - this is converting to IEEE 754 Scientific Notation but see if we can do this in-line in a more simple way
+  if ($value->isEmpty(),
+    | [],
+    | if($value->toOne() == 0, | '0.000000000000000E+000', | ($value->toOne() / pow(10, $value->toOne()->abs()->log10()->floor()))->round(15)->toString()->rpad(17, '0') + 'E' + if($value->toOne()->abs()->log10()->floor() >= 0, | '+', | '-') + $value->toOne()->abs()->log10()->floor()->abs()->toString()->lpad(3, '0'))
+  );
+}
+
+function meta::external::dataquality::normalizeBinary(value:Binary[0..1]):String[0..1]
+{
+  if ($value->isEmpty(),
+    | [],
+    | $value->toOne()->toString()->encodeBase64()
+  );
 }
 
 function <<PCT.test>> meta::external::dataquality::testRelationNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

@@ -28,7 +28,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |$row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -36,7 +36,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |$row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |$row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -103,22 +103,22 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 {
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
-    ->select(~[DOB,CODE,COUPOUN])
-    ->extend(~[DOB_SOURCE: row | $row.DOB->normalizeDateTime(), CODE_SOURCE: row | $row.CODE->normalizeFloat(), COUPOUN_SOURCE: row | $row.COUPOUN->normalizeDecimal()])
-    ->select(~[DOB_SOURCE,CODE_SOURCE,COUPOUN_SOURCE])
+    ->select(~[DOB,CODE,COUPOUN,CREATED])
+    ->extend(~[DOB_SOURCE: row | $row.DOB->normalizeDateTime(), CODE_SOURCE: row | $row.CODE->normalizeFloat(), COUPOUN_SOURCE: row | $row.COUPOUN->normalizeDecimal(), CREATED_SOURCE: row | $row.CREATED->normalizeDate()])
+    ->select(~[DOB_SOURCE,CODE_SOURCE,COUPOUN_SOURCE,CREATED_SOURCE])
     ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->select(~[DOB,CODE,COUPOUN])
-          ->extend(~[DOB_TARGET: row | $row.DOB->normalizeDateTime(), CODE_TARGET: row | $row.CODE->normalizeFloat(), COUPOUN_TARGET: row | $row.COUPOUN->normalizeDecimal()])
-          ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET])
+          ->select(~[DOB,CODE,COUPOUN,CREATED])
+          ->extend(~[DOB_TARGET: row | $row.DOB->normalizeDateTime(), CODE_TARGET: row | $row.CODE->normalizeFloat(), COUPOUN_TARGET: row | $row.COUPOUN->normalizeDecimal(), CREATED_TARGET: row | $row.CREATED->normalizeDate()])
+          ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET,CREATED_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| ($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET) && (($x.CODE_SOURCE == $y.CODE_TARGET) && $x.DOB_SOURCE == $y.DOB_TARGET)}
+        {x,y| ($x.CREATED_SOURCE == $y.CREATED_TARGET) && (($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET) && (($x.CODE_SOURCE == $y.CODE_TARGET) && ($x.DOB_SOURCE == $y.DOB_TARGET)))}
     )->filter(row | not($row.DOB_SOURCE == $row.DOB_TARGET))
   };
 
-  testRecon($lambda, $runtime, ['DOB', 'CODE', 'COUPOUN'], false, [], 'DOB', 'DOB');
+  testRecon($lambda, $runtime, ['DOB', 'CODE', 'COUPOUN', 'CREATED'], false, [], 'DOB', 'DOB');
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noHashCols():Boolean[1]
@@ -129,7 +129,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.ID_SOURCE->isEmpty(), | '', |$row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -137,7 +137,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.ID_TARGET->isEmpty(), | '', |$row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -155,7 +155,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[FIRSTNAME,LASTNAME])
     ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -163,7 +163,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[FIRSTNAME,LASTNAME])
           ->extend(~[FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |$row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |$row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -181,7 +181,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[FIRSTNAME,LASTNAME])
     ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |$row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |$row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -196,6 +196,40 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   };
 
   testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH');
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noKeysAndAggregatedHash():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[FIRSTNAME,LASTNAME])
+    ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
+    ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[DIGEST_SOURCE])
+    ->sort(~DIGEST_SOURCE->ascending())
+    ->aggregate(~AGG_HASH : x | $x.DIGEST_SOURCE : y | $y->joinStrings(''))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.AGG_HASH->isEmpty(), | '', |$row.AGG_HASH->toOne()->toString()), HashType.MD5))
+    ->select(~[DIGEST_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[FIRSTNAME,LASTNAME])
+          ->extend(~[FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
+          ->select(~[FIRSTNAME_TARGET,LASTNAME_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[DIGEST_TARGET])
+          ->sort(~DIGEST_TARGET->ascending())
+          ->aggregate(~AGG_HASH : x | $x.DIGEST_TARGET : y | $y->joinStrings(''))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.AGG_HASH->isEmpty(), | '', |$row.AGG_HASH->toOne()->toString()), HashType.MD5))
+          ->select(~[DIGEST_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.DIGEST_SOURCE == $y.DIGEST_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+  };
+
+  testRecon($lambda, $runtime, [], true, ['FIRSTNAME', 'LASTNAME'], [], []);
 }
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]):Boolean[1]
