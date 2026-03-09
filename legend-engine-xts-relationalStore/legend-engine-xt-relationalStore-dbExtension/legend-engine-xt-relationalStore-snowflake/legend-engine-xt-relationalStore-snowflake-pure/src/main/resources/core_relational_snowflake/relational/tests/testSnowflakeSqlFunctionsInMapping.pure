@@ -228,11 +228,3 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
     assertEquals('select TO_CHAR(CONVERT_TIMEZONE(\'EST\',"root".dateTime),\'YYYY-MM-DD HH24:MI:SS\') as "tzm", TO_CHAR(CONVERT_TIMEZONE(\'EST\',"root".dateTime),\'YYYY-MM-DDTHH24:MI:SS\') as "tzQuery" from dataTable as "root"',$s);
 }
-
-function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testConvertTimeZoneWithSource():Boolean[1]
-{
-    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertTimeZone,s|$s.dateTime->convertTimeZone('UTC', 'EST','yyyy-MM-ddTHH:mm:ss.SSSSSSSSS')], ['tzm','tzQuery']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select TO_CHAR(CONVERT_TIMEZONE(\'EST\',"root".dateTime),\'YYYY-MM-DD HH24:MI:SS\') as "tzm", TO_CHAR(CONVERT_TIMEZONE(\'UTC\',\'EST\',CAST("root".dateTime AS TIMESTAMP)),\'YYYY-MM-DDTHH24:MI:SS.FF9\') as "tzQuery" from dataTable as "root"',$s);
-}

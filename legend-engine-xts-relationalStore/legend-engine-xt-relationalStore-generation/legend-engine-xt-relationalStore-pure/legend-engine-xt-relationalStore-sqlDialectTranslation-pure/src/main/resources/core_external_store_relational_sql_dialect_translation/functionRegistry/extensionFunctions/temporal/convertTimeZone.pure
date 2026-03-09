@@ -35,12 +35,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       (
         parameterTypes = [TimestampSqlType, AbstractStringSqlType, AbstractStringSqlType],
         returnType = AbstractStringSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [TimestampSqlType, AbstractStringSqlType, AbstractStringSqlType, AbstractStringSqlType],
-        returnType = AbstractStringSqlType
-      )      
+      )
     ],
     tests = [
       sqlFunctionTest(
@@ -50,11 +45,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('convert_timezone', [literal(%2024-01-01T14:00:00), literal('America/Los_Angeles'), literal('YYYY-MM-DD HH24:MI:SS')]),
          '2024-01-01 06:00:00'
-      ),
-      sqlFunctionTest(
-        simpleFunctionCall('convert_timezone', [literal(%2024-01-01T14:00:00), literal('UTC'), literal('UTC'), literal('YYYY-MM-DD HH24:MI:SS')]),
-         '2024-01-01 14:00:00'
-      )              
+      )                
     ]
   )
 }

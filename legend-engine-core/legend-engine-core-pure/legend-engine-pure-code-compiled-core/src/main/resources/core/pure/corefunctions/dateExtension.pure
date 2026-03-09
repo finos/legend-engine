@@ -471,17 +471,11 @@ function meta::pure::functions::date::systemDefaultTimeZones():String[*]
   ['GMT', 'UTC']
 }   
 
-function  {doc.doc ='Adjust the timezone of a date time and format the time to the specific format'}
+function  {doc.doc ='Adjust the timezone of a date time and format the time to the specifid format'}
 meta::pure::functions::date::convertTimeZone(time:DateTime[1], targetZone:String[1],targetFormat:String[1]):String[1]
 {
    format( '%t{['+$targetZone+']'+$targetFormat+'}'   ,$time);
 }   
-
-function  {doc.doc ='Adjust the timezone of a date time and format the time to the specific format'}
-meta::pure::functions::date::convertTimeZone(time:DateTime[1], sourceZone:String[1], targetZone:String[1],targetFormat:String[1]):String[1]
-{
-   format( '%t{['+$targetZone+']'+$targetFormat+'}'   ,$time);
-} 
 
 function meta::pure::functions::date::hasYear(d:Date[1]):Boolean[1]
 {
