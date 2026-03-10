@@ -98,6 +98,7 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
   );
 
   ^SimpleFunctionExpression(
+    functionName = $func.functionName,
     func = $func,
     genericType = $genericType,
     resolvedTypeParameters = $resolvedTypeParameters,
