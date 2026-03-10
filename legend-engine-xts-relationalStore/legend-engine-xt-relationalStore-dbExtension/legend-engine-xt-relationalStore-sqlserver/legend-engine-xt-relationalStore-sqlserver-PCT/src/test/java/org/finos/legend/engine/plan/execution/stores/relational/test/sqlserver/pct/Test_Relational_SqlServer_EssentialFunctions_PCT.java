@@ -231,7 +231,7 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
 
             // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"%s %% %s\"\""),
+            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
             //Pow
@@ -241,7 +241,7 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             // Rem
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
+            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemWithFloats_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),

@@ -8317,18 +8317,17 @@ function meta::relational::functions::pureToSqlQuery::processVariableArity(expre
 {
   if($state.inAgg,
     | processAggVariableArity($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-    | let select = $operation.select; 
+    | let select = $operation.select;
       let source = ^$operation(select=^$select(filteringOperation = []));
       let args = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $source, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions);
-      let mergedSQL = mergeSQLQueryData($args->concatenate($source)->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
+      let mergedSQL = mergeSQLQueryData($args->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
       let currentTreeNode = $mergedSQL.data;
       ^SelectWithCursor(
-        select = $state.inFilter->if(
-                                | ^$mergedSQL(filteringOperation = newDynaFunction($expression.functionName->toOne(), $mergedSQL.filteringOperation));,
-                                | let existingColsCount = $mergedSQL.columns->size() - $args->size();
-                                  ^$mergedSQL(columns = $mergedSQL.columns->take($existingColsCount)->concatenate(newDynaFunction($expression.functionName->toOne(), $mergedSQL.columns->drop($existingColsCount))));
+         select = $state.inFilter->if(
+                                 | ^$mergedSQL(filteringOperation = newDynaFunction($expression.func.functionName->toOne(), $mergedSQL.filteringOperation));,
+                                 | ^$mergedSQL(columns = newDynaFunction($expression.func.functionName->toOne(), $mergedSQL.columns));
                             ),
-        currentTreeNode = $currentTreeNode
+         currentTreeNode = $currentTreeNode
       );
   );
 }

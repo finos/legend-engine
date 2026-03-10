@@ -73,6 +73,7 @@ public class Test_Relational_ClickHouse_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"),
             one("meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"),
             one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.SimpleNumbersTypeForCompositionTests"),
+            one("meta::pure::functions::relation::tests::composition::testExistsVariableArity_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
 
             // CumulativeDistribution
             one("meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_", "Aggregate function with name 'cume_dist' does not exist"),

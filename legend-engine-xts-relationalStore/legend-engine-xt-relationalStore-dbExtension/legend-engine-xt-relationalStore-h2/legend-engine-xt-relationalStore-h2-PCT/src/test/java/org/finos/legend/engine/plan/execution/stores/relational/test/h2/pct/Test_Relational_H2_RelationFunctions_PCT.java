@@ -62,6 +62,7 @@ public class Test_Relational_H2_RelationFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_", "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_", "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""),
             one("meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_", "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\""),
+            one("meta::pure::functions::relation::tests::composition::testExistsVariableArity_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
 
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_", "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda"),

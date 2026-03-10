@@ -173,11 +173,6 @@ public class Test_Relational_Trino_StandardFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_", "mismatched input '['. Expecting: ')', '*', 'ALL', 'DISTINCT', 'ORDER', <expression>"),
             one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "mismatched input '['. Expecting: ')', '*', 'ALL', 'DISTINCT', 'ORDER', <expression>"),
 
-            // Math - Trigonometry (eval)
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
-
             // Math - Variance
             one("meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_", "mismatched input '['. Expecting: ')', '*', 'ALL', 'DISTINCT', 'ORDER', <expression>"),
             one("meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_", "mismatched input '['. Expecting: ')', '*', 'ALL', 'DISTINCT', 'ORDER', <expression>"),

@@ -103,15 +103,6 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             // Percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"),
 
-            // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "No matched function in function registry for - cosh(DoubleSqlType, DoubleSqlType).\nAvailable variations for that function - [\n  cosh(AbstractNumericSqlType):DoubleSqlType\n]"),
-
-            // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "No matched function in function registry for - sinh(DoubleSqlType, DoubleSqlType).\nAvailable variations for that function - [\n  sinh(AbstractNumericSqlType):DoubleSqlType\n]"),
-
-            // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "No matched function in function registry for - tanh(DoubleSqlType, DoubleSqlType).\nAvailable variations for that function - [\n  tanh(AbstractNumericSqlType):DoubleSqlType\n]"),
-
             // Bitwise
             one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\"; SQL statement:\nselect bitand(cast('-9223372036854775808' as integer), -999999999)"),
             one("meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_", "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\"; SQL statement:\nselect bitnot(cast('-9223372036854775808' as integer))"),
