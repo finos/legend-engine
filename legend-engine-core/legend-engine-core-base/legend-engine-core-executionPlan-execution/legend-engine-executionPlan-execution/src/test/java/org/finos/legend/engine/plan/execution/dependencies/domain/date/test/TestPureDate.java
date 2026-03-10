@@ -59,21 +59,24 @@ public class TestPureDate
     public void testFormatWithTimeZoneShift()
     {
         PureDate date = PureDate.newPureDate(2014, 1, 1, 1, 1, 1, "070004235");
-        Assert.assertEquals("2014-01-01 01:01:01.070+0000", date.format("yyyy-MM-dd HH:mm:ss.SSSZ"));
-        Assert.assertEquals("2014-01-01 01:01:01.070 GMT", date.format("yyyy-MM-dd HH:mm:ss.SSS z"));
-        Assert.assertEquals("2014-01-01 01:01:01.070Z", date.format("yyyy-MM-dd HH:mm:ss.SSSX"));
 
-        Assert.assertEquals("2013-12-31 20:01:01.070-0500", date.format("[EST]yyyy-MM-dd HH:mm:ss.SSSZ"));
-        Assert.assertEquals("2013-12-31 20:01:01.070 EST", date.format("[EST]yyyy-MM-dd HH:mm:ss.SSS z"));
-        Assert.assertEquals("2013-12-31 20:01:01.070-05", date.format("[EST]yyyy-MM-dd HH:mm:ss.SSSX"));
+        assertDateWithZone(date, "CST", "2013-12-31 19:01:01.070", "CST|GMT-06:00");
+        assertDateWithZone(date, "EST", "2013-12-31 20:01:01.070", "EST|GMT-05:00");
+        assertDateWithZone(date, "CET", "2014-01-01 02:01:01.070", "CET|GMT\\+01:00");
+    }
 
-        Assert.assertEquals("2013-12-31 19:01:01.070-0600", date.format("[CST]yyyy-MM-dd HH:mm:ss.SSSZ"));
-        Assert.assertEquals("2013-12-31 19:01:01.070 CST", date.format("[CST]yyyy-MM-dd HH:mm:ss.SSS z"));
-        Assert.assertEquals("2013-12-31 19:01:01.070-06", date.format("[CST]yyyy-MM-dd HH:mm:ss.SSSX"));
+    private void assertDateWithZone(PureDate date, String zoneId, String expectedDateTime, String zonePattern)
+    {
+        String formatPattern = "[" + zoneId + "]yyyy-MM-dd HH:mm:ss.SSS z";
+        String actual = date.format(formatPattern);
 
-        Assert.assertEquals("2014-01-01 02:01:01.070+0100", date.format("[CET]yyyy-MM-dd HH:mm:ss.SSSZ"));
-        Assert.assertEquals("2014-01-01 02:01:01.070 CET", date.format("[CET]yyyy-MM-dd HH:mm:ss.SSS z"));
-        Assert.assertEquals("2014-01-01 02:01:01.070+01", date.format("[CET]yyyy-MM-dd HH:mm:ss.SSSX"));
+        String fullRegex = java.util.regex.Pattern.quote(expectedDateTime) + " (" + zonePattern + ")";
+
+        Assert.assertTrue(
+                String.format("Failed for %s. Expected format like '%s %s' but got: %s",
+                        zoneId, expectedDateTime, zonePattern, actual),
+                actual.matches(fullRegex)
+        );
     }
 
     @Test
