@@ -1750,3 +1750,143 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '   5,45,eee yyy\n'+
                   '#', $res->sort(~finalId->ascending())->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testComplexProjectJoinMulitpleLevels<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, year, rating
+              1, -0015, 8
+              1, 2025, 5
+              1, 2024, 3
+              2, 2025, 4
+              2, 2024, 2
+              2, 2021, 1
+              3, 2025, 5
+              3, 2023, 3
+            #;
+
+  let expr = {|
+    $tds
+      ->project(~[id:x|$x.id, year:x|2025])
+      ->distinct()
+      ->join(
+          $tds
+            ->project(~[worker_id2:y|$y.id, year2:y|$y.year, rating:y|$y.rating]),
+          JoinKind.LEFT,
+          {r1, r2|($r1.id == $r2.worker_id2) && ($r1.year == $r2.year2)}
+      )
+      ->project(~[id:y|$y.id, year:y|$y.year, rating:y|$y.rating])
+      ->concatenate(
+          $tds
+            ->project(~[id:y|$y.id, year:y|$y.year->cast(@Integer)->toOne(), rating:y|$y.rating])
+      )
+      ->distinct()
+      ->cast(@meta::pure::metamodel::relation::Relation<(id:Integer[1], year:Integer[1], rating:Integer[1])>)
+      ->project(~[worker_id:x|$x.id, ratings_year:x|$x.year->toOne()])
+      ->join(
+          $tds
+            ->project(~[id:x|$x.id, year:x|2025])
+            ->distinct()
+            ->join(
+                $tds
+                  ->project(~[worker_id2:y|$y.id, year2:y|$y.year, rating:y|$y.rating]),
+                JoinKind.LEFT,
+                {r1, r2|($r1.id == $r2.worker_id2) && ($r1.year == $r2.year2)}
+            )
+            ->project(~[id:y|$y.id, year:y|$y.year, rating:y|$y.rating])
+            ->concatenate(
+                $tds
+                  ->project(~[id:y|$y.id, year:y|$y.year->cast(@Integer)->toOne(), rating:y|$y.rating])
+            )
+            ->distinct()
+            ->cast(@meta::pure::metamodel::relation::Relation<(id:Integer[1], year:Integer[1], rating:Integer[1])>)
+            ->project(~[worker_id2:y|$y.id, year:y|$y.year, rating:y|$y.rating]),
+          JoinKind.LEFT,
+          {r1, r2|(($r1.worker_id == $r2.worker_id2) && ($r2.year <= $r1.ratings_year)) && ($r2.year >= $r1.ratings_year + 4 + 7 + $r2.year + 4)}
+      )
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   worker_id,ratings_year,worker_id2,year,rating\n'+
+                '   1,-15,1,-15,8\n'+
+                '   1,2024,null,null,null\n'+
+                '   1,2025,null,null,null\n'+
+                '   2,2021,null,null,null\n'+
+                '   2,2024,null,null,null\n'+
+                '   2,2025,null,null,null\n'+
+                '   3,2023,null,null,null\n'+
+                '   3,2025,null,null,null\n'+
+                '#', $res->sort([~worker_id->ascending(), ~ratings_year->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testComplexProjectJoinMulitpleLevels<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, year, rating
+              1, -0015, 8
+              1, 2025, 5
+              1, 2024, 3
+              2, 2025, 4
+              2, 2024, 2
+              2, 2021, 1
+              3, 2025, 5
+              3, 2023, 3
+            #;
+
+  let expr = {|
+    $tds
+      ->project(~[id:x|$x.id, year:x|2025])
+      ->distinct()
+      ->join(
+          $tds
+            ->project(~[worker_id2:y|$y.id, year2:y|$y.year, rating:y|$y.rating]),
+          JoinKind.LEFT,
+          {r1, r2|($r1.id == $r2.worker_id2) && ($r1.year == $r2.year2)}
+      )
+      ->project(~[id:y|$y.id, year:y|$y.year, rating:y|$y.rating])
+      ->concatenate(
+          $tds
+            ->project(~[id:y|$y.id, year:y|$y.year->cast(@Integer)->toOne(), rating:y|$y.rating])
+      )
+      ->distinct()
+      ->cast(@meta::pure::metamodel::relation::Relation<(id:Integer[1], year:Integer[1], rating:Integer[1])>)
+      ->project(~[worker_id:x|$x.id, ratings_year:x|$x.year->toOne()])
+      ->join(
+          $tds
+            ->project(~[id:x|$x.id, year:x|2025])
+            ->distinct()
+            ->join(
+                $tds
+                  ->project(~[worker_id2:y|$y.id, year2:y|$y.year, rating:y|$y.rating]),
+                JoinKind.LEFT,
+                {r1, r2|($r1.id == $r2.worker_id2) && ($r1.year == $r2.year2)}
+            )
+            ->project(~[id:y|$y.id, year:y|$y.year, rating:y|$y.rating])
+            ->concatenate(
+                $tds
+                  ->project(~[id:y|$y.id, year:y|$y.year->cast(@Integer)->toOne(), rating:y|$y.rating])
+            )
+            ->distinct()
+            ->cast(@meta::pure::metamodel::relation::Relation<(id:Integer[1], year:Integer[1], rating:Integer[1])>)
+            ->project(~[worker_id2:y|$y.id, year:y|$y.year, rating:y|$y.rating]),
+          JoinKind.LEFT,
+          {r1, r2|(($r1.worker_id == $r2.worker_id2) && ($r2.year <= $r1.ratings_year)) && ($r2.year >= $r1.ratings_year + 4 + 7 + $r2.year + 4)}
+      )
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   worker_id,ratings_year,worker_id2,year,rating\n'+
+                '   1,-15,1,-15,8\n'+
+                '   1,2024,null,null,null\n'+
+                '   1,2025,null,null,null\n'+
+                '   2,2021,null,null,null\n'+
+                '   2,2024,null,null,null\n'+
+                '   2,2025,null,null,null\n'+
+                '   3,2023,null,null,null\n'+
+                '   3,2025,null,null,null\n'+
+                '#', $res->sort([~worker_id->ascending(), ~ratings_year->ascending()])->toString());
+}

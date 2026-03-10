@@ -8315,22 +8315,18 @@ function meta::relational::functions::pureToSqlQuery::processAggVariableArity(ex
 
 function meta::relational::functions::pureToSqlQuery::processVariableArity(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  if($state.inAgg,
-    | processAggVariableArity($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-    | let select = $operation.select; 
-      let source = ^$operation(select=^$select(filteringOperation = []));
-      let args = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $source, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions);
-      let mergedSQL = mergeSQLQueryData($args->concatenate($source)->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
-      let currentTreeNode = $mergedSQL.data;
-      ^SelectWithCursor(
-        select = $state.inFilter->if(
-                                | ^$mergedSQL(filteringOperation = newDynaFunction($expression.functionName->toOne(), $mergedSQL.filteringOperation));,
-                                | let existingColsCount = $mergedSQL.columns->size() - $args->size();
-                                  ^$mergedSQL(columns = $mergedSQL.columns->take($existingColsCount)->concatenate(newDynaFunction($expression.functionName->toOne(), $mergedSQL.columns->drop($existingColsCount))));
-                            ),
-        currentTreeNode = $currentTreeNode
-      );
-  );
+    let select = $operation->cast(@SelectWithCursor).select;
+    let source = ^$operation(select=^$select(filteringOperation = []));
+    let args = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $source, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions);
+    let mergedSQL = mergeSQLQueryData($args->map(x | extractSelectSQLQuery($x)), $nodeId, $state, $context, $extensions);
+    let currentTreeNode = $mergedSQL.data;
+    ^SelectWithCursor(
+       select = $state.inFilter->if(
+                               | ^$mergedSQL(filteringOperation = newDynaFunction($expression.func.functionName->toOne(), $mergedSQL.filteringOperation));,
+                               | ^$mergedSQL(columns = newDynaFunction($expression.functionName->toOne(), $mergedSQL.columns));
+                          ),
+       currentTreeNode = $currentTreeNode
+    );
 }
 
 

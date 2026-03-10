@@ -104,6 +104,7 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select_Function_1__Boolean_1_", "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select_Function_1__Boolean_1_", "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""),
+            one("meta::pure::functions::relation::tests::composition::testComplexProjectJoinMulitpleLevels_Function_1__Boolean_1_", "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""),
 
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
