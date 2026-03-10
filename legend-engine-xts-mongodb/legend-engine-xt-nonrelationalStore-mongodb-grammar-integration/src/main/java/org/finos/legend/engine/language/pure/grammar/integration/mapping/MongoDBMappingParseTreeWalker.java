@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration.mapping;
 
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MongoDBMappingParserGrammar;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 
@@ -36,7 +37,7 @@ public class MongoDBMappingParseTreeWalker
         }
         if (ctx.mappingMainCollection().size() == 1)
         {
-            classMapping.mainCollectionName = ctx.mappingMainCollection().get(0).mappingScopeInfo().identifier().getText();
+            classMapping.mainCollectionName = PureGrammarParserUtility.fromIdentifier(ctx.mappingMainCollection().get(0).mappingScopeInfo().identifier());
             classMapping.storePath = ctx.mappingMainCollection().get(0).databasePointer().qualifiedName().getText();
         }
     }
