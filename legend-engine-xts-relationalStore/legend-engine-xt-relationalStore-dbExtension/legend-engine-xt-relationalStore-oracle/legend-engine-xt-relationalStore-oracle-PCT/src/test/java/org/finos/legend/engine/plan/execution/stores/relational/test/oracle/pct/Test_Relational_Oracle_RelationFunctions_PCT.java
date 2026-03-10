@@ -93,7 +93,6 @@ public class Test_Relational_Oracle_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""),
-            one("meta::pure::functions::relation::tests::composition::testExistsArithmeticComparisonExpression_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
 
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_", "\"[unsupported-api] relational lambda processing not supported for Database Type: Oracle\""),

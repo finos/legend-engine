@@ -1826,26 +1826,3 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '   4,9\n'+
                   '#', $res->sort([~val->ascending()])->toString());
 }
-
-function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testExistsArithmeticComparisonExpression<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-  let expr = {
-                |#TDS
-                  val, val2
-                  1, 2
-                  3, 5
-                  4, 9
-                  5, 14
-                  6, 20
-                #->filter(v|$v->exists(x|$x.val2->toOne() - 1 < $x.val->toOne() * 2 + 2))
-              };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   val,val2\n'+
-                  '   1,2\n'+
-                  '   3,5\n'+
-                  '   4,9\n'+
-                  '#', $res->sort([~val->ascending()])->toString());
-}

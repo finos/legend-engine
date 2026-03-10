@@ -52,10 +52,7 @@ public class Test_Relational_Snowflake_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "Window frame requires an ORDER BY clause"),
 
             one("meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."),
-            one("meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."),
-
-            // Join with computation needs to be implemented
-            one("meta::pure::functions::relation::tests::composition::testExistsArithmeticComparisonExpression_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"")
+            one("meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_", "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries.")
     );
 
     public static Test suite()

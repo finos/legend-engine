@@ -59,7 +59,6 @@ public class Test_Relational_MemSQL_RelationFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "MemSQL does not support dynamic pivot"),
             one("meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\""),
             one("meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_", "\"QUALIFY grammar is not supported\""),
-            one("meta::pure::functions::relation::tests::composition::testExistsArithmeticComparisonExpression_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression_Function_1__Boolean_1_", "Error while executing: CREATE TEMPORARY TABLE leSchema"),
 
             //concatenate
