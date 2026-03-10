@@ -121,6 +121,11 @@
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-engine-query-constants</artifactId>
+            <version>${deephaven.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.deephaven</groupId>
             <artifactId>deephaven-java-client-flight</artifactId>
             <version>${deephaven.version}</version>
             <exclusions>

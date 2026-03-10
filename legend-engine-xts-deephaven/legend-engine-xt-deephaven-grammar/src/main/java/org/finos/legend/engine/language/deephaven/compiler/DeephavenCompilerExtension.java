@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.language.deephaven.compiler;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -31,14 +32,18 @@ import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.consta
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_FloatType;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_IntType;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_TimestampType;
+import org.finos.legend.pure.generated.core_deephaven_pure_contract_storeContract;
 import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m3.navigation.relation._Column;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -49,17 +54,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_store_RelationStoreAccessor_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_Type;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_BooleanType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_ByteType;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_CharType;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_CustomType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_DoubleType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_FloatType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_IntType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_LongType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_ShortType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_StringType;
-import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_DateTimeType;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_DecimalType;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 
 import java.util.Collections;
 import java.util.List;
@@ -141,7 +139,7 @@ public class DeephavenCompilerExtension implements CompilerExtension
                         name = name.substring(1, name.length() - 1);
                     }
                     // TODO - right now no columns are nullable - enable nullable in future.
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), processorSupport), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(1, 1, processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), processorSupport, context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(1, 1, processorSupport), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
@@ -169,56 +167,68 @@ public class DeephavenCompilerExtension implements CompilerExtension
         });
     }
 
-    private GenericType convertTypes(Root_meta_external_store_deephaven_metamodel_type_Type c, ProcessorSupport processorSupport)
+    private GenericType convertTypes(Root_meta_external_store_deephaven_metamodel_type_Type c, ProcessorSupport processorSupport, CompileContext compileContext)
     {
-        String primitiveType;
-        if (c instanceof Root_meta_external_store_deephaven_metamodel_type_BooleanType)
+        if (c instanceof Root_meta_external_store_deephaven_metamodel_type_CharType)
         {
-            primitiveType = "Boolean";
-        }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_ByteType)
-        {
-            primitiveType = "Integer";
-        }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_CharType)
-        {
-            primitiveType = "String";
-        }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_ShortType)
-        {
-            primitiveType = "Integer";
+            return convertTypes("meta::pure::precisePrimitives::Varchar",
+                    Lists.mutable.with(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                            ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                            ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                            ._values(Lists.immutable.with(1L))),
+                    compileContext
+            );
         }
         else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_IntType)
         {
-            primitiveType = "Integer";
+            return convertTypes("meta::pure::precisePrimitives::Int", compileContext);
         }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_LongType)
+        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_FloatType)
         {
-            primitiveType = "Integer";
+            return convertTypes("meta::pure::precisePrimitives::Float4", compileContext);
         }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_DoubleType || c instanceof Root_meta_external_store_deephaven_metamodel_type_FloatType)
+        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_TimestampType)
         {
-            primitiveType = "Float";
+            return convertTypes("meta::pure::precisePrimitives::Timestamp", compileContext);
         }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_StringType)
+        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_DecimalType)
         {
-            primitiveType = "String";
-        }
-        else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_DateTimeType)
-        {
-            primitiveType = "DateTime";
+            Root_meta_external_store_deephaven_metamodel_type_DecimalType decimalType = (Root_meta_external_store_deephaven_metamodel_type_DecimalType) c;
+            return convertTypes("meta::pure::precisePrimitives::Numeric",
+                    Lists.mutable.with(
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(decimalType._precision())),
+                            new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, compileContext.pureModel.getClass(M3Paths.InstanceValue))
+                                    ._genericType(compileContext.pureModel.getGenericType("Integer"))
+                                    ._multiplicity(compileContext.pureModel.getMultiplicity("One"))
+                                    ._values(Lists.immutable.with(decimalType._scale()))),
+                    compileContext);
         }
         else if (c instanceof Root_meta_external_store_deephaven_metamodel_type_CustomType)
         {
             throw new EngineException("CustomType is not yet supported in Deephaven store compilation", null, EngineErrorType.COMPILATION);
         }
-        else
-        {
-            throw new EngineException("Unknown Deephaven type  '" + c.getClass().getSimpleName(), null, EngineErrorType.COMPILATION);
-        }
-        return (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(primitiveType, processorSupport));
+
+        return (GenericType) processorSupport.type_wrapGenericType(
+                core_deephaven_pure_contract_storeContract.Root_meta_external_store_deephaven_pureToDeephaven_mapDeephavenTypeToPureType_Type_1__DataType_1_(
+                        c,
+                        compileContext.pureModel.getExecutionSupport()
+                )
+        );
     }
 
+    private GenericType convertTypes(String type, CompileContext compileContext)
+    {
+        return convertTypes(type, Lists.mutable.empty(), compileContext);
+    }
+
+    private GenericType convertTypes(String type, RichIterable<? extends ValueSpecification> typeVariableValues, CompileContext compileContext)
+    {
+        return compileContext.newGenericType((Type) compileContext.resolvePackageableElement(type, null))
+                ._typeVariableValues(typeVariableValues);
+    }
 
     @Override
     public List<Procedure<Procedure2<String, List<String>>>> getExtraElementForPathToElementRegisters()

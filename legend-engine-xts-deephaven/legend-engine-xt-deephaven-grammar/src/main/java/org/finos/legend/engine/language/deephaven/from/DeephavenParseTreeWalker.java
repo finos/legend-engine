@@ -27,7 +27,10 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.DeephavenParser
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.DeephavenConnectionLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.DeephavenConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DecimalType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DoubleType;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.FloatType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.TimestampType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -132,31 +135,53 @@ public class DeephavenParseTreeWalker
         @Override
         public Type visitColumnType(DeephavenParserGrammar.ColumnTypeContext columnTypeContext)
         {
+            if (columnTypeContext.decimalType() != null)
+            {
+                return parseDecimalType(columnTypeContext.decimalType());
+            }
+
             TerminalNode type = columnTypeContext.getChild(TerminalNode.class, 0);
             Type columnType;
 
             switch (type.getSymbol().getType())
             {
-                case DeephavenParserGrammar.DATE_TIME:
+                case DeephavenParserGrammar.DECIMAL_TYPE:
+                    columnType = parseDecimalType((DeephavenParserGrammar.DecimalTypeContext) columnTypeContext.getChild(0));
+                    break;
+                case DeephavenParserGrammar.DATETIME_TYPE:
                     columnType = new DateTimeType();
                     break;
-                case DeephavenParserGrammar.STRING:
+                case DeephavenParserGrammar.STRING_TYPE:
                     columnType = new StringType();
                     break;
-                case DeephavenParserGrammar.INT:
+                case DeephavenParserGrammar.INT_TYPE:
                     columnType = new IntType();
                     break;
-                case DeephavenParserGrammar.BOOLEAN:
+                case DeephavenParserGrammar.BOOLEAN_TYPE:
                     columnType = new BooleanType();
                     break;
-                case DeephavenParserGrammar.FLOAT:
+                case DeephavenParserGrammar.FLOAT_TYPE:
                     columnType = new FloatType();
+                    break;
+                case DeephavenParserGrammar.DOUBLE_TYPE:
+                    columnType = new DoubleType();
+                    break;
+                case DeephavenParserGrammar.TIMESTAMP_TYPE:
+                    columnType = new TimestampType();
                     break;
                 default:
                     throw new EngineException("Unsupported column type: " + type.getText(), parserInfo.walkerSourceInformation.getSourceInformation(columnTypeContext), EngineErrorType.PARSER);
             }
 
             return columnType;
+        }
+
+        private Type parseDecimalType(DeephavenParserGrammar.DecimalTypeContext decimalTypeContext)
+        {
+            DecimalType decimalType = new DecimalType();
+            decimalType.precision = Long.parseLong(decimalTypeContext.precision.getText());
+            decimalType.scale = Long.parseLong(decimalTypeContext.scale.getText());
+            return decimalType;
         }
     }
 

@@ -1790,6 +1790,11 @@ function meta::external::language::java::factory::j_not(expression:Code[1]):Code
    ^PrefixExpression(op='!', expression=$expression, type=javaBoolean());
 }
 
+function meta::external::language::java::factory::j_bitwiseNot(expression:Code[1]):Code[1]
+{
+   ^PrefixExpression(op='~', expression=$expression, type=$expression.type);
+}
+
 function meta::external::language::java::factory::j_bitwiseAnd(left:Code[1], right:Code[1]):Code[1]
 {
    ^InfixExpression(left=$left, op='&', right=$right, type=$left.type);
@@ -1805,9 +1810,14 @@ function meta::external::language::java::factory::j_bitwiseXor(left:Code[1], rig
    ^InfixExpression(left=$left, op='^', right=$right, type=$left.type);
 }
 
-function meta::external::language::java::factory::j_bitwiseNot(left:Code[1], right:Code[1]):Code[1]
+function meta::external::language::java::factory::j_bitwiseShiftLeft(left:Code[1], right:Code[1]):Code[1]
 {
-   ^InfixExpression(left=$left, op='~', right=$right, type=$left.type);
+   ^InfixExpression(left=$left, op='<<', right=$right, type=$left.type);
+}
+
+function meta::external::language::java::factory::j_bitwiseShiftRight(left:Code[1], right:Code[1]):Code[1]
+{
+   ^InfixExpression(left=$left, op='>>', right=$right, type=$left.type);
 }
 
 function meta::external::language::java::factory::j_plus(left:Code[1], right:Code[1]):Code[1]

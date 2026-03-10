@@ -15,8 +15,11 @@ COLUMNDEFINITION:                          'columnDefinition';
 
 // -------------------------------------- Column Types --------------------------------------
 
-DATE_TIME:                                 'DateTime';
-STRING:                                    'String';
-INT:                                       'Integer';
-BOOLEAN:                                   'Boolean';
-FLOAT:                                     'Float';
+BOOLEAN_TYPE:                              'BOOLEAN';
+INT_TYPE:                                  'INT';
+FLOAT_TYPE:                                'FLOAT';
+DOUBLE_TYPE:                               'DOUBLE';
+DECIMAL_TYPE:                              'DECIMAL';
+STRING_TYPE:                               'STRING';
+TIMESTAMP_TYPE:                            'TIMESTAMP';
+DATETIME_TYPE:                             'DATETIME';

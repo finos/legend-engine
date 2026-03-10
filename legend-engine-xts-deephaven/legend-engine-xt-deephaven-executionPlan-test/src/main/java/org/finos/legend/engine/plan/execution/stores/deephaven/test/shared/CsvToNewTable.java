@@ -41,6 +41,16 @@ import io.deephaven.qst.column.Column;
 import io.deephaven.qst.table.NewTable;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,12 +58,20 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.deephaven.qst.type.StringType;
+import io.deephaven.qst.type.InstantType;
 import org.apache.arrow.memory.BufferAllocator;
 import org.eclipse.collections.api.factory.Maps;
 
 public class CsvToNewTable
 {
     private static final Map<Class<?>, BiFunction<CsvToNewTable, String, Array<?>>> HANDLERS;
+    private static final DateTimeFormatter[] formatters = new DateTimeFormatter[]{
+            DateTimeFormatter.ISO_INSTANT,
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME,
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME,
+            DateTimeFormatter.ISO_LOCAL_DATE,
+            DateTimeFormatter.ISO_LOCAL_TIME
+    };
 
     static
     {
@@ -83,6 +101,63 @@ public class CsvToNewTable
         this.table = CsvTools.readCsv(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
     }
 
+    private boolean isIso8601(String value)
+    {
+        if (value == null || value.trim().isEmpty())
+        {
+            return false;
+        }
+
+        for (DateTimeFormatter f : formatters)
+        {
+            try
+            {
+                f.parse(value);
+                return true;
+            }
+            catch (Exception ignored)
+            {
+            }
+        }
+        return false;
+    }
+
+    private Instant parseToInstant(String value)
+    {
+        for (DateTimeFormatter f : formatters)
+        {
+            try
+            {
+                TemporalAccessor parsed = f.parse(value);
+
+                if (parsed.query(TemporalQueries.offset()) != null)
+                {
+                    return OffsetDateTime.from(parsed).toInstant();
+                }
+
+                if (parsed.isSupported(ChronoField.INSTANT_SECONDS))
+                {
+                    return Instant.from(parsed);
+                }
+
+                if (parsed.isSupported(ChronoField.HOUR_OF_DAY))
+                {
+                    return LocalDateTime.from(parsed).toInstant(ZoneOffset.UTC);
+                }
+
+                if (parsed.isSupported(ChronoField.EPOCH_DAY))
+                {
+                    return LocalDate.from(parsed).atStartOfDay(ZoneOffset.UTC).toInstant();
+                }
+            }
+            catch (Exception ignored)
+            {
+            }
+        }
+
+        throw new DateTimeParseException("Unsupported date format: " + value, value, 0);
+    }
+
     public NewTable toNewTable()
     {
         Map<String, ? extends ColumnSource<?>> columnSourceMap = table.getColumnSourceMap();
@@ -104,8 +179,10 @@ public class CsvToNewTable
     public void publish(String tableName, BufferAllocator bufferAllocator, BarrageSession session) throws Exception
     {
         NewTable newTable = this.toNewTable();
-        TableHandle handle = session.putExport(newTable, bufferAllocator);
-        session.session().publish(tableName, handle).get();
+        try (TableHandle handle = session.putExport(newTable, bufferAllocator))
+        {
+            session.session().publish(tableName, handle).get();
+        }
     }
 
     private Array<?> intHandler(String key)
@@ -206,14 +283,51 @@ public class CsvToNewTable
 
     private Array<?> stringHandler(String key)
     {
+        boolean isIso = false;
         try (CloseableIterator<String> iterator = this.table.objectColumnIterator(key, String.class))
         {
-            List<String> strings = new ArrayList<>();
             while (iterator.hasNext())
             {
-                strings.add(iterator.next());
+                String sampleValue = iterator.next();
+                if (sampleValue != null)
+                {
+                    isIso = isIso8601(sampleValue);
+                    break;
+                }
             }
-            return io.deephaven.qst.array.GenericArray.of(StringType.of(), strings.toArray(new String[0]));
+        }
+
+        if (isIso)
+        {
+            try (CloseableIterator<String> iterator = this.table.objectColumnIterator(key, String.class))
+            {
+                List<Instant> instants = new ArrayList<>();
+                while (iterator.hasNext())
+                {
+                    String value = iterator.next();
+                    if (value != null)
+                    {
+                        instants.add(parseToInstant(value));
+                    }
+                    else
+                    {
+                        instants.add(null);
+                    }
+                }
+                return io.deephaven.qst.array.GenericArray.of(InstantType.of(), instants.toArray(new Instant[0]));
+            }
+        }
+        else
+        {
+            try (CloseableIterator<String> iterator = this.table.objectColumnIterator(key, String.class))
+            {
+                List<String> strings = new ArrayList<>();
+                while (iterator.hasNext())
+                {
+                    strings.add(iterator.next());
+                }
+                return io.deephaven.qst.array.GenericArray.of(StringType.of(), strings.toArray(new String[0]));
+            }
         }
     }
 }

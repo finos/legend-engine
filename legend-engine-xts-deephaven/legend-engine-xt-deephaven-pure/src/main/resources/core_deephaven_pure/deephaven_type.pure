@@ -63,9 +63,21 @@ Class meta::external::store::deephaven::metamodel::type::DoubleType extends meta
   _type: String[1] = 'doubleType';
 }
 
+Class meta::external::store::deephaven::metamodel::type::DecimalType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'decimalType';
+  precision : Integer[1];
+  scale     : Integer[1];
+}
+
 Class meta::external::store::deephaven::metamodel::type::StringType extends meta::external::store::deephaven::metamodel::type::Type
 {
   _type: String[1] = 'stringType';
+}
+
+Class meta::external::store::deephaven::metamodel::type::TimestampType extends meta::external::store::deephaven::metamodel::type::Type
+{
+  _type: String[1] = 'timestampType';
 }
 
 Class meta::external::store::deephaven::metamodel::type::DateTimeType extends meta::external::store::deephaven::metamodel::type::Type

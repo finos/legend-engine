@@ -11,7 +11,9 @@ unquotedIdentifier:                         VALID_STRING
                                             | DEEPHAVEN
                                             | IMPORT
                                             | TABLE
-                                            | TABLES | COLUMNS | COLUMNDEFINITION | columnType
+                                            | TABLES | COLUMNS | COLUMNDEFINITION
+                                            | BOOLEAN_TYPE | INT_TYPE | FLOAT_TYPE | DOUBLE_TYPE
+                                            | DECIMAL_TYPE | STRING_TYPE | TIMESTAMP_TYPE | DATETIME_TYPE
 ;
 
 identifier:                                 unquotedIdentifier | STRING
@@ -57,9 +59,18 @@ columnDefinition:                           columnName COLON columnType
 columnName:                                 VALID_STRING | STRING
 ;
 
-columnType:                                 DATE_TIME | STRING | INT | BOOLEAN | FLOAT
+columnType:                                 BOOLEAN_TYPE
+                                            | INT_TYPE
+                                            | FLOAT_TYPE
+                                            | DOUBLE_TYPE
+                                            | STRING_TYPE
+                                            | TIMESTAMP_TYPE
+                                            | DATETIME_TYPE
+                                            | decimalType
+;
+
+decimalType:                                DECIMAL_TYPE PAREN_OPEN precision=INTEGER COMMA scale=INTEGER PAREN_CLOSE
 ;
 
 tableName:                                  VALID_STRING | STRING
 ;
-

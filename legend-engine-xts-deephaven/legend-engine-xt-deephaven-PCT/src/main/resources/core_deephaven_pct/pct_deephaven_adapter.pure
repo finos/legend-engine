@@ -178,6 +178,7 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(f:Func
 
             let code = $deephavenStoreGrammar +
                        '\n###Pure\n' +
+                       $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function ' + $o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('') +
                        'function test::lambdaContainer():Any[*]{\n' +
                        '  ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n' +
                        '}';
@@ -264,7 +265,6 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(a:Any[
 
 function meta::external::store::deephaven::tests::pct::process::processTDS(tds:meta::pure::metamodel::relation::TDS<Any>[1], state:DeephavenProcessingState[1]):DeephavenProcessingState[1]
 {
-  let map = meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType();
   let cols = $tds->columns();
   let rand = random() * 10000000;
   let table = ^meta::external::store::deephaven::metamodel::store::Table
@@ -273,8 +273,8 @@ function meta::external::store::deephaven::tests::pct::process::processTDS(tds:m
     columns = $cols->map(c |
                      ^meta::external::store::deephaven::metamodel::store::Column(
                        name = $c.name->toOne(),
-                       type = $map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne()
-                     )
+                       type = meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType($c->genericType().typeArguments->at(1))->toOne()
+                     );
                    )
   );
   let store = $state.deephavenStore;
@@ -318,7 +318,7 @@ function meta::external::store::deephaven::tests::pct::process::extractDependent
     | [],
     |  $f->match([
         z:FunctionDefinition<Any>[1] |
-                    if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
+                    if($z->instanceOf(PackageableElement) && ($z->elementToPath()->startsWith('meta::external::scenario') || (!$z->hasStereotype('function', PCT) && $z->elementToPath()->contains('::tests::'))),|$z,|[])
                       ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
         x:SimpleFunctionExpression[1]|
                     let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
