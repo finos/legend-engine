@@ -45,7 +45,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
 
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
+            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_\""),
             
             one("meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_\""),
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_\""),
@@ -79,7 +79,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
 
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_\""),
 
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
+            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_\""),
 
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),
