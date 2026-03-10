@@ -370,6 +370,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testTableSubQuery()
+    {
+        check("SELECT * from ((SELECT * from myTable))");
+    }
+
+    @Test
     public void testCommonTableExpressionSingle()
     {
         check("WITH cte1 (col) AS (SELECT col from myTable) SELECT col from cte1");

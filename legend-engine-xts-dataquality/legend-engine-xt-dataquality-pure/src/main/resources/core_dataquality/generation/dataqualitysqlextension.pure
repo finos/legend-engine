@@ -1,0 +1,48 @@
+
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::utils::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::external::dataquality::dataprofile::*;
+import meta::pure::metamodel::relation::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+
+function <<sql.Extension>> meta::external::dataquality::dataProfileCoreExtension():SQLExtension[1]
+{
+  ^SQLExtension(
+    name = 'dq',
+    udtfs = ^UserDefinedTableFunctions(
+      prefix = 'core',
+      processors = [
+        misc('data_profile', 
+          meta::pure::metamodel::relation::Relation, 
+          {args, fc, expCtx, ctx |
+
+          assert($args->size() == 1, | 'expects single relational table');
+
+          let relationLambda = $args->at(0)->cast(@InstanceValue).values->cast(@LambdaFunction<Any>)->toOne();
+
+          let profilingLambda = iv(getProfilingLambda($relationLambda, [], [], false));
+
+          sfe(eval_Function_1__V_m_, $profilingLambda);
+          }
+        )
+      ]
+    )
+  )
+}
