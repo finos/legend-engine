@@ -56,8 +56,13 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGra
       ),
       meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_->testRev(
         [
+          rev('|1.1D / 2.1D', 'c(PythonDecimal(\'1.1\')) / PythonDecimal(\'2.1\')'),
           rev('|1.0D / 2.0', 'c(PythonDecimal(\'1.0\')) / 2.0'),
-          rev('|1.1D / 2.1D', 'c(PythonDecimal(\'1.1\')) / PythonDecimal(\'2.1\')')
+          rev('|((-4.0D) / 2.0) / 1', 'c(PythonDecimal(\'-4.0\')) / 2.0 / 1'),
+          rev('|((-4.0D) / 8) / 1.0', 'c(PythonDecimal(\'-4.0\')) / 8 / 1.0'),
+          rev('|(16D / 8) / 2.0', 'c(PythonDecimal(\'16\')) / 8 / 2.0'),
+          rev('|-(divide(3.1415D, 0.1D, 2))', '-(c(PythonDecimal(\'3.1415\')).divide(PythonDecimal(\'0.1\'), 2))')
+
         ]
       )
     ]->combine(),
