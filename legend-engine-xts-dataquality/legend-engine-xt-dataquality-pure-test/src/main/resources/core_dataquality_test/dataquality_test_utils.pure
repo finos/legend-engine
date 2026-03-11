@@ -91,11 +91,11 @@ function meta::external::dataquality::tests::doRelationRowCountTest(dq:String[1]
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
 
-function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationName:String[1], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
+function meta::external::dataquality::tests::doRelationTestWithLimit(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, $resultLimit);
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, $resultLimit);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
 }
@@ -107,6 +107,15 @@ function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:S
   let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
+}                             
+
+function meta::external::dataquality::tests::doRelationTestWithTotalDefectCountAndLimit(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, $resultLimit, true, false, true, true);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString, false);
 }
 
 
@@ -144,7 +153,6 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:Functio
 function meta::external::dataquality::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
 {
   let config = grammarConfig();
-
   assertLambdaEquals($expected->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $actual->printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')), $packageableRuntimeAsString, $fromExpected);
 }
 
