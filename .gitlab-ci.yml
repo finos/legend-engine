@@ -1,20 +1,4 @@
 include:
-  - file: build-scripts/sonarqube.yml
-    project: data-engineering/data-architecture-qubits/alloy-shared
-    ref: release-0.35.0
-
-stages:
-    - clmscan
-    - sonarqube
-
-clm_scan:
-    stage: clmscan
-    tags: [sdlc]
-    image: ${CI_REGISTRY}/dx/sdlc-tools/aws-gitlab-clm-plugin/aws-gitlab-clm-plugin:current
-    before_script: []
-    script:
-        - /opt/clm/request-clmscan.sh "${CI_PROJECT_DIR}"
-
-sonarqube_scan:
-  rules:
-    - if: '$CI_COMMIT_REF_NAME =~ /devin.+/ && $CI_PIPELINE_SOURCE == "push"'
+  - file: workflows/open-source-legend/legend-engine/.gitlab-ci.yml
+    project: data-engineering/data-architecture-qubits/alloy-sdlc-ci-utils
+    ref: release-1.12.0
