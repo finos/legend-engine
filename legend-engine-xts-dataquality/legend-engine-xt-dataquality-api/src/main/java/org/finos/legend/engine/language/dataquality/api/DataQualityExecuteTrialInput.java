@@ -34,6 +34,7 @@ public class DataQualityExecuteTrialInput
     @JsonProperty
     public String packagePath;
     public Integer defectsLimit;
+    public boolean includeTotalDefectCount = false;
     public List<ParameterValue> lambdaParameterValues;
     @Deprecated
     public String validationName; //this should be replaced by validationNames - remove once all usages migrated
