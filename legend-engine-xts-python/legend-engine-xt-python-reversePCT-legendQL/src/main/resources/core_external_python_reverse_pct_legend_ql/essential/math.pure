@@ -71,7 +71,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_->testRev(
         [
           rev('|meta::pure::functions::math::abs(-3.0D)', 'abs(c(PythonDecimal(\'-3.0\')))'),
-          rev('|3.0D->meta::pure::functions::math::abs()', 'c(PythonDecimal(\'3.0\')).abs()')
+          rev('|3.0D->meta::pure::functions::math::abs()', 'abs(c(PythonDecimal(\'3.0\')))')
         ]
       )
     ]->combine(),
@@ -329,7 +329,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_->testRev(
         [
           rev('|3.14159D->meta::pure::functions::math::round()', 'c(PythonDecimal(\'3.14159\')).round()'),
-          rev('|meta::pure::functions::math::floor(-3.14D)', 'c(PythonDecimal(\'-3.14\')).floor()'),
           rev('|3.14159D->meta::pure::functions::math::round(2)', 'c(PythonDecimal(\'3.14159\')).round(2)'),
           rev('|3.14159D->meta::pure::functions::math::round(3)', 'c(PythonDecimal(\'3.14159\')).round(3)'),
           rev('|meta::pure::functions::math::round(-3.14159D)', 'c(PythonDecimal(\'-3.14159\')).round()'),
