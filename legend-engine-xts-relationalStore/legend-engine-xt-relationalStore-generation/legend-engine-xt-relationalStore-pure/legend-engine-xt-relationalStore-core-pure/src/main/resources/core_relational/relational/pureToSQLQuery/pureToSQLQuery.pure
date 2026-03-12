@@ -3648,7 +3648,7 @@ function meta::relational::functions::pureToSqlQuery::isAutomapWithVariantInput(
     any: Any[1] | false
   ]);
 }
-
+//tc34
 function meta::relational::functions::pureToSqlQuery::isSemiStructuredArrayInput(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
 {
   let firstParam = $v->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo();
