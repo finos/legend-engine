@@ -36,6 +36,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -78,6 +79,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
+import org.finos.legend.pure.generated.PureCompiledLambda;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Query;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_schema_metamodel_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult;
@@ -92,6 +94,7 @@ import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_
 import org.finos.legend.pure.generated.core_pure_router_preeval_preeval;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.DefaultPureLambdaFunction1;
 import org.slf4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -201,8 +204,22 @@ public class SQLExecutor
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object> lambda = transformedContext.lambda(true, pureModel.getExecutionSupport());
                     return transformLambda(lambda, pureModel);
                 },
-                (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
+                (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Function_1__Extension_MANY__SqlTransformContext_1_(sources, getCompiler(pureModel), extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
                 "lambda", context, identity);
+    }
+
+    private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> getCompiler(PureModel pureModel)
+    {
+        PureCompiledLambda a = new PureCompiledLambda(pureModel.getExecutionSupport(), "", new DefaultPureLambdaFunction1<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object>>()
+        {
+            @Override
+            public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends Object> value(String code, ExecutionSupport executionSupport)
+            {
+                return HelperValueSpecificationBuilder.buildLambda(PureGrammarParser.newInstance().parseLambda(code), pureModel.getContext());
+            }
+        });
+
+        return core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getLambdaCompiler_Function_1__Function_1_(a, pureModel.getExecutionSupport());
     }
 
     public SingleExecutionPlan plan(Query query, SQLContext context, Identity identity)
@@ -255,7 +272,7 @@ public class SQLExecutor
 
     private <T> T process(Query query, List<Object> positionalArguments, Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func, String name, SQLContext context, Identity identity)
     {
-        return process(query, positionalArguments, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport()), name, context, identity);
+        return process(query, positionalArguments, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Function_1__Extension_MANY__SqlTransformContext_1_(sources, getCompiler(pureModel), extensions, pureModel.getExecutionSupport()), name, context, identity);
     }
 
     private <T> T process(Query query,
@@ -423,9 +440,9 @@ public class SQLExecutor
         {
             Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_valueSpecification");
             Method method = cl.getMethod("Root_meta_protocols_pure_" + version +
-                    (PureClientVersions.versionAGreaterThanVersionB(version, "v1_33_0") ?
-                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__LambdaFunction_1_" :
-                            "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_"),
+                            (PureClientVersions.versionAGreaterThanVersionB(version, "v1_33_0") ?
+                                    "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__LambdaFunction_1_" :
+                                    "_transformation_fromPureGraph_transformLambda_FunctionDefinition_1__Extension_MANY__Lambda_1_"),
                     FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
             return method.invoke(null, lambda, extensions, executionSupport);
         }
