@@ -53,11 +53,11 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
 
             //char
             one("meta::pure::functions::string::tests::char::testCharDigits_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
-            one("meta::pure::functions::string::tests::char::testCharLower_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(text) does not exist"),
-            one("meta::pure::functions::string::tests::char::testCharUpper_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(text) does not exist"),
-            one("meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(text) does not exist"),
-            one("meta::pure::functions::string::tests::char::testNewline_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(text) does not exist"),
-            one("meta::pure::functions::string::tests::char::testSpace_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(text) does not exist"),
+            one("meta::pure::functions::string::tests::char::testCharLower_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
+            one("meta::pure::functions::string::tests::char::testCharUpper_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
+            one("meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
+            one("meta::pure::functions::string::tests::char::testNewline_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
+            one("meta::pure::functions::string::tests::char::testSpace_Function_1__Boolean_1_", "[ERROR] function code_points_to_string(bigint) does not exist"),
 
             //base64
             one("meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_", "\"[unsupported-api] The function 'decodeBase64' (state: [Select, false]) is not supported yet\""),
@@ -82,7 +82,11 @@ public class Test_Relational_Spanner_UnclassifiedFunctions_PCT extends PCTReport
             pack("meta::pure::functions::string::tests::matches", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""),
 
             //splitpart
-            pack("meta::pure::functions::string::tests::splitPart", "[ERROR] function split_part(unknown, text, bigint) does not exist"),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_", "[ERROR] function split_part(unknown, text, bigint) does not exist"),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_", "[ERROR] function split_part(text, text, bigint) does not exist"),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_", "[ERROR] function split_part(text, text, bigint) does not exist"),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_", "[ERROR] function split_part(text, text, bigint) does not exist"),
+            one("meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_", "[ERROR] function split_part(text, text, bigint) does not exist"),
 
             //tolowerfirstcharacter
             one("meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_", "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\""),
