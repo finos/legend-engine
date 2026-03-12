@@ -41,10 +41,7 @@ function meta::external::store::deephaven::contract::deephavenStoreContract(): S
     supportsStreamFunction = f: FunctionExpression[1] | false,
     supportsSetImplementation = s: SetImplementation[1] | false,
     resolveStoreFromSetImplementation = [],
-    supports = supports(),
-    shouldStopRouting = [
-      meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_
-    ]
+    supports = supports()
   )
 }
 

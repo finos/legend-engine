@@ -34,7 +34,6 @@ import io.deephaven.api.filter.FilterNot;
 import io.deephaven.api.filter.FilterOr;
 import io.deephaven.api.literal.Literal;
 import io.deephaven.api.literal.LiteralFilter;
-import io.deephaven.api.updateby.DeltaControl;
 import io.deephaven.api.updateby.UpdateByControl;
 import io.deephaven.api.updateby.UpdateByOperation;
 import io.deephaven.client.impl.BarrageSession;
@@ -98,7 +97,6 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.TableOperationsDefaults", TableOperationsDefaults.class);
         DEPENDENCIES.put("io.deephaven.api.updateby.UpdateByOperation", UpdateByOperation.class);
         DEPENDENCIES.put("io.deephaven.api.updateby.UpdateByControl", UpdateByControl.class);
-        DEPENDENCIES.put("io.deephaven.api.updateby.DeltaControl", DeltaControl.class);
         DEPENDENCIES.put("io.deephaven.function", Numeric.class);
         DEPENDENCIES.put("io.deephaven.util.QueryConstants", QueryConstants.class);
 

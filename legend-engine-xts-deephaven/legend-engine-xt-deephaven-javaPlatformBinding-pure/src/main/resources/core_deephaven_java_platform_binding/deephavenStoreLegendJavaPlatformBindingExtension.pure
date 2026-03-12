@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::deephaven::pureToDeephaven::*;
 import meta::external::store::deephaven::metamodel::store::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::store::deephaven::metamodel::*;
@@ -116,13 +117,11 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   let literalClass = javaClass('io.deephaven.api.literal.Literal');
   let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
   let updateByControlClass = javaClass('io.deephaven.api.updateby.UpdateByControl');
-  let deltaControlClass = javaClass('io.deephaven.api.updateby.DeltaControl');
   let sessionClass = javaClass('io.deephaven.client.impl.Session');
   let numericClass = javaClass('io.deephaven.function.Numeric');
   let queryConstantsClass = javaClass('io.deephaven.util.QueryConstants');
 
-  let rand = random() * 10000000;
-  let uniqueClassName = 'Execute_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
+  let uniqueClassName = 'Execute' + randomizedSuffix();
   let executeClass = $conventions->planNodeClass('public', $path, $uniqueClassName)
                                  ->usingKnownPackages($conventions->knownPackages())
                                  ->imports($conventions->standardImports())
@@ -130,7 +129,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                                               $ticketTableClass, $emptyTableClass, $tableSpecClass, $tableHandleClass, $barrageSessionClass,
                                               $columnNameClass, $sortColumnClass, $numericClass,
                                               $filterClass, $filterInClass, $filterNotClass, $filterOrClass, $filterAndClass,
-                                              $filterComparisonClass, $literalClass, $updateByOperationClass, $updateByControlClass, $deltaControlClass,
+                                              $filterComparisonClass, $literalClass, $updateByOperationClass, $updateByControlClass,
                                               $queryConstantsClass
                                            ])
                                  ->imports([meta::external::store::deephaven::executionPlan::platformBinding::legendJava::IDeephavenExecutionNodeSpecifics]->map(x | $conventions->className($x)))
@@ -197,7 +196,6 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
                                         ]);
                                     }, $withSelects);
 
-        // Handle ExtendWindowOperation
         let extendWindowOps = $query.operations->filter(op |$op->instanceOf(ExtendWindowOperation));
         let result = $extendWindowOps->fold({op, code |
                                         $op->match([
@@ -210,7 +208,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
         let javaQueryStrings = range($queryOperations->size())->map(i | let currentOp = $queryOperations->at($i);
                                                                         let columnName = generateColumnName('Result' + $i->toString());
                                                                         let expression = generateQueryOperation($currentOp);
-                                                                        let javaQuery = 'Result' + $i->toString() + ' = ' + $expression->meta::external::language::java::serialization::codeToString();
+                                                                        let javaQuery = 'Result' + $i->toString() + randomizedSuffix() + ' = ' + $expression->meta::external::language::java::serialization::codeToString();
                                                                         $javaQuery->replace('\n', '')->j_string();
         );
         let emptyTable = generateEmptyTable();
@@ -310,7 +308,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateQueryOperation(op: QueryOperation[1]): Code[1]
 {
   $op->match([
-               lagOp: LagOperation[1] | $lagOp->generateLagOperation(),
+               offsetOp: OffsetOperation[1] | $offsetOp->generateOffsetOperation(),
                numericOp: NumericOperation[1] | $numericOp->generateNumericOperation(),
                roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp->generateRoundWithScaleOperation(),
                negationOp: NegationOperation[1] | $negationOp->generateNegationOperation(),
@@ -340,12 +338,10 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $numericClass->j_invoke($op.methodName, $methodArguments, javaNumber());
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateLagOperation(op: LagOperation[1]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateOffsetOperation(op: OffsetOperation[1]): Code[1]
 {
-  let currentColumnName = $op.columnName;
-  let deltaColumn = j_variable(javaObject(), $currentColumnName + '_delta');
-  let currentColumn = j_variable(javaObject(), $currentColumnName);
-  $currentColumn->j_minus($deltaColumn);
+  let offsetColName = $op.columnName + '_offset' + $op.offsetColumnSuffix;
+  j_variable(javaObject(), $offsetColName);
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateRoundWithScaleOperation(op: RoundWithScaleOperation[1]): Code[1]
@@ -400,14 +396,14 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
           let fallbackArgs = $op.methodArguments->tail();
 
           $firstArg->match([
-            lagOp: LagOperation[1] |
-              let lagResultStr = $lagOp->generateLagOperation()->meta::external::language::java::serialization::codeToString();
+            offsetOp: OffsetOperation[1] |
+              let offsetResultStr = $offsetOp->generateOffsetOperation()->meta::external::language::java::serialization::codeToString();
               let fallbackCode = if($fallbackArgs->size() == 1,
                 | $fallbackArgs->at(0)->generateDeephavenOperationElement(),
                 | ^CoalesceOperation(methodArguments = $fallbackArgs)->generateCoalesceOperation()
               );
               let fallbackStr = $fallbackCode->meta::external::language::java::serialization::codeToString();
-              let deephavenExpr = '!isNull(' + $lagOp.columnName + '_delta) ? ' + $lagResultStr + ' : ' + $fallbackStr;
+              let deephavenExpr = '!isNull(' + $offsetOp.columnName + '_offset' + $offsetOp.offsetColumnSuffix + ') ? ' + $offsetResultStr + ' : ' + $fallbackStr;
               j_code($deephavenExpr, javaObject());,
             other: DeephavenOperationElement[1] |
               let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
@@ -514,24 +510,29 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateSortOperation(op: SortOperation[1], chain: Code[1], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
 {
-  let sortColumnClass = javaClass('io.deephaven.api.SortColumn');
-  let allAscending = $op.columns->forAll(c | $c.direction == meta::external::store::deephaven::metamodel::SortDirection.ASCENDING);
-  let allDescending = $op.columns->forAll(c | $c.direction == meta::external::store::deephaven::metamodel::SortDirection.DESCENDING);
+  $chain->generateSortFromColumns($op.columns, $tableSpecClass);
+}
 
-  if($op.columns->size() == 1 && $allAscending,
-      | $chain->j_invoke('sort', [j_string($op.columns->at(0).name)], $tableSpecClass),
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateSortFromColumns(chain: Code[1], columns: SortColumn[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
+{
+  let sortColumnClass = javaClass('io.deephaven.api.SortColumn');
+  let allAscending = $columns->forAll(c | $c.direction == meta::external::store::deephaven::metamodel::SortDirection.ASCENDING);
+  let allDescending = $columns->forAll(c | $c.direction == meta::external::store::deephaven::metamodel::SortDirection.DESCENDING);
+
+  if($columns->size() == 1 && $allAscending,
+      | $chain->j_invoke('sort', [j_string($columns->at(0).name)], $tableSpecClass),
       | if($allAscending,
-            | $chain->j_invoke('sort', $op.columns->map(c | j_string($c.name)), $tableSpecClass),
+            | $chain->j_invoke('sort', $columns->map(c | j_string($c.name)), $tableSpecClass),
             | if($allDescending,
-                  | $chain->j_invoke('sortDescending', $op.columns->map(c | j_string($c.name)), $tableSpecClass),
-                  | let sortColumns = $op.columns->map(c |
-                     if($c.direction == meta::external::store::deephaven::metamodel::SortDirection.ASCENDING,
-                        | $sortColumnClass->j_invoke('asc', $c.name->generateColumnName(), $sortColumnClass),
-                        | $sortColumnClass->j_invoke('desc', $c.name->generateColumnName(), $sortColumnClass)
-                     )
-                  );
-                  let listType = javaList($sortColumnClass);
-                  $chain->j_invoke('sort', [javaArrays()->j_invoke('asList', $sortColumns, $listType)], $tableSpecClass);
+                  | $chain->j_invoke('sortDescending', $columns->map(c | j_string($c.name)), $tableSpecClass),
+                  | let sortCols = $columns->map(c |
+                       if($c.direction == meta::external::store::deephaven::metamodel::SortDirection.ASCENDING,
+                          | $sortColumnClass->j_invoke('asc', $c.name->generateColumnName(), $sortColumnClass),
+                          | $sortColumnClass->j_invoke('desc', $c.name->generateColumnName(), $sortColumnClass)
+                       )
+                    );
+                    let listType = javaList($sortColumnClass);
+                    $chain->j_invoke('sort', [javaArrays()->j_invoke('asList', $sortCols, $listType)], $tableSpecClass);
                )
          )
    );
@@ -557,10 +558,10 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateExtendWindowOperation(op: ExtendWindowOperation[1], chain: Code[1], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
 {
-  let sortColumns = $op.window.partitionColumns->concatenate($op.window.orderColumns->map(c | $c.name));
-  let withSort = if($sortColumns->isEmpty(),
+  let orderCols = $op.window.orderColumns;
+  let withSort = if($orderCols->isEmpty(),
                     | $chain,
-                    | $chain->j_invoke('sort', $sortColumns->map(c | j_string($c)), $tableSpecClass)
+                    | $chain->generateSortFromColumns($orderCols, $tableSpecClass)
                  );
 
   let result = $op.funcColSpecs->fold({fcs, currentChain |
@@ -580,7 +581,13 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
         let exprCode = $expr->generateDeephavenOperationElement();
         let updateExpr = $finalColName + ' = ' + $exprCode->meta::external::language::java::serialization::codeToString()->replace('\n', '');
 
-        $withUpdateBy->j_invoke('update', [j_string($updateExpr)], $tableSpecClass);
+        let withUpdate = $withUpdateBy->j_invoke('update', [j_string($updateExpr)], $tableSpecClass);
+
+        let offsetColNames = $tdsOps->filter(t | $t->instanceOf(OffsetOperation))->cast(@OffsetOperation)->map(o | j_string($o.columnName + '_offset' + $o.offsetColumnSuffix));
+        if($offsetColNames->isEmpty(),
+          | $withUpdate,
+          | $withUpdate->j_invoke('dropColumns', $offsetColNames, $tableSpecClass);
+        );
     );
   }, $withSort);
 
@@ -590,27 +597,32 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::dispatchTDSOperationUpdateBy(tdsOp: QueryOperation[1], chain: Code[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
 {
   $tdsOp->match([
-    lag: LagOperation[1] | $chain->generateUpdateByForLag($lag, $partitionColumns, $tableSpecClass),
+    offsetOp: OffsetOperation[1] | $chain->generateUpdateByForOffset($offsetOp, $partitionColumns, $tableSpecClass),
     a: QueryOperation[1] | $chain
   ]);
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForLag(chain: Code[1], lag: LagOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForOffset(chain: Code[1], offsetOp: OffsetOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
 {
   let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
-  let deltaColExpr = $lag.columnName + '_delta = ' + $lag.columnName;
-  let deltaOp = $updateByOperationClass->j_invoke('Delta', [j_string($deltaColExpr)], $updateByOperationClass);
+  let offsetColName = $offsetOp.columnName + '_offset' + $offsetOp.offsetColumnSuffix;
+  let offsetColExpr = $offsetColName + ' = ' + $offsetOp.columnName;
+
+  let revTicks = -$offsetOp.offset + 1;
+  let fwdTicks = $offsetOp.offset;
+  let formula = if($offsetOp.isDeephavenPrimitive, | 'first(x)', | 'firstObj(x)');
+  let rollingFormulaOp = $updateByOperationClass->j_invoke('RollingFormula', [j_long($revTicks), j_long($fwdTicks), j_string($formula), j_string('x'), j_string($offsetColExpr)], $updateByOperationClass);
 
   if($partitionColumns->isEmpty(),
-    | $chain->j_invoke('updateBy', [$deltaOp], $tableSpecClass),
-    | $chain->j_invoke('updateBy', [$deltaOp]->concatenate($partitionColumns->map(c | j_string($c))), $tableSpecClass)
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp], $tableSpecClass),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp]->concatenate($partitionColumns->map(c | j_string($c))), $tableSpecClass)
   );
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::collectTDSOperations(expr: DeephavenOperationElement[1]): QueryOperation[*]
 {
   $expr->match([
-    lagOp: LagOperation[1] | [$lagOp],
+    offsetOp: OffsetOperation[1] | [$offsetOp],
     numOp: NumericOperation[1] | $numOp.methodArguments->map(a | $a->collectTDSOperations()),
     roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp.methodArguments->map(a | $a->collectTDSOperations()),
     divWithScaleOp: DivisionWithScaleOperation[1] | $divWithScaleOp.methodArguments->map(a | $a->collectTDSOperations()),

@@ -143,10 +143,12 @@ Class meta::external::store::deephaven::metamodel::FuncColSpecOperation extends 
 }
 
 
-Class meta::external::store::deephaven::metamodel::LagOperation extends QueryOperation
+Class meta::external::store::deephaven::metamodel::OffsetOperation extends QueryOperation
 {
   columnName: String[1];
   offset: Integer[1];
+  offsetColumnSuffix: String[1];
+  isDeephavenPrimitive: Boolean[1];
 }
 
 Enum meta::external::store::deephaven::metamodel::JoinKind
@@ -213,6 +215,7 @@ Class meta::external::store::deephaven::metamodel::OrOperatorExpression extends 
 Class meta::external::store::deephaven::pureToDeephaven::State
 {
   dhQuery: meta::external::store::deephaven::metamodel::DeephavenQuery[0..1];
+  colName: String[0..1];
   // mapping:Mapping[0..1];
   inFilter: Boolean[1];
   inProject: Boolean[1];
@@ -870,7 +873,7 @@ function meta::external::store::deephaven::pureToDeephaven::processExtendWithWin
 
   let windowSpec = $vs.parametersValues->at(1)->processWindowSpec($initReq);
 
-  let funcColSpecs = $vs.parametersValues->at(2)->processFuncColSpecs($operation, $initReq, $windowSpec);
+  let funcColSpecs = $vs.parametersValues->at(2)->processFuncColSpecs($processStore, $initReq, $windowSpec);
 
   let extendWindowOp = ^ExtendWindowOperation(window = $windowSpec, funcColSpecs = $funcColSpecs);
   ^$processStore(operations = $processStore.operations->concatenate($extendWindowOp));
@@ -942,23 +945,38 @@ function meta::external::store::deephaven::pureToDeephaven::processMap(vs: Funct
   $initReq.debug(|'Processing -> map');
   let debug = $initReq.debug;
 
-  let windowFns = [meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_];
-  
+  let windowFns = [meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_];
+
   if($vs.parametersValues->at(0)->instanceOf(FunctionExpression) && $windowFns->contains($vs.parametersValues->at(0)->cast(@FunctionExpression).func),
     | let colName = $vs->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->evaluateAndDeactivate().func.name->toOne();
-      
-      let lagExpr = $vs.parametersValues->at(0)->cast(@FunctionExpression);
-      let offset = if($lagExpr.parametersValues->size() > 2,
-        | $lagExpr.parametersValues->at(2)->cast(@InstanceValue).values->toOne()->cast(@Integer),
-        | 1
-      );
-      
-      ^LagOperation(columnName = $colName, offset = $offset);,
+      $vs.parametersValues->at(0)->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'), colName = $colName))->toOne();,
     | let source = $vs.parametersValues->at(0)->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
-      let lambdaExpr = $vs.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>);
-      let bodyExpr = $lambdaExpr.expressionSequence->at(0);
-      $bodyExpr->processValueSpecification($source, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+      let func = $vs->instanceValuesAtParameter(1, [], [])->cast(@FunctionDefinition<Any>)->toOne();
+      $func.expressionSequence->at(0)->processValueSpecification($source, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
   );
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processOffset(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> offset');
+  let debug = $initReq.debug;
+
+  let colName = $initReq.colName->toOne();
+  let offsetValue = $vs.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let offsetColumnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^OffsetOperation(columnName = $colName, offset = $offsetValue, offsetColumnSuffix = randomizedSuffix(), isDeephavenPrimitive = $offsetColumnType->isDeephavenPrimitive());
+}
+
+function <<access.private>> meta::external::store::deephaven::pureToDeephaven::isDeephavenPrimitive(deephavenType: meta::external::store::deephaven::metamodel::type::Type[1]): Boolean[1]
+{
+  $deephavenType->match([
+    s: meta::external::store::deephaven::metamodel::type::StringType[1] | false,
+    t: meta::external::store::deephaven::metamodel::type::TimestampType[1] | false,
+    d: meta::external::store::deephaven::metamodel::type::DateTimeType[1] | false,
+    a: Any[1] | true
+  ]);
 }
 
 function meta::external::store::deephaven::pureToDeephaven::processEvaluate(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
@@ -1005,6 +1023,8 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
 
     pair(supportedIfEqual(meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_),     processExtendWithWindow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_),     processExtendWithWindow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_),     processOffset_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
 
     pair(supportedIfEqual(meta::pure::functions::collection::map_T_m__Function_1__V_m_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
@@ -1161,3 +1181,8 @@ function meta::external::store::deephaven::pureToDeephaven::passthruForPainlessE
   pair(list($fe), $req);
 }
 
+function meta::external::store::deephaven::pureToDeephaven::randomizedSuffix(): String[1]
+{
+  let rand = random() * 10000000;
+  '_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
+}
