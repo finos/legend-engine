@@ -19,6 +19,7 @@ Database meta::external::query::sql::transformation::queryToPure::tests::dynamic
 )
 
 ###Pure
+import meta::external::query::sql::transformation::compile::utils::*;
 import meta::external::store::relational::postgresSql::parser::*;
 import meta::pure::precisePrimitives::*;
 import meta::external::query::sql::metamodel::*;
@@ -131,6 +132,6 @@ function meta::external::query::sql::transformation::queryToPure::tests::dynamic
 
 function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transform(sql:String[1], extraPacks:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):String[1]
 {
-  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false)->cast(@FunctionDefinition<Any>);
+  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql->toOne())->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, $scopeVariables, false,{l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)})->cast(@FunctionDefinition<Any>);
   $transformed->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
 }
