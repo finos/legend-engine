@@ -308,7 +308,7 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateQueryOperation(op: QueryOperation[1]): Code[1]
 {
   $op->match([
-               offsetOp: OffsetOperation[1] | $offsetOp->generateOffsetOperation(),
+               windowOp: WindowOperation[1] | $windowOp->generateWindowOperation(),
                numericOp: NumericOperation[1] | $numericOp->generateNumericOperation(),
                roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp->generateRoundWithScaleOperation(),
                negationOp: NegationOperation[1] | $negationOp->generateNegationOperation(),
@@ -338,10 +338,21 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $numericClass->j_invoke($op.methodName, $methodArguments, javaNumber());
 }
 
-function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateOffsetOperation(op: OffsetOperation[1]): Code[1]
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::getWindowOperationSuffix(op: WindowOperation[1]): String[1]
 {
-  let offsetColName = $op.columnName + '_offset' + $op.offsetColumnSuffix;
-  j_variable(javaObject(), $offsetColName);
+  $op->match([
+    o: OffsetOperation[1] | '_offset',
+    f: FirstOperation[1] | '_first',
+    l: LastOperation[1] | '_last',
+    n: NthOperation[1] | '_nth'
+  ]);
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateWindowOperation(op: WindowOperation[1]): Code[1]
+{
+  let windowOperationName = $op->getWindowOperationSuffix();
+  let windowColumnName = $op.windowColumnName + $windowOperationName + $op.windowColumnSuffix;
+  j_variable(javaObject(), $windowColumnName);
 }
 
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateRoundWithScaleOperation(op: RoundWithScaleOperation[1]): Code[1]
@@ -396,14 +407,14 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
           let fallbackArgs = $op.methodArguments->tail();
 
           $firstArg->match([
-            offsetOp: OffsetOperation[1] |
-              let offsetResultStr = $offsetOp->generateOffsetOperation()->meta::external::language::java::serialization::codeToString();
+            windowOp: WindowOperation[1] |
+              let windowResultStr = $windowOp->generateWindowOperation()->meta::external::language::java::serialization::codeToString();
               let fallbackCode = if($fallbackArgs->size() == 1,
                 | $fallbackArgs->at(0)->generateDeephavenOperationElement(),
                 | ^CoalesceOperation(methodArguments = $fallbackArgs)->generateCoalesceOperation()
               );
               let fallbackStr = $fallbackCode->meta::external::language::java::serialization::codeToString();
-              let deephavenExpr = '!isNull(' + $offsetOp.columnName + '_offset' + $offsetOp.offsetColumnSuffix + ') ? ' + $offsetResultStr + ' : ' + $fallbackStr;
+              let deephavenExpr = '!isNull(' + $windowOp.windowColumnName + $windowOp->getWindowOperationSuffix() + $windowOp.windowColumnSuffix + ') ? ' + $windowResultStr + ' : ' + $fallbackStr;
               j_code($deephavenExpr, javaObject());,
             other: DeephavenOperationElement[1] |
               let methodArguments = $op.methodArguments->map(a | $a->generateDeephavenOperationElement());
@@ -583,10 +594,10 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 
         let withUpdate = $withUpdateBy->j_invoke('update', [j_string($updateExpr)], $tableSpecClass);
 
-        let offsetColNames = $tdsOps->filter(t | $t->instanceOf(OffsetOperation))->cast(@OffsetOperation)->map(o | j_string($o.columnName + '_offset' + $o.offsetColumnSuffix));
-        if($offsetColNames->isEmpty(),
+        let tempColNames = $tdsOps->filter(t | $t->instanceOf(WindowOperation))->cast(@WindowOperation)->map(o | j_string($o.windowColumnName + $o->getWindowOperationSuffix() + $o.windowColumnSuffix));
+        if($tempColNames->isEmpty(),
           | $withUpdate,
-          | $withUpdate->j_invoke('dropColumns', $offsetColNames, $tableSpecClass);
+          | $withUpdate->j_invoke('dropColumns', $tempColNames, $tableSpecClass);
         );
     );
   }, $withSort);
@@ -598,6 +609,9 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 {
   $tdsOp->match([
     offsetOp: OffsetOperation[1] | $chain->generateUpdateByForOffset($offsetOp, $partitionColumns, $tableSpecClass),
+    firstOp:  FirstOperation[1]  | $chain->generateUpdateByForFirst($firstOp, $partitionColumns, $tableSpecClass),
+    lastOp:   LastOperation[1]   | $chain->generateUpdateByForLast($lastOp, $partitionColumns, $tableSpecClass),
+    nthOp:    NthOperation[1]    | $chain->generateUpdateByForNth($nthOp, $partitionColumns, $tableSpecClass),
     a: QueryOperation[1] | $chain
   ]);
 }
@@ -605,13 +619,62 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForOffset(chain: Code[1], offsetOp: OffsetOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
 {
   let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
-  let offsetColName = $offsetOp.columnName + '_offset' + $offsetOp.offsetColumnSuffix;
-  let offsetColExpr = $offsetColName + ' = ' + $offsetOp.columnName;
+  let offsetColName = $offsetOp.windowColumnName + '_offset' + $offsetOp.windowColumnSuffix;
+  let offsetColExpr = $offsetColName + ' = ' + $offsetOp.windowColumnName;
 
-  let revTicks = -$offsetOp.offset + 1;
-  let fwdTicks = $offsetOp.offset;
-  let formula = if($offsetOp.isDeephavenPrimitive, | 'first(x)', | 'firstObj(x)');
+  let revTicks = -$offsetOp.offset->toOne() + 1;
+  let fwdTicks = $offsetOp.offset->toOne();
+  let formula = if($offsetOp.isWindowColumnDeephavenPrimitive, | 'first(x)', | 'firstObj(x)');
   let rollingFormulaOp = $updateByOperationClass->j_invoke('RollingFormula', [j_long($revTicks), j_long($fwdTicks), j_string($formula), j_string('x'), j_string($offsetColExpr)], $updateByOperationClass);
+
+  if($partitionColumns->isEmpty(),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp], $tableSpecClass),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp]->concatenate($partitionColumns->map(c | j_string($c))), $tableSpecClass)
+  );
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForFirst(chain: Code[1], firstOp: FirstOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
+{
+  let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
+  let tempColName = $firstOp.windowColumnName + '_first' + $firstOp.windowColumnSuffix;
+  let colExpr = $tempColName + ' = ' + $firstOp.windowColumnName;
+  let formula = if($firstOp.isWindowColumnDeephavenPrimitive, | 'first(x)', | 'firstObj(x)');
+  let upperBound = javaIntBoxed()->j_field('MAX_VALUE', javaInt());
+  let deephavenSpecificUpperBound = j_minus($upperBound, j_int(8))->j_cast(javaLong());
+  let rollingFormulaOp = $updateByOperationClass->j_invoke('RollingFormula', [$deephavenSpecificUpperBound, j_long(0), j_string($formula), j_string('x'), j_string($colExpr)], $updateByOperationClass);
+
+  if($partitionColumns->isEmpty(),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp], $tableSpecClass),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp]->concatenate($partitionColumns->map(c | j_string($c))), $tableSpecClass)
+  );
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForLast(chain: Code[1], lastOp: LastOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
+{
+  let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
+  let tempColName = $lastOp.windowColumnName + '_last' + $lastOp.windowColumnSuffix;
+  let colExpr = $tempColName + ' = ' + $lastOp.windowColumnName;
+  let formula = if($lastOp.isWindowColumnDeephavenPrimitive, | 'last(x)', | 'lastObj(x)');
+  let upperBound = javaIntBoxed()->j_field('MAX_VALUE', javaInt());
+  let deephavenSpecificUpperBound = j_minus($upperBound, j_int(8))->j_cast(javaLong());
+  let rollingFormulaOp = $updateByOperationClass->j_invoke('RollingFormula', [$deephavenSpecificUpperBound, j_long(0), j_string($formula), j_string('x'), j_string($colExpr)], $updateByOperationClass);
+
+  if($partitionColumns->isEmpty(),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp], $tableSpecClass),
+    | $chain->j_invoke('updateBy', [$rollingFormulaOp]->concatenate($partitionColumns->map(c | j_string($c))), $tableSpecClass)
+  );
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateUpdateByForNth(chain: Code[1], nthOp: NthOperation[1], partitionColumns: String[*], tableSpecClass: meta::external::language::java::metamodel::Type[1]): Code[1]
+{
+  let updateByOperationClass = javaClass('io.deephaven.api.updateby.UpdateByOperation');
+  let tempColName = $nthOp.windowColumnName + '_nth' + $nthOp.windowColumnSuffix;
+  let colExpr = $tempColName + ' = ' + $nthOp.windowColumnName;
+  let zeroBasedIndex = ($nthOp.offset->toOne() - 1)->toString();
+  let formula = if($nthOp.isWindowColumnDeephavenPrimitive, | 'nth(' + $zeroBasedIndex + ', x)', | 'nthObj(' + $zeroBasedIndex + ', x)');
+  let upperBound = javaIntBoxed()->j_field('MAX_VALUE', javaInt());
+  let deephavenSpecificUpperBound = j_minus($upperBound, j_int(8))->j_cast(javaLong());
+  let rollingFormulaOp = $updateByOperationClass->j_invoke('RollingFormula', [$deephavenSpecificUpperBound, j_long(0), j_string($formula), j_string('x'), j_string($colExpr)], $updateByOperationClass);
 
   if($partitionColumns->isEmpty(),
     | $chain->j_invoke('updateBy', [$rollingFormulaOp], $tableSpecClass),
@@ -623,6 +686,9 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
 {
   $expr->match([
     offsetOp: OffsetOperation[1] | [$offsetOp],
+    firstOp:  FirstOperation[1]  | [$firstOp],
+    lastOp:   LastOperation[1]   | [$lastOp],
+    nthOp:    NthOperation[1]    | [$nthOp],
     numOp: NumericOperation[1] | $numOp.methodArguments->map(a | $a->collectTDSOperations()),
     roundWithScaleOp: RoundWithScaleOperation[1] | $roundWithScaleOp.methodArguments->map(a | $a->collectTDSOperations()),
     divWithScaleOp: DivisionWithScaleOperation[1] | $divWithScaleOp.methodArguments->map(a | $a->collectTDSOperations()),

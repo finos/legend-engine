@@ -147,11 +147,8 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
-            one("meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_\""),
-            one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_\""),
-            one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_\""),
             one("meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
@@ -173,8 +170,6 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
 
-            one("meta::pure::functions::relation::tests::first::testOLAPWithPartitionAndOrderFirstWindow_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_\""),
-
             one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_\""),
@@ -190,17 +185,12 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::join::testSimpleJoinShared_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,name,id2,col,other\n   1,George,1,More George 1,1\n   1,George,1,More George 2,2\n   4,David,4,More David,1\n#'\nactual:   '#TDS\n   id,name,id2,col,other\n   1,George,null,null,null\n   2,Pierre,null,null,null\n   3,Sachin,null,null,null\n   4,David,null,null,null\n#'\""),
             one("meta::pure::functions::relation::tests::join::testSimpleJoin_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
 
-            one("meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_\""),
-
             one("meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
 
             one("meta::pure::functions::relation::tests::limit::testSimpleLimitShared_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
-
-            one("meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_\""),
-            one("meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_\""),
 
             one("meta::pure::functions::relation::tests::ntile::testOLAPWithPartitionAndOrderNTile_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_\""),
 

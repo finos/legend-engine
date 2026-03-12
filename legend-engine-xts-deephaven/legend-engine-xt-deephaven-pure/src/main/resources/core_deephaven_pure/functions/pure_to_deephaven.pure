@@ -142,13 +142,28 @@ Class meta::external::store::deephaven::metamodel::FuncColSpecOperation extends 
   expression: DeephavenOperationElement[1];
 }
 
-
-Class meta::external::store::deephaven::metamodel::OffsetOperation extends QueryOperation
+Class meta::external::store::deephaven::metamodel::WindowOperation extends QueryOperation
 {
-  columnName: String[1];
-  offset: Integer[1];
-  offsetColumnSuffix: String[1];
-  isDeephavenPrimitive: Boolean[1];
+  windowColumnName: String[1];
+  windowColumnSuffix: String[1];
+  isWindowColumnDeephavenPrimitive: Boolean[1];
+  offset: Integer[0..1];
+}
+
+Class meta::external::store::deephaven::metamodel::OffsetOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::FirstOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::LastOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::NthOperation extends WindowOperation
+{
 }
 
 Enum meta::external::store::deephaven::metamodel::JoinKind
@@ -945,7 +960,12 @@ function meta::external::store::deephaven::pureToDeephaven::processMap(vs: Funct
   $initReq.debug(|'Processing -> map');
   let debug = $initReq.debug;
 
-  let windowFns = [meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_];
+  let windowFns = [
+    meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_,
+    meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_,
+    meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_,
+    meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_
+  ];
 
   if($vs.parametersValues->at(0)->instanceOf(FunctionExpression) && $windowFns->contains($vs.parametersValues->at(0)->cast(@FunctionExpression).func),
     | let colName = $vs->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->evaluateAndDeactivate().func.name->toOne();
@@ -966,7 +986,41 @@ function meta::external::store::deephaven::pureToDeephaven::processOffset(vs: Fu
   let dhQuery = $operation->cast(@DeephavenQuery);
   let offsetColumnType = $dhQuery->findColumn($colName)->toOne().type;
 
-  ^OffsetOperation(columnName = $colName, offset = $offsetValue, offsetColumnSuffix = randomizedSuffix(), isDeephavenPrimitive = $offsetColumnType->isDeephavenPrimitive());
+  ^OffsetOperation(windowColumnName = $colName, offset = $offsetValue, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $offsetColumnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processFirst(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> first');
+
+  let colName = $initReq.colName->toOne();
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^FirstOperation(windowColumnName = $colName, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processLast(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> last');
+
+  let colName = $initReq.colName->toOne();
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^LastOperation(windowColumnName = $colName, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processNth(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> nth');
+
+  let colName = $initReq.colName->toOne();
+  let n = $vs.parametersValues->at(3)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^NthOperation(windowColumnName = $colName, offset = $n, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
 }
 
 function <<access.private>> meta::external::store::deephaven::pureToDeephaven::isDeephavenPrimitive(deephavenType: meta::external::store::deephaven::metamodel::type::Type[1]): Boolean[1]
@@ -1025,6 +1079,9 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_),     processExtendWithWindow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
 
     pair(supportedIfEqual(meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_),     processOffset_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_),      processFirst_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_),       processLast_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_), processNth_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
 
     pair(supportedIfEqual(meta::pure::functions::collection::map_T_m__Function_1__V_m_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
