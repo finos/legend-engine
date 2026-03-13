@@ -215,16 +215,26 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
   $query->sqlToPure(getSources(), [], ^Map<String, ValueSpecification>());
 }
 
-//NOTE: this is currently only used in the sql grammar flow, not traditional.
-function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1]):Function<Any>[1]
 {
-  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true)
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, true)});
 }
 
-function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:DynamicSQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1]):Function<Any>[1]
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
+{
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, getLambdaCompiler($compiler));
+}
+
+function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
+{
+  {l:LambdaFunction<Any>[1]| $compiler->eval($l->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')))}
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
 {
   let extensions = meta::relational::extension::relationalExtensions();
-  let _context = rootContext($sources, $extensions);
+  let _context = rootContext($sources, $compiler, $extensions);
   let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
   let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
   let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
@@ -1545,7 +1555,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
 
         let columns = $vs->match([
-          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
+          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 
@@ -3819,11 +3829,16 @@ Class meta::external::query::sql::transformation::queryToPure::SQLPlaceholderPar
 
 function meta::external::query::sql::transformation::queryToPure::rootContext(sources: SQLSource[*], extensions: meta::pure::extension::Extension[*]):SqlTransformContext[1]
 {
+  rootContext($sources, {l | compileViaGrammar($l, true)}, $extensions);
+}
+
+function meta::external::query::sql::transformation::queryToPure::rootContext(sources: SQLSource[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], extensions: meta::pure::extension::Extension[*]):SqlTransformContext[1]
+{
   let relation = $sources->exists(s | $s->instanceOf(DynamicSQLSource) || $s.func->isRelation());
 
   assert(!$relation || ($relation && $sources->forAll(s | $s->instanceOf(DynamicSQLSource) || $s.func->isRelation())), 'cannot currently mix relation and non relation sources');
 
-  context(0, true, $sources, $extensions, true, $relation, noDebug());
+  context(0, true, $sources, $extensions, true, $relation, $compiler, noDebug());
 }
 
 function meta::external::query::sql::transformation::queryToPure::isRelation(f:FunctionDefinition<Any>[1]):Boolean[1]
@@ -3834,9 +3849,9 @@ function meta::external::query::sql::transformation::queryToPure::isRelation(f:F
 }
 
 function meta::external::query::sql::transformation::queryToPure::context(id:Integer[1], root:Boolean[1], sources: SQLSource[*],
-  extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], relation:Boolean[1], debug:DebugContext[1]):SqlTransformContext[1]
+  extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], relation:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], debug:DebugContext[1]):SqlTransformContext[1]
 {
-  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, relation = $relation, debug = $debug, scopeVariables = ^Map<String, ValueSpecification>());
+  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug, scopeVariables = ^Map<String, ValueSpecification>());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::positionalName(i:Integer[1]):String[1]
@@ -3874,6 +3889,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   extraPackageableElements:PackageableElement[*];
   scopeVariables: Map<String, ValueSpecification>[1];
   failOnInvalidColumns: Boolean[1] = false;
+  compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1];
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);
@@ -3990,8 +4006,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     let compiled = if ($this.relation->isTrue(),
       | // TO FIX. Lambda is called far too many times. In clone. In ProcessRootQuery. in SQL to Pure.
         // One simple translation seems to call it minimum 4 times, which is excessive.
-        // We need to generate in one shot and compile at the end (including dependencies or expending the scope of compile so that it inherits state from its caller)
-        compileViaGrammar($lambda, true),
+        $this.compiler->eval($lambda),
       | $lambda
     );
 
