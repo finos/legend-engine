@@ -41,8 +41,8 @@ public class TestDeephavenGrammarParser extends TestGrammarParser.TestGrammarPar
                 "(\n" +
                 "    Table xyz\n" +
                 "    (\n" +
-                "        prop1: String,\n" +
-                "        prop2: Integer\n" +
+                "        prop1: STRING,\n" +
+                "        prop2: INT\n" +
                 "    )\n" +
                 ")";
     }

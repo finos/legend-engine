@@ -89,6 +89,83 @@ Class meta::external::store::deephaven::metamodel::DivisionWithScaleOperation ex
   methodArguments : DeephavenOperationElement[*];
 }
 
+Class meta::external::store::deephaven::metamodel::BitAndOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::BitNotOperation extends QueryOperation
+{
+  methodArgument : DeephavenOperationElement[1];
+}
+
+Class meta::external::store::deephaven::metamodel::BitOrOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::BitXorOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::BitShiftLeftOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::BitShiftRightOperation extends QueryOperation
+{
+  methodArguments : DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::CoalesceOperation extends QueryOperation
+{
+  methodArguments: DeephavenOperationElement[*];
+}
+
+Class meta::external::store::deephaven::metamodel::ExtendWindowOperation extends QueryOperation
+{
+  window: WindowSpec[1];
+  funcColSpecs: FuncColSpecOperation[*];
+}
+
+Class meta::external::store::deephaven::metamodel::WindowSpec
+{
+  partitionColumns: String[*];
+  orderColumns: SortColumn[*];
+}
+
+Class meta::external::store::deephaven::metamodel::FuncColSpecOperation extends DeephavenOperationElement
+{
+  name: String[1];
+  expression: DeephavenOperationElement[1];
+}
+
+Class meta::external::store::deephaven::metamodel::WindowOperation extends QueryOperation
+{
+  windowColumnName: String[1];
+  windowColumnSuffix: String[1];
+  isWindowColumnDeephavenPrimitive: Boolean[1];
+  offset: Integer[0..1];
+}
+
+Class meta::external::store::deephaven::metamodel::OffsetOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::FirstOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::LastOperation extends WindowOperation
+{
+}
+
+Class meta::external::store::deephaven::metamodel::NthOperation extends WindowOperation
+{
+}
+
 Enum meta::external::store::deephaven::metamodel::JoinKind
 {
   JOIN, LEFT, RIGHT, OUTER
@@ -153,6 +230,7 @@ Class meta::external::store::deephaven::metamodel::OrOperatorExpression extends 
 Class meta::external::store::deephaven::pureToDeephaven::State
 {
   dhQuery: meta::external::store::deephaven::metamodel::DeephavenQuery[0..1];
+  colName: String[0..1];
   // mapping:Mapping[0..1];
   inFilter: Boolean[1];
   inProject: Boolean[1];
@@ -219,8 +297,14 @@ function meta::external::store::deephaven::pureToDeephaven::processCol(fe: Funct
 
   let currReq = processValueSpecification($fe.parametersValues->at(0), $operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')));
   let colFuncName = $fe.func.name->toOne();
-  let foundColumn = $currReq->cast(@DeephavenQuery)->toOne()->findColumn($colFuncName);
-  $foundColumn->toOne();
+
+  $currReq->match([
+    dhQuery: DeephavenQuery[1] |
+      let foundColumn = $dhQuery->findColumn($colFuncName);
+      $foundColumn->toOne();,
+    other: DeephavenOperationElement[1] |
+      ^meta::external::store::deephaven::metamodel::store::Column(name = $colFuncName, type = ^meta::external::store::deephaven::metamodel::type::IntType());
+  ]);
 }
 
 function meta::external::store::deephaven::pureToDeephaven::findColumn(dhQuery:DeephavenQuery[1], name:String[1]):meta::external::store::deephaven::metamodel::store::Column[0..1]
@@ -725,9 +809,228 @@ function meta::external::store::deephaven::pureToDeephaven::processDivideWithSca
   ^DivisionWithScaleOperation(methodArguments = $methodArguments);
 }
 
+function meta::external::store::deephaven::pureToDeephaven::processBitAnd(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitAnd');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^BitAndOperation(methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processBitNot(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitNot');
+  let debug = $initReq.debug;
+
+  let methodArgument = $vs.parametersValues->toOne()->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+  ^BitNotOperation(methodArgument = $methodArgument);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processBitOr(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitOr');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^BitOrOperation(methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processBitXor(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitXor');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^BitXorOperation(methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processBitShiftLeft(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitShiftLeft');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^BitShiftLeftOperation(methodArguments = $methodArguments);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processBitShiftRight(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> bitShiftRight');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^BitShiftRightOperation(methodArguments = $methodArguments);
+}
+
 function meta::external::store::deephaven::pureToDeephaven::processRange(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
 {
   $vs->processNumericOperation($operation, $initReq, 'range', 'sequence');
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processCoalesce(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> coalesce');
+  let debug = $initReq.debug;
+
+  let methodArguments = $vs.parametersValues->map(p | $p->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'))));
+  ^CoalesceOperation(methodArguments = $methodArguments);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////// Window Operation Functions ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function meta::external::store::deephaven::pureToDeephaven::processExtendWithWindow(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> extend with window');
+  let debug = $initReq.debug;
+
+  let processStore = processValueSpecification($vs.parametersValues->at(0), $operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne()->cast(@DeephavenQuery);
+
+  let windowSpec = $vs.parametersValues->at(1)->processWindowSpec($initReq);
+
+  let funcColSpecs = $vs.parametersValues->at(2)->processFuncColSpecs($processStore, $initReq, $windowSpec);
+
+  let extendWindowOp = ^ExtendWindowOperation(window = $windowSpec, funcColSpecs = $funcColSpecs);
+  ^$processStore(operations = $processStore.operations->concatenate($extendWindowOp));
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processWindowSpec(vs: ValueSpecification[1], initReq: State[1]): WindowSpec[1]
+{
+  $initReq.debug(|'Processing -> window spec');
+
+  let window = $vs->cast(@InstanceValue).values->toOne()->cast(@meta::pure::functions::relation::_Window<Any>);
+  let partitionCols = $window.partition;
+  let orderCols = $window.sortInfo->map(si | ^SortColumn(
+    name = $si.column.name,
+    direction = if($si.direction->toString() == 'ASC',
+      | meta::external::store::deephaven::metamodel::SortDirection.ASCENDING,
+      | meta::external::store::deephaven::metamodel::SortDirection.DESCENDING)
+  ));
+  ^WindowSpec(partitionColumns = $partitionCols, orderColumns = $orderCols);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processFuncColSpec(fcs: meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1], operation: DeephavenOperationElement[1], initReq: State[1], windowSpec: WindowSpec[1]): FuncColSpecOperation[*]
+{
+  $initReq.debug(|'Processing -> func col spec');
+  let debug = $initReq.debug;
+
+  let colName = $fcs.name;
+  let funcDef = $fcs.function->cast(@FunctionDefinition<Any>);
+  let expression = $funcDef.expressionSequence->at(0);
+  let processedExpr = $expression->processWindowExpression($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')), $windowSpec);
+  ^FuncColSpecOperation(name = $colName, expression = $processedExpr);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processFuncColSpecs(vs: ValueSpecification[1], operation: DeephavenOperationElement[1], initReq: State[1], windowSpec: WindowSpec[1]): FuncColSpecOperation[*]
+{
+  $initReq.debug(|'Processing -> func col specs');
+  let debug = $initReq.debug;
+
+  $vs->cast(@InstanceValue).values->map(v | $v->match([
+    fcs: meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1] |
+      $fcs->processFuncColSpec($operation, $initReq, $windowSpec);,
+    fcsa: meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>[1] |
+      $fcsa.funcSpecs->map(fcs |
+        $fcs->processFuncColSpec($operation, $initReq, $windowSpec)
+      );,
+    a: Any[1] |
+      fail('Unsupported func col spec type: ' + $a->type()->toString()); []->toOne();
+  ]));
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processWindowExpression(vs: ValueSpecification[1], operation: DeephavenOperationElement[1], initReq: State[1], windowSpec: WindowSpec[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> window expression: ' + $vs->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')));
+  let debug = $initReq.debug;
+
+  $vs->match([
+    fe: FunctionExpression[1] |
+      $initReq.supportedRoutingFunctions->findAndEvalSupportedFunction($fe, $operation, $initReq);,
+    iv: InstanceValue[1] |
+      $iv->processInstanceValue($operation, $initReq)->toOne();,
+    ve: VariableExpression[1] |
+      $operation;,
+    a: ValueSpecification[1] |
+      $a->processValueSpecification($operation, $initReq)->toOne();
+  ]);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processMap(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> map');
+  let debug = $initReq.debug;
+
+  let windowFns = [
+    meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_,
+    meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_,
+    meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_,
+    meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_
+  ];
+
+  if($vs.parametersValues->at(0)->instanceOf(FunctionExpression) && $windowFns->contains($vs.parametersValues->at(0)->cast(@FunctionExpression).func),
+    | let colName = $vs->meta::pure::functions::meta::removeAutomap()->cast(@FunctionExpression)->evaluateAndDeactivate().func.name->toOne();
+      $vs.parametersValues->at(0)->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t'), colName = $colName))->toOne();,
+    | let source = $vs.parametersValues->at(0)->processValueSpecification($operation, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+      let func = $vs->instanceValuesAtParameter(1, [], [])->cast(@FunctionDefinition<Any>)->toOne();
+      $func.expressionSequence->at(0)->processValueSpecification($source, ^$initReq(debug = ^$debug(space = $debug.space + '\t')))->toOne();
+  );
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processOffset(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> offset');
+  let debug = $initReq.debug;
+
+  let colName = $initReq.colName->toOne();
+  let offsetValue = $vs.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let offsetColumnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^OffsetOperation(windowColumnName = $colName, offset = $offsetValue, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $offsetColumnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processFirst(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> first');
+
+  let colName = $initReq.colName->toOne();
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^FirstOperation(windowColumnName = $colName, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processLast(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> last');
+
+  let colName = $initReq.colName->toOne();
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^LastOperation(windowColumnName = $colName, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
+}
+
+function meta::external::store::deephaven::pureToDeephaven::processNth(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
+{
+  $initReq.debug(|'Processing -> nth');
+
+  let colName = $initReq.colName->toOne();
+  let n = $vs.parametersValues->at(3)->cast(@InstanceValue).values->at(0)->cast(@Integer);
+  let dhQuery = $operation->cast(@DeephavenQuery);
+  let columnType = $dhQuery->findColumn($colName)->toOne().type;
+
+  ^NthOperation(windowColumnName = $colName, offset = $n, windowColumnSuffix = randomizedSuffix(), isWindowColumnDeephavenPrimitive = $columnType->isDeephavenPrimitive());
+}
+
+function <<access.private>> meta::external::store::deephaven::pureToDeephaven::isDeephavenPrimitive(deephavenType: meta::external::store::deephaven::metamodel::type::Type[1]): Boolean[1]
+{
+  $deephavenType->match([
+    s: meta::external::store::deephaven::metamodel::type::StringType[1] | false,
+    t: meta::external::store::deephaven::metamodel::type::TimestampType[1] | false,
+    d: meta::external::store::deephaven::metamodel::type::DateTimeType[1] | false,
+    a: Any[1] | true
+  ]);
 }
 
 function meta::external::store::deephaven::pureToDeephaven::processEvaluate(vs: FunctionExpression[1], operation: DeephavenOperationElement[1], initReq: State[1]): DeephavenOperationElement[1]
@@ -772,7 +1075,18 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_),     processSort_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_),     processJoin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
 
-    // Eval functions
+    pair(supportedIfEqual(meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_),     processExtendWithWindow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_),     processExtendWithWindow_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_),     processOffset_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::first_Relation_1___Window_1__T_1__T_$0_1$_),      processFirst_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::last_Relation_1___Window_1__T_1__T_$0_1$_),       processLast_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_), processNth_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::collection::map_T_m__Function_1__V_m_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_),     processMap_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
     pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__T_n__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::lang::eval_Function_1__V_m_),     processEvaluate_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
@@ -793,8 +1107,8 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::math::ceiling_Number_1__Integer_1_),     processCeiling_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::floor_Number_1__Integer_1_),     processFloor_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::round_Number_1__Integer_1_),     processRound_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    pair(supportedIfEqual(meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle round with scale
-    pair(supportedIfEqual(meta::pure::functions::math::round_Float_1__Integer_1__Float_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_), // TODO: Handle round with scale
+    pair(supportedIfEqual(meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::round_Float_1__Integer_1__Float_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::acos_Number_1__Float_1_),     processAcos_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::asin_Number_1__Float_1_),     processAsin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::atan_Number_1__Float_1_),     processAtan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
@@ -871,7 +1185,21 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::math::times_Decimal_MANY__Decimal_1_),     processTimes_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::divide_Number_1__Number_1__Float_1_),     processDivide_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::divide_Decimal_1__Decimal_1__Integer_1__Decimal_1_),     processDivideWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
-    pair(supportedIfEqual(meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_),     processRange_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_)
+    pair(supportedIfEqual(meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_),     processBitAnd_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::bitNot_Integer_1__Integer_1_),     processBitNot_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_),     processBitOr_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_),     processBitXor_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_),     processBitShiftLeft_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_),     processBitShiftRight_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_),     processRange_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),     processCoalesce_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_)
   ];
 }
 
@@ -908,4 +1236,10 @@ function meta::external::store::deephaven::pureToDeephaven::passthruForPainlessE
   $req.debug(|'Passthru for painless: ' + $fe->printValueSpecification(^meta::pure::metamodel::serialization::grammar::GContext(space='\n')));
   assert($req.inProject, |'Evaluation as runtime mapping expression only supported on project context');
   pair(list($fe), $req);
+}
+
+function meta::external::store::deephaven::pureToDeephaven::randomizedSuffix(): String[1]
+{
+  let rand = random() * 10000000;
+  '_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
 }

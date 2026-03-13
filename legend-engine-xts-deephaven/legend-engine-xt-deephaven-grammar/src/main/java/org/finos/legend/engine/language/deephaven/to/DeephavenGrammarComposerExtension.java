@@ -33,6 +33,9 @@ import org.finos.legend.engine.protocol.deephaven.metamodel.store.Column;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.DeephavenStore;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.Table;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.FloatType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DoubleType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DecimalType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.TimestampType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.BooleanType;
@@ -102,23 +105,36 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
         builder.append(getTabString(baseIndentation)).append(column.name).append(": ");
         if (column.type instanceof StringType)
         {
-            builder.append("String");
+            builder.append("STRING");
         }
         else if (column.type instanceof IntType)
         {
-            builder.append("Integer");
+            builder.append("INT");
         }
         else if (column.type instanceof BooleanType)
         {
-            builder.append("Boolean");
-        }
-        else if (column.type instanceof DateTimeType)
-        {
-            builder.append("DateTime");
+            builder.append("BOOLEAN");
         }
         else if (column.type instanceof FloatType)
         {
-            builder.append("Float");
+            builder.append("FLOAT");
+        }
+        else if (column.type instanceof DoubleType)
+        {
+            builder.append("DOUBLE");
+        }
+        else if (column.type instanceof DecimalType)
+        {
+            DecimalType decimalType = (DecimalType) column.type;
+            builder.append("DECIMAL(").append(decimalType.precision).append(", ").append(decimalType.scale).append(")");
+        }
+        else if (column.type instanceof TimestampType)
+        {
+            builder.append("TIMESTAMP");
+        }
+        else if (column.type instanceof DateTimeType)
+        {
+            builder.append("DATETIME");
         }
         else
         {

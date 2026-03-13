@@ -25,6 +25,7 @@ import io.deephaven.qst.table.TicketTable;
 import org.apache.arrow.flight.FlightStream;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
+import org.finos.legend.engine.plan.execution.stores.deephaven.connection.DeephavenSession;
 import org.finos.legend.engine.plan.execution.stores.deephaven.test.DeephavenTestContainer;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL_Impl;
@@ -34,7 +35,7 @@ import java.util.concurrent.ExecutionException;
 public class DeephavenCommands
 {
     private static final int DEEPHAVEN_PORT = 10000;
-    public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__Boolean_1_";
+    public static final String CREATE_TABLE_FROM_CSV_FUNCTION = "createTableFromCSV_String_1__String_1__String_1__Boolean_1_";
     public static final String GET_DEEPHAVEN_TEST_CONNECTION_FUNCTION = "getDeephavenTestConnection__DeephavenConnection_1_";
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
@@ -58,18 +59,19 @@ public class DeephavenCommands
         DeephavenTestContainer.stopDeephaven();
     }
 
-    public static boolean createTableFromCSV(String tableName, String csv)
+    public static boolean createTableFromCSV(String tableName, String csv, String columnTypes)
     {
         try (
                 BufferAllocator bufferAllocator = new RootAllocator();
-                BarrageSession barrageSession = DeephavenTestContainer.buildSession(DeephavenTestContainer.deephavenContainer, bufferAllocator))
+                DeephavenSession deephavenSession = DeephavenTestContainer.buildSession(DeephavenTestContainer.deephavenContainer, bufferAllocator))
         {
+            BarrageSession barrageSession = deephavenSession.getBarrageSession();
             DeephavenTestContainer.LOGGER.info("Creating table '{}' from CSV data using session: {}", tableName, barrageSession);
 
             CsvToNewTable csvToNewTable;
             try
             {
-                csvToNewTable = new CsvToNewTable(csv);
+                csvToNewTable = new CsvToNewTable(csv, columnTypes);
             }
             catch (CsvReaderException e)
             {
@@ -124,7 +126,7 @@ public class DeephavenCommands
             try
             {
                 Table tableFuture = snapshot.entireTable().get();
-                TableTools.show(tableFuture);
+                TableTools.show(tableFuture, java.time.ZoneId.of("UTC"));
             }
             catch (InterruptedException | ExecutionException e)
             {
@@ -138,6 +140,10 @@ public class DeephavenCommands
         {
             DeephavenTestContainer.LOGGER.error("Failed to close BarrageSession for table '{}'", tableName, e);
             return false;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
         }
     }
 }

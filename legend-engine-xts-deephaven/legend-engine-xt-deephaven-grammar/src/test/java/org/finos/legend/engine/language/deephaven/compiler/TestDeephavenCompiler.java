@@ -43,11 +43,11 @@ public class TestDeephavenCompiler extends TestCompilationFromGrammar.TestCompil
             "(\n" +
             "    Table xyz\n" +
             "    (\n" +
-            "        prop1: String,\n" +
-            "        prop2: Integer,\n" +
-            "        prop3: Boolean,\n" +
-            "        prop4: DateTime,\n" +
-            "        prop5: Float\n" +
+            "        prop1: STRING,\n" +
+            "        prop2: INT,\n" +
+            "        prop3: BOOLEAN,\n" +
+            "        prop4: DATETIME,\n" +
+            "        prop5: FLOAT\n" +
             "    )\n" +
             ")\n\n";
 

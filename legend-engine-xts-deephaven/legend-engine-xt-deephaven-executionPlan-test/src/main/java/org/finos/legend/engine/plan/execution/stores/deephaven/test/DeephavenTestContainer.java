@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution.stores.deephaven.test;
 
-import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.BarrageSessionFactoryConfig;
 import io.deephaven.client.impl.ClientChannelFactory;
 import io.deephaven.client.impl.ClientChannelFactoryDefaulter;
@@ -22,6 +21,7 @@ import io.deephaven.client.impl.ClientConfig;
 import io.deephaven.client.impl.SessionConfig;
 import io.deephaven.uri.DeephavenTarget;
 import org.apache.arrow.memory.BufferAllocator;
+import org.finos.legend.engine.plan.execution.stores.deephaven.connection.DeephavenSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -30,8 +30,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collections;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 public class DeephavenTestContainer
 {
@@ -61,26 +59,15 @@ public class DeephavenTestContainer
         return deephavenContainer;
     }
 
-    public static BarrageSession buildSession(GenericContainer<?> container, BufferAllocator bufferAllocator)
+    public static DeephavenSession buildSession(GenericContainer<?> container, BufferAllocator bufferAllocator)
     {
-        final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
-
-        final BarrageSessionFactoryConfig.Factory factory = BarrageSessionFactoryConfig.builder()
-                .clientConfig(ClientConfig.builder().target(DeephavenTarget.builder().isSecure(false).host(container.getHost()).port(container.getMappedPort(PORT)).build()).build())
-                .clientChannelFactory(CLIENT_CHANNEL_FACTORY)
-                .allocator(bufferAllocator)
-                .scheduler(scheduler)
-                .build()
-                .factory();
-
-        return factory.newBarrageSession(sessionConfig());
-    }
-
-    private static SessionConfig sessionConfig()
-    {
-        final SessionConfig.Builder builder = SessionConfig.builder();
-        builder.authenticationTypeAndValue("io.deephaven.authentication.psk.PskAuthenticationHandler " + PSK);
-        return builder.build();
+        ClientConfig clientConfig = ClientConfig.builder()
+                .target(DeephavenTarget.builder().isSecure(false).host(container.getHost()).port(container.getMappedPort(PORT)).build())
+                .build();
+        SessionConfig sessionConfig = SessionConfig.builder()
+                .authenticationTypeAndValue("io.deephaven.authentication.psk.PskAuthenticationHandler " + PSK)
+                .build();
+        return new DeephavenSession(clientConfig, sessionConfig, CLIENT_CHANNEL_FACTORY, bufferAllocator);
     }
 
     public static boolean startDeephaven(String versionTag)

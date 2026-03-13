@@ -109,27 +109,21 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
-            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"function not supported yet: meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"function not supported yet: meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
             one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"), // io.deephaven.function.Numeric.cor(new int[]{1, 3.0, 6.0}, 10, -20, 30) -> Cannot find method cor([I, int, int, int) in class io.deephaven.function.Numeric
             one("meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
@@ -184,7 +178,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
-            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::map_T_m__Function_1__V_m_\""),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
@@ -228,7 +222,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuid_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::generation::generateGuid__String_1_\""),
 
             one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_\""),
-            one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"")
+            one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_\"")
     );
 
     public static Test suite()

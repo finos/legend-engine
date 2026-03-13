@@ -170,6 +170,15 @@
                         <PCTTestSuite>
                             org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_StandardFunctions_PCT
                         </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_GrammarFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_ScenarioQuantFunctions_PCT
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.test.deephaven.pct.Test_Deephaven_UnclassifiedFunctions_PCT
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>
@@ -235,6 +244,11 @@
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</artifactId>
                         <version>${project.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
         </plugins>
@@ -278,6 +292,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -369,6 +387,18 @@
         </dependency>
         <dependency>
             <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-table-api</artifactId>
+            <version>${deephaven.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.deephaven</groupId>
+            <artifactId>deephaven-engine-query-constants</artifactId>
+            <version>${deephaven.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.deephaven</groupId>
             <artifactId>deephaven-qst</artifactId>
             <version>${deephaven.version}</version>
             <scope>runtime</scope>
@@ -414,6 +444,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

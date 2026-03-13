@@ -39,20 +39,21 @@ function meta::external::store::deephaven::tests::pct::testAdapterForExecution<X
   let state = $reprocessed.second;
   let deephavenTables = $state.deephavenStore.tables;
   let csvs = $state.csvs;
+  let colTypes = $state.columnTypes;
 
   print(if($debug.debug, | 'Reprocessed function:\n' + $newFunction->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n', | ''));
 
   print(if($debug.debug, | 'Building execution plan', | ''));
 
-  let createTableResult = if ($deephavenTables->size() == $csvs->size(),
-                              | $deephavenTables->size()->range()->forAll(i |
-                                  let tableName = $deephavenTables->at($i).name;
-                                  let csv = $csvs->at($i);
-                                  meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv);
-                                );,
-                              | fail('There must be one csv per table!') // TODO: Revisit this assumption, as there doesn't have to be a csv for non-TDS operations
+  if ($deephavenTables->size() == $csvs->size(),
+      | $deephavenTables->size()->range()->forAll(i |
+          let tableName = $deephavenTables->at($i).name;
+          let csv = $csvs->at($i);
+          let columnTypesStr = $colTypes->at($i);
+          meta::external::store::deephaven::executionTest::utils::createTableFromCSV($tableName, $csv, $columnTypesStr);
+        );,
+      | [];
   );
-  if($createTableResult == false, | fail('Failed to create a table from csv. Check Deephaven logs for detailed error messages.'), | '');
 
   let resultJson = meta::legend::execute($newFunction, [], ^meta::pure::runtime::ExecutionContext(), $extensions);
 
@@ -105,6 +106,7 @@ Class meta::external::store::deephaven::tests::pct::process::DeephavenProcessing
    replaced : Pair<meta::pure::metamodel::relation::TDS<Any>, meta::pure::store::RelationStoreAccessor<Any>>[*];
    openVars : Map<String,Any>[0..1];
    csvs : String[*];
+   columnTypes : String[*];
 }
 
 function meta::external::store::deephaven::tests::pct::process::createDeephavenRuntime(): Runtime[1]
@@ -178,6 +180,7 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(f:Func
 
             let code = $deephavenStoreGrammar +
                        '\n###Pure\n' +
+                       $otherFuncs->filter(x|$x->instanceOf(FunctionDefinition))->map(o|'function ' + $o->cast(@FunctionDefinition<Any>)->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space=''));)->joinStrings('') +
                        'function test::lambdaContainer():Any[*]{\n' +
                        '  ' + meta::pure::metamodel::serialization::grammar::printFunctionDefinition($newFunction, $dhConfig, ^meta::pure::metamodel::serialization::grammar::GContext(space='')) + '\n' +
                        '}';
@@ -214,7 +217,8 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(a:Any[
                                                                               | $repro.current->cast(@ValueSpecification))
                                                        )->evaluateAndDeactivate(),
                                           replaced = $repro.replaced,
-                                          csvs = $repro.csvs
+                                          csvs = $repro.csvs,
+                                          columnTypes = $repro.columnTypes
                                       );,
                                     | ^$state
                                       (
@@ -234,14 +238,16 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(a:Any[
                                           values = $repro.current
                                         ),
                               replaced = $repro.replaced,
-                              csvs = $repro.csvs
+                              csvs = $repro.csvs,
+                              columnTypes = $repro.columnTypes
                             );,
       z:LambdaFunction<Any>[1] | let repro = $z.expressionSequence->evaluateAndDeactivate()->map(z|$z->reprocess($state));
                                  ^$state
                                  (
                                     current=^$z(expressionSequence = $repro.current->cast(@ValueSpecification)->toOneMany()),
                                     replaced=$repro.replaced,
-                                    csvs = $repro.csvs
+                                    csvs = $repro.csvs,
+                                    columnTypes = $repro.columnTypes
                                  );,
       v:VariableExpression[1] | let openVar = $state.openVars->toOne()->get($v.name);
                                 if ($openVar->isEmpty(),
@@ -264,7 +270,6 @@ function meta::external::store::deephaven::tests::pct::process::reprocess(a:Any[
 
 function meta::external::store::deephaven::tests::pct::process::processTDS(tds:meta::pure::metamodel::relation::TDS<Any>[1], state:DeephavenProcessingState[1]):DeephavenProcessingState[1]
 {
-  let map = meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType();
   let cols = $tds->columns();
   let rand = random() * 10000000;
   let table = ^meta::external::store::deephaven::metamodel::store::Table
@@ -273,8 +278,8 @@ function meta::external::store::deephaven::tests::pct::process::processTDS(tds:m
     columns = $cols->map(c |
                      ^meta::external::store::deephaven::metamodel::store::Column(
                        name = $c.name->toOne(),
-                       type = $map->meta::pure::functions::collection::get($c->genericType().typeArguments->at(1).rawType->toOne())->toOne()
-                     )
+                       type = meta::external::store::deephaven::pureToDeephaven::mapPureTypeToDeephavenType($c->genericType().typeArguments->at(1))->toOne()
+                     );
                    )
   );
   let store = $state.deephavenStore;
@@ -291,7 +296,7 @@ function meta::external::store::deephaven::tests::pct::process::processTDS(tds:m
             $tds->map(
               x | $cols->map(c | $c->eval($x)->match(
                                  [
-                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                   x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS"Z"}', $x),
                                    s : Variant[1] | '"' + $s->toString() + '"',
                                    z : Any[1] | $z->toString(),
                                    n : Any[0] | ''
@@ -299,11 +304,35 @@ function meta::external::store::deephaven::tests::pct::process::processTDS(tds:m
                   ))->joinStrings(',')
             )->joinStrings('\n');
 
+  let colTypeStr = $table.columns->map(c | $c.type->toOne()->meta::external::store::deephaven::tests::pct::process::deephavenTypeToString())->joinStrings(',');
+
   ^$state
   (
     current = $relAccessor,
     replaced = pair($tds, $relAccessor),
-    csvs += $csv
+    csvs += $csv,
+    columnTypes += $colTypeStr
+  );
+}
+
+function meta::external::store::deephaven::tests::pct::process::deephavenTypeToString(type:meta::external::store::deephaven::metamodel::type::Type[1]):String[1]
+{
+  $type->match(
+    [
+      t:meta::external::store::deephaven::metamodel::type::IntType[1] | 'int',
+      t:meta::external::store::deephaven::metamodel::type::LongType[1] | 'long',
+      t:meta::external::store::deephaven::metamodel::type::FloatType[1] | 'float',
+      t:meta::external::store::deephaven::metamodel::type::DoubleType[1] | 'double',
+      t:meta::external::store::deephaven::metamodel::type::StringType[1] | 'string',
+      t:meta::external::store::deephaven::metamodel::type::TimestampType[1] | 'timestamp',
+      t:meta::external::store::deephaven::metamodel::type::DateTimeType[1] | 'datetime',
+      t:meta::external::store::deephaven::metamodel::type::BooleanType[1] | 'boolean',
+      t:meta::external::store::deephaven::metamodel::type::DecimalType[1] | 'double',
+      t:meta::external::store::deephaven::metamodel::type::ByteType[1] | 'byte',
+      t:meta::external::store::deephaven::metamodel::type::ShortType[1] | 'short',
+      t:meta::external::store::deephaven::metamodel::type::CharType[1] | 'char',
+      t:meta::external::store::deephaven::metamodel::type::Type[1] | 'string'
+    ]
   );
 }
 
@@ -318,7 +347,7 @@ function meta::external::store::deephaven::tests::pct::process::extractDependent
     | [],
     |  $f->match([
         z:FunctionDefinition<Any>[1] |
-                    if(!$z->hasStereotype('function', PCT) && $z->instanceOf(PackageableElement) && $z->elementToPath()->contains('::tests::'),|$z,|[])
+                    if($z->instanceOf(PackageableElement) && ($z->elementToPath()->startsWith('meta::external::scenario') || (!$z->hasStereotype('function', PCT) && $z->elementToPath()->contains('::tests::'))),|$z,|[])
                       ->concatenate($z.expressionSequence->evaluateAndDeactivate()->map(x|$x->extractDependentFunctionsImpl($visitedFuncs->concatenate($z))));,
         x:SimpleFunctionExpression[1]|
                     let res = $x.parametersValues->map(p|$p->extractDependentFunctionsImpl($visitedFuncs));
@@ -335,6 +364,7 @@ function meta::external::store::deephaven::tests::pct::process::merge(s1:Deephav
   (
     replaced += $s2.replaced,
     csvs += $s2.csvs,
+    columnTypes += $s2.columnTypes,
     openVars = if($s1.openVars->isEmpty(), | $s1.openVars, | $s2.openVars)
   );
 }
