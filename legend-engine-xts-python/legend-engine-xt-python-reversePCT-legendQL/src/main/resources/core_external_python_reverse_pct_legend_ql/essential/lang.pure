@@ -21,18 +21,18 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
     // Cast -------------------------------------------------------------
     [ // toDecimal
       meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_->testRev(
-        noRev('|3.8->meta::pure::functions::math::toDecimal()')
+        rev('|3.8->meta::pure::functions::math::toDecimal()', 'c(3.8).to_decimal()')
       ),
       meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_->testRev(
-        noRev('|3.8D->meta::pure::functions::math::toDecimal()')
+        rev('|3.8D->meta::pure::functions::math::toDecimal()', 'c(PythonDecimal(\'3.8\')).to_decimal()')
       ),
       meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_->testRev(
-        noRev('|8->meta::pure::functions::math::toDecimal()')
+        rev('|8->meta::pure::functions::math::toDecimal()', 'c(8).to_decimal()')
       )
     ]->combine(),
     [ // toFloat
       meta::pure::functions::math::tests::toFloat::testDecimalToFloat_Function_1__Boolean_1_->testRev(
-        noRev('|3.8D->meta::pure::functions::math::toFloat()')
+        rev('|3.8D->meta::pure::functions::math::toFloat()', 'c(PythonDecimal(\'3.8\')).to_float()')
       )
     ]->combine()
   ]

@@ -81,27 +81,27 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
     [ // parseDecimal
       meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_->testRev(
         [
-          noRev('|\'3.14159d\'->meta::pure::functions::string::parseDecimal()'),
-          noRev('|\'3.14159\'->meta::pure::functions::string::parseDecimal()'),
-          noRev('|\'-3.14159d\'->meta::pure::functions::string::parseDecimal()'),
-          noRev('|\'+0000003.1415900000\'->meta::pure::functions::string::parseDecimal()'),
-          noRev('|\'-0000003.1415900000\'->meta::pure::functions::string::parseDecimal()')
+          rev('|\'3.14159d\'->meta::pure::functions::string::parseDecimal()', 'c("3.14159d").parse_decimal()'),
+          rev('|\'3.14159\'->meta::pure::functions::string::parseDecimal()', 'c("3.14159").parse_decimal()'),
+          rev('|\'-3.14159d\'->meta::pure::functions::string::parseDecimal()', 'c("-3.14159d").parse_decimal()'),
+          rev('|\'+0000003.1415900000\'->meta::pure::functions::string::parseDecimal()', 'c("+0000003.1415900000").parse_decimal()'),
+          rev('|\'-0000003.1415900000\'->meta::pure::functions::string::parseDecimal()', 'c("-0000003.1415900000").parse_decimal()')
         ]
       ),
       meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_->testRev(
         [
-          noRev('|\'0.0\'->meta::pure::functions::string::parseDecimal()'),
-          noRev('|\'-000.000\'->meta::pure::functions::string::parseDecimal()')
+          rev('|\'0.0\'->meta::pure::functions::string::parseDecimal()', 'c("0.0").parse_decimal()'),
+          rev('|\'-000.000\'->meta::pure::functions::string::parseDecimal()', 'c("-000.000").parse_decimal()')
         ]
       ),
       meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_->testRev(
         [
-          noRev('|\'123.126\'->meta::pure::functions::string::parseDecimal(5, 2)'),
-          noRev('|\'123.123\'->meta::pure::functions::string::parseDecimal(7, 3)'),
-          noRev('|\'-3.14159\'->meta::pure::functions::string::parseDecimal(5, 2)'),
-          noRev('|\'123.123\'->meta::pure::functions::string::parseDecimal(10, 5)'),
-          noRev('|\'+0000003.1415900000\'->meta::pure::functions::string::parseDecimal(38, 10)'),
-          noRev('|\'-0000003.1415900000\'->meta::pure::functions::string::parseDecimal(38, 10)')
+          rev('|\'123.126\'->meta::pure::functions::string::parseDecimal(5, 2)', 'c("123.126").parse_decimal(5, 2)'),
+          rev('|\'123.123\'->meta::pure::functions::string::parseDecimal(7, 3)', 'c("123.123").parse_decimal(7, 3)'),
+          rev('|\'-3.14159\'->meta::pure::functions::string::parseDecimal(5, 2)', 'c("-3.14159").parse_decimal(5, 2)'),
+          rev('|\'123.123\'->meta::pure::functions::string::parseDecimal(10, 5)', 'c("123.123").parse_decimal(10, 5)'),
+          rev('|\'+0000003.1415900000\'->meta::pure::functions::string::parseDecimal(38, 10)', 'c("+0000003.1415900000").parse_decimal(38, 10)'),
+          rev('|\'-0000003.1415900000\'->meta::pure::functions::string::parseDecimal(38, 10)', 'c("-0000003.1415900000").parse_decimal(38, 10)')
         ]
       )
     ]->combine(),

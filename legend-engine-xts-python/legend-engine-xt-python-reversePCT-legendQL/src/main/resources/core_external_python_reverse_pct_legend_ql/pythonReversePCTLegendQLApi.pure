@@ -144,7 +144,8 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
   let script =
     'import math\n' + 
     'from datetime import date, datetime\n' + 
-    'from pylegend.core.tds.tds_frame import FrameToPureConfig\n' + 
+    'from decimal import Decimal as PythonDecimal\n' +
+    'from pylegend.core.tds.tds_frame import FrameToPureConfig\n' +
     'from pylegend.core.language import PyLegendPrimitive\n' + 
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
     'from pylegend.core.language.shared.functions import pi\n' + 
