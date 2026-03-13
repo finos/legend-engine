@@ -542,9 +542,6 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-// Test for KS1768423660104: filter()->first() inside if/else derived property.
-// The filter predicate must NOT leak to the outer WHERE clause.
-// All 7 person rows must be returned — the filter only applies within the else branch.
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
