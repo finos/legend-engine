@@ -28,3 +28,17 @@ VALIDATION_ASSERTION:                    'assertion';
 VALIDATION_TYPE:                         'type';
 VALIDATION_TYPE_ROW:                     'ROW_LEVEL';
 VALIDATION_TYPE_AGG:                     'AGGREGATE';
+
+
+// -------------------- RELATION COMPARISON VALIDATION ------------------------------------
+DATAQUALITYRELATIONCOMPARISON:           'DataQualityRelationComparison';
+RECON_SOURCE:                            'source';
+RECON_TARGET:                            'target';
+RECON_KEYS:                              'keys';
+COLUMNS_TO_COMPARE:                      'columnsToCompare';
+RECON_STRATEGY:                          'strategy';
+RECON_STRATEGY_MD5:                      'MD5Hash';
+RECON_SOURCE_HASH_COLUMN:                'sourceHashColumn';
+RECON_TARGET_HASH_COLUMN:                'targetHashColumn';
+RECON_AGGREGATED_HASH:                   'aggregatedHash';
+RECON_EXPECTED_MATCH:                    'expectedMatch';
