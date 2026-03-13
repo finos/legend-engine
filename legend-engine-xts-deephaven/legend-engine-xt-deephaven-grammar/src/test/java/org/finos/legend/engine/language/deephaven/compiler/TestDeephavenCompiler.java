@@ -106,4 +106,48 @@ public class TestDeephavenCompiler extends TestCompilationFromGrammar.TestCompil
     {
         test(BASIC_STORE);
     }
+
+    @Test
+    public void testCompileDeephavenApp()
+    {
+        String grammar = BASIC_STORE +
+                "DeephavenApp test::MyDeephavenApp\n" +
+                "{\n" +
+                "    applicationName: 'TestApp';\n" +
+                "    function: test::myFunc():Any[*];\n" +
+                "    description: 'Test description';\n" +
+                "    ownership: Deployment { identifier: 'owner1' };\n" +
+                "}\n\n" +
+                "###Pure\n" +
+                "function test::myFunc(): Any[*]\n" +
+                "{\n" +
+                "    #>{test::Store::foo.xyz}#->select(~[prop1, prop2])->from(test::DeephavenRuntime)\n" +
+                "}\n\n" +
+                "###Connection\n" +
+                "DeephavenConnection test::DeephavenConnection\n" +
+                "{\n" +
+                "    store: test::Store::foo;\n" +
+                "    serverUrl: 'http://localhost:10000'\n" +
+                "    authentication: # PSK {\n" +
+                "        psk: 'testPSK';\n" +
+                "    }#;\n" +
+                "}\n\n" +
+                "###Runtime\n" +
+                "Runtime test::DeephavenRuntime\n" +
+                "{\n" +
+                "    mappings:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "    connections:\n" +
+                "    [\n" +
+                "        test::Store::foo:\n" +
+                "        [\n" +
+                "            connection: test::DeephavenConnection\n" +
+                "        ]\n" +
+                "    ];\n" +
+                "}\n";
+
+        Pair<PureModelContextData, PureModel> result = test(grammar);
+        Assert.assertNotNull(result.getTwo().getPackageableElement("test::MyDeephavenApp"));
+    }
 }
