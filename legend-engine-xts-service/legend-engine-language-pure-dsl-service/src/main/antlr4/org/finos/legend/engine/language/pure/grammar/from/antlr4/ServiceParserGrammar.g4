@@ -100,7 +100,7 @@ serviceMcpServer:                       SERVICE_MCP_SERVER COLON identifier SEMI
 
 serviceFunc:                            SERVICE_FUNCTION COLON combinedExpression SEMI_COLON
 ;
-serviceExec:                            SERVICE_EXECUTION COLON (singleExec|multiExec)
+serviceExec:                            SERVICE_EXECUTION COLON (singleExec | multiExec | extensionExec)
 ;
 singleExec:                             SERVICE_SINGLE
                                             BRACE_OPEN
@@ -119,6 +119,13 @@ multiExec:                              SERVICE_MULTI
                                                     | execParameter
                                                 )*
                                             BRACE_CLOSE
+;
+extensionExec:                          VALID_STRING
+                                            BRACE_OPEN
+                                                extensionExecContent
+                                            BRACE_CLOSE
+;
+extensionExecContent:                   (~(BRACE_OPEN | BRACE_CLOSE) | BRACE_OPEN extensionExecContent BRACE_CLOSE)*
 ;
 execParameter:                          execParameterSignature COLON
                                             BRACE_OPEN

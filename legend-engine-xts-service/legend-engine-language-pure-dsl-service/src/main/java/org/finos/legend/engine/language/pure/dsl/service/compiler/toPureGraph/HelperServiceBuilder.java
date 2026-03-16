@@ -52,15 +52,15 @@ public class HelperServiceBuilder
         return ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), ServiceCompilerExtension.class);
     }
 
-    public static Root_meta_legend_service_metamodel_Ownership processOwnershipModel(Ownership o)
+    public static Root_meta_legend_service_metamodel_Ownership processOwnershipModel(Ownership o, CompileContext context)
     {
         if (o instanceof DeploymentOwnership)
         {
-            return new Root_meta_legend_service_metamodel_DeploymentOwner_Impl("")._identifier(((DeploymentOwnership) o).identifier);
+            return new Root_meta_legend_service_metamodel_DeploymentOwner_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::DeploymentOwner"))._identifier(((DeploymentOwnership) o).identifier);
         }
         else if (o instanceof UserListOwnership)
         {
-            return new Root_meta_legend_service_metamodel_UserListOwner_Impl("")._usersAddAll(Lists.mutable.withAll(((UserListOwnership) o).users));
+            return new Root_meta_legend_service_metamodel_UserListOwner_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::UserListOwner"))._usersAddAll(Lists.mutable.withAll(((UserListOwnership) o).users));
         }
         else
         {
