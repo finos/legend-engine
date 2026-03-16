@@ -16,14 +16,18 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.from;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.service.grammar.from.extension.IServiceGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -71,7 +75,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class ServiceParseTreeWalker
 {
@@ -373,7 +379,46 @@ public class ServiceParseTreeWalker
             }
             return pureMultiExecution;
         }
-        throw new UnsupportedOperationException();
+        else if (ctx.extensionExec() != null)
+        {
+            return visitExtensionExec(ctx.extensionExec());
+        }
+        throw new EngineException("Unknown execution type", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private Execution visitExtensionExec(ServiceParserGrammar.ExtensionExecContext ctx)
+    {
+        String executionType = ctx.VALID_STRING().getText();
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        Map<String, Function3<String, ParseTreeWalkerSourceInformation, PureGrammarParserExtensions, Execution>> allParsers = getRegisteredExecutionParsers();
+        Function3<String, ParseTreeWalkerSourceInformation, PureGrammarParserExtensions, Execution> parser = allParsers.get(executionType);
+        if (parser == null)
+        {
+            String validTypes = allParsers.isEmpty()
+                ? ""
+                : ", " + allParsers.keySet().stream().sorted().map(t -> "'" + t + "'").collect(Collectors.joining(", "));
+            throw new EngineException("Unknown execution type: " + executionType + ". Valid alternatives: ['Single', 'Multi'" + validTypes + "]", sourceInformation, EngineErrorType.PARSER);
+        }
+        String content = ctx.extensionExecContent().getText();
+        int startLine = ctx.extensionExecContent().getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.extensionExecContent().getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation extensionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        return parser.value(content, extensionWalkerSourceInformation, this.context.getPureGrammarParserExtensions());
+    }
+
+    private Map<String, Function3<String, ParseTreeWalkerSourceInformation, PureGrammarParserExtensions, Execution>> getRegisteredExecutionParsers()
+    {
+        Map<String, Function3<String, ParseTreeWalkerSourceInformation, PureGrammarParserExtensions, Execution>> allParsers = new java.util.LinkedHashMap<>();
+        PureGrammarParserExtensions extensions = this.context.getPureGrammarParserExtensions();
+        for (PureGrammarParserExtension extension : extensions.getExtensions())
+        {
+            if (extension instanceof IServiceGrammarParserExtension)
+            {
+                allParsers.putAll(((IServiceGrammarParserExtension) extension).getExtraServiceExecutionParsers());
+            }
+        }
+        return allParsers;
     }
 
     private Runtime visitRuntime(ServiceParserGrammar.ServiceRuntimeContext serviceRuntimeContext)

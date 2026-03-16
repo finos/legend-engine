@@ -21,28 +21,32 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
+import org.finos.legend.engine.language.pure.dsl.service.grammar.to.extension.IServiceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
-import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.DeploymentOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Ownership;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UserListOwnership;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
-public class ServiceGrammarComposerExtension implements PureGrammarComposerExtension
+public class ServiceGrammarComposerExtension implements IServiceGrammarComposerExtension
 {
+    private static final MutableList<IServiceGrammarComposerExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(IServiceGrammarComposerExtension.class));
+
     @Override
     public MutableList<String> group()
     {
@@ -115,14 +119,7 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         serviceBuilder.append(getTabString()).append("documentation: ").append(convertString(service.documentation != null ? service.documentation : "", true)).append(";\n");
         serviceBuilder.append(getTabString()).append("autoActivateUpdates: ").append(service.autoActivateUpdates ? "true" : "false").append(";\n");
         Execution execution = service.execution;
-        if (execution instanceof PureExecution)
-        {
-            serviceBuilder.append(getTabString()).append("execution: ").append(HelperServiceGrammarComposer.renderServiceExecution(execution, context));
-        }
-        else
-        {
-            serviceBuilder.append(getTabString()).append(unsupported(execution.getClass(), "service execution type"));
-        }
+        serviceBuilder.append(getTabString()).append("execution: ").append(renderExecution(execution, context));
 
         if (service.testSuites != null)
         {
@@ -164,6 +161,26 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         {
             return "/* Can't transform ownership '" + o.getClass().getSimpleName() + "' in this service */";
         }
+    }
+
+    private static String renderExecution(Execution execution, PureGrammarComposerContext context)
+    {
+        if (execution instanceof PureSingleExecution || execution instanceof PureMultiExecution)
+        {
+            return HelperServiceGrammarComposer.renderServiceExecution(execution, context);
+        }
+        for (IServiceGrammarComposerExtension ext : extensions)
+        {
+            for (Function2<Execution, PureGrammarComposerContext, String> composer : ext.getExtraServiceExecutionComposers())
+            {
+                String result = composer.apply(execution, context);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+        }
+        throw new EngineException("Unknown execution type: " + execution.getClass().getSimpleName());
     }
 
     private String renderExecutionEnvironment(ExecutionEnvironmentInstance execEnv, PureGrammarComposerContext context)

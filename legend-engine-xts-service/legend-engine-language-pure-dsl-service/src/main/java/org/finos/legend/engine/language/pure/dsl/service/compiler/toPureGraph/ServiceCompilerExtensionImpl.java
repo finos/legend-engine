@@ -258,7 +258,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                 ._pattern(service.pattern)
                 ._owners(Lists.mutable.withAll(service.owners))
-                ._ownership(service.ownership != null ? processOwnershipModel(service.ownership) : null)
+                ._ownership(service.ownership != null ? processOwnershipModel(service.ownership, context) : null)
                 ._documentation(service.documentation);
     }
 
