@@ -3168,7 +3168,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->project(~[
-                COALESCE : x|[$x.Integer,1]->meta::pure::tds::extensions::firstNotNull(),
+                COALESCE : x|meta::pure::functions::flow::coalesce($x.Integer, 1, []),
                 GREATEST : x|[$x.Integer,1]->greatest(),
                 LEAST : x|[$x.Integer,1]->least()])
       }
