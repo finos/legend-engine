@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.deephaven.compiler;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -147,7 +148,7 @@ public class TestDeephavenCompiler extends TestCompilationFromGrammar.TestCompil
                 "    ];\n" +
                 "}\n";
 
-        Pair<PureModelContextData, PureModel> result = test(grammar);
+        Pair<PureModelContextData, PureModel> result = test(grammar, null, Lists.fixedSize.with("COMPILATION warning at [40:1-52:1]: Runtime must cover at least one mapping"));
         Assert.assertNotNull(result.getTwo().getPackageableElement("test::MyDeephavenApp"));
     }
 }

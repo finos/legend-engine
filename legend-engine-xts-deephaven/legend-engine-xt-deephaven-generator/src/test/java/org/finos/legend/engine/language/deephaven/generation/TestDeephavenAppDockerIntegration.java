@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.plan.execution.stores.deephaven.connection.DeephavenSession;
 import org.finos.legend.engine.plan.execution.stores.deephaven.test.DeephavenTestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -133,13 +134,13 @@ public class TestDeephavenAppDockerIntegration
     public void testGeneratedAppIsQueryable() throws Exception
     {
         try (BufferAllocator allocator = new RootAllocator();
-             BarrageSession session = DeephavenTestContainer.buildSession(DeephavenTestContainer.deephavenContainer, allocator))
+             DeephavenSession session = DeephavenTestContainer.buildSession(DeephavenTestContainer.deephavenContainer, allocator))
         {
-            TableHandle resultHandle = session.session().execute(TicketTable.fromApplicationField("stocktradesapp", "result"));
+            TableHandle resultHandle = session.getClientSession().execute(TicketTable.fromApplicationField("stocktradesapp", "result"));
             Assert.assertNotNull("The 'result' table should be queryable via application field", resultHandle);
             resultHandle.close();
 
-            TableHandle sourceHandle = session.session().execute(TicketTable.fromApplicationField("stocktradesapp", "stockTrades"));
+            TableHandle sourceHandle = session.getClientSession().execute(TicketTable.fromApplicationField("stocktradesapp", "stockTrades"));
             Assert.assertNotNull("The 'stockTrades' source table should be queryable via application field", sourceHandle);
             sourceHandle.close();
         }

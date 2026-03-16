@@ -18,7 +18,7 @@ package org.finos.legend.engine.language.deephaven.from;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.utility.ListIterate;
 
-import org.finos.legend.engine.language.deephaven.grammar.from.DeephavenApp;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;

@@ -19,7 +19,8 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.engine.language.deephaven.grammar.from.DeephavenApp;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
@@ -112,7 +113,7 @@ public class DeephavenCompilerExtension implements CompilerExtension
                                         ._function(func)
                                         ._description(app.description)
                                         ._ownership(new org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership_Impl("")
-                                                ._id(((org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner) app.ownership).id));
+                                                ._id(((DeploymentOwner) app.ownership).id));
                             }
                             catch (Exception e)
                             {

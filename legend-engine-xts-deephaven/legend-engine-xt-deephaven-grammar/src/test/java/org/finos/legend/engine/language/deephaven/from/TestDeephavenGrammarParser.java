@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.finos.legend.engine.language.deephaven.grammar.from.DeephavenApp;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DeephavenParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;

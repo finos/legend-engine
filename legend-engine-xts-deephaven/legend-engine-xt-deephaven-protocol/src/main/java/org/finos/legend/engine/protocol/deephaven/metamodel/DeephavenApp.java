@@ -12,19 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.deephaven.grammar.from;
+package org.finos.legend.engine.protocol.deephaven.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
-import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DeephavenApp extends PackageableElement
+public class DeephavenApp extends FunctionActivator
 {
     public String applicationName;
-    public PackageableElementPointer function;
-    public Ownership ownership;
     public String description;
 }
-
