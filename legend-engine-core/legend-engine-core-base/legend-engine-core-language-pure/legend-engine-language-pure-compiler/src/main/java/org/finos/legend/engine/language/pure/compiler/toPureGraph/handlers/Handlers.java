@@ -614,9 +614,7 @@ public class Handlers
                         new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
                                 ._rawType(pureModel.getClass("meta::pure::metamodel::relation::ColSpec"))
                                 ._typeArguments(Lists.mutable.with(firstGenericType))
-                )
-                ._stereotypes(stereotypes)
-                ._taggedValues(taggedValues);
+                );
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec<?> buildColSpec(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> col, PureModel pureModel, ProcessorSupport ps)
