@@ -29,5 +29,6 @@
     <modules>
         <module>legend-engine-xt-python-functions-execution</module>
         <module>legend-engine-xt-python-reversePCT-legendQL</module>
+        <module>legend-engine-xt-python-reversePCT-pandasAPI</module>
     </modules>
 </project>

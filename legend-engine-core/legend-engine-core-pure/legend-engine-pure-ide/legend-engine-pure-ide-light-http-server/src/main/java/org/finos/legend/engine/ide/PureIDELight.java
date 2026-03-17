@@ -31,8 +31,22 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        System.setProperty("legend.test.h2.port", "1976");
-        System.setProperty("user.timezone", "GMT");
+//        System.setProperty("legend.test.h2.port", "1976");
+//        System.setProperty("user.timezone", "GMT");
+        System.setProperty("alloy.test.server.host", "127.0.0.1");
+        System.setProperty("alloy.test.server.port", "6060");
+        System.setProperty("alloy.test.h2.port", "9092");
+        System.setProperty("alloy.test.clientVersion", "vX_X_X");
+        System.setProperty("alloy.test.serverVersion", "v1");
+
+        System.setProperty("pure.options.ExecPlan", "true");
+        System.setProperty("pure.options.PlanLocal", "true");
+        System.setProperty("legend.test.server.host", "127.0.0.1");
+        System.setProperty("legend.test.server.port", "8080");
+        System.setProperty("legend.test.h2.port", "9092");
+        System.setProperty("legend.test.clientVersion", "vX_X_X");
+        System.setProperty("legend.test.serverVersion", "v1");
+        System.setProperty("legend.test.serializationKind", "json");
 
         // Uncomment to be able to run   AlloyOny test cases
         // withAlloyServerSupport();
@@ -170,6 +184,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-memsql/legend-engine-xt-relationalStore-memsql-sqlDialectTranslation-pure", "external-store-relational-sql-dialect-translation-memsql"))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-reversePCT/legend-engine-pure-code-reversePCT-pure", "reverse-pct"))
                 .with(this.buildCore("legend-engine-xts-python/legend-engine-xt-python-reversePCT-legendQL", "external-python-reverse-pct-legend-ql"))
+                .with(this.buildCore("legend-engine-xts-python/legend-engine-xt-python-reversePCT-pandasAPI", "external-python-reverse-pct-pandas-api"))
                 ;
 
     }
