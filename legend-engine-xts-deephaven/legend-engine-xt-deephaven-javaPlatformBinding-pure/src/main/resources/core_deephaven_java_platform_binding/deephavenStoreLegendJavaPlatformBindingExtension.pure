@@ -168,42 +168,46 @@ function meta::external::store::deephaven::executionPlan::platformBinding::legen
   $executeProject->mergeProjects()->generatedCode($executeClass);
 }
 
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::applyOperationChain(query: DeephavenQuery[1], initial: Code[1], tableType: meta::external::language::java::metamodel::Type[1]): Code[1]
+{
+  let filterOps = $query.operations->filter(op |$op->instanceOf(FilterOperation));
+  let withFilters = $filterOps->fold({op, code |
+      $op->match([
+        f: FilterOperation[1] | generateFilterOperation($f, $code, $tableType)
+      ]);
+  }, $initial);
+
+  let selectOps = $query.operations->filter(op |$op->instanceOf(SelectOperation));
+  let withSelects = if($query.selectQueryExists == true,
+                        | $selectOps->fold({op, code |
+                                                      $op->match([
+                                                        s: SelectOperation[1] | generateSelectOperation($s, $code, $tableType)
+                                                      ]);
+                                  }, $withFilters),
+                        | $withFilters );
+
+  let sortOps = $query.operations->filter(op |$op->instanceOf(SortOperation));
+  let withSorts = $sortOps->fold({op, code |
+                                  $op->match([
+                                    s: SortOperation[1] | generateSortOperation($s, $code, $tableType)
+                                  ]);
+                              }, $withSelects);
+
+  let extendWindowOps = $query.operations->filter(op |$op->instanceOf(ExtendWindowOperation));
+  let result = $extendWindowOps->fold({op, code |
+                                  $op->match([
+                                    e: ExtendWindowOperation[1] | generateExtendWindowOperation($e, $code, $tableType)
+                                  ]);
+                              }, $withSorts);
+
+  $result;
+}
+
 function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::generateDeephavenOperationChain(query: DeephavenQuery[1], tableSpecClass: meta::external::language::java::metamodel::Type[1], context: GenerationContext[1]): Code[1]
 {
   if($query.source->isNotEmpty(),
       | let initial = javaClass('io.deephaven.qst.table.TicketTable')->j_invoke('fromQueryScopeField', [j_string($query.source->toOne().name)], $tableSpecClass);
-
-        let filterOps = $query.operations->filter(op |$op->instanceOf(FilterOperation));
-        let withFilters = $filterOps->fold({op, code |
-            $op->match([
-              f: FilterOperation[1] | generateFilterOperation($f, $code, $tableSpecClass)
-            ]);
-        }, $initial);
-
-        let selectOps = $query.operations->filter(op |$op->instanceOf(SelectOperation));
-        let withSelects = if($query.selectQueryExists == true,
-                              | $selectOps->fold({op, code |
-                                                            $op->match([
-                                                              s: SelectOperation[1] | generateSelectOperation($s, $code, $tableSpecClass)
-                                                            ]);
-                                        }, $withFilters),
-                              | $withFilters );
-        
-        let sortOps = $query.operations->filter(op |$op->instanceOf(SortOperation));
-        let withSorts = $sortOps->fold({op, code |
-                                        $op->match([
-                                          s: SortOperation[1] | generateSortOperation($s, $code, $tableSpecClass)
-                                        ]);
-                                    }, $withSelects);
-
-        let extendWindowOps = $query.operations->filter(op |$op->instanceOf(ExtendWindowOperation));
-        let result = $extendWindowOps->fold({op, code |
-                                        $op->match([
-                                          e: ExtendWindowOperation[1] | generateExtendWindowOperation($e, $code, $tableSpecClass)
-                                        ]);
-                                    }, $withSorts);
-
-        $result;,
+        applyOperationChain($query, $initial, $tableSpecClass);,
       | let queryOperations = $query.operations;
         let javaQueryStrings = range($queryOperations->size())->map(i | let currentOp = $queryOperations->at($i);
                                                                         let columnName = generateColumnName('Result' + $i->toString());

@@ -23,6 +23,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -63,6 +65,10 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
         {
             return renderDeephavenStore((DeephavenStore) element, context);
         }
+        if (element instanceof DeephavenApp)
+        {
+            return renderDeephavenApp((DeephavenApp) element);
+        }
         return null;
     });
 
@@ -78,6 +84,25 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
             builder.append("\n");
         }
         builder.append(")");
+        return builder.toString();
+    }
+
+    private static String renderDeephavenApp(DeephavenApp app)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("DeephavenApp ").append(PureGrammarComposerUtility.convertPath(app.getPath())).append("\n");
+        builder.append("{\n");
+        builder.append(getTabString()).append("applicationName: '").append(app.applicationName).append("';\n");
+        builder.append(getTabString()).append("function: ").append(app.function.path).append(";\n");
+        if (app.description != null)
+        {
+            builder.append(getTabString()).append("description: '").append(app.description).append("';\n");
+        }
+        if (app.ownership instanceof DeploymentOwner)
+        {
+            builder.append(getTabString()).append("ownership: Deployment { identifier: '").append(((DeploymentOwner) app.ownership).id).append("' };\n");
+        }
+        builder.append("}");
         return builder.toString();
     }
 

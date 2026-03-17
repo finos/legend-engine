@@ -140,6 +140,14 @@
             <artifactId>legend-engine-xt-deephaven-protocol</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-pure</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.antlr</groupId>

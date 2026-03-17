@@ -23,3 +23,14 @@ DECIMAL_TYPE:                              'DECIMAL';
 STRING_TYPE:                               'STRING';
 TIMESTAMP_TYPE:                            'TIMESTAMP';
 DATETIME_TYPE:                             'DATETIME';
+
+// -------------------------------------- DeephavenApp Tokens --------------------------------------
+
+DEEPHAVEN_APP:                             'DeephavenApp';
+DEEPHAVEN_APP__APPLICATION_NAME:           'applicationName';
+DEEPHAVEN_APP__FUNCTION:                   'function';
+DEEPHAVEN_APP__OWNER:                      'ownership';
+DEEPHAVEN_APP__OWNER_DEPLOYMENT:           'Deployment';
+DEEPHAVEN_APP__OWNER_DEPLOYMENT_ID:        'identifier';
+DEEPHAVEN_APP__DESCRIPTION:                'description';
+

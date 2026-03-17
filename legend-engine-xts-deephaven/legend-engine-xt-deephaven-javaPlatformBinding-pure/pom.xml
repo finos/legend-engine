@@ -149,11 +149,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.pure</groupId>-->
-        <!--            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>-->
-        <!--            <scope>runtime</scope>-->
-        <!--        </dependency>-->
         <!-- PURE -->
 
         <!-- ENGINE -->
@@ -192,6 +187,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-deephaven-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <!-- ENGINE -->
 

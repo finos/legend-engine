@@ -18,6 +18,7 @@ package org.finos.legend.engine.language.deephaven.from;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.utility.ListIterate;
 
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.IAuthenticationGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
@@ -31,9 +32,12 @@ import org.finos.legend.engine.protocol.deephaven.metamodel.type.DecimalType;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.DoubleType;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.FloatType;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.TimestampType;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.deephaven.metamodel.runtime.DeephavenConnection;
@@ -81,6 +85,7 @@ public class DeephavenParseTreeWalker
         };
 
         this.visit(definitionContext.deephavenDefinition(), sectionConsumer);
+        this.visitDeephavenApps(definitionContext.deephavenAppDefinition(), sectionConsumer);
 
         return section;
     }
@@ -88,6 +93,43 @@ public class DeephavenParseTreeWalker
     private void visit(List<DeephavenParserGrammar.DeephavenDefinitionContext> deephavenStoreDefinition, Consumer<PackageableElement> elementConsumer)
     {
         deephavenStoreDefinition.stream().map(this::visitDeephavenStore).forEach(elementConsumer);
+    }
+
+    private void visitDeephavenApps(List<DeephavenParserGrammar.DeephavenAppDefinitionContext> deephavenAppDefinitions, Consumer<PackageableElement> elementConsumer)
+    {
+        if (deephavenAppDefinitions != null)
+        {
+            deephavenAppDefinitions.stream().map(this::visitDeephavenApp).forEach(elementConsumer);
+        }
+    }
+
+    private DeephavenApp visitDeephavenApp(DeephavenParserGrammar.DeephavenAppDefinitionContext ctx)
+    {
+        DeephavenApp app = new DeephavenApp();
+        app.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        app._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        app.sourceInformation = this.parserInfo.walkerSourceInformation.getSourceInformation(ctx);
+
+        DeephavenParserGrammar.AppApplicationNameContext appNameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.appApplicationName(), "applicationName", app.sourceInformation);
+        app.applicationName = PureGrammarParserUtility.fromGrammarString(appNameCtx.STRING().getText(), true);
+
+        DeephavenParserGrammar.AppFunctionContext functionCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.appFunction(), "function", app.sourceInformation);
+        app.function = new PackageableElementPointer(
+                PackageableElementType.FUNCTION,
+                functionCtx.appFunctionIdentifier().getText(),
+                this.parserInfo.walkerSourceInformation.getSourceInformation(functionCtx.appFunctionIdentifier())
+        );
+
+        DeephavenParserGrammar.AppOwnershipContext ownerCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.appOwnership(), "ownership", app.sourceInformation);
+        app.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerCtx.STRING().getText(), true));
+
+        DeephavenParserGrammar.AppDescriptionContext descCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.appDescription(), "description", app.sourceInformation);
+        if (descCtx != null)
+        {
+            app.description = PureGrammarParserUtility.fromGrammarString(descCtx.STRING().getText(), true);
+        }
+
+        return app;
     }
 
     private DeephavenStore visitDeephavenStore(DeephavenParserGrammar.DeephavenDefinitionContext ctx)

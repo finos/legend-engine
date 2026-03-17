@@ -29,6 +29,7 @@
     <modules>
         <module>legend-engine-xt-deephaven-executionPlan</module>
         <module>legend-engine-xt-deephaven-executionPlan-test</module>
+        <module>legend-engine-xt-deephaven-generator</module>
         <module>legend-engine-xt-deephaven-grammar</module>
         <module>legend-engine-xt-deephaven-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-deephaven-protocol</module>

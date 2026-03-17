@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.deephaven.compiler;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -105,5 +106,49 @@ public class TestDeephavenCompiler extends TestCompilationFromGrammar.TestCompil
     public void testFullCompileStore()
     {
         test(BASIC_STORE);
+    }
+
+    @Test
+    public void testCompileDeephavenApp()
+    {
+        String grammar = BASIC_STORE +
+                "DeephavenApp test::MyDeephavenApp\n" +
+                "{\n" +
+                "    applicationName: 'TestApp';\n" +
+                "    function: test::myFunc():Any[*];\n" +
+                "    description: 'Test description';\n" +
+                "    ownership: Deployment { identifier: 'owner1' };\n" +
+                "}\n\n" +
+                "###Pure\n" +
+                "function test::myFunc(): Any[*]\n" +
+                "{\n" +
+                "    #>{test::Store::foo.xyz}#->select(~[prop1, prop2])->from(test::DeephavenRuntime)\n" +
+                "}\n\n" +
+                "###Connection\n" +
+                "DeephavenConnection test::DeephavenConnection\n" +
+                "{\n" +
+                "    store: test::Store::foo;\n" +
+                "    serverUrl: 'http://localhost:10000'\n" +
+                "    authentication: # PSK {\n" +
+                "        psk: 'testPSK';\n" +
+                "    }#;\n" +
+                "}\n\n" +
+                "###Runtime\n" +
+                "Runtime test::DeephavenRuntime\n" +
+                "{\n" +
+                "    mappings:\n" +
+                "    [\n" +
+                "    ];\n" +
+                "    connections:\n" +
+                "    [\n" +
+                "        test::Store::foo:\n" +
+                "        [\n" +
+                "            connection: test::DeephavenConnection\n" +
+                "        ]\n" +
+                "    ];\n" +
+                "}\n";
+
+        Pair<PureModelContextData, PureModel> result = test(grammar, null, Lists.fixedSize.with("COMPILATION warning at [40:1-52:1]: Runtime must cover at least one mapping"));
+        Assert.assertNotNull(result.getTwo().getPackageableElement("test::MyDeephavenApp"));
     }
 }
