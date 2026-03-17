@@ -29,6 +29,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.primitive.MutableIntSet;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.set.mutable.primitive.IntHashSet;
 import org.finos.legend.pure.generated.PureCompiledLambda;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -365,8 +366,9 @@ public class RelationNativeImplementation
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
 
-        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = tds.sort(window.getPartition().collect(part -> new SortInfo(part, SortDirection.ASC)).toList());
-        final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(window.getSorts(), sortRes);
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = window.getPartition().isEmpty() ? tds.wrapFullTDS() : tds.sort(window.getPartition().collect(part -> new SortInfo(part, SortDirection.ASC)).toList());
+        MutableList<SortInfo> sortInfos = window.getSorts();
+        final Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortedPartitions = TestTDS.sortPartitions(sortInfos, sortRes);
 
         return new TDSContainer((TestTDSCompiled) colFunc.injectInto(sortedPartitions.getOne(), (a, b) -> a.addColumn(performExtend(window, sortedPartitions, b, es))), ps);
     }
@@ -382,6 +384,35 @@ public class RelationNativeImplementation
 
         return new TDSContainer((TestTDSCompiled) aggregateTDS(window, sortInfos, sortedPartitions, aggColSpecTrans, false, es).injectInto(sortedPartitions.getOne(), TestTDS::addColumn), ps);
     }
+
+    public static <T, U> U reduce(Relation<? extends T> rel, Window window, Object rc, Function map, Function reduce, ExecutionSupport es)
+    {
+        TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
+        int currentRow = ((RowContainer) rc).getRow();
+        int partitionSize = (int) tds.getRowCount();
+
+        SharedPureFunction pureMap = PureCompiledLambda.getPureFunction(map, es);
+        Function2 pureReduce = (Function2) PureCompiledLambda.getPureFunction(reduce, es);
+
+        // Wrap map/reduce lambdas in AggColSpecTrans1 to reuse performMapReduce
+        AggColSpecTrans1 mapTrans = new AggColSpecTrans1(
+                "_reduce",
+                pureMap,
+                pureReduce,
+                null
+        );
+
+        // Single partition wrapping the entire TDS
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes =
+                Tuples.pair(tds, Lists.mutable.with(Tuples.pair(0, partitionSize)));
+
+        Object[] results = new Object[partitionSize];
+        performMapReduce(window, window.getSorts(), mapTrans, mapTrans.reduce, es, sortRes, (j, o) -> results[j] = o, false);
+
+        return (U) results[currentRow];
+    }
+
+
 
 
     private static ColumnValue performExtend(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> tds, ColFuncSpecTrans colFuncSpecTrans, ExecutionSupport es)
