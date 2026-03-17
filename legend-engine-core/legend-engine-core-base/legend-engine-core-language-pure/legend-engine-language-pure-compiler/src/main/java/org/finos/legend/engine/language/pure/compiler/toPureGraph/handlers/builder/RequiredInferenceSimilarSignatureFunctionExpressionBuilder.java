@@ -92,6 +92,13 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpressionFromResolvedParams(List<ValueSpecification> resolvedParams, SourceInformation sourceInformation)
+    {
+        SimpleFunctionExpression sfe = this.handlers.buildFunctionExpressionGraph(resolvedParams, sourceInformation);
+        return Tuples.pair(sfe, sfe != null ? resolvedParams : null);
+    }
+
+    @Override
     public MutableList<FunctionHandler> handlers()
     {
         return handlers.handlers();

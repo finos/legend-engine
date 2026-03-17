@@ -107,6 +107,13 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     }
 
     @Override
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpressionFromResolvedParams(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> resolvedParams, SourceInformation sourceInformation)
+    {
+        SimpleFunctionExpression sfe = buildFunctionExpressionGraph(resolvedParams, sourceInformation);
+        return Tuples.pair(sfe, sfe != null ? resolvedParams : null);
+    }
+
+    @Override
     public MutableList<FunctionHandler> handlers()
     {
         return this.handlers;

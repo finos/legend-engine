@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
@@ -123,6 +124,7 @@ public class CompileContext
 
     public final PureModel pureModel;
     private final ImmutableSet<String> imports;
+    private final ConcurrentHashMap<String, String> SEARCH_IMPORTS_CACHE = new ConcurrentHashMap<>();
 
     private CompileContext(Builder builder)
     {
@@ -586,6 +588,26 @@ public class CompileContext
     private <T> MutableMap<String, T> searchImports(String name, Function<String, T> resolver)
     {
         MutableMap<String, T> results = Maps.mutable.empty();
+
+        String cachedPath = SEARCH_IMPORTS_CACHE.get(name);
+        if (cachedPath != null)
+        {
+            try
+            {
+                T result = resolver.apply(cachedPath);
+                if (result != null)
+                {
+                    results.put(cachedPath, result);
+                    return results;
+                }
+            }
+            catch (Exception ignored)
+            {
+                // cached path didn't work with this resolver; fall through to full search
+            }
+        }
+
+        // Full import search
         this.imports.forEach(importPackage ->
         {
             String fullPath = importPackage + PACKAGE_SEPARATOR + name;
@@ -603,6 +625,13 @@ public class CompileContext
                 results.put(fullPath, result);
             }
         });
+
+        // Cache the result if exactly one match was found
+        if (results.size() == 1)
+        {
+            SEARCH_IMPORTS_CACHE.put(name, results.keysView().getAny());
+        }
+
         return results;
     }
 

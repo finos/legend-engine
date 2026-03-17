@@ -108,6 +108,14 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
         List<ValueSpecification> resolvedParams = null;
         for (FunctionExpressionBuilder b : builders)
         {
+            if (resolvedParams != null)
+            {
+                Pair<SimpleFunctionExpression, List<ValueSpecification>> reuse = b.buildFunctionExpressionFromResolvedParams(resolvedParams, sourceInformation);
+                if (reuse.getOne() != null)
+                {
+                    return reuse;
+                }
+            }
             Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
             if (res.getOne() != null)
             {
@@ -123,6 +131,20 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
             }
         }
         return Tuples.pair(null, resolvedParams);
+    }
+
+    @Override
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpressionFromResolvedParams(List<ValueSpecification> resolvedParams, SourceInformation sourceInformation)
+    {
+        for (FunctionExpressionBuilder b : builders)
+        {
+            Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpressionFromResolvedParams(resolvedParams, sourceInformation);
+            if (res.getOne() != null)
+            {
+                return res;
+            }
+        }
+        return Tuples.pair(null, null);
     }
 
     @Override
