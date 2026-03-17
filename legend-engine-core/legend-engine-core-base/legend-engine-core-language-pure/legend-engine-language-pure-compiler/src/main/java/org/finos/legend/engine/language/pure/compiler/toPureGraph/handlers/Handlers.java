@@ -963,6 +963,36 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
+    public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ValueSpecification rel = parameters.get(0).accept(valueSpecificationBuilder);
+        ValueSpecification w = parameters.get(1).accept(valueSpecificationBuilder);
+        ValueSpecification row = parameters.get(2).accept(valueSpecificationBuilder);
+
+        GenericType tType = rel._genericType()._typeArguments().getFirst();
+        GenericType windowType = w._genericType();
+        
+        if (parameters.get(3) instanceof LambdaFunction)
+        {
+            if (((LambdaFunction) parameters.get(3)).parameters.size() == 1)
+            {
+                updateSimpleLambda(parameters.get(3), tType, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
+            }
+            else
+            {
+                updateTwoParamsLambdaDiffTypes(parameters.get(3), tType, windowType, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
+            }
+        }
+        ValueSpecification map = parameters.get(3).accept(valueSpecificationBuilder);
+        
+        GenericType vType = funcReturnType(map, cc.pureModel);
+        updateSimpleLambda(parameters.get(4), vType, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(0, null), cc);
+        ValueSpecification agg = parameters.get(4).accept(valueSpecificationBuilder);
+        
+        return Lists.mutable.with(rel, w, row, map, agg);
+    };
+
     private final Map<String, FunctionExpressionBuilder> map = Maps.mutable.empty();
     private final Map<String, Dispatch> dispatchMap = Maps.mutable.empty();
     private final PureModel pureModel;
@@ -1058,6 +1088,12 @@ public class Handlers
                 grp(TDSAggInference,
                     h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                     h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                )
+        );
+
+        register(
+                grp(ReduceInference,
+                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_$0_1$_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), p -> true)
                 )
         );
 
@@ -1867,7 +1903,7 @@ public class Handlers
                 )
         );
 
-        register(grp(EvalColInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_MANY_", "eval", false,  ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroMany"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_ColSpec")))));
+        register(grp(EvalColInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_", "eval", false,  ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroOne"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_ColSpec")))));
 
         register(h("meta::pure::functions::relation::select_Relation_1__Relation_1_", "select", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true));
 
