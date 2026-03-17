@@ -3168,7 +3168,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->project(~[
-                COALESCE : x|[$x.Integer,1]->meta::pure::tds::extensions::firstNotNull(),
+                COALESCE : x|meta::pure::functions::flow::coalesce($x.Integer, 1, []),
                 GREATEST : x|[$x.Integer,1]->greatest(),
                 LEAST : x|[$x.Integer,1]->least()])
       }
@@ -3467,7 +3467,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'String like \'b\' AS "EQUAL", ' +
     'String like \'b%\' AS "STARTS_WITH", ' +
     'String like \'%b\' AS "ENDS_WITH", ' +
-    'String like \'%b%\' AS "CONTAINS"' +
+    'String like \'%b%\' AS "CONTAINS",' +
+    'String like \'\\%b\\\%\' AS "DEFAULT_ESCAPE",' +
+    'String like \'\!%b!_\\!%\' ESCAPE \'!\' AS "ESCAPE"' +
     'FROM service."/service/service1"',
 
     [
@@ -3480,7 +3482,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | equal($row.getString('String'), 'b'), 'EQUAL'),
                   col(row:TDSRow[1] | startsWith($row.getString('String'), 'b'), 'STARTS_WITH'),
                   col(row:TDSRow[1] | endsWith($row.getString('String'), 'b'), 'ENDS_WITH'),
-                  col(row:TDSRow[1] | contains($row.getString('String'), 'b'), 'CONTAINS')
+                  col(row:TDSRow[1] | contains($row.getString('String'), 'b'), 'CONTAINS'),
+                  col(row:TDSRow[1] | equal($row.getString('String'), '%b%'), 'DEFAULT_ESCAPE'),
+                  col(row:TDSRow[1] | equal($row.getString('String'), '%b_\\%'), 'ESCAPE')
                 ])
       },
 
@@ -3490,10 +3494,21 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 EQUAL : x|$x.String == 'b',
                 STARTS_WITH : x|$x.String->startsWith('b'),
                 ENDS_WITH : x|$x.String->endsWith('b'),
-                CONTAINS : x|$x.String->contains('b')])
+                CONTAINS : x|$x.String->contains('b'),
+                DEFAULT_ESCAPE : x|$x.String->equal('%b%'),
+                ESCAPE : x|$x.String->equal('%b_\\%')])
       }
     ]
   )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLikeUnsupported():Boolean[1]
+{
+
+  error('SELECT String like \'ab_cd\' FROM service."/service/service1"', 'currently unsupported like pattern: unescaped _ not supported, pattern: ab_cd');
+  error('SELECT String like \'ab%cd\' FROM service."/service/service1"', 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab%cd');
+  error('SELECT String like \'ab\\%cd\' ESCAPE \'!\' FROM service."/service/service1"', 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab\\%cd');
+  error('SELECT String like \'ab\\_cd\' ESCAPE \'!\' FROM service."/service/service1"', 'currently unsupported like pattern: unescaped _ not supported, pattern: ab\\_cd');
 }
 
 //PATTERN MATCHING

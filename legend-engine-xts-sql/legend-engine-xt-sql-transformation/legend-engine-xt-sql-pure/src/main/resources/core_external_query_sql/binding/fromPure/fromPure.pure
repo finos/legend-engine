@@ -2157,36 +2157,46 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLikePredicate(l:LikePredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
-  //TODO add more support/look to map to matches handling the special characters
-
-  assert($l.escape->isEmpty(), | 'like escape currently not supported');
+  assert($l.escape->isEmpty() || $l.escape->toOne()->instanceOf(StringLiteral), | 'like escape must be string literal');
   assertFalse($l.ignoreCase, | 'ilike currently not supported');
   assert($l.pattern->instanceOf(StringLiteral), | 'like pattern must be string literal');
 
   let pattern = $l.pattern->cast(@StringLiteral).value;
+  let escape = $l.escape->cast(@StringLiteral).value->orElse('\\');
 
-  assert(!$pattern->contains('_'), 'currently unsupported like pattern');
+  // Replace escaped wildcards with placeholders to find real (unescaped) wildcards
+  let escapedEscapePlaceholder = '<<ESC-ESC>>';
+  let escapedPercentPlaceholder = '<<ESC-PCT>>';
+  let escapedUnderscorePlaceholder = '<<ESC-US>>';
 
-  let wildFirstIndex = $pattern->indexOf('%');
-  let wildLastIndex = $pattern->lastIndexOf('%');
-  let length = $pattern->length();
+  // Neutralize escape sequences so only real wildcards remain
+  let neutralized = $pattern->replace($escape + $escape, $escapedEscapePlaceholder)
+                            ->replace($escape + '%', $escapedPercentPlaceholder)
+                            ->replace($escape + '_', $escapedUnderscorePlaceholder);
+
+  // Validate: no unescaped _ allowed
+  assert(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
+
+  let hasLeading = $neutralized->startsWith('%');
+  let hasTrailing = $neutralized->endsWith('%') && ($neutralized->length() > if($hasLeading, |1, |0));
+
+  // Strip leading/trailing unescaped % and assert none remain in the middle
+  let inner = $neutralized->substring(if($hasLeading, |1, |0), $neutralized->length() - if($hasTrailing, |1, |0));
+  assert(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
+
+  // Build the literal by resolving placeholders back to their unescaped characters
+  let literal = $inner->replace($escapedEscapePlaceholder, $escape)
+                       ->replace($escapedPercentPlaceholder, '%')
+                       ->replace($escapedUnderscorePlaceholder, '_');
 
   let value = $l.value->processExpression($expContext, $context);
 
-  [
-    pair($wildFirstIndex == 0 && $wildLastIndex == 0, {|
-      sfe(endsWith_String_1__String_1__Boolean_1_, [$value, iv($pattern->substring(1))])
-    }),
-    pair($wildFirstIndex == -1, {|
-      sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$value, iv($pattern)])
-    }),
-    pair($wildFirstIndex == 0 && ($wildLastIndex == $length - 1), {|
-      sfe(contains_String_1__String_1__Boolean_1_, [$value, iv($pattern->substring(1, $pattern->length() - 1))]);
-    }),
-    pair($wildFirstIndex == $length - 1, {|
-      sfe(startsWith_String_1__String_1__Boolean_1_, [$value, iv($pattern->substring(0, $pattern->length() - 1))])
-    })
-  ]->getValue(true, {| fail('currently unsupported like statement'); iv(1);})->eval();
+  let func = if($hasLeading && $hasTrailing, | contains_String_1__String_1__Boolean_1_,
+             | if($hasLeading, | endsWith_String_1__String_1__Boolean_1_,
+             | if($hasTrailing, | startsWith_String_1__String_1__Boolean_1_,
+             | equal_Any_MANY__Any_MANY__Boolean_1_)));
+
+  sfe($func, [$value, iv($literal)]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBetweenPredicate(b:BetweenPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
