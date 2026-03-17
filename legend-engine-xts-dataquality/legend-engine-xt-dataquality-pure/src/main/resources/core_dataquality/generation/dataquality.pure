@@ -609,15 +609,11 @@ function meta::external::dataquality::enrichTotalDefectCountColumn(f:ValueSpecif
   let newRelTypeWithDefectCount = $inputRelType->addColumns(~[DEFECT_COUNT: Integer[1]])->evaluateAndDeactivate();
   let newRelTypeOnlyDefectCount = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $newRelTypeWithDefectCount.columns->filter(col | 'DEFECT_COUNT' == ($col.name->toOne())));
 
-  // Build the first lambda: {x | $x.<firstCol>} - maps each row to the rule name
+  // Build the first lambda: {x | 1} - maps each row to a constant (avoids NULL skipping)
   let aggColSpecFirstParam = buildAggColSpecDefectCountFirstParam($inputRelType);
 
-  // Get the actual column type for the second param
-  let firstCol = $inputRelType.columns->first()->toOne();
-  let firstColGenericType = $firstCol.classifierGenericType.typeArguments->at(1);
-
   // Build the second lambda: {y | $y->size()} - counts the mapped values using size
-  let aggColSpecSecondParam = buildAggColSpecDefectCountSecondParam($firstColGenericType);
+  let aggColSpecSecondParam = buildAggColSpecDefectCountSecondParam();
 
   // Build the aggColSpec expression
   let aggColSpec = ^SimpleFunctionExpression
@@ -652,33 +648,21 @@ function meta::external::dataquality::enrichTotalDefectCountColumn(f:ValueSpecif
 }
 
 
-// Build the first lambda for defect count: {x | $x.<firstCol>} - maps each row to the first column value
+// Build the first lambda for defect count: {x | 1} - maps each row to a constant to ensure NULLs are counted
 function meta::external::dataquality::buildAggColSpecDefectCountFirstParam(relType: meta::pure::metamodel::relation::RelationType<Any>[1]):InstanceValue[1]
 {
-  let firstCol = $relType.columns->first()->toOne();
-  let firstColName = $firstCol.name->toOne();
-  let firstColGenericType = $firstCol.classifierGenericType.typeArguments->at(1);
   let expression = ^VariableExpression(name = 'x', genericType = ^GenericType(rawType = $relType), multiplicity = PureOne);
-  let colAccess = ^SimpleFunctionExpression
-  (
-      func = $firstCol,
-      multiplicity = ZeroOne,
-      genericType  = $firstColGenericType,
-      importGroup  = system::imports::coreImport,
-      parametersValues = [$expression],
-      propertyName = ^InstanceValue(genericType = ^GenericType(rawType=Any), multiplicity = ZeroOne, values = [$firstColName])
-  )->evaluateAndDeactivate();
   ^InstanceValue(
-      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = ZeroOne, returnType = $firstColGenericType))),
+      genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(parameters = $expression, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer)))),
       multiplicity = PureOne,
-      values = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = $firstColGenericType, parameters = $expression), $colAccess)
+      values = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Integer), parameters = $expression), ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1))
   )->evaluateAndDeactivate();
 }
 
 // Build the second lambda for defect count: {y | $y->size()} - counts using size
-function meta::external::dataquality::buildAggColSpecDefectCountSecondParam(colGenericType: GenericType[1]):InstanceValue[1]
+function meta::external::dataquality::buildAggColSpecDefectCountSecondParam():InstanceValue[1]
 {
-  let expression = ^VariableExpression(name = 'y', genericType = $colGenericType, multiplicity = ZeroMany);
+  let expression = ^VariableExpression(name = 'y', genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany);
   let sizeCall = ^SimpleFunctionExpression
   (
       func = size_Any_MANY__Integer_1_,
