@@ -338,8 +338,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
             let func = [
               pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$_),
-              pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),
-              pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_)
+              pair(2, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),
+              pair(3, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_)
             ]->getValue($filteredArgs->size());
 
             sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->concatenate(Nil->iv()));,
