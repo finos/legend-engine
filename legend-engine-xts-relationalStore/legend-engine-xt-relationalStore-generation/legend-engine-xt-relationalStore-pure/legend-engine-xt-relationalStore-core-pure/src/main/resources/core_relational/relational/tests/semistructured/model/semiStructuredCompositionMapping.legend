@@ -1,0 +1,178 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+Class composition::model::Trade
+{
+  id: Integer[1];
+  uniqueRef: String[0..1];
+  instanceContent: composition::model::InstanceContent[0..1];
+  tradeContent: composition::model::TradeContent[0..1];
+  entity: composition::model::Entity[1];
+}
+
+Class composition::model::InstanceContent
+{
+  rawData: composition::model::RawData[0..1];
+}
+
+Class composition::model::RawData
+{
+  instanceId: String[0..1];
+  instanceName: String[0..1];
+}
+
+Class composition::model::TradeContent
+{
+  tradeName: String[0..1];
+}
+
+Class composition::model::Entity
+{
+  id: Integer[1];
+  name: String[0..1];
+  aliases: composition::model::Alias[*];
+  displayName() {if(
+    $this.aliases.name->isNotEmpty(),
+    |$this.aliases.name->first(),
+    |$this.name
+  )->first()}: String[0..1];
+}
+
+Class composition::model::Alias
+{
+  name: String[1];
+}
+
+
+###ExternalFormat
+Binding composition::binding::CompositionBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    composition::model::TradeContent,
+    composition::model::InstanceContent
+  ];
+}
+
+
+###Relational
+Database composition::store::DB
+(
+  Schema S
+  (
+    Table TRADE
+    (
+      ID INTEGER PRIMARY KEY,
+      UNIQUE_REF VARCHAR(36),
+      ENTITY_ID INTEGER,
+      TRADE_CONTENT SEMISTRUCTURED
+    )
+    Table ENTITY
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(50)
+    )
+    Table ENTITY_ALIAS
+    (
+      ENTITY_ID INTEGER,
+      ALIAS_NAME VARCHAR(50)
+    )
+    Table EXTENSION_TABLE
+    (
+      UNIQUE_REF VARCHAR(36),
+      INSTANCE_CONTENT SEMISTRUCTURED
+    )
+  )
+
+  Join trade_entity(S.TRADE.ENTITY_ID = S.ENTITY.ID)
+  Join entity_alias(S.ENTITY.ID = S.ENTITY_ALIAS.ENTITY_ID)
+  Join trade_extension(S.TRADE.UNIQUE_REF = S.EXTENSION_TABLE.UNIQUE_REF)
+)
+
+
+###Mapping
+Mapping composition::mapping::CompositionMapping
+(
+  composition::model::Trade: Relational
+  {
+    ~primaryKey
+    (
+      [composition::store::DB]S.TRADE.ID
+    )
+    ~mainTable [composition::store::DB]S.TRADE
+    id: [composition::store::DB]S.TRADE.ID,
+    uniqueRef: [composition::store::DB]@trade_extension | [composition::store::DB]S.EXTENSION_TABLE.UNIQUE_REF,
+    instanceContent: Binding composition::binding::CompositionBinding : [composition::store::DB]@trade_extension | [composition::store::DB]S.EXTENSION_TABLE.INSTANCE_CONTENT,
+    tradeContent: Binding composition::binding::CompositionBinding : [composition::store::DB]S.TRADE.TRADE_CONTENT,
+    entity: [composition::store::DB]@trade_entity
+  }
+  composition::model::Entity: Relational
+  {
+    ~primaryKey
+    (
+      [composition::store::DB]S.ENTITY.ID
+    )
+    ~mainTable [composition::store::DB]S.ENTITY
+    id: [composition::store::DB]S.ENTITY.ID,
+    name: [composition::store::DB]S.ENTITY.NAME,
+    aliases: [composition::store::DB]@entity_alias
+  }
+  composition::model::Alias: Relational
+  {
+    ~primaryKey
+    (
+      [composition::store::DB]S.ENTITY_ALIAS.ENTITY_ID,
+      [composition::store::DB]S.ENTITY_ALIAS.ALIAS_NAME
+    )
+    ~mainTable [composition::store::DB]S.ENTITY_ALIAS
+    name: [composition::store::DB]S.ENTITY_ALIAS.ALIAS_NAME
+  }
+)
+
+
+###Pure
+function composition::semiStructuredThenDerivedPrimitivePropertyAccess(): TabularDataSet[1]
+{
+  composition::model::Trade.all()->project([
+      x|$x.id,
+      x|$x.tradeContent.tradeName,
+      x|$x.uniqueRef,
+      x|$x.entity.displayName()],
+    [
+      'Id',
+      'Trade Name',
+      'Unique Ref',
+      'Display Name'
+    ]
+  )
+}
+
+
+function composition::embeddedMappingSemiStructuredAccess(): TabularDataSet[1]
+{
+  composition::model::Trade.all()->project(
+    [
+      x|$x.id,
+      x|$x.instanceContent.rawData.instanceId,
+      x|$x.instanceContent.rawData.instanceName
+    ],
+    [
+      'Id',
+      'InstanceId',
+      'InstanceName'
+    ]
+  )
+}
