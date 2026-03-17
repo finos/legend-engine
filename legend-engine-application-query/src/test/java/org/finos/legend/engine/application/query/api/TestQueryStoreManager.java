@@ -190,6 +190,24 @@ public class TestQueryStoreManager
             return this.withDataSpaceExecution(dataSpace, null);
         }
 
+        TestQueryBuilder withDataProductModelAccessExecution(String dataProductPath, String accessPointGroupId)
+        {
+            DataProductModelAccessExecutionContext ctx = new DataProductModelAccessExecutionContext();
+            ctx.dataProductPath = dataProductPath;
+            ctx.accessPointGroupId = accessPointGroupId;
+            this.executionContext = ctx;
+            return this;
+        }
+
+        TestQueryBuilder withDataProductNativeExecution(String dataProductPath, String executionKey)
+        {
+            DataProductNativeExecutionContext ctx = new DataProductNativeExecutionContext();
+            ctx.dataProductPath = dataProductPath;
+            ctx.executionKey = executionKey;
+            this.executionContext = ctx;
+            return this;
+        }
+
         TestQueryBuilder withGroupId(String groupId)
         {
             this.groupId = groupId;
@@ -726,6 +744,82 @@ public class TestQueryStoreManager
         Assert.assertTrue(query3.executionContext instanceof QueryDataSpaceExecutionContext);
         Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).dataSpacePath, "my::dataSpace");
         Assert.assertEquals(((QueryDataSpaceExecutionContext) query3.executionContext).executionKey, "myKey");
+    }
+
+    @Test
+    public void testValidateQueryWithDataProductModelAccessExecutionContext()
+    {
+        // Valid DataProductModelAccessExecutionContext should pass validation
+        Query validQuery = TestQueryBuilder.create("1", "query1", "testUser").withDataProductModelAccessExecution("my::dataProduct", "myAccessPointGroup").build();
+        QueryStoreManager.validateQuery(validQuery);
+
+        // Missing dataProductPath should fail
+        Query queryMissingPath = TestQueryBuilder.create("2", "query2", "testUser").withDataProductModelAccessExecution(null, "myAccessPointGroup").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingPath)).getMessage());
+
+        // Empty dataProductPath should fail
+        Query queryEmptyPath = TestQueryBuilder.create("3", "query3", "testUser").withDataProductModelAccessExecution("", "myAccessPointGroup").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyPath)).getMessage());
+
+        // Missing accessPointGroupId should fail
+        Query queryMissingAccessPointGroupId = TestQueryBuilder.create("4", "query4", "testUser").withDataProductModelAccessExecution("my::dataProduct", null).build();
+        Assert.assertEquals("Query data product model access execution context accessPointGroupId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingAccessPointGroupId)).getMessage());
+
+        // Empty accessPointGroupId should fail
+        Query queryEmptyAccessPointGroupId = TestQueryBuilder.create("5", "query5", "testUser").withDataProductModelAccessExecution("my::dataProduct", "").build();
+        Assert.assertEquals("Query data product model access execution context accessPointGroupId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyAccessPointGroupId)).getMessage());
+    }
+
+    @Test
+    public void testValidateQueryWithDataProductNativeExecutionContext()
+    {
+        // Valid DataProductNativeExecutionContext should pass validation
+        Query validQuery = TestQueryBuilder.create("1", "query1", "testUser").withDataProductNativeExecution("my::dataProduct", "myKey").build();
+        QueryStoreManager.validateQuery(validQuery);
+
+        // Missing dataProductPath should fail
+        Query queryMissingPath = TestQueryBuilder.create("2", "query2", "testUser").withDataProductNativeExecution(null, "myKey").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingPath)).getMessage());
+
+        // Empty dataProductPath should fail
+        Query queryEmptyPath = TestQueryBuilder.create("3", "query3", "testUser").withDataProductNativeExecution("", "myKey").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyPath)).getMessage());
+
+        // Missing executionKey should fail
+        Query queryMissingExecutionKey = TestQueryBuilder.create("4", "query4", "testUser").withDataProductNativeExecution("my::dataProduct", null).build();
+        Assert.assertEquals("Query data product native execution context executionKey is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingExecutionKey)).getMessage());
+
+        // Empty executionKey should fail
+        Query queryEmptyExecutionKey = TestQueryBuilder.create("5", "query5", "testUser").withDataProductNativeExecution("my::dataProduct", "").build();
+        Assert.assertEquals("Query data product native execution context executionKey is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyExecutionKey)).getMessage());
+    }
+
+    @Test
+    public void testGetQueriesWithDataProductExecContext() throws Exception
+    {
+        String currentUser = "testUser";
+        Query testQuery1 = TestQueryBuilder.create("1", "query1", currentUser).withDataProductModelAccessExecution("my::dataProduct", "myAccessPointGroup").build();
+        Query testQuery2 = TestQueryBuilder.create("2", "query2", currentUser).withDataProductNativeExecution("my::dataProduct", "myKey").build();
+        store.createQuery(testQuery1, currentUser);
+        store.createQuery(testQuery2, currentUser);
+
+        Query query1 = store.getQuery("1");
+        Assert.assertTrue(query1.executionContext instanceof DataProductModelAccessExecutionContext);
+        Assert.assertEquals("my::dataProduct", ((DataProductModelAccessExecutionContext) query1.executionContext).dataProductPath);
+        Assert.assertEquals("myAccessPointGroup", ((DataProductModelAccessExecutionContext) query1.executionContext).accessPointGroupId);
+
+        Query query2 = store.getQuery("2");
+        Assert.assertTrue(query2.executionContext instanceof DataProductNativeExecutionContext);
+        Assert.assertEquals("my::dataProduct", ((DataProductNativeExecutionContext) query2.executionContext).dataProductPath);
+        Assert.assertEquals("myKey", ((DataProductNativeExecutionContext) query2.executionContext).executionKey);
     }
 
 
