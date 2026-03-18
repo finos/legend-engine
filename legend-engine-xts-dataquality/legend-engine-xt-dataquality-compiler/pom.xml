@@ -93,6 +93,12 @@
             <scope>test</scope>
         </dependency>
         <!-- ENGINE -->
+        <!-- Apache Commons -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
         <!-- ECLIPSE -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>

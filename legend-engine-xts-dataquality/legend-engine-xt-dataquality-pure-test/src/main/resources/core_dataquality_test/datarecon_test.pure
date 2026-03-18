@@ -44,7 +44,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
-  testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], []);
+  testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_preComputedHash():Boolean[1]
@@ -66,7 +66,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
-  testRecon($lambda, $runtime, 'ID', false, [], 'HASH', 'HASH');
+  testRecon($lambda, $runtime, 'ID', false, [], 'HASH', 'HASH', false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_aggregatedHash():Boolean[1]
@@ -96,7 +96,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
-  testRecon($lambda, $runtime, 'FIRMID', true, 'FIRMID', 'HASH', 'HASH');
+  testRecon($lambda, $runtime, 'FIRMID', true, 'FIRMID', 'HASH', 'HASH', false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_normalizesAllTypes():Boolean[1]
@@ -118,7 +118,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DOB_SOURCE == $row.DOB_TARGET))
   };
 
-  testRecon($lambda, $runtime, ['DOB', 'CODE', 'COUPOUN', 'CREATED'], false, [], 'DOB', 'DOB');
+  testRecon($lambda, $runtime, ['DOB', 'CODE', 'COUPOUN', 'CREATED'], false, [], 'DOB', 'DOB', false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noHashCols():Boolean[1]
@@ -145,7 +145,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
-  testRecon($lambda, $query, $query, 'ID', false, [], [], []);
+  testRecon($lambda, $query, $query, 'ID', false, [], [], [], false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noPrimaryOrGroupingKeys():Boolean[1]
@@ -171,7 +171,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
-  testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], []);
+  testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_oneSidePrecomputedHash():Boolean[1]
@@ -195,7 +195,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
   };
 
-  testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH');
+  testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH', false);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noKeysAndAggregatedHash():Boolean[1]
@@ -229,18 +229,42 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
-  testRecon($lambda, $runtime, [], true, ['FIRSTNAME', 'LASTNAME'], [], []);
+  testRecon($lambda, $runtime, [], true, ['FIRSTNAME', 'LASTNAME'], [], [], false);
 }
 
-function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]):Boolean[1]
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_includeColumnValues():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,FIRSTNAME,LASTNAME])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,FIRSTNAME,LASTNAME])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+  };
+
+  testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], true);
+}
+
+function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol);
+  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues);
 }
 
-function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1]):Boolean[1]
+function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
-  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol));
+  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues));
   assertLambdaEquals($expected, $actual, false);
 }

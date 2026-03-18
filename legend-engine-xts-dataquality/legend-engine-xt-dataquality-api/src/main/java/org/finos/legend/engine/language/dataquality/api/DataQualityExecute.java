@@ -345,12 +345,29 @@ public class DataQualityExecute
     private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
-        // 1. create DQ recon input
-        Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__DataQualityReconInput_1_(
-                HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()), HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()), Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, pureModel.getExecutionSupport()
-        );
-        // 2. call DQ PURE func to generate lambda
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction =  DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction;
+
+        if (input.runSourceQuery)
+        {
+            // return source query results directly
+            dqLambdaFunction = HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext());
+        }
+        else if (input.runTargetQuery)
+        {
+            // return target query results directly
+            dqLambdaFunction = HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext());
+        }
+        else
+        {
+            // 1. create DQ recon input
+            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__DataQualityReconInput_1_(
+                    HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()), HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()), Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, pureModel.getExecutionSupport()
+            );
+            // 2. call DQ PURE func to generate recon lambda
+            dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+        }
+
         // 3. Generate Plan from the lambda generated in the previous step
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
