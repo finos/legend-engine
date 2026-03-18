@@ -52,7 +52,7 @@ Class meta::relational::mapping::QueryMetadata
 
 Class meta::relational::mapping::TableMetadata extends QueryMetadata
 {
-  tables: Table[*];
+  tables: NamedRelation[*];
 }
 
 Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
