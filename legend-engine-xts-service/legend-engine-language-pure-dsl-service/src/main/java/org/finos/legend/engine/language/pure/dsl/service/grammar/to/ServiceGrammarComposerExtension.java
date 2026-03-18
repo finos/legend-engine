@@ -107,6 +107,10 @@ public class ServiceGrammarComposerExtension implements IServiceGrammarComposerE
         StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(HelperDomainGrammarComposer.renderAnnotations(service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
         serviceBuilder.append("\n{\n");
         serviceBuilder.append(getTabString()).append("pattern: ").append(convertString(service.pattern, true)).append(";\n");
+        if (service.title != null)
+        {
+            serviceBuilder.append(getTabString()).append("title: ").append(convertString(service.title, true)).append(";\n");
+        }
         if (!service.owners.isEmpty())
         {
             serviceBuilder.append(getTabString()).append("owners:\n").append(getTabString()).append("[\n").append(LazyIterate.collect(service.owners, o -> getTabString(2) + convertString(o, true)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
