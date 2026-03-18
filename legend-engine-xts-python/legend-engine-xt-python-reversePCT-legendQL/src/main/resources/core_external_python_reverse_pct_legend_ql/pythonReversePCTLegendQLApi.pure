@@ -15,6 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::python::reversePCT::legendQL::*;
+import meta::external::python::reversePCT::shared::*;
 
 
 function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter<X|o>(f: Function<{->X[o]}>[1]):X[o]
@@ -75,21 +76,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVar
   []
 }
 
-
-function meta::external::python::reversePCT::legendQL::testRev(testFunc: meta::pure::metamodel::function::ConcreteFunctionDefinition<Any>[1], reverses: Reverse[*]): ReversesForSource[1]
-{
-  ^ReversesForSource(source = $testFunc->sourceInformation().source->toOne(), reverses = revsForTest($testFunc->elementToPath(), $reverses))
-}
-
-function meta::external::python::reversePCT::legendQL::combine(testRevs: ReversesForSource[1..*]): ReversesForSource[1]
-{
-  if ($testRevs->size() == 1,
-      | $testRevs->at(0),
-      | let sources = $testRevs.source->removeDuplicates();
-        assert($sources->size() == 1, | 'Cannot combine test reverses defined in different source files: ' + $testRevs.source->removeDuplicates()->joinStrings('[', ', ', ']'));
-        ^ReversesForSource(source = $sources->at(0), reverses = $testRevs.reverses);
-  )
-}
 
 function <<access.private>> meta::external::python::reversePCT::legendQL::getPureLambdaForPythonCodeBlock(pythonCodeBlock: String[1]): LambdaFunction<Any>[1]
 {
