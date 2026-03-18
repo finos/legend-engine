@@ -3338,6 +3338,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
                 <version>${project.version}</version>
             </dependency>
