@@ -91,11 +91,20 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(Pair<List<ValueSpecification>, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        if (this.getParametersSize().get() == parameters.size() && handlers.stream().anyMatch(h -> test(h.getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext())))
+        List<ValueSpecification> protocolParams = parameters.getOne();
+        List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> resolvedParams = parameters.getTwo();
+
+        if (resolvedParams != null)
         {
-            List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
+            SimpleFunctionExpression sfe = buildFunctionExpressionGraph(resolvedParams, sourceInformation);
+            return Tuples.pair(sfe, resolvedParams);
+        }
+
+        if (protocolParams != null && this.getParametersSize().get() == protocolParams.size() && handlers.stream().anyMatch(h -> test(h.getFunc(), protocolParams, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext())))
+        {
+            List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = protocolParams.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
             return Tuples.pair(buildFunctionExpressionGraph(processed, sourceInformation), processed);
         }
         return Tuples.pair(null, null);
@@ -106,12 +115,6 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         return handlers.stream().filter(h -> h.getDispatch().shouldSelect(parameters)).findFirst().map(h -> h.process(parameters, sourceInformation)).orElse(null);
     }
 
-    @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpressionFromResolvedParams(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> resolvedParams, SourceInformation sourceInformation)
-    {
-        SimpleFunctionExpression sfe = buildFunctionExpressionGraph(resolvedParams, sourceInformation);
-        return Tuples.pair(sfe, sfe != null ? resolvedParams : null);
-    }
 
     @Override
     public MutableList<FunctionHandler> handlers()

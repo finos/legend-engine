@@ -18,7 +18,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
@@ -45,12 +44,7 @@ import java.util.Optional;
 
 public abstract class FunctionExpressionBuilder
 {
-    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder);
-
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpressionFromResolvedParams(List<ValueSpecification> resolvedParams, SourceInformation sourceInformation)
-    {
-        return Tuples.pair(null, null);
-    }
+    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(Pair<List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>, List<ValueSpecification>> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder);
 
     public abstract String getFunctionName();
 
