@@ -468,6 +468,12 @@ public class RelationNativeImplementation
             extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (Boolean) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultBoolean);
         }
+        else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, ps)))
+        {
+            Double[] resultDouble = new Double[(int) size];
+            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = ((Number) val).doubleValue()));
+            return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultDouble);
+        }
         throw new PureExecutionException("The type " + PackageableElement.getUserPathForPackageableElement(colFuncSpecTrans.functionType._returnType()._rawType()) + " is not supported yet!");
     }
 

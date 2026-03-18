@@ -28,7 +28,7 @@ public class Reduce extends AbstractNative implements Native
 {
     public Reduce()
     {
-        super("reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_$0_1$_");
+        super("reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_");
     }
 
     @Override
@@ -36,13 +36,13 @@ public class Reduce extends AbstractNative implements Native
     {
         ProcessorSupport processorSupport = processorContext.getSupport();
 
-        String type = TypeProcessor.typeToJavaObjectSingle(Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.genericType, processorSupport), true, processorSupport);
+        String type = TypeProcessor.typeToJavaObjectWithMul(Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.genericType, processorSupport), Instance.getValueForMetaPropertyToOneResolved(functionExpression, M3Properties.multiplicity, processorSupport), processorSupport);
 
         StringBuilder result = new StringBuilder();
         result.append('(');
         result.append(type);
         result.append(')');
-        result.append("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.reduce(");
+        result.append("(Object) org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.reduce(");
         result.append(transformedParams.get(0)).append(", ");
         org.finos.legend.pure.runtime.java.extension.external.relation.compiled.natives.ExtendWindowFunc.processWindow(result, transformedParams.get(1));
         result.append(", ").append(transformedParams.get(2)); // row

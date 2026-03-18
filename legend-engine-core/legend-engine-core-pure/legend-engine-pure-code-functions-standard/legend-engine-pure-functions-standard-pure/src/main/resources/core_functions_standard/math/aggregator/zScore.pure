@@ -21,8 +21,7 @@ function
 <<PCT.function>>
 meta::pure::functions::math::zScore<T>(partition: Relation<T>[1], window: _Window<T>[1], row: T[1], colToZScore:ColSpec<(?:Number)⊆T>[1]):Float[1]
 {
-    // todo what happen when the stdDev is null or zero?
-    (eval($colToZScore, $row)->toOne() - reduce($partition, $window, $row, x|eval($colToZScore, $x), y|$y->average())->toOne()) / reduce($partition, $window, $row, x|eval($colToZScore, $x), y|$y->stdDevPopulation())->toOne()
+    (eval($colToZScore, $row)->toOne() - average($partition, $window, $row, $colToZScore)) / stdDevPopulation($partition, $window, $row, $colToZScore)
 }
 
 //todo some more test
@@ -56,7 +55,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                      7, 1, G, 1.0
                      9, 1, H, 2.0
                   #, 
-                  $res->cast(@Relation<(id:Integer, grp:Integer, name:String, zScore:Float)>)->sort(~id->ascending()),
+                  $res->cast(@Relation<(id:Integer, grp:Integer, name:String, zScore:Float)>)->sort([~id->ascending(), ~grp->ascending(), ~name->ascending()]),
                   0
     );
 }

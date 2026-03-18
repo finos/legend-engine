@@ -237,6 +237,14 @@ public class ProjectExtend extends AggregationShared
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getDecimalValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, processorSupport)))
+        {
+            Double[] finalRes = new Double[(int) source.getOne().getRowCount()];
+            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
         else
         {
             throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(type) + " is not supported yet!");

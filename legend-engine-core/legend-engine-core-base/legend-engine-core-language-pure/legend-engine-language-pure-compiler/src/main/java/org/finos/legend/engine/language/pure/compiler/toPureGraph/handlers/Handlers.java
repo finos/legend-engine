@@ -213,6 +213,33 @@ public class Handlers
         }
     }
 
+    public static final Function<String, ParametersInference> RelationOlapAggregator = colSpecType -> (parameters, valueSpecificationBuilder) ->
+    {
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification partitionProtocol = parameters.get(0);
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification windowProtocol = parameters.get(1);
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification currRowProtocol = parameters.get(2);
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification colSpecProtocol = parameters.get(3);
+
+        ValueSpecification partition = partitionProtocol.accept(valueSpecificationBuilder);
+        GenericType gt = partition._genericType();
+
+        ValueSpecification window = windowProtocol.accept(valueSpecificationBuilder);
+        ValueSpecification currRow = currRowProtocol.accept(valueSpecificationBuilder);
+
+        processColumn(colSpecProtocol, gt, valueSpecificationBuilder.getContext());
+        ValueSpecification colSpec = colSpecProtocol.accept(valueSpecificationBuilder);
+
+        String colType = ((RelationType<?>) colSpec._genericType()._typeArguments().getOnly()._rawType())._columns().getOnly()._classifierGenericType()._typeArguments().getLast()._rawType()._name();
+
+        MutableSet<String> types = valueSpecificationBuilder.getContext().pureModel.taxonomyTypes(colSpecType);
+        if (!types.contains(colType))
+        {
+            throw new EngineException("Column type mismatch.  Expect column to be of one of these types: " + types, colSpecProtocol.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        return Lists.mutable.with(partition, window, currRow, colSpec);
+    };
+
     public static final ParametersInference ExtendInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
@@ -1093,7 +1120,7 @@ public class Handlers
 
         register(
                 grp(ReduceInference,
-                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_$0_1$_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), p -> true)
+                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), p -> true)
                 )
         );
 
@@ -2488,6 +2515,10 @@ public class Handlers
                 )
         );
         register(h("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", "averageRank", false, resolve));
+
+        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::zScore_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "zScore", false, ps -> res("Float", "one"))));
+        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::average_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "average", false, ps -> res("Float", "one"))));
+        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::stdDevPopulation_Relation_1___Window_1__T_1__ColSpec_1__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"))));
     }
 
     private void registerAggregations()
