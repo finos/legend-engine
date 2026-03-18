@@ -41,6 +41,7 @@ SERVICE_TEST_SERIALIZATION_FORMAT:  'serializationFormat';
 SERVICE_TEST_PARAMETERS:            'parameters';
 ASSERT_FOR_KEYS:                    'keys';
 PARAM_GROUP:                        'list';
+SERVICE_TITLE:                      'title';
 
 SERVICE_POST_VALIDATION:            'postValidations';
 SERVICE_POST_VALIDATION_DESCRIPTION:'description';

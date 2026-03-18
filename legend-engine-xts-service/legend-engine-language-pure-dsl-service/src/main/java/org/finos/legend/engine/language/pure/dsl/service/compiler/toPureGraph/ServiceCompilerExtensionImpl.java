@@ -248,6 +248,14 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         {
             throw new EngineException("Cannot use both ownership model and explicit owners list.", service.sourceInformation, EngineErrorType.COMPILATION);
         }
+        if (service.documentation.isEmpty())
+        {
+            context.pureModel.addDefects(Lists.mutable.with(new Warning(service.sourceInformation, "Service '" + service.name + "' has empty documentation")));
+        }
+        if (service.title == null || service.title.isEmpty())
+        {
+            context.pureModel.addDefects(Lists.mutable.with(new Warning(service.sourceInformation, "Service '" + service.name + "' has no title, it is recommended to provide a title for better readability")));
+        }
 //        if (service.owners == null && service.ownership == null)
 //        {
 //            throw new EngineException("Must use either ownership model or explicit owners list.", service.sourceInformation, EngineErrorType.COMPILATION);
@@ -257,6 +265,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                 ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                 ._pattern(service.pattern)
+                ._title(service.title != null ? service.title : null)
                 ._owners(Lists.mutable.withAll(service.owners))
                 ._ownership(service.ownership != null ? processOwnershipModel(service.ownership, context) : null)
                 ._documentation(service.documentation);

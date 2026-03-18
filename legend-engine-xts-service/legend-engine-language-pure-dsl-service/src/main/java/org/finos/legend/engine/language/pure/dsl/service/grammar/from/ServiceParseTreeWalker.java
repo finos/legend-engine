@@ -124,6 +124,9 @@ public class ServiceParseTreeWalker
         // documentation
         ServiceParserGrammar.ServiceDocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceDocumentation(), "documentation", service.sourceInformation);
         service.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
+        // title
+        ServiceParserGrammar.ServiceTitleContext titleContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTitle(), "title", service.sourceInformation);
+        service.title = titleContext != null ? PureGrammarParserUtility.fromGrammarString(titleContext.STRING().getText(), true) : null;
         // auto activate update flag (optional)
         ServiceParserGrammar.ServiceAutoActivateUpdatesContext autoActivateUpdatesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceAutoActivateUpdates(), "autoActivateUpdates", service.sourceInformation);
         service.autoActivateUpdates = autoActivateUpdatesContext != null && Boolean.parseBoolean(autoActivateUpdatesContext.BOOLEAN().getText());
