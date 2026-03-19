@@ -57,6 +57,10 @@
                                 </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-path-java
                                 </dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-diagram</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

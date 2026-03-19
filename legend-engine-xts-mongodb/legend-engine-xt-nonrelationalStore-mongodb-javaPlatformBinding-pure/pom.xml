@@ -36,10 +36,13 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>
-                                    org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-authentication-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -142,6 +145,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -39,19 +39,19 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-pure</dependency>
-                                <dependency>
-                                    org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-javaGeneration-conventions-essential-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-json-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-planExecution-pure
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-planExecution-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-javaPlatformBinding-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-functionActivator-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

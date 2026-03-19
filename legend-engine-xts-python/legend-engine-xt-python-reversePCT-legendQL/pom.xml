@@ -39,6 +39,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-python-functions-execution-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

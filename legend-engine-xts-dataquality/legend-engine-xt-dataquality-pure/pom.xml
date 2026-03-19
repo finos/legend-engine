@@ -27,18 +27,18 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java
-                                </dependency>
-                                <dependency>
-                                    org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-planExecution
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-planExecution</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m3-precisePrimitives</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-javaGeneration-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-functionActivator-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

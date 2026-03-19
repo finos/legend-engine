@@ -38,11 +38,10 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java
-                                </dependency>
-                                <dependency>
-                                    org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-graph-java</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-graph</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-platform-precisePrimitives-java</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

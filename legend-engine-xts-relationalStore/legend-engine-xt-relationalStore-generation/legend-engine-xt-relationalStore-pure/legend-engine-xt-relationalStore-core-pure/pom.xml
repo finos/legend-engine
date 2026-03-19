@@ -44,12 +44,11 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-json-pure</dependency>
-                                <dependency>
-                                    org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store
-                                </dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-store</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

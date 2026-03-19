@@ -38,6 +38,9 @@
                         <configuration>
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-m3-precisePrimitives</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

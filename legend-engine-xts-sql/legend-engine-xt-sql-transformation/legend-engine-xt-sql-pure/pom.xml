@@ -37,17 +37,17 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure
-                                </dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure
-                                </dependency>
-                                <dependency>
-                                    org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json
-                                </dependency>
-                                <dependency>
-                                    org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure
-                                </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-compiled-functions-json</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-pureExtensions-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-postgresSqlParser-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar</dependency>
                             </ignoredUnusedDeclaredDependencies>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUsedUndeclaredDependencies>
