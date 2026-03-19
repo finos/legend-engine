@@ -22,6 +22,14 @@ A comprehensive documentation suite for understanding Legend Engine end-to-end.
 | 12 | [Runtime, Server & REPL](12-runtime-server-repl.md) | Dropwizard server, REPL, Pure IDE, configuration |
 | 13 | [Non-Functional Requirements](13-non-functional-requirements.md) | Build, CI, security, performance, extensibility, observability |
 
+## Appendices
+
+| # | Document | Description |
+|---|----------|-------------|
+| A1 | [Grammar Extensions Reference](A1-grammar-extensions-reference.md) | Complete catalog of all `###Section` grammar extensions |
+| A2 | [Compiler Extensions Reference](A2-compiler-extensions-reference.md) | All compiler extensions, processors, and hook methods |
+| A3 | [Artifact Generation Reference](A3-artifact-generation-reference.md) | All generation extensions across four interface types |
+
 ## Existing Documentation
 
 These architecture docs complement the existing topic-specific docs in the parent [`docs/`](../) directory. Cross-references are provided throughout.
