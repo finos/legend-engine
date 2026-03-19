@@ -192,6 +192,8 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "[ERROR] column \"%A\" does not exist - Statement: 'select format_datetime(\"%A\", DATETIME(Date'1985-01-12'))'"),
             one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
 
+            one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
+
             // UUID
             pack("meta::pure::functions::string::generation::tests::generateGuid", "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet")
     );

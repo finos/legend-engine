@@ -4048,6 +4048,19 @@ function meta::relational::functions::pureToSqlQuery::processToJson(f:FunctionEx
   processDynaFunction('toJson', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
+function meta::relational::functions::pureToSqlQuery::processReduceWindow(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+    let win = $state.currentWindow->toOne('not in window aggregation flow!');
+
+    let mapFunc = $f.parametersValues->at(3)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>);
+    let aggFunc = $f.parametersValues->at(4)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>);
+
+    let aggContainer = ^AggContainer(name='reduce', map=$mapFunc, reduce=$aggFunc);
+    let result = processRelationMapReduce($aggContainer, true, '', $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+    let select = $operation.select;
+    ^$operation(select = ^$select(columns = $result));
+}
+
 function meta::relational::functions::pureToSqlQuery::processToVariant(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let param = $f.parametersValues->evaluateAndDeactivate()->toOne();
@@ -10192,6 +10205,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::rank_Relation_1___Window_1__T_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_, second = meta::relational::functions::pureToSqlQuery::processReduceWindow_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
 
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::offset_Relation_1__T_1__Integer_1__T_$0_1$_, second = meta::relational::functions::pureToSqlQuery::processOffset_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
