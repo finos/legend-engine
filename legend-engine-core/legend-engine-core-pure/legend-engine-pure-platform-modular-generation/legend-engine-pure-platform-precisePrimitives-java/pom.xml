@@ -51,13 +51,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                 <dependencies>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-m3-precisePrimitives</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-                 </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -78,7 +71,6 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-precisePrimitives</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>

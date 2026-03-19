@@ -51,40 +51,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                 <dependencies>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-
-                     <dependency>
-                         <groupId>org.finos.legend.engine</groupId>
-                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                         <version>${project.version}</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.finos.legend.engine</groupId>
-                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
-                         <version>${project.version}</version>
-                     </dependency>
-                 </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -133,6 +99,14 @@
             <artifactId>legend-pure-runtime-java-extension-shared-store-relational</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
@@ -143,6 +117,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
         </dependency>
 
         <dependency>
