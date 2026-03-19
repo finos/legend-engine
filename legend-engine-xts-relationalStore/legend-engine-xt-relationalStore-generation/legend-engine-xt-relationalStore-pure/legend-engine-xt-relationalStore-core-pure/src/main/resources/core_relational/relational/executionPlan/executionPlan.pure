@@ -55,6 +55,11 @@ Class meta::relational::mapping::TableMetadata extends QueryMetadata
   tables: Table[*];
 }
 
+Class meta::relational::mapping::RelationMetadata extends QueryMetadata
+{
+  relations: NamedRelation[*];
+}
+
 Class meta::relational::mapping::SQLExecutionNode extends ExecutionNode
 {
    sqlComment : String[0..1];
