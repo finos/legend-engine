@@ -226,15 +226,24 @@ public class Handlers
         ValueSpecification window = windowProtocol.accept(valueSpecificationBuilder);
         ValueSpecification currRow = currRowProtocol.accept(valueSpecificationBuilder);
 
-        processColumn(colSpecProtocol, gt, valueSpecificationBuilder.getContext());
-        ValueSpecification colSpec = colSpecProtocol.accept(valueSpecificationBuilder);
+        ValueSpecification colSpec = null;
 
-        String colType = ((RelationType<?>) colSpec._genericType()._typeArguments().getOnly()._rawType())._columns().getOnly()._classifierGenericType()._typeArguments().getLast()._rawType()._name();
-
-        MutableSet<String> types = valueSpecificationBuilder.getContext().pureModel.taxonomyTypes(colSpecType);
-        if (!types.contains(colType))
+        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()))
         {
-            throw new EngineException("Column type mismatch.  Expect column to be of one of these types: " + types, colSpecProtocol.sourceInformation, EngineErrorType.COMPILATION);
+            colSpec = colSpecProtocol.accept(valueSpecificationBuilder);
+        }
+        else if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            processColumn(colSpecProtocol, gt, valueSpecificationBuilder.getContext());
+            colSpec = colSpecProtocol.accept(valueSpecificationBuilder);
+
+            String colType = ((RelationType<?>) colSpec._genericType()._typeArguments().getOnly()._rawType())._columns().getOnly()._classifierGenericType()._typeArguments().getLast()._rawType()._name();
+
+            MutableSet<String> types = valueSpecificationBuilder.getContext().pureModel.taxonomyTypes(colSpecType);
+            if (!types.contains(colType))
+            {
+                throw new EngineException("Column type mismatch.  Expect column to be of one of these types: " + types, colSpecProtocol.sourceInformation, EngineErrorType.COMPILATION);
+            }
         }
 
         return Lists.mutable.with(partition, window, currRow, colSpec);

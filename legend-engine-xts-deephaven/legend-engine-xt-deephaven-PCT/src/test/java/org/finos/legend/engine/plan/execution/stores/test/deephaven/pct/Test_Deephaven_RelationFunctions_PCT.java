@@ -263,6 +263,8 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
+            pack("meta::pure::functions::relation::tests::reduce", "\"function not supported yet: meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_\""),
+
             one("meta::pure::functions::relation::tests::percentRank::testOLAPWithPartitionAndOrderPercentRank_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::percentRank_Relation_1___Window_1__T_1__Float_1_\""),
 
             one("meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
