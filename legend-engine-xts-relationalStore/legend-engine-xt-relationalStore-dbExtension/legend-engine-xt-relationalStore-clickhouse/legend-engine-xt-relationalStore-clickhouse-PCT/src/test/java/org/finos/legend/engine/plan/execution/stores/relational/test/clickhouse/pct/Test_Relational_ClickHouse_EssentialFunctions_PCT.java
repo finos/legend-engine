@@ -271,12 +271,12 @@ public class Test_Relational_ClickHouse_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "\"type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType\""),
 
             // Exp
-//            one("meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_", "\"\nexpected: 2.718281828459045\nactual:   2.718281828460626\""),
-//            one("meta::pure::functions::math::tests::exp::testSimple_Function_1__Boolean_1_", "\"\nexpected: 2.718281828459045\nactual:   2.718281828460626\""),
+            one("meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_", "\"\nexpected: 2.718281828459045\nactual:   2.718281828460626\""),
+            one("meta::pure::functions::math::tests::exp::testSimple_Function_1__Boolean_1_", "\"\nexpected: 2.718281828459045\nactual:   2.718281828460626\""),
 
             // Log
-//            one("meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   0.9999999987491066\""),
-//            one("meta::pure::functions::math::tests::log::testSimple_Function_1__Boolean_1_", "\"\nexpected: 4.0\nactual:   3.99999999928146\""),
+            one("meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   0.9999999987491066\""),
+            one("meta::pure::functions::math::tests::log::testSimple_Function_1__Boolean_1_", "\"\nexpected: 4.0\nactual:   3.99999999928146\""),
 
             // Pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
