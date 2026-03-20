@@ -403,12 +403,12 @@
         </pluginManagement>
 
         <plugins>
-           <plugin>
+            <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
-                     <autoPublish>true</autoPublish>
+                    <autoPublish>true</autoPublish>
                     <waitMaxTime>3600</waitMaxTime>
                 </configuration>
             </plugin>
@@ -534,10 +534,10 @@
                                         <!-- Default -->
 
                                         <!-- No HTTP Specific dependencies -->
-<!--                                        <exclude>javax.ws.rs</exclude>-->
-<!--                                        <exclude>io.swagger</exclude>-->
-<!--                                        <exclude>org.pac4j</exclude>-->
-<!--                                        <exclude>org.pac4j.jax-rs</exclude>-->
+                                        <!--                                        <exclude>javax.ws.rs</exclude>-->
+                                        <!--                                        <exclude>io.swagger</exclude>-->
+                                        <!--                                        <exclude>org.pac4j</exclude>-->
+                                        <!--                                        <exclude>org.pac4j.jax-rs</exclude>-->
                                         <!-- No HTTP Specific dependencies -->
                                     </excludes>
                                     <includes>
@@ -579,10 +579,10 @@
                                         <!-- Default -->
 
                                         <!-- No HTTP Specific dependencies -->
-<!--                                        <exclude>javax.ws.rs</exclude>-->
-<!--                                        <exclude>io.swagger</exclude>-->
-<!--                                        <exclude>org.pac4j</exclude>-->
-<!--                                        <exclude>org.pac4j.jax-rs</exclude>-->
+                                        <!--                                        <exclude>javax.ws.rs</exclude>-->
+                                        <!--                                        <exclude>io.swagger</exclude>-->
+                                        <!--                                        <exclude>org.pac4j</exclude>-->
+                                        <!--                                        <exclude>org.pac4j.jax-rs</exclude>-->
                                         <!-- No HTTP Specific dependencies -->
 
                                         <!-- No Pure -->
@@ -879,11 +879,11 @@
                 <artifactId>legend-engine-xt-memsqlFunction-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-<!--            <dependency>-->
-<!--                <groupId>org.finos.legend.engine</groupId>-->
-<!--                <artifactId>legend-engine-xt-snowflake-generator</artifactId>-->
-<!--                <version>${project.version}</version>-->
-<!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.finos.legend.engine</groupId>-->
+            <!--                <artifactId>legend-engine-xt-snowflake-generator</artifactId>-->
+            <!--                <version>${project.version}</version>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-pure</artifactId>
@@ -1301,7 +1301,7 @@
                 <version>${project.version}</version>
                 <type>test-jar</type>
             </dependency>
-             <dependency>
+            <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlPlanning-pure</artifactId>
                 <version>${project.version}</version>
