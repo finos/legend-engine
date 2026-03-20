@@ -41,7 +41,13 @@ public class Core_External_PythonPandasAPI_ReversePCTReportProvider implements P
     public MutableList<AdapterReport> getAdapterReports()
     {
         return PCTReportProviderTool.load(Core_External_PythonPandasAPI_ReversePCTReportProvider.class.getClassLoader(), AdapterReport.class,
-                "pct-reports/ADAPTER_relation_compiled_PythonPandasAPI.json"
+                "pct-reports/ADAPTER_essential_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_grammar_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_relation_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_standard_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_unclassified_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_variant_compiled_PythonPandasAPI.json",
+                "pct-reports/ADAPTER_variant_compiled_PythonPandasAPI.json"
         );
     }
 }

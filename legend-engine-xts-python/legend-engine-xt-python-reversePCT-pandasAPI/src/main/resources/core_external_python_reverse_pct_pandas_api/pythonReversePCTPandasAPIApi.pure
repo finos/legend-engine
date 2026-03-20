@@ -15,6 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::python::reversePCT::pandasAPI::*;
+import meta::external::python::reversePCT::shared::*;
 
 
 function <<PCT.adapter>> {PCT.adapterName = 'Python - PandasAPI'} meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversePCTAdapter<X|o>(f: Function<{->X[o]}>[1]):X[o]
@@ -33,7 +34,8 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReverses(
 {
   ^ReverseInformation
   (
-    reversesForSource =   pythonPandasAPIReversesRelation(),
+    reversesForSource =   meta::external::python::reversePCT::shared::pythonSharedReversesAll()
+                          ->concatenate(pythonPandasAPIReversesRelation()),
     reverseTransformer = val:String[1]| ^FunctionExpression
                                         (
                                           func = meta::external::python::reversePCT::pandasAPI::pythonToPure_String_1__Any_1_,
@@ -59,6 +61,11 @@ function meta::external::python::reversePCT::pandasAPI::pythonToPure(python:Stri
 function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesRelation(): ReversesForSource[*]
 {
   pythonPandasAPIReversesEssentialRelation()
+}
+
+function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesVariant(): ReversesForSource[*]
+{
+  []
 }
 
 
