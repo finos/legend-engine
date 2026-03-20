@@ -130,7 +130,7 @@ public class RelationalExecutor
         String databaseTypeName = node.getDatabaseTypeName();
         List<String> tempTableList = new FastList<>();
 
-        connectionManagerConnection = getConnection(node, identity, executionState, ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)));
+        connectionManagerConnection = getConnection(node, identity, executionState.getResults(), ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)));
         Span span = GlobalTracer.get().activeSpan();
         if (span != null)
         {
@@ -233,7 +233,7 @@ public class RelationalExecutor
 
         Span span = GlobalTracer.get().activeSpan();
 
-        connectionManagerConnection = getConnection(node, identity, executionState, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        connectionManagerConnection = getConnection(node, identity, executionState.getResults(), (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
@@ -262,7 +262,7 @@ public class RelationalExecutor
         List<String> tempTableList = FastList.newList();
 
         Span span = GlobalTracer.get().activeSpan();
-        connectionManagerConnection = this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        connectionManagerConnection = this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState.getResults(), (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
@@ -388,21 +388,21 @@ public class RelationalExecutor
         }
     }
 
-    private Connection getConnection(RelationalExecutionNode node, Identity identity, ExecutionState executionState, RelationalStoreExecutionState relationalExecutionState)
+    private Connection getConnection(RelationalExecutionNode node, Identity identity, Map<String, Result> allocationResults, RelationalStoreExecutionState relationalExecutionState)
     {
-        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState, relationalExecutionState);
+        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, allocationResults, relationalExecutionState);
     }
 
-    private Connection getConnection(SQLExecutionNode node, Identity identity, ExecutionState executionState, RelationalStoreExecutionState relationalExecutionState)
+    private Connection getConnection(SQLExecutionNode node, Identity identity, Map<String, Result> allocationResults, RelationalStoreExecutionState relationalExecutionState)
     {
-        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState, relationalExecutionState);
+        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, allocationResults, relationalExecutionState);
     }
 
-    private Connection getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, Identity identity, ExecutionState executionState, RelationalStoreExecutionState relationalExecutionState)
+    private Connection getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, Identity identity, Map<String, Result> allocationResults, RelationalStoreExecutionState relationalExecutionState)
     {
         if (relationalExecutionState.retainConnection())
         {
-            BlockConnection blockConnection = relationalExecutionState.getBlockConnectionContext().getBlockConnection(relationalExecutionState, databaseConnection, identity, executionState.getResults());
+            BlockConnection blockConnection = relationalExecutionState.getBlockConnectionContext().getBlockConnection(relationalExecutionState, databaseConnection, identity, allocationResults);
             if (onConnectionCloseRollbackQuery != null)
             {
                 blockConnection.addRollbackQuery(onConnectionCloseRollbackQuery);
@@ -413,7 +413,7 @@ public class RelationalExecutor
             }
             return blockConnection;
         }
-        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getResults());
+        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults);
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)
