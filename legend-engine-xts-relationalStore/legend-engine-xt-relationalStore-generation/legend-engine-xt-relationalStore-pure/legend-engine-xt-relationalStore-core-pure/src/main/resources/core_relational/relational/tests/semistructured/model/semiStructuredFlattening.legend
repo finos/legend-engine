@@ -297,6 +297,56 @@ function flatten::semiStructuredMultiLevelFlattenMerging(): TabularDataSet[1]
     ])
 }
 
+function flatten::semiStructuredArrayDirectIsEmpty(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->isEmpty(), 'Has No Addresses')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectSize(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->size(), 'Address Count')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectIsNotEmpty(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->isNotEmpty(), 'Has Addresses')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectAt(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->at(0).name, 'First Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectFold(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->fold({a, acc | $acc + $a.name}, ''), 'All Address Names')
+    ])
+}
+
 function flatten::semiStructuredArrayFilterWithIsEmpty(): TabularDataSet[1]
 {
     flatten::model::Person.all()

@@ -13,26 +13,117 @@
 // limitations under the License.
 
 // ===========================================================================================================
-// Tests for scalar operations on semi-structured arrays (filter->isEmpty, filter->first, filter->size, etc.)
+// Tests for scalar operations on semi-structured arrays.
 //
-// These tests verify that scalar operations on filtered/mapped semi-structured arrays produce correct SQL
+// These tests verify that scalar operations on semi-structured arrays produce correct SQL
 // without triggering the auto-flatten (LATERAL FLATTEN) behavior. The key mechanism is the disableAutoFlatten
 // flag which suppresses row-expansion and instead generates vendor-specific scalar array functions
 // (e.g. Snowflake's FILTER, ARRAY_SIZE, etc.).
 //
-// Covered patterns:
-//   - filter()->isEmpty()       : scalar boolean — is the filtered array empty?
-//   - filter()->first().prop    : scalar extraction — get a property from the first matching element
-//   - filter()->at(n).prop      : scalar extraction — get a property from the nth matching element
-//   - filter()->size()          : scalar integer — count of matching elements
-//   - filter()->map(a|a.prop)   : array projection — extract a property from each matching element (still to-many)
-//   - filter()->fold(fn, init)  : scalar aggregation — fold/reduce over matching elements
+// Covered patterns (direct, no intermediate operation):
+//   - isEmpty()                 : scalar boolean
+//   - isNotEmpty()              : scalar boolean
+//   - size()                    : scalar integer
+//   - fold(fn, init)            : scalar aggregation
+//   - at(n).prop                : uses existing processAt handler (one row per person, scalar)
+//
+// Covered patterns (with intermediate operations like filter, map):
+//   - filter()->isEmpty()       : scalar boolean
+//   - filter()->first().prop    : scalar extraction
+//   - filter()->at(n).prop      : scalar extraction
+//   - filter()->size()          : scalar integer
+//   - filter()->map(a|a.prop)   : array projection (still to-many)
+//   - filter()->fold(fn, init)  : scalar aggregation
 //   - if(cond, filter()->first().prop, fallback) : scalar extraction within conditional logic
 //
 // The query functions are defined in semiStructuredFlattening.legend alongside the shared model/mapping/store.
 // ===========================================================================================================
 
 import meta::relational::tests::semistructured::flattening::*;
+import meta::pure::test::*;
+import meta::core::runtime::*;
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredArrayDirectIsEmpty__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Has No Addresses\n' +
+    'Anthony,Firm X,false\n' +
+    'David,Firm B,false\n' +
+    'Fabrice,Firm A,false\n' +
+    'John,Firm X,false\n' +
+    'John,Firm X,false\n' +
+    'Oliver,Firm B,false\n' +
+    'Peter,Firm X,false\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredArrayDirectSize__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Address Count\n' +
+    'Anthony,Firm X,1\n' +
+    'David,Firm B,1\n' +
+    'Fabrice,Firm A,2\n' +
+    'John,Firm X,2\n' +
+    'John,Firm X,2\n' +
+    'Oliver,Firm B,1\n' +
+    'Peter,Firm X,2\n'
+  );
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredArrayDirectIsNotEmpty__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Has Addresses\n' +
+    'Anthony,Firm X,true\n' +
+    'David,Firm B,true\n' +
+    'Fabrice,Firm A,true\n' +
+    'John,Firm X,true\n' +
+    'John,Firm X,true\n' +
+    'Oliver,Firm B,true\n' +
+    'Peter,Firm X,true\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredArrayDirectAt__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,First Address Name\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5\n' +
+    'John,Firm X,A2\n' +
+    'John,Firm X,A3\n' +
+    'Oliver,Firm B,A6\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'flatten::semiStructuredArrayDirectFold__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,All Address Names\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5A52\n' +
+    'John,Firm X,A2A22\n' +
+    'John,Firm X,A3A32\n' +
+    'Oliver,Firm B,A6\n' +
+    'Peter,Firm X,A1A11\n'
+  );
+}
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
 {
