@@ -85,9 +85,16 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
 
 function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::addConstructor(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[1], pathOffset:String[0..1]): meta::external::language::java::metamodel::Class[1]
 {
+  let node = j_parameter(jsonNode(),'node');
   let in = j_parameter(javaInputStream(),'in');
 
   $class->addConstructor(
+    javaConstructor(['public'], [$node]->cast(@meta::external::language::java::metamodel::Parameter),
+        [
+          j_superInvoke($class, [$node])
+        ]
+    )
+  )->addConstructor(
     javaConstructor(['public'], [$in]->cast(@meta::external::language::java::metamodel::Parameter),
         [
           j_superInvoke($class, [$in, j_boolean($useBigDecimalForFloats), if($pathOffset->isEmpty(), | j_null(), | j_string($pathOffset->toOne()))])

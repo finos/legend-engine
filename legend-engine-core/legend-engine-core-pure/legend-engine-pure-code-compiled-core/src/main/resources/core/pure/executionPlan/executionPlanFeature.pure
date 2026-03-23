@@ -23,6 +23,11 @@ Enum  meta::pure::executionPlan::features::Feature
     PUSH_DOWN_ENUM_TRANSFORM  
 }
 
+Enum meta::pure::executionPlan::features::OptimizeInput
+{
+  TO_VARIANT_TYPE
+}
+
 function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]
 {
     $object;

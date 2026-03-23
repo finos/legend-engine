@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.runtime;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -45,6 +46,11 @@ public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExte
     List<String> getContentTypes();
 
     default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, Identity identity, ExecutionState executionState)
+    {
+        throw new UnsupportedOperationException("Internalize not supported by format - " + node.contentType);
+    }
+
+    default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, JsonNode jsonNode, Identity identity, ExecutionState executionState)
     {
         throw new UnsupportedOperationException("Internalize not supported by format - " + node.contentType);
     }

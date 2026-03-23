@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.validation;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.impl.factory.Lists;
@@ -207,7 +208,22 @@ abstract class FunctionParameterTypeValidator
         }
     };
 
-    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator, byteValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
+    private static final FunctionParameterTypeValidator jsonNodeValidator = new FunctionParameterTypeValidator("meta::pure::metamodel::variant::Variant")
+    {
+        @Override
+        protected boolean isValidJavaType(Object parameterValue)
+        {
+            return (parameterValue instanceof JsonNode);
+        }
+        
+        @Override
+        protected boolean canParse(String parameterValue)
+        {
+            return true;
+        }
+    };
+    
+    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator, byteValidator, jsonNodeValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
 
     private final String type;
 
