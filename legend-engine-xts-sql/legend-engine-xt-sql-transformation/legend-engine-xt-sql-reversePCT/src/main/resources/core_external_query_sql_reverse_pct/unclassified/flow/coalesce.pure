@@ -101,8 +101,10 @@ function meta::external::query::sql::reversePCT::tests::unclassified::flow::coal
                  revsForTest(
                       'meta::pure::functions::flow::test::coalesce::coalesce3_FirstNotEmpty_Function_1__Boolean_1_',
                       [
-                        rev('|\'hello\'->meta::pure::functions::flow::coalesce(\'world\', \'!\', \'bye\')',
-                            'select coalesce(Text\'hello\', Text\'world\', Text\'!\', Text\'bye\')'
+                        revError('|\'hello\'->meta::pure::functions::flow::coalesce(\'world\', \'!\', \'bye\')',
+                            'select coalesce(Text\'hello\', Text\'world\', Text\'!\', Text\'bye\')',
+                            'maximum 3 non null arguments supported for coalesce 4 supplied',
+                            'Unsupported, no coalesce with > 3 params in Pure'
                         )
                       ]
                  ),
