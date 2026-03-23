@@ -64,32 +64,15 @@ jobs:
         with:
           theme: dark
 
-      - name: Compute next development version
-        run: |
-          releaseVersion=${{ github.event.inputs.releaseVersion }}
-          n=${releaseVersion//[!0-9]/ }
-          a=(${n//\./ })
-          nextPatch=$((${a[2]} + 1))
-          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
-          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
-
-      - name: Prepare release
-        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
-
-      - name: Checkout Release Tag
-        uses: actions/checkout@v4
-        with:
-          path: 'target/checkout'
-          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
-          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
-          fetch-depth: 1
-          persist-credentials: true
-
-      - name: Build Release Tag
-        working-directory: target/checkout
-        run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
+      - name: Build release
+        run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true -Drevision=${{ github.event.inputs.releaseVersion }} install -P release,docker,pct-cloud-test
         env:
           MAVEN_OPTS: -Xmx36g
+
+      - name: Create and push git tag
+        run: |
+          git tag ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          git push origin ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
@@ -134,13 +117,12 @@ jobs:
         run: echo EXCLUSION_MODULES=`jq -c '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
 
       - name: Test
-        working-directory: target/checkout
         env:
           MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} -Drevision=${{ github.event.inputs.releaseVersion }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
@@ -173,13 +155,12 @@ jobs:
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
       - name: Test
-        working-directory: target/checkout
         env:
           MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -Drevision=${{ github.event.inputs.releaseVersion }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
@@ -203,7 +184,6 @@ jobs:
           path: ~/
 
       - name: Create bundle to publish
-        working-directory: target/checkout
         run: |
           mkdir -p central-staging/org/finos/legend
           cp -R ~/.m2/repository/org/finos/legend/engine central-staging/org/finos/legend
@@ -214,12 +194,12 @@ jobs:
             sha256sum "$file" | awk '{print $1}' > "$file.sha256"
             sha512sum "$file" | awk '{print $1}' > "$file.sha512"
           done
-          
+
           mkdir central-publishing
           cd central-staging && zip -r ../central-publishing/central-bundle.zip org
 
       - name: Publish bundle
-        working-directory: target/checkout/central-publishing
+        working-directory: central-publishing
         run: |
           token=$(printf "$CI_DEPLOY_USERNAME:$CI_DEPLOY_PASSWORD" | base64)
           httpCode=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Authorization: Bearer $token" --form bundle=@central-bundle.zip https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC)
@@ -254,3 +234,30 @@ jobs:
               exit 1
             fi
           done
+
+  bump-snapshot:
+    name: Bump Snapshot Version
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
+          git config --global user.name "FINOS Administrator"
+
+      - name: Compute and set next SNAPSHOT
+        run: |
+          releaseVersion=${{ github.event.inputs.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          nextSnapshot="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
+          git add pom.xml
+          git commit -m "Bump version to ${nextSnapshot}"
+          git push origin master

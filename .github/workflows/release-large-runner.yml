@@ -56,22 +56,35 @@ jobs:
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
 
-      - name: Compute next development version
-        run: |
-          releaseVersion=${{ github.event.inputs.releaseVersion }}
-          n=${releaseVersion//[!0-9]/ }
-          a=(${n//\./ })
-          nextPatch=$((${a[2]} + 1))
-          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
-          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
-
       - name: Collect Workflow Telemetry
         uses: runforesight/workflow-telemetry-action@v1
         with:
           theme: dark
 
-      - name: Prepare release
-        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+      - name: Build and install
+        run: |
+          mvn -B -e -T4 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true \
+            -Drevision=${{ github.event.inputs.releaseVersion }} \
+            install -P release,docker,pct-cloud-test
 
-      - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -Dorg.slf4j.simpleLogger.showThreadName=true -DargLine="-Xmx6g"' -P release,docker,pct-cloud-test
+      - name: Deploy to Central
+        run: |
+          mvn -B -e -T4 -Drevision=${{ github.event.inputs.releaseVersion }} \
+            deploy -P release,docker,pct-cloud-test
+
+      - name: Create and push git tag
+        run: |
+          git tag ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          git push origin ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+
+      - name: Compute and set next SNAPSHOT
+        run: |
+          releaseVersion=${{ github.event.inputs.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          nextSnapshot="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
+          git add pom.xml
+          git commit -m "Bump version to ${nextSnapshot}"
+          git push origin master

@@ -70,23 +70,30 @@ jobs:
             git push origin master
           fi
 
-      - name: Compute next development version
-        run: |
-          releaseVersion=${{ github.event.client_payload.releaseVersion }}
-          n=${releaseVersion//[!0-9]/ }
-          a=(${n//\./ })
-          nextPatch=$((${a[2]} + 1))
-          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
-          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
-
       - name: Collect Workflow Telemetry
         uses: runforesight/workflow-telemetry-action@v1
         with:
           theme: dark
 
-      - name: Prepare release
-        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.client_payload.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+      - name: Build and deploy release
+        run: |
+          mvn -B -e -T2 -Drevision=${{ github.event.client_payload.releaseVersion }} \
+            deploy -P release,docker
 
-      - name: Perform release
-        run: mvn -B -e release:perform -Darguments='-B -e -T 2 -DargLine="-Xmx20g"' -P release,docker
+      - name: Create and push git tag
+        run: |
+          git tag ${{ github.event.repository.name }}-${{ github.event.client_payload.releaseVersion }}
+          git push origin ${{ github.event.repository.name }}-${{ github.event.client_payload.releaseVersion }}
+
+      - name: Compute and set next SNAPSHOT
+        run: |
+          releaseVersion=${{ github.event.client_payload.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          nextSnapshot="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
+          git add pom.xml
+          git commit -m "Bump version to ${nextSnapshot}"
+          git push origin master
 

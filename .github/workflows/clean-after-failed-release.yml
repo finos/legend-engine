@@ -13,9 +13,8 @@
 # limitations under the License.
 
 
-# This action deletes the last two commits made on the master branch and the latest tag
-# This should only be run if a release failed and the remote staging repo has been dropped:
-# [ERROR]  * Dropping failed staging repository with ID "orgfinoslegend-..." ...
+# This action deletes the latest tag after a failed release.
+# With CI-friendly versions, there are no release commits to clean up — only the tag.
 name: Clean repo after failed release
 
 on: [workflow_dispatch]
@@ -39,5 +38,3 @@ jobs:
         run: |
           LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
           git push --delete origin $LATEST_TAG
-          git reset --hard HEAD~2
-          git push --force
