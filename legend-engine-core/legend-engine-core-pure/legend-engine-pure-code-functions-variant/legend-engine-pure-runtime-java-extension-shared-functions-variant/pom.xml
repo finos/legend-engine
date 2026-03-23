@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-variant</artifactId>
-        <version>4.123.4-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-variant</artifactId>
