@@ -19,12 +19,17 @@ import meta::pure::functions::math::*;
 
 function
 <<PCT.function>>
+{doc.doc='Returns how many standard deviations a value is from the mean within its window partition. A z-score of 0 indicates the value equals the mean; positive values are above average, negative below. Commonly used for outlier detection and normalizing data.'}
 meta::pure::functions::math::zScore<T>(partition: Relation<T>[1], window: _Window<T>[1], row: T[1], colToZScore:ColSpec<(?:Number)⊆T>[1]):Float[1]
 {
-    (eval($colToZScore, $row)->toOne() - average($partition, $window, $row, $colToZScore)) / stdDevPopulation($partition, $window, $row, $colToZScore)
+    let mean = average($partition, $window, $row, $colToZScore);
+    let stdDev = stdDevPopulation($partition, $window, $row, $colToZScore);
+    if($stdDev == 0,
+       | 0.0,
+       | (eval($colToZScore, $row)->toOne() - $mean) / $stdDev
+    );
 }
 
-//todo some more test
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -38,14 +43,14 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   5, 1, F
                   7, 1, G
                   9, 1, H
-                #->extend(over(~grp), ~zScore: {p,w,r| zScore($p, $w, $r, ~id)})
+                #->extend(over(~grp), ~id_zScore: {p,w,r| zScore($p, $w, $r, ~id)})
                };
 
     let res =  $f->eval($expr);
 
     assertTdsEquivalent(
                   #TDS
-                     id, grp, name, zScore
+                     id, grp, name, id_zScore
                      2, 1, A, -1.5
                      4, 1, B, -0.5
                      4, 1, C, -0.5
@@ -55,7 +60,40 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                      7, 1, G, 1.0
                      9, 1, H, 2.0
                   #, 
-                  $res->cast(@Relation<(id:Integer, grp:Integer, name:String, zScore:Float)>)->sort([~id->ascending(), ~grp->ascending(), ~name->ascending()]),
+                  $res->cast(@Relation<(id:Integer, grp:Integer, name:String, id_zScore:Float)>)->sort([~id->ascending(), ~grp->ascending(), ~name->ascending()]),
+                  0
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore_NoPartition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  grp, x
+                  A, 20
+                  A, 23
+                  A, 19
+                  A, 17
+                  A, 22
+                  A, 21
+                  A, 18
+                #->extend(over([], [], []), ~x_zscore: {p,w,r| zScore($p, $w, $r, ~x)})
+               };
+
+    let res = $f->eval($expr);
+
+    assertTdsEquivalent(
+                  #TDS
+                     grp, x, x_zscore
+                     A, 17, -1.5
+                     A, 18, -1.0
+                     A, 19, -0.5
+                     A, 20, 0.0
+                     A, 21, 0.5
+                     A, 22, 1.0
+                     A, 23, 1.5
+                  #,
+                  $res->cast(@Relation<(grp:String, x:Integer, x_zscore:Float)>)->sort([~grp->ascending(), ~x->ascending()]),
                   0
     );
 }
