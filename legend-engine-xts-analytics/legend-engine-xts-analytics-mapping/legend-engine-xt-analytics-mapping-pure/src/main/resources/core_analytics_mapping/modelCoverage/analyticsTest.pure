@@ -288,6 +288,104 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   assertContains($addressClass.properties.genericType.rawType->map(type | $type->elementToPath()), 'String');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedSemiStructuredMappingCoverageWithInheritance():Boolean[1]
+{
+  let semiGrammar =
+  '###Mapping\n'+
+  'Mapping test::mapping::TestMapping\n'+
+  '(\n'+
+  '  test::model::MasterRecord: Relational\n'+
+  '  {\n'+
+  '    ~primaryKey\n'+
+  '    (\n'+
+  '      [test::store::TestDB]TEST_SCHEMA.MASTER_TABLE.ID\n'+
+  '    )\n'+
+  '    ~mainTable [test::store::TestDB]TEST_SCHEMA.MASTER_TABLE\n'+
+  '    name: [test::store::TestDB]TEST_SCHEMA.MASTER_TABLE.NAME,\n'+
+  '    derivConfirm: Binding test::store::TestBinding : extractFromSemiStructured([test::store::TestDB]TEST_SCHEMA.MASTER_TABLE.CONTENT, \'derivConfirm\', \'VARCHAR\')\n'+
+  '  }\n'+
+  ')\n'+
+  '###Relational\n'+
+  'Database test::store::TestDB\n'+
+  '(\n'+
+  '  Schema TEST_SCHEMA\n'+
+  '  (\n'+
+  '    Table MASTER_TABLE\n'+
+  '    (\n'+
+  '      ID INTEGER PRIMARY KEY,\n'+
+  '      NAME VARCHAR(100),\n'+
+  '      CONTENT VARCHAR(1000)\n'+
+  '    )\n'+
+  '  )\n'+
+  ')\n'+
+  '###Pure\n'+
+  'Class test::model::MasterRecord\n'+
+  '{\n'+
+  '  name: String[1];\n'+
+  '  derivConfirm: test::model::DerivConfirm[0..1];\n'+
+  '}\n'+
+  'Class <<meta::pure::profiles::typemodifiers.abstract>> test::model::Confirm\n'+
+  '{\n'+
+  '  status: String[0..1];\n'+
+  '  confirmType: String[0..1];\n'+
+  '  source: String[0..1];\n'+
+  '}\n'+
+  'Class test::model::DerivConfirm extends test::model::Confirm\n'+
+  '{\n'+
+  '  id: test::model::Identifier[1];\n'+
+  '  contractEvent: test::model::PropertyReferenceKey[1];\n'+
+  '}\n'+
+  'Class <<meta::pure::profiles::typemodifiers.abstract>> test::model::Identifier\n'+
+  '{\n'+
+  '  identifier: String[1];\n'+
+  '  identifierType: String[0..1];\n'+
+  '  version: Integer[0..1];\n'+
+  '}\n'+
+  'Class test::model::PropertyReferenceKey extends test::model::Identifier\n'+
+  '{\n'+
+  '}\n'+
+  '###ExternalFormat\n'+
+  'Binding test::store::TestBinding\n'+
+  '{\n'+
+  '  contentType: \'application/json\';\n'+
+  '  modelIncludes: [\n'+
+  '    test::model::Confirm,\n'+
+  '    test::model::DerivConfirm,\n'+
+  '    test::model::Identifier,\n'+
+  '    test::model::PropertyReferenceKey\n'+
+  '  ];\n'+
+  '}';
+  let elements = meta::legend::compileLegendGrammar($semiGrammar);
+  let mapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::analyze($mapping, true, false, true);
+
+  let derivConfirmPath = 'semi_structured_generated_embedded_test_model_MasterRecord_derivConfirm_autoMapped_derivConfirm';
+
+  assertContains($result.mappedEntities.path, $derivConfirmPath);
+
+  let derivConfirmEntity = $result.mappedEntities->filter(mp|$mp.path == $derivConfirmPath)->toOne();
+  let dcProps = $derivConfirmEntity.properties;
+
+  assertContains($dcProps.name, 'status');
+  assertContains($dcProps.name, 'confirmType');
+  assertContains($dcProps.name, 'source');
+
+  assertContains($dcProps.name, 'id');
+  assertContains($dcProps.name, 'contractEvent');
+
+  let idProp = $dcProps->filter(p|$p.name == 'id')->toOne()->cast(@EntityMappedProperty);
+  let idEntity = $result.mappedEntities->filter(mp|$mp.path == $idProp.entityPath)->toOne();
+  assertContains($idEntity.properties.name, 'identifier');
+  assertContains($idEntity.properties.name, 'identifierType');
+  assertContains($idEntity.properties.name, 'version');
+
+  let ceProp = $dcProps->filter(p|$p.name == 'contractEvent')->toOne()->cast(@EntityMappedProperty);
+  let ceEntity = $result.mappedEntities->filter(mp|$mp.path == $ceProp.entityPath)->toOne();
+  assertContains($ceEntity.properties.name, 'identifier');
+  assertContains($ceEntity.properties.name, 'identifierType');
+  assertContains($ceEntity.properties.name, 'version');
+}
+
 ###Relational
 Database meta::analytics::mapping::modelCoverage::test::sampleDB
 (
