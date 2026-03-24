@@ -76,11 +76,12 @@ public class TestAthenaConnectionCompilationFromGrammar extends TestCompilationF
                 "    workGroup: 'workGroupX';\n" +
                 "    outputLocation: '1234';\n" +
                 "    catalog: 'catalogA';\n" +
+                "    athenaEndpoint: 'http://endpoint';\n" +
                 "  };\n" +
                 "}\n";
 
         testCompilationAndProtocolExtension(grammar,
-                "{\"authenticationStrategy\":{\"_type\":\"userNamePassword\",\"passwordVaultReference\":\"pwd\",\"userNameVaultReference\":\"user\"},\"_type\":\"RelationalDatabaseConnection\",\"type\":\"Athena\",\"datasourceSpecification\":{\"outputLocation\":\"1234\",\"database\":\"dbname\",\"workGroup\":\"workGroupX\",\"catalog\":\"catalogA\",\"_type\":\"athena\",\"region\":\"region\"},\"element\":\"\"}");
+                "{\"_type\":\"RelationalDatabaseConnection\",\"authenticationStrategy\":{\"_type\":\"userNamePassword\",\"passwordVaultReference\":\"pwd\",\"userNameVaultReference\":\"user\"},\"datasourceSpecification\":{\"_type\":\"athena\",\"athenaEndpoint\":\"http://endpoint\",\"catalog\":\"catalogA\",\"database\":\"dbname\",\"outputLocation\":\"1234\",\"region\":\"region\",\"workGroup\":\"workGroupX\"},\"element\":\"\",\"type\":\"Athena\"}");
     }
 
     private static void testCompilationAndProtocolExtension(String grammar, String expectedProtocol)

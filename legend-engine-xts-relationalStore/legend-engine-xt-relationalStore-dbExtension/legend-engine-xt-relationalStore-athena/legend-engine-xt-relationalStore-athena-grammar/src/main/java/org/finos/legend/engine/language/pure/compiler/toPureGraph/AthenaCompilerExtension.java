@@ -57,6 +57,7 @@ public class AthenaCompilerExtension implements IRelationalCompilerExtension
                         ._outputLocation(athenaDatasourceSpecification.outputLocation)
                         ._database(athenaDatasourceSpecification.database)
                         ._catalog(athenaDatasourceSpecification.catalog)
+                        ._athenaEndpoint(athenaDatasourceSpecification.athenaEndpoint)
                         ._workGroup(athenaDatasourceSpecification.workGroup);
             }
             return null;

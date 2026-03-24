@@ -25,14 +25,16 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
     public String database;
     public String workGroup;
     public String outputLocation;
+    public String athenaEndpoint;
 
-    public AthenaDatasourceSpecificationKey(String region, String catalog, String database, String workGroup, String outputLocation)
+    public AthenaDatasourceSpecificationKey(String region, String catalog, String database, String workGroup, String outputLocation, String athenaEndpoint)
     {
         this.region = region;
         this.catalog = catalog;
         this.database = database;
         this.workGroup = workGroup;
         this.outputLocation = outputLocation;
+        this.athenaEndpoint = athenaEndpoint;
     }
 
     public String getRegion()
@@ -60,6 +62,11 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
         return outputLocation;
     }
 
+    public String getAthenaEndpoint()
+    {
+        return athenaEndpoint;
+    }
+
     @Override
     public String toString()
     {
@@ -69,6 +76,7 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
                 ", database='" + database + '\'' +
                 ", workGroup='" + workGroup + '\'' +
                 ", outputLocation='" + outputLocation + '\'' +
+                ", athenaEndpoint='" + athenaEndpoint + '\'' +
                 '}';
     }
 
@@ -80,6 +88,7 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
                 "catalog:" + catalog + "_" +
                 "workGroup:" + workGroup + "_" +
                 "outputLocation:" + outputLocation + "_" +
+                "athenaEndpoint:" + athenaEndpoint + "_" +
                 "db:" + database;
     }
 
@@ -91,12 +100,12 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
             return false;
         }
         AthenaDatasourceSpecificationKey that = (AthenaDatasourceSpecificationKey) o;
-        return Objects.equals(region, that.region) && Objects.equals(catalog, that.catalog) && Objects.equals(database, that.database) && Objects.equals(workGroup, that.workGroup) && Objects.equals(outputLocation, that.outputLocation);
+        return Objects.equals(region, that.region) && Objects.equals(athenaEndpoint, that.athenaEndpoint) && Objects.equals(catalog, that.catalog) && Objects.equals(database, that.database) && Objects.equals(workGroup, that.workGroup) && Objects.equals(outputLocation, that.outputLocation);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(region, catalog, database, workGroup, outputLocation);
+        return Objects.hash(region, athenaEndpoint, catalog, database, workGroup, outputLocation);
     }
 }

@@ -8,3 +8,4 @@ ATHENA_OUTPUT_LOCATION:                            'outputLocation';
 ATHENA_DATABASE:                                   'database';
 ATHENA_CATALOG:                                    'catalog';
 ATHENA_WORK_GROUP:                                 'workGroup';
+ATHENA_ENDPOINT:                                   'athenaEndpoint';

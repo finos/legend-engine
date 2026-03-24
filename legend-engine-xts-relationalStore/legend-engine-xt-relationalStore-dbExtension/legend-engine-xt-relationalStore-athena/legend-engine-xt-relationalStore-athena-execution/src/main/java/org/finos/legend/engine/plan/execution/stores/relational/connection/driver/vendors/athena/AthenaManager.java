@@ -36,7 +36,7 @@ public class AthenaManager extends DatabaseManager
         StringBuilder builder = new StringBuilder("jdbc:awsathena://");
         builder.append("Region=").append(extraUserDataSourceProperties.getProperty("Region")).append(";");
 
-        List<String> optionalKeys = Lists.fixedSize.of("Catalog", "WorkGroup", "OutputLocation", "Database");
+        List<String> optionalKeys = Lists.fixedSize.of("Catalog", "WorkGroup", "OutputLocation", "Database", "AthenaEndpoint");
 
         for (String optionalKey : optionalKeys)
         {

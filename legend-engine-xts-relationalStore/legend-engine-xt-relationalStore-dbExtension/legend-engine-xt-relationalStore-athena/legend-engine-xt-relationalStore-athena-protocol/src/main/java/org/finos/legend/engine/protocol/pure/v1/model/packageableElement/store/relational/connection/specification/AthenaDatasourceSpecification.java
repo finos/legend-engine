@@ -21,6 +21,7 @@ public class AthenaDatasourceSpecification extends DatasourceSpecification
     public String database;
     public String workGroup;
     public String outputLocation;
+    public String athenaEndpoint;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

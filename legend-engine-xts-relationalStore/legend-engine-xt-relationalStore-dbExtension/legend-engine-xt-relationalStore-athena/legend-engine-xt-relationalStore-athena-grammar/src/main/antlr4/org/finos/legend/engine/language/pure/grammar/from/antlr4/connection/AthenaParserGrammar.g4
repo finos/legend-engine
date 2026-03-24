@@ -18,6 +18,7 @@ athenaDsp:                                  ATHENA_DSP
                                                         | athenaDatabase
                                                         | athenaCatalog
                                                         | athenaWorkGroup
+                                                        | athenaEndpoint
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -30,4 +31,6 @@ athenaDatabase:                                 ATHENA_DATABASE COLON STRING SEM
 athenaCatalog:                                  ATHENA_CATALOG COLON STRING SEMI_COLON
 ;
 athenaWorkGroup:                                ATHENA_WORK_GROUP COLON STRING SEMI_COLON
+;
+athenaEndpoint:                                ATHENA_ENDPOINT COLON STRING SEMI_COLON
 ;

@@ -19,4 +19,5 @@ Class meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpec
    <<equality.Key>> database: String[0..1];
    <<equality.Key>> workGroup: String[0..1];
    <<equality.Key>> outputLocation: String[0..1];
+   <<equality.Key>> athenaEndpoint: String[0..1];
 }

@@ -34,6 +34,7 @@ public class AthenaDatasourceSpecificationRuntime extends org.finos.legend.engin
         props.put("Database", key.getDatabase());
         props.put("WorkGroup", key.getWorkGroup());
         props.put("OutputLocation", key.getOutputLocation());
+        props.put("AthenaEndpoint", key.getAthenaEndpoint());
         return props;
     }
 }

@@ -55,6 +55,7 @@ public class TestAthenaConnectionGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "    workGroup: 'workGroupX';\n" +
                 "    outputLocation: '1234';\n" +
                 "    catalog: 'catalogA';\n" +
+                "    athenaEndpoint: 'http://endpoint';\n" +
                 "  };\n" +
                 "  auth: UserNamePassword\n" +
                 "  {\n" +

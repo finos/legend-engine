@@ -80,7 +80,8 @@ public class AthenaConnectionExtension implements ConnectionExtension, Strategic
                         athenaDatasourceSpecification.catalog,
                         athenaDatasourceSpecification.database,
                         athenaDatasourceSpecification.workGroup,
-                        athenaDatasourceSpecification.outputLocation
+                        athenaDatasourceSpecification.outputLocation,
+                        athenaDatasourceSpecification.athenaEndpoint
                 );
             }
             return null;

@@ -25,6 +25,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::athena
                       catalog = $d.catalog,
                       workGroup = $d.workGroup,
                       outputLocation = $d.outputLocation,
+                      athenaEndpoint = $d.athenaEndpoint,
                       database = $d.database
                  )
     ],
@@ -38,6 +39,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::athena
                       catalog = $d.catalog,
                       workGroup = $d.workGroup,
                       outputLocation = $d.outputLocation,
+                      athenaEndpoint = $d.athenaEndpoint,
                       database = $d.database
                  )
     ]

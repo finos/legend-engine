@@ -76,6 +76,9 @@ public class AthenaGrammarParserExtension implements IRelationalGrammarParserExt
         Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaWorkGroup(), "workGroup", dsSpec.sourceInformation)).ifPresent(x ->
                 dsSpec.workGroup = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
 
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaEndpoint(), "athenaEndpoint", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.athenaEndpoint = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
         return dsSpec;
     }
 }
