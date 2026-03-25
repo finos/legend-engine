@@ -29,8 +29,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.sp
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 
 import java.util.List;
 import java.util.function.Function;
@@ -76,9 +76,13 @@ public class AthenaConnectionExtension implements ConnectionExtension, Strategic
             {
                 AthenaDatasourceSpecification athenaDatasourceSpecification = (AthenaDatasourceSpecification) datasourceSpecification;
                 return new AthenaDatasourceSpecificationKey(
-                        athenaDatasourceSpecification.awsRegion,
-                        athenaDatasourceSpecification.s3OutputLocation,
-                        athenaDatasourceSpecification.databaseName);
+                        athenaDatasourceSpecification.region,
+                        athenaDatasourceSpecification.catalog,
+                        athenaDatasourceSpecification.database,
+                        athenaDatasourceSpecification.workGroup,
+                        athenaDatasourceSpecification.outputLocation,
+                        athenaDatasourceSpecification.athenaEndpoint
+                );
             }
             return null;
         };

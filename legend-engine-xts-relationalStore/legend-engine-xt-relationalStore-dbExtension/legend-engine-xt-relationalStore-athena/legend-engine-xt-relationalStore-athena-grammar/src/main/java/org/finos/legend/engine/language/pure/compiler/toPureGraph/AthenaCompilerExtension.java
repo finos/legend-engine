@@ -18,7 +18,10 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AthenaDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
@@ -50,9 +53,12 @@ public class AthenaCompilerExtension implements IRelationalCompilerExtension
             {
                 AthenaDatasourceSpecification athenaDatasourceSpecification = (AthenaDatasourceSpecification) datasourceSpecification;
                 return new Root_meta_pure_alloy_connections_alloy_specification_AthenaDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification"))
-                        ._awsRegion(athenaDatasourceSpecification.awsRegion)
-                        ._s3OutputLocation(athenaDatasourceSpecification.s3OutputLocation)
-                        ._databaseName(athenaDatasourceSpecification.databaseName);
+                        ._region(athenaDatasourceSpecification.region)
+                        ._outputLocation(athenaDatasourceSpecification.outputLocation)
+                        ._database(athenaDatasourceSpecification.database)
+                        ._catalog(athenaDatasourceSpecification.catalog)
+                        ._athenaEndpoint(athenaDatasourceSpecification.athenaEndpoint)
+                        ._workGroup(athenaDatasourceSpecification.workGroup);
             }
             return null;
         });
@@ -62,5 +68,11 @@ public class AthenaCompilerExtension implements IRelationalCompilerExtension
     public CompilerExtension build()
     {
         return new AthenaCompilerExtension();
+    }
+
+    @Override
+    public List<DatabaseAuthenticationFlowKey> getFlowKeys()
+    {
+        return Lists.mutable.of(DatabaseAuthenticationFlowKey.newKey(DatabaseType.Athena, AthenaDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class));
     }
 }
