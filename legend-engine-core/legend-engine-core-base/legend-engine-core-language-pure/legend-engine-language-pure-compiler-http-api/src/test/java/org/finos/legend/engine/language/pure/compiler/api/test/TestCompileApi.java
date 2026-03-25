@@ -119,4 +119,76 @@ public class TestCompileApi
         Assert.assertEquals("String", ((PackageableType) column.genericType.rawType).fullPath);
     }
 
+    @Test
+    public void testRelationTypeWithStereotypeAndTaggedValue() throws JsonProcessingException
+    {
+        String model = "Profile test::SampleProfile\n" +
+                "{\n" +
+                "  stereotypes: [important];\n" +
+                "  tags: [doc];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::Person {\n" +
+                "name: String[1];\n" +
+                "}\n";
+        PureModelContextText text = new PureModelContextText();
+        text.code = model;
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'model documentation'} 'Person Name':x|$x.name])", "", 0, 0, false);
+        LambdaReturnTypeInput lambdaReturnTypeInput = new LambdaReturnTypeInput();
+        lambdaReturnTypeInput.model = text;
+        lambdaReturnTypeInput.lambda = lambda;
+        String stringResult = objectMapper.writeValueAsString(compileApi.lambdaRelationType(lambdaReturnTypeInput, null, null).getEntity());
+        RelationType relationType = objectMapper.readValue(stringResult, RelationType.class);
+        Assert.assertEquals(1, relationType.columns.size());
+        Column column = relationType.columns.get(0);
+        Assert.assertEquals("Person Name", column.name);
+        Assert.assertEquals("String", ((PackageableType) column.genericType.rawType).fullPath);
+        Assert.assertEquals("test::SampleProfile", column.stereotypes.get(0).profile);
+        Assert.assertEquals("important", column.stereotypes.get(0).value);
+        Assert.assertEquals("test::SampleProfile", column.taggedValues.get(0).tag.profile);
+        Assert.assertEquals("doc", column.taggedValues.get(0).tag.value);
+        Assert.assertEquals("model documentation", column.taggedValues.get(0).value);
+    }
+
+    @Test
+    public void testRelationTypeWithStereotypeAndTaggedValueAggregateColumn() throws JsonProcessingException
+    {
+        String model = "Profile test::SampleProfile\n" +
+                "{\n" +
+                "  stereotypes: [important];\n" +
+                "  tags: [doc];\n" +
+                "}\n" +
+                "\n" +
+                "Class model::Person {\n" +
+                "name: String[1];\n" +
+                "age: Integer[1];\n" +
+                "}\n";
+        PureModelContextText text = new PureModelContextText();
+        text.code = model;
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|model::Person.all()->project(~['Person Name':x|$x.name, 'Person Age Sum': x|$x.age])->groupBy(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'name documentation'} 'Person Name'], ~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'age documentation'} 'Person Age Sum': x|$x.'Person Age Sum':x|$x->sum()])", "", 0, 0, false);
+        LambdaReturnTypeInput lambdaReturnTypeInput = new LambdaReturnTypeInput();
+        lambdaReturnTypeInput.model = text;
+        lambdaReturnTypeInput.lambda = lambda;
+        String stringResult = objectMapper.writeValueAsString(compileApi.lambdaRelationType(lambdaReturnTypeInput, null, null).getEntity());
+        RelationType relationType = objectMapper.readValue(stringResult, RelationType.class);
+        Assert.assertEquals(2, relationType.columns.size());
+        Column nameColumn = relationType.columns.get(0);
+        Assert.assertEquals("Person Name", nameColumn.name);
+        Assert.assertEquals("String", ((PackageableType) nameColumn.genericType.rawType).fullPath);
+        Assert.assertEquals("test::SampleProfile", nameColumn.stereotypes.get(0).profile);
+        Assert.assertEquals("important", nameColumn.stereotypes.get(0).value);
+        Assert.assertEquals("test::SampleProfile", nameColumn.taggedValues.get(0).tag.profile);
+        Assert.assertEquals("doc", nameColumn.taggedValues.get(0).tag.value);
+        Assert.assertEquals("name documentation", nameColumn.taggedValues.get(0).value);
+        Column ageColumn = relationType.columns.get(1);
+        Assert.assertEquals("Person Age Sum", ageColumn.name);
+        Assert.assertEquals("Integer", ((PackageableType) ageColumn.genericType.rawType).fullPath);
+        Assert.assertEquals("test::SampleProfile", ageColumn.stereotypes.get(0).profile);
+        Assert.assertEquals("important", ageColumn.stereotypes.get(0).value);
+        Assert.assertEquals("test::SampleProfile", ageColumn.taggedValues.get(0).tag.profile);
+        Assert.assertEquals("doc", ageColumn.taggedValues.get(0).tag.value);
+        Assert.assertEquals("age documentation", ageColumn.taggedValues.get(0).value);
+    }
+
 }
+

@@ -19,10 +19,12 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -207,6 +209,100 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "  \"typeVariableValues\": []\n" +
                         "}",
                 actualValue3);
+    }
+
+    @Test
+    public void testColumnsWithStereotypes() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> pureModelPair = test(
+                "###Pure\n" +
+                        "Profile test::SampleProfile\n" +
+                        "{\n" +
+                        "  stereotypes: [important, deprecated];\n" +
+                        "  tags: [doc];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "  Table tb\n" +
+                        "  (\n" +
+                        "    id <<test::SampleProfile.important, test::SampleProfile.deprecated>> Integer\n" +
+                        "  )\n" +
+                        ")\n"
+        );
+
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~id)");
+        RelationType relationType = Compiler.getLambdaRelationType(lambda, pureModelPair.getTwo());
+        String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(relationType);
+
+        // Verify the column has the stereotype in the return type
+        Assert.assertTrue(actualValue.contains("\"stereotypes\""));
+        Assert.assertTrue(actualValue.contains("\"test::SampleProfile\""));
+        Assert.assertTrue(actualValue.contains("\"important\""));
+    }
+
+    @Test
+    public void testColumnsWithTaggedValues() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> pureModelPair = test(
+                "###Pure\n" +
+                        "Profile test::SampleProfile\n" +
+                        "{\n" +
+                        "  stereotypes: [important];\n" +
+                        "  tags: [doc, version];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "  Table tb\n" +
+                        "  (\n" +
+                        "    id {test::SampleProfile.doc = 'This is a documentation', test::SampleProfile.version = '1.0'} Integer\n" +
+                        "  )\n" +
+                        ")\n"
+        );
+
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~id)");
+        RelationType relationType = Compiler.getLambdaRelationType(lambda, pureModelPair.getTwo());
+        String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(relationType);
+
+        // Verify the column has the tagged values in the return type
+        Assert.assertTrue(actualValue.contains("\"taggedValues\""));
+        Assert.assertTrue(actualValue.contains("\"doc\""));
+        Assert.assertTrue(actualValue.contains("\"This is a documentation\""));
+    }
+
+    @Test
+    public void testColumnsWithBothStereotypesAndTaggedValues() throws Exception
+    {
+        Pair<PureModelContextData, PureModel> pureModelPair = test(
+                "###Pure\n" +
+                        "Profile test::SampleProfile\n" +
+                        "{\n" +
+                        "  stereotypes: [important, deprecated];\n" +
+                        "  tags: [doc, version];\n" +
+                        "}\n" +
+                        "\n" +
+                        "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "  Table tb\n" +
+                        "  (\n" +
+                        "    id <<test::SampleProfile.important>> {test::SampleProfile.doc = 'Primary key column'} Integer\n" +
+                        "  )\n" +
+                        ")\n"
+        );
+
+        LambdaFunction lambda = PureGrammarParser.newInstance().parseLambda("|#>{a::A.tb}#->select(~id)");
+        RelationType relationType = Compiler.getLambdaRelationType(lambda, pureModelPair.getTwo());
+        String actualValue = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(relationType);
+
+        // Verify both stereotypes and tagged values are present
+        Assert.assertTrue(actualValue.contains("\"stereotypes\""));
+        Assert.assertTrue(actualValue.contains("\"important\""));
+        Assert.assertTrue(actualValue.contains("\"taggedValues\""));
+        Assert.assertTrue(actualValue.contains("\"Primary key column\""));
     }
 
     @Test
