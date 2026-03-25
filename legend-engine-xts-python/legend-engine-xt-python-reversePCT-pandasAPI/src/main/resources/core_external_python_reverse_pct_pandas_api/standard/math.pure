@@ -44,6 +44,63 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
         ]
       )
+    ]->combine(),
+
+    // ==========================================
+    // CovarPopulation
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::covarPopulation([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarPopulation([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::covarPopulation([10, -20, 30])'),
+          noRev('|[1]->meta::pure::functions::math::covarPopulation([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::covarPopulation::testSimpleWindowCovarPopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::covarPopulation())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].cov(frame.groupby("id")["valB"], ddof=0))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // CovarSample
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1]->meta::pure::functions::math::covarSample([10])'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarSample([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarSample([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::covarSample([10, -20, 30])'),
+          noRev('|[1]->meta::pure::functions::math::covarSample([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::covarSample())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].cov(frame.groupby("id")["valB"]))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
     ]->combine()
   ]
 }
