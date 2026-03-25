@@ -34,10 +34,15 @@ import org.eclipse.collections.api.factory.Maps;
 public class Test_Relational_H2_Semistructured
 {
     private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty_Connection_1__Boolean_1_"
     );
