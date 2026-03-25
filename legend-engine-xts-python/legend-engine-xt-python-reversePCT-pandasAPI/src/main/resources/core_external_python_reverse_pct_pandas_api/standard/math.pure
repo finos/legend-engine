@@ -1,0 +1,50 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::pandasAPI::*;
+
+function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesStandardMath(): ReversesForSource[*]
+{
+  [
+    // ==========================================
+    // Corr
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::corr([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::corr([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::corr([10, -20, 30])'),
+          noRev('|1->meta::pure::functions::math::corr([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::corr())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].corr(frame.groupby("id")["valB"]))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
+    ]->combine()
+  ]
+}
+

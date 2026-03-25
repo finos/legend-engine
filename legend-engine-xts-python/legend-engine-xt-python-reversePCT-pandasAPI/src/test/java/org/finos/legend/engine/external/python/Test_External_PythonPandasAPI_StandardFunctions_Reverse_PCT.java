@@ -19,7 +19,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
-import org.finos.legend.pure.generated.core_external_python_reverse_pct_shared_pythonReversePCTShared;
+import org.finos.legend.pure.generated.core_external_python_reverse_pct_pandas_api_pythonReversePCTPandasAPIApi;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -33,7 +33,7 @@ public class Test_External_PythonPandasAPI_StandardFunctions_Reverse_PCT extends
     private static final ReportScope reportScope = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
     private static final Adapter adapter = Core_External_PythonPandasAPI_ReversePCTReportProvider.PandasAPIAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_shared_pythonReversePCTShared.Root_meta_external_python_reversePCT_shared_pythonSharedReversesStandard__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_pandas_api_pythonReversePCTPandasAPIApi.Root_meta_external_python_reversePCT_pandasAPI_pythonPandasAPIReversesStandard__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = PythonPandasAPIReversePCTHelper.build(reverseInfo);
 
     static
