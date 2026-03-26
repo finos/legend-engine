@@ -36,4 +36,8 @@ public class DataQualityReconInput
     public Set<String> colsForHash; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns.
     public String sourceHashCol; //if there already exists a column on source that contains the hash that you want to use in recon
     public String targetHashCol; //if there already exists a column on target that contains the hash that you want to use in recon
+    public boolean includeColumnValues = false; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
+    public boolean runSourceQuery = false;
+    public boolean runTargetQuery = false;
+
 }
