@@ -286,12 +286,7 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
                   func = $func,
                   mapping = tradeMapping,
                   runtime = []
-                ),
-    test = ^SingleExecutionTest
-            (
-            data = '',
-            asserts = []
-            )
+                )
   );
 }
 
