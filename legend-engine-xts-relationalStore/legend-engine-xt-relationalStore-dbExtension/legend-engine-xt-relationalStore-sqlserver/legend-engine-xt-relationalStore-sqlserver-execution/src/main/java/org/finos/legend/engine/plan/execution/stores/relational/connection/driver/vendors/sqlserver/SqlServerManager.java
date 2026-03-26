@@ -20,8 +20,11 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-
 import java.util.Properties;
+import java.util.Set;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendConstrainedKerberosCredential;
+import org.ietf.jgss.GSSCredential;
 
 public class SqlServerManager extends DatabaseManager
 {
@@ -71,5 +74,23 @@ public class SqlServerManager extends DatabaseManager
     public RelationalDatabaseCommands relationalDatabaseSupport()
     {
         return new SqlServerCommands();
+    }
+
+    @Override
+    public Properties getObjectDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    {
+        Properties properties = new Properties();
+         if (identity.getCredential(LegendConstrainedKerberosCredential.class).isPresent() && authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
+         {
+             LegendConstrainedKerberosCredential credential = identity.getCredential(LegendConstrainedKerberosCredential.class).get();
+             Set<GSSCredential> publicCredentials = credential.getSubject().getPublicCredentials(GSSCredential.class);
+             if (!publicCredentials.isEmpty())
+             {
+
+                 properties.put("gsscredential", publicCredentials.iterator().next());
+                 return properties;
+             }
+         }
+        return properties;
     }
 }
