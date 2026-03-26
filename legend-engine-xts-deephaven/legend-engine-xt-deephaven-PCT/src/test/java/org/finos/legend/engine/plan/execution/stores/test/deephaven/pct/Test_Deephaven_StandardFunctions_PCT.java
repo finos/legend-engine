@@ -36,6 +36,8 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
+            one("meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
+            one("meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
 
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
