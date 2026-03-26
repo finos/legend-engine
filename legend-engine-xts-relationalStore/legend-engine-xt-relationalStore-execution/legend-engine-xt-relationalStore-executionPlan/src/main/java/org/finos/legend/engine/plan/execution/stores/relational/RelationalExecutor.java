@@ -413,7 +413,7 @@ public class RelationalExecutor
             }
             return blockConnection;
         }
-        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults);
+        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults, relationalExecutionState.getRuntimeContext());
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)

@@ -92,11 +92,12 @@ public class ConnectionManagerSelector
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, StoreExecutionState.emptyRuntimeContext());
     }
 
-    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults)
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults, StoreExecutionState.RuntimeContext runtimeContext)
     {
         DatabaseConnection preprocessed = this.connectionManagers.collect(c -> c.preprocessConnection(databaseConnection, identity, allocationResults)).detect(Objects::nonNull);
         DatabaseConnection resolvedConnection = preprocessed != null ? preprocessed : databaseConnection;
-        return this.getDatabaseConnection(identity, resolvedConnection);
+        return this.getDatabaseConnection(identity, resolvedConnection, runtimeContext);
     }
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
