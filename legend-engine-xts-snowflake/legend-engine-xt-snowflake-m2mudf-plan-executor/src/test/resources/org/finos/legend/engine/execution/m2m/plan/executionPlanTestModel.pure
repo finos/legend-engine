@@ -99,7 +99,7 @@ function test::query::getFirmDetailsWithStringInput(input: String[1]): String[1]
 
 function test::query::getFirmDetailsWithVariantInput(input: String[1]): String[1]
 {
-  test::model::Firms.all()->meta::pure::executionPlan::featureFlag::withFeatureFlags([meta::pure::executionPlan::features::OptimizeInput.TO_VARIANT_TYPE])->graphFetch(
+  test::model::Firms.all()->meta::pure::executionPlan::featureFlag::withFeatureFlags([meta::pure::executionPlan::features::Feature.VARIANT_TYPE_AS_INPUT])->graphFetch(
     #{
       test::model::Firms{
         firms{

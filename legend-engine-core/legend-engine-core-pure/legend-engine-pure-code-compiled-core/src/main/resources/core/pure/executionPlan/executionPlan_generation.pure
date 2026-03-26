@@ -242,17 +242,27 @@ function <<access.private>> meta::pure::executionPlan::addFunctionParametersVali
                                              );
                                        );
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
-   let withFeatureFlags = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($f, meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_); //Need to find func expression. Execution context option is not carried here
+   let withFeatureFlags = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($f, meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_)->first(); //Need to find func expression. Execution context option is not carried here
    let optVariantType = getVariantParam($f);
    if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|
                                                                               if($p.name==$optVariantType,
-                                                                                | ^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType= if($withFeatureFlags->isNotEmpty() ,| ^GenericType(rawType = meta::pure::metamodel::variant::Variant) ,| $p.genericType)),
+                                                                                | ^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType= if($withFeatureFlags->isNotEmpty() && containsVariantTypeAsInput($withFeatureFlags->toOne()) ,| ^GenericType(rawType = meta::pure::metamodel::variant::Variant) ,| $p.genericType)),
                                                                                 | ^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType= $p.genericType);
                                                                               ));
                                                                              let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(genericType=^GenericType(rawType = Boolean)), parameterValidationContext = $parameterValidationContexts);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);
+}
+
+function <<access.private>> meta::pure::executionPlan::containsVariantTypeAsInput(vs: FunctionExpression[1]):Boolean[1]
+{
+  let enumExpression = meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification($vs, extractEnumValue_Enumeration_1__String_1__T_1_);
+  if($enumExpression->isNotEmpty(),
+      | let enumVal = $enumExpression.parametersValues->at(1);
+        $enumVal->cast(@InstanceValue).values == 'VARIANT_TYPE_AS_INPUT';,
+      |false
+    );
 }
 
 function<<access.private>> meta::pure::executionPlan::getVariantParam(f:FunctionDefinition<Any>[1]):String[0..1]
