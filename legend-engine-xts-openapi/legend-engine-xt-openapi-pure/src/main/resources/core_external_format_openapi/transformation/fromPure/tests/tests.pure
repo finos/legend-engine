@@ -267,8 +267,8 @@ function <<test.Test>> meta::external::function::description::openapi::transform
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testDecimalTypeMapping():Boolean[1]
 {
   let openapi = simpleServiceWithDecimal()->serviceToOpenApi(packageableElemWithTrade(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
-  assert($openapi->contains('"type": "double"'), 'Decimal should be mapped to double in OpenAPI spec');
-  assert($openapi->contains('"type": "float"'), 'Float should be mapped to float in OpenAPI spec');
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithDecimal.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
 }
 
 function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test service with Decimal type'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithDecimal():Service[1]
