@@ -1,4 +1,4 @@
 include:
-  - file: workflows/open-source-legend/legend-engine/.gitlab-ci.yml
+  - file: workflows/open-source-legend/legend-engine/.gitlab-ci.build.yml
     project: data-engineering/data-architecture-qubits/alloy-sdlc-ci-utils
-    ref: release-1.12.0
+    ref: release-1.15.0
