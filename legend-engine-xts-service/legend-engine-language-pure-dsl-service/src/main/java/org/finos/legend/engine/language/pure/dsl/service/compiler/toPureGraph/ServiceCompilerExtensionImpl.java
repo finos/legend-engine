@@ -248,7 +248,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         {
             throw new EngineException("Cannot use both ownership model and explicit owners list.", service.sourceInformation, EngineErrorType.COMPILATION);
         }
-        if (service.documentation.isEmpty())
+        if (service.documentation == null || service.documentation.isEmpty())
         {
             context.pureModel.addDefects(Lists.mutable.with(new Warning(service.sourceInformation, "Service '" + service.name + "' has empty documentation")));
         }
