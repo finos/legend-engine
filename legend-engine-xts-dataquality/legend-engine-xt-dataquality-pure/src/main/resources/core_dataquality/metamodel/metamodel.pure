@@ -11,7 +11,6 @@ Class meta::external::dataquality::DataQualityRootGraphFetchTree<T> extends Root
 ]
 {
    constraints: Constraint[*]; 
-   
 }
 
 Class meta::external::dataquality::DataQualityPropertyGraphFetchTree extends PropertyGraphFetchTree
@@ -79,4 +78,32 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   colsForHash: String[*]; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns.
   sourceHashCol: String[0..1]; //if there already exists a column on source that contains the hash that you want to use in recon
   targetHashCol: String[0..1]; //if there already exists a column on target that contains the hash that you want to use in recon
+  includeColumnValues: Boolean[1]; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
+}
+
+Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement
+[
+  sourceMustEndWithRuntime: $this.source->isEndingWithFromFunction(),
+  targetMustEndWithRuntime: $this.target->isEndingWithFromFunction(),
+  sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),
+  targetMustReturnRelation: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation)
+]
+{
+  source: LambdaFunction<Any>[1];
+  target: LambdaFunction<Any>[1];
+  keys: String[*];
+  columnsToCompare: String[*];
+  strategy: ReconStrategy[1];
+  expectedMatch: Float[0..1];
+}
+
+Class meta::external::dataquality::ReconStrategy
+{
+}
+
+Class meta::external::dataquality::MD5HashStrategy extends meta::external::dataquality::ReconStrategy
+{
+  sourceHashColumn: String[0..1];
+  targetHashColumn: String[0..1];
+  aggregatedHash: Boolean[1];
 }

@@ -16,11 +16,15 @@
 package org.finos.legend.engine.language.deephaven.from;
 
 import java.util.List;
+import java.util.Optional;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DeephavenParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestDeephavenGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
@@ -45,5 +49,35 @@ public class TestDeephavenGrammarParser extends TestGrammarParser.TestGrammarPar
                 "        prop2: INT\n" +
                 "    )\n" +
                 ")";
+    }
+
+    @Test
+    public void testDeephavenAppParsing()
+    {
+        String grammar =
+                "###Deephaven\n" +
+                "DeephavenApp test::MyApp\n" +
+                "{\n" +
+                "    applicationName: 'MyTestApp';\n" +
+                "    function: test::myFunc():Any[*];\n" +
+                "    description: 'A test app';\n" +
+                "    ownership: Deployment { identifier: 'owner123' };\n" +
+                "}\n";
+
+        PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(grammar);
+        Assert.assertNotNull(pmcd);
+
+        Optional<DeephavenApp> appOpt = pmcd.getElements().stream()
+                .filter(e -> e instanceof DeephavenApp)
+                .map(e -> (DeephavenApp) e)
+                .findFirst();
+
+        Assert.assertTrue("DeephavenApp should be parsed from the grammar", appOpt.isPresent());
+        DeephavenApp app = appOpt.get();
+        Assert.assertEquals("MyTestApp", app.applicationName);
+        Assert.assertEquals("test::myFunc():Any[*]", app.function.path);
+        Assert.assertEquals("A test app", app.description);
+        Assert.assertEquals("MyApp", app.name);
+        Assert.assertEquals("test", app._package);
     }
 }

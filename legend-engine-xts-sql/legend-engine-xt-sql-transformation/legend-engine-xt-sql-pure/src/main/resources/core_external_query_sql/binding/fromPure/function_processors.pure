@@ -1,3 +1,4 @@
+import meta::pure::functions::flow::*;
 import meta::pure::metamodel::variant::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
@@ -330,8 +331,25 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       conditional('coalesce', [], {args, fc, expCtx, ctx |
         let filteredArgs = getNonNullArguments($args);
         let type = $filteredArgs.genericType->first().rawType;
+        let empty = iv([], ^GenericType(rawType = $type));
 
-        sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
+
+        if ($expCtx.relation->isTrue(),
+          |
+            assert($filteredArgs->size() < 4, | 'maximum 3 non null arguments supported for coalesce ' + $filteredArgs->size()->toString() + ' supplied');
+
+            let newArgs = if ($filteredArgs->isEmpty(), | $empty, | $filteredArgs);
+
+            let func = [
+              pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$_),
+              pair(2, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),
+              pair(3, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_)
+            ]->getValue($newArgs->size());
+
+            sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $newArgs->concatenate($empty));,
+          |
+            sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
+        );
       }),
 
       conditional('greatest', [], {args, fc, expCtx, ctx |

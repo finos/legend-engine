@@ -58,6 +58,26 @@ public class TestCompilerFromGrammar
     }
 
     @Test
+    public void  testTranspileErrorWithinSQL()
+    {
+        testCompile("function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #SQL{select a from abc}#;" +
+                "   true;" +
+                "}","COMPILATION error at [1:1-3:37]: Error in 'pack::f__Boolean_1_': no cte named \"abc\"\" found. Known ctes []");
+    }
+
+    @Test
+    public void  testParseErrorWithinSQL()
+    {
+        testCompile("function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #SQL{select a frm abc}#;" +
+                "   true;" +
+                "}","PARSER error at [1:1-3:36]: Error in 'pack::f__Boolean_1_': Unexpected token");
+    }
+
+    @Test
     public void testTable()
     {
         testCompile("" +
@@ -90,7 +110,7 @@ public class TestCompilerFromGrammar
                 " #SQL{select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable') as t }#->join( #SQL{select FIRM_ID, NAME from tb('meta::analytics::lineage::tests::db.firmTable')}#, JoinKind.INNER, {x,y| $x.FIRMID == $y.FIRM_ID}) ;\n" +
                 "true;\n" +
                 "}\n"
-             );
+        );
     }
 
 

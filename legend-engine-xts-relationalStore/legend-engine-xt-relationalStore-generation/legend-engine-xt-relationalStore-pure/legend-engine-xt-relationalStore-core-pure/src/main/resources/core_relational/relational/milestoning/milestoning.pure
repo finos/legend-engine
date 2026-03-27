@@ -105,7 +105,8 @@ function meta::relational::milestoning::getTemporalDateAlias(temporalStrategy:Si
 
 function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOperationElement[1], tableToFilterOp: meta::pure::metamodel::function::Function<{TableAlias[1]->Operation[0..1]}>[1],tableToTable : meta::pure::metamodel::function::Function<{Table[1]->Table[1]}>[1], shouldProcessViewSubSelect:Boolean[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-    $e->match([     v:VarSetPlaceHolder[1] | $v,
+    $e->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).milestoning_applyFilterHandlers)->map(h|$h->eval($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))->concatenate([   
+                    v:VarSetPlaceHolder[1] | $v,
                     pl:VarPlaceHolder[1]|$pl,
                     c:CommonTableExpressionReference[1] | $c,
                     c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),
@@ -154,7 +155,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     rl:RelationalLambda[1] | ^$rl(parameters = $rl.parameters->map(p|$p->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))->cast(@RelationalLambdaParameter), body = $rl.body->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     rlp:RelationalLambdaParameter[1] | ^$rlp(value= $rlp.value->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     swc:meta::relational::functions::pureToSqlQuery::SelectWithCursor[1] | $swc.select->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)
-                  ]);
+                  ])->toOneMany()
+    );
 }
 
 function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTreeNode[1], tableToFilterOp: meta::pure::metamodel::function::Function<{TableAlias[1]->Operation[0..1]}>[1],tableToTable : meta::pure::metamodel::function::Function<{Table[1]->Table[1]}>[1], shouldProcessViewSubSelect:Boolean[1], extensions:Extension[*]):RelationalTreeNode[1]
@@ -508,6 +510,10 @@ function meta::relational::milestoning::getMilestoningContextForPropertyPathQual
 }
 
 function meta::relational::milestoning::getQueryTableAliases(el: Any[*] ):TableAlias[*]{
+   $el->getQueryTableRelationalOperationElements()->cast(@TableAlias)->filter(r| $r.relationalElement->instanceOf(Table))
+}
+
+function meta::relational::milestoning::getQueryRelationAliases(el: Any[*] ):TableAlias[*]{
    $el->getQueryTableRelationalOperationElements()->cast(@TableAlias)
 }
 
@@ -518,18 +524,18 @@ function meta::relational::milestoning::getQueryTableRelationalOperationElements
      s : SelectSQLQuery[1] | let tablesInCtes = $s.commonTableExpressions->fold({c, res |
                                                         $res->concatenate($c->getQueryTableRelationalOperationElements());
                                                        }, []);
-                                                       $tablesInCtes->concatenate(getQueryTableAliases($s.data))->concatenate(getQueryTableAliases($s.filteringOperation));,
-     s : ViewSelectSQLQuery[1]|getQueryTableAliases($s.selectSQLQuery),
-     a : RootJoinTreeNode[1]|getQueryTableAliases($a.alias)->concatenate(getQueryTableAliases($a->children())),
-     b : JoinTreeNode[1]|getQueryTableAliases($b.alias)->concatenate(getQueryTableAliases($b.join.target))->concatenate(getQueryTableAliases($b->children())),
-     t : TableAlias[1]| if ($t.relationalElement->instanceOf(Table) && !$t.relationalElement->instanceOf(ViewSelectSQLQuery),| $t,| getQueryTableAliases($t.relationalElement)),
-     a:  Alias[1] | getQueryTableAliases($a.relationalElement),
-     op: UnaryOperation[1] | getQueryTableAliases($op.nested),
-     op: BinaryOperation[1] | getQueryTableAliases($op.left)->concatenate(getQueryTableAliases($op.right)),
-     va : VariableArityOperation[1] | getQueryTableAliases($va.args),
-     d : DynaFunction[1] | getQueryTableAliases($d.parameters),
+                                                       $tablesInCtes->concatenate(getQueryRelationAliases($s.data))->concatenate(getQueryRelationAliases($s.filteringOperation));,
+     s : ViewSelectSQLQuery[1]|getQueryRelationAliases($s.selectSQLQuery),
+     a : RootJoinTreeNode[1]|getQueryRelationAliases($a.alias)->concatenate(getQueryRelationAliases($a->children())),
+     b : JoinTreeNode[1]|getQueryRelationAliases($b.alias)->concatenate(getQueryRelationAliases($b.join.target))->concatenate(getQueryRelationAliases($b->children())),
+     t : TableAlias[1]| if ($t.relationalElement->instanceOf(NamedRelation) && !$t.relationalElement->instanceOf(ViewSelectSQLQuery),| $t,| getQueryRelationAliases($t.relationalElement)),
+     a:  Alias[1] | getQueryRelationAliases($a.relationalElement),
+     op: UnaryOperation[1] | getQueryRelationAliases($op.nested),
+     op: BinaryOperation[1] | getQueryRelationAliases($op.left)->concatenate(getQueryRelationAliases($op.right)),
+     va : VariableArityOperation[1] | getQueryRelationAliases($va.args),
+     d : DynaFunction[1] | getQueryRelationAliases($d.parameters),
      a : Any[1] | [],
-     e : Any[*]| $e->map(el | $el->getQueryTableAliases())
+     e : Any[*]| $e->map(el | $el->getQueryRelationAliases())
    ])
 }
 

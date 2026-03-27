@@ -19,8 +19,11 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -29,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.deephaven.metamodel.runtime.DeephavenConnection;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.DeephavenStore;
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -85,7 +89,39 @@ public class DeephavenCompilerExtension implements CompilerExtension
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
-        return Lists.immutable.with(Processor.newProcessor(DeephavenStore.class, HelperDeephavenStoreBuilder::buildStoreFirstPass));
+        return Lists.immutable.with(
+                Processor.newProcessor(DeephavenStore.class, HelperDeephavenStoreBuilder::buildStoreFirstPass),
+                Processor.newProcessor(
+                        DeephavenApp.class,
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(Function.class),
+                        (DeephavenApp app, CompileContext context) ->
+                        {
+                            try
+                            {
+                                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?> func =
+                                        (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction<?>)
+                                                context.resolvePackageableElement(
+                                                        org.finos.legend.pure.m3.navigation.function.FunctionDescriptor.functionDescriptorToId(app.function.path),
+                                                        app.sourceInformation
+                                                );
+                                return new org.finos.legend.pure.generated.Root_meta_external_function_activator_deephavenApp_DeephavenApp_Impl(
+                                        app.name,
+                                        SourceInformationHelper.toM3SourceInformation(app.sourceInformation),
+                                        context.pureModel.getClass("meta::external::function::activator::deephavenApp::DeephavenApp")
+                                )
+                                        ._applicationName(app.applicationName)
+                                        ._function(func)
+                                        ._description(app.description)
+                                        ._ownership(new org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership_Impl("")
+                                                ._id(((DeploymentOwner) app.ownership).id));
+                            }
+                            catch (Exception e)
+                            {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                )
+        );
     }
 
     @Override

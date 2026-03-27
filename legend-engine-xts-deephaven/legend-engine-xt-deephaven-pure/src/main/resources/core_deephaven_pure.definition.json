@@ -1,6 +1,6 @@
 {
   "name" : "core_deephaven_pure",
-  "pattern" : "(meta::external::store::deephaven|meta::protocols::pure)(::.*)?",
+  "pattern" : "(meta::external::store::deephaven|meta::external::function::activator::deephavenApp|meta::protocols::pure)(::.*)?",
   "dependencies" : [
     "platform",
     "platform_dsl_store",
@@ -12,6 +12,7 @@
     "core_functions_standard",
     "core_functions_relation",
     "core",
-    "core_authentication"
+    "core_authentication",
+    "core_function_activator"
   ]
 }

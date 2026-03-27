@@ -20,39 +20,63 @@ import java.util.Objects;
 
 public class AthenaDatasourceSpecificationKey implements DataSourceSpecificationKey
 {
-    private final String awsRegion;
-    private final String s3OutputLocation;
-    private final String databaseName;
+    public String region;
+    public String catalog;
+    public String database;
+    public String workGroup;
+    public String outputLocation;
+    public String athenaEndpoint;
 
-    public AthenaDatasourceSpecificationKey(String awsRegion, String s3OutputLocation, String databaseName)
+    public AthenaDatasourceSpecificationKey(String region, String catalog, String database, String workGroup, String outputLocation, String athenaEndpoint)
     {
-        this.awsRegion = awsRegion;
-        this.s3OutputLocation = s3OutputLocation;
-        this.databaseName = databaseName;
+        this.region = region;
+        this.catalog = catalog;
+        this.database = database;
+        this.workGroup = workGroup;
+        this.outputLocation = outputLocation;
+        this.athenaEndpoint = athenaEndpoint;
     }
 
-    public String getAwsRegion()
+    public String getRegion()
     {
-        return awsRegion;
+        return region;
     }
 
-    public String getS3OutputLocation()
+    public String getCatalog()
     {
-        return s3OutputLocation;
+        return catalog;
     }
 
-    public String getDatabaseName()
+    public String getDatabase()
     {
-        return databaseName;
+        return database;
+    }
+
+    public String getWorkGroup()
+    {
+        return workGroup;
+    }
+
+    public String getOutputLocation()
+    {
+        return outputLocation;
+    }
+
+    public String getAthenaEndpoint()
+    {
+        return athenaEndpoint;
     }
 
     @Override
     public String toString()
     {
         return "AthenaDatasourceSpecificationKey{" +
-                "awsRegion='" + awsRegion + '\'' +
-                ", s3OutputLocation=" + s3OutputLocation +
-                ", databaseName='" + databaseName + '\'' +
+                "region='" + region + '\'' +
+                ", catalog='" + catalog + '\'' +
+                ", database='" + database + '\'' +
+                ", workGroup='" + workGroup + '\'' +
+                ", outputLocation='" + outputLocation + '\'' +
+                ", athenaEndpoint='" + athenaEndpoint + '\'' +
                 '}';
     }
 
@@ -60,31 +84,28 @@ public class AthenaDatasourceSpecificationKey implements DataSourceSpecification
     public String shortId()
     {
         return "Athena_" +
-                "awsRegion:" + awsRegion + "_" +
-                "s3OutputLocation:" + s3OutputLocation + "_" +
-                "db:" + databaseName;
+                "region:" + region + "_" +
+                "catalog:" + catalog + "_" +
+                "workGroup:" + workGroup + "_" +
+                "outputLocation:" + outputLocation + "_" +
+                "athenaEndpoint:" + athenaEndpoint + "_" +
+                "db:" + database;
     }
 
     @Override
     public boolean equals(Object o)
     {
-        if (this == o)
-        {
-            return true;
-        }
         if (!(o instanceof AthenaDatasourceSpecificationKey))
         {
             return false;
         }
         AthenaDatasourceSpecificationKey that = (AthenaDatasourceSpecificationKey) o;
-        return Objects.equals(s3OutputLocation, that.s3OutputLocation) &&
-                Objects.equals(awsRegion, that.awsRegion) &&
-                Objects.equals(databaseName, that.databaseName);
+        return Objects.equals(region, that.region) && Objects.equals(athenaEndpoint, that.athenaEndpoint) && Objects.equals(catalog, that.catalog) && Objects.equals(database, that.database) && Objects.equals(workGroup, that.workGroup) && Objects.equals(outputLocation, that.outputLocation);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(awsRegion, s3OutputLocation, databaseName);
+        return Objects.hash(region, athenaEndpoint, catalog, database, workGroup, outputLocation);
     }
 }

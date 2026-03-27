@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.dsl.service.generation.extension.ServiceExecutionExtension;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -54,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
@@ -63,6 +65,7 @@ import java.util.function.Function;
 public class ServicePlanGenerator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServicePlanGenerator.class);
+    private static final List<ServiceExecutionExtension> SERVICE_EXECUTION_EXTENSIONS = Lists.mutable.withAll(ServiceLoader.load(ServiceExecutionExtension.class));
 
     public static ExecutionPlan generateServiceExecutionPlan(Service service, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
@@ -119,7 +122,18 @@ public class ServicePlanGenerator
         {
             return generateCompositeExecutionPlan(servicePath, (PureMultiExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers, pool);
         }
-        throw new IllegalArgumentException("Unsupported execution type: " + execution);
+        for (ServiceExecutionExtension serviceExecutionExtension : SERVICE_EXECUTION_EXTENSIONS)
+        {
+            for (ServiceExecutionExtension.ServiceExecutionPlanGenerator generator : serviceExecutionExtension.getExtraServiceExecutionPlanGenerators())
+            {
+                ExecutionPlan plan = generator.generate(execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
+                if (plan != null)
+                {
+                    return plan;
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unsupported execution type: " + execution.getClass().getSimpleName());
     }
 
     private static SingleExecutionPlan getSingleExecutionPlan(List<ExecutionOption> executionOptions, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, Mapping mapping, Root_meta_core_runtime_Runtime runtime, LambdaFunction<?> lambda)

@@ -57,7 +57,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
         assert($platformBindingConfig->genericType().rawType == PlatformBindingConfig, | 'Can only convert supertype (PlatformBindingConfig) instance');
         ^LegendJavaPlatformBindingConfig
         (
-          planId = $platformBindingConfig.planId
+          planId = $platformBindingConfig.planId,
+          suppliedClassesForGeneration = $platformBindingConfig.suppliedClassesForGeneration
         );
    )
 }
@@ -73,7 +74,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                           | $conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$legendJavaConfig.planId->toOne()))
                       );
 
-   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted);
+   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted, suppliedClassesForGeneration=$legendJavaConfig.suppliedClassesForGeneration);
   
    let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->fillNewFunctionProhibitedList();
    

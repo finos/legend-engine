@@ -52,6 +52,9 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(DataqualityRelationValidation.class, "dataqualityRelationValidation")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
+                        .withSubtype(DataQualityRelationComparison.class, "dataQualityRelationComparison")
                         .build()
         ));
     }
@@ -60,6 +63,7 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return Maps.mutable.with(DataQuality.class, "meta::external::dataquality::DataQuality",
-                                 DataqualityRelationValidation.class, "meta::external::dataquality::DataQualityRelationValidation");
+                                 DataqualityRelationValidation.class, "meta::external::dataquality::DataQualityRelationValidation",
+                                 DataQualityRelationComparison.class, "meta::external::dataquality::DataQualityRelationComparison");
     }
 }

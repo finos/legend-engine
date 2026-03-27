@@ -38,6 +38,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::GenerationContext
    conventions               : Conventions[1];
    nodeInfos                 : NodeInfo[*];
    baseProject               : Project[0..1];
+   suppliedClassesForGeneration : meta::pure::metamodel::type::Class<Any>[*];
 }
 
 Class meta::pure::executionPlan::platformBinding::legendJava::NodeInfo

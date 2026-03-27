@@ -40,11 +40,6 @@ bigQueryFunction:               BIGQUERY_FUNCTION stereotypes? taggedValues? qua
                                             )*
                                         BRACE_CLOSE;
 
-stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;
-stereotype:                         qualifiedName DOT identifier;
-taggedValues:                       BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE;
-taggedValue:                        qualifiedName DOT identifier EQUAL STRING;
-
 functionName:                   BIGQUERY_FUNCTION__FUNCTION_NAME COLON STRING SEMI_COLON;
 
 description:                    BIGQUERY_FUNCTION__DESCRIPTION COLON STRING SEMI_COLON;

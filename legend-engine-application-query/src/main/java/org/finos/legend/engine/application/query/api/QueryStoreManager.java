@@ -178,7 +178,19 @@ public class QueryStoreManager
             QueryDataSpaceExecutionContext queryDataSpaceExecutionContext = (QueryDataSpaceExecutionContext) query.executionContext;
             validateNonEmptyQueryField(queryDataSpaceExecutionContext.dataSpacePath, "Query data Space execution context dataSpace path is missing or empty");
         }
-        else
+        else if (query.executionContext instanceof DataProductModelAccessExecutionContext)
+        {
+            DataProductModelAccessExecutionContext dataProductModelAccessExecutionContext = (DataProductModelAccessExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(dataProductModelAccessExecutionContext.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
+            validateNonEmptyQueryField(dataProductModelAccessExecutionContext.accessPointGroupId, "Query data product model access execution context accessPointGroupId is missing or empty");
+        }
+        else if (query.executionContext instanceof DataProductNativeExecutionContext)
+        {
+            DataProductNativeExecutionContext dataProductNativeExecutionContext = (DataProductNativeExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(dataProductNativeExecutionContext.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
+            validateNonEmptyQueryField(dataProductNativeExecutionContext.executionKey, "Query data product native execution context executionKey is missing or empty");
+        }
+        else if (query.executionContext == null)
         {
             validateNonEmptyQueryField(query.mapping, "Query mapping is missing or empty");
             validateNonEmptyQueryField(query.runtime, "Query runtime is missing or empty");

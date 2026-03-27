@@ -15,9 +15,9 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::eval<Z,T>(col:ColSpec<(?:Z)⊆T>[1], row:T[1]) : Z[*]
+function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::eval<Z,T>(col:ColSpec<(?:Z)⊆T>[1], row:T[1]) : Z[0..1]
 {
-  $col->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,Z|*>)->eval($row);
+  $col->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,Z|0..1>)->eval($row);
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::eval::testSimpleEval<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

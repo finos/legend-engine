@@ -310,7 +310,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             throw new EngineException("Relation mapping is only supported for primitive properties or mapping to semi-structured data (which requires a binding), but the property '" + org.finos.legend.pure.m3.navigation.property.Property.getPropertyName(property) + "' has type " + propertyType._name() + " and no binding was specified.", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
         }
         String propertyTypeName = processorSupport.type_isPrimitiveType(propertyType) ? propertyType._name() : M3Paths.Variant;
-        RelationType<?> newRelationType = _RelationType.build(Lists.mutable.with(_Column.getColumnInstance(propertyMapping.column, false, propertyTypeName, property._multiplicity(), sourceInfo, processorSupport)), sourceInfo, processorSupport);
+        RelationType<?> newRelationType = _RelationType.build(Lists.mutable.with(_Column.getColumnInstance(propertyMapping.column, false, propertyTypeName, property._multiplicity(), property._stereotypes(), property._taggedValues(), sourceInfo, processorSupport)), sourceInfo, processorSupport);
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping relationFunctionPropertyMapping = new Root_meta_pure_mapping_relation_RelationFunctionPropertyMapping_Impl("", sourceInfo, context.pureModel.getClass("meta::pure::mapping::relation::RelationFunctionPropertyMapping"))
             ._property(property)
             ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)

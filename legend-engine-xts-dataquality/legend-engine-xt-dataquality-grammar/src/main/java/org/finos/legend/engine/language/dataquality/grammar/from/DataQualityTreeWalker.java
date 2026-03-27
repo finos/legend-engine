@@ -31,6 +31,9 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQuali
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
+import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
+import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -91,7 +94,94 @@ public class DataQualityTreeWalker
         {
             return visitRelationValidation(validationDefinitionContext.relationValidationDefinition());
         }
+         if (validationDefinitionContext.relationComparisonDefinition() != null)
+        {
+            return visitRelationComparison(validationDefinitionContext.relationComparisonDefinition());
+        }
         throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(validationDefinitionContext), EngineErrorType.PARSER);
+    }
+
+    private DataQualityRelationComparison visitRelationComparison(DataQualityParserGrammar.RelationComparisonDefinitionContext ctx)
+    {
+        DataQualityRelationComparison relationComparison = new DataQualityRelationComparison();
+        relationComparison.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        relationComparison._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        relationComparison.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // source
+        DataQualityParserGrammar.ReconSourceContext reconSourceContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                ctx.reconSource(), "source", relationComparison.sourceInformation);
+        relationComparison.source = visitLambda(reconSourceContext.combinedExpression());
+
+        // target
+        DataQualityParserGrammar.ReconTargetContext reconTargetContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                ctx.reconTarget(), "target", relationComparison.sourceInformation);
+        relationComparison.target = visitLambda(reconTargetContext.combinedExpression());
+
+        // keys
+        DataQualityParserGrammar.ReconKeysContext reconKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                ctx.reconKeys(), "keys", relationComparison.sourceInformation);
+        relationComparison.keys = reconKeysContext.identifier().stream()
+                .map(PureGrammarParserUtility::fromIdentifier)
+                .collect(Collectors.toList());
+
+        // columnsToCompare (optional)
+        DataQualityParserGrammar.ColumnsToCompareContext columnsToCompareContext = PureGrammarParserUtility.validateAndExtractOptionalField(
+                ctx.columnsToCompare(), "columnsToCompare", relationComparison.sourceInformation);
+        if (Objects.nonNull(columnsToCompareContext))
+        {
+            relationComparison.columnsToCompare = columnsToCompareContext.identifier().stream()
+                    .map(PureGrammarParserUtility::fromIdentifier)
+                    .collect(Collectors.toList());
+        }
+
+        // strategy
+        DataQualityParserGrammar.ReconStrategyContext reconStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+                ctx.reconStrategy(), "strategy", relationComparison.sourceInformation);
+        relationComparison.strategy = visitReconStrategy(reconStrategyContext);
+
+        // expectedMatch (optional)
+        DataQualityParserGrammar.ReconExpectedMatchContext reconExpectedMatchContext = PureGrammarParserUtility.validateAndExtractOptionalField(
+                ctx.reconExpectedMatch(), "expectedMatch", relationComparison.sourceInformation);
+        if (Objects.nonNull(reconExpectedMatchContext) && reconExpectedMatchContext.FLOAT() != null)
+        {
+            relationComparison.expectedMatch = Double.parseDouble(reconExpectedMatchContext.FLOAT().getText());
+        }
+
+        return relationComparison;
+    }
+
+    private ReconStrategy visitReconStrategy(DataQualityParserGrammar.ReconStrategyContext ctx)
+    {
+        // Currently only MD5Hash is supported
+        if (ctx.reconStrategyValue().RECON_STRATEGY_MD5() != null)
+        {
+            MD5HashStrategy md5HashStrategy = new MD5HashStrategy();
+
+            DataQualityParserGrammar.ReconSourceHashColumnContext sourceHashColCtx = PureGrammarParserUtility.validateAndExtractOptionalField(
+                    ctx.reconSourceHashColumn(), "sourceHashColumn", walkerSourceInformation.getSourceInformation(ctx));
+            if (Objects.nonNull(sourceHashColCtx) && sourceHashColCtx.identifier() != null)
+            {
+                md5HashStrategy.sourceHashColumn = PureGrammarParserUtility.fromIdentifier(sourceHashColCtx.identifier());
+            }
+
+            DataQualityParserGrammar.ReconTargetHashColumnContext targetHashColCtx = PureGrammarParserUtility.validateAndExtractOptionalField(
+                    ctx.reconTargetHashColumn(), "targetHashColumn", walkerSourceInformation.getSourceInformation(ctx));
+            if (Objects.nonNull(targetHashColCtx) && targetHashColCtx.identifier() != null)
+            {
+                md5HashStrategy.targetHashColumn = PureGrammarParserUtility.fromIdentifier(targetHashColCtx.identifier());
+            }
+
+            DataQualityParserGrammar.ReconAggregatedHashContext aggregatedHashCtx = PureGrammarParserUtility.validateAndExtractOptionalField(
+                    ctx.reconAggregatedHash(), "aggregatedHash", walkerSourceInformation.getSourceInformation(ctx));
+            if (Objects.nonNull(aggregatedHashCtx))
+            {
+                md5HashStrategy.aggregatedHash = Boolean.parseBoolean(aggregatedHashCtx.BOOLEAN().getText());
+            }
+
+            return md5HashStrategy;
+        }
+        throw new EngineException("Unsupported recon strategy", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
     private DataQuality visitClassValidation(DataQualityParserGrammar.ClassValidationDefinitionContext validationDefinitionContext)

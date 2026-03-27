@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-platform-modular-generation</artifactId>
-        <version>4.122.1-SNAPSHOT</version>
+        <version>4.124.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-platform-dsl-graph-java</artifactId>
@@ -31,7 +31,23 @@
 
     <build>
         <plugins>
-             <plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-java</artifactId>
                 <executions>
@@ -51,29 +67,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                 <dependencies>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.finos.legend.pure</groupId>
-                         <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
-                         <version>${legend.pure.version}</version>
-                     </dependency>
-
-                     <dependency>
-                         <groupId>org.finos.legend.engine</groupId>
-                         <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                         <version>${project.version}</version>
-                     </dependency>
-                     <dependency>
-                         <groupId>org.finos.legend.engine</groupId>
-                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
-                         <version>${project.version}</version>
-                     </dependency>
-                 </dependencies>
             </plugin>
         </plugins>
     </build>
@@ -97,19 +90,23 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure-runtime-java-engine-shared</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-java</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -119,6 +116,5 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
-
     </dependencies>
 </project>

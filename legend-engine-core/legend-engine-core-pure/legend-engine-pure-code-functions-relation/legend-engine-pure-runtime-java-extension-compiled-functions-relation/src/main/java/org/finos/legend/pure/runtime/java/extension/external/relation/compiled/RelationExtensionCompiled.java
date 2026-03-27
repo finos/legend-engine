@@ -92,7 +92,8 @@ public class RelationExtensionCompiled implements CompiledExtension
                 new DenseRank(),
                 new PercentRank(),
                 new Write(),
-                new WrapPrimitiveInTDS()
+                new WrapPrimitiveInTDS(),
+                new Reduce()
         );
     }
 

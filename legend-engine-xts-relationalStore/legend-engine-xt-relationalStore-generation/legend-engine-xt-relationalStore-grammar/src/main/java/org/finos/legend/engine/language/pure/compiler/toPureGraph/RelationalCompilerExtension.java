@@ -723,7 +723,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                         handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "rowValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4 && handlers.typeOne(ps.get(0), "TabularDataSet")))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "iqrClassify", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
@@ -941,7 +941,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), col._stereotypes(), col._taggedValues(), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))

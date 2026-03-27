@@ -1,0 +1,61 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::functions::math::*;
+
+function
+<<PCT.function>>
+meta::pure::functions::math::zScore<T>(partition: Relation<T>[1], window: _Window<T>[1], row: T[1], colToZScore:ColSpec<(?:Number)⊆T>[1]):Float[1]
+{
+    (eval($colToZScore, $row)->toOne() - average($partition, $window, $row, $colToZScore)) / stdDevPopulation($partition, $window, $row, $colToZScore)
+}
+
+//todo some more test
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, name
+                  2, 1, A
+                  4, 1, B
+                  4, 1, C
+                  4, 1, D
+                  5, 1, E
+                  5, 1, F
+                  7, 1, G
+                  9, 1, H
+                #->extend(over(~grp), ~zScore: {p,w,r| zScore($p, $w, $r, ~id)})
+               };
+
+    let res =  $f->eval($expr);
+
+    assertTdsEquivalent(
+                  #TDS
+                     id, grp, name, zScore
+                     2, 1, A, -1.5
+                     4, 1, B, -0.5
+                     4, 1, C, -0.5
+                     4, 1, D, -0.5
+                     5, 1, E, 0.0
+                     5, 1, F, 0.0
+                     7, 1, G, 1.0
+                     9, 1, H, 2.0
+                  #, 
+                  $res->cast(@Relation<(id:Integer, grp:Integer, name:String, zScore:Float)>)->sort([~id->ascending(), ~grp->ascending(), ~name->ascending()]),
+                  0
+    );
+}

@@ -15,7 +15,7 @@ identifier:                             VALID_STRING | STRING
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
-                                        | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES | SERVICE_OWNERSHIP
+                                        | SERVICE_PATTERN | SERVICE_TITLE | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES | SERVICE_OWNERSHIP
                                         | SERVICE_OWNERSHIP_DEPLOYMENT | SERVICE_OWNERSHIP_DEPLOYMENT_ID | SERVICE_OWNERSHIP_USERLIST | SERVICE_OWNERSHIP_USERLIST_USERS
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
@@ -39,6 +39,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                             BRACE_OPEN
                                                 (
                                                     servicePattern
+                                                    | serviceTitle
                                                     | serviceOwners
                                                     | serviceOwnership
                                                     | serviceDocumentation
@@ -51,15 +52,9 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                 )*
                                             BRACE_CLOSE
 ;
-stereotypes:                            LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
-;
-stereotype:                             qualifiedName DOT identifier
-;
-taggedValues:                           BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
-;
-taggedValue:                            qualifiedName DOT identifier EQUAL STRING
-;
 servicePattern:                         SERVICE_PATTERN COLON STRING SEMI_COLON
+;
+serviceTitle:                           SERVICE_TITLE COLON STRING SEMI_COLON
 ;
 serviceOwners:                          SERVICE_OWNERS COLON
                                             BRACKET_OPEN
@@ -100,7 +95,7 @@ serviceMcpServer:                       SERVICE_MCP_SERVER COLON identifier SEMI
 
 serviceFunc:                            SERVICE_FUNCTION COLON combinedExpression SEMI_COLON
 ;
-serviceExec:                            SERVICE_EXECUTION COLON (singleExec|multiExec)
+serviceExec:                            SERVICE_EXECUTION COLON (singleExec | multiExec | extensionExec)
 ;
 singleExec:                             SERVICE_SINGLE
                                             BRACE_OPEN
@@ -119,6 +114,13 @@ multiExec:                              SERVICE_MULTI
                                                     | execParameter
                                                 )*
                                             BRACE_CLOSE
+;
+extensionExec:                          VALID_STRING
+                                            BRACE_OPEN
+                                                extensionExecContent
+                                            BRACE_CLOSE
+;
+extensionExecContent:                   (~(BRACE_OPEN | BRACE_CLOSE) | BRACE_OPEN extensionExecContent BRACE_CLOSE)*
 ;
 execParameter:                          execParameterSignature COLON
                                             BRACE_OPEN

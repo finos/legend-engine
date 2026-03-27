@@ -28,9 +28,34 @@ public class TestAthenaConnectionGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "  type: Athena;\n" +
                 "  specification: Athena\n" +
                 "  {\n" +
-                "    name: 'name';\n" +
-                "    awsRegion: 'region';\n" +
-                "    s3OutputLocation: '1234';\n" +
+                "    region: 'region';\n" +
+                "    database: 'dbname';\n" +
+                "    outputLocation: '1234';\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testConnectionGrammarWithAllParameters()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::AthenaConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: Athena;\n" +
+                "  specification: Athena\n" +
+                "  {\n" +
+                "    region: 'region';\n" +
+                "    database: 'dbname';\n" +
+                "    workGroup: 'workGroupX';\n" +
+                "    outputLocation: '1234';\n" +
+                "    catalog: 'catalogA';\n" +
+                "    athenaEndpoint: 'http://endpoint';\n" +
                 "  };\n" +
                 "  auth: UserNamePassword\n" +
                 "  {\n" +

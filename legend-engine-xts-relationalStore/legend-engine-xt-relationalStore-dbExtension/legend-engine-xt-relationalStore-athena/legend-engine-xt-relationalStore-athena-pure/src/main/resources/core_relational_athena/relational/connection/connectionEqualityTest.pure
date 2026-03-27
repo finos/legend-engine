@@ -28,14 +28,14 @@ function <<test.Test>> meta::relational::tests::connEquality::testConnectionEqua
   let c1 = ^RelationalDatabaseConnection(
 
     type = DatabaseType.Athena,
-    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification(awsRegion='awsR', s3OutputLocation='s3OL', databaseName='db'),
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification(region='awsR', outputLocation='s3OL', database='db'),
     authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(apiToken='token')
   );
 
   let c2 = ^RelationalDatabaseConnection(
 
     type = DatabaseType.Athena,
-    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification(awsRegion='awsR', s3OutputLocation='s3OL', databaseName='db'),
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification(region='awsR', outputLocation='s3OL', database='db'),
     authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(apiToken='token')
   );
 

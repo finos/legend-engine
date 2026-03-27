@@ -40,10 +40,6 @@ memSqlFunction:               MEMSQL_FUNCTION stereotypes? taggedValues? qualifi
                                             )*
                                         BRACE_CLOSE;
 
-stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;
-stereotype:                         qualifiedName DOT identifier;
-taggedValues:                       BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE;
-taggedValue:                        qualifiedName DOT identifier EQUAL STRING;
 
 functionName:                   MEMSQL_FUNCTION__FUNCTION_NAME COLON STRING SEMI_COLON;
 
