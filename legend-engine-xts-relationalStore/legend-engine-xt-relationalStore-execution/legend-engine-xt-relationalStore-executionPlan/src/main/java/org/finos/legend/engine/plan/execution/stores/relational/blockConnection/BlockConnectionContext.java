@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.blockConnection
 
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
@@ -23,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class BlockConnectionContext
@@ -41,12 +43,17 @@ public class BlockConnectionContext
 
     public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, Identity identity)
     {
+        return getBlockConnection(executionState, databaseConnection, identity, java.util.Collections.emptyMap());
+    }
+
+    public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, Identity identity, Map<String, Result> allocationResults)
+    {
         BlockConnection requiredBlockConnection = this.blockConnectionMap.get(executionState.getRelationalExecutor().getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection));
         if (requiredBlockConnection == null)
         {
             requiredBlockConnection = setBlockConnection(executionState.getRelationalExecutor().getConnectionManager(),
                     databaseConnection,
-                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getRuntimeContext())));
+                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults, executionState.getRuntimeContext())));
         }
         if (!requiredBlockConnection.blockConnectionState.isConnectionAvailable())
         {
