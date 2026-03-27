@@ -1,11 +1,4 @@
-stages:
-    - clmscan
-
-
-clm_scan:
-    stage: clmscan
-    tags: [sdlc]
-    image: ${CI_REGISTRY}/dx/sdlc-tools/aws-gitlab-clm-plugin/aws-gitlab-clm-plugin:current
-    before_script: []
-    script:
-        - /opt/clm/request-clmscan.sh "${CI_PROJECT_DIR}"
+include:
+  - file: workflows/open-source-legend/legend-engine/.gitlab-ci.yml
+    project: data-engineering/data-architecture-qubits/alloy-sdlc-ci-utils
+    ref: release-1.15.1
