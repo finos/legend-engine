@@ -103,6 +103,7 @@
 
         <!-- Application -->
         <module>legend-engine-application-query</module>
+        <module>legend-engine-shared-mongo</module>
         <module>legend-engine-xts-identity</module>
 
         <!-- Python -->
@@ -3009,6 +3010,11 @@
                 <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-shared-mongo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -3447,6 +3453,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
