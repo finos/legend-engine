@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -86,7 +88,16 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection)
     {
-        return this.getDatabaseConnection(identity, databaseConnection, StoreExecutionState.emptyRuntimeContext());
+        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
+        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, StoreExecutionState.emptyRuntimeContext());
+    }
+
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults, StoreExecutionState.RuntimeContext runtimeContext)
+    {
+        DatabaseConnection preprocessed = this.connectionManagers.collect(c -> c.preprocessConnection(databaseConnection, identity, allocationResults)).detect(Objects::nonNull);
+        DatabaseConnection resolvedConnection = preprocessed != null ? preprocessed : databaseConnection;
+        return this.getDatabaseConnection(identity, resolvedConnection, runtimeContext);
     }
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
@@ -120,6 +131,7 @@ public class ConnectionManagerSelector
         }
         return key;
     }
+
 
     public Connection getTestDatabaseConnection()
     {

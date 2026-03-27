@@ -14,15 +14,24 @@
 
 package org.finos.legend.engine.external.format.json.read;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class JsonDataRecord
 {
     private final long number;
-    private final String record;
+    private String record;
+    private JsonNode jsonNode;
 
     public JsonDataRecord(long number, String record)
     {
         this.number = number;
         this.record = record;
+    }
+
+    public JsonDataRecord(long number, JsonNode jsonNode)
+    {
+        this.number = number;
+        this.jsonNode = jsonNode;
     }
 
     public long getNumber()
@@ -33,6 +42,11 @@ public class JsonDataRecord
     public String getRecord()
     {
         return record;
+    }
+
+    public JsonNode getJsonNode()
+    {
+        return jsonNode;
     }
 
     public String typePath$()

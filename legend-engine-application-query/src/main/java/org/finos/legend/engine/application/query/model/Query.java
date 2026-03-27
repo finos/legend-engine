@@ -31,6 +31,8 @@ public class Query
     public String artifactId;
     public String versionId;
     public String originalVersionId;
+    // TODO: remove once migration completes
+    // keeping this only for backward compatibility
     @Deprecated
     public String mapping;
     @Deprecated
@@ -40,6 +42,9 @@ public class Query
     public Long lastUpdatedAt;
     public Long createdAt;
     public Long lastOpenAt;
+    public Long deletedAt;
+    public Long validUntil;
+    public Integer version;
 
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;

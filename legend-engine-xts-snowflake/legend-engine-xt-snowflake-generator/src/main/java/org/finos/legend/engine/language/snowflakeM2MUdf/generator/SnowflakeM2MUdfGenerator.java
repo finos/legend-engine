@@ -29,11 +29,14 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -57,6 +60,7 @@ import org.slf4j.Logger;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
@@ -72,6 +76,7 @@ public class SnowflakeM2MUdfGenerator
     private static String deploymentStage;
     private static String udfName;
     private static String directoryLocation;
+    private static boolean useVariantType;
 
     public static SnowflakeM2MUdfArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeM2MUdf_SnowflakeM2MUdf activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
@@ -112,7 +117,10 @@ public class SnowflakeM2MUdfGenerator
         deploymentStage = activator._deploymentStage();
         udfName = activator._udfName().toUpperCase();
         directoryLocation = extractElementPath((Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl) activator._function());
-        String inputStub = extractInputStub(singleExecutionPlan);
+
+        //Check if Variant Type is required
+        useVariantType = useVariantType(singleExecutionPlan);
+        String inputStub = useVariantType ? extractInputStubWithVariant(singleExecutionPlan) : extractInputStub(singleExecutionPlan);
         String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S/schemas/%S/user-function/%S(VARCHAR)", ds.region, ds.region, ds.accountName, ds.databaseName,deploymentSchema,udfName);
 
         List<String> sqlCommands = new ArrayList<>();
@@ -124,7 +132,8 @@ public class SnowflakeM2MUdfGenerator
         //Add udf create or replace statement
         sqlCommands.add(generateCreateFunctionQuery(inputStub));
         //Add grant statement
-        sqlCommands.add(generateGrantStatement());
+        String grantStatement = useVariantType ? generateGrantStatementWithVariant() : generateGrantStatement();
+        sqlCommands.add(grantStatement);
 
         String executionPlan;
         try
@@ -152,9 +161,29 @@ public class SnowflakeM2MUdfGenerator
         return "(\"" + (((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters).get(0).name + "\" VARCHAR)";
     }
 
+    private static String extractInputStubWithVariant(SingleExecutionPlan singleExecutionPlan)
+    {
+        return "(\"" + (((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters).get(0).name + "\" VARIANT)";
+    }
+
     private static String extractElementPath(Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl function)
     {
         return "/" + String.join("/",function._functionName().split("::"));
+    }
+
+    private static String paramType()
+    {
+        return useVariantType ? "Variant input" : "String input";
+    }
+
+    private static String input()
+    {
+        return useVariantType ? "input.asJsonNode()" : "input";
+    }
+
+    private static String importVariant()
+    {
+        return useVariantType ? "import com.snowflake.snowpark_java.types.Variant;\n" : "";
     }
 
     private static String generateCreateFunctionQuery(String inputStub)
@@ -169,6 +198,7 @@ public class SnowflakeM2MUdfGenerator
                 "import java.io.InputStream;\n" +
                 "import java.nio.charset.StandardCharsets;\n" +
                 "import com.snowflake.snowpark_java.types.SnowflakeFile;\n" +
+                importVariant() + 
                 "import org.finos.legend.engine.execution.m2m.plan.SnowflakeM2MUdfPlanExecutor;\n" +
                 "import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;\n" +
                 "import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;\n" +
@@ -187,7 +217,7 @@ public class SnowflakeM2MUdfGenerator
                 "    public static SingleExecutionPlan singleExecutionPlan;\n" +
                 "    public static String parameter;\n" +
                 "    \n" +
-                "    public static String executeWithInputFromPlan(String input) {\n" +
+                "    public static String executeWithInputFromPlan(" + paramType() + ") {\n" +
                 "        try \n" +
                 "        {\n" +
                 "             if(singleExecutionPlan == null){\n" +
@@ -202,7 +232,7 @@ public class SnowflakeM2MUdfGenerator
                 "                     throw new RuntimeException(e);\n" +
                 "                 }\n" +
                 "             }\n" +
-                "             return SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, input);\n" +
+                "             return SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, " + input() + ");\n" +
                 "        }\n" +
                 "        catch (IOException e)\n" +
                 "        {\n" +
@@ -225,6 +255,11 @@ public class SnowflakeM2MUdfGenerator
         return "GRANT USAGE ON FUNCTION " + database + "." + deploymentSchema + "." + udfName + "(VARCHAR) to role PUBLIC;";
     }
 
+    private static String generateGrantStatementWithVariant()
+    {
+        return "GRANT USAGE ON FUNCTION " + database + "." + deploymentSchema + "." + udfName + "(VARIANT) to role PUBLIC;";
+    }
+
     private static String getVersion()
     {
         String version = null;
@@ -245,6 +280,19 @@ public class SnowflakeM2MUdfGenerator
         }
 
         return version;
+    }
+
+    private static Boolean useVariantType(SingleExecutionPlan singleExecutionPlan)
+    {
+        Optional<ExecutionNode> n = singleExecutionPlan.rootExecutionNode.executionNodes.stream().filter(node -> node instanceof FunctionParametersValidationNode).findFirst();
+
+        Optional<Variable> variable = Optional.empty();
+        if (n.isPresent())
+        {
+            FunctionParametersValidationNode node = (FunctionParametersValidationNode) n.get();
+            variable = node.functionParameters.stream().filter(var -> var.genericType.rawType instanceof PackageableType && ((PackageableType)var.genericType.rawType).fullPath.equals("meta::pure::metamodel::variant::Variant")).findFirst();
+        }
+        return variable.isPresent();
     }
 
     public static String generateFunctionLineage(PureModel pureModel, Root_meta_external_function_activator_snowflakeM2MUdf_SnowflakeM2MUdf activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

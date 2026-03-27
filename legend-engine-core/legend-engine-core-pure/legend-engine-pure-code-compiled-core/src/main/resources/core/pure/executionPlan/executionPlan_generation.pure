@@ -202,7 +202,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
                                                 c: meta::pure::runtime::ExecutionContext[1] | []
                                              ]);
 
-   let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction);
+   let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction, $context);
 
    ^ExecutionPlan
    (
@@ -229,7 +229,7 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 }
 
 
-function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
+function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1]):ExecutionNode[1]
 {
    let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.genericType.rawType->toOne()->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
    let parameterValidationContexts = $planVarPlaceHolders->map(p |
@@ -242,11 +242,33 @@ function <<access.private>> meta::pure::executionPlan::addFunctionParametersVali
                                              );
                                        );
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
-   if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType=$p.genericType));
+   let withFeatureFlags = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($f, meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_)->first(); //Need to find func expression. Execution context option is not carried here
+   let optVariantType = getVariantParam($f);
+   if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|
+                                                                              if($p.name==$optVariantType,
+                                                                                | ^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType= if($withFeatureFlags->isNotEmpty() && containsVariantTypeAsInput($withFeatureFlags->toOne()) ,| ^GenericType(rawType = meta::pure::metamodel::variant::Variant) ,| $p.genericType)),
+                                                                                | ^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, genericType= $p.genericType);
+                                                                              ));
                                                                              let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(genericType=^GenericType(rawType = Boolean)), parameterValidationContext = $parameterValidationContexts);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);
+}
+
+function <<access.private>> meta::pure::executionPlan::containsVariantTypeAsInput(vs: FunctionExpression[1]):Boolean[1]
+{
+  let enumExpression = meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification($vs, extractEnumValue_Enumeration_1__String_1__T_1_);
+  if($enumExpression->isNotEmpty(),
+      | let enumVal = $enumExpression.parametersValues->at(1);
+        $enumVal->cast(@InstanceValue).values == 'VARIANT_TYPE_AS_INPUT';,
+      |false
+    );
+}
+
+function<<access.private>> meta::pure::executionPlan::getVariantParam(f:FunctionDefinition<Any>[1]):String[0..1]
+{
+  let func = meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition($f, meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__String_1__String_1__Runtime_1_);
+  if($func->isNotEmpty() && $func.parametersValues->last()->toOne()->instanceOf(VariableExpression), | $func.parametersValues->last()->cast(@VariableExpression).name,|'');
 }
 
 function <<access.private>> meta::pure::executionPlan::findParamsSupportedForStreamInput(routedFunction:FunctionDefinition<Any>[1]):String[*]

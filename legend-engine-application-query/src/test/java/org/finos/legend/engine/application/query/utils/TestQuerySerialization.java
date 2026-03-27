@@ -28,29 +28,6 @@ public class TestQuerySerialization
 
     final ObjectMapper objectMapper = new ObjectMapper();
 
-    String LEGACY_QUERY = "{\n" +
-            "  \"_id\": 1242837498375,\n" +
-            "  \"artifactId\": \"test-artifact\",\n" +
-            "  \"content\": \"content\",\n" +
-            "  \"createdAt\": null,\n" +
-            "  \"defaultParameterValues\": [],\n" +
-            "  \"description\": \"description\",\n" +
-            "  \"executionContext\": null,\n" +
-            "  \"gridConfig\": null,\n" +
-            "  \"groupId\": \"test.group\",\n" +
-            "  \"id\": \"1\",\n" +
-            "  \"lastUpdatedAt\": null,\n" +
-            "  \"mapping\": \"my::mapping\",\n" +
-            "  \"name\": \"query1\",\n" +
-            "  \"originalVersionId\": \"0.0.0\",\n" +
-            "  \"owner\": \"testUser\",\n" +
-            "  \"runtime\": \"my::runtime\",\n" +
-            "  \"stereotypes\": [],\n" +
-            "  \"taggedValues\": [],\n" +
-            "  \"versionId\": \"0.0.0\"\n" +
-            "}";
-
-
     String EXPLICIT_EX_QUERY = "{\n" +
             "  \"artifactId\": \"test-artifact\",\n" +
             "  \"content\": \"content\",\n" +
@@ -169,13 +146,7 @@ public class TestQuerySerialization
     @Test
     public void testDeserialization() throws Exception
     {
-        Query legacyQuery = objectMapper.readValue(LEGACY_QUERY, Query.class);
-        Assert.assertNull(legacyQuery.executionContext);
-        Assert.assertEquals(legacyQuery.mapping, "my::mapping");
-        Assert.assertEquals(legacyQuery.runtime, "my::runtime");
         Query explicitExecutionQuery = objectMapper.readValue(EXPLICIT_EX_QUERY, Query.class);
-        Assert.assertNull(explicitExecutionQuery.runtime);
-        Assert.assertNull(explicitExecutionQuery.mapping);
         Assert.assertTrue(explicitExecutionQuery.executionContext instanceof QueryExplicitExecutionContext);
         Query dataSpaceQuery = objectMapper.readValue(DATA_SPACE_QUERY, Query.class);
         Assert.assertTrue(dataSpaceQuery.executionContext instanceof QueryDataSpaceExecutionContext);

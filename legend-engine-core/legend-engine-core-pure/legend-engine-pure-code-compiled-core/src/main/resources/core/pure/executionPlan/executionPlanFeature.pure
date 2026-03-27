@@ -20,7 +20,8 @@ import meta::pure::executionPlan::featureFlag::*;
 
 Enum  meta::pure::executionPlan::features::Feature
 {
-    PUSH_DOWN_ENUM_TRANSFORM  
+    PUSH_DOWN_ENUM_TRANSFORM,
+    VARIANT_TYPE_AS_INPUT
 }
 
 function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]

@@ -188,6 +188,17 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
                               ]), 
                               | []);
 
+   let hasFeatureFlag = if($state.exeCtx->instanceOf(MultiExecutionContext) ,
+                          | let multiExecCtx = $state.exeCtx->cast(@MultiExecutionContext);
+                            $multiExecCtx.childExecutionContext->map(exeCtx | $exeCtx->match([
+                                                                                      eo: ExecutionOptionContext[1]| $exeCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf(meta::pure::executionPlan::featureFlag::FeatureFlagOption)),
+                                                                                      ec: meta::pure::runtime::ExecutionContext[1] | []
+                                                                                  ]);
+                                                                        );
+                            ,
+                          | []
+                      )->cast(@meta::pure::executionPlan::featureFlag::FeatureFlagOption);
+
    let classArg           = $fe.parametersValues->at(0);
    assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
    let class              = $classArg->cast(@InstanceValue).values->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
@@ -208,7 +219,8 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
       checked           = $checked,
       tree              = $graphFetchTree->orElse(generateTreeWithPrimitiveProperties($class)),
       executionNodes    = generateSourceNodeFromFunctionExpression($fe, $state, $extensions, $debug),
-      fromCluster       = ^ExternalFormatClusteredValueSpecification(val = $fe, executable=true, binding = $binding, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([]))
+      fromCluster       = ^ExternalFormatClusteredValueSpecification(val = $fe, executable=true, binding = $binding, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([])),
+      useJsonNodeType   = $hasFeatureFlag.flags == meta::pure::executionPlan::features::Feature.VARIANT_TYPE_AS_INPUT
    );
 }
 
