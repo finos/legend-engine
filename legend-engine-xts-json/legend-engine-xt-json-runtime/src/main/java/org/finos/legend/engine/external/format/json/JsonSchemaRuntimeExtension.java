@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
@@ -83,6 +84,28 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
                 // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
                 StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
                 objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
+            }
+            return new StreamingObjectResult<>(objectStream);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, JsonNode jsonNode, Identity identity, ExecutionState executionState)
+    {
+        try
+        {
+            String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, identity);
+
+            Stream<?> objectStream = Stream.empty();
+            if (Arrays.asList(specificsClass.getInterfaces()).contains(IJsonInternalizeExecutionNodeSpecifics.class))
+            {
+                IJsonInternalizeExecutionNodeSpecifics specifics = (IJsonInternalizeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
+                objectStream = specifics.createReader(jsonNode).startStreamOptimized();
             }
             return new StreamingObjectResult<>(objectStream);
         }

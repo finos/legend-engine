@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::external::format::json::binding::validation::*;
@@ -87,14 +88,19 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
   let jsonReaderProject  = createJsonReading($pureClass, $javaClass, $path, $node.config->cast(@JsonSchemaInternalizeConfig)->orElse(defaultInternalizeConfig()), $bindingDetail, $readableClasses, $readableEnums, $context, $debug->indent());
 
   let sourceStreamParam       = j_parameter(javaInputStream(), 'sourceStream');
+  let jsonNode                = j_parameter(jsonNode(), 'jsonNode');
   let createReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
                                             ->j_new($sourceStreamParam)
                                             ->j_return();
 
+  let createJsonReaderMethodCodes = $conventions->jsonReaderClass($path, $pureClass)
+                                            ->j_new($jsonNode)
+                                            ->j_return();
   let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
                                             ->usingKnownPackages($conventions->knownPackages())
                                             ->imports($conventions->standardImports())
                                             ->imports(javaInputStream())
+                                            ->imports(jsonNode())
                                             ->imports($conventions->className(_IJsonInternalizeExecutionNodeSpecifics))
                                             ->imports($conventions->className(JsonDataReader))
                                             ->imports($javaClass)
@@ -102,7 +108,9 @@ function meta::external::format::json::executionPlan::platformBinding::legendJav
 
   let executeClass = $executeClassWithImports->addMethod(
     javaMethod(['public'], javaParameterizedType($conventions->className(JsonDataReader), $javaClass), 'createReader', [$sourceStreamParam], $createReaderMethodCodes)
-  );
+  )->addMethod(
+       javaMethod(['public'], javaParameterizedType($conventions->className(JsonDataReader), $javaClass), 'createReader', [$jsonNode], $createJsonReaderMethodCodes)
+     );
 
   let executeProject = newProject()->addClasses($executeClass);
   let allProjects    = $executeProject
