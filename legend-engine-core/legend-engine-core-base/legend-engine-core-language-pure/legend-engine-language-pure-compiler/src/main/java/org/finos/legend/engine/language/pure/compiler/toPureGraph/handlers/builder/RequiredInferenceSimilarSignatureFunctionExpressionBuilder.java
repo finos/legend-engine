@@ -78,11 +78,21 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(Pair<List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        if (test(handlers.handlers.get(0).getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext()))
+        List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> resolvedParams = parameters.getTwo();
+
+        if (resolvedParams != null)
         {
-            List<ValueSpecification> newParameters = parametersInference.update(parameters, valueSpecificationBuilder);
+            SimpleFunctionExpression sfe = this.handlers.buildFunctionExpressionGraph(resolvedParams, sourceInformation);
+            return Tuples.pair(sfe, resolvedParams);
+        }
+
+        List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> protocolParams = parameters.getOne();
+
+        if (protocolParams != null && test(handlers.handlers.get(0).getFunc(), protocolParams, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext()))
+        {
+            List<ValueSpecification> newParameters = parametersInference.update(protocolParams, valueSpecificationBuilder);
             return Tuples.pair(this.handlers.buildFunctionExpressionGraph(newParameters, sourceInformation), newParameters);
         }
         else
@@ -90,6 +100,7 @@ public class RequiredInferenceSimilarSignatureFunctionExpressionBuilder extends 
             return Tuples.pair(null, null);
         }
     }
+
 
     @Override
     public MutableList<FunctionHandler> handlers()

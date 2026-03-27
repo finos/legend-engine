@@ -44,7 +44,7 @@ import java.util.Optional;
 
 public abstract class FunctionExpressionBuilder
 {
-    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder);
+    public abstract Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(Pair<List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>, List<ValueSpecification>> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder);
 
     public abstract String getFunctionName();
 

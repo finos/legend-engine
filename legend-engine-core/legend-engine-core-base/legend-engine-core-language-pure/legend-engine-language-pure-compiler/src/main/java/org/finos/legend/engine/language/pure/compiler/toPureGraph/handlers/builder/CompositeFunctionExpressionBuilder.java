@@ -103,12 +103,21 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(Pair<List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification>, List<ValueSpecification>> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        List<ValueSpecification> resolvedParams = null;
+        List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> protocolParams = parameters.getOne();
+        List<ValueSpecification> resolvedParams = parameters.getTwo();
         for (FunctionExpressionBuilder b : builders)
         {
-            Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+            if (resolvedParams != null)
+            {
+                Pair<SimpleFunctionExpression, List<ValueSpecification>> reuse = b.buildFunctionExpression(Tuples.pair(null, resolvedParams), sourceInformation, valueSpecificationBuilder);
+                if (reuse.getOne() != null)
+                {
+                    return reuse;
+                }
+            }
+            Pair<SimpleFunctionExpression, List<ValueSpecification>> res = b.buildFunctionExpression(Tuples.pair(protocolParams, null), sourceInformation, valueSpecificationBuilder);
             if (res.getOne() != null)
             {
                 return res;

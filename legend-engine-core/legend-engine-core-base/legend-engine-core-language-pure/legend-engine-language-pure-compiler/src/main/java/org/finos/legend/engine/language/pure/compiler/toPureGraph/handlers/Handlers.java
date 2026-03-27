@@ -27,6 +27,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.CompositeFunctionExpressionBuilder;
@@ -2684,7 +2685,7 @@ public class Handlers
         FunctionExpressionBuilder builder = getExpressionBuilder(functionName, sourceInformation, valueSpecificationBuilder);
         if (builder != null)
         {
-            return builder.buildFunctionExpression(parameters, sourceInformation, valueSpecificationBuilder);
+            return builder.buildFunctionExpression(Tuples.pair(parameters, null), sourceInformation, valueSpecificationBuilder);
         }
         return null;
     }
