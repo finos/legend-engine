@@ -1223,9 +1223,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                 '7,3,G\n'+
                 '7,1,H\n'+
                 '9,5,I\n'+
-                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average())',
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average())->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol2:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])[1]|$p->meta::pure::functions::math::average($w, $r, ~id)})',
               '(lambda frame:' +
-               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("mean"))' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("mean")).assign(newCol2=lambda _r: frame.groupby("grp")["id"].transform("mean"))' +
                ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n7,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
