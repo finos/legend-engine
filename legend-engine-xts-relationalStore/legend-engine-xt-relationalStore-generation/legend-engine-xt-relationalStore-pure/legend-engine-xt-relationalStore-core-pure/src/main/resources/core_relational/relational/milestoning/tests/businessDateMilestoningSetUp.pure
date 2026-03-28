@@ -374,15 +374,18 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
 
    executeInDb('DROP TABLE IF EXISTS Person;', $connection);
    executeInDb('DROP TABLE IF EXISTS Cars;', $connection);
+   executeInDb('DROP TABLE IF EXISTS CarDetails;', $connection);
    executeInDb('DROP TABLE IF EXISTS Bicycles;', $connection);
    executeInDb('DROP TABLE IF EXISTS Jets;', $connection);
    executeInDb('CREATE TABLE Person (name VARCHAR(100),id INTEGER, PRIMARY KEY(id));', $connection);
    executeInDb('CREATE TABLE Cars (in_z TIMESTAMP,  out_z TIMESTAMP, id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
+   executeInDb('CREATE TABLE CarDetails (id INTEGER PRIMARY KEY,  time TIMESTAMP);', $connection);
    executeInDb('CREATE TABLE Bicycles (in_z TIMESTAMP, out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
    executeInDb('CREATE TABLE Jets (in_z TIMESTAMP,  out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
    executeInDb('INSERT INTO Person (name, id) VALUES (\'Alice\', 1), (\'Bob\', 2), (\'Charlie\', 3), (\'Diana\', 4), (\'Eve\', 5);', $connection);
-   executeInDb('INSERT INTO Cars (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 1, \'Sedan\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'SUV\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hatchback\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Convertible\'),\n(\'2020-01-01\', \'2050-01-01\', 5, \'Truck\');', $connection);
-   executeInDb('INSERT INTO Bicycles (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 5, \'Mountain Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Road Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hybrid Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Electric Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 1, \'Folding Bike\');', $connection);
+   executeInDb('INSERT INTO Cars (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 1, \'Sedan\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'SUV\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hatchback\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Convertible\'),\n(\'2020-01-01\', \'2050-01-01\', 5, \'Truck\'),\n(\'2100-01-01\', \'2200-01-01\', 6, \'Nuclear Car\');', $connection);
+   executeInDb('INSERT INTO CarDetails (id, time) VALUES\n(1, \'2025-01-01\'),\n(2, \'2030-01-01\'),\n(3, \'2035-01-01\'),\n(4, \'2040-01-01\'),\n(5, \'2045-01-01\'),\n(6, \'2150-01-01\');', $connection);
+   executeInDb('INSERT INTO Bicycles (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 5, \'Mountain Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Road Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hybrid Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Electric Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 1, \'Folding Bike\'),\n(\'2200-01-01\', \'2300-01-01\', 6, \'Nuclear Bike\');', $connection);
    executeInDb('INSERT INTO Jets (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 3, \'Fighter Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 8, \'Water Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 6, \'Hybrid Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Supersonic Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Transformer Jet\');', $connection);
 
    ^Runtime(connectionStores=$connectionStore);
@@ -1526,6 +1529,63 @@ Mapping meta::relational::tests::milestoning::milestoningmapWithVehicles
 
 )
 
+###Mapping
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inheritance::*;
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithVehiclesUnion
+(
+
+  *CarDetails: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1,c2)
+  }
+
+  CarDetails[c1]: Relational
+  {
+    ~primaryKey (
+      [db]CarDetails.id
+    )
+    ~mainTable [db]CarDetails
+    time: [db]CarDetails.time,
+    car[meta_relational_tests_milestoning_inheritance_Car]: [db]@Car_CarDetails
+  }
+
+  CarDetails[c2]: Relational
+  {
+    ~primaryKey (
+      [db]CarDetails.id
+    )
+    ~mainTable [db]CarDetails
+    time: [db]CarDetails.time,
+    car[meta_relational_tests_milestoning_inheritance_Car]: [db]@Car_CarDetails
+  }
+
+  *Car: Relational
+  {
+    ~primaryKey (
+      [db]Cars.id
+    )
+    ~mainTable [db]Cars
+    id: [db]Cars.id,
+    description: [db]Cars.description,
+    wheelCount: 4,
+    bicycle[meta_relational_tests_milestoning_inheritance_Bicycle]: [db]@CarBicycle
+  }
+
+  *Bicycle: Relational
+  {
+    ~primaryKey (
+      [db]Bicycles.id
+    )
+    ~mainTable [db]Bicycles
+    id: [db]Bicycles.id,
+    description: [db]Bicycles.description,
+    wheelCount: 2
+  }
+
+)
+
 ###Relational
 Database meta::relational::tests::milestoning::dbWithInclusion(
   include  meta::relational::tests::milestoning::dbInclusion
@@ -2232,6 +2292,12 @@ Database meta::relational::tests::milestoning::db(
       description VARCHAR(200) 
     )
 
+    Table CarDetails
+    (
+      id INTEGER PRIMARY KEY,
+      time TIMESTAMP NOT NULL
+    )
+
 
    Join Order_Product(OrderTable.prodFk=ProductTable.id)
    Join Order_MilestonedProductTable2(OrderTable.prodFk=MilestonedProductTable2.id)
@@ -2323,6 +2389,9 @@ Database meta::relational::tests::milestoning::db(
    Join stockProductView_ProductTable(stockProductView.id = ProductTable.id)
    Join PersonCar(Person.id = Cars.id)
    Join PersonBicycle(Person.id = Bicycles.id)
+   Join CarBicycle(Cars.id = Bicycles.id)
+   Join Car_CarDetails(Cars.id = CarDetails.id)
+
 
    Filter IsStockType(ProductTable.type='STOCK')
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
