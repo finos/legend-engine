@@ -1,0 +1,97 @@
+{
+  "name": "legend-pure-lsp",
+  "displayName": "Legend Pure Language Support",
+  "description": "Language support for Legend Pure (.pure files)",
+  "version": "0.1.0",
+  "publisher": "finos",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:pure"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "pure",
+        "aliases": [
+          "Pure",
+          "pure"
+        ],
+        "extensions": [
+          ".pure"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pure",
+        "scopeName": "source.pure",
+        "path": "./syntaxes/pure.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Legend Pure",
+      "properties": {
+        "legendPure.server.jarPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the Legend Pure LSP server JAR. If empty, the extension looks for the JAR in the default Maven build output directory relative to the workspace."
+        },
+        "legendPure.java.home": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a Java 11+ installation. If empty, 'java' from PATH is used."
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "legend-pure",
+          "title": "Legend Pure",
+          "icon": "$(symbol-namespace)"
+        }
+      ]
+    },
+    "views": {
+      "legend-pure": [
+        {
+          "id": "purePackageTree",
+          "name": "Pure Packages"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "legend.reindexWorkspace",
+        "title": "Legend Pure: Reindex Workspace"
+      },
+      {
+        "command": "legend.executeGo",
+        "title": "Legend Pure: Execute go()"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run bundle",
+    "compile": "tsc -p ./",
+    "bundle": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "esbuild": "^0.27.4",
+    "typescript": "^5.3.0"
+  }
+}
