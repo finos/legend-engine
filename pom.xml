@@ -116,7 +116,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.81.0</legend.pure.version>
-        <legend.shared.version>0.33.0</legend.shared.version>
+        <legend.shared.version>0.34.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.18.0</legend.pylegend.version>
 
@@ -3360,17 +3360,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-python-reversePCT-pandasAPI</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
