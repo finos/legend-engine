@@ -198,6 +198,42 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesGrammar
         ]
       )
 
+    ]->combine(),
+
+    [
+
+      meta::pure::functions::math::tests::times::testSimpleTimes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 * 2', 'c(3)*2')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::times::testComplexTimes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 * (4 * 5) * 7', 'c(3)*c(4*5)*7'),
+          rev('|3 * 4 * 5 * 7', 'c(3)*c(4)*c(5)*c(7)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::times::testNegativeTimes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|3 * (-2)', '3*c(-2)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::times::testFloatTimes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|1.5 * 0.5', 'c(1.5)*0.5'),
+          rev('|3 * 0.7', 'c(3)*c(0.7)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_->testRev(
+        [
+          rev('|2 * 9223372036854775807', 'c(2)*9223372036854775807'),
+          rev('|9223372036854775807 * 2', 'c(9223372036854775807)*2')
+        ]
+      )
     ]->combine()
   ]
 }
