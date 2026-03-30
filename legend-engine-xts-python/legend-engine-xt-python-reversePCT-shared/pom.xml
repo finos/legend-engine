@@ -147,22 +147,6 @@ limitations under the License.
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-python-functions-execution-pure</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.engine</groupId>-->
-        <!--            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.engine</groupId>-->
-        <!--            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.engine</groupId>-->
-        <!--            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.finos.legend.engine</groupId>-->
-        <!--            <artifactId>legend-engine-pure-functions-variant-pure</artifactId>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
