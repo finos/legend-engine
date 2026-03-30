@@ -93,7 +93,8 @@ function <<access.private>> meta::external::python::reversePCT::legendQL::getPur
     'from pylegend.core.language.shared.pct_helpers import c\n' + 
     'from pylegend.core.language.shared.functions import pi\n' + 
     'from pylegend.extensions.tds.legendql_api.frames.legendql_api_csv_input_frame import LegendQLApiCsvNonExecutableInputTdsFrame as csv_frame\n'+
-    'from pylegend.core.tds.legendql_api.frames.legendql_api_applied_function_tds_frame import LegendQLApiAppliedFunctionTdsFrame' +
+    'from pylegend.core.tds.legendql_api.frames.legendql_api_applied_function_tds_frame import LegendQLApiAppliedFunctionTdsFrame\n' +
+    'from pylegend.core.tds.tds_column import PrimitiveType\n' +
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' + 
