@@ -1,6 +1,6 @@
 {
-  "name": "core_external_python_reverse_pct_legend_ql",
-  "pattern": "(meta::external::python::reversePCT::legendQL)(::.*)?",
+  "name": "core_external_python_reverse_pct_shared",
+  "pattern": "(meta::external::python::reversePCT::shared)(::.*)?",
   "dependencies": [
     "platform",
     "platform_dsl_store",
@@ -11,7 +11,7 @@
     "core_functions_unclassified",
     "core_functions_standard",
     "core_functions_relation",
-    "core_external_python_execution",
-    "core_external_python_reverse_pct_shared"
+    "core_external_python_execution"
   ]
 }
+

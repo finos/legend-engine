@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2025 Goldman Sachs
+ Copyright 2026 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-python</artifactId>
-        <version>4.124.4-SNAPSHOT</version>
+        <version>4.124.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-python-reversePCT-legendQL</artifactId>
+    <artifactId>legend-engine-xt-python-reversePCT-pandasAPI</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Python - Reverse PCT - Legend QL</name>
+    <name>Legend Engine - XT - Python - Reverse PCT - Pandas API</name>
 
     <build>
         <plugins>
@@ -39,7 +39,6 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-python-functions-execution-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-python-reversePCT-shared</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
@@ -53,11 +52,11 @@
                     <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>core_external_python_reverse_pct_legend_ql</repository>
+                        <repository>core_external_python_reverse_pct_pandas_api</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>
-                            ${project.basedir}/src/main/resources/core_external_python_reverse_pct_legend_ql.definition.json
+                            ${project.basedir}/src/main/resources/core_external_python_reverse_pct_pandas_api.definition.json
                         </extraRepository>
                     </extraRepositories>
                 </configuration>
@@ -85,12 +84,28 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_external_python_reverse_pct_legend_ql</repository>
+                                <repository>core_external_python_reverse_pct_pandas_api</repository>
                             </repositories>
                         </configuration>
                     </execution>
                 </executions>
                 <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-python-functions-execution-runtime-java-extension-compiled
+                        </artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
@@ -112,22 +127,22 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_EssentialFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_EssentialFunctions_Reverse_PCT
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_GrammarFunctions_Reverse_PCT
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_RelationFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_RelationFunctions_Reverse_PCT
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_StandardFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_StandardFunctions_Reverse_PCT
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_UnclassifiedFunctions_Reverse_PCT
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.external.python.Test_External_PythonLegendQL_VariantFunctions_Reverse_PCT
+                            org.finos.legend.engine.external.python.Test_External_PythonPandasAPI_VariantFunctions_Reverse_PCT
                         </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
@@ -203,6 +218,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
         </dependency>
         <dependency>
@@ -217,10 +236,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-variant-pure</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -229,11 +244,6 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
 
         <!-- TEST -->
@@ -250,8 +260,8 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
-            <type>test-jar</type>
             <scope>test</scope>
+            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -280,3 +290,4 @@
         </dependency>
     </dependencies>
 </project>
+

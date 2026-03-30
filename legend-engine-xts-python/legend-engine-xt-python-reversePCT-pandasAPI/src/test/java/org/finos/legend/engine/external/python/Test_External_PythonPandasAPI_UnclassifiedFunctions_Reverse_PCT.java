@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
 import org.finos.legend.pure.generated.core_external_python_reverse_pct_shared_pythonReversePCTShared;
-import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
+import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -28,22 +28,22 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 
 import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled.getClassLoaderExecutionSupport;
 
-public class Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT extends PCTReportConfiguration
+public class Test_External_PythonPandasAPI_UnclassifiedFunctions_Reverse_PCT extends PCTReportConfiguration
 {
-    private static final ReportScope reportScope = PlatformCodeRepositoryProvider.grammarFunctions;
-    private static final Adapter adapter = Core_External_PythonLegendQL_ReversePCTReportProvider.LegendQLAdapter;
+    private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
+    private static final Adapter adapter = Core_External_PythonPandasAPI_ReversePCTReportProvider.PandasAPIAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_shared_pythonReversePCTShared.Root_meta_external_python_reversePCT_shared_pythonSharedReversesGrammar__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
-    private static final MutableList<ExclusionSpecification> expectedFailures = PythonLegendQLReversePCTHelper.build(reverseInfo);
+    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_shared_pythonReversePCTShared.Root_meta_external_python_reversePCT_shared_pythonSharedReversesUnclassified__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final MutableList<ExclusionSpecification> expectedFailures = PythonPandasAPIReversePCTHelper.build(reverseInfo);
 
     static
     {
-        expectedFailures.addAll(PythonLegendQLReversePCTHelper.getMissingExpectedFailures(PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter), reverseInfo));
+        expectedFailures.addAll(PythonPandasAPIReversePCTHelper.getMissingExpectedFailures(PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter), reverseInfo));
     }
 
     public static Test suite()
     {
-        return PythonLegendQLReversePCTHelper.buildSuite(reportScope, adapter, expectedFailures);
+        return PythonPandasAPIReversePCTHelper.buildSuite(reportScope, adapter, expectedFailures);
     }
 
     @Override
@@ -70,3 +70,4 @@ public class Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT extends P
         return platform;
     }
 }
+

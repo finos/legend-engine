@@ -14,6 +14,7 @@
 
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::python::reversePCT::legendQL::*;
+import meta::external::python::reversePCT::shared::*;
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssentialRelation(): ReversesForSource[*]
 {
