@@ -13,6 +13,7 @@
 // limitations under the License.
 
 
+import meta::pure::functions::string::generation::*;
 import meta::pure::precisePrimitives::*;
 import meta::pure::functions::hash::*;
 import meta::pure::metamodel::variant::*;
@@ -402,7 +403,7 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
 {
    let res = $vs->evaluateAndDeactivate()->match(
              [
-                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping, mapping = $r.mapping, idToClassMapping=buildClassMappingsById($r.mapping)), $joinType, $nodeId, $aggFromMap, $context, $extensions),
+                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping, mapping = $r.mapping, idToClassMapping=if ($state.mapping == $r.mapping, | $state.idToClassMapping, | buildClassMappingsById($r.mapping))), $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  r:StoreRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  f:FunctionExpression[1] | processFunctionExpression($f, $currentPropertyMapping, $operation, $vars, ^$state(functionExpressionStack+=$f), $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions),
@@ -8905,7 +8906,7 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
 
                     ^$new_a
                          (
-                            columns = $new_a.columns->concatenate($merged.columns)->removeDuplicates({a,b|$a->match([a:Alias[1]|$a.name,a:Any[1]|'']) == $b->match([b:Alias[1]|$b.name,b:Any[1]|'x'])}),
+                            columns = $new_a.columns->concatenate($merged.columns)->removeDuplicatesBy(x | $x->match([a:Alias[1]|$a.name, a:Any[1]|generateGuid()])),
                             data = $merged.node->cast(@RootJoinTreeNode),
                             filteringOperation = $new_a.filteringOperation->reprocessAliases($remap)->concatenate($merged.filteringOperation),
                             savedFilteringOperation = $new_a.savedFilteringOperation->map(p|pair($p.first, $p.second->reprocessAliases($remap)))->concatenate($merged.savedFilteringOperation),
@@ -8915,7 +8916,7 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
                    ,| let cols = $a.columns->filter(c|$c->instanceOf(WindowColumn));
                         ^$a
                          (
-                            columns = $a.columns->concatenate($q.columns)->filter(c|!$c->instanceOf(WindowColumn))->removeDuplicates({a,b|$a->match([a:Alias[1]|$a.name,a:Any[1]|'']) == $b->match([b:Alias[1]|$b.name,b:Any[1]|'x'])})->concatenate($cols),
+                            columns = $a.columns->concatenate($q.columns)->filter(c|!$c->instanceOf(WindowColumn))->removeDuplicatesBy(x | $x->match([a:Alias[1]|$a.name, a:Any[1]|generateGuid()]))->concatenate($cols),
                             filteringOperation += $q.filteringOperation,
                             savedFilteringOperation += $q.savedFilteringOperation,
                             extraFilteringOperation += $q.extraFilteringOperation,
