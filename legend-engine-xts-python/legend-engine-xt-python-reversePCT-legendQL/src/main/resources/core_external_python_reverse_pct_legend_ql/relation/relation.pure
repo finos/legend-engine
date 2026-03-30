@@ -2289,7 +2289,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                             '9,5,I\n'+
                             '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))', 
                '(lambda frame: frame.window_extend(' +
-                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum().cast(PrimitiveType.Integer)))' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -2309,7 +2309,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                             '9,5,I\n'+
                             '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|+($y->meta::pure::functions::lang::cast(@Integer)))', 
                '(lambda frame: frame.window_extend(' +
-                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id.cast(PrimitiveType.Integer), lambda c: c.sum()))' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -2329,7 +2329,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                             '9,5,I\n'+
                             '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|$y->plus())', 
                '(lambda frame: frame.window_extend(' +
-                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id.cast(PrimitiveType.Integer), lambda c: c.sum()))' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -2349,7 +2349,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                             '9,5,I\n'+
                             '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))', 
                '(lambda frame: frame.window_extend(' +
-                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id.cast(PrimitiveType.Integer), lambda c: c.sum().cast(PrimitiveType.Integer)))' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -2369,7 +2369,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                                   '9,5\n'+
                                   '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|+($x->meta::pure::functions::lang::cast(@Integer)))', 
                      '(lambda frame:' +
-                       'frame.group_by(["grp"], [("newCol", lambda x: x.id.cast(PrimitiveType.Integer), lambda c: c.sum())])' + 
+                       'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
                     ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
               ]
             ),
@@ -2389,7 +2389,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                               '9,5\n'+
                               '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|meta::pure::functions::lang::cast($x->plus(), @Integer))', 
                   '(lambda frame:' +
-                    'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum().cast(PrimitiveType.Integer))])' + 
+                    'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
                 ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
           ]
         ),
