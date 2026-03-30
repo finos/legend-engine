@@ -39,6 +39,7 @@ public class DeephavenTestContainer
 {
     public static final Logger LOGGER = LoggerFactory.getLogger(DeephavenTestContainer.class);
     private static final int PORT = 10_000;
+    private static final int DEFAULT_STARTUP_ATTEMPTS = 3;
     private static final String PSK = "myStaticPSK";
     private static final String APP_DIR = "/app.d";
 
@@ -58,7 +59,8 @@ public class DeephavenTestContainer
                 .withPrivilegedMode(true)
                 .withEnv("START_OPTS", "-Xmx4g -Dauthentication.psk=" + PSK)
                 .withLogConsumer(new Slf4jLogConsumer(LOGGER).withPrefix("Deephaven"))
-                .waitingFor(Wait.forHttp("/").forPort(PORT).forStatusCode(200).withStartupTimeout(java.time.Duration.ofMinutes(2)));
+                .waitingFor(Wait.forHttp("/").forPort(PORT).forStatusCode(200).withStartupTimeout(java.time.Duration.ofMinutes(2)))
+                .withStartupAttempts(DEFAULT_STARTUP_ATTEMPTS);
 
         deephavenContainer.start();
         return deephavenContainer;
