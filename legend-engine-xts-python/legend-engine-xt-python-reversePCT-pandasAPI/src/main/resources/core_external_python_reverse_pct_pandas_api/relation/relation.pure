@@ -643,11 +643,160 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
 
       meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_->testRev(
         [
+          noRev('|let t = #TDS{\n'+
+                'val,str\n'+
+                '1,a\n'+
+                '3,ewe\n'+
+                '4,qw}#;\n'+
+                ' $t->meta::pure::functions::relation::size();\n'+
+                '')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::groupBy(~[grp], ~[newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus()])->meta::pure::functions::relation::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|let t = #TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#;\n'+
+                ' let t2 = $t->meta::pure::functions::relation::groupBy(~[grp], ~[newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus()]);\n'+
+                ' $t2->meta::pure::functions::relation::size();\n'+
+                '')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testWindowSize_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus())->meta::pure::functions::relation::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::test_Distinct_Size_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'val,str,str2\n'+
+                '2,a,b\n'+
+                '3,a,b\n'+
+                '4,qw,b\n'+
+                '5,qw,c\n'+
+                '2,weq,c}#->meta::pure::functions::relation::distinct(~[str,str2])->meta::pure::functions::relation::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::test_Limit_Size_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'val,str,str2\n'+
+                '2,a,b\n'+
+                '3,a,b\n'+
+                '4,qw,b\n'+
+                '5,qw,c\n'+
+                '2,weq,c}#->meta::pure::functions::relation::limit(2)->meta::pure::functions::relation::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'val,str,str2\n'+
+                '2,a,b\n'+
+                '3,a,b\n'+
+                '4,qw,b\n'+
+                '5,qw,c\n'+
+                '2,weq,c}#->meta::pure::functions::relation::slice(2, 4)->meta::pure::functions::relation::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_->testRev(
+        [
           noRev('|#TDS{\n'+
                 'val,str\n'+
                 '1,a\n'+
                 '3,ewe\n'+
-                '4,qw}#')
+                '4,qw}#->meta::pure::functions::relation::size() > 0')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|let t = #TDS{\n'+
+                'val,str\n'+
+                '1,a\n'+
+                '3,ewe\n'+
+                '4,qw}#;\n'+
+                ' let s = $t->meta::pure::functions::relation::size();\n'+
+                ' $s > 0;\n'+
+                '')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::collection::size())')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::size::testSize_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::collection::size())')
         ]
       )
     ]->combine(),
@@ -794,4 +943,3 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
     ]->combine()
   ]
 }
-
