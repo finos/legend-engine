@@ -2584,7 +2584,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let lambda = $subQueryCtx.lambda(true);
 
-  iv($lambda);
+  sfe(eval_Function_1__V_m_, iv($lambda));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processArraySliceExpression(a:ArraySliceExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]

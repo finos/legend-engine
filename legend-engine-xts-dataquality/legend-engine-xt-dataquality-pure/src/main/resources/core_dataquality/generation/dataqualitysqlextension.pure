@@ -35,7 +35,12 @@ function <<sql.Extension>> meta::external::dataquality::dataProfileCoreExtension
 
           assert($args->size() == 1, | 'expects single relational table');
 
-          let relationLambda = $args->at(0)->cast(@InstanceValue).values->cast(@LambdaFunction<Any>)->toOne();
+          let relationLambda = $args->at(0)->match([
+            s:SimpleFunctionExpression[1] | 
+              assert($s.func.functionName == 'eval', | 'invalid parameter to data_profile');
+              $s.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);,
+            v:ValueSpecification[1] | fail('invalid parameter to data_profile'); {|1};
+          ]);
 
           let profilingLambda = iv(getProfilingLambda($relationLambda, [], [], false));
 

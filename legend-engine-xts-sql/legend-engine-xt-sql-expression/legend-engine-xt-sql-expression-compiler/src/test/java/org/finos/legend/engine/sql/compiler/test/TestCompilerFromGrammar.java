@@ -48,6 +48,31 @@ public class TestCompilerFromGrammar
     }
 
     @Test
+    public void testFuncSubqueries()
+    {
+        testCompile("###Relational\n" +
+                "Database pack::DB" +
+                "(\n" +
+                "   Table myTab(a INT, b INT)" +
+                ")\n" +
+                "###Pure\n" +
+                "function pack::func3(r:Relation<(a:Integer[0..1], b:Integer[0..1])>[1]):Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from var('r')}#\n" +
+                "}\n" +
+                "\n" +
+                "function pack::func4():Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from csv('a,b\n1,2\n3,4')))}#\n" +
+                "}" +
+                "\n" +
+                "function pack::func5():Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from tb('pack::DB.myTab')))}#\n" +
+                "}");
+    }
+
+    @Test
     public void  testSimpleWithError()
     {
         testCompile("function pack::f():Boolean[1]\n" +
