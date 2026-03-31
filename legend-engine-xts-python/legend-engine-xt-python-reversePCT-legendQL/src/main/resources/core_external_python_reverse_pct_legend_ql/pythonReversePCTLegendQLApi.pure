@@ -15,6 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::test::pct::reversePCT::framework::*;
 import meta::external::python::reversePCT::legendQL::*;
+import meta::external::python::reversePCT::shared::*;
 
 
 function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external::python::reversePCT::legendQL::pythonLegendQLReversePCTAdapter<X|o>(f: Function<{->X[o]}>[1]):X[o]
@@ -35,12 +36,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReverses():
 {
   ^ReverseInformation
   (
-    reversesForSource =   pythonLegendQLReversesEssential()
-                          ->concatenate(pythonLegendQLReversesGrammar())
+    reversesForSource =   meta::external::python::reversePCT::shared::pythonSharedReversesAll()
                           ->concatenate(pythonLegendQLReversesRelation())
-                          ->concatenate(pythonLegendQLReversesStandard())
-                          ->concatenate(pythonLegendQLReversesUnclassified())
-                          ->concatenate(pythonLegendQLReversesVariant()),
+                          ->concatenate(pythonLegendQLReversesStandard()),
     reverseTransformer = val:String[1]| ^FunctionExpression
                                         (
                                           func = meta::external::python::reversePCT::legendQL::pythonToPure_String_1__Any_1_,
@@ -63,34 +61,6 @@ function meta::external::python::reversePCT::legendQL::pythonToPure(python:Strin
   '';
 }
 
-function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEssential(): ReversesForSource[*]
-{
-  pythonLegendQLReversesEssentialMath()
-    ->concatenate(
-      pythonLegendQLReversesEssentialDate()
-    )
-    ->concatenate(
-      pythonLegendQLReversesEssentialLang()
-    )
-    ->concatenate(
-      pythonLegendQLReversesEssentialString()
-    )
-    ->concatenate(
-      pythonLegendQLReversesEssentialCollection()
-    )
-}
-
-function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesGrammar(): ReversesForSource[*]
-{
-  pythonLegendQLReversesGrammarString()
-    ->concatenate(
-      pythonLegendQLReversesGrammarMath()
-    )
-    ->concatenate(
-      pythonLegendQLReversesGrammarBoolean()
-    )
-}
-
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRelation(): ReversesForSource[*]
 {
   pythonLegendQLReversesEssentialRelation()
@@ -99,18 +69,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesRel
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesStandard(): ReversesForSource[*]
 {
   pythonLegendQLReversesStandardMath()
-    ->concatenate(
-      pythonLegendQLReversesStandardBoolean()
-    )
-    ->concatenate(
-      pythonLegendQLReversesStandardDate()
-    )
-}
-
-function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesUnclassified(): ReversesForSource[*]
-{
-  pythonLegendQLReversesUnclassifiedString()
-    ->concatenate(pythonLegendQLReversesUnclassifiedTbd())
 }
 
 function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVariant(): ReversesForSource[*]
@@ -118,21 +76,6 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesVar
   []
 }
 
-
-function meta::external::python::reversePCT::legendQL::testRev(testFunc: meta::pure::metamodel::function::ConcreteFunctionDefinition<Any>[1], reverses: Reverse[*]): ReversesForSource[1]
-{
-  ^ReversesForSource(source = $testFunc->sourceInformation().source->toOne(), reverses = revsForTest($testFunc->elementToPath(), $reverses))
-}
-
-function meta::external::python::reversePCT::legendQL::combine(testRevs: ReversesForSource[1..*]): ReversesForSource[1]
-{
-  if ($testRevs->size() == 1,
-      | $testRevs->at(0),
-      | let sources = $testRevs.source->removeDuplicates();
-        assert($sources->size() == 1, | 'Cannot combine test reverses defined in different source files: ' + $testRevs.source->removeDuplicates()->joinStrings('[', ', ', ']'));
-        ^ReversesForSource(source = $sources->at(0), reverses = $testRevs.reverses);
-  )
-}
 
 function <<access.private>> meta::external::python::reversePCT::legendQL::getPureLambdaForPythonCodeBlock(pythonCodeBlock: String[1]): LambdaFunction<Any>[1]
 {

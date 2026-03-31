@@ -1,0 +1,17 @@
+{
+  "name": "core_external_python_reverse_pct_shared",
+  "pattern": "(meta::external::python::reversePCT::shared)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_dsl_store",
+    "platform_dsl_tds",
+    "platform_store_relational",
+    "core",
+    "core_reverse_pct",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core_functions_relation",
+    "core_external_python_execution"
+  ]
+}
+
