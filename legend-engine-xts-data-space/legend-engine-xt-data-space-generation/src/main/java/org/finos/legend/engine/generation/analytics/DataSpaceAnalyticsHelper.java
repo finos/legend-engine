@@ -152,7 +152,7 @@ public class DataSpaceAnalyticsHelper
                                 null,
                                 PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
                                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                        ).plan.rootExecutionNode.resultType);
+                        ).rootExecutionNode.resultType);
                     }
                     dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                 }
@@ -259,7 +259,7 @@ public class DataSpaceAnalyticsHelper
                                     null,
                                     PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
                                     generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                            ).plan.rootExecutionNode.resultType);
+                            ).rootExecutionNode.resultType);
                         }
                         dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                     }
