@@ -48,12 +48,18 @@ public class BlockConnectionContext
 
     public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, Identity identity, Map<String, Result> allocationResults)
     {
-        BlockConnection requiredBlockConnection = this.blockConnectionMap.get(executionState.getRelationalExecutor().getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection));
+        ConnectionManagerSelector connectionManager = executionState.getRelationalExecutor().getConnectionManager();
+
+        // Preprocess the connection BEFORE key generation so that the key is correct
+        DatabaseConnection resolvedConnection = connectionManager.preprocessConnection(databaseConnection, identity, allocationResults);
+
+        BlockConnection requiredBlockConnection = this.blockConnectionMap.get(connectionManager.generateKeyFromDatabaseConnection(resolvedConnection));
         if (requiredBlockConnection == null)
         {
-            requiredBlockConnection = setBlockConnection(executionState.getRelationalExecutor().getConnectionManager(),
-                    databaseConnection,
-                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults, executionState.getRuntimeContext())));
+            // Already preprocessed – pass skipPreprocessing = true to avoid running preprocessors again
+            requiredBlockConnection = setBlockConnection(connectionManager,
+                    resolvedConnection,
+                    new BlockConnection(connectionManager.getDatabaseConnection(identity, resolvedConnection, allocationResults, executionState.getRuntimeContext(), true)));
         }
         if (!requiredBlockConnection.blockConnectionState.isConnectionAvailable())
         {
