@@ -251,66 +251,6 @@ function meta::pure::functions::date::datePart(d:Date[0..1]):Date[0..1]
     $d->toOne()->datePart();
 }
 
-function meta::pure::functions::date::max(dates:Date[*]):Date[0..1]
-{
-    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::max(dates:StrictDate[*]):StrictDate[0..1]
-{
-    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::max(dates:DateTime[*]):DateTime[0..1]
-{
-    $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::max(left:Date[1], right:Date[1]):Date[1]
-{
-    if($left < $right, | $right, | $left)
-}
-
-function meta::pure::functions::date::max(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
-{
-    if($left < $right, | $right, | $left)
-}
-
-function meta::pure::functions::date::max(left:DateTime[1], right:DateTime[1]):DateTime[1]
-{
-    if($left < $right, | $right, | $left)
-}
-
-function meta::pure::functions::date::min(dates:Date[*]):Date[0..1]
-{
-    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::min(dates:StrictDate[*]):StrictDate[0..1]
-{
-    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::min(dates:DateTime[*]):DateTime[0..1]
-{
-    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
-}
-
-function meta::pure::functions::date::min(left:Date[1], right:Date[1]):Date[1]
-{
-    if($right < $left, | $right, | $left)
-}
-
-function meta::pure::functions::date::min(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
-{
-    if($right < $left, | $right, | $left)
-}
-
-function meta::pure::functions::date::min(left:DateTime[1], right:DateTime[1]):DateTime[1]
-{
-    if($right < $left, | $right, | $left)
-}
-
 function meta::pure::functions::date::weekOfYear(d:Date[0..1]):Integer[0..1]
 {
    $d->toOne()->weekOfYear();
