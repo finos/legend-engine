@@ -188,8 +188,10 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                         rev('|2->meta::pure::functions::math::max(1.23)',
                             'select case when 2 < 1.23 then 1.23 else 2 end'
                         ),
-                        rev('|2D->meta::pure::functions::math::max(1.23)',
-                            'select case when cast(2 as DECIMAL(32, 16)) < 1.23 then 1.23 else cast(2 as DECIMAL(32, 16)) end'
+                        revError('|2D->meta::pure::functions::math::max(1.23)',
+                                 'select case when cast(2 as DECIMAL(32, 16)) < 1.23 then 1.23 else cast(2 as DECIMAL(32, 16)) end',
+                                 'expected: 2D\nactual:   2.0000000000000000D',
+                                 'Issue with return type formatting'
                         )
                       ]
                  ),
