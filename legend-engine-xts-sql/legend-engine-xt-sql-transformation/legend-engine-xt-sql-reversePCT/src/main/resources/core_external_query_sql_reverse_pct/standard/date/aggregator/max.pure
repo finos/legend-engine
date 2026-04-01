@@ -22,11 +22,15 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_Date_Function_1__Boolean_1_',
                       [
-                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max(%2025-02-10)',
-                            'select case when Date\'2025-02-10\' < Timestamp\'2025-02-10 20:10:20\' then Date\'2025-02-10\' else Timestamp\'2025-02-10 20:10:20\' end'
+                        revError('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max(%2025-02-10)',
+                                 'select case when Date\'2025-02-10\' < Timestamp\'2025-02-10 20:10:20\' then Date\'2025-02-10\' else Timestamp\'2025-02-10 20:10:20\' end',
+                                 'expected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10',
+                                 'Issue with return type formatting'
                         ),
-                        rev('|%2025-02-10->meta::pure::functions::date::max(%2025-02-10T20:10:20+0000)',
-                            'select case when Timestamp\'2025-02-10 20:10:20\' < Date\'2025-02-10\' then Timestamp\'2025-02-10 20:10:20\' else Date\'2025-02-10\' end'
+                        revError('|%2025-02-10->meta::pure::functions::date::max(%2025-02-10T20:10:20+0000)',
+                                 'select case when Timestamp\'2025-02-10 20:10:20\' < Date\'2025-02-10\' then Timestamp\'2025-02-10 20:10:20\' else Date\'2025-02-10\' end',
+                                 'expected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10',
+                                 'Issue with return type formatting'
                         )
                       ]
                  ),
@@ -58,11 +62,15 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_',
                       [
-                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max(%2025-01-10T15:25:30+0000)',
-                            'select case when Timestamp\'2025-01-10 15:25:30\' < Timestamp\'2025-02-10 20:10:20\' then Timestamp\'2025-01-10 15:25:30\' else Timestamp\'2025-02-10 20:10:20\' end'
+                        revError('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::max(%2025-01-10T15:25:30+0000)',
+                                 'select case when Timestamp\'2025-01-10 15:25:30\' < Timestamp\'2025-02-10 20:10:20\' then Timestamp\'2025-01-10 15:25:30\' else Timestamp\'2025-02-10 20:10:20\' end',
+                                 'expected: %2025-02-10T20:10:20+0000\nactual:   %2025-01-10T15:25:30+0000',
+                                 'Issue with return type formatting'
                         ),
-                        rev('|%2025-01-10T15:25:30+0000->meta::pure::functions::date::max(%2025-02-10T20:10:20+0000)',
-                            'select case when Timestamp\'2025-02-10 20:10:20\' < Timestamp\'2025-01-10 15:25:30\' then Timestamp\'2025-02-10 20:10:20\' else Timestamp\'2025-01-10 15:25:30\' end'
+                        revError('|%2025-01-10T15:25:30+0000->meta::pure::functions::date::max(%2025-02-10T20:10:20+0000)',
+                                 'select case when Timestamp\'2025-02-10 20:10:20\' < Timestamp\'2025-01-10 15:25:30\' then Timestamp\'2025-02-10 20:10:20\' else Timestamp\'2025-01-10 15:25:30\' end',
+                                 'expected: %2025-02-10T20:10:20+0000\nactual:   %2025-01-10T15:25:30+0000',
+                                 'Issue with return type formatting'
                         )
                       ]
                  ),
@@ -99,11 +107,15 @@ function meta::external::query::sql::reversePCT::tests::standard::date::aggregat
                  revsForTest(
                       'meta::pure::functions::date::tests::max::testMax_StrictDate_Function_1__Boolean_1_',
                       [
-                        rev('|%2025-04-09->meta::pure::functions::date::max(%2025-02-09)',
-                            'select case when Date\'2025-02-09\' < Date\'2025-04-09\' then Date\'2025-02-09\' else Date\'2025-04-09\' end'
+                        revError('|%2025-04-09->meta::pure::functions::date::max(%2025-02-09)',
+                                 'select case when Date\'2025-02-09\' < Date\'2025-04-09\' then Date\'2025-02-09\' else Date\'2025-04-09\' end',
+                                 'expected: %2025-04-09\nactual:   %2025-02-09',
+                                 'Issue with return type formatting'
                         ),
-                        rev('|%2025-02-09->meta::pure::functions::date::max(%2025-04-09)',
-                            'select case when Date\'2025-04-09\' < Date\'2025-02-09\' then Date\'2025-04-09\' else Date\'2025-02-09\' end'
+                        revError('|%2025-02-09->meta::pure::functions::date::max(%2025-04-09)',
+                                 'select case when Date\'2025-04-09\' < Date\'2025-02-09\' then Date\'2025-04-09\' else Date\'2025-02-09\' end',
+                                 'expected: %2025-04-09\nactual:   %2025-02-09',
+                                 'Issue with return type formatting'
                         )
                       ]
                  ),

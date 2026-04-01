@@ -89,8 +89,10 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                         rev('|2->meta::pure::functions::math::min(1.23)',
                             'select case when 1.23 < 2 then 1.23 else 2 end'
                         ),
-                        rev('|2->meta::pure::functions::math::min(1.23D)',
-                            'select case when cast(1.23 as DECIMAL(32, 16)) < 2 then cast(1.23 as DECIMAL(32, 16)) else 2 end'
+                        revError('|2->meta::pure::functions::math::min(1.23D)',
+                                 'select case when cast(1.23 as DECIMAL(32, 16)) < 2 then cast(1.23 as DECIMAL(32, 16)) else 2 end',
+                                 'expected: 1.23D\nactual:   1.2300000000000000D',
+                                 'Issue with return type formatting'
                         )
                       ]
                  ),
