@@ -225,7 +225,7 @@ public abstract class DataSourceSpecification
             jdbcConfig.setPoolName(poolName);
             jdbcConfig.setMaximumPoolSize(maxPoolSize);
             jdbcConfig.setMinimumIdle(minPoolSize);
-            jdbcConfig.setDataSourceProperties(this.databaseManager.getObjectDataSourceProperties(this.authenticationStrategy, identity));
+            jdbcConfig.setDataSourceProperties(this.databaseManager.getObjectDataSourceProperties(this.datasourceKey, this.authenticationStrategy, identity));
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", "false");
