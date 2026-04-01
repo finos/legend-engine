@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import java.util.Properties;
 import java.util.Set;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -77,7 +78,7 @@ public class SqlServerManager extends DatabaseManager
     }
 
     @Override
-    public Properties getObjectDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    public Properties getObjectDataSourceProperties(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, Identity identity)
     {
         Properties properties = new Properties();
          if (identity.getCredential(LegendConstrainedKerberosCredential.class).isPresent() && authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
