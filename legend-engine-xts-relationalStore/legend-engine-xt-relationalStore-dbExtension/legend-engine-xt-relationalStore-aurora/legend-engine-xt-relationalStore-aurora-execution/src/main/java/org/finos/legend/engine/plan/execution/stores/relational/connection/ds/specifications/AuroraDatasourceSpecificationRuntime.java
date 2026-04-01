@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
+
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.AuroraDatasourceSpecificationKey;
+
+import java.util.Properties;
+
+public class AuroraDatasourceSpecificationRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification
+{
+    public AuroraDatasourceSpecificationRuntime(AuroraDatasourceSpecificationKey key, DatabaseManager driver, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy authenticationStrategyRuntime)
+    {
+        super(key, driver, authenticationStrategyRuntime, addPropertiesFromDataSource(key));
+    }
+
+    private static Properties addPropertiesFromDataSource(AuroraDatasourceSpecificationKey key)
+    {
+        Properties props = new Properties();
+        props.put("Host", key.getHost());
+        props.put("Port", String.valueOf(key.getPort()));
+        props.put("DatabaseName", key.getName());
+        return props;
+    }
+}
