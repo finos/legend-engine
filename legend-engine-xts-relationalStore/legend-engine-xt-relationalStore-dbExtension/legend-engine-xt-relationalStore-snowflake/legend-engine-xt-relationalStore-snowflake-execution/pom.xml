@@ -90,6 +90,11 @@
             <artifactId>bcpkix-jdk15on</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
         <!-- DRIVERS -->
         <dependency>
             <groupId>net.snowflake</groupId>

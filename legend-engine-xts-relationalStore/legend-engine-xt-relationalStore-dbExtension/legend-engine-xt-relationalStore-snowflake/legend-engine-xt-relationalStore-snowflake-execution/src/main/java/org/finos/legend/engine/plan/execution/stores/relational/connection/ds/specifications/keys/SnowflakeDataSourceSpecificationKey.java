@@ -40,6 +40,16 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
 
     private String role;
 
+    private String sessionTimezone;
+
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role, String tempTableDb, String tempTableSchema, String sessionTimezone)
+    {
+        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, enableQueryTags, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role);
+        this.tempTableDb = tempTableDb;
+        this.tempTableSchema = tempTableSchema;
+        this.sessionTimezone = sessionTimezone;
+    }
+
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role, String tempTableDb, String tempTableSchema)
     {
         this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, enableQueryTags, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role);
@@ -158,6 +168,11 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return tempTableSchema;
     }
 
+    public String getSessionTimezone()
+    {
+        return sessionTimezone;
+    }
+
     @Override
     public String toString()
     {
@@ -177,6 +192,7 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", organisation='" + organisation + '\'' +
                 ", role='" + role + '\'' +
                 ", enableQueryTags='" + enableQueryTags + '\'' +
+                ", sessionTimezone='" + sessionTimezone + '\'' +
                 '}';
     }
 
@@ -198,7 +214,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 "organisation:" + organisation + "_" +
                 "quoteIdentifiers:" + quoteIdentifiers +
                 "role:" + role +
-                "enableQueryTags:" + enableQueryTags;
+                "enableQueryTags:" + enableQueryTags +
+                "sessionTimezone:" + sessionTimezone;
     }
 
     @Override
@@ -227,12 +244,13 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 Objects.equals(organisation, that.organisation) &&
                 Objects.equals(quoteIdentifiers, that.quoteIdentifiers) &&
                 Objects.equals(role, that.role) &&
-                Objects.equals(enableQueryTags, that.enableQueryTags);
+                Objects.equals(enableQueryTags, that.enableQueryTags) &&
+                Objects.equals(sessionTimezone, that.sessionTimezone);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, tempTableDb, tempTableSchema, accountType, organisation, role, enableQueryTags);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, tempTableDb, tempTableSchema, accountType, organisation, role, enableQueryTags, sessionTimezone);
     }
 }

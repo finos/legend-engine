@@ -18,9 +18,13 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.junit.Assert;
 import org.junit.Test;
-
+import java.util.Collections;
 import java.util.Properties;
 
 import static org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeAccountType.MultiTenant;
@@ -43,8 +47,13 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
 
     private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyProt, String nonProxyHosts, String accountType, String organisation, String role)
     {
+        return buildSnowflakeDataSource(accountName, region, warehouse, database, cloudType, quoteIdentifiers, proxyHost, proxyProt, nonProxyHosts, accountType, organisation, role, null);
+    }
+
+    private SnowflakeDataSourceSpecification buildSnowflakeDataSource(String accountName, String region, String warehouse, String database, String cloudType, Boolean quoteIdentifiers, String proxyHost, String proxyProt, String nonProxyHosts, String accountType, String organisation, String role, String sessionTimezone)
+    {
         return new SnowflakeDataSourceSpecification(
-                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, null, proxyHost, proxyProt, nonProxyHosts, accountType, organisation, role),
+                new SnowflakeDataSourceSpecificationKey(accountName, region, warehouse, database, cloudType, quoteIdentifiers, null, proxyHost, proxyProt, nonProxyHosts, accountType, organisation, role, null, null, sessionTimezone),
                 new SnowflakeManager(),
                 new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"));
     }
@@ -53,7 +62,6 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
     {
         return snowflakeDataSourceSpecification.getDatabaseManager().buildURL("test.host", 101, "test", snowflakeDataSourceSpecification.extraDatasourceProperties, snowflakeDataSourceSpecification.getAuthenticationStrategy());
     }
-
 
     @Test
     public void testSnowflakeDataSourceSpecificationProperties()
@@ -136,7 +144,6 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("\"LEGENDRO_WH\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME));
         Assert.assertEquals("\"TEST_ROLE\"", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ROLE));
     }
-
 
     @Test
     public void testSnowflakeDataSourceSpecificationPropertiesWithProxy()
@@ -304,5 +311,70 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_PROXY_HOST));
         Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_PROXY_PORT));
         Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_NON_PROXY_HOSTS));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecification_SessionTimezoneNotSet1()
+    {
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", false, null, null, null, null, null, null, null);
+        Properties properties = ds.getConnectionProperties();
+        Assert.assertNull(properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_SESSION_TIMEZONE));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecification_SessionTimezoneFromConnectionValue1()
+    {
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("sampleAccount", "us-east-2", "LEGENDRO_WH", "SAMPLE_DB", "aws", false, null, null, null, null, null, null, "US/Eastern");
+        Properties properties = ds.getConnectionProperties();
+        Assert.assertEquals("US/Eastern", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_SESSION_TIMEZONE));
+    }
+
+    private RelationalDatabaseConnection getConnection(boolean setSessionTimezone)
+    {
+        SnowflakeDatasourceSpecification ds = new SnowflakeDatasourceSpecification();
+        ds.accountName = "sampleAccount";
+        ds.region = "us-east-2";
+        ds.warehouseName = "LEGENDRO_WH";
+        ds.databaseName = "SAMPLE_DB";
+        ds.cloudType = "aws";
+        ds.setSessionTimezone = setSessionTimezone;
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy authStrategy =
+                new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy();
+        authStrategy.privateKeyVaultReference = "SF_KEY";
+        authStrategy.passPhraseVaultReference = "SF_PASS";
+        authStrategy.publicUserName = "LEGEND_RO_PIERRE";
+        return new RelationalDatabaseConnection(ds, authStrategy, DatabaseType.Snowflake);
+    }
+
+    private String computeAndGetSessionTimezoneFromJdbcProperties(RelationalDatabaseConnection connection)
+    {
+        RelationalConnectionManager manager = new RelationalConnectionManager(0, Collections.emptyList());
+        SnowflakeDataSourceSpecification ds = (SnowflakeDataSourceSpecification) manager.getDataSourceSpecification(connection);
+        Properties properties = ds.getConnectionProperties();
+        return properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_SESSION_TIMEZONE);
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecification_SessionTimezoneNotSet2()
+    {
+        RelationalDatabaseConnection connection = getConnection(false);
+        connection.timeZone = null;
+        Assert.assertNull(computeAndGetSessionTimezoneFromJdbcProperties(connection));
+    }
+    
+    @Test
+    public void testSnowflakeDataSourceSpecification_SessionTimezoneDefaultsToUTC()
+    {
+        RelationalDatabaseConnection connection = getConnection(true);
+        connection.timeZone = null;
+        Assert.assertEquals("UTC", computeAndGetSessionTimezoneFromJdbcProperties(connection));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecification_SessionTimezoneFromConnectionValue2()
+    {
+        RelationalDatabaseConnection connection = getConnection(true);
+        connection.timeZone = "America/Los_Angeles";
+        Assert.assertEquals("America/Los_Angeles", computeAndGetSessionTimezoneFromJdbcProperties(connection));
     }
 }
