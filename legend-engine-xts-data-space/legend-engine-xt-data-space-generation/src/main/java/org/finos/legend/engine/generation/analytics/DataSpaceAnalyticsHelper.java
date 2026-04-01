@@ -141,7 +141,7 @@ public class DataSpaceAnalyticsHelper
                     executableAnalysisResult.info = templateExecutableInfo;
                     if (buildResult)
                     {
-                        executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
+                        executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
                                 ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
                                 executionContext._mapping(),
                                 executionContext._defaultRuntime()._runtimeValue(),
@@ -152,7 +152,7 @@ public class DataSpaceAnalyticsHelper
                                 null,
                                 PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
                                 generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                        ).plan.rootExecutionNode.resultType);
+                        ).rootExecutionNode.resultType);
                     }
                     dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                 }
@@ -248,7 +248,7 @@ public class DataSpaceAnalyticsHelper
                         }
                         if (buildResult)
                         {
-                            executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
+                            executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
                                     lambdaFunc,
                                     mapping,
                                     runtime,
@@ -259,7 +259,7 @@ public class DataSpaceAnalyticsHelper
                                     null,
                                     PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
                                     generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                            ).plan.rootExecutionNode.resultType);
+                            ).rootExecutionNode.resultType);
                         }
                         dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                     }
