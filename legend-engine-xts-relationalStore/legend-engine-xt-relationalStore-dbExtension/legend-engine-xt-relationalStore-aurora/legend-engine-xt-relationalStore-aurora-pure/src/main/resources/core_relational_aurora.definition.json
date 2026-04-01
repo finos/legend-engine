@@ -1,0 +1,13 @@
+{
+  "name": "core_relational_aurora",
+  "pattern": "(meta::relational::functions::sqlQueryToString::aurora|meta::relational::tests::sqlQueryToString::aurora|meta::pure::alloy::connections|meta::external::store::relational::runtime|meta::protocols::pure|meta::relational::tests::connEquality)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_store_relational",
+    "core_functions_unclassified",
+    "core_functions_standard",
+    "core",
+    "core_relational",
+    "core_relational_postgres"
+  ]
+}

@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-athena</module>
+        <module>legend-engine-xt-relationalStore-aurora</module>
         <module>legend-engine-xt-relationalStore-bigquery</module>
         <module>legend-engine-xt-relationalStore-duckdb</module>
         <module>legend-engine-xt-relationalStore-memsql</module>
