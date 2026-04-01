@@ -28,11 +28,10 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.*;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.CompositeFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.FunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.MultiHandlerFunctionExpressionBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.RequiredInferenceSimilarSignatureFunctionExpressionBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder.UnifiedInferenceFunctionExpressionBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.*;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -498,39 +497,6 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
-    public static final ParametersInference EvalInference = (parameters, valueSpecificationBuilder) ->
-    {
-        ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-        updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 0, valueSpecificationBuilder.getContext());
-        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
-        return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter), parameters.stream().skip(2).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
-    };
-
-    public static final ParametersInference EvalInference2 = (parameters, valueSpecificationBuilder) ->
-    {
-        ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-        ValueSpecification thirdProcessedParameter = parameters.get(2).accept(valueSpecificationBuilder);
-        updateTwoParamsLambdaDiffTypes(parameters.get(0), secondProcessedParameter._genericType(), thirdProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
-        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
-        return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter, thirdProcessedParameter), parameters.stream().skip(3).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
-    };
-
-    public static final ParametersInference EvalColInference = (parameters, valueSpecificationBuilder) ->
-    {
-        ValueSpecification vs = parameters.get(1).accept(valueSpecificationBuilder);
-        RelationType<?> type = (RelationType<?>) vs._genericType()._rawType();
-
-        ColSpec colSpec = (ColSpec) ((ClassInstance) parameters.get(0)).value;
-        Column<?, ?> found = findColumn(type, colSpec, valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport());
-        colSpec.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
-        colSpec.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
-
-        return Lists.mutable.with(
-                parameters.get(0).accept(valueSpecificationBuilder),
-                vs
-        );
-    };
-
     public static final ParametersInference LateralInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification toLateral = parameters.get(0).accept(valueSpecificationBuilder);
@@ -750,7 +716,7 @@ public class Handlers
         return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
     };
 
-    public static final ParametersInference TDSFilterInference = (parameters, valueSpecificationBuilder) ->
+    public static final ParametersInference FilterInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
@@ -792,27 +758,34 @@ public class Handlers
 
     public static final ParametersInference JoinInference = (parameters, valueSpecificationBuilder) ->
     {
-        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
-        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
-        GenericType gt = firstProcessedParameter._genericType();
+        if (parameters.size() == 4 && parameters.get(3) instanceof LambdaFunction)
+        {
+            ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+            MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+            GenericType gt = firstProcessedParameter._genericType();
 
-        if ("TabularDataSet".equals(gt._rawType()._name()))
-        {
-            updateTDSRowLambda(((LambdaFunction) parameters.get(3)).parameters);
-            parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
-        }
-        else if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
-        {
-            ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
-            org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
-            updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
-            result.with(secondProcessedParameter).with(parameters.get(2).accept(valueSpecificationBuilder)).with(parameters.get(3).accept(valueSpecificationBuilder));
+            if ("TabularDataSet".equals(gt._rawType()._name()))
+            {
+                updateTDSRowLambda(((LambdaFunction) parameters.get(3)).parameters);
+                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+            }
+            else if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+            {
+                ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
+                org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity one = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
+                updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
+                result.with(secondProcessedParameter).with(parameters.get(2).accept(valueSpecificationBuilder)).with(parameters.get(3).accept(valueSpecificationBuilder));
+            }
+            else
+            {
+                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+            }
+            return result;
         }
         else
         {
-            parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+            return null;
         }
-        return result;
     };
 
     public static final ParametersInference TDSAggInference = (parameters, valueSpecificationBuilder) ->
@@ -956,7 +929,7 @@ public class Handlers
         updateSimpleLambda(colSpec.function2, lambda._expressionSequence().getLast()._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(0, null), cc);
     }
 
-    public static final ParametersInference TDSOLAPInference = (parameters, valueSpecificationBuilder) ->
+    public static final ParametersInference OlapGroupByInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
         parameters.forEach(parameter ->
@@ -1001,6 +974,256 @@ public class Handlers
         updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 1, valueSpecificationBuilder.getContext());
         aggInferenceAll(parameters, gt, 0, 1, valueSpecificationBuilder);
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
+    };
+
+    public static final ParametersInference SortByInference = LambdaInference;
+    public static final ParametersInference MapInference = LambdaInference;
+    public static final ParametersInference ExistsInference = LambdaInference;
+    public static final ParametersInference ForAllInference = LambdaInference;
+    public static final ParametersInference RemoveDuplicatesByInference = LambdaInference;
+    public static final ParametersInference FoldInference = TwoParameterLambdaInferenceDiffTypes;
+    public static final ParametersInference GroupByWithWindowSubsetInference = LambdaAndAggInference;
+    public static final ParametersInference AggregateInference = TDSAggInference;
+    public static final ParametersInference PivotInference = TDSAggInference;
+    public static final ParametersInference ProjectInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 2)
+        {
+            org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification param1 = parameters.get(1);
+            boolean isPath = (param1 instanceof ClassInstance && "path".equals(((ClassInstance) param1).type));
+            if (isPath)
+            {
+                return null;
+            }
+        }
+        if (parameters.size() == 3)
+        {
+            return LambdaCollectionInference.update(parameters, valueSpecificationBuilder);
+        }
+        return LambdaColCollectionInference.update(parameters, valueSpecificationBuilder);
+    };
+
+    public static final ParametersInference GroupByInference = (parameters, valueSpecificationBuilder) ->
+    {
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType gt = firstProcessedParameter._genericType();
+        CompileContext cc = valueSpecificationBuilder.getContext();
+
+        if (cc.pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name())
+            || cc.pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+            if (cc.pureModel.taxonomyTypes("cov_tds_TabularDataSet").contains(gt._rawType()._name()))
+            {
+                int aggOffset = parameters.size() == 3 ? 2 : 3;
+                aggInferenceAll(parameters, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), 1, aggOffset, valueSpecificationBuilder);
+                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+            }
+            else
+            {
+                boolean containsGroupByCols = parameters.size() == 3 || parameters.size() == 4;
+                int aggSpecParamIndex = containsGroupByCols ? parameters.size() == 3 ? 2 : 3 : 1;
+                if (containsGroupByCols)
+                {
+                    processColumn(parameters.get(1), gt, cc);
+                }
+                Object aggCol = ((ClassInstance) parameters.get(aggSpecParamIndex)).value;
+                if (aggCol instanceof ColSpecArray)
+                {
+                    ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleAggColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
+                }
+                else if (aggCol instanceof ColSpec)
+                {
+                    processSingleAggColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
+                }
+                else
+                {
+                    throw new RuntimeException("Not supported " + aggCol.getClass());
+                }
+                parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+            }
+            return result;
+        }
+        else
+        {
+            updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 1, cc);
+            aggInferenceAll(parameters, gt, 0, 1, valueSpecificationBuilder);
+            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
+        }
+    };
+
+    public static final ParametersInference EvalInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 1)
+        {
+            return null;
+        }
+        if (parameters.size() == 2 && parameters.get(0) instanceof ClassInstance && ((ClassInstance) parameters.get(0)).value instanceof ColSpec)
+        {
+            ValueSpecification vs = parameters.get(1).accept(valueSpecificationBuilder);
+            RelationType<?> type = (RelationType<?>) vs._genericType()._rawType();
+            ColSpec colSpec = (ColSpec) ((ClassInstance) parameters.get(0)).value;
+            Column<?, ?> found = findColumn(type, colSpec, valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport());
+            colSpec.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
+            colSpec.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
+            return Lists.mutable.with(parameters.get(0).accept(valueSpecificationBuilder), vs);
+        }
+        if (parameters.size() == 2)
+        {
+            ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
+            updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), 0, valueSpecificationBuilder.getContext());
+            ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+            return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter), parameters.stream().skip(2).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
+        }
+        if (parameters.size() == 3)
+        {
+            ValueSpecification secondProcessedParameter = parameters.get(1).accept(valueSpecificationBuilder);
+            ValueSpecification thirdProcessedParameter = parameters.get(2).accept(valueSpecificationBuilder);
+            updateTwoParamsLambdaDiffTypes(parameters.get(0), secondProcessedParameter._genericType(), thirdProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
+            ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+            return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter, thirdProcessedParameter), parameters.stream().skip(3).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
+        }
+        return null;
+    };
+
+    public static final ParametersInference RemoveDuplicatesInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 1)
+        {
+            return null;
+        }
+        if (parameters.size() == 2)
+        {
+            return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
+        }
+        List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof LambdaFunction ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
+        updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
+        updateTwoParamsLambda(parameters.get(2), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
+        return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
+    };
+
+    public static final ParametersInference MatchInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 3)
+        {
+            return TwoParameterLambdaInferenceDiffTypes.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference SortInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 1)
+        {
+            return null;
+        }
+        if (parameters.size() == 2 && parameters.get(1) instanceof LambdaFunction)
+        {
+            return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
+        }
+        if (parameters.size() == 2 && (parameters.get(1) instanceof AppliedFunction || parameters.get(1) instanceof Collection || parameters.get(1) instanceof ClassInstance))
+        {
+            return SortColumnInference.update(parameters, valueSpecificationBuilder);
+        }
+        if (parameters.size() == 2)
+        {
+            return null;
+        }
+        if (parameters.size() == 3 && parameters.get(1) instanceof LambdaFunction)
+        {
+            return LambdaInference.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference TDSContainsInferenceUnified = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 3)
+        {
+            return LambdaCollectionInference.update(parameters, valueSpecificationBuilder);
+        }
+        return TDSContainsInference.update(parameters, valueSpecificationBuilder);
+    };
+
+    public static final ParametersInference OLAPFuncInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 1)
+        {
+            return OLAPFuncTDSInference.update(parameters, valueSpecificationBuilder);
+        }
+        return OLAPFuncNumInference.update(parameters, valueSpecificationBuilder);
+    };
+
+    public static final ParametersInference ProjectWithColumnSubsetInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 3)
+        {
+            return LambdaColCollectionInference.update(parameters, valueSpecificationBuilder);
+        }
+        return LambdaCollectionInference.update(parameters, valueSpecificationBuilder);
+    };
+
+    public static final ParametersInference MaxInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 2 && parameters.get(1) instanceof LambdaFunction)
+        {
+            return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference MinInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 2 && parameters.get(1) instanceof LambdaFunction)
+        {
+            return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference AverageInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 4)
+        {
+            return RelationOlapAggregator.apply("cov_Number").update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference ZScoreInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 4)
+        {
+            return RelationOlapAggregator.apply("cov_Number").update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference StdDevPopulationInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 4)
+        {
+            return RelationOlapAggregator.apply("cov_Number").update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference DistinctInferenceUnified = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 2)
+        {
+            return DistinctInference.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
+    };
+
+    public static final ParametersInference SelectInference = (parameters, valueSpecificationBuilder) ->
+    {
+        if (parameters.size() == 2)
+        {
+            return SelectColInference.update(parameters, valueSpecificationBuilder);
+        }
+        return null;
     };
 
     public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
@@ -1070,9 +1293,9 @@ public class Handlers
         registerUnitFunctions();
         registerCalendarFunctions();
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_", "sortBy", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> true)));
+        register(grp(SortByInference, h("meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_", "sortBy", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> true)));
 
-        register(grp(LambdaInference,
+        register(grp(MapInference,
                 // meta::pure::functions::collection::map<T,V|m>(value:T[m], func:Function<{T[1]->V[1]}>[1]):V[m];
                 h("meta::pure::functions::collection::map_T_m__Function_1__V_m_", "map", true, ps -> res(funcReturnType(ps.get(1)), ps.get(0)._multiplicity()), ps -> isOne(funcType(ps.get(1)._genericType())._returnMultiplicity())),
                 // meta::pure::functions::collection::map<T,V>(value:T[0..1], func:Function<{T[1]->V[0..1]}>[1]):V[0..1];
@@ -1080,54 +1303,47 @@ public class Handlers
                 // meta::pure::functions::collection::map<T,V>(value:T[*], func:Function<{T[1]->V[*]}>[1]):V[*];
                 h("meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_", "map", true, ps -> res(funcReturnType(ps.get(1)), "zeroMany"), ps -> true)));
 
-        register(m(
-                        grp(TDSFilterInference,
-                                // meta::pure::functions::relation::filter<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]
-                                h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", "filter", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
-                                // meta::pure::tds::filter(tds:TabularDataSet[1], f:Function<{TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
-                                h("meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_", "filter", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))
-                        ),
+        register(grp(FilterInference,
+                        // meta::pure::functions::relation::filter<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]
+                        h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", "filter", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                        // meta::pure::tds::filter(tds:TabularDataSet[1], f:Function<{TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
+                        h("meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_", "filter", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
                         // meta::pure::functions::collection::filter<T>(value:T[*], func:Function<{T[1]->Boolean[1]}>[1]):T[*];
-                        grp(LambdaInference, h("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", "filter", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true))
+                        h("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", "filter", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
                 )
         );
 
-        register(m(
+        register(grp(ProjectInference,
                         // meta::pure::tds::project<T>(set:T[*], paths:Path<T,Any|*>[*]):TabularDataSet[1]
-                        m(h("meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && typeMany(ps.get(1), "Path"))),
-                        //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
+                        h("meta::pure::tds::project_T_MANY__Path_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && typeMany(ps.get(1), "Path")),
                         // meta::pure::tds::project<K>(set:K[*], functions:Function<{K[1]->Any[*]}>[*], ids:String[*]):TabularDataSet[1]
-                        grp(LambdaCollectionInference, h("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
-                        grp(LambdaColCollectionInference,
-                                //meta::pure::tds::project(tds:TabularDataSet[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
-                                h("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
-                                // meta::pure::tds::project<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*]):TabularDataSet[1]
-                                h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
-                                h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", "project", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
-                                //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
-                                h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", "project", true, ps -> GraphProjectReturnInference(ps, this.pureModel), ps -> true)
-                        )
+                        h("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3),
+                        //meta::pure::tds::project(tds:TabularDataSet[1], columnFunctions:ColumnSpecification<TDSRow>[*]):TabularDataSet[1]
+                        h("meta::pure::tds::project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                        // meta::pure::tds::project<T>(set:T[*], columnSpecifications:ColumnSpecification<T>[*]):TabularDataSet[1]
+                        h("meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_", "project", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
+                        h("meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_", "project", true, ps -> ProjectReturnInference(ps, this.pureModel), ps -> true),
+                        //meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
+                        h("meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_", "project", true, ps -> GraphProjectReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
-        register(m(
+        register(grp(GroupByInference,
                         // meta::pure::tds::groupBy<T,U>(tds:TabularDataSet[1], columns:String[*], aggValues:meta::pure::tds::AggregateValue<T,U>[*]):TabularDataSet[1]
-                        grp(TDSAggInference,
-                                h("meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
-                        ),
+                        h("meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet")),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         // meta::pure::functions::collection::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
-                        grp(LambdaAndAggInference, h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
+                        h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                 )
         );
 
         register(
-                grp(TDSAggInference,
-                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                    h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                grp(AggregateInference,
+                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
@@ -1137,34 +1353,26 @@ public class Handlers
                 )
         );
 
-        register(m(
-                        grp(TDSAggInference,
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
-                        ),
-                        grp(TDSAggInference,
-                                h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
-                        )
+        register(grp(PivotInference,
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_", "pivot", true, ps -> PivotReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
         // meta::pure::tds::extend(tds:TabularDataSet[1], newColumnFunctions:BasicColumnSpecification<TDSRow >[*]):TabularDataSet[1]
-        register(m(
-                        grp(ExtendInference,
-                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::tds::extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_", "extend", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
-                        ),
-                        grp(ExtendInference,
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
-                                h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true)
-                        )
+        register(grp(ExtendInference,
+                        h("meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::tds::extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_", "extend", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_", "extend", true, ps -> ExtendReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
@@ -1217,22 +1425,18 @@ public class Handlers
                 )
         );
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", "exists", true, ps -> res("Boolean", "one"), ps -> true)));
+        register(grp(ExistsInference, h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", "exists", true, ps -> res("Boolean", "one"), ps -> true)));
 
-        register(grp(LambdaInference, h("meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_", "forAll", true, ps -> res("Boolean", "one"), ps -> true)));
+        register(grp(ForAllInference, h("meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_", "forAll", true, ps -> res("Boolean", "one"), ps -> true)));
 
-        register(grp(LambdaAndAggInference, h("meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_", "groupByWithWindowSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)));
+        register(grp(GroupByWithWindowSubsetInference, h("meta::pure::tds::groupByWithWindowSubset_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__String_MANY__String_MANY__TabularDataSet_1_", "groupByWithWindowSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)));
 
-        register(m(
+        register(grp(EvalInference,
                         // meta::pure::functions::lang::eval<T,V|m,n>(func:Function<{T[n]->V[m]}>[1], param:T[n]):V[m];
-                        grp(EvalInference,
-                                h("meta::pure::functions::lang::eval_Function_1__T_n__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
-                        ),
+                        h("meta::pure::functions::lang::eval_Function_1__T_n__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0)))),
                         // meta::pure::functions::lang::eval<V|m>(func:Function<{->V[m]}>[1]):V[m];
-                        m(h("meta::pure::functions::lang::eval_Function_1__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))),
-                        grp(EvalInference2,
-                                h("meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
-                        )
+                        h("meta::pure::functions::lang::eval_Function_1__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0)))),
+                        h("meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_", "eval", true, ps -> res(funcReturnType(ps.get(0)), funcReturnMul(ps.get(0))))
                 )
         );
 
@@ -1367,16 +1571,11 @@ public class Handlers
                 m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), p -> true))));
 
 
-        register(m(m(m(h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1)),
-                        // meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
-                        grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_1__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 2))),
-                grp((parameters, vsb) ->
-                {
-                    List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof LambdaFunction ? null : p.accept(vsb)).collect(Collectors.toList());
-                    updateSimpleLambda(parameters.get(1), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), vsb.getContext());
-                    updateTwoParamsLambda(parameters.get(2), firstPassProcessed.get(0)._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1));
-                    return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(vsb));
-                }, h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", "removeDuplicates", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3))));
+        register(grp(RemoveDuplicatesInference,
+                h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1),
+                // meta::pure::functions::collection::removeDuplicates<T>(col:T[*], eql:Function<{T[1],T[1]->Boolean[1]}>[1]):T[*]
+                h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_1__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 2),
+                h("meta::pure::functions::collection::removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_", "removeDuplicates", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> p.size() == 3)));
 
         register(h("meta::pure::tds::concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_", "concatenate", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
                 h("meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_", "concatenate", true, ps ->
@@ -1439,13 +1638,11 @@ public class Handlers
         register("meta::pure::functions::collection::getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_", "getAllVersionsInRange", true, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
         register("meta::pure::functions::collection::getAllForEachDate_Class_1__Date_MANY__T_MANY_", "getAllForEachDate", false, ps -> res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"));
 
-        register(m(
-                        grp(DistinctInference, h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", "distinct", true, ps -> DistinctReturnInference(ps, this.pureModel), ps -> ps.size() == 2)),
-                        m(
-                                h("meta::pure::functions::relation::distinct_Relation_1__Relation_1_", "distinct", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
-                                h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", "distinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
-                                h("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", "distinct", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
-                        )
+        register(grp(DistinctInferenceUnified,
+                        h("meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_", "distinct", true, ps -> DistinctReturnInference(ps, this.pureModel), ps -> ps.size() == 2),
+                        h("meta::pure::functions::relation::distinct_Relation_1__Relation_1_", "distinct", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                        h("meta::pure::tds::distinct_TabularDataSet_1__TabularDataSet_1_", "distinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "TabularDataSet".equals(ps.get(0)._genericType()._rawType()._name())),
+                        h("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", "distinct", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)
                 )
         );
 
@@ -1523,8 +1720,9 @@ public class Handlers
         );
 
         register(h("meta::pure::graphFetch::calculateSourceTree_RootGraphFetchTree_1__Mapping_1__Extension_MANY__RootGraphFetchTree_1_", "calculateSourceTree", false, ps -> res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> true));
-        register(m(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3))),
-                m(h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2))));
+        register(grp(MatchInference,
+                h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3),
+                h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2)));
         register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", "instanceOf", true, ps -> res("Boolean", "one"));
         register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", "union", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::reverse_T_m__T_m_", "reverse", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
@@ -1544,7 +1742,7 @@ public class Handlers
                 m(h("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", "dropAt", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))));
 
         register("meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_", "zip", true, ps -> res(CompileContext.newGenericType(this.pureModel.getType(M3Paths.Pair), Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList())), pureModel), "oneMany"));
-        register(m(grp(LambdaInference, h("meta::pure::functions::collection::removeDuplicatesBy_T_MANY__Function_1__T_MANY_", "removeDuplicatesBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> true))));
+        register(grp(RemoveDuplicatesByInference, h("meta::pure::functions::collection::removeDuplicatesBy_T_MANY__Function_1__T_MANY_", "removeDuplicatesBy", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), p -> true)));
         register("meta::pure::functions::collection::containsAll_Any_MANY__Any_MANY__Boolean_1_", "containsAll", false, ps -> res("Boolean", "one"));
 
         register("meta::pure::functions::meta::id_Any_1__String_1_", "id", true, ps -> res("String", "one"));
@@ -1554,7 +1752,7 @@ public class Handlers
         register("meta::pure::functions::meta::type_Any_MANY__Type_1_", "type", false, ps -> res("meta::pure::metamodel::type::Type", "one"));
         register("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", "compare", true, ps -> res("Integer", "one"));
         // meta::pure::functions::collection::fold<T,V|m>(value:T[*], func:Function<{T[1],V[m]->V[m]}>[1], accumulator:V[m]):V[m], note return type is V and not T
-        register(m(grp(TwoParameterLambdaInferenceDiffTypes, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", "fold", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), p -> true))));
+        register(grp(FoldInference, h("meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_", "fold", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), p -> true)));
 
         register(m(m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_1__Integer_MANY_", "range", true, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::collection::range_Integer_1__Integer_1__Integer_MANY_", "range", false, ps -> res("Integer", "zeroMany"), ps -> ps.size() == 2)),
@@ -1928,9 +2126,10 @@ public class Handlers
             );
         }, ps -> true)));
 
-        register(grp(SelectColInference,
-                        h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
-                        h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
+        register(grp(SelectInference,
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> ps.size() == 2),
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", "select", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> ps.size() == 2),
+                        h("meta::pure::functions::relation::select_Relation_1__Relation_1_", "select", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true)
                 )
         );
 
@@ -1943,14 +2142,13 @@ public class Handlers
                 )
         );
 
-        register(grp(EvalColInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_", "eval", false,  ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroOne"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_ColSpec")))));
-
-        register(h("meta::pure::functions::relation::select_Relation_1__Relation_1_", "select", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true));
+        register(grp(EvalInference, h("meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_", "eval", false, ps -> res(getGenericReturnTypeForEvalCol(ps), "zeroOne"), ps -> Lists.fixedSize.of(getGenericReturnTypeForEvalCol(ps), ps.get(1)._genericType()), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_ColSpec")))));
 
         register(h("meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_", "renameColumns", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true));
 
-        register(m(grp(LambdaColCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "ColumnSpecification".equals(ps.get(1)._genericType()._rawType()._name()))),
-                grp(LambdaCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true))));
+        register(grp(ProjectWithColumnSubsetInference,
+                h("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "ColumnSpecification".equals(ps.get(1)._genericType()._rawType()._name())),
+                h("meta::pure::tds::projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_", "projectWithColumnSubset", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)));
 
         register("meta::pure::tds::restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrict", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
         register("meta::pure::tds::restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrictDistinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
@@ -1965,27 +2163,20 @@ public class Handlers
 
         register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 
-        register(m(
-                        grp(AsOfJoinInference,
-                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
-                        ),
-                        grp(AsOfJoinInference,
-                                h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
-                        )
+        register(grp(AsOfJoinInference,
+                        h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_", "asOfJoin", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
-        register(
-                m(
-                        m(h("meta::pure::functions::collection::sort_T_m__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 1)),
-                        m(grp(SortColumnInference, h("meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_", "sort", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true))),
-                        m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2))),
-                        m(grp(LambdaInference, h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__Function_$0_1$__T_m_", "sort", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3))),
-                        m(h("meta::pure::tds::sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3)),
-                        m(
-                                h("meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
-                                h("meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
-                        )
+        register(grp(SortInference,
+                        h("meta::pure::functions::collection::sort_T_m__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 1),
+                        h("meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_", "sort", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true),
+                        h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__T_m_", "sort", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2),
+                        h("meta::pure::functions::collection::sort_T_m__Function_$0_1$__Function_$0_1$__T_m_", "sort", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 3),
+                        h("meta::pure::tds::sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3),
+                        h("meta::pure::tds::sort_TabularDataSet_1__String_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2 && "String".equals(ps.get(1)._genericType()._rawType()._name())),
+                        h("meta::pure::tds::sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_", "sort", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                 )
         );
 
@@ -2029,22 +2220,25 @@ public class Handlers
         register(h("meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_", "withMapping", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_mapping_Mapping"))));
         register(h("meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_", "withChainedMappings", false, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && typeMany(ps.get(1), pureModel.taxonomyTypes("cov_mapping_Mapping"))));
 
-        register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
-                grp(TDSContainsInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> true))));
+        register(grp(TDSContainsInferenceUnified,
+                h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3),
+                h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", "tdsContains", false, ps -> res("Boolean", "one"), ps -> true)));
 
-        register(m(m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "OlapOperation".equals(ps.get(3)._genericType()._rawType()._name()))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "FunctionDefinition".equals(ps.get(3)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "SortInformation".equals(ps.get(1)._genericType()._rawType()._name()) && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "OlapOperation".equals(ps.get(1)._genericType()._rawType()._name())))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "FunctionDefinition".equals(ps.get(1)._genericType()._rawType()._name()))))
-        )));
+        register(grp(OlapGroupByInference,
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "OlapOperation".equals(ps.get(3)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "FunctionDefinition".equals(ps.get(3)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "SortInformation".equals(ps.get(1)._genericType()._rawType()._name()) && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "OlapOperation".equals(ps.get(1)._genericType()._rawType()._name())),
+                h("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", "olapGroupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "FunctionDefinition".equals(ps.get(1)._genericType()._rawType()._name()))
+        ));
 
         register(
-                m(m(grp(OLAPFuncNumInference, h("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapAggregation", "one"), ps -> ps.size() == 2))),
-                        m(grp(OLAPFuncTDSInference, h("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapRank", "one"), ps -> ps.size() == 1)))));
+                grp(OLAPFuncInference,
+                        h("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapAggregation", "one"), ps -> ps.size() == 2),
+                        h("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_", "func", false, ps -> res("meta::pure::tds::TdsOlapRank", "one"), ps -> ps.size() == 1)));
     }
 
     private void registerDates()
@@ -2410,15 +2604,15 @@ public class Handlers
 
     private void registerMaxMin()
     {
-        register(m(
-                m(h("meta::pure::functions::math::max_Integer_1__Integer_1__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+        register(grp(MaxInference,
+                h("meta::pure::functions::math::max_Integer_1__Integer_1__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
                         h("meta::pure::functions::math::max_Float_1__Float_1__Float_1_", "max", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
                         h("meta::pure::functions::math::max_Number_1__Number_1__Number_1_", "max", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
                         h("meta::pure::functions::date::max_DateTime_1__DateTime_1__DateTime_1_", "max", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::max_StrictDate_1__StrictDate_1__StrictDate_1_", "max", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
-                        h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", "max", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
-                m(h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::date::max_Date_1__Date_1__Date_1_", "max", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date")),
+                h("meta::pure::functions::collection::max_T_$1_MANY$__Function_1__T_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2),
+                h("meta::pure::functions::math::max_Integer_$1_MANY$__Integer_1_", "max", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Integer_MANY__Integer_$0_1$_", "max", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::max_Float_$1_MANY$__Float_1_", "max", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
                         h("meta::pure::functions::math::max_Float_MANY__Float_$0_1$_", "max", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
@@ -2428,17 +2622,17 @@ public class Handlers
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", "max", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", "max", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", "max", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
+                        h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", "max", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
 
-        register(m(
-                m(h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
+        register(grp(MinInference,
+                h("meta::pure::functions::math::min_Integer_1__Integer_1__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Integer") && typeOne(ps.get(1), "Integer")),
                         h("meta::pure::functions::math::min_Float_1__Float_1__Float_1_", "min", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float") && typeOne(ps.get(1), "Float")),
                         h("meta::pure::functions::math::min_Number_1__Number_1__Number_1_", "min", false, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number") && typeOne(ps.get(1), "Number")),
                         h("meta::pure::functions::date::min_DateTime_1__DateTime_1__DateTime_1_", "min", false, ps -> res("DateTime", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "DateTime") && typeOne(ps.get(1), "DateTime")),
                         h("meta::pure::functions::date::min_StrictDate_1__StrictDate_1__StrictDate_1_", "min", false, ps -> res("StrictDate", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "StrictDate") && typeOne(ps.get(1), "StrictDate")),
-                        h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", "min", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date"))),
-                m(grp(TwoParameterLambdaInference, h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2))),
-                m(h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
+                        h("meta::pure::functions::date::min_Date_1__Date_1__Date_1_", "min", false, ps -> res("Date", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Date") && typeOne(ps.get(1), "Date")),
+                h("meta::pure::functions::collection::min_T_$1_MANY$__Function_1__T_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 2),
+                h("meta::pure::functions::math::min_Integer_$1_MANY$__Integer_1_", "min", false, ps -> res("Integer", "one"), ps -> typeOneMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Integer_MANY__Integer_$0_1$_", "min", false, ps -> res("Integer", "zeroOne"), ps -> typeMany(ps.get(0), "Integer")),
                         h("meta::pure::functions::math::min_Float_$1_MANY$__Float_1_", "min", false, ps -> res("Float", "one"), ps -> typeOneMany(ps.get(0), "Float")),
                         h("meta::pure::functions::math::min_Float_MANY__Float_$0_1$_", "min", false, ps -> res("Float", "zeroOne"), ps -> typeMany(ps.get(0), "Float")),
@@ -2448,7 +2642,7 @@ public class Handlers
                         h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", "min", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", "min", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", "min", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true))));
+                        h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", "min", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
     }
 
     private void registerAlgebra()
@@ -2529,16 +2723,17 @@ public class Handlers
         );
         register(h("meta::pure::functions::math::olap::averageRank_Any_MANY__Map_1_", "averageRank", false, resolve));
 
-        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::zScore_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "zScore", false, ps -> res("Float", "one"))));
-        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::average_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "average", false, ps -> res("Float", "one"))));
-        register(grp(RelationOlapAggregator.apply("cov_Number"), h("meta::pure::functions::math::stdDevPopulation_Relation_1___Window_1__T_1__ColSpec_1__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"))));
+        register(grp(ZScoreInference, h("meta::pure::functions::math::zScore_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "zScore", false, ps -> res("Float", "one"))));
+        register(grp(AverageInference, h("meta::pure::functions::math::average_Relation_1___Window_1__T_1__ColSpec_1__Float_1_", "average", false, ps -> res("Float", "one"))));
+        register(grp(StdDevPopulationInference, h("meta::pure::functions::math::stdDevPopulation_Relation_1___Window_1__T_1__ColSpec_1__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"))));
     }
 
     private void registerAggregations()
     {
-        register(h("meta::pure::functions::math::average_Float_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
+        register(grp(AverageInference,
+                h("meta::pure::functions::math::average_Float_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::average_Integer_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")));
+                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))));
 
         register(h("meta::pure::functions::math::mean_Float_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::mean_Integer_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
@@ -2593,8 +2788,9 @@ public class Handlers
 
     private void registerStdDeviations()
     {
-        register(h("meta::pure::functions::math::stdDevPopulation_Number_$1_MANY$__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), pureModel.taxonomyTypes("cov_Number"))),
-                h("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), pureModel.taxonomyTypes("cov_Number"))));
+        register(grp(StdDevPopulationInference,
+                h("meta::pure::functions::math::stdDevPopulation_Number_$1_MANY$__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), pureModel.taxonomyTypes("cov_Number"))),
+                h("meta::pure::functions::math::stdDevPopulation_Number_MANY__Number_1_", "stdDevPopulation", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), pureModel.taxonomyTypes("cov_Number")))));
 
         register(h("meta::pure::functions::math::stdDevSample_Number_$1_MANY$__Number_1_", "stdDevSample", false, ps -> res("Number", "one"), ps -> typeOneMany(ps.get(0), pureModel.taxonomyTypes("cov_Number"))),
                 h("meta::pure::functions::math::stdDevSample_Number_MANY__Number_1_", "stdDevSample", false, ps -> res("Number", "one"), ps -> typeMany(ps.get(0), pureModel.taxonomyTypes("cov_Number"))));
@@ -2732,6 +2928,14 @@ public class Handlers
     {
         String functionName = handler.getFunctionName();
         boolean functionRegisteredByName = isFunctionRegisteredByName(handler);
+
+        if (functionRegisteredByName && map.get(functionName) instanceof UnifiedInferenceFunctionExpressionBuilder)
+        {
+            throw new RuntimeException("Function '" + functionName + "' is already registered with a UnifiedInferenceFunctionExpressionBuilder. " +
+                    "All new handlers for '" + functionName + "' must also be registered via grp() using the same ParametersInference. " +
+                    "Do not use m(), h(), or register(FunctionHandler...) directly.");
+        }
+
         if (!functionRegisteredByName)
         {
             map.put(functionName, new MultiHandlerFunctionExpressionBuilder(this.pureModel, handler));
@@ -2762,7 +2966,44 @@ public class Handlers
     {
         String functionName = handler.getFunctionName();
         FunctionExpressionBuilder existingBuilder = map.get(functionName);
-        if (existingBuilder == null || existingBuilder instanceof RequiredInferenceSimilarSignatureFunctionExpressionBuilder || handler instanceof RequiredInferenceSimilarSignatureFunctionExpressionBuilder)
+
+        if (existingBuilder instanceof UnifiedInferenceFunctionExpressionBuilder
+            && !(handler instanceof UnifiedInferenceFunctionExpressionBuilder))
+        {
+            throw new RuntimeException("Function '" + functionName + "' is already registered with a UnifiedInferenceFunctionExpressionBuilder. " +
+                    "All new handlers for '" + functionName + "' must also be registered via grp() using the same ParametersInference. " +
+                    "Do not use m(), h(), or register(FunctionHandler...) directly.");
+        }
+
+        if (existingBuilder != null
+            && !(existingBuilder instanceof UnifiedInferenceFunctionExpressionBuilder)
+            && handler instanceof UnifiedInferenceFunctionExpressionBuilder)
+        {
+            throw new RuntimeException("Function '" + functionName + "' already has handlers registered without UnifiedInferenceFunctionExpressionBuilder. " +
+                    "To add a handler that requires ParametersInference, ALL handlers for '" + functionName + "' must be consolidated under a single " +
+                    "UnifiedInferenceFunctionExpressionBuilder with a shared ParametersInference. Please update the existing registration first.");
+        }
+
+        if (handler instanceof UnifiedInferenceFunctionExpressionBuilder
+            && existingBuilder instanceof UnifiedInferenceFunctionExpressionBuilder)
+        {
+            UnifiedInferenceFunctionExpressionBuilder incomingUnified = (UnifiedInferenceFunctionExpressionBuilder) handler;
+            UnifiedInferenceFunctionExpressionBuilder existingUnified = (UnifiedInferenceFunctionExpressionBuilder) existingBuilder;
+            if (incomingUnified.getParametersInference() != existingUnified.getParametersInference())
+            {
+                throw new RuntimeException("Function '" + functionName + "' is already registered with a UnifiedInferenceFunctionExpressionBuilder " +
+                        "using a specific ParametersInference. New registration must use the exact same ParametersInference reference. " +
+                        "Please register using grp(<ExistingInference>, ...).");
+            }
+            for (FunctionHandler h : handler.handlers())
+            {
+                existingBuilder.addFunctionHandler(h);
+                registerMetaPackage(h);
+                mayReplace(h);
+            }
+            return;
+        }
+        if (existingBuilder == null)
         {
             insertInMap(handler);
         }
@@ -2793,6 +3034,24 @@ public class Handlers
         handler.handlers().forEach(this::registerMetaPackage);
 
         FunctionExpressionBuilder existing = map.get(handler.getFunctionName());
+
+        if (existing instanceof UnifiedInferenceFunctionExpressionBuilder
+            && !(handler instanceof UnifiedInferenceFunctionExpressionBuilder))
+        {
+            throw new RuntimeException("Function '" + handler.getFunctionName() + "' is already registered with a UnifiedInferenceFunctionExpressionBuilder. " +
+                    "All new handlers for '" + handler.getFunctionName() + "' must also be registered via grp() using the same ParametersInference. " +
+                    "Do not use m(), h(), or register(FunctionHandler...) directly.");
+        }
+
+        if (existing != null
+            && !(existing instanceof UnifiedInferenceFunctionExpressionBuilder)
+            && handler instanceof UnifiedInferenceFunctionExpressionBuilder)
+        {
+            throw new RuntimeException("Function '" + handler.getFunctionName() + "' already has handlers registered without UnifiedInferenceFunctionExpressionBuilder. " +
+                    "To add a handler that requires ParametersInference, ALL handlers for '" + handler.getFunctionName() + "' must be consolidated under a single " +
+                    "UnifiedInferenceFunctionExpressionBuilder with a shared ParametersInference. Please update the existing registration first.");
+        }
+
         if (existing == null)
         {
             map.put(handler.getFunctionName(), handler);
@@ -2898,9 +3157,9 @@ public class Handlers
         return new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
     }
 
-    public RequiredInferenceSimilarSignatureFunctionExpressionBuilder grp(ParametersInference parametersInference, FunctionHandler... handlers)
+    public UnifiedInferenceFunctionExpressionBuilder grp(ParametersInference parametersInference, FunctionHandler... handlers)
     {
-        return new RequiredInferenceSimilarSignatureFunctionExpressionBuilder(parametersInference, handlers, this.pureModel);
+        return new UnifiedInferenceFunctionExpressionBuilder(parametersInference, handlers);
     }
 
     public MultiHandlerFunctionExpressionBuilder m(FunctionHandler... handlers)
