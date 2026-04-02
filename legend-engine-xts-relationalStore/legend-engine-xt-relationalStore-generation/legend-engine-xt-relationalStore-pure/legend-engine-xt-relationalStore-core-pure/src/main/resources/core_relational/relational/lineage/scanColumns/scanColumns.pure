@@ -104,9 +104,9 @@ function <<access.private>> meta::pure::lineage::scanColumns::enrichPropertyPath
 {
     printDebug('Enriching Property Path Tree\n', $debug);
     $p.value->match([
-                     pr: PropertyPathNode[1] | time('PPN', |$pr->enrichPropertyPathNodeWithDataSetMapping($p, $state, $isRoot, $debug)),
-                     cl: Class<Any>[1]       | time('CN', | $cl->enrichClassWithDataSetMapping($p, $state, $isRoot, $debug)),
-                     a: Any[1]               | time('AA', | $a->enrichAnyPropertyWithDataSetMapping($p, $state, $isRoot, $debug)) // TODO: check tighter constraint (e.g. String)
+                     pr: PropertyPathNode[1] | $pr->enrichPropertyPathNodeWithDataSetMapping($p, $state, $isRoot, $debug),
+                     cl: Class<Any>[1]       | $cl->enrichClassWithDataSetMapping($p, $state, $isRoot, $debug),
+                     a: Any[1]               | $a->enrichAnyPropertyWithDataSetMapping($p, $state, $isRoot, $debug) // TODO: check tighter constraint (e.g. String)
                    ]);
 }
 
