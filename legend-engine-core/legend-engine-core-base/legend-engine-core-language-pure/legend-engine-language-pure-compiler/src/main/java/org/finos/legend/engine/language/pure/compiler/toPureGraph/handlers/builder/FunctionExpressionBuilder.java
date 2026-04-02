@@ -104,14 +104,6 @@ public abstract class FunctionExpressionBuilder
 
     public abstract MutableList<FunctionHandler> handlers();
 
-    // Methods to get and insert function handler at certain coordinate within the function expression builder
-
-    public abstract void insertFunctionHandlerAtIndex(int idx, FunctionHandler functionHandler);
-
-    public abstract FunctionExpressionBuilder getFunctionExpressionBuilderAtIndex(int idx);
-
-    public abstract void insertFunctionExpressionBuilderAtIndex(int idx, FunctionExpressionBuilder functionExpressionBuilder);
-
     public abstract void addFunctionHandler(FunctionHandler functionHandler);
 
     public abstract Boolean supportFunctionHandler(FunctionHandler handler);

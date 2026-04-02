@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,30 +18,33 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBuilder
+public class UnifiedInferenceFunctionExpressionBuilder extends FunctionExpressionBuilder
 {
-    MutableList<FunctionHandler> handlers;
+    private final ParametersInference parametersInference;
+    private final MutableList<FunctionHandler> handlers;
 
-    public MultiHandlerFunctionExpressionBuilder(PureModel pureModel, FunctionHandler... handlers)
+    public UnifiedInferenceFunctionExpressionBuilder(ParametersInference parametersInference, FunctionHandler... handlers)
     {
+        this.parametersInference = parametersInference;
         this.handlers = FastList.newListWith(handlers);
     }
 
+    @Override
     public void validate(Map<String, Dispatch> dispatchMap)
     {
         this.handlers.forEach(handler ->
@@ -53,9 +56,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
             }
         });
         MutableList<String> names = this.handlers.collect(FunctionHandler::getFunctionName).distinct();
-        Assert.assertTrue(names.size() == 1, () -> "Multi handlers should have the same simple name. Found " + names.size() + " -> " + names);
-        MutableList<Integer> signatures = this.handlers.collect(FunctionHandler::getParametersSize).distinct();
-        Assert.assertTrue(signatures.size() == 1, () -> "Multi handlers should have the same kind of function signatures. Found " + signatures.size() + " -> " + signatures);
+        Assert.assertTrue(names.size() == 1, () -> "Unified inference handlers should have the same simple name. Found " + names.size() + " -> " + names);
     }
 
     @Override
@@ -67,43 +68,60 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         }
     }
 
+    @Override
     public String getFunctionName()
     {
-        return handlers.get(0).getFunctionName();
+        return this.handlers.get(0).getFunctionName();
     }
 
     @Override
-    public void addFunctionHandler(FunctionHandler handler)
+    public void addFunctionHandler(FunctionHandler functionHandler)
     {
-        handlers.add(handler);
+        this.handlers.add(functionHandler);
+    }
+
+    public ParametersInference getParametersInference()
+    {
+        return this.parametersInference;
     }
 
     @Override
     public Boolean supportFunctionHandler(FunctionHandler handler)
     {
-        return this.getParametersSize().isPresent() && this.getParametersSize().get() == handler.getParametersSize();
+        // Unified builder supports any handler with the same function name
+        return this.getFunctionName().equals(handler.getFunctionName());
     }
 
     @Override
     public Optional<Integer> getParametersSize()
     {
-        return Optional.of(handlers.get(0).getParametersSize());
+        // Multiple param sizes may be present across handlers
+        return Optional.empty();
     }
 
     @Override
-    public Pair<SimpleFunctionExpression, List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> buildFunctionExpression(List<ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
+    public Pair<SimpleFunctionExpression, List<ValueSpecification>> buildFunctionExpression(List<org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation, ValueSpecificationBuilder valueSpecificationBuilder)
     {
-        if (this.getParametersSize().get() == parameters.size() && handlers.stream().anyMatch(h -> test(h.getFunc(), parameters, valueSpecificationBuilder.getContext().pureModel, valueSpecificationBuilder.getProcessingContext())))
+        List<ValueSpecification> compiled = parametersInference.update(parameters, valueSpecificationBuilder);
+
+        if (compiled == null)
         {
-            List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
-            return Tuples.pair(buildFunctionExpressionGraph(processed, sourceInformation), processed);
+            compiled = parameters.stream()
+                    .map(p -> p.accept(valueSpecificationBuilder))
+                    .collect(Collectors.toList());
         }
-        return Tuples.pair(null, null);
+
+        SimpleFunctionExpression sfe = dispatchToHandlers(compiled, sourceInformation);
+        return Tuples.pair(sfe, compiled);
     }
 
-    public SimpleFunctionExpression buildFunctionExpressionGraph(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation)
+    private SimpleFunctionExpression dispatchToHandlers(List<ValueSpecification> compiled, SourceInformation sourceInformation)
     {
-        return handlers.stream().filter(h -> h.getDispatch().shouldSelect(parameters)).findFirst().map(h -> h.process(parameters, sourceInformation)).orElse(null);
+        return this.handlers.stream()
+                .filter(h -> h.getDispatch().shouldSelect(compiled))
+                .findFirst()
+                .map(h -> h.process(compiled, sourceInformation))
+                .orElse(null);
     }
 
     @Override
@@ -112,3 +130,4 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
         return this.handlers;
     }
 }
+
