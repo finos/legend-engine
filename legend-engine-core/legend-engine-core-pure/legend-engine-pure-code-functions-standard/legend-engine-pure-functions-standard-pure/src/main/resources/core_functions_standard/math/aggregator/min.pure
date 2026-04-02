@@ -63,6 +63,10 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Integers<
 {
     assertEquals(1, $f->eval(|min(1, 2)));
     assertEquals(1, $f->eval(|min(2, 1)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_IntegersArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     assertEquals([], $f->eval(|min([]->cast(@Integer))));
     assertEquals(1, $f->eval(|min([1])));
     assertEquals(1, $f->eval(|min([4, 7, 1, 3, 4])));
@@ -72,6 +76,10 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Floats<Z|
 {
     assertEquals(1.23, $f->eval(|min(1.23, 2.8)));
     assertEquals(1.23, $f->eval(|min(2.8, 1.23)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_FloatsArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     assertEquals([], $f->eval(|min([]->cast(@Float))));
     assertEquals(1.0, $f->eval(|min([1.0])));
     assertEquals(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3.678, 4.6])));
@@ -82,6 +90,10 @@ function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_Numbers<Z
     assertEquals(1.23, $f->eval(|min(1.23, 2)));
     assertEquals(1.23, $f->eval(|min(2, 1.23)));
     assertEquals(1.23d, $f->eval(|min(2, 1.23d)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::min::testMin_NumbersArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
     assertEquals([], $f->eval(|min([]->cast(@Number))));
     assertEquals(1.0d, $f->eval(|min([1.0d])));
     assertEquals(1.0, $f->eval(|min([4.23, 7.345, 1.0, 3, 4])));
