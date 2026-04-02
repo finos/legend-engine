@@ -205,14 +205,15 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                  |$sourceMappings->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->cast(@SetImplementation)
                               );
 
-      let embeddedExistsInOperation = !$sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->isEmpty();
+      let sourceMappingOperationMap = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne()));
+      let embeddedOperation = $sourceMappingOperationMap->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation));
 
       let classMapping = if($embeddedMappings->isEmpty(),
-                                   |  if ($embeddedExistsInOperation,
-                                          | let embeddedMappings = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->cast(@EmbeddedSetImplementation);
+                                   |  if ($embeddedOperation->isEmpty(),
+                                          | let embeddedMappings = $embeddedOperation->cast(@EmbeddedSetImplementation);
                                             let containers = $embeddedMappings->map(e | ^SetImplementationContainer(id=$e.id, setImplementation=$e));
                                             ^OperationSetImplementation(id='embedded_operation', root=true, class=$c->cast(@Class<Any>), parent=$mapping, parameters=$containers, operation=$sourceMappings->at(0)->cast(@OperationSetImplementation).operation);,
-                                          | let targetSetIds = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne())).targetSetImplementationId;
+                                          | let targetSetIds = $sourceMappingOperationMap.targetSetImplementationId;
                                             if(!$targetSetIds->isEmpty(),
                                                | let classMappingsById = $mapping->_classMappingByIdRecursive($targetSetIds)->map(x | $mapping->classMappingById($x.id));
                                                  if($classMappingsById->isEmpty(),
