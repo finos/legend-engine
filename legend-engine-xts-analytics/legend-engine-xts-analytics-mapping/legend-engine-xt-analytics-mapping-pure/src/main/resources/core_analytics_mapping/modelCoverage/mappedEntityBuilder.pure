@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
 import meta::analytics::class::modelCoverage::utility::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
@@ -251,7 +252,8 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    inheritanceMap:Map<OperationSetImplementation, List<SetImplementation>>[1],
    mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
    isRootEntity:Boolean[1],
-   config: AnalysisConfiguration[1]
+   config: AnalysisConfiguration[1],
+   extensions:Extension[*]
 ): MappedEntity[*]
 {
    let classInfo = $class->getClassInfo($classMap);
@@ -298,7 +300,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
    
    // handle auto mapped properties
    let autoMappedPropertyMappings = $propertyMappings->removeAll($supportedPropertyMappings)
-                                                     ->filter(pm| $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, meta::relational::extension::relationalExtensions(), $mapping));
+                                                     ->filter(pm| $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && meta::pure::router::store::routing::isPropertyAutoMapped($pm.owner->toOne()->cast(@InstanceSetImplementation), $pm.property, $extensions, $mapping));
 
     let autoMappedHelperClasses = $autoMappedPropertyMappings->map(pm |
     let id = if($pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(PureInstanceSetImplementation),
@@ -390,7 +392,8 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
    mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
    isRootEntity:Boolean[1],
    isBase:Boolean[1],
-   config: AnalysisConfiguration[1]
+   config: AnalysisConfiguration[1],
+   extensions:Extension[*]
 ): MappedEntity[*]
 {
    let class = $setImplementation.class;
@@ -438,13 +441,13 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
    let name = $namePrefix + if ($isBase, | $setImplementation->buildEntityName(),| $class->createInheritanceName());
 
    let entities = buildEntity($class, $name, $setImplementation, $mapping, 
-      $mappedProperties, $propertyFilter, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity, $config);
+      $mappedProperties, $propertyFilter, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity, $config, $extensions);
 
    let rootEntity = $entities->at(0);
    let currentMappings = $mappings->filter(m | $m.class->in($specs));
    let inheritanceEntities = $currentMappings->map(cm |
       $baseMapping->buildInheritanceEntitiesImpl($cm, $mapping, $inheritanceTypes, $mappings, $namePrefix, $originalPropertyFilter, $rootClassMappings, $classMap, $propertiesMap,
-                                                 $inheritanceMap, $mappingClassMappings, false, false, $config);
+                                                 $inheritanceMap, $mappingClassMappings, false, false, $config, $extensions);
    );
 
    ^$rootEntity(properties = $rootEntity.properties->concatenate($currentMappings->map(cm |
@@ -473,11 +476,12 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::buildInheri
    mappingClassMappings:Map<Mapping, List<SetImplementation>>[1],
    isRootEntity:Boolean[1],
    isBase:Boolean[1],
-   config: AnalysisConfiguration[1]
+   config: AnalysisConfiguration[1],
+   extensions: Extension[*]
 ):MappedEntity[*]
 {
    let entities = buildInheritanceEntitiesImpl($baseMapping, $setImplementation, $mapping, $seenInheritanceTypes, $mappings,
-      $namePrefix, $originalPropertyFilter, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity, $isBase, $config);
+      $namePrefix, $originalPropertyFilter, $rootClassMappings, $classMap, $propertiesMap, $inheritanceMap, $mappingClassMappings, $isRootEntity, $isBase, $config, $extensions);
 
    $entities->map(e | ^$e(properties = $e.properties->removeDuplicatesBy(x | $x.name)));
 }
