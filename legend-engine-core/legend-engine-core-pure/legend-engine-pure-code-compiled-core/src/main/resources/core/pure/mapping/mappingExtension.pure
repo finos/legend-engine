@@ -205,8 +205,8 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                  |$sourceMappings->filter(s|$s->instanceOf(PropertyMappingsImplementation))->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne())->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)))->cast(@SetImplementation)
                               );
 
-      let sourceMappingOperationMap = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne());
-      let embeddedOperation = $sourceMappingOperationMap->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation)));
+      let sourceMappingOperationMap = $sourceMappings->resolveOperation($mapping)->cast(@PropertyMappingsImplementation)->map(s|$s->_propertyMappingsByPropertyName($p.name->toOne()));
+      let embeddedOperation = $sourceMappingOperationMap->map(pm | $pm->reprocessAggregationAwarePropertyMapping())->filter(p|$p->instanceOf(EmbeddedSetImplementation));
 
       let classMapping = if($embeddedMappings->isEmpty(),
                                    |  if ($embeddedOperation->isEmpty(),
