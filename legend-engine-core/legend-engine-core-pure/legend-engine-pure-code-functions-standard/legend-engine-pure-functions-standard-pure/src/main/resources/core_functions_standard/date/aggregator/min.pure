@@ -1,0 +1,164 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:Date[1], right:Date[1]):Date[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:DateTime[1], right:DateTime[1]):DateTime[1]
+{
+    if($right < $left, | $right, | $left)
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest Date value from the list'
+  }
+meta::pure::functions::date::min(dates:Date[*]):Date[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest Date value from the list'
+  }
+meta::pure::functions::date::min(dates:Date[1..*]):Date[1]
+{
+    $dates->fold({n, m | min($n, $m)}, $dates->at(0))
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest StrictDate value from the list'
+  }
+meta::pure::functions::date::min(dates:StrictDate[*]):StrictDate[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest Date value from the list'
+  }
+meta::pure::functions::date::min(dates:StrictDate[1..*]):StrictDate[1]
+{
+    $dates->fold({n, m | min($n, $m)}, $dates->at(0))
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest DateTime value from the list'
+  }
+meta::pure::functions::date::min(dates:DateTime[*]):DateTime[0..1]
+{
+    $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
+}
+
+function
+  <<PCT.function, functionType.ReducerFunction>>
+  {
+      doc.doc='min returns smallest Date value from the list'
+  }
+meta::pure::functions::date::min(dates:DateTime[1..*]):DateTime[1]
+{
+    $dates->fold({n, m | min($n, $m)}, $dates->at(0))
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_Date<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(%2025-02-10, $f->eval(|min(%2025-02-10T20:10:20, %2025-02-10)));
+    assertEquals(%2025-02-10, $f->eval(|min(%2025-02-10, %2025-02-10T20:10:20)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_DateArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals([], $f->eval(|min([]->cast(@Date))));
+    assertEquals(%2025-02-10, $f->eval(|min([%2025-02-10T20:10:20, %2025-02-10])));
+    assertEquals(%2025-02-10, $f->eval(|min([%2025-02-10, %2025-02-10T20:10:20])));
+    assertEquals(%2025-01-10T15:25:30, $f->eval(|min([%2025-02-09, %2025-04-09, %2025-02-09T01:15:20, %2025-01-10T15:25:30])));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_DateTime<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(%2025-01-10T15:25:30, $f->eval(|min(%2025-02-10T20:10:20, %2025-01-10T15:25:30)));
+    assertEquals(%2025-01-10T15:25:30, $f->eval(|min(%2025-01-10T15:25:30, %2025-02-10T20:10:20)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_DateTimeArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals([], $f->eval(|min([]->cast(@DateTime))));
+    assertEquals(%2025-02-10T20:10:20, $f->eval(|min([%2025-02-10T20:10:20])));
+    assertEquals(%2025-01-10T15:25:30, $f->eval(|min([%2025-02-10T20:10:20, %2025-01-10T15:25:30])));
+    assertEquals(%2025-01-10T15:25:30, $f->eval(|min([%2025-01-10T15:25:30, %2025-02-10T20:10:20])));
+    assertEquals(%2024-05-17T23:11:14, $f->eval(|min([%2025-01-10T15:25:30, %2025-02-10T10:11:15, %2025-02-10T20:10:20, %2024-05-17T23:11:14])));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_StrictDate<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals(%2025-02-09, $f->eval(|min(%2025-04-09, %2025-02-09)));
+    assertEquals(%2025-02-09, $f->eval(|min(%2025-02-09, %2025-04-09)));
+}
+
+function <<PCT.test>> meta::pure::functions::date::tests::min::testMin_StrictDateArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+    assertEquals([], $f->eval(|min([]->cast(@StrictDate))));
+    assertEquals(%2025-02-09, $f->eval(|min([%2025-02-09])));
+    assertEquals(%2025-02-09, $f->eval(|min([%2025-04-09, %2025-02-09])));
+    assertEquals(%2025-02-09, $f->eval(|min([%2025-02-09, %2025-04-09])));
+    assertEquals(%2024-12-14, $f->eval(|min([%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02])));
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::date::tests::min::testExtendMinDate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = 
+    {
+      | #TDS
+          id:Integer[1],time:Date[1],volume:Integer[1]
+          1,2026-01-07T00:00:00.000000000+0000,820000
+          2,2026-01-07T06:00:00.000000000+0000,520000
+          3,2026-01-07T06:00:00.000000000+0000,480000
+          4,2026-01-08T00:00:00.000000000+0000,480000
+          5,2026-01-08T00:00:00.000000000+0000,480000
+          6,2026-01-09T00:00:00.000000000+0000,520000
+          7,2026-01-09T01:00:00.000000000+0000,820000
+        #->extend(over(~volume), ~minDate:{p,w,r|$r.time}:y|$y->min())
+    };
+
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,time,volume,minDate\n'+
+                '   1,2026-01-07T00:00:00.000+0000,820000,2026-01-07T00:00:00.000+0000\n'+
+                '   2,2026-01-07T06:00:00.000+0000,520000,2026-01-07T06:00:00.000+0000\n'+
+                '   3,2026-01-07T06:00:00.000+0000,480000,2026-01-07T06:00:00.000+0000\n'+
+                '   4,2026-01-08T00:00:00.000+0000,480000,2026-01-07T06:00:00.000+0000\n'+
+                '   5,2026-01-08T00:00:00.000+0000,480000,2026-01-07T06:00:00.000+0000\n'+
+                '   6,2026-01-09T00:00:00.000+0000,520000,2026-01-07T06:00:00.000+0000\n'+
+                '   7,2026-01-09T01:00:00.000+0000,820000,2026-01-07T00:00:00.000+0000\n'+
+                '#', $res->sort(~id->ascending())->toString());
+}
