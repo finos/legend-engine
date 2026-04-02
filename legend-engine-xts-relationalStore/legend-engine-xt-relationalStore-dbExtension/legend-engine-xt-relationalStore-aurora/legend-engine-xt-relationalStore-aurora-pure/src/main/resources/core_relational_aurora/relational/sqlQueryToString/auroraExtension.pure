@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::postgres::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::extension::*;
 
-public enum DatabaseType
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::aurora::dbExtensionLoaderForAurora():DbExtensionLoader[1]
 {
-    DB2, H2, MemSQL, Sybase, SybaseIQ, Composite, Postgres, SqlServer, Hive,
-    Snowflake, Presto, Trino, BigQuery, Redshift, Databricks, Spanner, Athena, DuckDB,
-    Oracle, ClickHouse, Aurora
+  ^DbExtensionLoader(dbType = DatabaseType.Aurora, loader = createDbExtensionForPostgres__DbExtension_1_);
 }
