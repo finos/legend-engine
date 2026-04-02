@@ -312,12 +312,12 @@ function  meta::relational::functions::pureToSqlQuery::relationalExecutionContex
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1]):State[1]
 {
    let map = $mapping->defaultIfEmpty(^Mapping())->toOne();
-   defaultState($map, $inScopeVars, buildClassMappingsById($map->toOne()));
+   defaultState($map, $inScopeVars, buildClassMappingsById($map));
 }
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], idToClassMapping:Map<String,List<SetImplementation>>[1]):State[1]
 {
-   let map = $mapping->defaultIfEmpty(^Mapping());
+   let map = $mapping->defaultIfEmpty(^Mapping())->toOne();
    ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$map, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions(), idToClassMapping=$idToClassMapping);
 }
 
