@@ -1158,7 +1158,49 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                'frame.window(["grp"], lambda r : r.id.descending() , frame.rows("unbounded","unbounded")), [("newCol", lambda p, w, r: r.name, lambda c: c.join(\'\'))])'+
              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
           ]
-        )
+        ),
+
+        meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::descending()->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus())', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window([], lambda r: r.id.descending()), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' + 
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|let t = #TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#;\n'+
+                            ' $t->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::descending()->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus());\n'+
+                            '', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window([], lambda r: r.id.descending()), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' + 
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      )
 
     ]->combine(),
     [ // Filter --------
@@ -1559,37 +1601,38 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
         ]
       ),
 
-//      meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_->testRev(
-//        [
-//          rev('|#TDS{\n'+
-//                  'val,str,otherkind\n'+
-//                  '1,a,a\n'+
-//                  '3,ewe,b\n'+
-//                  '4,qw,c\n'+
-//                  '5,wwe,d\n'+
-//                  '6,weq,e}#->meta::pure::functions::relation::select(~\'other kind\')',
-//              '(lambda frame:' +
-//              '  frame.select(lambda r: r["other kind"])' +
-//              ')(csv_frame("val,str,other kind\\n1,a,a\\n3,ewe,b\\n4,qw,c\\n5,wwe,d\\n6,weq,e"))')
-//        ]
-//      ),
+     meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'val,str,otherkind\n'+
+                            '1,a,a\n'+
+                            '3,ewe,b\n'+
+                            '4,qw,c\n'+
+                            '5,wwe,d\n'+
+                            '6,weq,e}#->meta::pure::functions::relation::select(~\'other kind\')', 
+               '(lambda frame:' +
+             '  frame.select(lambda r: r["other kind"])' +
+             ')(csv_frame("val,str,\'other kind\'\\n1,a,a\\n3,ewe,b\\n4,qw,c\\n5,wwe,d\\n6,weq,e"))')
+       ]
+     ),
 
-//      meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_->testRev(
-//        [
-//          rev('|let t = #TDS{\n'+
-//                        'val,str,\'other kind\'\n'+
-//                        '1,a,a\n'+
-//                        '3,ewe,b\n'+
-//                        '4,qw,c\n'+
-//                        '5,wwe,d\n'+
-//                        '6,weq,e}#;\n'+
-//                        ' $t->meta::pure::functions::relation::select(~\'other kind\');\n'+
-//                        '',
-//               '(lambda frame:' +
-//               '  frame.select(lambda r: r["other kind"])' +
-//               ')(csv_frame("val,str,other kind\\n1,a,a\\n3,ewe,b\\n4,qw,c\\n5,wwe,d\\n6,weq,e"))')
-//        ]
-//      ),
+     meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_->testRev(
+        [
+          rev('|let t = #TDS{\n'+
+                            'val,str,otherkind\n'+
+                            '1,a,a\n'+
+                            '3,ewe,b\n'+
+                            '4,qw,c\n'+
+                            '5,wwe,d\n'+
+                            '6,weq,e}#;\n'+
+                            ' $t->meta::pure::functions::relation::select(~\'other kind\');\n'+
+                            '', 
+               '(lambda frame:' +
+                '  frame.select(lambda r: r["other kind"])' +
+                ')(csv_frame("val,str,\'other kind\'\\n1,a,a\\n3,ewe,b\\n4,qw,c\\n5,wwe,d\\n6,weq,e"))')
+       ]
+     ),
+
       meta::pure::functions::relation::tests::select::testSelectAll_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -1863,6 +1906,15 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                '  frame.join(csv_frame("id2,col,other\\n1,More George 1,1\\n1,More George 2,2\\n4,More David,1\\n6,John,3"), (lambda x , y : x.id == y.id2), "RIGHT_OUTER")' +
                ')(csv_frame("id,name\\n1,George\\n2,Pierre\\n3,Sachin\\n4,David\\n5,Foo"))')
         ]
+      ),
+
+      meta::pure::functions::relation::tests::join::testFullJoin_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.FULL, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2})', 
+               '(lambda frame:' +
+               '  frame.join(csv_frame("id2,col,other\\n1,More George 1,1\\n1,More George 2,2\\n4,More David,1\\n6,John,3"), (lambda x , y : x.id == y.id2), "FULL")' +
+               ')(csv_frame("id,name\\n1,George\\n2,Pierre\\n3,Sachin\\n4,David\\n5,James"))')
+        ]
       )
 
     ]->combine(),
@@ -2133,7 +2185,232 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                   'frame.group_by(["str","str2"], ("newCol", lambda r: r.val, lambda c: c.sum())).distinct(["str"])'+
                 ')(csv_frame("\\nval,str,str2\\n2,a,b\\n3,a,b\\n4,qw,b\\n5,qw,c\\n2,weq,c"))')
           ]
-        )
+        ),
+
+        meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select_Function_1__Boolean_1_->testRev(
+          [
+            rev('|#TDS{\n'+
+                              'id,firstName,lastName,age\n'+
+                              '1,aaa,ttt,25\n'+
+                              '2,bbb,uuu,30\n'+
+                              '3,ccc,vvv,35\n'+
+                              '4,ddd,xxx,40\n'+
+                              '5,eee,yyy,45}#->meta::pure::functions::relation::extend(~fullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1])[1]|$x.firstName->meta::pure::functions::multiplicity::toOne() + \' \' + $x.lastName->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::relation::groupBy(~[id,fullName], ~[totalAges:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.age:y: Integer[*]|$y->plus()])->meta::pure::functions::relation::extend(~[finalId:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.id,finalTotalAges:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.totalAges,finalFullName:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.fullName])->meta::pure::functions::relation::select(~[finalId,finalFullName,finalTotalAges])', 
+                '(lambda frame:' +
+                  'frame.extend(("fullName", lambda r: r.firstName + \' \' + r.lastName)).group_by(["id","fullName"], [("totalAges", lambda r: r.age, lambda c: c.sum())]).extend([("finalId", lambda r: r.id),("finalTotalAges", lambda r: r.totalAges),("finalFullName", lambda r: r.fullName)]).select(lambda r: [r.finalId, r.finalFullName, r.finalTotalAges])' + 
+                ')(csv_frame("\\nid,firstName,lastName,age\\n1,aaa,ttt,25\\n2,bbb,uuu,30\\n3,ccc,vvv,35\\n4,ddd,xxx,40\\n5,eee,yyy,45"))')
+          ]
+        ),
+
+      meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Project_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,firstName,lastName,age\n'+
+                            '1,aaa,ttt,25\n'+
+                            '2,bbb,uuu,30\n'+
+                            '3,ccc,vvv,35\n'+
+                            '4,ddd,xxx,40\n'+
+                            '5,eee,yyy,45}#->meta::pure::functions::relation::extend(~fullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1])[1]|$x.firstName->meta::pure::functions::multiplicity::toOne() + \' \' + $x.lastName->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::relation::groupBy(~[id,fullName], ~[totalAges:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.age:y: Integer[*]|$y->plus()])->meta::pure::functions::relation::project(~[finalId:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.id,finalTotalAges:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.totalAges,finalFullName:x: (id:Integer[0..1], fullName:String[1], totalAges:Integer[1])[1]|$x.fullName])', 
+               '(lambda frame:' +
+                 'frame.extend(("fullName", lambda r: r.firstName + \' \' + r.lastName)).group_by(["id","fullName"], [("totalAges", lambda r: r.age, lambda c: c.sum())]).project([("finalId", lambda r: r.id),("finalTotalAges", lambda r: r.totalAges),("finalFullName", lambda r: r.fullName)])' + 
+              ')(csv_frame("\\nid,firstName,lastName,age\\n1,aaa,ttt,25\\n2,bbb,uuu,30\\n3,ccc,vvv,35\\n4,ddd,xxx,40\\n5,eee,yyy,45"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,firstName,lastName,age\n'+
+                            '1,aaa,ttt,25\n'+
+                            '2,bbb,uuu,30\n'+
+                            '3,ccc,vvv,35\n'+
+                            '4,ddd,xxx,40\n'+
+                            '5,eee,yyy,45}#->meta::pure::functions::relation::extend(~fullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1])[1]|$x.firstName->meta::pure::functions::multiplicity::toOne() + \' \' + $x.lastName->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::relation::sort(~fullName->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::extend(~[finalId:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.id,finalAge:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.age,finalFullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.fullName])->meta::pure::functions::relation::select(~[finalId,finalAge,finalFullName])', 
+               '(lambda frame:' +
+                 'frame.extend(("fullName", lambda r: r.firstName + \' \' + r.lastName)).sort(["fullName"]).extend([("finalId", lambda r: r.id),("finalAge", lambda r: r.age),("finalFullName", lambda r: r.fullName)]).select(lambda r: [r.finalId, r.finalAge, r.finalFullName])' + 
+              ')(csv_frame("\\nid,firstName,lastName,age\\n1,aaa,ttt,25\\n2,bbb,uuu,30\\n3,ccc,vvv,35\\n4,ddd,xxx,40\\n5,eee,yyy,45"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,firstName,lastName,age\n'+
+                            '1,aaa,ttt,25\n'+
+                            '2,bbb,uuu,30\n'+
+                            '3,ccc,vvv,35\n'+
+                            '4,ddd,xxx,40\n'+
+                            '5,eee,yyy,45}#->meta::pure::functions::relation::extend(~fullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1])[1]|$x.firstName->meta::pure::functions::multiplicity::toOne() + \' \' + $x.lastName->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::relation::sort(~fullName->meta::pure::functions::relation::ascending())->meta::pure::functions::relation::project(~[finalId:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.id,finalAge:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.age,finalFullName:x: (id:Integer[0..1], firstName:String[0..1], lastName:String[0..1], age:Integer[0..1], fullName:String[1])[1]|$x.fullName])', 
+               '(lambda frame:' +
+                 'frame.extend(("fullName", lambda r: r.firstName + \' \' + r.lastName)).sort(["fullName"]).project([("finalId", lambda r: r.id),("finalAge", lambda r: r.age),("finalFullName", lambda r: r.fullName)])' + 
+              ')(csv_frame("\\nid,firstName,lastName,age\\n1,aaa,ttt,25\\n2,bbb,uuu,30\\n3,ccc,vvv,35\\n4,ddd,xxx,40\\n5,eee,yyy,45"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Smith\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(firstName=\'John\', lastName=\'Johnson\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(lastName=\'Peter\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(firstName=\'Anthony\', lastName=\'Allen\')]->meta::pure::functions::collection::filter(x|\'Peter\' == $x.firstName->meta::pure::functions::flow::coalesce($x.lastName))->meta::pure::functions::collection::size()')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testFilterArithmeticComparisonExpression_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'val,val2\n'+
+                            '1,2\n'+
+                            '3,5\n'+
+                            '4,9\n'+
+                            '5,14\n'+
+                            '6,20}#->meta::pure::functions::relation::filter(x: (val:Integer[0..1], val2:Integer[0..1])[1]|($x.val2->meta::pure::functions::multiplicity::toOne() - 1) < (($x.val->meta::pure::functions::multiplicity::toOne() * 2) + 2))', 
+               '(lambda frame:' +
+                 'frame.filter(lambda x: (x.val2 - 1) < ((x.val * 2) + 2))' + 
+              ')(csv_frame("\\nval,val2\\n1,2\\n3,5\\n4,9\\n5,14\\n6,20"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(firstName=\'Peter\', lastName=\'Smith\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(lastName=\'Johnson\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests(firstName=\'Anthony\'), ^meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests()]->meta::pure::functions::relation::project(~[name:x: meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests[1]|$x.firstName->meta::pure::functions::flow::coalesce($x.lastName, \'Anonymous\'),firstName:x: meta::pure::functions::relation::tests::composition::OptionalPersonTypeForCompositionTests[1]|$x.firstName->meta::pure::functions::flow::coalesce(\'Empty\')])')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|+($y->meta::pure::functions::lang::cast(@Integer)))', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|$y->plus())', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C\n'+
+                            '4,4,D\n'+
+                            '5,2,E\n'+
+                            '6,1,F\n'+
+                            '7,3,G\n'+
+                            '8,1,H\n'+
+                            '9,5,I\n'+
+                            '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Integer)}:y: Integer[*]|meta::pure::functions::lang::cast($y->plus(), @Integer))', 
+               '(lambda frame: frame.window_extend(' +
+                 'frame.window("grp", []), ("newCol", lambda p, w, r: r.id, lambda c: c.sum()))' +
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg_Function_1__Boolean_1_->testRev(
+              [
+                rev('|#TDS{\n'+
+                                  'id,grp\n'+
+                                  '1,2\n'+
+                                  '2,1\n'+
+                                  '3,3\n'+
+                                  '4,4\n'+
+                                  '5,2\n'+
+                                  '6,1\n'+
+                                  '7,3\n'+
+                                  '8,1\n'+
+                                  '9,5\n'+
+                                  '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|+($x->meta::pure::functions::lang::cast(@Integer)))', 
+                     '(lambda frame:' +
+                       'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
+                    ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
+              ]
+            ),
+      
+        meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg_Function_1__Boolean_1_->testRev(
+          [
+            rev('|#TDS{\n'+
+                              'id,grp\n'+
+                              '1,2\n'+
+                              '2,1\n'+
+                              '3,3\n'+
+                              '4,4\n'+
+                              '5,2\n'+
+                              '6,1\n'+
+                              '7,3\n'+
+                              '8,1\n'+
+                              '9,5\n'+
+                              '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|meta::pure::functions::lang::cast($x->plus(), @Integer))', 
+                  '(lambda frame:' +
+                    'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
+                ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
+          ]
+        ),
+
+        meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$tds->meta::pure::functions::relation::project(~[id:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.id,val1:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val1,factor:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|2])->meta::pure::functions::relation::join($tds->meta::pure::functions::relation::project(~[id2:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.id,val2:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.val2,order:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.order]), meta::pure::functions::relation::JoinKind.LEFT, {r1: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1])[1], r2: (id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|($r1.id == $r2.id2) && ($r2.val2 >= (($r1.val1->meta::pure::functions::multiplicity::toOne() + 8 + 9) * $r1.factor))})->meta::pure::functions::relation::project(~[id:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.id,val1:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val1,val2:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val2,order:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.order])', 
+               '(lambda frame1:' +
+                 'frame1.project([("id", lambda x: x.id),("val1", lambda x: x.val1),("factor", lambda x: 2)]).join(frame1.project([("id2", lambda y: y.id),("val2", lambda y: y.val2),("order", lambda y: y.order)]),(lambda r1, r2: (r1.id == r2.id2) & (r2.val2 >= (r1.val1 + 8 + 9) * r1.factor)), "LEFT_OUTER").project([("id", lambda x: x.id),("val1", lambda x: x.val1),("val2", lambda x: x.val2),("order", lambda x: x.order)])' +
+              ')(csv_frame("\\nid,val1,val2,order\\n1,-20,8,1\\n1,-19,5,2\\n1,2024,3,3\\n2,-20,8,4\\n2,-19,2,5\\n2,-21,1,6\\n3,-20,8,7\\n3,-19,3,8"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_->testRev(
+        [
+          rev('|$tds1->meta::pure::functions::relation::select(~[id,name])->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.INNER, {x: (id:String[0..1], name:String[0..1])[1], y: (id2:String[0..1], grp2:String[0..1], name2:String[0..1])[1]|$x.id == $y.id2})->meta::pure::functions::relation::project(~[name2:x: (id:String[0..1], name:String[0..1], id2:String[0..1], grp2:String[0..1], name2:String[0..1])[1]|$x.name->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()])->meta::pure::functions::relation::groupBy(~name2, ~[newCol:x: (name2:String[1])[1]|1:y: Integer[*]|$y->plus()])', 
+               '(lambda frame1, frame2:' +
+                 'frame1.select(lambda r: [r.id, r.name]).join(frame2, (lambda x, y: x.id == y.id2), "INNER").project([("name2", lambda x: x.name.to_string())]).group_by(["name2"], [("newCol", lambda x: 1, lambda c: c.sum())])' + 
+              ')(csv_frame("\\nid,grp,name\\nP,Y,A\\nQ,X,B\\nR,Z,B\\nS,U,C\\nT,Y,D"),csv_frame("\\nid2,grp2,name2\\nP,Y,A\\nQ,X,B\\nR,Z,B\\nS,V,C\\nT,V,D"))')
+        ]
+      )
 
     ]->combine(),
     [
@@ -3926,6 +4203,47 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
            ')(csv_frame("\\np,o,i\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-29T00:32:34.000000000+0000,10\\n0,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-29T00:32:34.000000000+0000,10\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-30T00:32:34.000000000+0000,20\\n100,2024-01-31T00:32:34.000000000+0000,30\\n100,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-29T00:32:34.000000000+0000,10\\n200,2024-01-30T00:32:34.000000000+0000,20\\n200,2024-01-31T00:32:34.000000000+0000,30\\n200,2024-01-31T00:32:34.000000000+0000,30\\n300,2024-01-29T00:32:34.000000000+0000,10\\n300,2024-01-30T00:32:34.000000000+0000,20"))')
         ]
       )
+    ]->combine(),
+    [
+      meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpec_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus())', 
+                '(lambda frame:' +
+                  'frame.aggregate(("idSum", lambda r: r.id, lambda c: c.sum()))' +
+                ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,code\n'+
+                            '1,2,A\n'+
+                            '2,1,A\n'+
+                            '3,3,A}#->meta::pure::functions::relation::aggregate(~[idSum:x: (id:Integer[0..1], grp:Integer[0..1], code:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus(),codes:x: (id:Integer[0..1], grp:Integer[0..1], code:String[0..1])[1]|$x.code:y: String[*]|$y->meta::pure::functions::string::joinStrings(\':\')])', 
+               '(lambda frame:' +
+                'frame.aggregate([("idSum", lambda r: r.id, lambda c: c.sum()), ("codes", lambda r: r.code, lambda c: c.join(":"))])' +
+              ')(csv_frame("\\nid,grp,code\\n1,2,A\\n2,1,A\\n3,3,A"))')
+        ]
+      ),
+
+      meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_WithFilter_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                            'id,grp,name\n'+
+                            '1,2,A\n'+
+                            '2,1,B\n'+
+                            '3,3,C}#->meta::pure::functions::relation::aggregate(~idSum:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus())->meta::pure::functions::relation::filter(r: (idSum:Integer[1])[1]|$r.idSum == 6)', 
+               '(lambda frame:' +
+                'frame.aggregate(("idSum", lambda r: r.id, lambda c: c.sum())).filter(lambda r: r.idSum == 6)' +
+              ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C"))')
+        ]
+      )
+
     ]->combine()
   ]
 }
