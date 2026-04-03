@@ -45,6 +45,7 @@ import meta::analytics::lineage::graph::*;
 import meta::analytics::lineage::flow::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::pure::router::routing::*;
 
 
 
@@ -358,8 +359,11 @@ function meta::analytics::lineage::buildReportLineage(funcBody:ValueSpecificatio
    let colPropertyTreePair = $groupedProject->keys()->map(gp|let propertiesPaths = $groupedProject->get($gp).values->map(c| $c.second.expressionSequence->at(0)->scanProperties(^List<PropertyPathNode>(), [], [], noDebug()))->removeDuplicates();
                                                 pair($gp, $propertiesPaths.result->buildPropertyTree()););
 
+  let sets = $mapping->classMappings()->map(s|$s->resolveOperation($mapping));
+  let setsWithSuper = $sets->map(s|$s->allSuperSetImplementations($mapping))->concatenate($sets)->cast(@InstanceSetImplementation)->removeDuplicatesBy(x | $x.id);
+
    let result = $colPropertyTreePair->fold({p,state|
-                                            let res= $p.second->scanColumns($mapping, $state.classToSets, $state.idToSet);
+                                            let res= $p.second->scanColumns($setsWithSuper, $state.classToSets, $state.idToSet);
                                             ^ReportColumnsWithState(columns=$state.columns->concatenate(^ReportColumn(name = $p.first, propertyTree = $p.second, columns = $res.colRes.columns->removeDuplicates())),
                                                          idToSet = $res.idToSet->map(n|$n->keyValues())->newMap(),
                                                          classToSets = $res.classToSets->map(n|$n->keyValues())->newMap());},
