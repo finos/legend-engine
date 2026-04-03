@@ -42,5 +42,6 @@
         <module>legend-engine-pure-platform-modular-generation</module>
         <module>legend-engine-pure-ide</module>
         <module>legend-engine-pure-code-reversePCT</module>
+        <module>legend-engine-pure-repl</module>
     </modules>
 </project>
