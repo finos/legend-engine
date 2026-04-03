@@ -38,6 +38,7 @@ Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceS
 
     <<equality.Key>> quotedIdentifiersIgnoreCase:Boolean[0..1];
     <<equality.Key>> enableQueryTags: Boolean[0..1];
+    <<equality.Key>> setSessionTimezone: Boolean[0..1];
 }
 
 Class meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy

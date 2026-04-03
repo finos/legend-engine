@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -105,6 +106,11 @@ public class SnowflakeConnectionExtension implements ConnectionExtension, Strate
             if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
             {
                 SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
+                String sessionTimezone = null;
+                if (snowflakeDatasourceSpecification.setSessionTimezone)
+                {
+                    sessionTimezone = StringUtils.isNotEmpty(connection.timeZone) ? connection.timeZone : "UTC";
+                }
                 return new SnowflakeDataSourceSpecificationKey(
                         snowflakeDatasourceSpecification.accountName,
                         snowflakeDatasourceSpecification.region,
@@ -120,7 +126,8 @@ public class SnowflakeConnectionExtension implements ConnectionExtension, Strate
                         snowflakeDatasourceSpecification.organization,
                         snowflakeDatasourceSpecification.role,
                         snowflakeDatasourceSpecification.tempTableDb,
-                        snowflakeDatasourceSpecification.tempTableSchema);
+                        snowflakeDatasourceSpecification.tempTableSchema,
+                        sessionTimezone);
             }
             return null;
         };
