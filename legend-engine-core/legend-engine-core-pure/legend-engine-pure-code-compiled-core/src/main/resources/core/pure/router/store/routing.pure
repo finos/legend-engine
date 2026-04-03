@@ -393,7 +393,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                             let r = ^StoreMappingRoutedValueSpecification(
                                       genericType = $fe.genericType,
                                       multiplicity = $fe.multiplicity,
-                                      id = $last.counter->toString(),
+                                      id = $preLast.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.id, a:Any[*]|$last.counter->toString()]),
                                       sets = $updatedClassMappingAndRoutingStrategy.first.values,
                                       runtime = $runtime,
                                       mapping = $mapping,
