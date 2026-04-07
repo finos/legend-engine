@@ -105,7 +105,6 @@ function <<access.private>> meta::external::python::reversePCT::pandasAPI::getPu
     'from pylegend.core.language import PyLegendPrimitive\n' +
     'from pylegend.core.language.shared.pct_helpers import c\n' +
     'from pylegend.core.language.shared.functions import pi\n' +
-    'from pylegend.core.language import row_mapper\n' +
     'from pylegend.extensions.tds.pandas_api.frames.pandas_api_csv_input_frame import PandasApiCsvNonExecutableInputTdsFrame as csv_frame\n'+
     'from pylegend.core.tds.pandas_api.frames.pandas_api_applied_function_tds_frame import PandasApiAppliedFunctionTdsFrame\n' +
     'from pylegend.core.tds.pandas_api.frames.pandas_api_window_tds_frame import PandasApiWindowTdsFrame\n' +
@@ -129,4 +128,3 @@ function <<access.private>> meta::external::python::reversePCT::pandasAPI::getPu
   if ($res.error->trim() != '', | fail($res.error), | []);
   $res.output;
 }
-
