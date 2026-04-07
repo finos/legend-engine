@@ -1,4 +1,4 @@
-// Copyright 2026 Goldman Sachs
+// Copyright 2025 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReverses(
   ^ReverseInformation
   (
     reversesForSource =   meta::external::python::reversePCT::shared::pythonSharedReversesAll()
-                          ->concatenate(pythonPandasAPIReversesRelation()),
+                          ->concatenate(pythonPandasAPIReversesRelation())
+                          ->concatenate(pythonPandasAPIReversesStandard()),
     reverseTransformer = val:String[1]| ^FunctionExpression
                                         (
                                           func = meta::external::python::reversePCT::pandasAPI::pythonToPure_String_1__Any_1_,
@@ -63,6 +64,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesR
   pythonPandasAPIReversesEssentialRelation()
 }
 
+function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesStandard(): ReversesForSource[*]
+{
+  pythonPandasAPIReversesStandardMath()
+}
 
 function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesVariant(): ReversesForSource[*]
 {
@@ -100,8 +105,11 @@ function <<access.private>> meta::external::python::reversePCT::pandasAPI::getPu
     'from pylegend.core.language import PyLegendPrimitive\n' +
     'from pylegend.core.language.shared.pct_helpers import c\n' +
     'from pylegend.core.language.shared.functions import pi\n' +
+    'from pylegend.core.language import row_mapper\n' +
     'from pylegend.extensions.tds.pandas_api.frames.pandas_api_csv_input_frame import PandasApiCsvNonExecutableInputTdsFrame as csv_frame\n'+
     'from pylegend.core.tds.pandas_api.frames.pandas_api_applied_function_tds_frame import PandasApiAppliedFunctionTdsFrame\n' +
+    'from pylegend.core.tds.pandas_api.frames.pandas_api_window_tds_frame import PandasApiWindowTdsFrame\n' +
+    'from pylegend.core.language.pandas_api.pandas_api_window_series import WindowSeries' +
     '\n' +
     'def func():\n'+
     '  res = (' + $pythonCodeBlock + ')\n' +
