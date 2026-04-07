@@ -208,9 +208,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                 '1,1\n'+
                 '1,2\n'+
                 '2,2\n'+
-                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())',
+                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol2:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1], newCol:Number[1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1], newCol:Number[1])>[1], r: (id:Integer[0..1], val:Integer[0..1], newCol:Number[1])[1]|$p->meta::pure::functions::math::stdDevPopulation($w, $r, ~val)})',
               '(lambda frame:' +
-               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("std_dev_population"))' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("std_dev_population")).assign(newCol2=lambda _r: frame.groupby("id")["val"].transform("std_dev_population"))' +
                ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
         ]
       )
@@ -1298,21 +1298,51 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
       meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
-                'id,grp,name\n'+
-                '2,1,A\n'+
-                '4,1,B\n'+
-                '4,1,C\n'+
-                '4,1,D\n'+
-                '5,1,E\n'+
-                '5,1,F\n'+
-                '7,1,G\n'+
-                '9,1,H}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~zScore:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~id)})',
+                'grp,x\n'+
+                'A,11\n'+
+                'A,9\n'+
+                'A,13\n'+
+                'A,7\n'+
+                'A,10\n'+
+                'B,20\n'+
+                'B,26\n'+
+                'B,14\n'+
+                'B,22\n'+
+                'B,18}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
               '(lambda frame:' +
-               '  frame.assign(zScore=lambda r: frame.groupby("grp")["id"].zscore())' +
-               ')(csv_frame("\\nid,grp,name\\n2,1,A\\n4,1,B\\n4,1,C\\n4,1,D\\n5,1,E\\n5,1,F\\n7,1,G\\n9,1,H"))')
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               ')(csv_frame("\\ngrp,x\\nA,11\\nA,9\\nA,13\\nA,7\\nA,10\\nB,20\\nB,26\\nB,14\\nB,22\\nB,18"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'grp,x\n'+
+                'A,5\n'+
+                'A,5\n'+
+                'A,5\n'+
+                'B,10}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
+              '(lambda frame:' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               ')(csv_frame("\\ngrp,x\\nA,5\\nA,5\\nA,5\\nB,10"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'grp,x\n'+
+                'A,1.0\n'+
+                'A,2.0\n'+
+                'A,3.0\n'+
+                'A,4.0\n'+
+                'A,5.0}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Float[0..1])>[1], r: (grp:String[0..1], x:Float[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
+              '(lambda frame:' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               ')(csv_frame("\\ngrp,x\\nA,1.0\\nA,2.0\\nA,3.0\\nA,4.0\\nA,5.0"))')
         ]
       )
     ]->combine()
   ]
 }
-
