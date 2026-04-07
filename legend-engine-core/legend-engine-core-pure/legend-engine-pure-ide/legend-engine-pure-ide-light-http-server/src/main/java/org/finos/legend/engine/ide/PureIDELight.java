@@ -31,22 +31,8 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-//        System.setProperty("legend.test.h2.port", "1976");
-//        System.setProperty("user.timezone", "GMT");
-        System.setProperty("alloy.test.server.host", "127.0.0.1");
-        System.setProperty("alloy.test.server.port", "6060");
-        System.setProperty("alloy.test.h2.port", "9092");
-        System.setProperty("alloy.test.clientVersion", "vX_X_X");
-        System.setProperty("alloy.test.serverVersion", "v1");
-
-        System.setProperty("pure.options.ExecPlan", "true");
-        System.setProperty("pure.options.PlanLocal", "true");
-        System.setProperty("legend.test.server.host", "127.0.0.1");
-        System.setProperty("legend.test.server.port", "8080");
-        System.setProperty("legend.test.h2.port", "9092");
-        System.setProperty("legend.test.clientVersion", "vX_X_X");
-        System.setProperty("legend.test.serverVersion", "v1");
-        System.setProperty("legend.test.serializationKind", "json");
+        System.setProperty("legend.test.h2.port", "1976");
+        System.setProperty("user.timezone", "GMT");
 
         // Uncomment to be able to run   AlloyOny test cases
         // withAlloyServerSupport();
