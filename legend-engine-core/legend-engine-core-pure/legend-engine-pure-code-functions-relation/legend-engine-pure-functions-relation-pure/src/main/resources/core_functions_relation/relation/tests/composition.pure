@@ -1826,3 +1826,105 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '   4,9\n'+
                   '#', $res->sort([~val->ascending()])->toString());
 }
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests project followed by extend with an OLAP lead inside a nested if with adjust.'
+  }
+meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id:Integer[1],fromDate:Date[1],toDate:Date[1]
+                  1,2026-01-07T00:00:00.000000000+0000,2026-01-08T00:00:00.000000000+0000
+                  1,2026-01-08T00:00:00.000000000+0000,2026-01-10T00:00:00.000000000+0000
+                  1,2026-01-09T00:00:00.000000000+0000,2026-01-09T00:00:00.000000000+0000
+                  1,2026-01-10T00:00:00.000000000+0000,9999-12-31T00:00:00.000000000+0000
+                #
+                ->project(
+                  ~[
+                    grp: x|$x.id,
+                    dateSeq: x|$x.fromDate,
+                    endDate: x|$x.toDate,
+                    startDate: x|$x.fromDate
+                  ]
+                )->extend(
+                  over(~[grp], [~dateSeq->ascending()]),
+                  ~[
+                    endDateSeq: {p, w, r|if(
+                      $r.endDate ==
+                      $p->lead(
+                        $r
+                      ).startDate,
+                      |$p->lead(
+                        $r
+                      ).dateSeq,
+                      |if(
+                        $r.startDate != $r.endDate,
+                        |$r.endDate,
+                        |$r.dateSeq->adjust(
+                          1,
+                          DurationUnit.SECONDS
+                        )
+                      )
+                    )->cast(@Date)    }
+                  ]
+                )
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,dateSeq,endDate,startDate,endDateSeq\n'+
+                  '   1,2026-01-07T00:00:00.000+0000,2026-01-08T00:00:00.000+0000,2026-01-07T00:00:00.000+0000,2026-01-08T00:00:00.000+0000\n'+
+                  '   1,2026-01-08T00:00:00.000+0000,2026-01-10T00:00:00.000+0000,2026-01-08T00:00:00.000+0000,2026-01-10T00:00:00.000+0000\n'+
+                  '   1,2026-01-09T00:00:00.000+0000,2026-01-09T00:00:00.000+0000,2026-01-09T00:00:00.000+0000,2026-01-09T00:00:01.000+0000\n'+
+                  '   1,2026-01-10T00:00:00.000+0000,1816-03-29T05:56:08.067+0000,2026-01-10T00:00:00.000+0000,1816-03-29T05:56:08.067+0000\n'+
+                  '#', $res->sort(~dateSeq->ascending())->toString());
+}
+
+function
+  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
+  {
+    doc.doc='Tests extend with an OLAP lead inside an if with adjust using a derived offset.'
+  }
+meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id:Integer[1],fromDate:Date[1],seq:Integer[1],toDate:Date[1]
+                  1, 2026-01-07T00:00:00.000000000+0000,1,2026-01-07T00:00:00.000000000+0000
+                  1, 2026-01-07T00:00:00.000000000+0000,2,2026-01-08T00:00:00.000000000+0000
+                  1, 2026-01-08T00:00:00.000000000+0000,1,2026-01-08T00:00:00.000000000+0000
+                  1, 2026-01-08T00:00:00.000000000+0000,2,9999-12-31T00:00:00.000000000+0000
+                #
+                ->extend(over(~[id, fromDate], [~fromDate->ascending(), ~seq->ascending()]),
+                  ~[
+                    toDateSeq: {p, w, r|if(
+                      $r.fromDate ==
+                      $r.toDate,
+                      |$p->lead(
+                        $r
+                      ).fromDate->toOne()->cast(@Date)->adjust(
+                        $p->lead(
+                          $r
+                        ).seq->toOne() - 1,
+                        DurationUnit.SECONDS
+                      ),
+                      |$r.toDate
+                    )->cast(@Date)  }
+                  ]
+                )
+               };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   id,fromDate,seq,toDate,toDateSeq\n'+
+                  '   1,2026-01-07T00:00:00.000+0000,1,2026-01-07T00:00:00.000+0000,2026-01-07T00:00:01.000+0000\n'+
+                  '   1,2026-01-07T00:00:00.000+0000,2,2026-01-08T00:00:00.000+0000,2026-01-08T00:00:00.000+0000\n'+
+                  '   1,2026-01-08T00:00:00.000+0000,1,2026-01-08T00:00:00.000+0000,2026-01-08T00:00:01.000+0000\n'+
+                  '   1,2026-01-08T00:00:00.000+0000,2,1816-03-29T05:56:08.067+0000,1816-03-29T05:56:08.067+0000\n'+
+                  '#', $res->sort([~fromDate->ascending(), ~seq->ascending()])->toString());
+}
