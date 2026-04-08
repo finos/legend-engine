@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
+import meta::pure::functions::string::generation::*;
 import meta::pure::precisePrimitives::*;
 import meta::pure::functions::hash::*;
 import meta::pure::metamodel::variant::*;
