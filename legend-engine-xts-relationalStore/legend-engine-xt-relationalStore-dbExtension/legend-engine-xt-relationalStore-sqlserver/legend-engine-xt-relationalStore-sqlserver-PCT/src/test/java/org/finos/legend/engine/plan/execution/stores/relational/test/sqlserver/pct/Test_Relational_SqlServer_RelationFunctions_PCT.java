@@ -229,6 +229,8 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select_Function_1__Boolean_1_", "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."),
             one("meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project_Function_1__Boolean_1_", "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."),
+            one("meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_", "Error while executing: Create Table leSchema"),
+            one("meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust_Function_1__Boolean_1_", "Error while executing: Create Table leSchema"),
 
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"),
             one("meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"),
