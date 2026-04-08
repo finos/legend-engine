@@ -616,7 +616,7 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpression(
                                     a:Any[1]| processFunctionExpressionForNonPropertyFunction($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
                                    ]);
 
-  print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n  ' + $context.space + $res.element->match([s:SelectWithCursor[*]|$s.select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', '), a:Any[*]|'No SQL'])));
+  print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n  ' + $context.space + $res.element->match([s:SelectWithCursor[*]|$s.select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', '), w:WindowColumn[1]|^SelectSQLQuery(columns=$w)->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', ')])));
   $res;
 }
 
@@ -4890,10 +4890,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(name:S
                         positionBeforeLastApplyJoinTreeNode = []
                      );
 
-   let otherParams = $processedParams.first.values->filter(x | !$x->instanceOf(SelectWithCursor) && !$x->instanceOf(Literal));
-   let columns = $res.select.columns->concatenate($otherParams)->removeDuplicates();
-   let select = $res.select;
-   $processedParams.second->eval(^$res(select = ^$select(columns = $columns)));
+   $processedParams.second->eval($res);
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapAlias<|N>(params: RelationalOperationElement[N]): RelationalOperationElement[N]
@@ -8588,7 +8585,7 @@ function meta::relational::functions::pureToSqlQuery::extractSelectSQLQuery(src:
                   [
                      o:SelectWithCursor[1] | $o.select,
                      l:Literal[1] | [],
-                     w:WindowColumn[1] | []
+                     w:WindowColumn[1] | ^SelectSQLQuery(columns=$w);
                   ]
               )
 }
@@ -8882,7 +8879,7 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
                        )
                     );
                let q_moved = if($q.columns->filter(c|$c->instanceOf(Alias) && $c->cast(@Alias).relationalElement->instanceOf(WindowColumn))->map(w|$a.filteringOperation->extractTableAliasColumns().column.name->contains($w->cast(@Alias).name))->contains(true),|$q->moveSelectQueryToSubSelect($q.data,[],'root',$context, $extensions),|$q);
-               if ($q != [] && !$q.data->isEmpty()
+               if ($q != [] && !$q.data->isEmpty() && !$a.data->isEmpty()
                    ,|
                       // let shouldIsolate = shouldIsolateSubJoins($a, $q, $context->shift());
                       let new_a = $a;//if ($shouldIsolate,|$a->possiblyIsolateSubJoins($nodeId),|$a);
@@ -8919,15 +8916,14 @@ function meta::relational::functions::pureToSqlQuery::mergeSQLQueryData(preQuery
                             extraFilteringOperation = $new_a.extraFilteringOperation->reprocessAliases($remap)->concatenate($merged.extraFilteringOperation),
                             groupBy = $newGroupBy
                          );
-                   ,| let cols = $a.columns->filter(c|$c->instanceOf(WindowColumn));
-                        ^$a
-                         (
-                            columns = $a.columns->concatenate($q.columns)->filter(c|!$c->instanceOf(WindowColumn))->removeDuplicatesBy(x | $x->match([a:Alias[1]|$a.name, a:Any[1]|generateGuid()]))->concatenate($cols),
-                            filteringOperation += $q.filteringOperation,
-                            savedFilteringOperation += $q.savedFilteringOperation,
-                            extraFilteringOperation += $q.extraFilteringOperation,
-                            groupBy = if ($q.groupBy->isEmpty(), | $a.groupBy, | $q.groupBy)
-                         );
+                   ,| ^$a
+                        (
+                          columns = $a.columns->concatenate($q.columns)->removeDuplicatesBy(x | $x->match([a:Alias[1]|$a.name, a:Any[1]|generateGuid()])),
+                          filteringOperation += $q.filteringOperation,
+                          savedFilteringOperation += $q.savedFilteringOperation,
+                          extraFilteringOperation += $q.extraFilteringOperation,
+                          groupBy = if ($q.groupBy->isEmpty(), | $a.groupBy, | $q.groupBy)
+                        );
                );
       }, $querySet->first()->toOne()
    );
