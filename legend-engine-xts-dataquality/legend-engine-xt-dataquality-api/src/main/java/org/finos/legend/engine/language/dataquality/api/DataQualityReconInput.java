@@ -39,5 +39,6 @@ public class DataQualityReconInput
     public boolean includeColumnValues = false; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
     public boolean runSourceQuery = false;
     public boolean runTargetQuery = false;
+    public Long defectLimit; //optional limit on the number of defect rows returned
 
 }

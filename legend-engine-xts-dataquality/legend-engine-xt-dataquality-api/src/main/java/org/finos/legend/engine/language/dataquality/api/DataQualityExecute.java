@@ -361,8 +361,8 @@ public class DataQualityExecute
         else
         {
             // 1. create DQ recon input
-            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__DataQualityReconInput_1_(
-                    HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()), HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()), Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, pureModel.getExecutionSupport()
+            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__DataQualityReconInput_1_(
+                    HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()), HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()), Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, input.defectLimit, pureModel.getExecutionSupport()
             );
             // 2. call DQ PURE func to generate recon lambda
             dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);

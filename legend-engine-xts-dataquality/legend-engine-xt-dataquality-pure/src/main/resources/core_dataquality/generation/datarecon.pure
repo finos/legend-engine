@@ -48,7 +48,12 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
   let filterCondition = negatedFunctionExpression(buildComparisonExpression(equal_Any_MANY__Any_MANY__Boolean_1_, 'row', $joinRelType, $sourceHashCol, 'row', $joinRelType, $targetHashCol, ^GenericType(rawType=String)));
   let withFilter = buildFilterExpression($withJoin, $joinRelType, $filterCondition);
 
-  ^$baseLambda(expressionSequence=$withFilter);
+  let withLimit = if($reconInput.defectLimit->isEmpty(),
+    | $withFilter,
+    | $withFilter->buildRelationLimitFilterExpression($reconInput.defectLimit->toOne(), $withFilter.genericType)
+  );
+
+  ^$baseLambda(expressionSequence=$withLimit);
 }
 
 function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1]): ValueSpecification[1]
@@ -389,5 +394,10 @@ function meta::external::dataquality::datarecon::getRelType(input: ValueSpecific
   
 function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]): DataQualityReconInput[1]
 {
-  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues);
+  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);
+}
+
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1]): DataQualityReconInput[1]
+{
+  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit);
 }
