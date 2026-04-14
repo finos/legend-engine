@@ -744,8 +744,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '9,1,C,11\n'+
                   '10,2,D,11}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over([~name->meta::pure::functions::relation::ascending(), ~height->meta::pure::functions::relation::ascending()]), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])'+
                   '',
-               '(lambda frame:' +
-               '  frame' +
+              '(lambda frame:' +
+               '  frame.__setitem__("newCol", frame.groupby("grp").window_frame_legend_ext(order_by=["name", "height"], ascending=[True, True])["id"].shift(periods=-1))' +
+               '  or frame.__setitem__("other", frame.groupby("grp").window_frame_legend_ext(frame_spec=frame.rows_between(), order_by=["name", "height"], ascending=[True, True])["name"].first())' +
+               '  or frame' +
                ')(csv_frame("\\nid,grp,name,height\\n1,2,A,11\\n2,1,B,12\\n3,3,C,12\\n4,3,B,11\\n5,2,B,13\\n6,1,C,12\\n7,3,A,13\\n8,1,B,14\\n9,1,C,11\\n10,2,D,11"))')
         ]
       ),
@@ -766,7 +768,11 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '10,2,D,11}#->meta::pure::functions::relation::filter(x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$x.id < 9)->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over([~name->meta::pure::functions::relation::ascending(), ~height->meta::pure::functions::relation::ascending()]), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], height:Integer[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])'+
                   '',
                '(lambda frame:' +
-               '  frame' +
+               '  (lambda frame:' +
+               '    frame.__setitem__("newCol", frame.groupby("grp").window_frame_legend_ext(order_by=["name", "height"], ascending=[True, True])["id"].shift(periods=-1))' +
+               '    or frame.__setitem__("other", frame.groupby("grp").window_frame_legend_ext(frame_spec=frame.rows_between(), order_by=["name", "height"], ascending=[True, True])["name"].first())' +
+               '    or frame' +
+               '  )(frame[frame["id"] < 9])' +
                ')(csv_frame("\\nid,grp,name,height\\n1,2,A,11\\n2,1,B,12\\n3,3,C,12\\n4,3,B,11\\n5,2,B,13\\n6,1,C,12\\n7,3,A,13\\n8,1,B,14\\n9,1,C,11\\n10,2,D,11"))')
         ]
       ),
@@ -787,7 +793,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])'+
                   '',
                '(lambda frame:' +
-               '  frame' +
+               '  frame.__setitem__("newCol", frame.groupby("grp").window_frame_legend_ext(order_by="id", ascending=False)["id"].shift(periods=-1))' +
+               '  or frame.__setitem__("other", frame.groupby("grp").window_frame_legend_ext(frame_spec=frame.rows_between(), order_by="id", ascending=False)["name"].first())' +
+               '  or frame' +
                ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -809,7 +817,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}]);\n'+
                   '',
                '(lambda frame:' +
-               '  frame' +
+               '  frame.__setitem__("newCol", frame.groupby("grp").window_frame_legend_ext(order_by="id", ascending=False)["id"].shift(periods=-1))' +
+               '  or frame.__setitem__("other", frame.groupby("grp").window_frame_legend_ext(frame_spec=frame.rows_between(), order_by="id", ascending=False)["name"].first())' +
+               '  or frame' +
                ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
         ]
       ),
@@ -876,7 +886,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '10,0,0,J}#->meta::pure::functions::relation::extend(~[grp,grp2]->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}])'+
                   '',
                '(lambda frame:' +
-               '  frame' +
+               '  frame.__setitem__("newCol", frame.groupby(["grp", "grp2"]).window_frame_legend_ext(order_by="id", ascending=False)["id"].shift(periods=-1))' +
+               '  or frame.__setitem__("other", frame.groupby(["grp", "grp2"]).window_frame_legend_ext(frame_spec=frame.rows_between(), order_by="id", ascending=False)["name"].first())' +
+               '  or frame' +
                ')(csv_frame("\\nid,grp,grp2,name\\n1,2,2,A\\n2,1,1,B\\n3,3,3,C\\n4,4,4,D\\n5,2,2,E\\n6,1,2,F\\n7,3,3,G\\n8,1,1,H\\n9,5,5,I\\n10,0,0,J"))')
         ]
       ),
@@ -898,7 +910,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   ' $t->meta::pure::functions::relation::extend(~[grp,grp2]->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::lead($r).id},other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], grp2:Integer[0..1], name:String[0..1])[1]|$p->meta::pure::functions::relation::first($w, $r).name}]);\n'+
                   '',
                '(lambda frame:' +
-               '  frame' +
+               '  frame.__setitem__("newCol", frame.groupby(["grp", "grp2"]).window_frame_legend_ext(order_by="id", ascending=False)["id"].shift(periods=-1))' +
+               '  or frame.__setitem__("other", frame.groupby(["grp", "grp2"]).window_frame_legend_ext(frame_spec=frame.rows_between(), order_by="id", ascending=False)["name"].first())' +
+               '  or frame' +
                ')(csv_frame("\\nid,grp,grp2,name\\n1,2,2,A\\n2,1,1,B\\n3,3,3,C\\n4,4,4,D\\n5,2,2,E\\n6,1,2,F\\n7,3,3,G\\n8,1,1,H\\n9,5,5,I\\n10,0,0,J"))')
         ]
       ),
@@ -1039,83 +1053,37 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[4,5,6]"\n'+
-                  '3,"[7,8,9]"\n'+
-                  '4,"[10,11,12]"\n'+
-                  '5,"[13,14,15]"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~passthru:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload)->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending());\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~passthru:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload)->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())')
         ]
       ),
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[4,5,6]"\n'+
-                  '3,"[7,8,9]"\n'+
-                  '4,"[10,11,12]"\n'+
-                  '5,"[13,14,15]"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(0))->meta::pure::functions::relation::extend(~atCol1:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], atCol0:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(1));\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(0))->meta::pure::functions::relation::extend(~atCol1:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], atCol0:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(1))')
         ]
       ),
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"{""boolean"":true,""integer"":1,""string"":""hello""}"\n'+
-                  '2,"{""boolean"":false,""integer"":2,""string"":""world""}"\n'+
-                  '3,"{""boolean"":true,""integer"":3,""string"":""world""}"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~[booleanKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'boolean\'),integerKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'integer\'),stringKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'string\')]);\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~[booleanKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'boolean\'),integerKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'integer\'),stringKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'string\')])')
         ]
       ),
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[4,5,6]"\n'+
-                  '3,"[7,8,9]"\n'+
-                  '4,"[10,11,12]"\n'+
-                  '5,"[13,14,15]"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~payloadMod:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::map(t: Integer[1]|$t->meta::pure::functions::math::mod(2))->meta::pure::functions::variant::convert::toVariant());\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~payloadMod:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::map(t: Integer[1]|$t->meta::pure::functions::math::mod(2))->meta::pure::functions::variant::convert::toVariant())')
         ]
       ),
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[4,5,6]"\n'+
-                  '3,"[7,8,9]"\n'+
-                  '4,"[10,11,12]"\n'+
-                  '5,"[13,14,15]"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~payloadFoldMult:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::fold({t: Integer[1], v: Integer[1]|$t * $v}, 1));\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~payloadFoldMult:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::fold({t: Integer[1], v: Integer[1]|$t * $v}, 1))')
         ]
       ),
 
       meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_->testRev(
         [
-          noRev('|let tds = #TDS{\n'+
-                  'id,payload:meta::pure::metamodel::variant::Variant\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[4,5,6]"\n'+
-                  '3,"[7,8,9]"\n'+
-                  '4,"[10,11,12]"\n'+
-                  '5,"[13,14,15]"}#;\n'+
-                  ' $tds->meta::pure::functions::relation::extend(~divBy2:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::filter(t|$t->meta::pure::functions::math::mod(2) == 0)->meta::pure::functions::variant::convert::toVariant());\n'+
-                  '')
+          noRev('|$tds->meta::pure::functions::relation::extend(~divBy2:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::filter(t|$t->meta::pure::functions::math::mod(2) == 0)->meta::pure::functions::variant::convert::toVariant())')
         ]
       )
     ]->combine(),
