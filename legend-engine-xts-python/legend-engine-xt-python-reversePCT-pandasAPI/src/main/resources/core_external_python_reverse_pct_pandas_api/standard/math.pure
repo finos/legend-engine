@@ -1310,7 +1310,7 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                 'B,22\n'+
                 'B,18}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
               '(lambda frame:' +
-               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
                ')(csv_frame("\\ngrp,x\\nA,11\\nA,9\\nA,13\\nA,7\\nA,10\\nB,20\\nB,26\\nB,14\\nB,22\\nB,18"))')
         ]
       ),
@@ -1324,7 +1324,7 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                 'A,5\n'+
                 'B,10}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
               '(lambda frame:' +
-               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
                ')(csv_frame("\\ngrp,x\\nA,5\\nA,5\\nA,5\\nB,10"))')
         ]
       ),
@@ -1339,7 +1339,7 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesS
                 'A,4.0\n'+
                 'A,5.0}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Float[0..1])>[1], r: (grp:String[0..1], x:Float[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
               '(lambda frame:' +
-               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore())' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
                ')(csv_frame("\\ngrp,x\\nA,1.0\\nA,2.0\\nA,3.0\\nA,4.0\\nA,5.0"))')
         ]
       )
