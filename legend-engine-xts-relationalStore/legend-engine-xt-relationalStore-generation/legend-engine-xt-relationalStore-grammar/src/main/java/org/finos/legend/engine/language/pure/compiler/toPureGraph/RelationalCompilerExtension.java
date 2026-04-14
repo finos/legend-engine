@@ -385,7 +385,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (cm instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
-                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)));
+                        String classMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
+                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
 
                         HelperRelationalBuilder.processRootRelationalClassMapping(rsi, classMapping, context);
                     }
@@ -449,7 +450,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(
                 (cm, parentMapping, context) ->
                 {
-                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(cm, context)));
+                    String classMappingId = HelperMappingBuilder.getClassMappingId(cm, context);
+                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
                     if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
@@ -460,9 +462,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         if (agg.setImplementation instanceof RootRelationalClassMapping)
                         {
                             RootRelationalClassMapping classMapping = (RootRelationalClassMapping) agg.setImplementation;
+                            String aggClassMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
                             asi._aggregateSetImplementations().forEach(c ->
                             {
-                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)))
+                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(aggClassMappingId))
                                 {
                                     HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation) c._setImplementation(), classMapping, context);
                                 }

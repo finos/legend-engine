@@ -55,6 +55,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             //contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"),
 
             //drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\""),
@@ -296,7 +297,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "Cannot cast a collection of size 2 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'"),
-            one("meta::pure::functions::string::tests::toString::testFloatToStringWithNegativeExponent_Function_1__Boolean_1_", "\"\nexpected: '0.000000013421'\nactual:   '1.3421E-8'\"")
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "[CAST_INVALID_INPUT] The value '3.14159d' of the type \"STRING\" cannot be cast to \"DECIMAL(10,0)\" because it is malformed.")
     );
 
     public static Test suite()

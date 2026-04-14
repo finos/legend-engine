@@ -79,6 +79,7 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   sourceHashCol: String[0..1]; //if there already exists a column on source that contains the hash that you want to use in recon
   targetHashCol: String[0..1]; //if there already exists a column on target that contains the hash that you want to use in recon
   includeColumnValues: Boolean[1]; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
+  defectLimit: Integer[0..1]; //optional limit on the number of defect rows returned
 }
 
 Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement

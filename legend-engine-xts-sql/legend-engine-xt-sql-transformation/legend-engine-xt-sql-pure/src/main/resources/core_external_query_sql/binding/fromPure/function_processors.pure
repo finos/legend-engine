@@ -522,7 +522,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
       misc('var', Any, {args, fc, expCtx, ctx |
         getVariableReference($args, $ctx);
-      })
+      }) 
   ]
 }
 

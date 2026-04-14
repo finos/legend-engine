@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
+import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Extract;
@@ -215,6 +216,12 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
 
     @Override
     public Node visit(CurrentTime val)
+    {
+        return val;
+    }
+
+    @Override
+    public Node visit(CurrentUser val)
     {
         return val;
     }

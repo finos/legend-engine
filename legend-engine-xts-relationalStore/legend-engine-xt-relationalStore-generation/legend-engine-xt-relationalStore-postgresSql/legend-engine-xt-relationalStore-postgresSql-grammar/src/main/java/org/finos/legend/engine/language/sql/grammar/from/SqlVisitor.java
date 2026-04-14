@@ -1504,7 +1504,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitCurrentUser(SqlBaseParser.CurrentUserContext ctx)
     {
-        return unsupported("Current User");
+        return new CurrentUser();
     }
 
     @Override

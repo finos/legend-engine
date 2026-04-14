@@ -299,7 +299,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
 {
   //NOTE: we should remove this once issues with enum mappings in plan transformation are fixed.
   let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | emptyMapping());
-  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^Runtime());
+  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^meta::core::runtime::Runtime());
   let lambda = $context.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 
 //  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -1984,6 +1984,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
         pair(CurrentTimeType.TIMESTAMP, 'CURRENT_TIMESTAMP'),
         pair(CurrentTimeType.DATE, 'CURRENT_DATE')
       ]->getValue($c.type) + $param;,
+    c:CurrentUser[1] | 'CURRENT_USER',
     c:CollectionColumnType[1] | $c.innerType.name + '[]',
     c:ColumnType[1] | $c.name + if ($c.parameters->isEmpty(), | '', | $c.parameters->map(p | $p->toString())->joinStrings('(', ', ', ')')),
     e:Extract[1] | 'EXTRACT(\'' + extractFieldToValue($e.field) + '\' FROM ' + $e.expression->extractNameFromExpression($context) + ')',
@@ -2091,6 +2092,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     c:Cast[1] | processCast($c, $expContext, $context),
     c:ComparisonExpression[1] | processComparisonExpression($c, $expContext, $context),
     c:CurrentTime[1] | processCurrentTime($c, $expContext, $context),
+    c:CurrentUser[1] | processCurrentUser($c, $context),
     e:Extract[1] | processExtract($e, $functionalContext, $context),
     f:FunctionCall[1] | processFunctionCall($f, $functionalContext, $context),
     i:InListExpression[1] | processInListExpression($i, $expContext, $context),
@@ -2260,6 +2262,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]->getValue($c.type);
 
   sfe($func, []);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCurrentUser(c:CurrentUser[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
+  debug(|'processCurrentUser', $context.debug);
+
+  sfe(meta::pure::functions::runtime::currentUserId__String_1_, []);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJSONExpression(j:JSONExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3118,6 +3127,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair(CurrentTimeType.TIME, DateTime),
         pair(CurrentTimeType.TIMESTAMP, DateTime)
       ]->getValue($c.type),
+    c:CurrentUser[1] | String,
     e:Extract[1] | Integer,
     f:FunctionCall[1] |
       let processor = functionProcessor($f.name);

@@ -333,7 +333,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                           |  print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(non unique: '+$unique->size()->toString()+'): '),|''));
                                              let k = if ($unique->size() == 0,
                                                 | ^ClusterResponse(cluster=^$f(parametersValues = $params)),
-                                                | let clustersToReplace = clusteredVSToBeReplaced($params);
+                                                | let clustersToReplace = storeClusteredVSToBeReplaced($params);
                                                   if($clustersToReplace->isNotEmpty(),
                                                       | let updatedParams = $params->map(p| if($p->in($clustersToReplace),
                                                                                               | let varName = meta::pure::router::clustering::createVarExpName($paramSuffix);
@@ -345,7 +345,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                         if($updatedUnique->size()==1,
                                                             | let newLetFns = $params->map(p|if($p->in($clustersToReplace) ,
                                                                                                  | let varName = meta::pure::router::clustering::createVarExpName($paramSuffix);
-                                                                                                   let rhsCluster = $p->cast(@StoreMappingClusteredValueSpecification);
+                                                                                                   let rhsCluster = $p->cast(@StoreClusteredValueSpecification);
                                                                                                    let letFxn     = createLetFunction($rhsCluster.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression), $varName, $rhsCluster, $extensions)->evaluateAndDeactivate();
                                                                                                    ^PlatformClusteredValueSpecification(
                                                                                                       genericType  = $letFxn.genericType,
@@ -362,16 +362,16 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                               let updatedCluster = ^$updatedOne(
                                                                                       genericType  = $f.genericType,
                                                                                       multiplicity = $f.multiplicity,
-                                                                                      val = ^$f(parametersValues = $updatedParams->evaluateAndDeactivate()->map(p|$p->match([c:StoreMappingClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a])))
-                                                                                    )->cast(@StoreMappingClusteredValueSpecification);
+                                                                                      val = ^$f(parametersValues = $updatedParams->evaluateAndDeactivate()->map(p|$p->match([c:StoreClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a])))
+                                                                                    )->cast(@StoreClusteredValueSpecification);
                                                               ^ClusterResponse(cluster=$updatedCluster,letFunctions= $letFunctions->concatenate($newLetFns),executableSetOperations=$executables->concatenate($childExecutables));,
                                                             | ^ClusterResponse(cluster=^PlatformClusteredValueSpecification(
                                                                                           genericType  = $f.genericType,
                                                                                           multiplicity = $f.multiplicity,
                                                                                           openVars     = $openVariables,
                                                                                           exeCtx       = $exeCtx,
-                                                                                          val          = ^$f(parametersValues = $params->map(p|if($p->instanceOf(StoreMappingClusteredValueSpecification) && $p->cast(@StoreMappingClusteredValueSpecification).val->isOneFunction(),
-                                                                                                                                                  |$p->cast(@StoreMappingClusteredValueSpecification).val,
+                                                                                          val          = ^$f(parametersValues = $params->map(p|if($p->instanceOf(StoreClusteredValueSpecification) && $p->cast(@StoreClusteredValueSpecification).val->isOneFunction(),
+                                                                                                                                                  |$p->cast(@StoreClusteredValueSpecification).val,
                                                                                                                                                   |$p))),
                                                                                           executable=true
                                                                                         ));
@@ -382,8 +382,8 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                     multiplicity = $f.multiplicity,
                                                                                     openVars     = $openVariables,
                                                                                     exeCtx       = $exeCtx,
-                                                                                    val          = ^$f(parametersValues = $params->map(p|if($p->instanceOf(StoreMappingClusteredValueSpecification) && $p->cast(@StoreMappingClusteredValueSpecification).val->isOneFunction(),
-                                                                                                                                            |$p->cast(@StoreMappingClusteredValueSpecification).val,
+                                                                                    val          = ^$f(parametersValues = $params->map(p|if($p->instanceOf(StoreClusteredValueSpecification) && $p->cast(@StoreClusteredValueSpecification).val->isOneFunction(),
+                                                                                                                                            |$p->cast(@StoreClusteredValueSpecification).val,
                                                                                                                                             |$p
                                                                                                                                           ))),
                                                                                     executable = true
@@ -605,23 +605,41 @@ function meta::pure::router::store::clustering::areStoreClustersCompatible(clust
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1],  parentCluster:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
 {
+   createLetFunction($orginalFunction, $varExpressionName, $parentCluster->cast(@StoreClusteredValueSpecification), $extensions);
+}
+
+function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1],  parentCluster:StoreClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
+{
    let varExp = ^InstanceValue(genericType  = ^GenericType(rawType= String),
                                multiplicity = PureOne,
                                values       = $varExpressionName);
    let newParams = $orginalFunction.parametersValues->map(p|if($p->willBeVarExp($orginalFunction, $extensions),| createVariableExpression($p,$varExpressionName),|$p ));
    let updatedFunction = ^$orginalFunction(parametersValues = $newParams);
-   let updatedCluster = ^StoreMappingClusteredValueSpecification(
-      genericType = $parentCluster.genericType,
-      multiplicity = $parentCluster.multiplicity,
-      s = $parentCluster.s,
-      store = $parentCluster.store,
-      val = $updatedFunction,
-      openVars = $parentCluster.openVars,
-      runtime =  $parentCluster.runtime,
-      mapping = $parentCluster.mapping,
-      exeCtx = $parentCluster.exeCtx,
-      executable = $parentCluster.executable
-   );
+   let updatedCluster = $parentCluster->match([
+      sm:StoreMappingClusteredValueSpecification[1] | ^StoreMappingClusteredValueSpecification(
+         genericType = $parentCluster.genericType,
+         multiplicity = $parentCluster.multiplicity,
+         s = $parentCluster.s,
+         store = $parentCluster.store,
+         val = $updatedFunction,
+         openVars = $parentCluster.openVars,
+         runtime =  $parentCluster.runtime,
+         mapping = $sm.mapping,
+         exeCtx = $parentCluster.exeCtx,
+         executable = $parentCluster.executable
+      ),
+      sc:StoreClusteredValueSpecification[1] | ^StoreClusteredValueSpecification(
+         genericType = $parentCluster.genericType,
+         multiplicity = $parentCluster.multiplicity,
+         s = $parentCluster.s,
+         store = $parentCluster.store,
+         val = $updatedFunction,
+         openVars = $parentCluster.openVars,
+         runtime =  $parentCluster.runtime,
+         exeCtx = $parentCluster.exeCtx,
+         executable = $parentCluster.executable
+      )
+   ]);
    ^SimpleFunctionExpression(func             = letFunction_String_1__T_m__T_m_,
                              functionName     = 'letFunction',
                              genericType      = $orginalFunction.genericType,
@@ -636,14 +654,19 @@ function <<access.private>> meta::pure::router::clustering::willBeVarExp(param:V
 
 {
    $param ->match( [ s:SimpleFunctionExpression[1] | if($s->getDistinctClusterVSByStore(true, $extensions)->size()>1,|true,|false),
-                     c:StoreMappingClusteredValueSpecification[1]| $c->in($originalFn.parametersValues->clusteredVSToBeReplaced()),
+                     c:StoreClusteredValueSpecification[1]| $c->in($originalFn.parametersValues->storeClusteredVSToBeReplaced()),
                      a:Any[1]|false]);
 }
 
 
 function <<access.private>> meta::pure::router::clustering::clusteredVSToBeReplaced(allParams:ValueSpecification[*]):StoreMappingClusteredValueSpecification[*]
 {
-   let clusteredVSToBeReplaced = $allParams->filter(p|$p->instanceOf(StoreMappingClusteredValueSpecification))->cast(@StoreMappingClusteredValueSpecification)->filter(c|!$c.store->instanceOf( meta::pure::mapping::aggregationAware::AggregationAwareStore))->init();
+   $allParams->storeClusteredVSToBeReplaced()->filter(p|$p->instanceOf(StoreMappingClusteredValueSpecification))->cast(@StoreMappingClusteredValueSpecification);
+}
+
+function <<access.private>> meta::pure::router::clustering::storeClusteredVSToBeReplaced(allParams:ValueSpecification[*]):StoreClusteredValueSpecification[*]
+{
+   let clusteredVSToBeReplaced = $allParams->filter(p|$p->instanceOf(StoreClusteredValueSpecification))->cast(@StoreClusteredValueSpecification)->filter(c|!$c.store->instanceOf( meta::pure::mapping::aggregationAware::AggregationAwareStore))->init();
    if($clusteredVSToBeReplaced->forAll(c | $c.val->byPassValueSpecificationWrapper()->instanceOf(FunctionExpression)
                                         && $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->isNotEmpty()
                                         && ($c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet) || $c.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression).func->functionReturnType().rawType->toOne()->_subTypeOf(Relation))),

@@ -38,7 +38,6 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
             //xor
-            one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(true OR (NOT (2 = 3)))\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"STRING\" and \"BOOLEAN\")"),
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\"."),
     
             // StD Dev
@@ -57,6 +56,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception"),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"),
 
             // Date
             pack("meta::pure::functions::date::tests::timeBucket::dateTime", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
@@ -69,6 +69,8 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,wavgCol1,wavgCol2\n   1,180.0,220.0\n   2,150.0,175.0\n   3,362.5,325.0\n   4,700.0,700.0\n   5,350.0,350.0\n#'\nactual:   '#TDS\n   grp,wavgCol1,wavgCol2\n   1,180.00000268220901,220.00000029802322\n   2,150.0,175.0\n   3,362.5,325.0\n   4,700.0,700.0\n   5,350.0,350.0\n#'\""),
+            one("meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,wavgCol\n   1,180.0\n   2,150.0\n   3,362.5\n   4,700.0\n   5,350.0\n#'\nactual:   '#TDS\n   grp,wavgCol\n   1,180.00000268220901\n   2,150.0\n   3,362.5\n   4,700.0\n   5,350.0\n#'\""),
 
             //max
             one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),

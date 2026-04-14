@@ -275,6 +275,10 @@ Class meta::external::query::sql::metamodel::CurrentTime extends meta::external:
   <<equality.Key>> precision: Integer[0..1];
 }
 
+Class meta::external::query::sql::metamodel::CurrentUser extends meta::external::query::sql::metamodel::Expression
+{
+}
+
 Class meta::external::query::sql::metamodel::FunctionCall extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> name: meta::external::query::sql::metamodel::QualifiedName[1];

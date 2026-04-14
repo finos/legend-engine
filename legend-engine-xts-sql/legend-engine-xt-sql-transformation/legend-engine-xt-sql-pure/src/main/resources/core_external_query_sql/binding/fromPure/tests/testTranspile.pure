@@ -2854,6 +2854,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCurrentUserId():Boolean[1]
+{
+  test(
+      'SELECT current_user as user FROM service."/service/service1"',
+
+      [
+        {|
+          FlatInput.all()
+              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+              ->project(~[
+                  user: x | meta::pure::functions::runtime::currentUserId()
+                ])
+        }
+      ]
+  )
+}
 
 
 Class meta::external::query::sql::transformation::queryToPure::tests::ToCharTestConfig
@@ -4343,6 +4359,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^CurrentTime(type = CurrentTimeType.TIME), 'CURRENT_TIME');
   doNameTest(^CurrentTime(type = CurrentTimeType.TIMESTAMP), 'CURRENT_TIMESTAMP');
   doNameTest(^CurrentTime(type = CurrentTimeType.DATE), 'CURRENT_DATE');
+
+  doNameTest(^CurrentUser(), 'CURRENT_USER');
 
   doNameTest(^CollectionColumnType(name = 'ARRAY', innerType = ^ColumnType(name = 'int')), 'int[]');
 
