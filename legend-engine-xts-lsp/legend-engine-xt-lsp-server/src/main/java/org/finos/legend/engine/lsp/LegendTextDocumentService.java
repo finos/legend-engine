@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.lsp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +24,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
@@ -37,6 +43,7 @@ import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.slf4j.Logger;
@@ -102,12 +109,77 @@ public class LegendTextDocumentService implements TextDocumentService
         this.openDocuments.remove(uri);
         cancelPending(uri);
         DiagnosticsPublisher.clear(this.server.getClient(), uri);
+
+        // Restore the runtime to the on-disk state. Without this, unsaved edits
+        // stay live after the editor tab closes, affecting hover/definition/references.
+        LegendPureSession session = this.server.getSession();
+        if (session != null && session.isInitialized() && !uri.startsWith("pure://"))
+        {
+            String sourceId = this.server.getUriMapper().toSourceId(uri);
+            session.restoreFromDisk(sourceId);
+        }
     }
 
     @Override
     public void didSave(DidSaveTextDocumentParams params)
     {
         // didChange already scheduled a compile; didSave is a no-op
+    }
+
+    @Override
+    public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams params)
+    {
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                LegendPureSession session = this.server.getSession();
+                if (session == null || !session.isInitialized())
+                {
+                    return Either.<List<CompletionItem>, CompletionList>forLeft(Collections.emptyList());
+                }
+
+                String uri = params.getTextDocument().getUri();
+                int line = params.getPosition().getLine() + 1;
+                int column = params.getPosition().getCharacter();
+
+                // Get current file content from open documents or from the runtime
+                String content = this.openDocuments.get(uri);
+
+                String sourceId = this.server.getUriMapper().toSourceId(uri);
+                String resolvedId = session.resolveSourceId(sourceId);
+
+                if (content == null && resolvedId != null)
+                {
+                    synchronized (session)
+                    {
+                        org.finos.legend.pure.m3.serialization.runtime.Source source =
+                                session.getPureRuntime().getSourceById(resolvedId);
+                        if (source != null)
+                        {
+                            content = source.getContent();
+                        }
+                    }
+                }
+
+                if (content == null || resolvedId == null)
+                {
+                    return Either.<List<CompletionItem>, CompletionList>forLeft(Collections.emptyList());
+                }
+
+                synchronized (session)
+                {
+                    List<CompletionItem> items = CompletionProvider.getCompletions(
+                            session.getPureRuntime(), resolvedId, content, line, column);
+                    return Either.<List<CompletionItem>, CompletionList>forLeft(items);
+                }
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Error in completion", e);
+                return Either.<List<CompletionItem>, CompletionList>forLeft(Collections.emptyList());
+            }
+        });
     }
 
     @Override
@@ -291,6 +363,55 @@ public class LegendTextDocumentService implements TextDocumentService
         });
     }
 
+    @Override
+    public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params)
+    {
+        return CompletableFuture.supplyAsync(() ->
+        {
+            try
+            {
+                LegendPureSession session = this.server.getSession();
+                if (session == null || !session.isInitialized())
+                {
+                    return Collections.<Either<SymbolInformation, DocumentSymbol>>emptyList();
+                }
+
+                String uri = params.getTextDocument().getUri();
+                String sourceId;
+                if (uri.startsWith("pure://"))
+                {
+                    sourceId = uri.substring("pure://".length());
+                }
+                else
+                {
+                    sourceId = this.server.getUriMapper().toSourceId(uri);
+                }
+                String resolvedId = session.resolveSourceId(sourceId);
+                if (resolvedId == null)
+                {
+                    return Collections.<Either<SymbolInformation, DocumentSymbol>>emptyList();
+                }
+
+                synchronized (session)
+                {
+                    List<DocumentSymbol> outline = DocumentOutlineProvider.getOutline(
+                            session.getPureRuntime(), resolvedId);
+                    List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
+                    for (DocumentSymbol symbol : outline)
+                    {
+                        result.add(Either.forRight(symbol));
+                    }
+                    return result;
+                }
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Error in document outline", e);
+                return Collections.<Either<SymbolInformation, DocumentSymbol>>emptyList();
+            }
+        });
+    }
+
     /**
      * Per-URI debounce: cancel any pending compile for this URI and schedule a new one.
      */
@@ -374,9 +495,19 @@ public class LegendTextDocumentService implements TextDocumentService
         }
         else
         {
+            LspLog.warn("Compile error for " + uri + ": " + result.getError().getMessage());
+            // Publish diagnostic on the file that actually has the error, not
+            // necessarily the file that was edited. The PureException carries
+            // SourceInformation pointing to the real error location.
+            String errorUri = DiagnosticsPublisher.resolveErrorUri(
+                    result.getError(), this.server.getUriMapper());
+            if (errorUri == null)
+            {
+                errorUri = uri;
+            }
             DiagnosticsPublisher.publish(
                     this.server.getClient(),
-                    uri,
+                    errorUri,
                     DiagnosticsPublisher.fromException(result.getError())
             );
         }

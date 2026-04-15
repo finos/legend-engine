@@ -118,15 +118,29 @@ public class LegendWorkspaceService implements WorkspaceService
         }
         else if (!result.isInternalError() && result.getError() != null)
         {
-            // Publish diagnostics for compile errors from file watcher changes
-            for (LegendPureSession.FileChange change : changes)
+            // Publish diagnostic on the file that actually has the error,
+            // not on every changed file.
+            String errorUri = DiagnosticsPublisher.resolveErrorUri(
+                    result.getError(), this.server.getUriMapper());
+            if (errorUri != null)
             {
-                String uri = this.server.getUriMapper().toUri(change.sourceId);
-                if (uri != null)
+                DiagnosticsPublisher.publish(
+                        this.server.getClient(), errorUri,
+                        DiagnosticsPublisher.fromException(result.getError()));
+            }
+            else
+            {
+                // Fallback: no source info, publish on first changed file
+                for (LegendPureSession.FileChange change : changes)
                 {
-                    DiagnosticsPublisher.publish(
-                            this.server.getClient(), uri,
-                            DiagnosticsPublisher.fromException(result.getError()));
+                    String uri = this.server.getUriMapper().toUri(change.sourceId);
+                    if (uri != null)
+                    {
+                        DiagnosticsPublisher.publish(
+                                this.server.getClient(), uri,
+                                DiagnosticsPublisher.fromException(result.getError()));
+                        break;
+                    }
                 }
             }
         }
@@ -156,10 +170,22 @@ public class LegendWorkspaceService implements WorkspaceService
         this.server.getClient().showMessage(new MessageParams(MessageType.Info, "Pure LSP: reindexing..."));
         try
         {
+            // Bug fix: rescan workspace roots so newly added/removed repos are discovered
             this.server.getUriMapper().clear();
+            this.server.rescanWorkspaceRoots();
+
             session.reinitialize();
+
+            // Bug fix: rewire UriMapper to new PureRuntime after reinitialize
+            this.server.getUriMapper().setPureRuntime(session.getPureRuntime());
+
             // Rebuild symbol index
             this.server.getSymbolProvider().buildIndex(session.getPureRuntime());
+
+            // Bug fix: replay unsaved editor buffers so the runtime matches
+            // what the user sees on screen
+            ((LegendTextDocumentService) this.server.getTextDocumentService()).compileOpenDocuments();
+
             // Client listens for showMessage to trigger cache clear
             this.server.getClient().showMessage(new MessageParams(MessageType.Info, "Pure LSP: reindex complete"));
         }

@@ -18,7 +18,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.navigation.M3Properties;
@@ -50,7 +52,8 @@ public class SemanticTokensProvider
 {
     public static final List<String> TOKEN_TYPES = Collections.unmodifiableList(Arrays.asList(
             "namespace", "class", "enum", "function", "property",
-            "enumMember", "type", "parameter", "interface", "struct"
+            "enumMember", "type", "parameter", "interface", "struct",
+            "variable"
     ));
 
     public static final List<String> TOKEN_MODIFIERS = Collections.unmodifiableList(Arrays.asList(
@@ -67,8 +70,20 @@ public class SemanticTokensProvider
     private static final int TYPE_PARAMETER = 7;
     private static final int TYPE_INTERFACE = 8;
     private static final int TYPE_STRUCT = 9;
+    private static final int TYPE_VARIABLE = 10;
 
     private static final int MOD_DEFINITION = 1;
+
+    // Function names that map to keywords or operators in source — skip these
+    // as TextMate already colors them.
+    private static final Set<String> OPERATOR_FUNCTION_NAMES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "letFunction", "if", "match", "new",
+            "plus", "minus", "times", "divide",
+            "equal", "not", "and", "or",
+            "lessThan", "lessThanEqual", "greaterThan", "greaterThanEqual"
+    )));
+
+    private static final int MAX_WALK_DEPTH = 50;
 
     /**
      * Get semantic tokens for a source file.
@@ -128,7 +143,8 @@ public class SemanticTokensProvider
                     break;
                 case "ConcreteFunctionDefinition":
                     addDefinitionToken(tokens, instance, TYPE_FUNCTION);
-                    addFunctionParameters(tokens, instance, source);
+                    addFunctionSignatureTokens(tokens, instance, runtime, source);
+                    addFunctionBodyTokens(tokens, instance, runtime, source);
                     break;
                 case "NativeFunction":
                     addDefinitionToken(tokens, instance, TYPE_FUNCTION);
@@ -176,7 +192,11 @@ public class SemanticTokensProvider
             }
         }
 
-        tokens.add(new RawToken(si.getStartLine(), si.getStartColumn(), shortName.length(), tokenType, MOD_DEFINITION));
+        // Use si.getLine()/si.getColumn() which points to the simple name position
+        // (e.g., "Person" in "Class test::sem::Person"), NOT si.getStartLine()/si.getStartColumn()
+        // which points to the keyword. Use shortName.length() — the qualified package path
+        // preceding the name is already colored by the TextMate packagePaths rule.
+        tokens.add(new RawToken(si.getLine(), si.getColumn(), shortName.length(), tokenType, MOD_DEFINITION));
     }
 
     private static void addClassMembers(List<RawToken> tokens, CoreInstance classElement, PureRuntime runtime, Source source)
@@ -277,19 +297,326 @@ public class SemanticTokensProvider
         }
     }
 
-    private static void addFunctionParameters(List<RawToken> tokens, CoreInstance function, Source source)
+    /**
+     * Extract parameter names, parameter types, and return type from a function definition.
+     * Walks: function → classifierGenericType → typeArguments[0] → rawType (FunctionType)
+     *        → parameters (VariableExpression list) and returnType (GenericType).
+     */
+    private static void addFunctionSignatureTokens(List<RawToken> tokens, CoreInstance function,
+                                                    PureRuntime runtime, Source source)
     {
         try
         {
-            ListIterable<? extends CoreInstance> params =
-                    function.getValueForMetaPropertyToMany(M3Properties.classifierGenericType)
-                            != null ? function.getValueForMetaPropertyToMany("parameters") : null;
-            // Pure function parameters are stored differently — skip for now
-            // TODO: extract parameter names from function signature
+            CoreInstance classifierGT = function.getValueForMetaPropertyToOne(M3Properties.classifierGenericType);
+            if (classifierGT == null)
+            {
+                return;
+            }
+            ListIterable<? extends CoreInstance> typeArgs = classifierGT.getValueForMetaPropertyToMany(M3Properties.typeArguments);
+            if (typeArgs == null || typeArgs.isEmpty())
+            {
+                return;
+            }
+            CoreInstance functionTypeGT = typeArgs.get(0);
+            CoreInstance functionType = functionTypeGT.getValueForMetaPropertyToOne(M3Properties.rawType);
+            if (functionType == null)
+            {
+                return;
+            }
+
+            // Parameters: each is a VariableExpression with name and genericType.
+            // Note: param.getName() returns a synthetic hash (e.g., "@_000an09"), NOT the
+            // user-visible name. The actual name "x" is in the M3 "name" property.
+            ListIterable<? extends CoreInstance> params = functionType.getValueForMetaPropertyToMany(M3Properties.parameters);
+            if (params != null)
+            {
+                for (CoreInstance param : params)
+                {
+                    SourceInformation paramSi = param.getSourceInformation();
+                    if (paramSi == null || !sourceId(source).equals(paramSi.getSourceId()))
+                    {
+                        continue;
+                    }
+                    CoreInstance nameCI = param.getValueForMetaPropertyToOne(M3Properties.name);
+                    String paramName = nameCI != null ? nameCI.getName() : null;
+                    if (paramName != null)
+                    {
+                        tokens.add(new RawToken(paramSi.getLine(), paramSi.getColumn(),
+                                paramName.length(), TYPE_PARAMETER, 0));
+                    }
+                    // Type reference for the parameter type
+                    addTypeReference(tokens, param, runtime, source);
+                }
+            }
+
+            // Return type
+            CoreInstance returnTypeGT = functionType.getValueForMetaPropertyToOne(M3Properties.returnType);
+            if (returnTypeGT != null)
+            {
+                CoreInstance rawReturnType = returnTypeGT.getValueForMetaPropertyToOne(M3Properties.rawType);
+                if (rawReturnType != null)
+                {
+                    rawReturnType = ImportStub.withImportStubByPass(rawReturnType, runtime.getProcessorSupport());
+                }
+                if (rawReturnType != null)
+                {
+                    SourceInformation retSi = returnTypeGT.getSourceInformation();
+                    if (retSi != null && sourceId(source).equals(retSi.getSourceId()))
+                    {
+                        String typeName = rawReturnType.getName();
+                        if (typeName != null && !typeName.startsWith("@"))
+                        {
+                            tokens.add(new RawToken(retSi.getStartLine(), retSi.getStartColumn(),
+                                    typeName.length(), TYPE_TYPE, 0));
+                        }
+                    }
+                }
+            }
         }
         catch (Exception ignored)
         {
-            // Parameters not accessible
+            // Function type info not accessible
+        }
+    }
+
+    // ── Function body expression tree walker ──────────────────────────────────
+
+    /**
+     * Walk the function's expressionSequence to emit semantic tokens for
+     * variable references, property accesses, function calls, and let bindings.
+     */
+    private static void addFunctionBodyTokens(List<RawToken> tokens, CoreInstance function,
+                                               PureRuntime runtime, Source source)
+    {
+        try
+        {
+            ListIterable<? extends CoreInstance> exprs = function.getValueForMetaPropertyToMany(M3Properties.expressionSequence);
+            if (exprs != null)
+            {
+                for (CoreInstance expr : exprs)
+                {
+                    walkExpression(tokens, expr, runtime, source, 0);
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    private static void walkExpression(List<RawToken> tokens, CoreInstance expr,
+                                        PureRuntime runtime, Source source, int depth)
+    {
+        if (expr == null || depth > MAX_WALK_DEPTH)
+        {
+            return;
+        }
+
+        String classifierName = expr.getClassifier().getName();
+
+        switch (classifierName)
+        {
+            case "SimpleFunctionExpression":
+                walkSimpleFunctionExpression(tokens, expr, runtime, source, depth);
+                break;
+            case "VariableExpression":
+                walkVariableExpression(tokens, expr, source);
+                break;
+            case "InstanceValue":
+                walkInstanceValue(tokens, expr, runtime, source, depth);
+                break;
+            case "LambdaFunction":
+                walkLambdaFunction(tokens, expr, runtime, source, depth);
+                break;
+            default:
+                // Recurse into parametersValues / expressionSequence for unknown types
+                walkChildren(tokens, expr, runtime, source, depth);
+                break;
+        }
+    }
+
+    private static void walkSimpleFunctionExpression(List<RawToken> tokens, CoreInstance expr,
+                                                      PureRuntime runtime, Source source, int depth)
+    {
+        try
+        {
+            SourceInformation si = expr.getSourceInformation();
+            CoreInstance func = expr.getValueForMetaPropertyToOne(M3Properties.func);
+            if (func != null)
+            {
+                func = ImportStub.withImportStubByPass(func, runtime.getProcessorSupport());
+            }
+
+            if (func != null && si != null && sourceId(source).equals(si.getSourceId()))
+            {
+                String funcClassifier = func.getClassifier().getName();
+
+                if ("Property".equals(funcClassifier) || "QualifiedProperty".equals(funcClassifier))
+                {
+                    // Property access: $person.name → color "name" as property
+                    String propName = func.getName();
+                    if (propName != null && !propName.startsWith("@"))
+                    {
+                        tokens.add(new RawToken(si.getLine(), si.getColumn(),
+                                propName.length(), TYPE_PROPERTY, 0));
+                    }
+                }
+                else
+                {
+                    // Function call: ->toUpper(), ->map(), etc.
+                    CoreInstance fnNameCI = expr.getValueForMetaPropertyToOne(M3Properties.functionName);
+                    String fnName = fnNameCI != null ? fnNameCI.getName() : null;
+
+                    if ("letFunction".equals(fnName))
+                    {
+                        // Handle let bindings: color the variable name, not the "let" keyword
+                        addLetVariableName(tokens, expr, source);
+                    }
+                    else if (fnName != null && !OPERATOR_FUNCTION_NAMES.contains(fnName))
+                    {
+                        tokens.add(new RawToken(si.getLine(), si.getColumn(),
+                                fnName.length(), TYPE_FUNCTION, 0));
+                    }
+                }
+            }
+
+            // Recurse into arguments
+            ListIterable<? extends CoreInstance> args = expr.getValueForMetaPropertyToMany(M3Properties.parametersValues);
+            if (args != null)
+            {
+                for (CoreInstance arg : args)
+                {
+                    walkExpression(tokens, arg, runtime, source, depth + 1);
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    /**
+     * For let bindings (letFunction), the first argument is an InstanceValue containing
+     * the variable name string. Color it as a variable definition.
+     */
+    private static void addLetVariableName(List<RawToken> tokens, CoreInstance letExpr, Source source)
+    {
+        try
+        {
+            ListIterable<? extends CoreInstance> args = letExpr.getValueForMetaPropertyToMany(M3Properties.parametersValues);
+            if (args != null && args.size() >= 1)
+            {
+                CoreInstance nameIV = args.get(0);
+                SourceInformation nameSi = nameIV.getSourceInformation();
+                if (nameSi != null && sourceId(source).equals(nameSi.getSourceId()))
+                {
+                    ListIterable<? extends CoreInstance> vals = nameIV.getValueForMetaPropertyToMany("values");
+                    if (vals != null && vals.size() == 1)
+                    {
+                        String varName = vals.get(0).getName();
+                        if (varName != null)
+                        {
+                            tokens.add(new RawToken(nameSi.getLine(), nameSi.getColumn(),
+                                    varName.length(), TYPE_VARIABLE, MOD_DEFINITION));
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    private static void walkVariableExpression(List<RawToken> tokens, CoreInstance expr, Source source)
+    {
+        try
+        {
+            SourceInformation si = expr.getSourceInformation();
+            if (si == null || !sourceId(source).equals(si.getSourceId()))
+            {
+                return;
+            }
+            CoreInstance nameCI = expr.getValueForMetaPropertyToOne(M3Properties.name);
+            String varName = nameCI != null ? nameCI.getName() : null;
+            if (varName != null)
+            {
+                tokens.add(new RawToken(si.getLine(), si.getColumn(),
+                        varName.length(), TYPE_VARIABLE, 0));
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    private static void walkInstanceValue(List<RawToken> tokens, CoreInstance expr,
+                                           PureRuntime runtime, Source source, int depth)
+    {
+        try
+        {
+            // Recurse into values that are sub-expressions (lambdas, nested expressions)
+            ListIterable<? extends CoreInstance> vals = expr.getValueForMetaPropertyToMany("values");
+            if (vals != null)
+            {
+                for (CoreInstance val : vals)
+                {
+                    String vcn = val.getClassifier().getName();
+                    if (vcn.contains("Expression") || vcn.contains("Function") || vcn.contains("Lambda"))
+                    {
+                        walkExpression(tokens, val, runtime, source, depth + 1);
+                    }
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    private static void walkLambdaFunction(List<RawToken> tokens, CoreInstance expr,
+                                            PureRuntime runtime, Source source, int depth)
+    {
+        try
+        {
+            ListIterable<? extends CoreInstance> exprs = expr.getValueForMetaPropertyToMany(M3Properties.expressionSequence);
+            if (exprs != null)
+            {
+                for (CoreInstance e : exprs)
+                {
+                    walkExpression(tokens, e, runtime, source, depth + 1);
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
+        }
+    }
+
+    private static void walkChildren(List<RawToken> tokens, CoreInstance expr,
+                                      PureRuntime runtime, Source source, int depth)
+    {
+        try
+        {
+            ListIterable<? extends CoreInstance> args = expr.getValueForMetaPropertyToMany(M3Properties.parametersValues);
+            if (args != null)
+            {
+                for (CoreInstance arg : args)
+                {
+                    walkExpression(tokens, arg, runtime, source, depth + 1);
+                }
+            }
+            ListIterable<? extends CoreInstance> exprs = expr.getValueForMetaPropertyToMany(M3Properties.expressionSequence);
+            if (exprs != null)
+            {
+                for (CoreInstance e : exprs)
+                {
+                    walkExpression(tokens, e, runtime, source, depth + 1);
+                }
+            }
+        }
+        catch (Exception ignored)
+        {
         }
     }
 

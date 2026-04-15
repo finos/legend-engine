@@ -40,6 +40,11 @@ public class LspLog
         System.err.println("[LSP-WARN] " + message);
     }
 
+    public static void error(String message)
+    {
+        System.err.println("[LSP-ERROR] " + message);
+    }
+
     public static void debug(String message)
     {
         System.err.println("[LSP-DEBUG] " + message);

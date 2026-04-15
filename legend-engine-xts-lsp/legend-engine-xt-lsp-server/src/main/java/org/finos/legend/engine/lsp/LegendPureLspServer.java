@@ -29,6 +29,9 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.SemanticTokensLegend;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
+import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceFolder;
@@ -46,6 +49,7 @@ import org.slf4j.LoggerFactory;
 public class LegendPureLspServer implements LanguageServer, LanguageClientAware
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendPureLspServer.class);
+    private static final String VERSION = "0.3.0-2026-04-01";
 
     private static final int MAX_RECOVERY_ATTEMPTS = 3;
 
@@ -97,18 +101,26 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
     {
         // Capture workspace roots for repository scanning
         this.workspaceRoots = extractWorkspaceRoots(params);
-        LOGGER.info("Workspace roots: {}", this.workspaceRoots);
+        LspLog.info("Legend Pure LSP v" + VERSION + " starting");
+        LspLog.info("Workspace roots: " + this.workspaceRoots);
 
         ServerCapabilities caps = new ServerCapabilities();
         caps.setTextDocumentSync(TextDocumentSyncKind.Full);
+        caps.setCompletionProvider(new org.eclipse.lsp4j.CompletionOptions(false, java.util.Arrays.asList(":","$",".")));
         caps.setDefinitionProvider(true);
         caps.setReferencesProvider(true);
         caps.setHoverProvider(true);
+        caps.setDocumentSymbolProvider(true);
         caps.setWorkspaceSymbolProvider(true);
-        // Semantic tokens disabled — partial tokenization (only definitions, not function
-        // bodies) causes inconsistent coloring where half the file is themed by semantic
-        // tokens and the other half by TextMate. Re-enable when we can tokenize comprehensively.
-        // caps.setSemanticTokensProvider(...);
+
+        SemanticTokensLegend legend = new SemanticTokensLegend(
+                SemanticTokensProvider.TOKEN_TYPES,
+                SemanticTokensProvider.TOKEN_MODIFIERS);
+        SemanticTokensWithRegistrationOptions semanticOpts =
+                new SemanticTokensWithRegistrationOptions(legend);
+        semanticOpts.setFull(true);
+        semanticOpts.setRange(false);
+        caps.setSemanticTokensProvider(semanticOpts);
         caps.setExecuteCommandProvider(
                 new ExecuteCommandOptions(Arrays.asList(LegendWorkspaceService.CMD_REINDEX)));
         return CompletableFuture.completedFuture(new InitializeResult(caps));
@@ -165,7 +177,7 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
     @Override
     public void initialized(InitializedParams params)
     {
-        this.client.showMessage(new MessageParams(MessageType.Info, "Pure LSP: initializing runtime..."));
+        this.client.showMessage(new MessageParams(MessageType.Info, "Pure LSP v" + VERSION + ": initializing runtime..."));
         CompletableFuture.runAsync(() ->
         {
             try
@@ -175,38 +187,56 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
                 {
                     this.repositoryScanner.scan(this.workspaceRoots);
                     this.uriMapper.setRepositoryScanner(this.repositoryScanner);
-                    LOGGER.info("Mapped {} repositories to filesystem paths",
-                            this.repositoryScanner.getMappings().size());
+                    LspLog.info("Mapped " + this.repositoryScanner.getMappings().size()
+                            + " repositories to filesystem paths");
                 }
                 else
                 {
-                    LOGGER.warn("No workspace roots provided; source ID resolution will be limited");
-                    LOGGER.info("WARNING: No workspace roots provided. Go-to-definition will not work for cross-file navigation.");
+                    LspLog.warn("No workspace roots provided; source ID resolution will be limited");
                 }
 
+                LspLog.info("Initializing PureRuntime...");
                 this.session = new LegendPureSession();
                 this.session.initialize(this.repositoryScanner);
+                LspLog.info("PureRuntime initialized");
 
                 // Wire UriMapper to PureRuntime for direct storage queries
                 this.uriMapper.setPureRuntime(this.session.getPureRuntime());
 
                 // Build the workspace symbol index
+                LspLog.info("Building symbol index...");
                 this.symbolProvider.buildIndex(this.session.getPureRuntime());
 
                 // Compile any documents that were opened before the session was ready
                 this.textDocumentService.compileOpenDocuments();
 
-                this.client.showMessage(new MessageParams(MessageType.Info, "Pure LSP: ready ("
+                this.client.showMessage(new MessageParams(MessageType.Info, "Pure LSP v" + VERSION + ": ready ("
                         + this.repositoryScanner.getMappings().size() + " repos, "
                         + this.symbolProvider.size() + " symbols)"));
-                LOGGER.info("Pure LSP initialized successfully");
+                LspLog.info("Pure LSP initialized successfully — "
+                        + this.symbolProvider.size() + " symbols indexed");
             }
             catch (Exception e)
             {
-                LOGGER.error("Pure LSP initialization failed", e);
+                LspLog.error("Pure LSP initialization FAILED: " + e.getMessage());
+                e.printStackTrace(System.err);
                 this.client.showMessage(new MessageParams(MessageType.Error, "Pure LSP failed: " + e.getMessage()));
             }
         });
+    }
+
+    /**
+     * Rescan workspace roots for repository definitions. Called during reindex
+     * to discover newly added/removed repos since startup.
+     */
+    void rescanWorkspaceRoots()
+    {
+        this.repositoryScanner.clear();
+        if (!this.workspaceRoots.isEmpty())
+        {
+            this.repositoryScanner.scan(this.workspaceRoots);
+            this.uriMapper.setRepositoryScanner(this.repositoryScanner);
+        }
     }
 
     /**
@@ -239,6 +269,13 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
                 if (this.session != null)
                 {
                     this.session.reinitialize();
+                    // Bug fix: rewire UriMapper to new PureRuntime after reinitialize
+                    this.uriMapper.setPureRuntime(this.session.getPureRuntime());
+                    // Rebuild symbol index
+                    this.symbolProvider.buildIndex(this.session.getPureRuntime());
+                    // Bug fix: replay unsaved editor buffers so the runtime
+                    // matches what the user sees on screen
+                    this.textDocumentService.compileOpenDocuments();
                 }
                 this.recoveryAttempts = 0;
                 this.client.showMessage(new MessageParams(MessageType.Info, "Pure LSP: recovered"));
@@ -249,6 +286,13 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
                 this.client.showMessage(new MessageParams(MessageType.Error, "Pure LSP recovery failed: " + e.getMessage()));
             }
         });
+    }
+
+    @Override
+    public void setTrace(SetTraceParams params)
+    {
+        // No-op: VS Code sends $/setTrace on every connection; the default
+        // LSP4J implementation throws UnsupportedOperationException.
     }
 
     @Override
@@ -421,6 +465,41 @@ public class LegendPureLspServer implements LanguageServer, LanguageClientAware
                 new java.io.BufferedOutputStream(new java.io.FileOutputStream(java.io.FileDescriptor.err)), true);
         System.setOut(stderrOut);
         System.setErr(stderrOut);
+
+        // Log which JAR we're running from, so misconfigurations are visible.
+        java.security.CodeSource cs = LegendPureLspServer.class.getProtectionDomain().getCodeSource();
+        String jarLocation = cs != null ? cs.getLocation().toString() : "unknown";
+        System.err.println("[LSP] Running from: " + jarLocation);
+
+        // Eagerly load critical classes at startup. The JVM caches class-init
+        // failures permanently (NoClassDefFoundError is sticky), so if Gson or
+        // a provider class fails to load lazily on a concurrent request thread,
+        // ALL subsequent uses of that class fail for the lifetime of the process.
+        // Loading them here on the main thread ensures any failure is immediate
+        // and visible, and that the classes are ready before requests arrive.
+        try
+        {
+            // Dependency libraries
+            Class.forName("com.google.gson.Gson");
+            Class.forName("com.google.gson.internal.bind.NumberTypeAdapter");
+            Class.forName("org.eclipse.collections.impl.block.procedure.MinComparatorProcedure");
+            Class.forName("org.eclipse.lsp4j.adapters.SymbolInformationTypeAdapter");
+            // LSP provider classes
+            Class.forName("org.finos.legend.engine.lsp.HoverProvider");
+            Class.forName("org.finos.legend.engine.lsp.NavigationProvider");
+            Class.forName("org.finos.legend.engine.lsp.ReferencesProvider");
+            Class.forName("org.finos.legend.engine.lsp.SemanticTokensProvider");
+            Class.forName("org.finos.legend.engine.lsp.DocumentOutlineProvider");
+            Class.forName("org.finos.legend.engine.lsp.PackageTreeProvider");
+            Class.forName("org.finos.legend.engine.lsp.WorkspaceSymbolProvider");
+            Class.forName("org.finos.legend.engine.lsp.CompletionProvider");
+        }
+        catch (ClassNotFoundException e)
+        {
+            System.err.println("[LSP-ERROR] Critical class not found: " + e.getMessage()
+                    + ". Are you running the shaded *-server.jar?");
+            System.exit(1);
+        }
 
         LegendPureLspServer server = new LegendPureLspServer();
         org.eclipse.lsp4j.jsonrpc.Launcher<LanguageClient> launcher =

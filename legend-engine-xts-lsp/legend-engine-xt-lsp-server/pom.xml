@@ -41,7 +41,6 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-runtime-java-engine-interpreted</dependency>
                                 <dependency>org.eclipse.collections:eclipse-collections</dependency>
-                                <dependency>org.finos.legend.engine:*</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -64,6 +63,8 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>module-info.class</exclude>
+                                        <exclude>META-INF/versions/*/module-info.class</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -120,118 +121,94 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- Pure code repositories (needed on classpath for CodeRepositoryProviderHelper) -->
-        <!-- Core -->
+        <!-- Pure language infrastructure from legend-pure.                            -->
+        <!-- Each DSL has TWO modules:                                               -->
+        <!--   -pure    = .pure source files + CodeRepositoryProvider                -->
+        <!--   -grammar = Java parser (InlineDSL) registered via ServiceLoader       -->
+        <!-- Both are needed: -pure for the type system, -grammar for the parser.    -->
+        <!-- Without -grammar, inline DSLs like #TDS...# cause parser errors.        -->
+
+        <!-- Mapping DSL -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- Functions -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-json-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Store DSL -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Relational Store -->
+        <!-- Graph DSL -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-SDT-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Path DSL -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-path-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-path-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Relational dialects -->
+        <!-- Diagram DSL -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-postgres-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-snowflake-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- External formats -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-flatdata-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-json-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- TDS DSL -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-xml-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Java platform binding -->
+        <!-- Relational store -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <!-- Service & mapping -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-service-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
-        <!-- Data space, analytics -->
+        <!-- Precise primitives -->
         <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-data-space-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-diagram-pure</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-persistence-pure</artifactId>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-precisePrimitives</artifactId>
             <scope>runtime</scope>
         </dependency>
 

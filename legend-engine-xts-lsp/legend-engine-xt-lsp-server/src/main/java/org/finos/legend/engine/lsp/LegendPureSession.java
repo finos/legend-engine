@@ -154,6 +154,58 @@ public class LegendPureSession
         initialize(this.workspaceScanner);
     }
 
+    /**
+     * Restore a source to its on-disk state after the editor closes without saving.
+     * For storage-backed sources, reloads from disk and recompiles.
+     * For in-memory scratch sources, deletes them from the runtime.
+     */
+    public synchronized void restoreFromDisk(String sourceId)
+    {
+        if (!this.initialized || sourceId == null)
+        {
+            return;
+        }
+        try
+        {
+            String resolvedId = resolveSourceId(sourceId);
+            if (resolvedId == null)
+            {
+                return;
+            }
+            org.finos.legend.pure.m3.serialization.runtime.Source source =
+                    this.pureRuntime.getSourceById(resolvedId);
+            if (source == null)
+            {
+                return;
+            }
+            if (source.isImmutable())
+            {
+                return;
+            }
+            if (source.isInMemory())
+            {
+                // Scratch file — delete from runtime
+                this.pureRuntime.delete(resolvedId);
+                this.pureRuntime.compile();
+            }
+            else
+            {
+                // Storage-backed file — reload from disk and recompile
+                String diskContent = this.pureRuntime.getCodeStorage()
+                        .getContentAsText(resolvedId);
+                if (diskContent != null && !diskContent.equals(source.getContent()))
+                {
+                    this.pureRuntime.modify(resolvedId, diskContent);
+                    this.pureRuntime.compile();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LspLog.debug("restoreFromDisk failed for " + sourceId + ": " + e.getMessage());
+        }
+    }
+
     public synchronized CompileResult modifyAndCompile(String sourceId, String content)
     {
         if (!this.initialized)

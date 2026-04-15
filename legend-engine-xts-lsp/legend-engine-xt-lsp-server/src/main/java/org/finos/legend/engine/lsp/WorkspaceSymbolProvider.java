@@ -76,7 +76,7 @@ public class WorkspaceSymbolProvider
             {
                 break;
             }
-            if (lowerQuery.isEmpty() || entry.lowerPath.contains(lowerQuery))
+            if (lowerQuery.isEmpty() || entry.lowerSearchName.contains(lowerQuery))
             {
                 SymbolInformation symbol = entry.toSymbolInformation(uriMapper);
                 if (symbol != null)
@@ -117,9 +117,23 @@ public class WorkspaceSymbolProvider
                 {
                     String qualifiedPath = PackageableElement.getUserPathForPackageableElement(child);
                     String classifierName = child.getClassifier().getName();
+                    // For functions, extract the simple name from M3Properties.functionName
+                    // so developers can search by "compileLegendGrammar" instead of the
+                    // mangled name "compileLegendGrammar_String_1__PackageableElement_MANY_"
+                    String simpleName = null;
+                    if ("ConcreteFunctionDefinition".equals(classifierName)
+                            || "NativeFunction".equals(classifierName))
+                    {
+                        CoreInstance fnName = child.getValueForMetaPropertyToOne(M3Properties.functionName);
+                        if (fnName != null)
+                        {
+                            simpleName = fnName.getName();
+                        }
+                    }
                     entries.add(new IndexEntry(
                             qualifiedPath,
                             classifierName,
+                            simpleName,
                             si.getSourceId(),
                             si.getStartLine(),
                             si.getStartColumn(),
@@ -166,23 +180,54 @@ public class WorkspaceSymbolProvider
         final String qualifiedPath;
         final String lowerPath;
         final String classifierName;
+        final String simpleFunctionName; // null for non-functions
+        final String lowerSearchName;    // includes simple name for function search
         final String sourceId;
         final int startLine;
         final int startColumn;
         final int endLine;
         final int endColumn;
 
-        IndexEntry(String qualifiedPath, String classifierName, String sourceId,
-                   int startLine, int startColumn, int endLine, int endColumn)
+        IndexEntry(String qualifiedPath, String classifierName, String simpleFunctionName,
+                   String sourceId, int startLine, int startColumn, int endLine, int endColumn)
         {
             this.qualifiedPath = qualifiedPath;
             this.lowerPath = qualifiedPath.toLowerCase();
             this.classifierName = classifierName;
+            this.simpleFunctionName = simpleFunctionName;
+            // For functions, search matches against the simple name (e.g. "compileLegendGrammar")
+            // as well as the qualified path. This lets developers search naturally.
+            if (simpleFunctionName != null)
+            {
+                this.lowerSearchName = (qualifiedPath + " " + simpleFunctionName).toLowerCase();
+            }
+            else
+            {
+                this.lowerSearchName = this.lowerPath;
+            }
             this.sourceId = sourceId;
             this.startLine = startLine;
             this.startColumn = startColumn;
             this.endLine = endLine;
             this.endColumn = endColumn;
+        }
+
+        /**
+         * Get the display name: for functions, use the simple name;
+         * for other elements, use the last segment of the qualified path.
+         */
+        String getDisplayName()
+        {
+            if (this.simpleFunctionName != null)
+            {
+                return this.simpleFunctionName;
+            }
+            int lastSep = this.qualifiedPath.lastIndexOf("::");
+            if (lastSep > 0)
+            {
+                return this.qualifiedPath.substring(lastSep + 2);
+            }
+            return this.qualifiedPath;
         }
 
         SymbolInformation toSymbolInformation(UriMapper uriMapper)
@@ -210,7 +255,7 @@ public class WorkspaceSymbolProvider
             );
 
             SymbolInformation info = new SymbolInformation();
-            info.setName(this.qualifiedPath);
+            info.setName(getDisplayName());
             info.setKind(kind);
             info.setContainerName(containerName);
             info.setLocation(location);

@@ -16,7 +16,9 @@ package org.finos.legend.engine.lsp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
@@ -31,16 +33,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Provides find-all-references by reading the referenceUsages property
- * that the Pure compiler populates on every element during compilation.
+ * Provides find-all-references using the same approach as PureIdeLight's findUsages:
+ * - For functions: reads both {@code applications} (call sites) and
+ *   {@code referenceUsages} (structural type references)
+ * - For other elements: reads {@code referenceUsages}
+ *
+ * @see pure_ide/findUsage.pure in legend-engine for the reference implementation
  */
 public class ReferencesProvider
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferencesProvider.class);
-    /**
-     * Find all references to the element at the given position.
-     * Line and column are 1-based (PureRuntime convention).
-     */
     private static final int MAX_REFERENCES = 1000;
 
     public static List<Location> references(PureRuntime runtime, UriMapper uriMapper,
@@ -59,13 +61,17 @@ public class ReferencesProvider
             return Collections.emptyList();
         }
 
-        // Resolve ImportStubs to get the actual element
         CoreInstance element = ImportStub.withImportStubByPass(raw, runtime.getProcessorSupport());
         if (element == null)
         {
             return Collections.emptyList();
         }
 
+        String classifierName = element.getClassifier() != null
+                ? element.getClassifier().getName() : "";
+
+        // Deduplicate by source location string (sourceId:startLine:startCol)
+        Set<String> seen = new HashSet<>();
         List<Location> locations = new ArrayList<>();
 
         // Optionally include the declaration itself
@@ -74,15 +80,38 @@ public class ReferencesProvider
             SourceInformation defSi = element.getSourceInformation();
             if (defSi != null)
             {
-                Location defLoc = toLocation(defSi, uriMapper);
-                if (defLoc != null)
+                addLocation(locations, seen, defSi, uriMapper);
+            }
+        }
+
+        // For functions: read 'applications' (call sites) — same as PureIdeLight's
+        // $f.applications->evaluateAndDeactivate()
+        // Note: we check the classifier name, NOT Java instanceof, because Pure's
+        // runtime graph objects are often plain CoreInstance and don't implement
+        // the PackageableFunction Java interface.
+        if ("ConcreteFunctionDefinition".equals(classifierName)
+                || "NativeFunction".equals(classifierName))
+        {
+            ListIterable<? extends CoreInstance> applications =
+                    element.getValueForMetaPropertyToMany(M3Properties.applications);
+            if (applications != null)
+            {
+                for (CoreInstance app : applications)
                 {
-                    locations.add(defLoc);
+                    if (locations.size() >= MAX_REFERENCES)
+                    {
+                        break;
+                    }
+                    SourceInformation appSi = app.getSourceInformation();
+                    if (appSi != null)
+                    {
+                        addLocation(locations, seen, appSi, uriMapper);
+                    }
                 }
             }
         }
 
-        // Get all reference usages from the compiler
+        // For all elements: read 'referenceUsages' (structural type references)
         ListIterable<? extends CoreInstance> refUsages =
                 element.getValueForMetaPropertyToMany(M3Properties.referenceUsages);
         if (refUsages != null)
@@ -94,22 +123,25 @@ public class ReferencesProvider
                     LspLog.debug("references: truncated at " + MAX_REFERENCES + " results");
                     break;
                 }
-                CoreInstance owner = refUsage.getValueForMetaPropertyToOne(M3Properties.owner);
-                if (owner == null)
-                {
-                    continue;
-                }
 
-                SourceInformation ownerSi = owner.getSourceInformation();
-                if (ownerSi == null)
+                // PureIdeLight: if sourceInformation is empty on the refUsage itself,
+                // fall back to the owner's sourceInformation
+                SourceInformation refSi = refUsage.getSourceInformation();
+                if (refSi != null)
                 {
-                    continue;
+                    addLocation(locations, seen, refSi, uriMapper);
                 }
-
-                Location loc = toLocation(ownerSi, uriMapper);
-                if (loc != null)
+                else
                 {
-                    locations.add(loc);
+                    CoreInstance owner = refUsage.getValueForMetaPropertyToOne(M3Properties.owner);
+                    if (owner != null)
+                    {
+                        SourceInformation ownerSi = owner.getSourceInformation();
+                        if (ownerSi != null)
+                        {
+                            addLocation(locations, seen, ownerSi, uriMapper);
+                        }
+                    }
                 }
             }
         }
@@ -117,14 +149,20 @@ public class ReferencesProvider
         return locations;
     }
 
-    private static Location toLocation(SourceInformation si, UriMapper uriMapper)
+    private static void addLocation(List<Location> locations, Set<String> seen,
+                                    SourceInformation si, UriMapper uriMapper)
     {
-        String uri = uriMapper.toUri(si.getSourceId());
-        if (uri == null)
+        // Deduplicate by exact source position
+        String key = si.getSourceId() + ":" + si.getStartLine() + ":" + si.getStartColumn();
+        if (!seen.add(key))
         {
-            return null;
+            return;
         }
 
-        return SourceInfoUtil.toLocation(si, uri);
+        String uri = uriMapper.toUri(si.getSourceId());
+        if (uri != null)
+        {
+            locations.add(SourceInfoUtil.toLocation(si, uri));
+        }
     }
 }

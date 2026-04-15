@@ -48,6 +48,19 @@ public class SemanticTokensProviderTest
             "  'Hello ' + $x\n" +                                     // line 3
             "}\n";                                                     // line 4
 
+    private static final String BODY_SOURCE_ID = "sem_test_body.pure";
+    private static final String BODY_CLS_CODE =
+            "Class test::sem::Animal\n" +
+            "{\n" +
+            "  species: String[1];\n" +
+            "}\n";
+    private static final String BODY_CODE =
+            "function test::sem::process(a: test::sem::Animal[1]): String[1]\n" +  // line 1
+            "{\n" +                                                                  // line 2
+            "  let nm = $a.species;\n" +                                             // line 3
+            "  $nm->toUpper();\n" +                                                  // line 4
+            "}\n";                                                                   // line 5
+
     @BeforeClass
     public static void init()
     {
@@ -65,6 +78,13 @@ public class SemanticTokensProviderTest
         LegendPureSession.CompileResult r3 = session.modifyAndCompile(FUNC_SOURCE_ID, FUNC_CODE);
         Assert.assertTrue("greet should compile: " +
                 (r3.getError() != null ? r3.getError().getMessage() : ""), r3.isSuccess());
+
+        LegendPureSession.CompileResult r4 = session.modifyAndCompile("sem_test_body_cls.pure", BODY_CLS_CODE);
+        Assert.assertTrue("Animal should compile: " +
+                (r4.getError() != null ? r4.getError().getMessage() : ""), r4.isSuccess());
+        LegendPureSession.CompileResult r5 = session.modifyAndCompile(BODY_SOURCE_ID, BODY_CODE);
+        Assert.assertTrue("process should compile: " +
+                (r5.getError() != null ? r5.getError().getMessage() : ""), r5.isSuccess());
     }
 
     @AfterClass
@@ -199,5 +219,217 @@ public class SemanticTokensProviderTest
             Assert.assertTrue("tokenType should be valid, got " + tokenType + " at token " + (i / 5),
                     tokenType >= 0 && tokenType < SemanticTokensProvider.TOKEN_TYPES.size());
         }
+    }
+
+    @Test
+    public void classDefinitionToken_positionedAtName_notKeyword()
+    {
+        // "Class test::sem::Person\n" — the "Class" keyword is at col 1,
+        // the qualified name "test::sem::Person" starts at col 7.
+        // Token must be at the name position, NOT the keyword position.
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), CLASS_SOURCE_ID);
+
+        // Decode delta to absolute positions to find the class definition token
+        int absLine = 0;
+        int absCol = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            int deltaLine = data.get(i);
+            int deltaCol = data.get(i + 1);
+            int length = data.get(i + 2);
+            int tokenType = data.get(i + 3);
+            int modifiers = data.get(i + 4);
+
+            absLine += deltaLine;
+            absCol = (deltaLine == 0) ? absCol + deltaCol : deltaCol;
+
+            if (tokenType == 1 && (modifiers & 1) != 0) // class + definition
+            {
+                // Line 0 (0-based) = line 1 in source
+                Assert.assertEquals("Class definition should be on line 1 (0-based: 0)", 0, absLine);
+                // Column must be > 0 (0-based) — proving it's NOT at column 1 where "Class" keyword is.
+                // "test::sem::Person" starts at column 7 (1-based) = column 6 (0-based).
+                Assert.assertTrue("Class definition token should not be at column 0 (keyword position), " +
+                        "but was at column " + absCol, absCol > 0);
+                // Length covers the simple name "Person" (si.getLine()/getColumn() points to simple name)
+                Assert.assertEquals("Class definition token length should cover simple name",
+                        "Person".length(), length);
+                return;
+            }
+        }
+        Assert.fail("Did not find a class definition token");
+    }
+
+    @Test
+    public void enumDefinitionToken_positionedAtName_notKeyword()
+    {
+        // "Enum test::sem::Color\n" — "Enum" keyword at col 1, name at col 6.
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), ENUM_SOURCE_ID);
+
+        int absLine = 0;
+        int absCol = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            int deltaLine = data.get(i);
+            int deltaCol = data.get(i + 1);
+            int length = data.get(i + 2);
+            int tokenType = data.get(i + 3);
+            int modifiers = data.get(i + 4);
+
+            absLine += deltaLine;
+            absCol = (deltaLine == 0) ? absCol + deltaCol : deltaCol;
+
+            if (tokenType == 2 && (modifiers & 1) != 0) // enum + definition
+            {
+                Assert.assertEquals("Enum definition should be on line 1 (0-based: 0)", 0, absLine);
+                Assert.assertTrue("Enum definition token should not be at column 0 (keyword position), " +
+                        "but was at column " + absCol, absCol > 0);
+                Assert.assertEquals("Enum definition token length should cover simple name",
+                        "Color".length(), length);
+                return;
+            }
+        }
+        Assert.fail("Did not find an enum definition token");
+    }
+
+    @Test
+    public void funcDefinitionToken_positionedAtName_notKeyword()
+    {
+        // "function test::sem::greet(..." — "function" keyword at col 1, name at col 10.
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), FUNC_SOURCE_ID);
+
+        int absLine = 0;
+        int absCol = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            int deltaLine = data.get(i);
+            int deltaCol = data.get(i + 1);
+            int length = data.get(i + 2);
+            int tokenType = data.get(i + 3);
+            int modifiers = data.get(i + 4);
+
+            absLine += deltaLine;
+            absCol = (deltaLine == 0) ? absCol + deltaCol : deltaCol;
+
+            if (tokenType == 3 && (modifiers & 1) != 0) // function + definition
+            {
+                Assert.assertEquals("Function definition should be on line 1 (0-based: 0)", 0, absLine);
+                Assert.assertTrue("Function definition token should not be at column 0 (keyword position), " +
+                        "but was at column " + absCol, absCol > 0);
+                Assert.assertEquals("Function definition token length should cover simple name",
+                        "greet".length(), length);
+                return;
+            }
+        }
+        Assert.fail("Did not find a function definition token");
+    }
+
+    @Test
+    public void funcSource_containsParameterToken()
+    {
+        // "function test::sem::greet(x: String[1]): String[1]"
+        // Should produce a parameter token for "x"
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), FUNC_SOURCE_ID);
+        int paramCount = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 7) // tokenType == parameter
+            {
+                paramCount++;
+            }
+        }
+        Assert.assertTrue("Should contain parameter token for 'x', found: " + paramCount,
+                paramCount >= 1);
+    }
+
+    @Test
+    public void funcSource_containsReturnTypeToken()
+    {
+        // "function test::sem::greet(x: String[1]): String[1]"
+        // Should produce type tokens for parameter type and/or return type
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), FUNC_SOURCE_ID);
+        int typeCount = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 6) // tokenType == type
+            {
+                typeCount++;
+            }
+        }
+        // At least 1 type token: the return type String (parameter type may also produce one)
+        Assert.assertTrue("Should contain type reference token(s) for String, found: " + typeCount,
+                typeCount >= 1);
+    }
+
+    // ── Function body expression tree tests ──────────────────────────────
+
+    @Test
+    public void functionBody_containsVariableTokens()
+    {
+        // "let nm = $a.species; $nm->toUpper();"
+        // Should produce variable tokens for $a, $nm references
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), BODY_SOURCE_ID);
+        int varCount = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 10) // tokenType == variable
+            {
+                varCount++;
+            }
+        }
+        // At least 2: $a (line 3) and $nm (line 4), plus let variable "nm"
+        Assert.assertTrue("Should contain variable tokens, found: " + varCount,
+                varCount >= 2);
+    }
+
+    @Test
+    public void functionBody_containsPropertyAccessToken()
+    {
+        // "$a.species" → "species" should be a property token
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), BODY_SOURCE_ID);
+        int propCount = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 4 && (data.get(i + 4) & 1) == 0) // property, NOT definition
+            {
+                propCount++;
+            }
+        }
+        Assert.assertTrue("Should contain property access token for .species, found: " + propCount,
+                propCount >= 1);
+    }
+
+    @Test
+    public void functionBody_containsFunctionCallToken()
+    {
+        // "$nm->toUpper()" → "toUpper" should be a function token
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), BODY_SOURCE_ID);
+        int fnCount = 0;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 3 && (data.get(i + 4) & 1) == 0) // function, NOT definition
+            {
+                fnCount++;
+            }
+        }
+        Assert.assertTrue("Should contain function call token for toUpper, found: " + fnCount,
+                fnCount >= 1);
+    }
+
+    @Test
+    public void functionBody_letBindingCreatesVariableDefinition()
+    {
+        // "let nm = ..." → "nm" should be a variable with definition modifier
+        List<Integer> data = SemanticTokensProvider.getTokens(session.getPureRuntime(), BODY_SOURCE_ID);
+        boolean foundLetVar = false;
+        for (int i = 0; i < data.size(); i += 5)
+        {
+            if (data.get(i + 3) == 10 && (data.get(i + 4) & 1) != 0) // variable + definition
+            {
+                foundLetVar = true;
+                break;
+            }
+        }
+        Assert.assertTrue("Should contain a variable definition token for let binding", foundLetVar);
     }
 }

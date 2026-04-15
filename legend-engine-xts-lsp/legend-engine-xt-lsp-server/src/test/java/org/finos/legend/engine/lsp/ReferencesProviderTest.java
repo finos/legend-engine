@@ -15,7 +15,11 @@
 package org.finos.legend.engine.lsp;
 
 import java.util.List;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.lsp4j.Location;
+import org.finos.legend.pure.m3.navigation.M3Properties;
+import org.finos.legend.pure.m3.serialization.runtime.Source;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -206,13 +210,16 @@ public class ReferencesProviderTest
     }
 
     @Test
-    public void references_onFunction_doesNotCrash()
+    public void references_onFunction_findsCallSitesViaApplications()
     {
         String funcDefId = "ref_test_func_def.pure";
-        String funcUseId = "ref_test_func_use.pure";
+        String funcCallerId = "ref_test_func_caller.pure";
+        String funcCaller2Id = "ref_test_func_caller2.pure";
         uriMapper.register("file:///test/" + funcDefId, funcDefId);
-        uriMapper.register("file:///test/" + funcUseId, funcUseId);
+        uriMapper.register("file:///test/" + funcCallerId, funcCallerId);
+        uriMapper.register("file:///test/" + funcCaller2Id, funcCaller2Id);
 
+        // Define a function
         LegendPureSession.CompileResult r1 = session.modifyAndCompile(
                 funcDefId,
                 "function test::ref::greet(name: String[1]): String[1]\n{\n  'Hello ' + $name\n}\n"
@@ -220,22 +227,177 @@ public class ReferencesProviderTest
         Assert.assertTrue("greet should compile: " +
                 (r1.getError() != null ? r1.getError().getMessage() : ""), r1.isSuccess());
 
+        // Call it from another function
         LegendPureSession.CompileResult r2 = session.modifyAndCompile(
-                funcUseId,
+                funcCallerId,
                 "function test::ref::caller(): String[1]\n{\n  test::ref::greet('World')\n}\n"
         );
         Assert.assertTrue("caller should compile: " +
                 (r2.getError() != null ? r2.getError().getMessage() : ""), r2.isSuccess());
 
-        // Try multiple positions on the function definition to find references
-        // Function referenceUsages depend on the exact position navigate() resolves to
-        for (int col = 10; col <= 30; col += 5)
+        // Call it from yet another function (cross-file)
+        LegendPureSession.CompileResult r3 = session.modifyAndCompile(
+                funcCaller2Id,
+                "function test::ref::caller2(): String[1]\n{\n  test::ref::greet('again')\n}\n"
+        );
+        Assert.assertTrue("caller2 should compile: " +
+                (r3.getError() != null ? r3.getError().getMessage() : ""), r3.isSuccess());
+
+        // Find references to greet — navigate at "greet" in the definition
+        // "function test::ref::greet(name: String[1]): String[1]"
+        //  1234567890123456789012345
+        List<Location> refs = ReferencesProvider.references(
+                session.getPureRuntime(), uriMapper,
+                funcDefId, 1, 22, false);
+
+        // Should find at least the two call sites (via 'applications' property)
+        Assert.assertTrue(
+                "Should find at least 2 call-site references to greet(), found: " + refs.size()
+                        + ". References: " + locationsToString(refs),
+                refs.size() >= 2);
+
+        // Verify call sites are in the caller files
+        boolean foundCaller1 = false;
+        boolean foundCaller2 = false;
+        for (Location loc : refs)
         {
-            List<Location> refs = ReferencesProvider.references(
-                    session.getPureRuntime(), uriMapper,
-                    funcDefId, 1, col, false);
-            Assert.assertNotNull("Should return non-null list at col " + col, refs);
+            if (loc.getUri().contains(funcCallerId))
+            {
+                foundCaller1 = true;
+            }
+            if (loc.getUri().contains(funcCaller2Id))
+            {
+                foundCaller2 = true;
+            }
         }
+        Assert.assertTrue("Should find call site in caller function. Refs: " + locationsToString(refs),
+                foundCaller1);
+        Assert.assertTrue("Should find call site in caller2 function. Refs: " + locationsToString(refs),
+                foundCaller2);
+    }
+
+    @Test
+    public void references_onFunction_sameFile_findsCallSite()
+    {
+        String sameFileId = "ref_test_func_same.pure";
+        uriMapper.register("file:///test/" + sameFileId, sameFileId);
+
+        // Define and call a function within the same file
+        LegendPureSession.CompileResult r = session.modifyAndCompile(
+                sameFileId,
+                "function test::ref::helper(): String[1]\n" +     // line 1
+                "{\n" +                                            // line 2
+                "  'help'\n" +                                     // line 3
+                "}\n" +                                            // line 4
+                "\n" +                                             // line 5
+                "function test::ref::main(): String[1]\n" +       // line 6
+                "{\n" +                                            // line 7
+                "  test::ref::helper()\n" +                        // line 8: call site
+                "}\n"                                              // line 9
+        );
+        Assert.assertTrue("same-file functions should compile: " +
+                (r.getError() != null ? r.getError().getMessage() : ""), r.isSuccess());
+
+        // Find references to helper() from its definition
+        List<Location> refs = ReferencesProvider.references(
+                session.getPureRuntime(), uriMapper,
+                sameFileId, 1, 22, false);
+
+        // Should find the call site on line 8 in the same file
+        boolean foundSameFileCall = false;
+        for (Location loc : refs)
+        {
+            if (loc.getUri().contains(sameFileId)
+                    && loc.getRange().getStart().getLine() >= 7) // line 8, 0-based = 7
+            {
+                foundSameFileCall = true;
+            }
+        }
+        Assert.assertTrue(
+                "Should find same-file call site for helper(). Refs: " + locationsToString(refs),
+                foundSameFileCall);
+    }
+
+    private static String locationsToString(List<Location> locations)
+    {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < locations.size(); i++)
+        {
+            if (i > 0)
+            {
+                sb.append(", ");
+            }
+            Location loc = locations.get(i);
+            sb.append(loc.getUri())
+              .append(":")
+              .append(loc.getRange().getStart().getLine() + 1)
+              .append(":")
+              .append(loc.getRange().getStart().getCharacter() + 1);
+        }
+        return sb.append("]").toString();
+    }
+
+    /**
+     * Directly verify that the 'applications' property on a function contains
+     * call sites. This test would have caught the instanceof bug where
+     * Java instanceof PackageableFunction failed on CoreInstance objects.
+     */
+    @Test
+    public void references_functionApplicationsProperty_isPopulated()
+    {
+        String fnDefId = "ref_test_apps_def.pure";
+        String fnCallId = "ref_test_apps_call.pure";
+        uriMapper.register("file:///test/" + fnDefId, fnDefId);
+        uriMapper.register("file:///test/" + fnCallId, fnCallId);
+
+        LegendPureSession.CompileResult r1 = session.modifyAndCompile(
+                fnDefId,
+                "function test::ref::sayHi(): String[1]\n{\n  'Hi'\n}\n"
+        );
+        Assert.assertTrue("sayHi should compile", r1.isSuccess());
+
+        LegendPureSession.CompileResult r2 = session.modifyAndCompile(
+                fnCallId,
+                "function test::ref::useSayHi(): String[1]\n{\n  test::ref::sayHi()\n}\n"
+        );
+        Assert.assertTrue("useSayHi should compile", r2.isSuccess());
+
+        // Navigate to sayHi function and verify its 'applications' property directly
+        Source source = session.getPureRuntime().getSourceById(fnDefId);
+        Assert.assertNotNull("Source should exist", source);
+        CoreInstance raw = source.navigate(1, 22, session.getPureRuntime().getProcessorSupport());
+        Assert.assertNotNull("Should navigate to function", raw);
+
+        // Verify classifier name
+        String classifierName = raw.getClassifier() != null ? raw.getClassifier().getName() : "";
+        Assert.assertEquals("Should be a ConcreteFunctionDefinition",
+                "ConcreteFunctionDefinition", classifierName);
+
+        // Verify applications property has the call site
+        ListIterable<? extends CoreInstance> apps =
+                raw.getValueForMetaPropertyToMany(M3Properties.applications);
+        Assert.assertNotNull("applications property should not be null", apps);
+        Assert.assertFalse(
+                "applications should contain at least one call site, found: " + apps.size(),
+                apps.isEmpty());
+
+        // Now verify ReferencesProvider actually returns these call sites
+        List<Location> refs = ReferencesProvider.references(
+                session.getPureRuntime(), uriMapper,
+                fnDefId, 1, 22, false);
+        boolean foundCallSite = false;
+        for (Location loc : refs)
+        {
+            if (loc.getUri().contains(fnCallId))
+            {
+                foundCallSite = true;
+            }
+        }
+        Assert.assertTrue(
+                "ReferencesProvider should find the call site from applications. "
+                        + "applications.size()=" + apps.size()
+                        + ", refs=" + locationsToString(refs),
+                foundCallSite);
     }
 
     @Test

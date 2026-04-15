@@ -14,6 +14,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 import { workspace, ExtensionContext, Uri, commands, window } from 'vscode';
 import {
     LanguageClient,
@@ -28,8 +29,16 @@ let pureFs: PureFileSystemProvider | undefined;
 let packageTree: PurePackageTreeProvider | undefined;
 let goOutputChannel: import('vscode').OutputChannel | undefined;
 
+// Resolves when PureRuntime is fully initialized (server sends "ready" message)
+let serverReady: Promise<void>;
+let resolveServerReady: () => void;
+serverReady = new Promise(r => { resolveServerReady = r; });
+
 export function activate(context: ExtensionContext): void {
     const jarPath = resolveServerJar();
+    console.log('[Legend Pure] Resolved server JAR:', jarPath);
+    const jarSize = jarPath ? Math.round(fs.statSync(jarPath).size / 1024 / 1024) : 0;
+    console.log(`[Legend Pure] JAR size: ${jarSize}MB${jarSize < 10 ? ' — WARNING: this looks like the thin JAR, expected ~36MB' : ''}`);
     if (!jarPath) {
         window.showErrorMessage(
             'Legend Pure LSP: server JAR not found. ' +
@@ -94,6 +103,9 @@ export function activate(context: ExtensionContext): void {
         })
     );
 
+    // Register LLM tools (VS Code LanguageModelTool API for Copilot/agents)
+    registerLanguageModelTools(context);
+
     // Start the client and register providers once ready
     client.start().then(() => {
         if (client) {
@@ -128,8 +140,16 @@ export function activate(context: ExtensionContext): void {
                 })
             );
 
-            // Listen for showMessage to detect reindex completion and clear caches
+            // Listen for showMessage to detect server readiness and reindex completion
             client.onNotification('window/showMessage', (params: any) => {
+                if (params.message && params.message.includes(': ready')) {
+                    console.log('[Legend Pure] Server ready — tools are now active');
+                    resolveServerReady();
+                    // Refresh the package tree now that PureRuntime is initialized
+                    if (packageTree) {
+                        packageTree.refresh();
+                    }
+                }
                 if (params.message && params.message.includes('reindex complete')) {
                     if (pureFs) {
                         pureFs.clearCache();
@@ -207,6 +227,7 @@ function resolveServerJar(): string | undefined {
                 const files = fs.readdirSync(targetDir);
                 const shadedJar = files.find(
                     (f) =>
+                        f.endsWith('-server.jar') ||
                         f.endsWith('-shaded.jar') ||
                         f.endsWith('-jar-with-dependencies.jar')
                 );
@@ -229,6 +250,130 @@ function resolveServerJar(): string | undefined {
     }
 
     return undefined;
+}
+
+// ── LLM Tool Registration ──────────────────────────────────────────
+
+function registerLanguageModelTools(context: ExtensionContext): void {
+    // Guard: vscode.lm.registerTool requires VS Code 1.99+
+    if (!vscode.lm || typeof vscode.lm.registerTool !== 'function') {
+        console.log('[Legend Pure] vscode.lm.registerTool not available — skipping tool registration');
+        return;
+    }
+
+    console.log('[Legend Pure] Registering LLM tools...');
+
+    /** Wait for both client and PureRuntime to be ready */
+    async function ensureReady(): Promise<string | null> {
+        if (!client) { return 'Pure LSP not started'; }
+        // Wait up to 120s for PureRuntime initialization
+        const timeout = new Promise<void>(r => setTimeout(r, 120_000));
+        await Promise.race([serverReady, timeout]);
+        // Check again after waiting
+        if (!client) { return 'Pure LSP not started'; }
+        return null;
+    }
+
+    // Tool 1: Search Pure symbols
+    context.subscriptions.push(
+        vscode.lm.registerTool('legend-pure-search-symbols', {
+            async invoke(options: vscode.LanguageModelToolInvocationOptions<{ query: string }>, token: vscode.CancellationToken) {
+                const err = await ensureReady();
+                if (err) {
+                    return new vscode.LanguageModelToolResult([
+                        new vscode.LanguageModelTextPart(err),
+                    ]);
+                }
+                const symbols: any[] = await client.sendRequest(
+                    'workspace/symbol',
+                    { query: options.input.query }
+                );
+                if (!symbols || symbols.length === 0) {
+                    return new vscode.LanguageModelToolResult([
+                        new vscode.LanguageModelTextPart(`No symbols found for "${options.input.query}"`),
+                    ]);
+                }
+                const lines = symbols.slice(0, 50).map((s: any) => {
+                    const kind = symbolKindName(s.kind);
+                    const uri = s.location?.uri || '';
+                    const line = s.location?.range?.start?.line;
+                    const loc = line != null ? `${uri}#L${line + 1}` : uri;
+                    return `${s.name} (${kind}) — ${loc}`;
+                });
+                const text = `Found ${symbols.length} symbol(s):\n${lines.join('\n')}`;
+                return new vscode.LanguageModelToolResult([
+                    new vscode.LanguageModelTextPart(text),
+                ]);
+            },
+            async prepareInvocation(options: vscode.LanguageModelToolInvocationPrepareOptions<{ query: string }>) {
+                return { invocationMessage: `Searching Pure symbols for "${options.input.query}"...` };
+            },
+        })
+    );
+
+    // Tool 2: Execute go()
+    context.subscriptions.push(
+        vscode.lm.registerTool('legend-pure-execute-go', {
+            async invoke(options: vscode.LanguageModelToolInvocationOptions<Record<string, never>>, token: vscode.CancellationToken) {
+                const err = await ensureReady();
+                if (err) {
+                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(err)]);
+                }
+                const result: { success: boolean; error: string | null; output: string | null } =
+                    await client.sendRequest('legend/executeGo');
+                const text = result.success
+                    ? (result.output || '(no output)')
+                    : `ERROR: ${result.error || 'Unknown error'}`;
+                return new vscode.LanguageModelToolResult([
+                    new vscode.LanguageModelTextPart(text),
+                ]);
+            },
+            async prepareInvocation() {
+                return { invocationMessage: 'Executing Pure go() function...' };
+            },
+        })
+    );
+
+    // Tool 3: Get source content
+    context.subscriptions.push(
+        vscode.lm.registerTool('legend-pure-get-source', {
+            async invoke(options: vscode.LanguageModelToolInvocationOptions<{ sourceId: string }>, token: vscode.CancellationToken) {
+                const err = await ensureReady();
+                if (err) {
+                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(err)]);
+                }
+                const content: string | null = await client!.sendRequest(
+                    'legend/getSourceContent',
+                    options.input.sourceId
+                );
+                if (content == null) {
+                    return new vscode.LanguageModelToolResult([
+                        new vscode.LanguageModelTextPart(`Source not found: ${options.input.sourceId}`),
+                    ]);
+                }
+                return new vscode.LanguageModelToolResult([
+                    new vscode.LanguageModelTextPart(content),
+                ]);
+            },
+            async prepareInvocation(options: vscode.LanguageModelToolInvocationPrepareOptions<{ sourceId: string }>) {
+                return { invocationMessage: `Reading ${options.input.sourceId}...` };
+            },
+        })
+    );
+
+    console.log('[Legend Pure] 3 LLM tools registered');
+}
+
+function symbolKindName(kind: number): string {
+    const kinds: Record<number, string> = {
+        1: 'File', 2: 'Module', 3: 'Namespace', 4: 'Package', 5: 'Class',
+        6: 'Method', 7: 'Property', 8: 'Field', 9: 'Constructor', 10: 'Enum',
+        11: 'Interface', 12: 'Function', 13: 'Variable', 14: 'Constant',
+        15: 'String', 16: 'Number', 17: 'Boolean', 18: 'Array', 19: 'Object',
+        20: 'Key', 21: 'Null', 22: 'EnumMember', 23: 'Struct', 24: 'Event',
+        25: 'Operator', 26: 'TypeParameter',
+    };
+    return kinds[kind] || `Kind(${kind})`;
 }
 
 function getJavaExecutable(): string {

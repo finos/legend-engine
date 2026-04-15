@@ -2,11 +2,11 @@
   "name": "legend-pure-lsp",
   "displayName": "Legend Pure Language Support",
   "description": "Language support for Legend Pure (.pure files)",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "finos",
   "license": "Apache-2.0",
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.110.0"
   },
   "categories": [
     "Programming Languages"
@@ -34,6 +34,61 @@
         "language": "pure",
         "scopeName": "source.pure",
         "path": "./syntaxes/pure.tmLanguage.json"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "pure",
+        "scopes": {
+          "namespace": [
+            "entity.name.type.package.pure"
+          ],
+          "class": [
+            "entity.name.type.class.pure"
+          ],
+          "class.definition": [
+            "entity.name.type.class.pure"
+          ],
+          "enum": [
+            "entity.name.type.enum.pure"
+          ],
+          "enum.definition": [
+            "entity.name.type.enum.pure"
+          ],
+          "function": [
+            "entity.name.function.pure"
+          ],
+          "function.definition": [
+            "entity.name.function.pure"
+          ],
+          "property": [
+            "variable.other.property.pure"
+          ],
+          "property.definition": [
+            "variable.other.property.pure"
+          ],
+          "enumMember": [
+            "variable.other.enummember.pure"
+          ],
+          "type": [
+            "support.type.pure"
+          ],
+          "parameter": [
+            "variable.parameter.pure"
+          ],
+          "interface": [
+            "entity.name.type.interface.pure"
+          ],
+          "struct": [
+            "entity.name.type.struct.pure"
+          ],
+          "variable": [
+            "variable.other.pure"
+          ],
+          "variable.definition": [
+            "variable.other.pure"
+          ]
+        }
       }
     ],
     "configuration": {
@@ -68,6 +123,60 @@
         }
       ]
     },
+    "languageModelTools": [
+      {
+        "name": "legend-pure-search-symbols",
+        "displayName": "Search Pure Symbols",
+        "toolReferenceName": "pureSearch",
+        "canBeReferencedInPrompt": true,
+        "userDescription": "Search for Pure classes, functions, enums by name",
+        "modelDescription": "Search for Pure language elements (classes, functions, enums, associations, profiles) by name in the legend-engine workspace. Returns qualified paths, element kind, and file locations. Use this to find where something is defined in Pure code.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query — matches element names case-insensitively. Examples: 'Person', 'relational', 'graphFetch'"
+            }
+          },
+          "required": [
+            "query"
+          ]
+        }
+      },
+      {
+        "name": "legend-pure-execute-go",
+        "displayName": "Execute Pure go()",
+        "toolReferenceName": "pureGo",
+        "canBeReferencedInPrompt": true,
+        "userDescription": "Compile and run the Pure go() function",
+        "modelDescription": "Compile and execute the go():Any[*] function in the current Pure workspace. Returns the console output or compilation/execution errors. Use this to run Pure code.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "legend-pure-get-source",
+        "displayName": "Read Pure Source",
+        "toolReferenceName": "pureSource",
+        "canBeReferencedInPrompt": true,
+        "userDescription": "Read a Pure source file by its source ID",
+        "modelDescription": "Read the content of a Pure source file by its source ID (e.g., '/core/pure/lang.pure') or pure:// URI. Returns the full source text. Use this to read Pure code that you found via symbol search.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "description": "Pure source ID (e.g., '/core/pure/lang.pure') or pure:// URI"
+            }
+          },
+          "required": [
+            "sourceId"
+          ]
+        }
+      }
+    ],
     "commands": [
       {
         "command": "legend.reindexWorkspace",
@@ -90,7 +199,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "@types/vscode": "^1.80.0",
+    "@types/vscode": "^1.110.0",
     "esbuild": "^0.27.4",
     "typescript": "^5.3.0"
   }

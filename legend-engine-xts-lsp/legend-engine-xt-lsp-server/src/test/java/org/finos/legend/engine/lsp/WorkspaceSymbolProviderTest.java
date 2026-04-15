@@ -84,7 +84,7 @@ public class WorkspaceSymbolProviderTest
         List<SymbolInformation> results = provider.search(uriMapper, "Customer", 100);
 
         List<SymbolInformation> matches = results.stream()
-                .filter(s -> s.getName().equals("test::ws::sym::Customer"))
+                .filter(s -> s.getName().equals("Customer"))
                 .collect(Collectors.toList());
 
         Assert.assertEquals("Should find exactly one Customer", 1, matches.size());
@@ -98,7 +98,7 @@ public class WorkspaceSymbolProviderTest
         List<SymbolInformation> results = provider.search(uriMapper, "Color", 100);
 
         List<SymbolInformation> matches = results.stream()
-                .filter(s -> s.getName().equals("test::ws::sym::Color"))
+                .filter(s -> s.getName().equals("Color"))
                 .collect(Collectors.toList());
 
         Assert.assertEquals("Should find exactly one Color", 1, matches.size());
@@ -125,10 +125,10 @@ public class WorkspaceSymbolProviderTest
         List<SymbolInformation> upper = provider.search(uriMapper, "CUSTOMER", 100);
 
         List<SymbolInformation> lowerMatches = lower.stream()
-                .filter(s -> s.getName().equals("test::ws::sym::Customer"))
+                .filter(s -> s.getName().equals("Customer"))
                 .collect(Collectors.toList());
         List<SymbolInformation> upperMatches = upper.stream()
-                .filter(s -> s.getName().equals("test::ws::sym::Customer"))
+                .filter(s -> s.getName().equals("Customer"))
                 .collect(Collectors.toList());
 
         Assert.assertEquals("Case-insensitive search should find Customer", 1, lowerMatches.size());
@@ -142,7 +142,7 @@ public class WorkspaceSymbolProviderTest
 
         // Should find at least our 3 test elements
         List<SymbolInformation> matches = results.stream()
-                .filter(s -> s.getName().startsWith("test::ws::sym::"))
+                .filter(s -> s.getContainerName().startsWith("test::ws::sym"))
                 .collect(Collectors.toList());
 
         Assert.assertTrue("Should find at least 3 symbols in test::ws::sym, found " + matches.size(),
@@ -183,7 +183,7 @@ public class WorkspaceSymbolProviderTest
         List<SymbolInformation> results = provider.search(uriMapper, "Customer", 100);
 
         List<SymbolInformation> matches = results.stream()
-                .filter(s -> s.getName().equals("test::ws::sym::Customer"))
+                .filter(s -> s.getName().equals("Customer"))
                 .collect(Collectors.toList());
 
         Assert.assertEquals(1, matches.size());

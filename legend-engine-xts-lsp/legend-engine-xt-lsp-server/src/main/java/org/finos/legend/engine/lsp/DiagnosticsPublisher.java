@@ -33,17 +33,45 @@ public class DiagnosticsPublisher
 {
     public static List<Diagnostic> fromException(Exception e)
     {
-        SourceInformation sourceInfo = extractSourceInfo(e);
+        PureException pe = PureException.findPureException(e);
+        SourceInformation sourceInfo = (pe != null) ? pe.getSourceInformation() : null;
         Range range = (sourceInfo != null)
                 ? toRange(sourceInfo)
                 : new Range(new Position(0, 0), new Position(0, 0));
 
+        // Use the innermost PureException's message, not the outer wrapper's.
+        // The outer exception may have a generic message like "Compilation error"
+        // while the inner PureException has the actual error detail.
+        String message = (pe != null) ? pe.getInfo() : e.getMessage();
+        if (message == null || message.isEmpty())
+        {
+            message = e.getMessage();
+        }
+
         return Collections.singletonList(new Diagnostic(
                 range,
-                e.getMessage(),
+                message,
                 DiagnosticSeverity.Error,
                 "legend-pure"
         ));
+    }
+
+    /**
+     * Resolve the URI of the file that actually has the error, based on the
+     * PureException's SourceInformation. Returns null if no source info available.
+     */
+    public static String resolveErrorUri(Exception e, UriMapper uriMapper)
+    {
+        PureException pe = PureException.findPureException(e);
+        if (pe != null)
+        {
+            SourceInformation si = pe.getSourceInformation();
+            if (si != null && si.getSourceId() != null)
+            {
+                return uriMapper.toUri(si.getSourceId());
+            }
+        }
+        return null;
     }
 
     public static void publish(LanguageClient client, String uri, List<Diagnostic> diagnostics)
