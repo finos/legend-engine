@@ -201,6 +201,16 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withDataProductLakehouseAccessPointExecution(String dataProductPath, String accessGroupId, String accessPointId)
+        {
+            DataProductLakehouseAccessExecutionContext ctx = new DataProductLakehouseAccessExecutionContext();
+            ctx.dataProductPath = dataProductPath;
+            ctx.accessGroupId = accessGroupId;
+            ctx.accessPointId = accessPointId;
+            this.executionContext = ctx;
+            return this;
+        }
+
         TestQueryBuilder withGroupId(String groupId)
         {
             this.groupId = groupId;
@@ -795,6 +805,58 @@ public class TestQueryStoreManager
         Assert.assertTrue(query2.executionContext instanceof DataProductNativeExecutionContext);
         Assert.assertEquals("my::dataProduct", ((DataProductNativeExecutionContext) query2.executionContext).dataProductPath);
         Assert.assertEquals("myKey", ((DataProductNativeExecutionContext) query2.executionContext).executionKey);
+    }
+
+    @Test
+    public void testValidateQueryWithDataProductLakehouseAccessPointContext()
+    {
+        // Valid context should pass validation
+        Query validQuery = TestQueryBuilder.create("1", "query1", "testUser").withDataProductLakehouseAccessPointExecution("my::dataProduct", "myGroup", "myAccessPoint").build();
+        QueryStoreManager.validateQuery(validQuery);
+
+        // Missing dataProductPath should fail
+        Query queryMissingPath = TestQueryBuilder.create("2", "query2", "testUser").withDataProductLakehouseAccessPointExecution(null, "myGroup", "myAccessPoint").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingPath)).getMessage());
+
+        // Empty dataProductPath should fail
+        Query queryEmptyPath = TestQueryBuilder.create("3", "query3", "testUser").withDataProductLakehouseAccessPointExecution("", "myGroup", "myAccessPoint").build();
+        Assert.assertEquals("Query data product execution context dataProduct path is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyPath)).getMessage());
+
+        // Missing accessGroupId should fail
+        Query queryMissingGroupId = TestQueryBuilder.create("4", "query4", "testUser").withDataProductLakehouseAccessPointExecution("my::dataProduct", null, "myAccessPoint").build();
+        Assert.assertEquals("Query data product lakehouse access point context accessGroupId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingGroupId)).getMessage());
+
+        // Empty accessGroupId should fail
+        Query queryEmptyGroupId = TestQueryBuilder.create("5", "query5", "testUser").withDataProductLakehouseAccessPointExecution("my::dataProduct", "", "myAccessPoint").build();
+        Assert.assertEquals("Query data product lakehouse access point context accessGroupId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyGroupId)).getMessage());
+
+        // Missing accessPointId should fail
+        Query queryMissingPointId = TestQueryBuilder.create("6", "query6", "testUser").withDataProductLakehouseAccessPointExecution("my::dataProduct", "myGroup", null).build();
+        Assert.assertEquals("Query data product lakehouse access point context accessPointId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryMissingPointId)).getMessage());
+
+        // Empty accessPointId should fail
+        Query queryEmptyPointId = TestQueryBuilder.create("7", "query7", "testUser").withDataProductLakehouseAccessPointExecution("my::dataProduct", "myGroup", "").build();
+        Assert.assertEquals("Query data product lakehouse access point context accessPointId is missing or empty",
+                Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryEmptyPointId)).getMessage());
+    }
+
+    @Test
+    public void testGetQueriesWithDataProductLakehouseAccessPointContext() throws Exception
+    {
+        String currentUser = "testUser";
+        Query testQuery = TestQueryBuilder.create("1", "query1", currentUser).withDataProductLakehouseAccessPointExecution("my::dataProduct", "myGroup", "myAccessPoint").build();
+        store.createQuery(testQuery, currentUser);
+
+        Query query = store.getQuery("1");
+        Assert.assertTrue(query.executionContext instanceof DataProductLakehouseAccessExecutionContext);
+        Assert.assertEquals("my::dataProduct", ((DataProductLakehouseAccessExecutionContext) query.executionContext).dataProductPath);
+        Assert.assertEquals("myGroup", ((DataProductLakehouseAccessExecutionContext) query.executionContext).accessGroupId);
+        Assert.assertEquals("myAccessPoint", ((DataProductLakehouseAccessExecutionContext) query.executionContext).accessPointId);
     }
 
 

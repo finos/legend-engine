@@ -194,6 +194,13 @@ public class QueryStoreManager
             validateNonEmptyQueryField(dataProductNativeExecutionContext.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
             validateNonEmptyQueryField(dataProductNativeExecutionContext.executionKey, "Query data product native execution context executionKey is missing or empty");
         }
+        else if (query.executionContext instanceof DataProductLakehouseAccessExecutionContext)
+        {
+            DataProductLakehouseAccessExecutionContext lakehouseCtx = (DataProductLakehouseAccessExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(lakehouseCtx.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
+            validateNonEmptyQueryField(lakehouseCtx.accessGroupId, "Query data product lakehouse access point context accessGroupId is missing or empty");
+            validateNonEmptyQueryField(lakehouseCtx.accessPointId, "Query data product lakehouse access point context accessPointId is missing or empty");
+        }
         validateNonEmptyQueryField(query.content, "Query content is missing or empty");
         validate(SourceVersion.isName(query.groupId), "Query project group ID is invalid");
         validate(VALID_ARTIFACT_ID_PATTERN.matcher(query.artifactId).matches(), "Query project artifact ID is invalid");
