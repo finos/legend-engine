@@ -78,7 +78,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
       let oldData = $dateColCursor.select.data->toOne();  
       let newData = $oldData->replaceTreeNode($currentTreeNode, $newCurrentTreeNode)->cast(@RootJoinTreeNode);  
       let dateColCursorSelect = $dateColCursor.select;  
-      let newSelect = ^$dateColCursorSelect(data = $newData);  
+      let newSelect = ^$dateColCursorSelect(data = $newData, columns = []);  
       ^$dateColCursor(  
         select = $newSelect,  
         currentTreeNode = $newCurrentTreeNode  
@@ -104,9 +104,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::proc
   let selectWithBothCalendarJoins = meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoins($dateCol,$endDate, $calendarType, $nodeId, $state, $context, $extensions);
 
   // Merge the 'calendarJoins' and 'valueCol' SQLs
-  let selectWithBothCalendarJoinsSelect = $selectWithBothCalendarJoins.select;  
-  let calendarSelectNoColumns = ^$selectWithBothCalendarJoins(select = ^$selectWithBothCalendarJoinsSelect(columns = []));  
-  let sqlWithBothCalendarJoins = $calendarSelectNoColumns.select->concatenate($valueCol.select)->mergeSQLQueryData($nodeId, $state, $context, $extensions);  
+  let sqlWithBothCalendarJoins = $selectWithBothCalendarJoins.select->concatenate($valueCol.select)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
 
   // Generates: case when (caseCondition) then valueCol / normalisationFactor else null end.
   let calendarAlias    = $selectWithBothCalendarJoins->cast(@SelectWithCursor).currentTreeNode.childrenData->cast(@JoinTreeNode)->filter(x | $x.join.name == 'calendarJoin'   +$nodeId).alias->toOne();
