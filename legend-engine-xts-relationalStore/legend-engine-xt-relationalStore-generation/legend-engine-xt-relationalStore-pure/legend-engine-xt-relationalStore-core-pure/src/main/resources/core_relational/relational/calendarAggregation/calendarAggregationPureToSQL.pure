@@ -29,7 +29,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
 
 function meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoinsForSimpleSelectSQL(dateColCursor:SelectWithCursor[1], endDate:RelationalOperationElement[1], calendarType:String[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]  
 {  
-  let calendarTableName = $calendarType->cast(@String) + '_Calendar';  
+  let calendarTableName = $calendarType->cast(@String)+'_Calendar';  
   assert(isNotEmpty(table(schema(CalendarDatabase,'LegendCalendarSchema')->toOne(),$calendarTableName)), | 'A new calendar type requires a table in meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase store, LegendCalendarSchema schema.');
 
   // build calendar select.
