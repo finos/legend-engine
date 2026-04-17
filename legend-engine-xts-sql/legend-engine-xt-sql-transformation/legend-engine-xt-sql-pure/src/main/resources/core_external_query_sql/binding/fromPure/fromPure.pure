@@ -2490,18 +2490,17 @@ function meta::external::query::sql::transformation::queryToPure::processParseDa
 
   let value = if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(String),
     | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
-      if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'),
-        | pair(iv($string->replace(' ', 'T')), DateTime),
-        | pair($v, if ($string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'), | StrictDate, | Date)));,
-    | pair($v, Date));
 
-
-  let parse = nullOrSfe(parseDate_String_1__Date_1_, $value.first);
+      if ([
+        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'), | pair(iv($string->replace(' ', 'T')->parseDate()), DateTime)),
+        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'), | pair(iv($string->parseDate()), StrictDate))
+      ], | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));,
+    | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));
 
   //we do the cast to ensure correct column type
-  if ($value.second != Date,
-    | doCreateCast($parse, $value.second),
-    | $parse);
+  if ($value.second != Date && $value.first.genericType.rawType != $value.second,
+    | doCreateCast($value.first, $value.second),
+    | $value.first);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCastAsCast(c:Cast[1], v:ValueSpecification[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
