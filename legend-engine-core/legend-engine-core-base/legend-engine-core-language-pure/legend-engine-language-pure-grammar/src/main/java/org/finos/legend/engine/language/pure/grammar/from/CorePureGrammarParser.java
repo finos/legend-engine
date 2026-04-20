@@ -316,7 +316,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     {
         MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
         SourceCodeParserInfo parserInfo = getRelationFunctionMappingParserInfo(mappingElementSourceCode);
-        RelationFunctionMappingParseTreeWalker walker = new RelationFunctionMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserContext, mappingElementSourceCode);
+        RelationFunctionMappingParseTreeWalker walker = new RelationFunctionMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext, mappingElementSourceCode);
         RelationFunctionClassMapping relationFunctionClassMapping = new RelationFunctionClassMapping();
         String className = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         relationFunctionClassMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;

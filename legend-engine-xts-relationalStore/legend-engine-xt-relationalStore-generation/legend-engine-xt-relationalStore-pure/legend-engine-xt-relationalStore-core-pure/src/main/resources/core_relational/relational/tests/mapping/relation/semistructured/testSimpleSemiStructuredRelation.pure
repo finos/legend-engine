@@ -1,0 +1,790 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Translation of tests/semistructured/testSimpleSemiStructuredMapping.pure into
+// the Pure-compiler-only RFPM variant-lift form.
+//
+// - Source binding-based mappings replaced by a single lift mapping
+//   (SimpleSemiStructuredMapping). Per-property `firm: Binding ...` rewritten
+//   as `firm: $src.FIRM_DETAILS->to(@Firm)->toOne()`, routed through
+//   processRelationFunctionPropertyMapping's variant-lift arm
+//   (pureToSQLQuery.pure:1985..2120).
+// - Source Store-level `Join manager(...)` and one-side property
+//   `manager: Person[0..1]` replaced by Association `Person_Manager` + ModelJoin
+//   keyed on MANAGERID = ID.
+// - Composition properties (firm, address, lines) stay as Pure properties on
+//   the owning class — no Association — lifted in place by the router.
+// - Tests parametrized over `conn: Connection[1]` via `<<paramTest.Test>>` (or
+//   `<<paramTest.Test>>` for known-broken), dispatched by the cross-dialect
+//   harness. Each test calls the file-local `semiStructuredExecute(conn, func,
+//   expected)` helper which forwards to `executeLegendFunction(...)` with the
+//   mapping/db/csv baked in.
+// - Sub-package `…::semistructured::simple::*` isolates this file from the
+//   parent `meta::relational::tests::mapping::relation::*` test suite.
+// =============================================================================
+
+###Relational
+// Same shape as the source's `simple::store::H2DB` (simpleSemiStructuredMapping.legend
+// lines 56-72), with two intentional shape changes:
+//   * `Join manager(...)` dropped — replaced by ModelJoin on the FK column.
+//   * FIRSTNAME/LASTNAME declared NOT NULL so they align with `String[1]`
+//     properties under the strict-multiplicity check.
+Database meta::relational::tests::mapping::relation::semistructured::simple::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// -----------------------------------------------------------------------------
+// Domain (mirrors simpleSemiStructuredMapping.legend lines 16-50 — same class
+// names, same properties, same multiplicities).
+//
+// Composition properties (firm, address, lines) stay as Pure properties; the
+// lift router synthesises a SemiStructuredEmbeddedRelationalInstanceSetImpl
+// for each at SQL-gen time. Only the self-reference (manager) needs an
+// Association — see Person_Manager below.
+// -----------------------------------------------------------------------------
+Class meta::relational::tests::mapping::relation::semistructured::simple::AddressLine
+{
+  details: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::simple::Address
+{
+  name  : String[1];
+  street: String[0..1];
+  lines : meta::relational::tests::mapping::relation::semistructured::simple::AddressLine[*];
+}
+
+Enum meta::relational::tests::mapping::relation::semistructured::simple::EntityType
+{
+  Organization,
+  Company
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::simple::Firm
+{
+  legalName    : String[1];
+  address      : meta::relational::tests::mapping::relation::semistructured::simple::Address[1];
+  employeeCount: Integer[1];
+  revenue      : Float[1];
+  mnc          : Boolean[1];
+  estDate      : StrictDate[1];
+  lastUpdate   : DateTime[1];
+  otherNames   : String[*];
+  entityType   : meta::relational::tests::mapping::relation::semistructured::simple::EntityType[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::simple::Person
+{
+  firstName: String[1];
+  lastName : String[1];
+  firm     : meta::relational::tests::mapping::relation::semistructured::simple::Firm[1];
+}
+
+// Self-association replacing source's DB-level `Join manager(MANAGERID = {target}.ID)`.
+// `reports: Person[*]` is a synthetic reverse end — unused by any test — required only
+// because Pure associations need two ends.
+Association meta::relational::tests::mapping::relation::semistructured::simple::Person_Manager
+{
+  manager: meta::relational::tests::mapping::relation::semistructured::simple::Person[0..1];
+  reports: meta::relational::tests::mapping::relation::semistructured::simple::Person[*];
+}
+
+// -----------------------------------------------------------------------------
+// Relation function — feeds PERSON_TABLE columns (including variant
+// FIRM_DETAILS) into the mapping's Relation class mapping. ID is the PK for
+// the Person_Manager ModelJoin's `$manager.id` end; MANAGERID is the FK for
+// the `$reports.managerId` end.
+// -----------------------------------------------------------------------------
+function meta::relational::tests::mapping::relation::semistructured::simple::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::simple::H2DB.PERSON_SCHEMA.PERSON_TABLE}#
+    ->select(~[ID, FIRSTNAME, LASTNAME, FIRM_DETAILS, MANAGERID])
+}
+
+// -----------------------------------------------------------------------------
+// CSV fixture — verbatim copy of the 7-row dataset from
+// testSimpleSemiStructuredMapping.pure:24-32 (source's `simple::semiStructuredExecute`).
+// Each test passes this via the file-local helper; `executeLegendFunction` →
+// `setupDatabase` drops/creates/inserts before every test invocation.
+// -----------------------------------------------------------------------------
+function meta::relational::tests::mapping::relation::semistructured::simple::simpleCsv(): String[1]
+{
+  'PERSON_SCHEMA\n' +
+  'PERSON_TABLE\n' +
+  'ID, FIRSTNAME, LASTNAME, FIRM_DETAILS, MANAGERID\n' +
+  '1,Peter,Smith,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 0.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"":""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}",2\n' +
+  '2,John,Johnson,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 5.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"":""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}",4\n' +
+  '3,John,Hill,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 55.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"":""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}",2\n' +
+  '4,Anthony,Allen,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 5555.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"":""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}",null\n' +
+  '5,Fabrice,Roberts,"{""legalName"": ""Firm A"", ""employeeCount"": 1, ""revenue"": 0.5, ""mnc"": false, ""estDate"": ""2012-11-13"", ""lastUpdate"": ""2022-02-14T03:00:00"", ""otherNames"": [""O3"", ""O4""], ""address"": {""name"": ""A2"", ""lines"": [{""details"": ""D4""}, {""details"": ""D5""}]}}",null\n' +
+  '6,Oliver,Hill,"{""legalName"": ""Firm B"", ""employeeCount"": 2, ""revenue"": 5.5, ""mnc"": true, ""estDate"": ""2017-7-7"", ""lastUpdate"": ""2022-9-01T06:00:00"", ""entityType"":""Company"", ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""street"": ""S2"", ""lines"": [{""details"": ""D5""},{""details"": ""D6""}]}}",7\n' +
+  '7,David,Harris,"{""legalName"": ""Firm B"", ""employeeCount"": 2, ""revenue"": 55.5, ""mnc"": true, ""estDate"": ""2017-7-7"", ""lastUpdate"": ""2022-9-01T06:00:00"", ""entityType"":""Company"", ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""lines"": [{""details"": ""D5""},{""details"": ""D6""}]}}",null\n'
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::relation::semistructured::simple::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+// Single lift mapping replacing both source mappings (`simple::mapping::H2Mapping`
+// and `simple::relationFunctionMapping::H2Mapping`).
+//
+// - `firstName`, `lastName` are bare-column mappings on real relational columns.
+// - `firm` is a variant-lift property: the whole FIRM_DETAILS JSON column IS the
+//   Firm object. `$src.FIRM_DETAILS->to(@Firm)->toOne()` triggers the SS-embedded
+//   set synthesis in processRelationFunctionPropertyMapping (router line ~2090).
+// - `+id` and `+managerId` are +local-mapping-properties — needed only as join
+//   keys for the Person_Manager ModelJoin.
+// - Person_Manager: ModelJoin replaces the source's DB-level Join.
+Mapping meta::relational::tests::mapping::relation::semistructured::simple::SimpleSemiStructuredMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::simple::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName : LASTNAME,
+    firm     : $src.FIRM_DETAILS->to(@meta::relational::tests::mapping::relation::semistructured::simple::Firm)->toOne(),
+    +id       : Integer[1]   : ID,
+    +managerId: Integer[0..1]: MANAGERID
+  }
+
+  *Person_Manager: ModelJoin
+  {
+    {manager: meta::relational::tests::mapping::relation::semistructured::simple::Person[1], reports: meta::relational::tests::mapping::relation::semistructured::simple::Person[1]
+      | $reports.managerId == $manager.id}
+  }
+)
+
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::semistructured::simple::*;
+
+// =============================================================================
+// File-local helper. Bakes in mapping/db/csv so each test reduces to
+//   (conn, inline-lambda, expected-CSV).
+// executeLegendFunction internally builds a Runtime from `conn`+`H2DB`, seeds
+// `simpleCsv()` via setupDatabase, generates + executes the plan, and compares
+// the (sortCsv-normalised) actual CSV vs the expected CSV.
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::simple::semiStructuredExecute(
+  conn: Connection[1],
+  func: FunctionDefinition<Any>[1],
+  expected: String[1]
+):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    $func,
+    $expected,
+    false
+  );
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::simple::semiStructuredExecute(
+  conn: Connection[1],
+  func: FunctionDefinition<Any>[1],
+  expected: String[1],
+  shouldDebug: Boolean[1]
+):Boolean[1]
+{
+  executeLegendFunction(
+    $func,
+    SimpleSemiStructuredMapping,
+    H2DB,
+    $conn,
+    [simpleCsv()],
+    $expected,
+    $shouldDebug
+  );
+}
+
+
+// =============================================================================
+// Tests (25, mirroring testSimpleSemiStructuredMapping.pure 1:1).
+//
+// Each test calls semiStructuredExecute($conn, <inline-lambda>, <expected-CSV>).
+// Lambdas are written in Relation API form (project(~[…])); expected CSVs are
+// copied VERBATIM from the source (sortCsv handles row ordering on both sides).
+// `<<paramTest.Test>>` mirrors source convention for known-broken tests.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// #1 — Single SS property access (firm.legalName)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSingleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~['Firm Legal Name': x|$x.firm.legalName]),
+    'Firm Legal Name\n' +
+    'Firm X\n' +
+    'Firm X\n' +
+    'Firm X\n' +
+    'Firm X\n' +
+    'Firm A\n' +
+    'Firm B\n' +
+    'Firm B\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #2 — Combined primitive + SS property in parallel
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'     : x|$x.firstName,
+      'Firm Legal Name': x|$x.firm.legalName
+    ]),
+    'First Name,Firm Legal Name\n' +
+    'Peter,Firm X\n' +
+    'John,Firm X\n' +
+    'John,Firm X\n' +
+    'Anthony,Firm X\n' +
+    'Fabrice,Firm A\n' +
+    'Oliver,Firm B\n' +
+    'David,Firm B\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #3 — Combined primitive + SS property concatenated
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testCombinedPrimitiveAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Out Col': x|$x.firstName + ' : ' + $x.firm.legalName
+    ]),
+    'Out Col\n' +
+    'Peter : Firm X\n' +
+    'John : Firm X\n' +
+    'John : Firm X\n' +
+    'Anthony : Firm X\n' +
+    'Fabrice : Firm A\n' +
+    'Oliver : Firm B\n' +
+    'David : Firm B\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #4 — Combined Complex (manager via ModelJoin) + SS property in parallel
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccessParallel(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Manager First Name': x|$x.manager.firstName,
+      'Firm Legal Name'   : x|$x.firm.legalName
+    ]),
+    'Manager First Name,Firm Legal Name\n' +
+    'John,Firm X\n' +
+    'Anthony,Firm X\n' +
+    'John,Firm X\n' +
+    ',Firm X\n' +
+    ',Firm A\n' +
+    'David,Firm B\n' +
+    ',Firm B\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #5 — Combined Complex + SS property concatenated, with isEmpty fallback to
+//      literal 'NULL'. (Legend-only in source — no relationFunctionMapping
+//      version existed; we add the lift-mapping translation here.)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testCombinedComplexAndSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Out Col': x|if($x.manager.firstName->isEmpty(), |'NULL', |$x.manager.firstName->toOne()) + ' : ' + $x.firm.legalName
+    ]),
+    'Out Col\n' +
+    'John : Firm X\n' +
+    'Anthony : Firm X\n' +
+    'John : Firm X\n' +
+    'NULL : Firm X\n' +
+    'NULL : Firm A\n' +
+    'David : Firm B\n' +
+    'NULL : Firm B\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #6 — Nested SS property (firm.address.name)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testNestedSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~['Firm Address Name': x|$x.firm.address.name]),
+    'Firm Address Name\n' +
+    'A1\n' +
+    'A1\n' +
+    'A1\n' +
+    'A1\n' +
+    'A2\n' +
+    'A3\n' +
+    'A3\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #7 — Multiple SS properties (firm.legalName + firm.address.name)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testMultipleSemiStructuredPropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Firm Legal Name'  : x|$x.firm.legalName,
+      'Firm Address Name': x|$x.firm.address.name
+    ]),
+    'Firm Legal Name,Firm Address Name\n' +
+    'Firm X,A1\n' +
+    'Firm X,A1\n' +
+    'Firm X,A1\n' +
+    'Firm X,A1\n' +
+    'Firm A,A2\n' +
+    'Firm B,A3\n' +
+    'Firm B,A3\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #8 — Multiple SS properties combined (firm.legalName + firm.address.name)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testMultipleSemiStructuredPropertyAccessCombined(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Firm Legal Name And Address Name': x|$x.firm.legalName + $x.firm.address.name
+    ]),
+    'Firm Legal Name And Address Name\n' +
+    'Firm XA1\n' +
+    'Firm XA1\n' +
+    'Firm XA1\n' +
+    'Firm XA1\n' +
+    'Firm AA2\n' +
+    'Firm BA3\n' +
+    'Firm BA3\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #9 — Filter with SS property (firm.legalName == 'Firm X')
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testFilterWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->filter(x|$x.firm.legalName == 'Firm X')
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #10 — GroupBy with SS property (firm.address.name as group key)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testGroupByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->groupBy(
+       [x|$x.firm.address.name],
+       [agg(x|$x.firstName, y|$y->joinStrings(';'))],
+       ['Address', 'Names']
+     ),
+    'Address,Names\n' +
+    'A1,Peter;John;John;Anthony\n' +
+    'A2,Fabrice\n' +
+    'A3,Oliver;David\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #11 — SortBy on SS property (firm.legalName as sort key)
+// Source marks `<<paramTest.Test>>` on relationFunctionMapping path:
+// "TODO: fix currentTreeNode handling in Pure2Sql". Mirrored here.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSortByWithSemiStructuredProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->sortBy(#/Person/firm/legalName!legalName#)
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Fabrice\n' +
+    'Oliver\n' +
+    'David\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n',
+    true
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #12 — isEmpty check on SS primitive property (firm.address.street)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'          : x|$x.firstName,
+      'First Address Street': x|if($x.firm.address.street->isEmpty(), |'NULL', |$x.firm.address.street->toOne())
+    ]),
+    'First Name,First Address Street\n' +
+    'Peter,S1\n' +
+    'John,S1\n' +
+    'John,S1\n' +
+    'Anthony,S1\n' +
+    'Fabrice,NULL\n' +
+    'Oliver,S2\n' +
+    'David,NULL\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #13 — isEmpty check on SS property after array indexing (lines->at(2).details)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'        : x|$x.firstName,
+      'First Address Line': x|if($x.firm.address.lines->at(2).details->isEmpty(), |'NULL', |$x.firm.address.lines->at(2).details->toOne())
+    ]),
+    'First Name,First Address Line\n' +
+    'Peter,D3\n' +
+    'John,D3\n' +
+    'John,D3\n' +
+    'Anthony,D3\n' +
+    'Fabrice,NULL\n' +
+    'Oliver,NULL\n' +
+    'David,NULL\n',
+    true
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #14 — SS property access for many primitive datatypes (incl. enum entityType)
+// Ignored: enum extraction on lift-synthesised SS-embedded set lacks the
+// EnumerationMapping wiring the binding path supplies. To be triaged after
+// router-level enum support lands.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredDifferentDataTypePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'         : x|$x.firstName,
+      'Firm Legal Name'    : x|$x.firm.legalName,
+      'Firm Employee Count': x|$x.firm.employeeCount,
+      'Firm Revenue'       : x|$x.firm.revenue,
+      'Firm MNC'           : x|$x.firm.mnc,
+      'Firm Est Date'      : x|$x.firm.estDate,
+      'Firm Last Update'   : x|$x.firm.lastUpdate,
+      'Firm Address Street': x|$x.firm.address.street,
+      'Firm Entity Type'   : x|$x.firm.entityType
+    ]),
+    'First Name,Firm Legal Name,Firm Employee Count,Firm Revenue,Firm MNC,Firm Est Date,Firm Last Update,Firm Address Street,Firm Entity Type\n' +
+    'Peter,Firm X,4,0.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
+    'John,Firm X,4,5.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
+    'John,Firm X,4,55.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
+    'Anthony,Firm X,4,5555.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n' +
+    'Fabrice,Firm A,1,0.5,false,2012-11-13,2022-02-14 03:00:00.0,,\n' +
+    'Oliver,Firm B,2,5.5,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n' +
+    'David,Firm B,2,55.5,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #15 — SS array element access on a primitive array (otherNames->at(0|1))
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredArrayElementAccessPrimitive(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'       : x|$x.firstName,
+      'Firm Other Name 0': x|$x.firm.otherNames->at(0),
+      'Firm Other Name 1': x|$x.firm.otherNames->at(1)
+    ]),
+    'First Name,Firm Other Name 0,Firm Other Name 1\n' +
+    'Peter,O1,O2\n' +
+    'John,O1,O2\n' +
+    'John,O1,O2\n' +
+    'Anthony,O1,O2\n' +
+    'Fabrice,O3,O4\n' +
+    'Oliver,O5,O6\n' +
+    'David,O5,O6\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #16 — SS array element access on a complex array (address.lines->at(N).details)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredArrayElementAccessComplex(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'         : x|$x.firstName,
+      'Firm Address Line 0': x|$x.firm.address.lines->at(0).details,
+      'Firm Address Line 1': x|$x.firm.address.lines->at(1).details,
+      'Firm Address Line 2': x|$x.firm.address.lines->at(2).details,
+      'Firm Address Line 3': x|$x.firm.address.lines->at(3).details
+    ]),
+    'First Name,Firm Address Line 0,Firm Address Line 1,Firm Address Line 2,Firm Address Line 3\n' +
+    'Peter,D1,D2,D3,\n' +
+    'John,D1,D2,D3,\n' +
+    'John,D1,D2,D3,\n' +
+    'Anthony,D1,D2,D3,\n' +
+    'Fabrice,D4,D5,,\n' +
+    'Oliver,D5,D6,,\n' +
+    'David,D5,D6,,\n',
+    true
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #17 — Multi-hop self-ModelJoin (manager.manager.manager.firm.legalName)
+// Source marks `<<paramTest.Test>>` for relationFunctionMapping: "self joins
+// not supported on Relation function mappings yet". Our ModelJoin replacement
+// should handle this but 3-hop self chains are untested terrain — mirror Ignore.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'                       : x|$x.firstName,
+      'Firm Name'                        : x|$x.firm.legalName,
+      'Manager Firm Name'                : x|$x.manager.firm.legalName,
+      'Manager Manager Firm Name'        : x|$x.manager.manager.firm.legalName,
+      'Manager Manager Manager Firm Name': x|$x.manager.manager.manager.firm.legalName
+    ]),
+    'First Name,Firm Name,Manager Firm Name,Manager Manager Firm Name,Manager Manager Manager Firm Name\n' +
+    'Peter,Firm X,Firm X,Firm X,\n' +
+    'John,Firm X,Firm X,,\n' +
+    'John,Firm X,Firm X,Firm X,\n' +
+    'Anthony,Firm X,,,\n' +
+    'Fabrice,Firm A,,,\n' +
+    'Oliver,Firm B,Firm B,,\n' +
+    'David,Firm B,,,\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #18 — Same as #17 but the source used the `project([fns], [names])` shape.
+// Per R-8 both collapse to identical `project(~[…])` bodies — kept distinct
+// only for source naming parity.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSemiStructuredPropertyAccessAtNestedPropertyWithProjectFunctions(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'First Name'                       : x|$x.firstName,
+      'Firm Name'                        : x|$x.firm.legalName,
+      'Manager Firm Name'                : x|$x.manager.firm.legalName,
+      'Manager Manager Firm Name'        : x|$x.manager.manager.firm.legalName,
+      'Manager Manager Manager Firm Name': x|$x.manager.manager.manager.firm.legalName
+    ]),
+    'First Name,Firm Name,Manager Firm Name,Manager Manager Firm Name,Manager Manager Manager Firm Name\n' +
+    'Peter,Firm X,Firm X,Firm X,\n' +
+    'John,Firm X,Firm X,,\n' +
+    'John,Firm X,Firm X,Firm X,\n' +
+    'Anthony,Firm X,,,\n' +
+    'Fabrice,Firm A,,,\n' +
+    'Oliver,Firm B,Firm B,,\n' +
+    'David,Firm B,,,\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #19 — Filter with multi-hop self-ModelJoin chain in predicate
+//       (manager.manager.firm.legalName == 'Firm X')
+// Source marks `<<paramTest.Test>>` on relationFunctionMapping path; mirrored.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testFilterWithSemiStructuredPropertyAccessAtNestedProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->filter(x|$x.manager.manager.firm.legalName == 'Firm X')
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Peter\n' +
+    'John\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #20 — if/else logic on enum properties (firm.entityType)
+// Ignored: enum extraction on lift-synthesised SS-embedded set — same gap as #14.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testIfElseLogicOnEnumProperties(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->project(~[
+      'Enum Return': x|if($x.firstName == 'John', |$x.firm.entityType, |$x.firm.entityType)
+    ]),
+    'Enum Return\n' +
+    'Organization\n' +
+    'Organization\n' +
+    'Organization\n' +
+    'Organization\n' +
+    '\n' +
+    'Company\n' +
+    'Company\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #21 — Filter on enum property with enum constant
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testFilterOnEnumPropertyWithEnumConst(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->filter(x|$x.firm.entityType == EntityType.Organization)
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #22 — Filter on enum property with string constant
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testFilterOnEnumPropertyWithStringConst(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->filter(x|$x.firm.entityType == 'Organization')
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #23 — Filter on enum property with nested if-else logic
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testFilterOnEnumPropertyWithIfElseLogicEnum(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->filter(x|if($x.firstName == 'John', |$x.firm.entityType, |$x.firm.entityType) == 'Organization')
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #24 — GroupBy on enum property (firm.entityType as group key)
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testGroupByOnEnumProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()->groupBy(
+       [x|$x.firm.entityType],
+       [agg(x|$x.firstName, y|$y->joinStrings(';'))],
+       ['Address', 'Names']
+     ),
+    'Address,Names\n' +
+    ',Fabrice\n' +
+    'Company,Oliver;David\n' +
+    'Organization,Peter;John;John;Anthony\n'
+  );
+}
+
+// -----------------------------------------------------------------------------
+// #25 — SortBy on enum property (firm.entityType as sort key)
+// Source marks `<<paramTest.Test>>` on relationFunctionMapping path
+// ("TODO: fix currentTreeNode handling in Pure2Sql"); same path as #11.
+// -----------------------------------------------------------------------------
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::simple::testSortByOnEnumProperty(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute(
+    $conn,
+    |Person.all()
+      ->sortBy(#/Person/firm/entityType!entityType#)
+      ->project(~['First Name': x|$x.firstName]),
+    'First Name\n' +
+    'Fabrice\n' +
+    'Oliver\n' +
+    'David\n' +
+    'Peter\n' +
+    'John\n' +
+    'John\n' +
+    'Anthony\n'
+  );
+}
+

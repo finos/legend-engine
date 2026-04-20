@@ -1,0 +1,772 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// ModelJoin Lambdas with Variant Navigation — Setup
+//
+// Tests ModelJoin condition lambdas where the variant navigation + array-
+// collapse operators (->at(N), ->first(), ->filter()->first(), ->size(), ...)
+// happen INSIDE the lambda body, with both sides of every comparator at [1] or
+// [0..1]. Variant data is exposed via deserialised classes (to(@Class).toOne())
+// — no properties of type Variant.
+//
+// Pattern:
+//   - VariantInMJ_BaseMapping declares the Person/Firm class mappings.
+//   - Per-test mappings include the base + add a unique Person_Firm ModelJoin.
+// =============================================================================
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJDB
+(
+  Schema VIMJ
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100) NOT NULL,
+      CODE VARCHAR(50),
+      ALT_CODE VARCHAR(50),
+      EXPECTED_COUNT INTEGER,
+      ALT_COUNT INTEGER,
+      EXPECTED_REVENUE DOUBLE,
+      MAX_REVENUE DOUBLE,
+      MIN_REVENUE DOUBLE,
+      FIRM_META SEMISTRUCTURED
+    )
+
+    Table DEPARTMENT_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_ID INTEGER NOT NULL,
+      NAME VARCHAR(100) NOT NULL,
+      BUDGET DOUBLE NOT NULL,
+      HEAD_COUNT INTEGER NOT NULL
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// Variant-deserialised subtree on the Person side
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmRegion
+{
+  code : String[1];
+  name : String[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmCustomer
+{
+  name   : String[1];
+  tier   : String[0..1];
+  region : meta::relational::tests::mapping::relation::variant::modelJoin::FirmRegion[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmOrder
+{
+  side     : String[1];
+  id       : String[1];
+  qty      : Integer[1];
+  customer : meta::relational::tests::mapping::relation::variant::modelJoin::FirmCustomer[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmAddressLine
+{
+  details : String[1];
+  weight  : Integer[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmAddress
+{
+  name   : String[1];
+  street : String[0..1];
+  lines  : meta::relational::tests::mapping::relation::variant::modelJoin::FirmAddressLine[*];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmInfo
+{
+  legalName     : String[1];
+  employeeCount : Integer[1];
+  entityType    : String[0..1];
+  address       : meta::relational::tests::mapping::relation::variant::modelJoin::FirmAddress[1];
+  otherNames    : String[*];
+  countries     : String[*];
+  revenueHistory: Float[*];
+  orders        : meta::relational::tests::mapping::relation::variant::modelJoin::FirmOrder[*];
+}
+
+// =============================================================================
+// Variant-deserialised subtree on the Firm side (for cross-side tests)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmContact
+{
+  name : String[1];
+  role : String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::FirmMetadata
+{
+  region       : String[1];
+  aliases      : String[*];
+  productLines : String[*];
+  contacts     : meta::relational::tests::mapping::relation::variant::modelJoin::FirmContact[*];
+}
+
+// =============================================================================
+// Main domain classes — ModelJoin source and target
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::modelJoin::Person
+{
+  id        : Integer[1];
+  firstName : String[1];
+  firmInfo  : meta::relational::tests::mapping::relation::variant::modelJoin::FirmInfo[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::modelJoin::Firm
+{
+  id        : Integer[1];
+  legalName : String[1];
+  code      : String[0..1];
+  metadata  : meta::relational::tests::mapping::relation::variant::modelJoin::FirmMetadata[1];
+}
+
+Association meta::relational::tests::mapping::relation::variant::modelJoin::Person_Firm
+{
+  firm    : meta::relational::tests::mapping::relation::variant::modelJoin::Firm[1];
+  persons : meta::relational::tests::mapping::relation::variant::modelJoin::Person[*];
+}
+
+// =============================================================================
+// Non-variant Department class — for the 10 complex-query tests in the
+// companion tests file. Associated with Firm via a plain primitive ModelJoin
+// (Firm_Department) so cross-class navigation $x.firm.firmDept works for
+// Persons reaching Firm via the variant-in-lambda Person_Firm ModelJoin.
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::modelJoin::Department
+{
+  id        : Integer[1];
+  firmId    : Integer[1];
+  name      : String[1];
+  budget    : Float[1];
+  headCount : Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::variant::modelJoin::Firm_Department
+{
+  firmDept   : meta::relational::tests::mapping::relation::variant::modelJoin::Department[*];
+  parentFirm : meta::relational::tests::mapping::relation::variant::modelJoin::Firm[1];
+}
+
+// =============================================================================
+// Relation function accessors
+// =============================================================================
+function meta::relational::tests::mapping::relation::variant::modelJoin::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJDB.VIMJ.PERSON_TABLE}#
+    ->select(~[ID, FIRSTNAME, FIRM_DETAILS])
+}
+
+function meta::relational::tests::mapping::relation::variant::modelJoin::firmFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJDB.VIMJ.FIRM_TABLE}#
+    ->select(~[ID, LEGALNAME, CODE, ALT_CODE, EXPECTED_COUNT, ALT_COUNT, EXPECTED_REVENUE, MAX_REVENUE, MIN_REVENUE, FIRM_META])
+}
+
+function meta::relational::tests::mapping::relation::variant::modelJoin::departmentFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJDB.VIMJ.DEPARTMENT_TABLE}#
+    ->select(~[ID, FIRM_ID, NAME, BUDGET, HEAD_COUNT])
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::relation::variant::modelJoin::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// BaseMapping — class mappings shared by all 26 per-test mappings.
+// Per-test mappings `include` this base and add a unique Person_Firm: ModelJoin
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::modelJoin::personFunction():Relation<Any>[1]
+    id        : ID,
+    firstName : FIRSTNAME,
+    firmInfo  : $src.FIRM_DETAILS->to(@FirmInfo)->toOne()
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::modelJoin::firmFunction():Relation<Any>[1]
+    id        : ID,
+    legalName : LEGALNAME,
+    code      : CODE,
+    metadata  : $src.FIRM_META->to(@FirmMetadata)->toOne(),
+    +altCode         : String[0..1]: ALT_CODE,
+    +expectedCount   : Integer[0..1]: EXPECTED_COUNT,
+    +altCount        : Integer[0..1]: ALT_COUNT,
+    +expectedRevenue : Float[0..1]: EXPECTED_REVENUE,
+    +maxRevenue      : Float[0..1]: MAX_REVENUE,
+    +minRevenue      : Float[0..1]: MIN_REVENUE
+  }
+)
+
+// =============================================================================
+// Tier 0 — Class-navigation baseline (no variant collapse)
+// =============================================================================
+
+// T0.1: scalar nav AND nested 2-hop nav
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T0_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.legalName == $firm.legalName && $persons.firmInfo.address.name == $firm.code->toOne()}
+  }
+)
+
+// T0.2: optional [0..1] navigation on both sides, OR-combined
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T0_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.entityType == $firm.code || $persons.firmInfo.address.street == $firm.altCode}
+  }
+)
+
+// =============================================================================
+// Tier 1 — Variant collapse at the leaf (single-hop nav)
+// =============================================================================
+
+// T1.1: indexed access (OR-form per §11.4 for diagnostic clarity)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.otherNames->first() == $firm.code->toOne() ||
+      $persons.firmInfo.otherNames->at(1)   == $firm.code->toOne() ||
+      $persons.firmInfo.otherNames->last()  == $firm.code->toOne()}
+  }
+)
+
+// T1.2: cardinality + distinct (size, distinct.size)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.otherNames->size() == $firm.expectedCount->toOne() &&
+      $persons.firmInfo.countries->distinct()->size() == $firm.altCount->toOne()}
+  }
+)
+
+// T1.3: membership (indexOf)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_3_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.countries->indexOf('UK') == $firm.expectedCount->toOne()}
+  }
+)
+
+// T1.4: numeric aggregations (plus, max, min) — the §3 "repetitive" example
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_4_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.revenueHistory->plus() == $firm.expectedRevenue->toOne() &&
+      $persons.firmInfo.revenueHistory->max() == $firm.maxRevenue->toOne() &&
+      $persons.firmInfo.revenueHistory->min() == $firm.minRevenue->toOne()}
+  }
+)
+
+// T1.5: fold + take (structurally different from other aggs)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T1_5_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      ($persons.firmInfo.otherNames->take(2)->size() == $firm.expectedCount->toOne()) &&
+      ($persons.firmInfo.otherNames->fold({s, acc| $acc + $s}, '') == $firm.code->toOne())}
+  }
+)
+
+// =============================================================================
+// Tier 2 — Filter then collapse (the user's ->filter()->first() shape)
+// =============================================================================
+
+// T2.1: filter + first / filter + at(0)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T2_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.otherNames->filter(n | $n->startsWith('O'))->first() == $firm.code->toOne() &&
+      $persons.firmInfo.otherNames->filter(n | $n != 'O1')->at(0) == $firm.altCode->toOne()}
+  }
+)
+
+// T2.2: filter + size
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T2_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.countries->filter(c | $c->length() == 2)->size() == $firm.expectedCount->toOne()}
+  }
+)
+
+// T2.3: filter + plus / filter + max
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T2_3_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.revenueHistory->filter(r | $r > 100.0)->plus() == $firm.expectedRevenue->toOne() &&
+      $persons.firmInfo.revenueHistory->filter(r | $r > 0.0)->max() == $firm.maxRevenue->toOne()}
+  }
+)
+
+// =============================================================================
+// Tier 3 — Nested class nav + collapse + post-collapse class nav
+// =============================================================================
+
+// T3.1: 2-hop nav + first/size, scalar on collapsed
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.address.lines->first().details == $firm.code->toOne() &&
+      $persons.firmInfo.address.lines->size() == $firm.expectedCount->toOne()}
+  }
+)
+
+// T3.2: at(N) + scalar function on collapsed (§11.4 revision — second clause compares to altCode not code)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.address.lines->at(1).details == $firm.code->toOne() &&
+      $persons.firmInfo.address.lines->first()->toOne().details->toUpper() == $firm.altCode->toOne()->toUpper()}
+  }
+)
+
+// T3.3: filter + first / filter + on optional [0..1] field
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_3_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.address.lines->filter(l | $l.details->startsWith('D'))->first().details == $firm.code->toOne() &&
+      $persons.firmInfo.address.lines->filter(l | $l.weight->toOne() > 1)->first().details == $firm.altCode->toOne()}
+  }
+)
+
+// T3.4: post-collapse class nav — collapse + 1-hop + 2-hop class chain
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_4_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.orders->first().customer.name == $firm.code->toOne() &&
+      $persons.firmInfo.orders->first().customer.region.code == $firm.altCode->toOne()}
+  }
+)
+
+// T3.5: filter + collapse + post-collapse class nav into optional [0..1]
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T3_5_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.orders->filter(o | $o.side == 'BUY')->first().customer.tier == $firm.code}
+  }
+)
+
+// =============================================================================
+// Tier 4 — Cross-side variant (both LHS and RHS do variant work)
+// =============================================================================
+
+// T4.1: scalar-vs-scalar AND collapse-vs-collapse across sides
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T4_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.legalName == $firm.metadata.region &&
+      $persons.firmInfo.otherNames->first() == $firm.metadata.aliases->first()}
+  }
+)
+
+// T4.2: size-vs-size AND collapse+post-collapse-class-nav on both sides
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T4_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.countries->size() == $firm.metadata.productLines->size() &&
+      $persons.firmInfo.orders->first().customer.name == $firm.metadata.contacts->first().name}
+  }
+)
+
+// T4.3: filter+collapse+scalar on BOTH sides — most demanding
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T4_3_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.address.lines->filter(l | $l.details->startsWith('D'))->first().details
+        == $firm.metadata.contacts->filter(c | $c.role == 'lead')->first().name}
+  }
+)
+
+// =============================================================================
+// Tier 5 — Compound expressions inside one comparator side
+// =============================================================================
+
+// T5.1: arithmetic AND concatenation, each combining two collapses
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T5_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      ($persons.firmInfo.otherNames->size() + $persons.firmInfo.countries->size()) == $firm.expectedCount->toOne() &&
+      ($persons.firmInfo.otherNames->first()->toOne() + '-' + $persons.firmInfo.countries->first()->toOne()) == $firm.code->toOne()}
+  }
+)
+
+// T5.2: if/then/else whose branches collapse the same variant array differently
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T5_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      if($persons.firmInfo.countries->contains('UK'),
+         |$persons.firmInfo.otherNames->first(),
+         |$persons.firmInfo.otherNames->last()) == $firm.code->toOne()}
+  }
+)
+
+// =============================================================================
+// Tier 6 — Non-equality comparators
+// =============================================================================
+
+// T6.1: > AND >=
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T6_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      ($persons.firmInfo.address.lines->size() > $firm.expectedCount->toOne()) &&
+      ($persons.firmInfo.revenueHistory->plus() >= $firm.expectedRevenue->toOne())}
+  }
+)
+
+// T6.2: != over [1] AND [0..1] — anchored on legalName to limit fan-out (§11.7 revision)
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T6_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.legalName == $firm.legalName &&
+      ($persons.firmInfo.otherNames->first() != $firm.code->toOne() || $persons.firmInfo.entityType != $firm.altCode)}
+  }
+)
+
+// =============================================================================
+// Tier 7 — Failure modes
+// =============================================================================
+
+// T7.1: empty array on LHS — Dave's otherNames=[] → ->first() returns []
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_1_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.otherNames->first() == $firm.code->toOne()}
+  }
+)
+
+// T7.2: missing JSON key — entityType absent for Bob/Dave
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_2_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.entityType == $firm.code}
+  }
+)
+
+// T7.3: NULL on Firm side — F10 has CODE=NULL; tests ->toOne() over NULL semantics
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_3_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.legalName == $firm.code->toOne()}
+  }
+)
+
+// T7.4: fan-out — Alice's first()=O1 matches F14 and F32 (both CODE=O1)
+//        same lambda as T7.1; distinguishing assertion lives in the test function
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::T7_4_Mapping
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.otherNames->first() == $firm.code->toOne()}
+  }
+)
+
+// =============================================================================
+// VariantInMJ_BaseMappingWithDept — single mapping shared by all 10 complex
+// query-feature tests (Q1–Q10 in the companion tests file).
+//
+// Extends VariantInMJ_BaseMapping with:
+//   - Department class mapping (plain primitive relational, no variant)
+//   - Firm_Department: ModelJoin {f.id == d.firmId}   (plain FK join)
+//   - Person_Firm: ModelJoin {legalName + address.name match}   (T0.1's join)
+//
+// Tests that don't navigate $x.firm or $x.firmDept still compile against this
+// mapping — the extra mappings are inert when their property paths aren't
+// referenced in the query.
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMappingWithDept
+(
+  include meta::relational::tests::mapping::relation::variant::modelJoin::VariantInMJ_BaseMapping
+
+  *Department[department]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::modelJoin::departmentFunction():Relation<Any>[1]
+    id        : ID,
+    firmId    : FIRM_ID,
+    name      : NAME,
+    budget    : BUDGET,
+    headCount : HEAD_COUNT
+  }
+
+  Firm_Department: ModelJoin
+  {
+    {parentFirm: Firm[1], firmDept: Department[1] | $parentFirm.id == $firmDept.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {persons: Person[1], firm: Firm[1] |
+      $persons.firmInfo.legalName == $firm.legalName && $persons.firmInfo.address.name == $firm.code->toOne()}
+  }
+)
+
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::variant::modelJoin::*;
+
+// =============================================================================
+// Person CSV — 4 rows designed to span the variant-operator catalogue
+// (see §11.2 of the strategy doc for per-Person derived-value reference cards)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::modelJoin::personCsv(): String[1]
+{
+  'VIMJ\n' +
+  'PERSON_TABLE\n' +
+  'ID,FIRSTNAME,FIRM_DETAILS\n' +
+  '1,Alice,"{""legalName"":""FirmX"",""employeeCount"":4,""entityType"":""Org"",""otherNames"":[""O1"",""O2"",""O3""],""countries"":[""US"",""UK"",""DE""],""revenueHistory"":[100.0,200.0,50.0],""address"":{""name"":""A1"",""street"":""S1"",""lines"":[{""details"":""D1"",""weight"":2},{""details"":""D2"",""weight"":1},{""details"":""D3""}]},""orders"":[{""side"":""BUY"",""id"":""ORD-A"",""qty"":10,""customer"":{""name"":""CustA"",""tier"":""gold"",""region"":{""code"":""R1"",""name"":""NorthAm""}}},{""side"":""SELL"",""id"":""ORD-B"",""qty"":5}]}"\n' +
+  '2,Bob,"{""legalName"":""FirmA"",""employeeCount"":1,""otherNames"":[""X1"",""X2""],""countries"":[""FR""],""revenueHistory"":[],""address"":{""name"":""A2"",""lines"":[{""details"":""D4""},{""details"":""D5""}]},""orders"":[]}"\n' +
+  '3,Carol,"{""legalName"":""FirmB"",""employeeCount"":2,""entityType"":""Co"",""otherNames"":[""O5"",""O6""],""countries"":[""US"",""UK"",""UK""],""revenueHistory"":[500.0],""address"":{""name"":""A3"",""street"":""S2"",""lines"":[{""details"":""D5"",""weight"":1},{""details"":""D6"",""weight"":2}]},""orders"":[{""side"":""BUY"",""id"":""ORD-C"",""qty"":8,""customer"":{""name"":""CustC"",""tier"":""silver"",""region"":{""code"":""R2"",""name"":""Europe""}}}]}"\n' +
+  '4,Dave,"{""legalName"":""FirmX"",""employeeCount"":4,""otherNames"":[],""countries"":[""JP""],""revenueHistory"":[10.0,20.0],""address"":{""name"":""A4"",""lines"":[]},""orders"":[]}"\n'
+}
+
+// =============================================================================
+// Firm CSV — Firm IDs preserve §11.3 / §11.5 numbering (skips at F19, F22, F23).
+// Columns: ID,LEGALNAME,CODE,ALT_CODE,EXPECTED_COUNT,ALT_COUNT,EXPECTED_REVENUE,
+//          MAX_REVENUE,MIN_REVENUE,FIRM_META
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::modelJoin::firmCsv(): String[1]
+{
+  'VIMJ\n' +
+  'FIRM_TABLE\n' +
+  'ID,LEGALNAME,CODE,ALT_CODE,EXPECTED_COUNT,ALT_COUNT,EXPECTED_REVENUE,MAX_REVENUE,MIN_REVENUE,FIRM_META\n' +
+  // Base set F1-F11
+  '1,FirmX,A1,O2,3,3,350.0,200.0,50.0,"{""region"":""FirmX"",""aliases"":[""O1"",""M2""],""productLines"":[""p1"",""p2"",""p3""],""contacts"":[{""name"":""CustA"",""role"":""lead""}]}"\n' +
+  '2,FirmB,A3,O6,2,2,500.0,500.0,500.0,"{""region"":""FirmB"",""aliases"":[""O5""],""productLines"":[""x"",""y""],""contacts"":[{""name"":""CustC"",""role"":""lead""}]}"\n' +
+  '3,FirmX,A4,A0,2,1,30.0,20.0,10.0,"{""region"":""Backup"",""aliases"":[""Z""],""productLines"":[""q""],""contacts"":[]}"\n' +
+  '4,FirmA,X1,X2,2,1,0.0,,,"{""region"":""FirmA"",""aliases"":[""X1""],""productLines"":[""r""],""contacts"":[]}"\n' +
+  '5,FirmC,O5,O6,,,,,,"{""region"":""FirmC"",""aliases"":[""O5"",""O6""],""productLines"":[""s""],""contacts"":[]}"\n' +
+  '6,UKMatch,UK,UKalt,1,1,,,,"{""region"":""UK"",""aliases"":[""UK""],""productLines"":[""u""],""contacts"":[]}"\n' +
+  '7,NoUKMatch,NoUK,NoUKalt,-1,-1,,,,"{""region"":""NoUK"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '8,OptCo,Co,S1,,,,,,"{""region"":""OptCo"",""aliases"":[""Org""],""productLines"":[],""contacts"":[]}"\n' +
+  '9,Zeta,Z9,Z0,99,99,9999.0,9999.0,9999.0,"{""region"":""Zeta"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '10,NullCode,,X,1,1,0.0,0.0,0.0,"{""region"":""NullCode"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '11,Lines,D1,D6,3,,,,,"{""region"":""Lines"",""aliases"":[],""productLines"":[""a"",""b"",""c""],""contacts"":[{""name"":""LineCust"",""role"":""ops""}]}"\n' +
+  // T1.1 OR targets (F12-F14)
+  '12,Last_O3,O3,,,,,,,"{""region"":""Last_O3"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '13,At1_O2,O2,,,,,,,"{""region"":""At1_O2"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '14,First_O1,O1,,,,,,,"{""region"":""First_O1"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T1.5 fold targets (F15-F17)
+  '15,FoldAlice,O1O2O3,,2,,,,,"{""region"":""FoldAlice"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '16,FoldBob,X1X2,,2,,,,,"{""region"":""FoldBob"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '17,FoldCarol,O5O6,,2,,,,,"{""region"":""FoldCarol"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T2.1 filter+indexed target (F18)
+  '18,Fil_O1O2,O1,O2,,,,,,"{""region"":""Fil_O1O2"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T2.3 filter+numeric targets (F20, F21 — F19 intentionally skipped per §11.5)
+  '20,FiltAlice,FA,,,,200.0,200.0,,"{""region"":""FiltAlice"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '21,FiltDave,FD,,,,0.0,20.0,,"{""region"":""FiltDave"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T3.2 at(N) + upper target (F24 — F22/F23 intentionally skipped per §11.5)
+  '24,AtUpper,D2,D1,,,,,,"{""region"":""AtUpper"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T3.3 lines+filter target (F25 — same CODE and ALT_CODE)
+  '25,FilLines,D1,D1,,,,,,"{""region"":""FilLines"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T3.4 post-collapse class nav targets (F26-F27)
+  '26,CustA-R1,CustA,R1,,,,,,"{""region"":""CustA-R1"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '27,CustC-R2,CustC,R2,,,,,,"{""region"":""CustC-R2"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T3.5 filter+post-collapse tier targets (F28-F29)
+  '28,GoldTier,gold,,,,,,,"{""region"":""GoldTier"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '29,SilverTier,silver,,,,,,,"{""region"":""SilverTier"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T4.3 cross-side deep-filter target (F30 — FIRM_META.contacts has a (D1,lead))
+  '30,LeadD1,LD,,,,,,,"{""region"":""LeadD1"",""aliases"":[],""productLines"":[],""contacts"":[{""name"":""D1"",""role"":""lead""}]}"\n' +
+  // T5.1 arithmetic+concat targets (F31-F33)
+  '31,Sum6_O1US,O1-US,,6,,,,,"{""region"":""Sum6_O1US"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '32,Sum3_X1FR,X1-FR,,3,,,,,"{""region"":""Sum3_X1FR"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  '33,Sum5_O5US,O5-US,,5,,,,,"{""region"":""Sum5_O5US"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T5.2 if-then-else Bob target (F34)
+  '34,IfBob,X2,,,,,,,"{""region"":""IfBob"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n' +
+  // T7.4 fan-out — second Firm with CODE=O1 (alongside F14)
+  '35,Fan1,O1,,,,,,,"{""region"":""Fan1"",""aliases"":[],""productLines"":[],""contacts"":[]}"\n'
+}
+
+// =============================================================================
+// Test execution helper — parameterised on the mapping per test
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::modelJoin::variantInMJExecute(
+   conn: Connection[1],
+   mapping: meta::pure::mapping::Mapping[1],
+   func: FunctionDefinition<Any>[1],
+   expected: String[1]
+):Boolean[1]
+{
+  executeLegendFunction($func, $mapping, VariantInMJDB, $conn, [personCsv(), firmCsv()], $expected, false);
+}
+
+// =============================================================================
+// Department CSV — 7 rows distributed across Firms 1-4:
+//   F1 (FirmX)  : 3 depts (Engineering 1M, Sales 500k, Operations 200k)
+//   F2 (FirmB)  : 2 depts (Research 800k, Marketing 300k)
+//   F3 (FirmX#2): 1 dept  (IT 100k)
+//   F4 (FirmA)  : 1 dept  (Trading 2M)
+//   F5–F35      : no departments
+// Used by all 10 query-feature tests in the companion tests file.
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::modelJoin::departmentCsv(): String[1]
+{
+  'VIMJ\n' +
+  'DEPARTMENT_TABLE\n' +
+  'ID,FIRM_ID,NAME,BUDGET,HEAD_COUNT\n' +
+  '1,1,Engineering,1000000.0,50\n' +
+  '2,1,Sales,500000.0,20\n' +
+  '3,1,Operations,200000.0,10\n' +
+  '4,2,Research,800000.0,30\n' +
+  '5,2,Marketing,300000.0,15\n' +
+  '6,3,IT,100000.0,5\n' +
+  '7,4,Trading,2000000.0,80\n'
+}
+
+// =============================================================================
+// Test execution helper for query-feature tests — loads all three tables
+// (Person + Firm + Department) and uses VariantInMJ_BaseMappingWithDept.
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::modelJoin::variantInMJExecuteWithDept(
+   conn: Connection[1],
+   func: FunctionDefinition<Any>[1],
+   expected: String[1]
+):Boolean[1]
+{
+  executeLegendFunction($func, VariantInMJ_BaseMappingWithDept, VariantInMJDB, $conn, [personCsv(), firmCsv(), departmentCsv()], $expected, false);
+}

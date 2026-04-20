@@ -15,12 +15,17 @@
 ###Relational
 Database meta::relational::tests::mapping::modelJoin::store::Db
 (
+  // Columns property-mapped to [1] properties via ~func Relation mappings are
+  // NOT NULL so they satisfy the strict multiplicity check; columns mapped to
+  // [0..1] properties (firmTable.{CITY,COUNTRY,CODE}, departmentTable.CODE,
+  // projectTable.CITY) stay nullable. personTable.SALARY is intentionally
+  // nullable to drive the [0..1]-column → [0..1]-property NullableSalaryMapping.
   Schema default
   (
     Table firmTable
     (
       ID INTEGER PRIMARY KEY,
-      LEGALNAME VARCHAR(100),
+      LEGALNAME VARCHAR(100) NOT NULL,
       CITY VARCHAR(100),
       COUNTRY VARCHAR(100),
       CODE VARCHAR(50)
@@ -29,49 +34,50 @@ Database meta::relational::tests::mapping::modelJoin::store::Db
     Table personTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRSTNAME VARCHAR(100),
-      LASTNAME VARCHAR(100),
-      FIRMID INTEGER,
-      AGE INTEGER
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      AGE INTEGER NOT NULL,
+      SALARY FLOAT
     )
 
     Table addressTable
     (
       ID INTEGER PRIMARY KEY,
-      PERSONID INTEGER,
-      CITY VARCHAR(100),
-      COUNTRY VARCHAR(100)
+      PERSONID INTEGER NOT NULL,
+      CITY VARCHAR(100) NOT NULL,
+      COUNTRY VARCHAR(100) NOT NULL
     )
 
     Table headquartersTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRMID INTEGER,
-      CITY VARCHAR(100),
-      COUNTRY VARCHAR(100)
+      FIRMID INTEGER NOT NULL,
+      CITY VARCHAR(100) NOT NULL,
+      COUNTRY VARCHAR(100) NOT NULL
     )
 
     Table departmentTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRMID INTEGER,
-      NAME VARCHAR(100),
+      FIRMID INTEGER NOT NULL,
+      NAME VARCHAR(100) NOT NULL,
       CODE VARCHAR(50)
     )
 
     Table projectTable
     (
       ID INTEGER PRIMARY KEY,
-      DEPTID INTEGER,
-      NAME VARCHAR(100),
+      DEPTID INTEGER NOT NULL,
+      NAME VARCHAR(100) NOT NULL,
       CITY VARCHAR(100)
     )
 
     Table profileTable
     (
       ID INTEGER PRIMARY KEY,
-      PERSONID INTEGER,
-      RANK VARCHAR(50)
+      PERSONID INTEGER NOT NULL,
+      RANK VARCHAR(50) NOT NULL
     )
   )
 
@@ -85,7 +91,7 @@ Database meta::relational::tests::mapping::modelJoin::store::Db
 ###Pure
 import meta::core::runtime::*;
 import meta::relational::metamodel::*;
-Class meta::relational::tests::mapping::modelJoin::domain::Firm 
+Class meta::relational::tests::mapping::modelJoin::domain::Firm
 {
   legalName: String[1];
   city: String[0..1];
@@ -137,6 +143,15 @@ Class meta::relational::tests::mapping::modelJoin::domain::ExtendedPerson extend
   employeeCode: String[0..1];
 }
 
+// Demonstrates the nullable-column → [0..1]-property mapping path under the
+// strict multiplicity check. `salary` is Float[0..1] and the underlying
+// personTable.SALARY column is the only nullable column in personTable, so the
+// multiplicities line up exactly. Used by NullableSalaryMapping below.
+Class meta::relational::tests::mapping::modelJoin::domain::PersonWithOptionalSalary extends meta::relational::tests::mapping::modelJoin::domain::Person
+{
+  salary: Float[0..1];
+}
+
 Association meta::relational::tests::mapping::modelJoin::domain::Person_Firm
 {
   employees: meta::relational::tests::mapping::modelJoin::domain::Person[1];
@@ -179,6 +194,14 @@ Association meta::relational::tests::mapping::modelJoin::domain::Person_Profile
 function meta::relational::tests::mapping::modelJoin::function::personTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
 {
   #>{meta::relational::tests::mapping::modelJoin::store::Db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+// Variant of personTable() that also projects the (nullable) SALARY column.
+// Kept separate from personTable() so existing tests' expected-SQL strings —
+// which spell out the projected column list — remain untouched.
+function meta::relational::tests::mapping::modelJoin::function::personTableWithSalary(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE, SALARY])
 }
 
 function meta::relational::tests::mapping::modelJoin::function::firmTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
@@ -479,3 +502,24 @@ Mapping meta::relational::tests::mapping::modelJoin::simple::RelationalSimpleEqu
     {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
   }
 )
+
+// =========================================================================
+// Nullable-column → [0..1]-property mapping under strict multiplicity check.
+// SALARY is the lone nullable column on personTable; PersonWithOptionalSalary.salary
+// is Float[0..1]. The bare-column `salary: SALARY` lowers (in legend-pure) to
+// `{src | $src.SALARY}` which preserves the [0..1] inferred multiplicity end to end.
+// Uses personTableWithSalary() so existing tests' personTable() projections are
+// unchanged.
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::NullableSalaryMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::PersonWithOptionalSalary[personWithSalary]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTableWithSalary():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    salary: SALARY
+  }
+)
+

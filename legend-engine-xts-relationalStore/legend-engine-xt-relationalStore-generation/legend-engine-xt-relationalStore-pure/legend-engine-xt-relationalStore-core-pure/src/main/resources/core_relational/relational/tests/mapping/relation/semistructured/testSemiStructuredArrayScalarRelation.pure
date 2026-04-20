@@ -1,0 +1,643 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Translation of tests/semistructured/testSemiStructuredArrayScalarOperations.pure
+// into the RFPM variant-lift form.
+//
+// - Source binding-based mappings (`H2Mapping` with `FirmBinding`, `SemiRecordMapping`
+//   with Tag/Participant/LineItemBinding) replaced by RFPM lift mappings:
+//   * `ArrayScalarMapping`: `firm: $src.FIRM_DETAILS->to(@Firm)->toOne()`
+//   * `ArrayScalarSemiRecordMapping`: variant navigation for nested paths
+// - Source DB-level `Join manager(...)` replaced by Association + ModelJoin.
+// - Tests parametrized over `conn: Connection[1]` via `<<paramTest.Test>>`.
+// =============================================================================
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::arrayscalar::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+)
+
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::arrayscalar::SemiDB
+(
+  Schema SEMI_SCHEMA
+  (
+    Table RECORD_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      CONTENT SEMISTRUCTURED
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// Domain model — Person / Firm / Address / AddressType
+// =============================================================================
+Enum meta::relational::tests::mapping::relation::semistructured::arrayscalar::AddressType
+{
+  Primary,
+  Secondary,
+  Other
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address
+{
+  name       : String[1];
+  addressType: meta::relational::tests::mapping::relation::semistructured::arrayscalar::AddressType[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::Firm
+{
+  legalName : String[1];
+  otherNames: String[*];
+  addresses : meta::relational::tests::mapping::relation::semistructured::arrayscalar::Address[*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person
+{
+  firstName: String[1];
+  lastName : String[1];
+  firm     : meta::relational::tests::mapping::relation::semistructured::arrayscalar::Firm[1];
+  conditionalAddressName() {
+    if($this.firstName != 'Peter',
+      |$this.firm.legalName,
+      |$this.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name
+    )
+  }: String[0..1];
+}
+
+Association meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person_Manager
+{
+  manager: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[0..1];
+  reports: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[*];
+}
+
+// =============================================================================
+// Domain model — SemiRecord / Tag / Participant / LineItem
+// =============================================================================
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::Tag
+{
+  code    : String[1];
+  category: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::Participant
+{
+  participantId: String[1];
+  role         : String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::LineItem
+{
+  itemId     : String[1];
+  itemVersion: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::arrayscalar::SemiRecord
+{
+  firstName    : String[1];
+  recordId     : String[0..1];
+  recordVersion: Integer[0..1];
+  revision     : Integer[0..1];
+  section      : String[0..1];
+  batchId      : String[0..1];
+  action       : String[0..1];
+  tags         : meta::relational::tests::mapping::relation::semistructured::arrayscalar::Tag[*];
+  participants : meta::relational::tests::mapping::relation::semistructured::arrayscalar::Participant[*];
+  lineItems    : meta::relational::tests::mapping::relation::semistructured::arrayscalar::LineItem[*];
+}
+
+// =============================================================================
+// Relation functions
+// =============================================================================
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::arrayscalar::H2DB.PERSON_SCHEMA.PERSON_TABLE}#
+    ->select(~[ID, FIRSTNAME, LASTNAME, FIRM_DETAILS, MANAGERID])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::semiRecordFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::arrayscalar::SemiDB.SEMI_SCHEMA.RECORD_TABLE}#
+    ->select(~[ID, FIRSTNAME, CONTENT])
+}
+
+// =============================================================================
+// Standalone helper function (used by testSemiStructuredArrayFilterFirstWithEnumComparison)
+// =============================================================================
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::getPrimaryAddressName(person: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[1]): String[0..1]
+{
+  $person.firm.addresses->filter(
+    a | $a.addressType == meta::relational::tests::mapping::relation::semistructured::arrayscalar::AddressType.Primary
+  )->first().name
+}
+
+// =============================================================================
+// Ranking helpers (used by testMultiArrayOlapWithNestedIfExists)
+// =============================================================================
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::rankTagCategories(items: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Tag[*]): Integer[1]
+{
+  if($items->exists(t1 | $t1.category == 'Primary'),
+    |1,
+    |if($items->exists(t2 | $t2.category == 'Secondary'),
+      |2,
+      |999
+    )
+  )
+}
+
+function meta::relational::tests::mapping::relation::semistructured::arrayscalar::rankParticipantRoles(items: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Participant[*]): Integer[1]
+{
+  if($items->exists(p1 | $p1.role == 'Active'),
+    |1,
+    |if($items->exists(p2 | $p2.role == 'Passive'),
+      |2,
+      |999
+    )
+  )
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::relation::semistructured::arrayscalar::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+// RFPM lift mapping for Person — replaces binding-based H2Mapping.
+Mapping meta::relational::tests::mapping::relation::semistructured::arrayscalar::ArrayScalarMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::arrayscalar::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName : LASTNAME,
+    firm     : $src.FIRM_DETAILS->to(@meta::relational::tests::mapping::relation::semistructured::arrayscalar::Firm)->toOne(),
+    +id       : Integer[1]   : ID,
+    +managerId: Integer[0..1]: MANAGERID
+  }
+
+  *Person_Manager: ModelJoin
+  {
+    {manager: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[1], reports: meta::relational::tests::mapping::relation::semistructured::arrayscalar::Person[1]
+      | $reports.managerId == $manager.id}
+  }
+)
+
+// RFPM lift mapping for SemiRecord — replaces binding-based SemiRecordMapping.
+Mapping meta::relational::tests::mapping::relation::semistructured::arrayscalar::ArrayScalarSemiRecordMapping
+(
+  *SemiRecord[semiRecord]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::arrayscalar::semiRecordFunction():Relation<Any>[1]
+    firstName    : FIRSTNAME,
+    recordId     : $src.CONTENT->get('payload')->get('recordId')->to(@String),
+    recordVersion: $src.CONTENT->get('payload')->get('recordVersion')->to(@Integer),
+    revision     : $src.CONTENT->get('payload')->get('revision')->to(@Integer),
+    section      : $src.CONTENT->get('payload')->get('section')->to(@String),
+    batchId      : $src.CONTENT->get('payload')->get('batchId')->to(@String),
+    action       : $src.CONTENT->get('payload')->get('action')->to(@String),
+    tags         : $src.CONTENT->get('payload')->get('tags')->toMany(@meta::relational::tests::mapping::relation::semistructured::arrayscalar::Tag),
+    participants : $src.CONTENT->get('payload')->get('participants')->toMany(@meta::relational::tests::mapping::relation::semistructured::arrayscalar::Participant),
+    lineItems    : $src.CONTENT->get('payload')->get('lineItems')->toMany(@meta::relational::tests::mapping::relation::semistructured::arrayscalar::LineItem)
+  }
+)
+
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::semistructured::arrayscalar::*;
+
+// =============================================================================
+// Test infrastructure
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::personCsv(): String[1]
+{
+  'PERSON_SCHEMA\n' +
+  'PERSON_TABLE\n' +
+  'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
+  '1,Peter,Smith,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A1"", ""addressType"": ""Primary""}, {""name"": ""A11"", ""addressType"": ""Secondary""}]}",2\n' +
+  '2,John,Johnson,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A2"", ""addressType"": ""Primary""}, {""name"": ""A22"", ""addressType"": ""Secondary""}]}",4\n' +
+  '3,John,Hill,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A3"", ""addressType"": ""Primary""}, {""name"": ""A32"", ""addressType"": ""Secondary""}]}",2\n' +
+  '4,Anthony,Allen,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A4"", ""addressType"": ""Primary""}]}",null\n' +
+  '5,Fabrice,Roberts,"{""legalName"": ""Firm A"", ""otherNames"": [""O3"", ""O4""], ""addresses"": [{""name"": ""A5"", ""addressType"": ""Primary""}, {""name"": ""A52"", ""addressType"": ""Secondary""}]}",null\n' +
+  '6,Oliver,Hill,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A6"", ""addressType"": ""Primary""}]}",7\n' +
+  '7,David,Harris,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A7"", ""addressType"": ""Primary""}]}",null\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::semiRecordCsv(): String[1]
+{
+  'SEMI_SCHEMA\n' +
+  'RECORD_TABLE\n' +
+  'ID,FIRSTNAME,CONTENT\n' +
+  '1,Peter,"{""payload"": {""recordId"": ""R1"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B1"", ""action"": ""CREATE"", ""tags"": [{""code"": ""P1"", ""category"": ""Primary""}, {""code"": ""S1"", ""category"": ""Secondary""}], ""participants"": [{""participantId"": ""A1"", ""role"": ""Active""}, {""participantId"": ""V1"", ""role"": ""Passive""}], ""lineItems"": [{""itemId"": ""L1"", ""itemVersion"": 1}, {""itemId"": ""L2"", ""itemVersion"": 2}]}}"\n' +
+  '2,Fabrice,"{""payload"": {""recordId"": ""R2"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B2"", ""action"": ""UPDATE"", ""tags"": [{""code"": ""S2"", ""category"": ""Secondary""}, {""code"": ""X2"", ""category"": ""Other""}], ""participants"": [{""participantId"": ""V2"", ""role"": ""Passive""}, {""participantId"": ""Z2"", ""role"": ""Other""}], ""lineItems"": [{""itemId"": ""L3"", ""itemVersion"": 1}, {""itemId"": ""L4"", ""itemVersion"": 2}]}}"\n' +
+  '3,Anthony,"{""payload"": {""recordId"": ""R3"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B3"", ""action"": ""CREATE"", ""tags"": [{""code"": ""X3"", ""category"": ""Other""}, {""code"": ""Y3"", ""category"": ""Unknown""}], ""participants"": [{""participantId"": ""Z3"", ""role"": ""Other""}, {""participantId"": ""W3"", ""role"": ""Unknown""}], ""lineItems"": [{""itemId"": ""L5"", ""itemVersion"": 1}, {""itemId"": ""L6"", ""itemVersion"": 2}]}}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::arrayScalarExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, ArrayScalarMapping, H2DB, $conn, [personCsv()], $expected, false);
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::semiRecordExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, ArrayScalarSemiRecordMapping, SemiDB, $conn, [semiRecordCsv()], $expected, false);
+}
+
+// =============================================================================
+// Tests — Array direct operations (isEmpty, size, isNotEmpty, at, fold)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->isEmpty(), 'Has No Addresses')
+    ]),
+    'First Name,Firm Name,Has No Addresses\n' +
+    'Anthony,Firm X,false\n' +
+    'David,Firm B,false\n' +
+    'Fabrice,Firm A,false\n' +
+    'John,Firm X,false\n' +
+    'John,Firm X,false\n' +
+    'Oliver,Firm B,false\n' +
+    'Peter,Firm X,false\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->size(), 'Address Count')
+    ]),
+    'First Name,Firm Name,Address Count\n' +
+    'Anthony,Firm X,1\n' +
+    'David,Firm B,1\n' +
+    'Fabrice,Firm A,2\n' +
+    'John,Firm X,2\n' +
+    'John,Firm X,2\n' +
+    'Oliver,Firm B,1\n' +
+    'Peter,Firm X,2\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->isNotEmpty(), 'Has Addresses')
+    ]),
+    'First Name,Firm Name,Has Addresses\n' +
+    'Anthony,Firm X,true\n' +
+    'David,Firm B,true\n' +
+    'Fabrice,Firm A,true\n' +
+    'John,Firm X,true\n' +
+    'John,Firm X,true\n' +
+    'Oliver,Firm B,true\n' +
+    'Peter,Firm X,true\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectAt(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->at(0).name, 'First Address Name')
+    ]),
+    'First Name,Firm Name,First Address Name\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5\n' +
+    'John,Firm X,A2\n' +
+    'John,Firm X,A3\n' +
+    'Oliver,Firm B,A6\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->fold({a, acc | $acc + $a.name}, ''), 'All Address Names')
+    ]),
+    'First Name,Firm Name,All Address Names\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5A52\n' +
+    'John,Firm X,A2A22\n' +
+    'John,Firm X,A3A32\n' +
+    'Oliver,Firm B,A6\n' +
+    'Peter,Firm X,A1A11\n'
+  );
+}
+
+// =============================================================================
+// Tests — Array filter + scalar operations
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->isEmpty(), 'Has No Matching Address')
+    ]),
+    'First Name,Firm Name,Has No Matching Address\n' +
+    'Anthony,Firm X,true\n' +
+    'David,Firm B,true\n' +
+    'Fabrice,Firm A,true\n' +
+    'John,Firm X,true\n' +
+    'John,Firm X,true\n' +
+    'Oliver,Firm B,true\n' +
+    'Peter,Firm X,false\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1')).name, 'Filtered Address Name')
+    ]),
+    'First Name,Firm Name,Filtered Address Name\n' +
+    'Peter,Firm X,A1\n' +
+    'Peter,Firm X,A11\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->at(0).name, 'First Matching Address Name')
+    ]),
+    'First Name,Firm Name,First Matching Address Name\n' +
+    'Anthony,Firm X,null\n' +
+    'David,Firm B,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Oliver,Firm B,null\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name, 'First Matching Address Name')
+    ]),
+    'First Name,Firm Name,First Matching Address Name\n' +
+    'Anthony,Firm X,null\n' +
+    'David,Firm B,null\n' +
+    'Fabrice,Firm A,null\n' +
+    'John,Firm X,null\n' +
+    'John,Firm X,null\n' +
+    'Oliver,Firm B,null\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->size(), 'Matching Address Count')
+    ]),
+    'First Name,Firm Name,Matching Address Count\n' +
+    'Anthony,Firm X,0\n' +
+    'David,Firm B,0\n' +
+    'Fabrice,Firm A,0\n' +
+    'John,Firm X,0\n' +
+    'John,Firm X,0\n' +
+    'Oliver,Firm B,0\n' +
+    'Peter,Firm X,2\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->map(a | $a.name), 'Matching Address Names')
+    ]),
+    'First Name,Firm Name,Matching Address Names\n' +
+    'Peter,Firm X,A1\n' +
+    'Peter,Firm X,A11\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->fold({a, acc | $acc + $a.name}, ''), 'Concatenated Address Names')
+    ]),
+    'First Name,Firm Name,Concatenated Address Names\n' +
+    'Anthony,Firm X,\n' +
+    'David,Firm B,\n' +
+    'Fabrice,Firm A,\n' +
+    'John,Firm X,\n' +
+    'John,Firm X,\n' +
+    'Oliver,Firm B,\n' +
+    'Peter,Firm X,A1A11\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x.conditionalAddressName, 'Conditional Address Name')
+    ]),
+    'First Name,Firm Name,Conditional Address Name\n' +
+    'Anthony,Firm X,Firm X\n' +
+    'David,Firm B,Firm B\n' +
+    'Fabrice,Firm A,Firm A\n' +
+    'John,Firm X,Firm X\n' +
+    'John,Firm X,Firm X\n' +
+    'Oliver,Firm B,Firm B\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testSemiStructuredArrayFilterFirstWithEnumComparison(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute(
+    $conn,
+    |Person.all()->project([
+      col(x | $x.firstName, 'First Name'),
+      col(x | $x.firm.legalName, 'Firm Name'),
+      col(x | $x->meta::relational::tests::mapping::relation::semistructured::arrayscalar::getPrimaryAddressName(), 'Primary Address Name')
+    ]),
+    'First Name,Firm Name,Primary Address Name\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5\n' +
+    'John,Firm X,A2\n' +
+    'John,Firm X,A3\n' +
+    'Oliver,Firm B,A6\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+// =============================================================================
+// Tests — Multi-array OLAP with nested if/exists
+// =============================================================================
+// function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::arrayscalar::testMultiArrayOlapWithNestedIfExists(conn: Connection[1]):Boolean[1]
+// {
+//   semiRecordExecute(
+    // $conn,
+//     |SemiRecord.all()
+//       ->project(
+//         [
+//           x | $x.recordId,
+//           x | $x.recordVersion,
+//           x | $x.revision,
+//           x | $x.section,
+//           x | $x.batchId,
+//           x | $x.action,
+//           x | $x.tags.code,
+//           x | $x.tags.category,
+//           x | $x.tags->meta::relational::tests::mapping::relation::semistructured::arrayscalar::rankTagCategories(),
+//           x | $x.participants.participantId,
+//           x | $x.participants->meta::relational::tests::mapping::relation::semistructured::arrayscalar::rankParticipantRoles(),
+//           x | $x.lineItems.itemId,
+//           x | $x.lineItems.itemVersion
+//         ],
+//         [
+//           'recordId',
+//           'recordVersion',
+//           'revision',
+//           'section',
+//           'batchId',
+//           'action',
+//           'tagCode',
+//           'tagCategory',
+//           '_tagCategoryRanking',
+//           'participantId',
+//           '_participantRoleRanking',
+//           'itemId',
+//           'itemVersion'
+//         ]
+//       )
+//       ->olapGroupBy(
+//         ['recordId', 'section', 'batchId', 'recordVersion'],
+//         desc('revision'),
+//         x | $x->rank(),
+//         '_revisionRecencyIndex'
+//       )
+//       ->olapGroupBy(
+//         ['recordId', 'section', 'batchId'],
+//         desc('recordVersion'),
+//         x | $x->rank(),
+//         '_versionRecencyIndex'
+//       )
+//       ->olapGroupBy(
+//         ['recordId', 'section', 'batchId'],
+//         asc('_tagCategoryRanking'),
+//         x | $x->rank(),
+//         '_tagCategoryRankingIndex'
+//       )
+//       ->olapGroupBy(
+//         ['recordId', 'section', 'batchId'],
+//         asc('_participantRoleRanking'),
+//         x | $x->rank(),
+//         '_participantRoleRankingIndex'
+//       )
+//       ->filter(
+//         row |
+//           ($row.getNumber('_versionRecencyIndex') == 1) &&
+//           (($row.getNumber('_revisionRecencyIndex') == 1) &&
+//           (($row.getNumber('_tagCategoryRankingIndex') == 1) &&
+//           ($row.getNumber('_participantRoleRankingIndex') == 1)))
+//       )
+//       ->distinct(),
+//     'recordId,recordVersion,revision,section,batchId,action,tagCode,tagCategory,_tagCategoryRanking,participantId,_participantRoleRanking,itemId,itemVersion,_revisionRecencyIndex,_versionRecencyIndex,_tagCategoryRankingIndex,_participantRoleRankingIndex\n' +
+//     'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L1,1,1,1,1,1\n' +
+//     'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L2,2,1,1,1,1\n' +
+//     'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L3,1,1,1,1,1\n' +
+//     'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L4,2,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L5,1,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L6,2,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,Z3,999,L5,1,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,X3,Other,999,Z3,999,L6,2,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,W3,999,L5,1,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,W3,999,L6,2,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,Z3,999,L5,1,1,1,1,1\n' +
+//     'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,Z3,999,L6,2,1,1,1,1\n'
+//   );
+// }
+

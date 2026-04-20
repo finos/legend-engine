@@ -1,0 +1,465 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Translation of tests/semistructured/testSemiStructuredUnionMapping.pure +
+//                tests/semistructured/testSemiStructuredLateralFlatten.pure
+// into the RFPM variant-lift form. Output groups two distinct models under
+// sub-packages to avoid class/mapping/helper collisions:
+//
+//   ::unionlateral::union::*    — testSemiStructuredUnionMapping
+//     Person/Firm across PERSON_TABLE_1 + PERSON_TABLE_2 (operation-mapping
+//     union of two RFPMs — one with `extractFromSemiStructured`-style nested
+//     navigation, one with the whole SS column being the embedded Firm).
+//
+//   ::unionlateral::lateral::*  — testSemiStructuredLateralFlatten
+//     Order/OrderFulfillment with Association + ModelJoin, union mapping on
+//     both root classes (orderA/orderB, fulfillmentA/fulfillmentB), and a
+//     derived `itemCategories()` traversing an embedded SS array.
+//
+// ToFix policy: all 3 tests are <<paramTest.Ignore>>. The lift RFPM form has
+// no known equivalent of the source `*Class: Operation { union(impl1, impl2) }`
+// combinator — there is no router wiring that synthesises a union of two
+// `Relation`-typed implementations on the same root class. We translate the
+// model + mapping structure as faithfully as possible so a future router
+// extension can flip these tests back to `<<paramTest.Test>>` without
+// retouching the model/queries, but until then they remain ignored.
+// =============================================================================
+
+
+// =============================================================================
+// Database — Union (PERSON_SCHEMA with PERSON_TABLE_1 + PERSON_TABLE_2)
+// =============================================================================
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::unionlateral::union::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE_1
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED,
+      NAME VARCHAR(32)
+    )
+    Table PERSON_TABLE_2
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED,
+      NAME VARCHAR(32)
+    )
+  )
+)
+
+
+// =============================================================================
+// Database — Lateral (ORDER + FULFILLMENT, two tables each, drop DB-level joins)
+// =============================================================================
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB
+(
+  Schema ORDER_SCHEMA
+  (
+    Table ORDER_TABLE_A
+    (
+      ORDER_ID VARCHAR(100) PRIMARY KEY,
+      ORDER_VERSION INTEGER PRIMARY KEY,
+      ORDER_STATUS VARCHAR(50)
+    )
+    Table ORDER_TABLE_B
+    (
+      ORDER_ID VARCHAR(100) PRIMARY KEY,
+      ORDER_VERSION INTEGER PRIMARY KEY,
+      ORDER_STATUS VARCHAR(50)
+    )
+  )
+  Schema FULFILLMENT_SCHEMA
+  (
+    Table FULFILLMENT_TABLE_A
+    (
+      FULFILLMENT_ID VARCHAR(100) PRIMARY KEY,
+      FULFILLMENT_VERSION INTEGER PRIMARY KEY,
+      ORDER_ID VARCHAR(100),
+      ORDER_VERSION INTEGER,
+      DETAILS SEMISTRUCTURED
+    )
+    Table FULFILLMENT_TABLE_B
+    (
+      FULFILLMENT_ID VARCHAR(100) PRIMARY KEY,
+      FULFILLMENT_VERSION INTEGER PRIMARY KEY,
+      ORDER_ID VARCHAR(100),
+      ORDER_VERSION INTEGER,
+      DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+
+// =============================================================================
+// Pure model + relation functions
+// =============================================================================
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// -----------------------------------------------------------------------------
+// Union sub-package — Person/Firm
+// -----------------------------------------------------------------------------
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Firm
+{
+  firmName: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person
+{
+  firm: meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Firm[1];
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::union::personTable1Function(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::union::H2DB.PERSON_SCHEMA.PERSON_TABLE_1}#
+    ->select(~[ID, FIRM_DETAILS, NAME])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::union::personTable2Function(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::union::H2DB.PERSON_SCHEMA.PERSON_TABLE_2}#
+    ->select(~[ID, FIRM_DETAILS, NAME])
+}
+
+// -----------------------------------------------------------------------------
+// Lateral sub-package — Order/OrderFulfillment with derived itemCategories()
+// -----------------------------------------------------------------------------
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order
+{
+  orderId    : String[1];
+  orderStatus: String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillment
+{
+  orderVersion      : Integer[1];
+  fulfillmentVersion: Integer[1];
+  details           : meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::FulfillmentDetails[1];
+  itemCategories() {$this.details.lineItems.category}: String[*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::FulfillmentDetails
+{
+  lineItems: meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::LineItem[*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::LineItem
+{
+  category: String[1];
+}
+
+// Association replaces the source DB-level joins order_fulfillment_a/_b — the
+// match is on (ORDER_ID, ORDER_VERSION) composite key, mapped via ModelJoin
+// using +localOrderId/+localOrderVersion mapping properties on the
+// OrderFulfillment side.
+Association meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillmentAssociation
+{
+  order      : meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order[1];
+  fulfillment: meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillment[1];
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderTableAFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB.ORDER_SCHEMA.ORDER_TABLE_A}#
+    ->select(~[ORDER_ID, ORDER_VERSION, ORDER_STATUS])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderTableBFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB.ORDER_SCHEMA.ORDER_TABLE_B}#
+    ->select(~[ORDER_ID, ORDER_VERSION, ORDER_STATUS])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentTableAFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB.FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A}#
+    ->select(~[FULFILLMENT_ID, FULFILLMENT_VERSION, ORDER_ID, ORDER_VERSION, DETAILS])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentTableBFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB.FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B}#
+    ->select(~[FULFILLMENT_ID, FULFILLMENT_VERSION, ORDER_ID, ORDER_VERSION, DETAILS])
+}
+
+
+// =============================================================================
+// Mappings — best-effort RFPM lift shape for the union pattern.
+//
+// Source uses `*Class: Operation { meta::pure::router::operations::union(...) }`
+// with two `Relational` implementations. The lift form has no documented
+// equivalent: there is no `*Class: Operation` block accepting two `Relation`
+// implementations. We DECLARE the two implementations per root class so the
+// model is faithful, but no Operation block is added; tests are
+// <<paramTest.Ignore>> until the lift router gains union support.
+// =============================================================================
+###Mapping
+import meta::relational::tests::mapping::relation::semistructured::unionlateral::union::*;
+import meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+// -----------------------------------------------------------------------------
+// Union mapping — two implementations of Person.
+// Source pattern: Person[Type_A] uses `extractFromSemiStructured` (path 'firm')
+// to navigate into FIRM_DETAILS; Person[Type_B] treats the whole FIRM_DETAILS
+// blob as the Firm. In the lift form both collapse to a `$src.<COL>->to(@Firm)
+// ->toOne()` shape — the navigation depth differs by one level of `->get('firm')`.
+// -----------------------------------------------------------------------------
+Mapping meta::relational::tests::mapping::relation::semistructured::unionlateral::union::UnionSemiStructuredMapping
+(
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person[personTypeA]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::union::personTable1Function():Relation<Any>[1]
+  //   firm: $src.FIRM_DETAILS->get('firm')->to(@meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Firm)->toOne(),
+  //   +id: Integer[1]: ID
+  // }
+
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person[personTypeB]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::union::personTable2Function():Relation<Any>[1]
+  //   firm: $src.FIRM_DETAILS->to(@meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Firm)->toOne(),
+  //   +id: Integer[1]: ID
+  // }
+)
+
+// -----------------------------------------------------------------------------
+// Lateral mapping — Order union (orderA/orderB) + OrderFulfillment union
+// (fulfillmentA/fulfillmentB) + Association via ModelJoin on composite key
+// (orderId, orderVersion).
+// -----------------------------------------------------------------------------
+Mapping meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::LateralSemiStructuredMapping
+(
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order[orderA]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderTableAFunction():Relation<Any>[1]
+  //   orderId    : ORDER_ID,
+  //   orderStatus: ORDER_STATUS,
+  //   +orderVersion: Integer[1]: ORDER_VERSION
+  // }
+
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order[orderB]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderTableBFunction():Relation<Any>[1]
+  //   orderId    : ORDER_ID,
+  //   orderStatus: ORDER_STATUS,
+  //   +orderVersion: Integer[1]: ORDER_VERSION
+  // }
+
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillment[fulfillmentA]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentTableAFunction():Relation<Any>[1]
+  //   orderVersion      : ORDER_VERSION,
+  //   fulfillmentVersion: FULFILLMENT_VERSION,
+  //   details           : $src.DETAILS->to(@meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::FulfillmentDetails)->toOne(),
+  //   +localOrderId     : String[1] : ORDER_ID,
+  //   +localOrderVersion: Integer[1]: ORDER_VERSION
+  // }
+
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillment[fulfillmentB]: Relation
+  // {
+  //   ~func meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentTableBFunction():Relation<Any>[1]
+  //   orderVersion      : ORDER_VERSION,
+  //   fulfillmentVersion: FULFILLMENT_VERSION,
+  //   details           : $src.DETAILS->to(@meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::FulfillmentDetails)->toOne(),
+  //   +localOrderId     : String[1] : ORDER_ID,
+  //   +localOrderVersion: Integer[1]: ORDER_VERSION
+  // }
+
+  // *meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillmentAssociation: ModelJoin
+  // {
+  //   {order      : meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order[1],
+  //    fulfillment: meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::OrderFulfillment[1]
+  //     | $fulfillment.localOrderId == $order.orderId &&
+  //       $fulfillment.localOrderVersion == $order.orderVersion}
+  // }
+)
+
+
+// =============================================================================
+// Test infrastructure + tests
+// =============================================================================
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::semistructured::unionlateral::union::*;
+import meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::*;
+
+// =============================================================================
+// ====== union ======
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionCsv(): String[1]
+{
+  'PERSON_SCHEMA\n' +
+  'PERSON_TABLE_1\n' +
+  'ID,FIRM_DETAILS,NAME\n' +
+  '1,"{""firm"": {""firmName"": ""firm_A""}}",ABC\n' +
+  '3,"{""firm"": {""firmName"": ""firm_B""}}",PQR\n' +
+  '5,"{""firm"": {""firmName"": ""firm_C""}}",XYZ\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionCsv2(): String[1]
+{
+  'PERSON_SCHEMA\n' +
+  'PERSON_TABLE_2\n' +
+  'ID,FIRM_DETAILS,NAME\n' +
+  '2,"{""firmName"": ""firm_D""}",MNO\n' +
+  '4,"{""firmName"": ""firm_E""}",DEF\n' +
+  '6,"{""firmName"": ""firm_F""}",STU\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
+  conn: Connection[1],
+  func: FunctionDefinition<Any>[1],
+  expected: String[1]
+):Boolean[1]
+{
+  executeLegendFunction(
+    $func,
+    meta::relational::tests::mapping::relation::semistructured::unionlateral::union::UnionSemiStructuredMapping,
+    meta::relational::tests::mapping::relation::semistructured::unionlateral::union::H2DB,
+    $conn,
+    [meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionCsv(),
+     meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionCsv2()],
+    $expected,
+    false
+  );
+}
+
+// Ignored because the lift RFPM form has no Operation/union combinator —
+// `*Person: Operation { union(personTypeA, personTypeB) }` does not exist
+// for relation mappings; pending router work.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBinding(conn: Connection[1]):Boolean[1]
+{
+  meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
+    $conn,
+    |meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person.all()
+      ->project(~['Firm/FirmName': x|$x.firm.firmName]),
+    'Firm/FirmName\n' +
+    'firm_A\n' +
+    'firm_B\n' +
+    'firm_C\n' +
+    'firm_D\n' +
+    'firm_E\n' +
+    'firm_F\n'
+  );
+}
+
+// Ignored because the lift RFPM form has no Operation/union combinator —
+// `*Person: Operation { union(personTypeA, personTypeB) }` does not exist
+// for relation mappings; pending router work.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::union::testSemiStructuredUnionMappingWithBindingAndFilter(conn: Connection[1]):Boolean[1]
+{
+  meta::relational::tests::mapping::relation::semistructured::unionlateral::union::unionExecute(
+    $conn,
+    |meta::relational::tests::mapping::relation::semistructured::unionlateral::union::Person.all()
+      ->filter(x|$x.firm.firmName->in(['firm_A', 'firm_B', 'firm_D'])->and())
+      ->project(~['Firm/FirmName': x|$x.firm.firmName]),
+    'Firm/FirmName\n' +
+    'firm_A\n' +
+    'firm_B\n' +
+    'firm_D\n'
+  );
+}
+
+
+// =============================================================================
+// ====== lateral ======
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderCsvA(): String[1]
+{
+  'ORDER_SCHEMA\n' +
+  'ORDER_TABLE_A\n' +
+  'ORDER_ID,ORDER_VERSION,ORDER_STATUS\n' +
+  '1,10,Open\n' +
+  '2,20,Closed\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderCsvB(): String[1]
+{
+  'ORDER_SCHEMA\n' +
+  'ORDER_TABLE_B\n' +
+  'ORDER_ID,ORDER_VERSION,ORDER_STATUS\n' +
+  '3,30,Open\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentCsvA(): String[1]
+{
+  'FULFILLMENT_SCHEMA\n' +
+  'FULFILLMENT_TABLE_A\n' +
+  'FULFILLMENT_ID,FULFILLMENT_VERSION,ORDER_ID,ORDER_VERSION,DETAILS\n' +
+  '100,1,1,10,"{""lineItems"": [{""category"": ""Electronics""}, {""category"": ""Books""}]}"\n' +
+  '101,1,2,20,"{""lineItems"": [{""category"": ""Clothing""}]}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentCsvB(): String[1]
+{
+  'FULFILLMENT_SCHEMA\n' +
+  'FULFILLMENT_TABLE_B\n' +
+  'FULFILLMENT_ID,FULFILLMENT_VERSION,ORDER_ID,ORDER_VERSION,DETAILS\n' +
+  '200,1,3,30,"{""lineItems"": [{""category"": ""Food""}, {""category"": ""Toys""}]}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::lateralExecute(
+  conn: Connection[1],
+  func: FunctionDefinition<Any>[1],
+  expected: String[1]
+):Boolean[1]
+{
+  executeLegendFunction(
+    $func,
+    meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::LateralSemiStructuredMapping,
+    meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::H2DB,
+    $conn,
+    [meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderCsvA(),
+     meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::orderCsvB(),
+     meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentCsvA(),
+     meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::fulfillmentCsvB()],
+    $expected,
+    false
+  );
+}
+
+// Ignored because the lift RFPM form has no Operation/union combinator and
+// the test also requires Association traversal across two unioned root
+// classes (Order, OrderFulfillment) — pending router work for both
+// union-of-relation-implementations and union-aware ModelJoin resolution.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::testSemiStructuredUnionFlattenWithAssociation(conn: Connection[1]):Boolean[1]
+{
+  meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::lateralExecute(
+    $conn,
+    |meta::relational::tests::mapping::relation::semistructured::unionlateral::lateral::Order.all()
+      ->filter(x|$x.orderId != '')
+      ->project(~[
+        'Order Id'           : x|$x.orderId,
+        'Order Status'       : x|$x.orderStatus,
+        'Order Version'      : x|$x.fulfillment.orderVersion,
+        'Fulfillment Version': x|$x.fulfillment.fulfillmentVersion,
+        'Item Categories'    : x|$x.fulfillment.itemCategories
+      ]),
+    'Order Id,Order Status,Order Version,Fulfillment Version,Item Categories\n' +
+    '1,Open,10,1,Electronics\n' +
+    '1,Open,10,1,Books\n' +
+    '2,Closed,20,1,Clothing\n' +
+    '3,Open,30,1,Food\n' +
+    '3,Open,30,1,Toys\n'
+  );
+}

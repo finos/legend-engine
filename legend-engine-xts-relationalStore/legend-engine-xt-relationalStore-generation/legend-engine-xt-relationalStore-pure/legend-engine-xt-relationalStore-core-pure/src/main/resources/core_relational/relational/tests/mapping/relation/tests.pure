@@ -13,6 +13,8 @@
 // limitations under the License.
 
 ###Pure
+import meta::relational::functions::sqlstring::*;
+import meta::relational::runtime::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::relational::metamodel::execute::*;
@@ -985,5 +987,158 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Fabrice, Seattle
     #->toString(),
     $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+
+// --- Pure-expression-based RelationFunctionPropertyMapping tests --------------
+// These exercise the general-case lambda walker (now `evaluateRfpmRhs` →
+// `transformRelationFunctionPropertyMappingToRelational` in pureToSQLQuery.pure)
+// that replaced the original bare-column-only placeholder helper. Bare-column
+// property mappings lower (in legend-pure) to `{src | $src.<col>}`, and richer
+// expressions like `$src.A + 5` flow through the same walker via the DynaFunction leg.
+
+// Same query / fixture as testSimpleMappingQuery but driven by ExplicitSrcMapping
+// where every property is written in `$src.<col>` form. Asserts the explicit
+// lambda form produces results identical to the bare-column sugar.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingQuery():Boolean[1]
+{
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
+    meta::relational::tests::mapping::relation::ExplicitSrcMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, age
+       David, 52
+       Fabrice, 45
+       John, 30
+       Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// XStore association still resolves when both source and target class mappings
+// use `$src.COL` form on every property mapping (PK and FK lookups).
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingWithAssociation():Boolean[1]
+{
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
+    meta::relational::tests::mapping::relation::ExplicitSrcMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+      name, firmName
+      David, Firm D
+      Fabrice, Firm C
+      John, Firm X
+      Oliver, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// Arithmetic expression on the RHS of a property mapping. `age` is mapped to
+// `$src.AGE + 5`, so projected ages should be the underlying column values
+// shifted by +5. This exercises the DynaFunction leg of the lambda walker
+// (`plus`) over a TableAliasColumn + Literal.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionMappingArithmetic():Boolean[1]
+{
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
+    meta::relational::tests::mapping::relation::ExpressionMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+      name, age
+      David, 57
+      Fabrice, 50
+      John, 35
+      Oliver, 31
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// Same arithmetic mapping, but the projection filters first to ensure the
+// expression-form PM survives a downstream filter pushdown.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionMappingArithmeticWithFilter():Boolean[1]
+{
+  let result = execute(
+    |Person.all()->filter(p|$p.age > 35)->project(~[name:x|$x.firstName, age:x|$x.age]),
+    meta::relational::tests::mapping::relation::ExpressionMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+      name, age
+      David, 57
+      Fabrice, 50
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// Demonstrates that the strict-multiplicity property-mapping check accepts
+// a nullable column ([0..1]) feeding a [0..1] property. Source SALARY is
+// declared nullable in `testDB.personTable`; PersonWithOptionalSalary.salary
+// is Float[0..1]. The compile-time check passes because both ends are [0..1].
+// All seed rows currently have non-null SALARY, so the [0..1] path is
+// exercised at compile time only — matches the sibling test in
+// testModelJoinSimple.pure::testNullableSalaryMapping.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testNullableSalaryMapping():Boolean[1]
+{
+  let result = execute(
+    |PersonWithOptionalSalary.all()->project(~[name:x|$x.firstName, salary:x|$x.salary]),
+    meta::relational::tests::mapping::relation::NullableSalaryMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, salary
+       David, 88.88
+       Fabrice, 19.29
+       John, 72.4
+       Oliver, 42.34
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// t6 — Non-variant DynaFunction (string concat). Lift router routes through
+// the RelationalPropertyMapping arm (no SS PM).
+// Uses the existing personFunction → personTable, seeded once by
+// createTablesAndFillDb (no setupRfpmLiftTestData call needed).
+// personFunction filters AGE > 25 and limits to 5 → John, Fabrice, Oliver, David.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftMixedConcat():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+
+  let result = execute(
+    |PersonLiftedConcat.all()->project(~[greeting: x | $x.greeting]),
+    meta::relational::tests::mapping::relation::LiftedConcatMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals(
+    #TDS
+      greeting
+      Hello David
+      Hello Fabrice
+      Hello John
+      Hello Oliver
+    #->toString(),
+    $result.values->at(0)->sort([~greeting->ascending()])->toString()
   );
 }

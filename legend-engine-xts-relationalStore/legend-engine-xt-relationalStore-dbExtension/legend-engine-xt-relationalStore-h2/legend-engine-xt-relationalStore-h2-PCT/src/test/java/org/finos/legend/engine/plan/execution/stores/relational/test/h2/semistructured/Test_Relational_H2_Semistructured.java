@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
+import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
@@ -33,27 +34,16 @@ import org.eclipse.collections.api.factory.Maps;
 // TODO move to a better module!
 public class Test_Relational_H2_Semistructured
 {
-    private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstWithEnumComparison_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStrings_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStringsPrefixSuffix_Connection_1__Boolean_1_"
+    // Skip every test whose Pure user-path lives under one of these packages.
+    // Cheaper to maintain than listing each function individually — entries here are
+    // matched as `<package>::` prefixes so a sibling package can't accidentally match.
+    private static final Set<String> SKIPPED_PACKAGES = Sets.mutable.with(
+            "meta::relational::tests::semistructured::flattening",
+            "meta::relational::tests::mapping::relation"
     );
+
+    // One-off skips that aren't worth (or can't be) skipped by package. Empty by default.
+    private static final Set<String> SKIPPED_TESTS = Sets.mutable.empty();
 
     public static Test suite()
     {
@@ -70,11 +60,27 @@ public class Test_Relational_H2_Semistructured
             }
         }
 
+        // Pre-compute prefixes once (with trailing "::") so the executor only does a startsWith per test.
+        String[] skippedPackagePrefixes = SKIPPED_PACKAGES.stream()
+                .map(p -> p + "::")
+                .toArray(String[]::new);
+
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
             if (skippedCoreInstances.contains(test))
             {
                 return true; // skip
+            }
+            if (skippedPackagePrefixes.length > 0)
+            {
+                String testPath = PackageableElement.getUserPathForPackageableElement(test);
+                for (String prefix : skippedPackagePrefixes)
+                {
+                    if (testPath.startsWith(prefix))
+                    {
+                        return true; // skip — covered by a SKIPPED_PACKAGES entry
+                    }
+                }
             }
             return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
         };

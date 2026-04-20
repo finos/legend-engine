@@ -14,10 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.mapping;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.misc.Interval;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
@@ -34,19 +40,32 @@ import java.util.stream.Collectors;
 public class RelationFunctionMappingParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
+    private final CharStream input;
     private final PureGrammarParserContext parserContext;
     private final MappingElementSourceCode mappingElementSourceCode;
 
-    public RelationFunctionMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, MappingElementSourceCode mappingElementSourceCode)
+    public RelationFunctionMappingParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, CharStream input, PureGrammarParserContext parserContext, MappingElementSourceCode mappingElementSourceCode)
     {
         this.walkerSourceInformation = walkerSourceInformation;
+        this.input = input;
         this.parserContext = parserContext;
         this.mappingElementSourceCode = mappingElementSourceCode;
     }
 
     public void visitRelationFunctionClassMapping(RelationFunctionMappingParserGrammar.RelationFunctionMappingContext ctx, RelationFunctionClassMapping relationFunctionClassMapping)
     {
-        relationFunctionClassMapping.relationFunction = new PackageableElementPointer(PackageableElementType.FUNCTION, ctx.functionIdentifier().getText(), walkerSourceInformation.getSourceInformation(ctx.functionIdentifier()));
+        RelationFunctionMappingParserGrammar.RelationSourceContext sourceCtx = ctx.relationSource();
+        if (sourceCtx.RELATION_FUNC() != null)
+        {
+            relationFunctionClassMapping.relationFunction = new PackageableElementPointer(PackageableElementType.FUNCTION, sourceCtx.functionIdentifier().getText(), walkerSourceInformation.getSourceInformation(sourceCtx.functionIdentifier()));
+        }
+        else
+        {
+            // ~src <combinedExpression> — wrap the inline expression in a zero-arg lambda so the
+            // downstream compiler can resolve the relation function's row type and bind $src
+            // for property mappings uniformly with the ~func path.
+            relationFunctionClassMapping.sourceLambda = visitInlineExpressionAsLambda(sourceCtx.combinedExpression());
+        }
         if (ctx.primaryKey() != null)
         {
             relationFunctionClassMapping.primaryKey = ctx.primaryKey().identifier()
@@ -70,8 +89,8 @@ public class RelationFunctionMappingParseTreeWalker
         PropertyPointer propertyPointer = new PropertyPointer();
         propertyPointer._class = ownerClass;
         propertyMapping.property = propertyPointer;
-        
-        if (ctx.singleLocalPropertyMapping()  != null)
+
+        if (ctx.singleLocalPropertyMapping() != null)
         {
             RelationFunctionMappingParserGrammar.SingleLocalPropertyMappingContext localPropertyMappingCtx = ctx.singleLocalPropertyMapping();
             LocalMappingPropertyInfo localMappingPropertyInfo = new LocalMappingPropertyInfo();
@@ -116,7 +135,20 @@ public class RelationFunctionMappingParseTreeWalker
 
     private void visitRelationFunctionPropertyMapping(RelationFunctionMappingParserGrammar.RelationFunctionPropertyMappingContext ctx, RelationFunctionPropertyMapping propertyMapping)
     {
-        propertyMapping.column = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        // Bare-column form (single identifier token) — preferred fast path.
+        // Otherwise, fall through to combinedExpression (any Pure expression over $src).
+        if (ctx.identifier() != null)
+        {
+            propertyMapping.column = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        }
+        else if (ctx.combinedExpression() != null)
+        {
+            propertyMapping.valueFn = visitInlineExpressionAsLambda(ctx.combinedExpression());
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Expected either a bare column name or an expression on the right-hand side of a relation property mapping");
+        }
         if (ctx.transformer() != null)
         {
             if (ctx.transformer().bindingTransformer() != null)
@@ -171,6 +203,32 @@ public class RelationFunctionMappingParseTreeWalker
         embeddedMapping.propertyMappings = Collections.emptyList();
 
         return embeddedMapping;
+    }
+
+    /**
+     * Parse a {@code combinedExpression} as a zero-parameter {@code LambdaFunction}.  Used both for the
+     * {@code ~src <expr>} class-mapping source and for the per-property expression RHS.  The compiler
+     * later injects the {@code $src} parameter into the lambda's function type once the relation
+     * function's row type is known.
+     */
+    private LambdaFunction visitInlineExpressionAsLambda(RelationFunctionMappingParserGrammar.CombinedExpressionContext ctx)
+    {
+        String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+        DomainParser parser = new DomainParser();
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation combinedExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);
+        LambdaFunction lambda = new LambdaFunction();
+        lambda.body = Lists.mutable.empty();
+        lambda.body.add(valueSpecification);
+        // parameters are intentionally empty — the compiler will inject `$src` typed at the
+        // relation function's row type.  Keeping it empty here lets the M3 parser treat the
+        // body as a free expression rather than a typed-lambda literal.
+        lambda.parameters = Lists.mutable.empty();
+        lambda.sourceInformation = combinedExpressionSourceInformation.getSourceInformation(ctx);
+        return lambda;
     }
 
 }

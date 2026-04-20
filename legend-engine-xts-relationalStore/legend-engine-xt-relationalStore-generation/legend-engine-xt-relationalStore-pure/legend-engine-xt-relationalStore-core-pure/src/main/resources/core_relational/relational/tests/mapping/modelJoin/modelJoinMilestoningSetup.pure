@@ -20,15 +20,19 @@
 ###Relational
 Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
 (
+  // Columns property-mapped to [1] properties via ~func Relation mappings are
+  // NOT NULL so they satisfy the strict multiplicity check; orderTable.REFCODE
+  // is the only [0..1]-mapped column and stays nullable. All milestoning
+  // marker columns (FROM_Z/THRU_Z/IN_Z/OUT_Z) are NOT NULL on hygiene grounds.
   Schema default
   (
     Table personTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRSTNAME VARCHAR(100),
-      LASTNAME VARCHAR(100),
-      FIRMID INTEGER,
-      AGE INTEGER
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      AGE INTEGER NOT NULL
     )
 
     Table contractLogTable
@@ -37,10 +41,10 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      PERSONID INTEGER,
-      DESCRIPTION VARCHAR(200),
-      FROM_Z DATE,
-      THRU_Z DATE
+      PERSONID INTEGER NOT NULL,
+      DESCRIPTION VARCHAR(200) NOT NULL,
+      FROM_Z DATE NOT NULL,
+      THRU_Z DATE NOT NULL
     )
 
     Table orderTable
@@ -49,33 +53,33 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      PRODUCTID INTEGER,
-      DESCRIPTION VARCHAR(200),
+      PRODUCTID INTEGER NOT NULL,
+      DESCRIPTION VARCHAR(200) NOT NULL,
       REFCODE VARCHAR(50),
-      FROM_Z DATE,
-      THRU_Z DATE
+      FROM_Z DATE NOT NULL,
+      THRU_Z DATE NOT NULL
     )
 
     Table productTable
     (
       ID INTEGER PRIMARY KEY,
-      ORDERID INTEGER,
-      CODE VARCHAR(50),
-      CATEGORY VARCHAR(50)
+      ORDERID INTEGER NOT NULL,
+      CODE VARCHAR(50) NOT NULL,
+      CATEGORY VARCHAR(50) NOT NULL
     )
 
     Table warehouseTable
     (
       ID INTEGER PRIMARY KEY,
-      NAME VARCHAR(100),
-      SECTIONID INTEGER
+      NAME VARCHAR(100) NOT NULL,
+      SECTIONID INTEGER NOT NULL
     )
 
     Table sectionTable
     (
       ID INTEGER PRIMARY KEY,
-      WAREHOUSEID INTEGER,
-      ZONE VARCHAR(50)
+      WAREHOUSEID INTEGER NOT NULL,
+      ZONE VARCHAR(50) NOT NULL
     )
 
     Table shipmentTable
@@ -84,18 +88,18 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      ORDERID INTEGER,
-      CARRIER VARCHAR(100),
-      TRACKINGID INTEGER,
-      FROM_Z DATE,
-      THRU_Z DATE
+      ORDERID INTEGER NOT NULL,
+      CARRIER VARCHAR(100) NOT NULL,
+      TRACKINGID INTEGER NOT NULL,
+      FROM_Z DATE NOT NULL,
+      THRU_Z DATE NOT NULL
     )
 
     Table trackingTable
     (
       ID INTEGER PRIMARY KEY,
-      SHIPMENTID INTEGER,
-      PREFIX VARCHAR(50)
+      SHIPMENTID INTEGER NOT NULL,
+      PREFIX VARCHAR(50) NOT NULL
     )
 
     Table auditTable
@@ -104,10 +108,10 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         processing(PROCESSING_IN=IN_Z, PROCESSING_OUT=OUT_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      ENTITYREF VARCHAR(50),
-      MESSAGE VARCHAR(200),
-      IN_Z TIMESTAMP,
-      OUT_Z TIMESTAMP
+      ENTITYREF VARCHAR(50) NOT NULL,
+      MESSAGE VARCHAR(200) NOT NULL,
+      IN_Z TIMESTAMP NOT NULL,
+      OUT_Z TIMESTAMP NOT NULL
     )
 
     Table productMilTable
@@ -116,11 +120,11 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      ORDERID INTEGER,
-      CODE VARCHAR(50),
-      CATEGORY VARCHAR(50),
-      FROM_Z DATE,
-      THRU_Z DATE
+      ORDERID INTEGER NOT NULL,
+      CODE VARCHAR(50) NOT NULL,
+      CATEGORY VARCHAR(50) NOT NULL,
+      FROM_Z DATE NOT NULL,
+      THRU_Z DATE NOT NULL
     )
 
     Table trackingMilTable
@@ -129,10 +133,10 @@ Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
         business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
       )
       ID INTEGER PRIMARY KEY,
-      SHIPMENTID INTEGER,
-      PREFIX VARCHAR(50),
-      FROM_Z DATE,
-      THRU_Z DATE
+      SHIPMENTID INTEGER NOT NULL,
+      PREFIX VARCHAR(50) NOT NULL,
+      FROM_Z DATE NOT NULL,
+      THRU_Z DATE NOT NULL
     )
   )
 )

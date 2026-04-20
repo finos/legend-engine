@@ -1,0 +1,662 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Comprehensive Variant Mapping Tests — Setup
+//
+// Domain, Database, Mappings, CSV data, and test execution helpers.
+// Tests variant-operation expressivity at the MAPPING LEVEL (§2.1–§2.20).
+// Companion test file: testVariantMappingComprehensiveTests.pure
+// =============================================================================
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB
+(
+  Schema VARIANT_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+
+    Table ORDER_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD_JSON VARCHAR(4000)
+    )
+
+    Table EVENT_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD SEMISTRUCTURED
+    )
+
+    Table BLOCK_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      BLOCKDATA SEMISTRUCTURED
+    )
+
+    Table PET_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD SEMISTRUCTURED
+    )
+
+    Table MAP_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD SEMISTRUCTURED
+    )
+
+    Table NESTED_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      PAYLOAD SEMISTRUCTURED
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// Domain — Firm / Address / AddressLine (for whole-subtree §2.7)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::AddressLine
+{
+  details: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Address
+{
+  name  : String[1];
+  street: String[0..1];
+  lines : meta::relational::tests::mapping::relation::variant::comprehensive::AddressLine[*];
+}
+
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Firm
+{
+  legalName     : String[1];
+  employeeCount : Integer[1];
+  revenue       : Float[1];
+  mnc           : Boolean[1];
+  estDate       : StrictDate[1];
+  lastUpdate    : DateTime[1];
+  entityType    : String[0..1];
+  otherNames    : String[*];
+  address       : meta::relational::tests::mapping::relation::variant::comprehensive::Address[1];
+  revenueHistory: Float[*];
+  ratings       : String[*];
+  countries     : String[*];
+}
+
+// =============================================================================
+// Domain — Person (the rich "view model" with 40+ concrete properties)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Person
+{
+  // Baseline columns
+  firstName       : String[1];
+  lastName        : String[1];
+  // §2.7 — whole subtree deserialization
+  firm            : meta::relational::tests::mapping::relation::variant::comprehensive::Firm[1];
+  // §2.1 — direct extraction (all primitive types)
+  firmName        : String[1];
+  employeeCount   : Integer[1];
+  revenue         : Float[1];
+  isMnc           : Boolean[1];
+  estDate         : StrictDate[1];
+  lastUpdate      : DateTime[1];
+  // §2.2 — enum-as-string
+  entityType      : String[0..1];
+  // §2.9 — nested object navigation
+  addressName     : String[1];
+  addressStreet   : String[0..1];
+  // §2.15 — at / first / size / isEmpty / isNotEmpty
+  firstAddrLine   : String[0..1];
+  secondAddrLine  : String[0..1];
+  addrLineCount   : Integer[1];
+  hasAddress      : Boolean[1];
+  hasStreet       : Boolean[1];
+  // §2.5 + §2.15 — toMany + size / first / at / isEmpty / isNotEmpty
+  otherNameCount  : Integer[1];
+  firstOtherName  : String[0..1];
+  secondOtherName : String[0..1];
+  hasOtherNames   : Boolean[1];
+  otherNamesEmpty : Boolean[1];
+  // §2.20 — distinct / contains / indexOf / concatenate
+  distinctCtryCount: Integer[1];
+  hasUkOffice     : Boolean[1];
+  ukIndex         : Integer[1];
+  allNameCount    : Integer[1];
+  // §2.17 — numeric aggregations
+  totalRevenue    : Float[1];
+  maxRevenue      : Float[0..1];
+  minRevenue      : Float[0..1];
+  hasRevHistory   : Boolean[1];
+  // §2.19 — fold / take / drop
+  ratingsFolded   : String[1];
+  topTwoRatCt     : Integer[1];
+  tailRatCt       : Integer[1];
+  // §2.3 — computed leaves
+  displayName     : String[1];
+  fteEquiv        : Float[1];
+  contactName     : String[1];
+  isLargeMnc      : Boolean[1];
+  // §2.5 — exists / filter+size
+  existsO3        : Boolean[1];
+  filteredNameCt  : Integer[1];
+  // §A — collection ops: last, init, tail, sort, reverse, add
+  lastOtherName   : String[0..1];
+  initRatingCt    : Integer[1];
+  tailRatingCt    : Integer[1];
+  sortedCountries : String[0..1];
+  reversedFirst   : String[0..1];
+  withExtraName   : Integer[1];
+  // §C — round-trip: toJson
+  firmDetailsJson : String[1];
+  // §D — toMany (direct array flatten)
+  otherNamesDirect : String[*];
+  countriesDirect  : String[*];
+  revenuesDirect   : Float[*];
+  // §D — toMany class (flatten then navigate sub-properties)
+  addressLines     : meta::relational::tests::mapping::relation::variant::comprehensive::AddressLine[*];
+}
+
+// =============================================================================
+// Relation function — Person
+// =============================================================================
+function meta::relational::tests::mapping::relation::variant::comprehensive::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.PERSON_TABLE}#
+    ->select(~[ID, FIRSTNAME, LASTNAME, FIRM_DETAILS, MANAGERID])
+}
+
+// =============================================================================
+// Domain — Order (§2.4 fromJson over VARCHAR, §2.3 computed, §2.11 round-trip)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Order
+{
+  orderId      : String[1];
+  side         : String[1];
+  qty          : Integer[1];
+  price        : Float[1];
+  isActive     : Boolean[1];
+  headerSource : String[0..1];
+  totalValue   : Float[1];
+  displayLabel : String[1];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::orderFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.ORDER_TABLE}#
+    ->select(~[ID, PAYLOAD_JSON])
+}
+
+// =============================================================================
+// Domain — PartyEvent (§2.12 conditional discriminator, §2.18)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::PartyEvent
+{
+  eventId      : Integer[1];
+  kind         : String[1];
+  counterparty : String[0..1];
+  venue        : String[0..1];
+  priority     : Integer[0..1];
+  isTradeEvent : Boolean[1];
+  hasPriority  : Boolean[1];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::eventFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.EVENT_TABLE}#
+    ->select(~[ID, PAYLOAD])
+}
+
+// =============================================================================
+// Domain — BlockSummary (§2.13 aggregating variant arrays)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::BlockSummary
+{
+  blockId          : String[1];
+  status           : String[1];
+  tradeCount       : Integer[1];
+  firstOrderId     : String[0..1];
+  totalValue       : Float[1];
+  entityCount      : Integer[1];
+  hasTradeEntities : Boolean[1];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::blockFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.BLOCK_TABLE}#
+    ->select(~[ID, BLOCKDATA])
+}
+
+// =============================================================================
+// Domain — Pet / Dog / Cat / PersonWithPet (§2.6 polymorphic, §2.16 instanceOf/match)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Pet
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Dog extends meta::relational::tests::mapping::relation::variant::comprehensive::Pet
+{
+  isPuppy: Boolean[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::comprehensive::Cat extends meta::relational::tests::mapping::relation::variant::comprehensive::Pet
+{
+  isKitten: Boolean[1];
+}
+
+Class meta::relational::tests::mapping::relation::variant::comprehensive::PersonWithPet
+{
+  personId : Integer[1];
+  pet      : meta::relational::tests::mapping::relation::variant::comprehensive::Pet[1];
+  isDog    : Boolean[1];
+  isCat    : Boolean[1];
+  petType  : String[1];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::petFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.PET_TABLE}#
+    ->select(~[ID, PAYLOAD])
+}
+
+// =============================================================================
+// Domain — MapPerson (§B Map<K,V> ops via to(@Map<String,String>))
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::MapPerson
+{
+  name           : String[1];
+  // to(@Map<String,String>) + get
+  tagRole        : String[0..1];
+  tagDept        : String[0..1];
+  // to(@Map<String,String>) + keys / values
+  tagKeys        : String[*];
+  tagValues      : String[*];
+  // to(@Map<String,String>) + put + get
+  withExtraTag   : String[0..1];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::mapFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.MAP_TABLE}#
+    ->select(~[ID, PAYLOAD])
+}
+
+// =============================================================================
+// Domain — NestedDoc (§D chained getMany→getMany)
+// =============================================================================
+Class meta::relational::tests::mapping::relation::variant::comprehensive::NestedDoc
+{
+  docId     : Integer[1];
+  allItems  : String[*];
+  allTitles : String[*];
+}
+
+function meta::relational::tests::mapping::relation::variant::comprehensive::nestedFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::variant::comprehensive::VariantDB.VARIANT_SCHEMA.NESTED_TABLE}#
+    ->select(~[ID, PAYLOAD])
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::relation::variant::comprehensive::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// Mapping 1 — VariantFirmMapping
+//
+// The "kitchen-sink" mapping: every property-RHS exercises a different variant
+// operation chain. Covers §2.1, §2.2, §2.3, §2.5, §2.7, §2.9, §2.15, §2.17,
+// §2.19, §2.20.
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantFirmMapping
+(
+  *Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::personFunction():Relation<Any>[1]
+    firstName       : FIRSTNAME,
+    lastName        : LASTNAME,
+    // §2.7 — whole subtree deserialization
+    firm            : $src.FIRM_DETAILS->to(@meta::relational::tests::mapping::relation::variant::comprehensive::Firm)->toOne(),
+    // §2.1 — direct extraction of all primitive types
+    firmName        : $src.FIRM_DETAILS->get('legalName')->to(@String)->toOne(),
+    employeeCount   : $src.FIRM_DETAILS->get('employeeCount')->to(@Integer)->toOne(),
+    revenue         : $src.FIRM_DETAILS->get('revenue')->to(@Float)->toOne(),
+    isMnc           : $src.FIRM_DETAILS->get('mnc')->to(@Boolean)->toOne(),
+    estDate         : $src.FIRM_DETAILS->get('estDate')->to(@StrictDate)->toOne(),
+    lastUpdate      : $src.FIRM_DETAILS->get('lastUpdate')->to(@DateTime)->toOne(),
+    // §2.2 — enum as string (optional — may be absent in JSON)
+    entityType      : $src.FIRM_DETAILS->get('entityType')->to(@String),
+    // §2.9 — nested object navigation
+    addressName     : $src.FIRM_DETAILS->get('address')->get('name')->to(@String)->toOne(),
+    addressStreet   : $src.FIRM_DETAILS->get('address')->get('street')->to(@String),
+    // §2.15 — at / first / size / isEmpty / isNotEmpty
+    firstAddrLine   : $src.FIRM_DETAILS->get('address')->get('lines')->at(0)->get('details')->to(@String),
+    secondAddrLine  : $src.FIRM_DETAILS->get('address')->get('lines')->at(1)->get('details')->to(@String),
+    addrLineCount   : $src.FIRM_DETAILS->get('address')->get('lines')->size(),
+    hasAddress      : $src.FIRM_DETAILS->get('address')->isNotEmpty(),
+    hasStreet       : $src.FIRM_DETAILS->get('address')->get('street')->isNotEmpty(),
+    // §2.5 + §2.15 — toMany + size / first / at / isEmpty / isNotEmpty
+    otherNameCount  : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->size(),
+    firstOtherName  : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->first(),
+    secondOtherName : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->at(1),
+    hasOtherNames   : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->isNotEmpty(),
+    otherNamesEmpty : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->isEmpty(),
+    // §2.20 — distinct / contains / indexOf / concatenate
+    distinctCtryCount: $src.FIRM_DETAILS->get('countries')->toMany(@String)->distinct()->size(),
+    hasUkOffice     : $src.FIRM_DETAILS->get('countries')->toMany(@String)->contains('UK'),
+    ukIndex         : $src.FIRM_DETAILS->get('countries')->toMany(@String)->indexOf('UK'),
+    allNameCount    : $src.FIRM_DETAILS->get('countries')->toMany(@String)->concatenate($src.FIRM_DETAILS->get('otherNames')->toMany(@String))->size(),
+    // §2.17 — numeric aggregations
+    totalRevenue    : $src.FIRM_DETAILS->get('revenueHistory')->toMany(@Float)->plus(),
+    maxRevenue      : $src.FIRM_DETAILS->get('revenueHistory')->toMany(@Float)->max(),
+    minRevenue      : $src.FIRM_DETAILS->get('revenueHistory')->toMany(@Float)->min(),
+    hasRevHistory   : $src.FIRM_DETAILS->get('revenueHistory')->toMany(@Float)->isNotEmpty(),
+    // §2.19 — fold / take / drop
+    ratingsFolded   : $src.FIRM_DETAILS->get('ratings')->toMany(@String)->fold({r, acc| $acc + ',' + $r}, ''),
+    topTwoRatCt     : $src.FIRM_DETAILS->get('ratings')->toMany(@String)->take(2)->size(),
+    tailRatCt       : $src.FIRM_DETAILS->get('ratings')->toMany(@String)->drop(1)->size(),
+    // §2.3 — computed leaves (arithmetic, string assembly, conditional, boolean logic)
+    displayName     : $src.FIRM_DETAILS->get('legalName')->to(@String)->toOne() + ' (' + $src.FIRSTNAME + ')',
+    fteEquiv        : $src.FIRM_DETAILS->get('employeeCount')->to(@Float)->toOne() * $src.FIRM_DETAILS->get('revenue')->to(@Float)->toOne(),
+    contactName     : if($src.FIRM_DETAILS->get('address')->get('street')->isNotEmpty(),
+                  |$src.FIRM_DETAILS->get('address')->get('street')->to(@String)->toOne(),
+                  |'N/A'),
+    isLargeMnc      : $src.FIRM_DETAILS->get('mnc')->to(@Boolean)->toOne() && ($src.FIRM_DETAILS->get('employeeCount')->to(@Integer)->toOne() > 2),
+    // §2.5 — exists
+    existsO3        : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->exists(n | $n == 'O3'),
+    filteredNameCt  : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->filter(n| $n->startsWith('O1'))->size(),
+    // §A — collection ops: last, init, tail, sort, reverse, add
+    lastOtherName   : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->last(),
+    initRatingCt    : $src.FIRM_DETAILS->get('ratings')->toMany(@String)->init()->size(),
+    tailRatingCt    : $src.FIRM_DETAILS->get('ratings')->toMany(@String)->tail()->size(),
+    sortedCountries : $src.FIRM_DETAILS->get('countries')->toMany(@String)->sort()->first(),
+    reversedFirst   : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->reverse()->first(),
+    withExtraName   : $src.FIRM_DETAILS->get('otherNames')->toMany(@String)->add('NEW')->size(),
+    // §C — round-trip: toJson
+    firmDetailsJson : $src.FIRM_DETAILS->toOne()->toJson(),
+    // §D — toMany (direct array flatten — produces multiple rows)
+    otherNamesDirect : $src.FIRM_DETAILS->get('otherNames')->toMany(@String),
+    countriesDirect  : $src.FIRM_DETAILS->get('countries')->toMany(@String),
+    revenuesDirect   : $src.FIRM_DETAILS->get('revenueHistory')->toMany(@Float),
+    // §D — toMany class (flatten + sub-property navigation)
+    addressLines     : $src.FIRM_DETAILS->get('address')->get('lines')->toMany(@meta::relational::tests::mapping::relation::variant::comprehensive::AddressLine)
+  }
+)
+
+// =============================================================================
+// Mapping 2 — VariantOrderMapping (§2.4 fromJson + §2.3 computed)
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantOrderMapping
+(
+   *Order[order]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::variant::comprehensive::orderFunction():Relation<Any>[1]
+      orderId      : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('orderId')->to(@String)->toOne(),
+      side         : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('side')->to(@String)->toOne(),
+      qty          : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('qty')->to(@Integer)->toOne(),
+      price        : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('price')->to(@Float)->toOne(),
+      isActive     : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('isActive')->to(@Boolean)->toOne(),
+      headerSource : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('header')->get('source')->to(@String),
+      totalValue   : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('qty')->to(@Float)->toOne() * $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('price')->to(@Float)->toOne(),
+      displayLabel : $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('side')->to(@String)->toOne() + ':' + $src.PAYLOAD_JSON->cast(@String)->toOne()->fromJson()->get('orderId')->to(@String)->toOne()
+   }
+)
+
+// =============================================================================
+// Mapping 3 — VariantEventMapping (§2.12 conditional + §2.18 discriminator)
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantEventMapping
+(
+  *PartyEvent[event]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::eventFunction():Relation<Any>[1]
+    eventId      : $src.ID,
+    kind         : $src.PAYLOAD->get('kind')->to(@String)->toOne(),
+    counterparty : if($src.PAYLOAD->get('kind')->to(@String)->toOne() == 'TRADE',
+                |$src.PAYLOAD->get('counterparty')->to(@String),
+                |[]),
+    venue        : if($src.PAYLOAD->get('kind')->to(@String)->toOne() == 'EXEC',
+                |$src.PAYLOAD->get('execution')->get('venue')->to(@String),
+                |[]),
+    priority     : $src.PAYLOAD->get('priority')->to(@Integer),
+    isTradeEvent : $src.PAYLOAD->get('kind')->to(@String)->toOne() == 'TRADE',
+    hasPriority  : $src.PAYLOAD->get('priority')->isNotEmpty()
+  }
+)
+
+// =============================================================================
+// Mapping 4 — VariantBlockMapping (§2.13 array aggregation + §2.15 + §2.19)
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantBlockMapping
+(
+  *BlockSummary[block]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::blockFunction():Relation<Any>[1]
+    blockId          : $src.ID->cast(@String)->toOne(),
+    status           : $src.BLOCKDATA->get('status')->to(@String)->toOne(),
+    tradeCount       : $src.BLOCKDATA->get('relatedEntities')->toMany(@Variant)->filter(e| $e->get('tag')->to(@String)->toOne() == 'trade')->size(),
+    firstOrderId     : $src.BLOCKDATA->get('relatedEntities')->toMany(@Variant)->filter(e| $e->get('tag')->to(@String)->toOne() == 'order')->first()->get('tagId')->to(@String),
+    totalValue       : $src.BLOCKDATA->get('relatedEntities')->toMany(@Variant)->filter(e| $e->get('active')->to(@Boolean)->toOne() == true)->fold({e, acc| $acc + $e->get('value')->to(@Float)->toOne()}, 0.0),
+    entityCount      : $src.BLOCKDATA->get('relatedEntities')->size(),
+    hasTradeEntities : $src.BLOCKDATA->get('relatedEntities')->toMany(@Variant)->filter(e| $e->get('tag')->to(@String)->toOne() == 'trade')->isNotEmpty()
+  }
+)
+
+// =============================================================================
+// Mapping 5 — VariantPetMapping (§2.6 polymorphic + §2.16 instanceOf/match)
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantPetMapping
+(
+  *PersonWithPet[pwp]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::petFunction():Relation<Any>[1]
+    personId : $src.ID,
+    pet      : $src.PAYLOAD->to(@Pet, '_type', [pair('Dog', Dog), pair('Cat', Cat)])->toOne(),
+    isDog    : $src.PAYLOAD->toOne()->instanceOf(Dog),
+    isCat    : $src.PAYLOAD->toOne()->instanceOf(Cat),
+    petType  : $src.PAYLOAD->match([d:Dog[1]|'dog', c:Cat[1]|'cat', a:Any[1]|'unknown'])
+  }
+)
+
+// =============================================================================
+// Mapping 6 — VariantMapMapping (§B Map ops via to(@Map<String,String>))
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantMapMapping
+(
+  *MapPerson[mp]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::mapFunction():Relation<Any>[1]
+    name         : $src.PAYLOAD->get('name')->to(@String)->toOne(),
+    // tagRole      : $src.PAYLOAD->get('tags')->to(@Map<String, Variant>)->get('role'),
+    // tagDept      : $src.PAYLOAD->get('tags')->to(@Map<String, Variant>)->get('dept'),
+    tagKeys      : $src.PAYLOAD->get('tags')->to(@Map<String, String>)->toOne()->keys(),
+    tagValues    : $src.PAYLOAD->get('tags')->to(@Map<String, String>)->toOne()->values(),
+    withExtraTag : $src.PAYLOAD->get('tags')->to(@Map<String, String>)->toOne()->put('extra', 'yes')->get('extra')
+  }
+)
+
+// =============================================================================
+// Mapping 7 — VariantNestedMapping (§D chained getMany→getMany)
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::variant::comprehensive::VariantNestedMapping
+(
+  *NestedDoc[nd]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::variant::comprehensive::nestedFunction():Relation<Any>[1]
+    docId     : $src.ID,
+    allItems  : $src.PAYLOAD->get('sections')->toMany(@Variant)->map(s| $s->get('items')->toMany(@String)),
+    allTitles : $src.PAYLOAD->get('sections')->toMany(@Variant)->map(s| $s->get('title')->to(@String)->toOne())
+  }
+)
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::variant::comprehensive::*;
+
+// =============================================================================
+// CSV test data — 7 rows with rich JSON blobs
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::personCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'PERSON_TABLE\n' +
+  'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
+  '1,Peter,Smith,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 0.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"": ""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}, ""revenueHistory"": [100.5, 200.0, 50.25], ""ratings"": [""A"", ""B"", ""A"", ""C""], ""countries"": [""US"", ""UK"", ""DE""]}",2\n' +
+  '2,John,Johnson,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 5.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"": ""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}, ""revenueHistory"": [100.5, 200.0, 50.25], ""ratings"": [""A"", ""B"", ""A"", ""C""], ""countries"": [""US"", ""UK"", ""DE""]}",4\n' +
+  '3,John,Hill,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 55.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"": ""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}, ""revenueHistory"": [100.5, 200.0, 50.25], ""ratings"": [""A"", ""B"", ""A"", ""C""], ""countries"": [""US"", ""UK"", ""DE""]}",2\n' +
+  '4,Anthony,Allen,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 5555.5, ""mnc"": true, ""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00"", ""entityType"": ""Organization"", ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}, ""revenueHistory"": [100.5, 200.0, 50.25], ""ratings"": [""A"", ""B"", ""A"", ""C""], ""countries"": [""US"", ""UK"", ""DE""]}",null\n' +
+  '5,Fabrice,Roberts,"{""legalName"": ""Firm A"", ""employeeCount"": 1, ""revenue"": 0.5, ""mnc"": false, ""estDate"": ""2012-11-13"", ""lastUpdate"": ""2022-02-14T03:00:00"", ""otherNames"": [""O3"", ""O4""], ""address"": {""name"": ""A2"", ""lines"": [{""details"": ""D4""}, {""details"": ""D5""}]}, ""revenueHistory"": [], ""ratings"": [""B""], ""countries"": [""FR""]}",null\n' +
+  '6,Oliver,Hill,"{""legalName"": ""Firm B"", ""employeeCount"": 2, ""revenue"": 5.5, ""mnc"": true, ""estDate"": ""2017-07-07"", ""lastUpdate"": ""2022-09-01T06:00:00"", ""entityType"": ""Company"", ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""street"": ""S2"", ""lines"": [{""details"": ""D5""}, {""details"": ""D6""}]}, ""revenueHistory"": [500.0], ""ratings"": [""A"", ""A"", ""B""], ""countries"": [""US"", ""UK"", ""UK""]}",7\n' +
+  '7,David,Harris,"{""legalName"": ""Firm B"", ""employeeCount"": 2, ""revenue"": 55.5, ""mnc"": true, ""estDate"": ""2017-07-07"", ""lastUpdate"": ""2022-09-01T06:00:00"", ""entityType"": ""Company"", ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""lines"": [{""details"": ""D5""}, {""details"": ""D6""}]}, ""revenueHistory"": [500.0], ""ratings"": [""A"", ""A"", ""B""], ""countries"": [""US"", ""UK"", ""UK""]}",null\n'
+}
+
+// =============================================================================
+// Test execution helper
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::firmExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantFirmMapping, VariantDB, $conn, [personCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Order (4 rows, VARCHAR JSON for fromJson §2.4)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::orderCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'ORDER_TABLE\n' +
+  'ID,PAYLOAD_JSON\n' +
+  '1,"{""orderId"": ""ORD1"", ""side"": ""BUY"", ""qty"": 100, ""price"": 25.5, ""isActive"": true, ""header"": {""source"": ""SYS1"", ""ts"": ""2024-01-01""}}"\n' +
+  '2,"{""orderId"": ""ORD2"", ""side"": ""SELL"", ""qty"": 50, ""price"": 30.0, ""isActive"": true, ""header"": {""source"": ""SYS2"", ""ts"": ""2024-01-02""}}"\n' +
+  '3,"{""orderId"": ""ORD3"", ""side"": ""BUY"", ""qty"": 200, ""price"": 10.0, ""isActive"": false, ""header"": {""source"": ""SYS1"", ""ts"": ""2024-01-03""}}"\n' +
+  '4,"{""orderId"": ""ORD4"", ""side"": ""SELL"", ""qty"": 75, ""price"": 40.0, ""isActive"": true, ""header"": {""source"": ""SYS3"", ""ts"": ""2024-01-04""}}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::orderExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantOrderMapping, VariantDB, $conn, [orderCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Event (4 rows, discriminator-based §2.12/§2.18)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::eventCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'EVENT_TABLE\n' +
+  'ID,PAYLOAD\n' +
+  '1,"{""kind"": ""TRADE"", ""counterparty"": ""ACME"", ""priority"": 1}"\n' +
+  '2,"{""kind"": ""TRADE"", ""counterparty"": ""GLOBEX"", ""priority"": 2}"\n' +
+  '3,"{""kind"": ""EXEC"", ""execution"": {""venue"": ""NYSE"", ""broker"": ""GS""}, ""priority"": 1}"\n' +
+  '4,"{""kind"": ""SETTLE"", ""settlement"": {""account"": ""ACC1""}}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::eventExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantEventMapping, VariantDB, $conn, [eventCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Block (3 rows, array aggregation §2.13)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::blockCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'BLOCK_TABLE\n' +
+  'ID,BLOCKDATA\n' +
+  '1,"{""status"": ""OPEN"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""T1"", ""active"": true, ""value"": 100.0}, {""tag"": ""order"", ""tagId"": ""O1"", ""active"": true, ""value"": 50.0}]}"\n' +
+  '2,"{""status"": ""CLOSED"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""T2"", ""active"": false, ""value"": 200.0}, {""tag"": ""trade"", ""tagId"": ""T3"", ""active"": true, ""value"": 150.0}, {""tag"": ""order"", ""tagId"": ""O2"", ""active"": true, ""value"": 75.0}]}"\n' +
+  '3,"{""status"": ""OPEN"", ""relatedEntities"": [{""tag"": ""order"", ""tagId"": ""O3"", ""active"": true, ""value"": 25.0}]}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::blockExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantBlockMapping, VariantDB, $conn, [blockCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Pet (3 rows, polymorphic §2.6/§2.16)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::petCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'PET_TABLE\n' +
+  'ID,PAYLOAD\n' +
+  '1,"{""_type"": ""Dog"", ""name"": ""Buddy"", ""isPuppy"": true}"\n' +
+  '2,"{""_type"": ""Cat"", ""name"": ""Whiskers"", ""isKitten"": false}"\n' +
+  '3,"{""_type"": ""Dog"", ""name"": ""Rex"", ""isPuppy"": false}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::petExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantPetMapping, VariantDB, $conn, [petCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Map (3 rows, Map<String,String> via to(@Map) §B)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::mapCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'MAP_TABLE\n' +
+  'ID,PAYLOAD\n' +
+  '1,"{""name"": ""Alice"", ""tags"": {""role"": ""admin"", ""dept"": ""eng""}, ""scores"": [90, 80, 70]}"\n' +
+  '2,"{""name"": ""Bob"", ""tags"": {""role"": ""user"", ""dept"": ""sales""}, ""scores"": [60, 50]}"\n' +
+  '3,"{""name"": ""Carol"", ""tags"": {""role"": ""admin"", ""dept"": ""ops""}, ""scores"": [100]}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::mapExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantMapMapping, VariantDB, $conn, [mapCsv()], $expected, false);
+}
+
+// =============================================================================
+// CSV test data — Nested (2 rows, chained getMany §D)
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::nestedCsv(): String[1]
+{
+  'VARIANT_SCHEMA\n' +
+  'NESTED_TABLE\n' +
+  'ID,PAYLOAD\n' +
+  '1,"{""sections"": [{""title"": ""S1"", ""items"": [""A"", ""B""]}, {""title"": ""S2"", ""items"": [""C""]}]}"\n' +
+  '2,"{""sections"": [{""title"": ""S3"", ""items"": [""D""]}]}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::variant::comprehensive::nestedExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, VariantNestedMapping, VariantDB, $conn, [nestedCsv()], $expected, false);
+}
+

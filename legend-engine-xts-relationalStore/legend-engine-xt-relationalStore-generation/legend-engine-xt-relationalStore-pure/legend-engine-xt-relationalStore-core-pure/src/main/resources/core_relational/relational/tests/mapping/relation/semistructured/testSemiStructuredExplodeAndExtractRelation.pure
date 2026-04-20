@@ -1,0 +1,791 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Translation of tests/semistructured/testExplodeSemiStructuredMapping.pure
+// and tests/semistructured/testExtractFromSemiStructuredMappingSimple.pure
+// into the RFPM variant-lift form.
+//
+// Two distinct source models — separated by sub-package:
+//
+// EXPLODE sub-package
+//   …::explodeextract::explode::*
+//   Sources: testExplodeSemiStructuredMapping (15 tests, 3 source mappings —
+//            simple, view, extractAndExplode).
+//   Status:  All 15 tests marked <<paramTest.Ignore>>. Source mapping uses
+//            `Join Block_Order(extractFromSemiStructured(explodeSemiStructured(
+//            BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR')
+//            = Orders.ID)` — i.e. array-explode-driven cross-table joins. RFPM
+//            lift handles composition embedding (Block.orders as array of
+//            embedded JSON), NOT array-explode joins back to separate physical
+//            tables. No clean lift analogue; would need lift-router extension.
+//
+// EXTRACTSIMPLE sub-package
+//   …::explodeextract::extractsimple::*
+//   Sources: testExtractFromSemiStructuredMappingSimple (4 tests, 1 mapping,
+//            includes enum EntityType).
+//   Status:  3 tests <<paramTest.Test>>, 1 test <<paramTest.Ignore>>
+//            (testExtractEnumProperty — lift-router rejects enum-typed
+//            top-level RFPMs per R-2).
+// =============================================================================
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB
+(
+  Schema Semistructured
+  (
+    Table Blocks
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      ACCOUNT VARCHAR(100) NOT NULL,
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table Trades
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      STATUS VARCHAR(100) NOT NULL,
+      TRADESUMMARY SEMISTRUCTURED
+    )
+    Table Orders
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      IDENTIFIER VARCHAR(100) NOT NULL,
+      QUANTITY INTEGER NOT NULL,
+      SIDE VARCHAR(100) NOT NULL,
+      PRICE DOUBLE NOT NULL
+    )
+    Table Product
+    (
+      IDENTIFIER VARCHAR(100) PRIMARY KEY,
+      VERSION VARCHAR(100) PRIMARY KEY,
+      PRODUCT VARCHAR(100) NOT NULL
+    )
+  )
+)
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::H2DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// =============================================================================
+// EXPLODE domain — Block / Trade / Order / Product / BlockData / RelatedEntity
+// =============================================================================
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::RelatedEntity
+{
+  tag  : String[1];
+  tagId: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::BlockData
+{
+  status         : String[1];
+  relatedEntities: meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::RelatedEntity[1..*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::TradeSummary
+{
+  identifier  : String[1];
+  execQuantity: Integer[1];
+  price       : String[1];
+  side        : String[1];
+  orderId     : String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Product
+{
+  product   : String[1];
+  identifier: String[1];
+  version   : String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block
+{
+  id       : String[1];
+  account  : String[1];
+  blockData: meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::BlockData[1];
+  trades   : meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade[*];
+  orders   : meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Order[*];
+  products : String[*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Order
+{
+  id        : String[1];
+  identifier: String[1];
+  quantity  : Integer[1];
+  side      : String[1];
+  price     : Float[1];
+  account   : String[1];
+  tradeId   : String[1];
+  product   : meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Product[1];
+  block     : meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade
+{
+  id          : String[1];
+  status      : String[1];
+  tradeSummary: meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::TradeSummary[1];
+  block       : meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block[1];
+}
+
+// =============================================================================
+// EXTRACTSIMPLE domain — Firm / EntityType
+// =============================================================================
+Enum meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::EntityType
+{
+  Organization,
+  Company
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm
+{
+  ID                 : Integer[1];
+  legalName          : String[1];
+  employeeCount      : Integer[1];
+  revenue            : Float[1];
+  mnc                : Boolean[1];
+  estDate            : StrictDate[1];
+  lastUpdate         : DateTime[1];
+  entityType         : meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::EntityType[1];
+  secondLineOfAddress: String[0..1];
+}
+
+// =============================================================================
+// Relation functions
+// =============================================================================
+function meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::blockFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB.Semistructured.Blocks}#
+    ->select(~[ID, ACCOUNT, BLOCKDATA])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::tradeFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB.Semistructured.Trades}#
+    ->select(~[ID, STATUS, TRADESUMMARY])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::orderFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB.Semistructured.Orders}#
+    ->select(~[ID, IDENTIFIER, QUANTITY, SIDE, PRICE])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::productFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB.Semistructured.Product}#
+    ->select(~[IDENTIFIER, VERSION, PRODUCT])
+}
+
+function meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::firmFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::H2DB.FIRM_SCHEMA.FIRM_TABLE}#
+    ->select(~[ID, FIRM_DETAILS])
+}
+
+
+###Mapping
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+// =============================================================================
+// EXPLODE lift mapping — best-effort. Composition (blockData / trades / orders)
+// is expressed as embedded JSON; the original source's explode-driven joins to
+// physical Orders/Trades/Product tables are NOT preserved because the lift
+// router has no analogue. All 15 explode tests marked <<paramTest.Ignore>>.
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::ExplodeSemiStructuredMapping
+(
+  *meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block[block]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::blockFunction():Relation<Any>[1]
+    id       : ID,
+    account  : ACCOUNT,
+    blockData: $src.BLOCKDATA->to(@meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::BlockData)->toOne()
+  }
+
+  *meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade[trade]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::tradeFunction():Relation<Any>[1]
+    id          : ID,
+    status      : STATUS,
+    tradeSummary: $src.TRADESUMMARY->to(@meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::TradeSummary)->toOne()
+  }
+
+  *meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::orderFunction():Relation<Any>[1]
+    id        : ID,
+    identifier: IDENTIFIER,
+    quantity  : QUANTITY,
+    side      : SIDE,
+    price     : PRICE
+  }
+
+  *meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Product[product]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::productFunction():Relation<Any>[1]
+    identifier: IDENTIFIER,
+    version   : VERSION,
+    product   : PRODUCT
+  }
+)
+
+// =============================================================================
+// EXTRACTSIMPLE lift mapping — direct translation of binding-based H2Mapping.
+// Firm fields extracted from FIRM_DETAILS JSON via variant navigation.
+// =============================================================================
+Mapping meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::ExtractSimpleSemiStructuredMapping
+(
+  *meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::firmFunction():Relation<Any>[1]
+    ID                 : ID,
+    legalName          : $src.FIRM_DETAILS->get('legalName')->to(@String)->toOne(),
+    employeeCount      : $src.FIRM_DETAILS->get('employeeCount')->to(@Integer)->toOne(),
+    revenue            : $src.FIRM_DETAILS->get('revenue')->to(@Float)->toOne(),
+    mnc                : $src.FIRM_DETAILS->get('mnc')->to(@Boolean)->toOne(),
+    estDate            : $src.FIRM_DETAILS->get('dates')->get('estDate')->to(@StrictDate)->toOne(),
+    lastUpdate         : $src.FIRM_DETAILS->get('dates')->get('last Update')->to(@DateTime)->toOne(),
+    // entityType         : EnumerationMapping meta_relational_tests_mapping_relation_semistructured_explodeextract_extractsimple_EntityType: $src.FIRM_DETAILS->get('entity')->get('entityType')->to(@String)->toOne(),
+    secondLineOfAddress: $src.FIRM_DETAILS->get('address')->get('lines')->get(1)->get('details')->to(@String)
+  }
+
+  meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::EntityType: EnumerationMapping
+  {
+    Organization: ['O'],
+    Company     : ['C']
+  }
+)
+
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::*;
+import meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::*;
+
+// =============================================================================
+// ====== EXPLODE — CSV + execute helper ======
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::blockCsv(): String[1]
+{
+  'Semistructured\n' +
+  'Blocks\n' +
+  'id,account,blockData\n' +
+  '1,a1,"{""status"": ""fulfilled"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""t1""}, {""tag"": ""order"", ""tagId"": ""o1""}]}"\n' +
+  '2,a1,"{""status"": ""cancelled"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""t2""}, {""tag"": ""order"", ""tagId"": ""o2""}, {""tag"": ""order"", ""tagId"": ""o1""}]}"\n' +
+  '3,a2,"{""status"": ""fulfilled"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""t3""}, {""tag"": ""trade"", ""tagId"": ""t4""}, {""tag"": ""order"", ""tagId"": ""o3""}]}"\n' +
+  '4,a2,"{""status"": ""accepted"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""t5""}, {""tag"": ""trade"", ""tagId"": ""t6""}, {""tag"": ""order"", ""tagId"": ""o4""}]}"\n' +
+  '5,a1,"{""status"": ""fulfilled"", ""relatedEntities"": [{""tag"": ""trade"", ""tagId"": ""t7""}, {""tag"": ""order"", ""tagId"": ""o5""}, {""tag"": ""order"", ""tagId"": ""o6""}]}"\n' +
+  '6,a3,"{""status"": ""rejected"", ""relatedEntities"": []}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::tradeCsv(): String[1]
+{
+  'Semistructured\n' +
+  'Trades\n' +
+  'id,status,tradeSummary\n' +
+  't1,accepted,"{""identifier"": ""i1"", ""execQuantity"": 100, ""execPrice"": 100, ""side"": ""SELL""}"\n' +
+  't2,rejected,"{""identifier"": ""i2"", ""execQuantity"": 100, ""execPrice"": 10, ""side"": ""BUY""}"\n' +
+  't3,accepted,"{""identifier"": ""i3"", ""execQuantity"": 100, ""execPrice"": 100, ""side"": ""BUY""}"\n' +
+  't4,accepted,"{""identifier"": ""i3"", ""execQuantity"": 100, ""execPrice"": 105, ""side"": ""BUY""}"\n' +
+  't5,accepted,"{""identifier"": ""i1"", ""execQuantity"": 70, ""execPrice"": 100, ""side"": ""SELL""}"\n' +
+  't6,rejected,"{""identifier"": ""i1"", ""execQuantity"": 80, ""execPrice"": 90, ""side"": ""SELL""}"\n' +
+  't7,accepted,"{""identifier"": ""i4"", ""execQuantity"": 60, ""execPrice"": 50, ""side"": ""SELL""}"\n' +
+  't8,invalid,"{""identifier"": ""i4"", ""execQuantity"": 60, ""execPrice"": 50, ""side"": ""SELL""}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::orderCsv(): String[1]
+{
+  'Semistructured\n' +
+  'Orders\n' +
+  'id,identifier,quantity,side,price\n' +
+  'o1,i1,100,SELL,100\n' +
+  'o2,i2,100,BUY,10\n' +
+  'o3,i3,200,BUY,100\n' +
+  'o4,i1,150,SELL,100\n' +
+  'o5,i4,60,SELL,50\n' +
+  'o6,i4,60,SELL,50\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::productCsv(): String[1]
+{
+  'Semistructured\n' +
+  'Product\n' +
+  'product,identifier,version\n' +
+  'p1,i1,v1\n' +
+  'p2,i2,v1\n' +
+  'p3,i3,v1\n' +
+  'p1,i4,v1\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::explodeExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction(
+    $func,
+    meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::ExplodeSemiStructuredMapping,
+    meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::H2DB,
+    $conn,
+    [blockCsv(), tradeCsv(), orderCsv(), productCsv()],
+    $expected,
+    false
+  );
+}
+
+// =============================================================================
+// ====== EXPLODE — tests (all 15 ignored: explode-driven joins have no
+// ====== RFPM-lift analogue — would require lift-router extension)
+// =============================================================================
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testCanProperlyMixExtractAndExplode(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Id'           : x | $x.id,
+        'Trades/Status': x | $x.trades.status
+      ]),
+    'Id,Trades/Status\n' +
+    '1,\n' +
+    '2,\n' +
+    '4,\n' +
+    '3,\n' +
+    '5,\n' +
+    '6,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testSimplePrimitivePropertiesProjectExplodeSource(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Id'               : x | $x.id,
+        'Account'          : x | $x.account,
+        'Orders/Id'        : x | $x.orders.id,
+        'Orders/Identifier': x | $x.orders.identifier,
+        'Orders/Price'     : x | $x.orders.price
+      ]),
+    'Id,Account,Orders/Id,Orders/Identifier,Orders/Price\n' +
+    '1,a1,o1,i1,100.0\n' +
+    '2,a1,o1,i1,100.0\n' +
+    '2,a1,o2,i2,10.0\n' +
+    '3,a2,o3,i3,100.0\n' +
+    '4,a2,o4,i1,100.0\n' +
+    '5,a1,o5,i4,50.0\n' +
+    '5,a1,o6,i4,50.0\n' +
+    '6,a3,,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testSimplePrimitivePropertiesProjectExplodeTarget(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade.all()
+      ->project(~[
+        'Id'           : x | $x.id,
+        'Status'       : x | $x.status,
+        'Block/Id'     : x | $x.block.id,
+        'Block/Account': x | $x.block.account
+      ]),
+    'Id,Status,Block/Id,Block/Account\n' +
+    't1,accepted,1,a1\n' +
+    't2,rejected,2,a1\n' +
+    't3,accepted,3,a2\n' +
+    't4,accepted,3,a2\n' +
+    't5,accepted,4,a2\n' +
+    't6,rejected,4,a2\n' +
+    't7,accepted,5,a1\n' +
+    't8,invalid,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testComplexProjectFlattenedAndExplodedPropertiesInProject(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Id'           : x | $x.id,
+        'Entity Tag'   : x | $x.blockData.relatedEntities.tag,
+        'Entity Tag Id': x | $x.blockData.relatedEntities.tagId,
+        'Orders/Id'    : x | $x.orders.id
+      ]),
+    'Id,Entity Tag,Entity Tag Id,Orders/Id\n' +
+    '1,trade,t1,o1\n' +
+    '1,order,o1,o1\n' +
+    '2,trade,t2,o1\n' +
+    '2,trade,t2,o2\n' +
+    '2,order,o2,o1\n' +
+    '2,order,o2,o2\n' +
+    '2,order,o1,o2\n' +
+    '2,order,o1,o1\n' +
+    '3,trade,t3,o3\n' +
+    '3,trade,t4,o3\n' +
+    '3,order,o3,o3\n' +
+    '4,trade,t5,o4\n' +
+    '4,trade,t6,o4\n' +
+    '4,order,o4,o4\n' +
+    '5,trade,t7,o5\n' +
+    '5,trade,t7,o6\n' +
+    '5,order,o5,o5\n' +
+    '5,order,o5,o6\n' +
+    '5,order,o6,o5\n' +
+    '5,order,o6,o6\n' +
+    '6,,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testComplexProjectMultiplePropertiesToExplodeInProject(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Id'               : x | $x.id,
+        'Account'          : x | $x.account,
+        'Orders/Id'        : x | $x.orders.id,
+        'Orders/Identifier': x | $x.orders.identifier,
+        'Trades/Id'        : x | $x.trades.id,
+        'Trades/Status'    : x | $x.trades.status
+      ]),
+    'Id,Account,Orders/Id,Orders/Identifier,Trades/Id,Trades/Status\n' +
+    '1,a1,o1,i1,t1,accepted\n' +
+    '2,a1,o1,i1,t2,rejected\n' +
+    '2,a1,o2,i2,t2,rejected\n' +
+    '3,a2,o3,i3,t3,accepted\n' +
+    '3,a2,o3,i3,t4,accepted\n' +
+    '4,a2,o4,i1,t5,accepted\n' +
+    '4,a2,o4,i1,t6,rejected\n' +
+    '5,a1,o5,i4,t7,accepted\n' +
+    '5,a1,o6,i4,t7,accepted\n' +
+    '6,a3,,,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testSimplePrimitivePropertiesProjectWithFilterOnSource(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->filter(x | !($x.blockData.status == 'cancelled'))
+      ->project(~[
+        'Id'           : x | $x.id,
+        'Account'      : x | $x.account,
+        'Trades/Id'    : x | $x.trades.id,
+        'Trades/Status': x | $x.trades.status
+      ]),
+    'Id,Account,Trades/Id,Trades/Status\n' +
+    '1,a1,t1,accepted\n' +
+    '3,a2,t3,accepted\n' +
+    '3,a2,t4,accepted\n' +
+    '4,a2,t5,accepted\n' +
+    '4,a2,t6,rejected\n' +
+    '5,a1,t7,accepted\n' +
+    '6,a3,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testSimplePrimitivePropertiesProjectWithFilterOnTarget(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade.all()
+      ->filter(x | !($x.block.blockData.status == 'cancelled'))
+      ->project(~[
+        'Id'           : x | $x.id,
+        'Status'       : x | $x.status,
+        'Block/Id'     : x | $x.block.id,
+        'Block/Account': x | $x.block.account
+      ]),
+    'Id,Status,Block/Id,Block/Account\n' +
+    't1,accepted,1,a1\n' +
+    't3,accepted,3,a2\n' +
+    't4,accepted,3,a2\n' +
+    't5,accepted,4,a2\n' +
+    't6,rejected,4,a2\n' +
+    't7,accepted,5,a1\n' +
+    't8,invalid,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testProjectWithExplodedPropertyAccessOnlyInFilter(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Trade.all()
+      ->filter(x | !($x.block.blockData.status == 'cancelled'))
+      ->project(~[
+        'Id'    : x | $x.id,
+        'Status': x | $x.status
+      ]),
+    'Id,Status\n' +
+    't1,accepted\n' +
+    't3,accepted\n' +
+    't4,accepted\n' +
+    't5,accepted\n' +
+    't6,rejected\n' +
+    't7,accepted\n' +
+    't8,invalid\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testFilterOnExplodedPropertyFilteringInsideProject(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Block/Id'     : x | $x.id,
+        'Block/Account': x | $x.account,
+        'Big Buy Orders': x | $x.orders->filter(x_1 | ($x_1.quantity >= 100) && ($x_1.side == 'BUY')).id,
+        'Orders/Id'    : x | $x.orders.id
+      ]),
+    'Block/Id,Block/Account,Big Buy Orders,Orders/Id\n' +
+    '1,a1,,o1\n' +
+    '2,a1,o2,o1\n' +
+    '2,a1,o2,o2\n' +
+    '3,a2,o3,o3\n' +
+    '4,a2,,o4\n' +
+    '5,a1,,o5\n' +
+    '5,a1,,o6\n' +
+    '6,a3,,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testAggregationAggregateExplodedPropertyUsingGroupBy(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->groupBy(
+        [x | $x.id, x | $x.account],
+        [agg(x | $x.trades.tradeSummary.execQuantity, x | $x->sum())],
+        ['Id', 'Account', 'quantity']
+      ),
+    'Id,Account,quantity\n' +
+    '1,a1,100\n' +
+    '2,a1,100\n' +
+    '3,a2,200\n' +
+    '4,a2,150\n' +
+    '5,a1,60\n' +
+    '6,a3,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testAggregationAggregateExplodedPropertyInsideProject(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Id'       : x | $x.id,
+        'Account'  : x | $x.account,
+        'Buy Order': x | $x.orders->filter(x_1 | $x_1.side == 'BUY').quantity->sum()
+      ]),
+    'Id,Account,Buy Order\n' +
+    '1,a1,\n' +
+    '2,a1,100\n' +
+    '3,a2,200\n' +
+    '4,a2,\n' +
+    '5,a1,\n' +
+    '6,a3,\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testSimpleJoinChainOneJoin(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Order.all()
+      ->project(~[
+        'Id'      : x | $x.id,
+        'Account' : x | $x.account,
+        'Block/Id': x | $x.block.id
+      ]),
+    'Id,Account,Block/Id\n' +
+    'o1,a1,1\n' +
+    'o1,a1,2\n' +
+    'o2,a1,2\n' +
+    'o3,a2,3\n' +
+    'o4,a2,4\n' +
+    'o5,a1,5\n' +
+    'o6,a1,5\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testJoinChainMultipleJoinsSingleExplode(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Block.all()
+      ->project(~[
+        'Product': x | $x.products,
+        'Id'     : x | $x.id
+      ]),
+    'Product,Id\n' +
+    'p1,1\n' +
+    'p1,2\n' +
+    'p2,2\n' +
+    'p3,3\n' +
+    'p1,4\n' +
+    'p1,5\n' +
+    'p1,5\n' +
+    ',6\n'
+  );
+}
+
+// Ignored because explode-driven joins from BLOCKDATA.relatedEntities to physical Trades/Orders have no RFPM-lift analogue.
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::testJoinChainMultipleJoinsMultipleExplode(conn: Connection[1]):Boolean[1]
+{
+  explodeExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::explode::Order.all()
+      ->project(~[
+        'Id'      : x | $x.id,
+        'Trade Id': x | $x.tradeId
+      ]),
+    'Id,Trade Id\n' +
+    'o1,t1\n' +
+    'o1,t2\n' +
+    'o2,t2\n' +
+    'o3,t3\n' +
+    'o3,t4\n' +
+    'o4,t5\n' +
+    'o4,t6\n' +
+    'o5,t7\n' +
+    'o6,t7\n'
+  );
+}
+
+
+// =============================================================================
+// ====== EXTRACTSIMPLE — CSV + execute helper ======
+// =============================================================================
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::firmCsv(): String[1]
+{
+  'FIRM_SCHEMA\n' +
+  'FIRM_TABLE\n' +
+  'ID,FIRM_DETAILS\n' +
+  '1,"{""legalName"": ""Firm X"", ""employeeCount"": 4, ""revenue"": 5.0, ""mnc"": true, ""dates"": {""estDate"": ""2010-03-04"", ""last Update"": ""2022-01-16T01:00:00""}, ""entity"": {""entityType"":""O""}, ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}"\n' +
+  '2,"{""legalName"": ""Firm A"", ""employeeCount"": 1, ""revenue"": 2000.5, ""mnc"": false, ""dates"": {""estDate"": ""2012-11-13"", ""last Update"": ""2022-02-14T03:00:00""}, ""entity"": {""entityType"":""O""}, ""otherNames"": [""O3"", ""O4""], ""address"": {""name"": ""A2"", ""lines"": [{""details"": ""D4""}, {""details"": ""D5""}]}}"\n' +
+  '3,"{""legalName"": ""Firm B"", ""employeeCount"": 2, ""revenue"": 0.1, ""mnc"": true, ""dates"": {""estDate"": ""2017-7-7"", ""last Update"": ""2022-9-01T06:00:00""}, ""entity"": {""entityType"":""C""}, ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""lines"": [{""details"": ""D5""},{""details"": ""D6""}]}}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::extractSimpleExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]):Boolean[1]
+{
+  executeLegendFunction(
+    $func,
+    meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::ExtractSimpleSemiStructuredMapping,
+    meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::H2DB,
+    $conn,
+    [firmCsv()],
+    $expected,
+    false
+  );
+}
+
+// =============================================================================
+// ====== EXTRACTSIMPLE — tests ======
+// =============================================================================
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::testDotAndBracketNotationAccess(conn: Connection[1]):Boolean[1]
+{
+  extractSimpleExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm.all()
+      ->project(~[
+        'Id'           : x | $x.ID,
+        'Dot Only'     : x | $x.estDate,
+        'Bracket Only' : x | $x.lastUpdate,
+        'Dot & Bracket': x | $x.secondLineOfAddress
+      ]),
+    'Id,Dot Only,Bracket Only,Dot & Bracket\n' +
+    '1,2010-03-04,2022-01-16 01:00:00.0,D2\n' +
+    '2,2012-11-13,2022-02-14 03:00:00.0,D5\n' +
+    '3,2017-07-07,2022-09-01 06:00:00.0,D6\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::testArrayElementNoFlattenAccess(conn: Connection[1]):Boolean[1]
+{
+  extractSimpleExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm.all()
+      ->project(~[
+        'Id'                    : x | $x.ID,
+        'Second Line of Address': x | $x.secondLineOfAddress
+      ]),
+    'Id,Second Line of Address\n' +
+    '1,D2\n' +
+    '2,D5\n' +
+    '3,D6\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::testAllDataTypesAccess(conn: Connection[1]):Boolean[1]
+{
+  extractSimpleExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm.all()
+      ->project(~[
+        'Id'            : x | $x.ID,
+        'Legal Name'    : x | $x.legalName,
+        'Est Date'      : x | $x.estDate,
+        'Mnc'           : x | $x.mnc,
+        'Employee Count': x | $x.employeeCount,
+        'Revenue'       : x | $x.revenue,
+        'Last Update'   : x | $x.lastUpdate
+      ]),
+    'Id,Legal Name,Est Date,Mnc,Employee Count,Revenue,Last Update\n' +
+    '1,Firm X,2010-03-04,true,4,5.0,2022-01-16 01:00:00.0\n' +
+    '2,Firm A,2012-11-13,false,1,2000.5,2022-02-14 03:00:00.0\n' +
+    '3,Firm B,2017-07-07,true,2,0.1,2022-09-01 06:00:00.0\n'
+  );
+}
+
+// Ignored because lift router rejects enum-typed top-level RFPMs (per R-2 in playbook).
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::testExtractEnumProperty(conn: Connection[1]):Boolean[1]
+{
+  extractSimpleExecute($conn,
+    |meta::relational::tests::mapping::relation::semistructured::explodeextract::extractsimple::Firm.all()
+      ->project(~[
+        'Id'         : x | $x.ID,
+        'Entity Type': x | $x.entityType
+      ]),
+    'Id,Entity Type\n' +
+    '1,O\n' +
+    '2,O\n' +
+    '3,C\n'
+  );
+}

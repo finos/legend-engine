@@ -168,6 +168,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
                       )
                  )
             ),
+         s: SQLNull[1] | ^meta::relational::metamodel::datatype::Other(),
          a: Any[1]     | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
       ]),
       j : meta::relational::metamodel::operation::JoinStrings[1] | 
@@ -1802,6 +1803,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),     
+
+      pair(
+         'variantTo',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | $params->at(1)->instanceOf(DataTypeInfo)},
+               {params: RelationalOperationElement[*] | $params->at(1)->cast(@DataTypeInfo).dataType}
+            )
+         ])
+      ),
 
       pair(
          'toUpper',

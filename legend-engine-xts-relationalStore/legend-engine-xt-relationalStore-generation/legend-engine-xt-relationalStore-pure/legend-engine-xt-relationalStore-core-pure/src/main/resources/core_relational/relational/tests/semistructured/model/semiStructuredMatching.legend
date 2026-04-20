@@ -128,9 +128,9 @@ Mapping match::relationFunctionMapping::H2Mapping
   *match::model::Order: Relation 
   {
     ~func match::personFunction():Relation<Any>[1]
-    orderId: ORDERID,
-    orderName: ORDERNAME,
-    customer: Binding match::store::OrderBinding : CUSTOMER
+    orderId: $src.ORDERID->toOne(),
+    orderName: $src.ORDERNAME->toOne(),
+    customer: Binding match::store::OrderBinding : $src.CUSTOMER->toOne()
   }
 )
 

@@ -97,7 +97,7 @@ Protocol classes are versioned (`v1_24_0`, `v1_25_0`, …). Breaking changes req
 
 ## Conventions to follow
 
-- **Indentation:** Java 4 spaces, Pure 3 spaces, XML/JSON/YAML 4 spaces. No tabs anywhere (`.java`, `.xml`, `.pure` all checked).
+- **Indentation:** Java 4 spaces, Pure 2 spaces, XML/JSON/YAML 4 spaces. No tabs anywhere (`.java`, `.xml`, `.pure` all checked).
 - **Braces:** always required (including single-statement `if`). Opening brace on a new line; closing brace alone on its line.
 - **Copyright header:** every new file (including `.pure`) needs the Apache 2.0 header — Checkstyle enforces this.
 - **Logging:** SLF4J only — never `System.out.println`. For `INFO`-level operational events use `LogInfo` wrapper + `LoggingEventType` enum (in `legend-shared`); add new event types to the enum rather than free-text strings. Never log credentials/tokens, not even at DEBUG.

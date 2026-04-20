@@ -1,0 +1,523 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Translation of:
+//   tests/semistructured/testSemiStructuredTypeFunctions.pure -> typeNarrowing scenarios using ->typeName()
+//   tests/semistructured/testSemiStructuredMatching.pure      -> typeNarrowing scenarios using ->match()
+// into the RFPM variant-lift form.
+//
+// Both sources share the Order/Customer/Payment/Product @type-discriminator
+// model, so they collapse into a single namespace, one mapping, one CSV, one
+// execute helper. Per the agent table for the "typenarrowing" group.
+//
+// - Source binding-based mappings replaced by a single lift mapping
+//   (TypeNarrowingSemiStructuredMapping). The whole `customer: Customer[1]`
+//   property is rewritten as `$src.CUSTOMER->to(@Customer)->toOne()`; the
+//   class hierarchy (BillingAddress/ShippingAddress, Cash/PrepaidPayment etc.)
+//   is lifted via the embedded SS path and subtype navigation goes through
+//   `->subType(@…)` or `->typeName()` / `->match()` in the test lambdas.
+// - No DB-level joins; no Association / ModelJoin (no cross-table navigation
+//   in either source).
+// - Tests parametrized over `conn: Connection[1]` via `<<paramTest.Test>>`,
+//   mirroring the source's `::relationFunctionMapping::` namespace annotations
+//   (all source rfpm variants are Test, so no Ignore here).
+// =============================================================================
+
+
+###Relational
+Database meta::relational::tests::mapping::relation::semistructured::typenarrowing::H2DB
+(
+  Schema ORDER_SCHEMA
+  (
+    Table ORDER_TABLE
+    (
+      ORDERID INTEGER PRIMARY KEY,
+      ORDERNAME VARCHAR(100) NOT NULL,
+      CUSTOMER SEMISTRUCTURED
+    )
+  )
+)
+
+
+###Pure
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::metamodel::variant::*;
+
+// -----------------------------------------------------------------------------
+// Domain - merged superset of typeFunctions::model::* and match::model::*.
+//
+// - typeFunctions::Customer adds `products: Product[*]`; matching does not.
+//   We include it on the merged Customer; tests that don't reference products
+//   simply ignore the column data.
+// - match::CustomerAddress adds `defaultAddress: String[0..1]`; typeFunctions
+//   does not. Included on the merged CustomerAddress for the same reason.
+// - Subtype hierarchies (BillingAddress/ShippingAddress, CashOnDeliveryPayment
+//   / PrepaidPayment / WalletPrepaidPayment / CardPrepaidPayment, Electronics
+//   Product / SportsProduct) are common to both and lifted via SS.
+// -----------------------------------------------------------------------------
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::Order
+{
+  orderId  : Integer[1];
+  orderName: String[1];
+  customer : meta::relational::tests::mapping::relation::semistructured::typenarrowing::Customer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::Customer
+{
+  customerId        : String[1];
+  customerAddress   : meta::relational::tests::mapping::relation::semistructured::typenarrowing::CustomerAddress[1];
+  transactionDetails: meta::relational::tests::mapping::relation::semistructured::typenarrowing::TransactionDetails[1];
+  products          : meta::relational::tests::mapping::relation::semistructured::typenarrowing::Product[*];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::CustomerAddress
+{
+  name          : String[1];
+  defaultAddress: String[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::BillingAddress extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::CustomerAddress
+{
+  billAddress: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::ShippingAddress extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::CustomerAddress
+{
+  shipAddress: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::TransactionDetails
+{
+  payment: meta::relational::tests::mapping::relation::semistructured::typenarrowing::Payment[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::Payment
+{
+  paymentId: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::CashOnDeliveryPayment extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::Payment
+{
+  amountToBePaid: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::PrepaidPayment extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::Payment
+{
+  amountPaid: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::WalletPrepaidPayment extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::PrepaidPayment
+{
+  walletTransactionAmount: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::CardPrepaidPayment extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::PrepaidPayment
+{
+  cardTransactionAmount: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::Product
+{
+  productId: Integer[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::ElectronicsProduct extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::Product
+{
+  brand: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::semistructured::typenarrowing::SportsProduct extends meta::relational::tests::mapping::relation::semistructured::typenarrowing::Product
+{
+  sport: String[1];
+}
+
+function meta::relational::tests::mapping::relation::semistructured::typenarrowing::orderFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::semistructured::typenarrowing::H2DB.ORDER_SCHEMA.ORDER_TABLE}#
+    ->select(~[ORDERID, ORDERNAME, CUSTOMER])
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::relation::semistructured::typenarrowing::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
+
+Mapping meta::relational::tests::mapping::relation::semistructured::typenarrowing::TypeNarrowingSemiStructuredMapping
+(
+  *Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::semistructured::typenarrowing::orderFunction():Relation<Any>[1]
+    orderId  : ORDERID,
+    orderName: ORDERNAME,
+    customer : $src.CUSTOMER->to(@meta::relational::tests::mapping::relation::semistructured::typenarrowing::Customer)->toOne()
+  }
+)
+
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::semistructured::typenarrowing::*;
+
+// -----------------------------------------------------------------------------
+// Shared CSV — merged superset of testSemiStructuredTypeFunctions.pure (8 rows)
+// and testSemiStructuredMatching.pure (10 rows). Differences reconciled:
+//   * Rows 1, 2 keep the `products` array from typeFunctions (matching ignored
+//     them — products column data is harmless to the matching tests).
+//   * Row 4 keeps `@type:Address` from typeFunctions. The matching tests fall
+//     through to the `CustomerAddress[1]`/`Any[1]` arms either way (BillingAddress
+//     and ShippingAddress are excluded), so observed outputs are unchanged.
+//   * Rows 9, 10 come from matching (CustomerAddress @type with optional
+//     defaultAddress). typeFunctions tests now see them too, so the expected
+//     outputs below extend the source's 8-row tables with rows for orders 9, 10.
+// -----------------------------------------------------------------------------
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::typeNarrowingCsv(): String[1]
+{
+  'ORDER_SCHEMA\n' +
+  'ORDER_TABLE\n' +
+  'ORDERID,ORDERNAME,CUSTOMER\n' +
+  '1,Order1,"{""customerId"": ""Customer1"", ""customerAddress"": {""@type"":""BillingAddress"",""name"": ""A1"",""billAddress"":""B1""},""transactionDetails"": {""payment"":{""@type"":""CashOnDeliveryPayment"",""paymentId"": ""P1"",""amountToBePaid"": 200}}, ""products"": [{""@type"": ""ElectronicsProduct"", ""productId"": 1, ""productName"": ""P1"", ""brand"": ""B1""}, {""@type"": ""SportsProduct"", ""productId"": 2, ""productName"": ""P2"", ""sport"": ""S1""}]}"\n' +
+  '2,Order2,"{""customerId"": ""Customer2"", ""customerAddress"": {""@type"":""BillingAddress"",""name"": ""A2"",""billAddress"":""B2""},""transactionDetails"": {""payment"":{""@type"":""CashOnDeliveryPayment"",""paymentId"": ""P2"",""amountToBePaid"": 180}}, ""products"": [{""@type"": ""SportsProduct"", ""productId"": 2, ""productName"": ""P2"", ""sport"": ""S1""}]}"\n' +
+  '3,Order3,"{""customerId"": ""Customer3"", ""customerAddress"": {""@type"":""BillingAddress"",""name"": ""A3"",""billAddress"":""B3""},""transactionDetails"": {""payment"":{""@type"":""CashOnDeliveryPayment"",""paymentId"": ""P3"",""amountToBePaid"": 290}}}"\n' +
+  '4,Order4,"{""customerId"": ""Customer4"", ""customerAddress"": {""@type"":""Address"",""name"": ""A4""},""transactionDetails"": {""payment"":{""@type"":""PrepaidPayment"",""paymentId"": ""P4"",""amountPaid"": 150}}}"\n' +
+  '6,Order6,"{""customerId"": ""Customer6"", ""customerAddress"": {""@type"":""ShippingAddress"",""name"": ""A6"",""shipAddress"":""S2""},""transactionDetails"": {""payment"":{""@type"":""PrepaidPayment"",""paymentId"": ""P6"",""amountPaid"": 120}}}"\n' +
+  '5,Order5,"{""customerId"": ""Customer5"", ""customerAddress"": {""@type"":""ShippingAddress"",""name"": ""A5"",""shipAddress"":""S1""},""transactionDetails"": {""payment"":{""@type"":""PrepaidPayment"",""paymentId"": ""P5"",""amountPaid"": 185}}}"\n' +
+  '7,Order7,"{""customerId"": ""Customer7"", ""customerAddress"": {""@type"":""ShippingAddress"",""name"": ""A7"",""shipAddress"":""S3""},""transactionDetails"": {""payment"":{""@type"":""WalletPrepaidPayment"",""paymentId"": ""P7"",""amountPaid"": 180,""walletTransactionAmount"":200}}}"\n' +
+  '8,Order8,"{""customerId"": ""Customer8"", ""customerAddress"": {""@type"":""ShippingAddress"",""name"": ""A8"",""shipAddress"":""S4""},""transactionDetails"": {""payment"":{""@type"":""CardPrepaidPayment"",""paymentId"": ""P8"",""amountPaid"": 160, ""cardTransactionAmount"":190}}}"\n' +
+  '9,Order9,"{""customerId"": ""Customer9"", ""customerAddress"": {""@type"":""CustomerAddress"", ""name"": ""A9""},""transactionDetails"": {""payment"":{""@type"":""PrepaidPayment"",""paymentId"": ""P4"",""amountPaid"": 150}}}"\n' +
+  '10,Order10,"{""customerId"": ""Customer10"", ""customerAddress"": {""@type"":""CustomerAddress"", ""name"": ""A10"", ""defaultAddress"": ""Default Customer Address""},""transactionDetails"": {""payment"":{""@type"":""PrepaidPayment"",""paymentId"": ""P4"",""amountPaid"": 150}}}"\n'
+}
+
+function <<access.private>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::typeNarrowingExecute(conn: Connection[1], func: FunctionDefinition<Any>[1], expected: String[1]): Boolean[1]
+{
+  executeLegendFunction($func, TypeNarrowingSemiStructuredMapping, H2DB, $conn, [typeNarrowingCsv()], $expected, false);
+}
+
+
+// =============================================================================
+// ====== Source: testSemiStructuredTypeFunctions.pure (->typeName scenarios) ======
+// =============================================================================
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageInProjectWithFunctions(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address Type': x|$x.customer.customerAddress->typeName(),
+      'Payment Type'         : x|$x.customer.transactionDetails.payment->typeName()
+    ]),
+    'Customer Address Type,Payment Type\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'Address,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,WalletPrepaidPayment\n' +
+    'ShippingAddress,CardPrepaidPayment\n' +
+    'CustomerAddress,PrepaidPayment\n' +
+    'CustomerAddress,PrepaidPayment\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageInProjectWithColSpecs(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address Type': x|$x.customer.customerAddress->typeName(),
+      'Payment Type'         : x|$x.customer.transactionDetails.payment->typeName()
+    ]),
+    'Customer Address Type,Payment Type\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'BillingAddress,CashOnDeliveryPayment\n' +
+    'Address,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,PrepaidPayment\n' +
+    'ShippingAddress,WalletPrepaidPayment\n' +
+    'ShippingAddress,CardPrepaidPayment\n' +
+    'CustomerAddress,PrepaidPayment\n' +
+    'CustomerAddress,PrepaidPayment\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageInFilter(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()
+      ->filter(x | $x.customer.transactionDetails.payment->typeName() == 'CashOnDeliveryPayment')
+      ->project(~[
+        'Order Id'             : x|$x.orderId,
+        'Customer Address Type': x|$x.customer.customerAddress->typeName()
+      ]),
+    'Order Id,Customer Address Type\n' +
+    '1,BillingAddress\n' +
+    '2,BillingAddress\n' +
+    '3,BillingAddress\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Order Id'    : x|$x.orderId,
+      'Product Type': x|$x.customer.products->map(p | $p->typeName())
+    ]),
+    'Order Id,Product Type\n' +
+    '1,ElectronicsProduct\n' +
+    '1,SportsProduct\n' +
+    '2,SportsProduct\n' +
+    '3,\n' +
+    '4,\n' +
+    '6,\n' +
+    '5,\n' +
+    '7,\n' +
+    '8,\n' +
+    '9,\n' +
+    '10,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpec(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Order Id'    : x|$x.orderId,
+      'Product Type': x|$x.customer.products->map(p | $p->typeName())
+    ]),
+    'Order Id,Product Type\n' +
+    '1,ElectronicsProduct\n' +
+    '1,SportsProduct\n' +
+    '2,SportsProduct\n' +
+    '3,\n' +
+    '4,\n' +
+    '6,\n' +
+    '5,\n' +
+    '7,\n' +
+    '8,\n' +
+    '9,\n' +
+    '10,\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Order Id'      : x|$x.orderId,
+      'Product 0 Type': x|$x.customer.products->at(0)->typeName(),
+      'Product 1 Type': x|$x.customer.products->at(1)->typeName()
+    ]),
+    'Order Id,Product 0 Type,Product 1 Type\n' +
+    '1,ElectronicsProduct,SportsProduct\n' +
+    '2,SportsProduct,\n' +
+    '3,,\n' +
+    '4,,\n' +
+    '6,,\n' +
+    '5,,\n' +
+    '7,,\n' +
+    '8,,\n' +
+    '9,,\n' +
+    '10,,\n'
+  );
+}
+
+
+// =============================================================================
+// ====== Source: testSemiStructuredMatching.pure (->match scenarios) ======
+// =============================================================================
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchComplexProperty(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address': x|$x.customer.customerAddress->match([
+        s: BillingAddress[1]  | $s.billAddress,
+        s: ShippingAddress[1] | $s.shipAddress,
+        s: Any[1]             | 'Default Address'
+      ])
+    ]),
+    'Customer Address\n' +
+    'B1\n' +
+    'B2\n' +
+    'B3\n' +
+    'Default Address\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    'Default Address\n' +
+    'Default Address\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithDifferentMultiplicities(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address': x|$x.customer.customerAddress->match([
+        s: BillingAddress[1]  | $s.billAddress,
+        s: ShippingAddress[1] | $s.shipAddress,
+        s: CustomerAddress[1] | $s.defaultAddress,
+        s: Any[1]             | []
+      ])
+    ]),
+    'Customer Address\n' +
+    'B1\n' +
+    'B2\n' +
+    'B3\n' +
+    '\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    '\n' +
+    'Default Customer Address\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProject(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address': x|$x.customer.customerAddress->match([
+        s: BillingAddress[1]  | $s.billAddress,
+        s: ShippingAddress[1] | $s.shipAddress
+      ]),
+      'Order Price'     : x|$x.customer.transactionDetails.payment->match([
+        s: CashOnDeliveryPayment[1] | $s.amountToBePaid,
+        s: PrepaidPayment[1]        | $s.amountPaid
+      ])
+    ]),
+    'Customer Address,Order Price\n' +
+    'B1,200\n' +
+    'B2,180\n' +
+    'B3,290\n' +
+    ',150\n' +
+    'S2,120\n' +
+    'S1,185\n' +
+    'S3,180\n' +
+    'S4,160\n' +
+    ',150\n' +
+    ',150\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithComplexFilter(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()
+      ->filter(x | $x.customer.transactionDetails.payment->match([
+          s: CashOnDeliveryPayment[1] | $s.amountToBePaid,
+          s: PrepaidPayment[1]        | $s.amountPaid
+        ]) < 200)
+      ->project(~[
+        'Customer Address': x|$x.customer.customerAddress->match([
+          s: BillingAddress[1]  | $s.billAddress,
+          s: ShippingAddress[1] | $s.shipAddress
+        ])
+      ]),
+    'Customer Address\n' +
+    'B2\n' +
+    '\n' +
+    'S2\n' +
+    'S1\n' +
+    'S3\n' +
+    'S4\n' +
+    '\n' +
+    '\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithVariableAccess(conn: Connection[1]): Boolean[1]
+{
+  let maxAmount = 200;
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Max Amount Flag': x|$x.customer.transactionDetails.payment->match([
+        s: CashOnDeliveryPayment[1] | if($s.amountToBePaid < $maxAmount, |true, |false),
+        s: PrepaidPayment[1]        | if($s.amountPaid < $maxAmount, |true, |false)
+      ])
+    ]),
+    'Max Amount Flag\n' +
+    'false\n' +
+    'true\n' +
+    'false\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n' +
+    'true\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchMultilevel(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Amount': x|$x.customer.transactionDetails.payment->match([
+        s: PrepaidPayment[1]        | $s->match([
+          k: WalletPrepaidPayment[1] | $k.walletTransactionAmount,
+          k: CardPrepaidPayment[1]   | $k.cardTransactionAmount,
+          k: PrepaidPayment[1]       | $k.amountPaid
+        ]),
+        s: CashOnDeliveryPayment[1] | $s.amountToBePaid
+      ])
+    ]),
+    'Amount\n' +
+    '200\n' +
+    '180\n' +
+    '290\n' +
+    '150\n' +
+    '120\n' +
+    '185\n' +
+    '200\n' +
+    '190\n' +
+    '150\n' +
+    '150\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::semistructured::typenarrowing::testSemiStructuredMatchWithMultipleProjectUsingCol(conn: Connection[1]): Boolean[1]
+{
+  typeNarrowingExecute($conn,
+    |Order.all()->project(~[
+      'Customer Address': x|$x.customer.customerAddress->match([
+        s: BillingAddress[1]  | $s.billAddress,
+        s: ShippingAddress[1] | $s.shipAddress
+      ]),
+      'Order Price'     : x|$x.customer.transactionDetails.payment->match([
+        s: CashOnDeliveryPayment[1] | $s.amountToBePaid,
+        s: PrepaidPayment[1]        | $s.amountPaid
+      ])
+    ]),
+    'Customer Address,Order Price\n' +
+    'B1,200\n' +
+    'B2,180\n' +
+    'B3,290\n' +
+    ',150\n' +
+    'S2,120\n' +
+    'S1,185\n' +
+    'S3,180\n' +
+    'S4,160\n' +
+    ',150\n' +
+    ',150\n'
+  );
+}

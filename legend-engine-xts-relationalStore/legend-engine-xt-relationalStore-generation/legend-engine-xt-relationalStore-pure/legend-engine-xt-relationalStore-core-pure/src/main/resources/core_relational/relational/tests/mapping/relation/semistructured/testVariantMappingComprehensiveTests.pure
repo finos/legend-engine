@@ -1,0 +1,1501 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =============================================================================
+// Comprehensive Variant Mapping Tests — Test Functions (Phase 2)
+//
+// 28 tests for VariantFirmMapping exercising varied query patterns over
+// mapping-level variant operations (§2.1–§2.20).
+// Companion setup file: testVariantMappingComprehensiveSetup.pure
+// =============================================================================
+
+###Pure
+import meta::pure::test::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::tests::mapping::relation::variant::comprehensive::*;
+
+// =============================================================================
+// Test 1 — All primitive type extraction (§2.1)
+// Mapping ops: get→to(@String), get→to(@Integer), get→to(@Float),
+//              get→to(@Boolean), get→to(@StrictDate), get→to(@DateTime)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testAllPrimitiveTypes(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'    : x|$x.firstName,
+      'Firm Name'     : x|$x.firmName,
+      'Employee Count': x|$x.employeeCount,
+      'Revenue'       : x|$x.revenue,
+      'Is MNC'        : x|$x.isMnc,
+      'Est Date'      : x|$x.estDate,
+      'Last Update'   : x|$x.lastUpdate
+    ]),
+    'First Name,Firm Name,Employee Count,Revenue,Is MNC,Est Date,Last Update\n' +
+    'Anthony,Firm X,4,5555.5,true,2010-03-04,2022-01-16 01:00:00.0\n' +
+    'David,Firm B,2,55.5,true,2017-07-07,2022-09-01 06:00:00.0\n' +
+    'Fabrice,Firm A,1,0.5,false,2012-11-13,2022-02-14 03:00:00.0\n' +
+    'John,Firm X,4,5.5,true,2010-03-04,2022-01-16 01:00:00.0\n' +
+    'John,Firm X,4,55.5,true,2010-03-04,2022-01-16 01:00:00.0\n' +
+    'Oliver,Firm B,2,5.5,true,2017-07-07,2022-09-01 06:00:00.0\n' +
+    'Peter,Firm X,4,0.5,true,2010-03-04,2022-01-16 01:00:00.0\n'
+  );
+}
+
+// =============================================================================
+// Test 2 — Nested object navigation (§2.9)
+// Mapping ops: get('address')→get('name')→to, get→get→at(N)→get→to
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testNestedObjectNavigation(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'Address Name'    : x|$x.addressName,
+      'Address Street'  : x|$x.addressStreet,
+      'First Addr Line' : x|$x.firstAddrLine,
+      'Second Addr Line': x|$x.secondAddrLine
+    ]),
+    'First Name,Address Name,Address Street,First Addr Line,Second Addr Line\n' +
+    'Anthony,A1,S1,D1,D2\n' +
+    'David,A3,,D5,D6\n' +
+    'Fabrice,A2,,D4,D5\n' +
+    'John,A1,S1,D1,D2\n' +
+    'John,A1,S1,D1,D2\n' +
+    'Oliver,A3,S2,D5,D6\n' +
+    'Peter,A1,S1,D1,D2\n'
+  );
+}
+
+// =============================================================================
+// Test 3 — Array size / isEmpty / isNotEmpty (§2.15)
+// Mapping ops: toMany→size(), isNotEmpty(), isEmpty(), get→get→size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArraySizeIsEmptyIsNotEmpty(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'Other Name Count': x|$x.otherNameCount,
+      'Has Other Names' : x|$x.hasOtherNames,
+      'Others Empty'    : x|$x.otherNamesEmpty,
+      'Addr Line Count' : x|$x.addrLineCount,
+      'Has Address'     : x|$x.hasAddress,
+      'Has Street'      : x|$x.hasStreet
+    ]),
+    'First Name,Other Name Count,Has Other Names,Others Empty,Addr Line Count,Has Address,Has Street\n' +
+    'Anthony,2,true,false,3,true,true\n' +
+    'David,2,true,false,2,true,false\n' +
+    'Fabrice,2,true,false,2,true,false\n' +
+    'John,2,true,false,3,true,true\n' +
+    'John,2,true,false,3,true,true\n' +
+    'Oliver,2,true,false,2,true,true\n' +
+    'Peter,2,true,false,3,true,true\n'
+  );
+}
+
+// =============================================================================
+// Test 4 — Array at() and first() (§2.15)
+// Mapping ops: toMany→first(), toMany→at(1), get→at(0)→get→to
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayAtAndFirst(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'First Other Name': x|$x.firstOtherName,
+      'Second Other Name': x|$x.secondOtherName,
+      'First Addr Line' : x|$x.firstAddrLine
+    ]),
+    'First Name,First Other Name,Second Other Name,First Addr Line\n' +
+    'Anthony,O1,O2,D1\n' +
+    'David,O5,O6,D5\n' +
+    'Fabrice,O3,O4,D4\n' +
+    'John,O1,O2,D1\n' +
+    'John,O1,O2,D1\n' +
+    'Oliver,O5,O6,D5\n' +
+    'Peter,O1,O2,D1\n'
+  );
+}
+
+// =============================================================================
+// Test 5 — Array distinct / contains / indexOf / concatenate (§2.20)
+// Mapping ops: toMany→distinct()→size(), toMany→contains(), toMany→indexOf(),
+//              toMany→concatenate(toMany)→size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testArrayDistinctContainsIndexOf(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'        : x|$x.firstName,
+      'Firm'              : x|$x.firmName,
+      'Distinct Countries': x|$x.distinctCtryCount,
+      'Has UK'            : x|$x.hasUkOffice,
+      'UK Index'          : x|$x.ukIndex,
+      'All Names Count'   : x|$x.allNameCount
+    ]),
+    'First Name,Firm,Distinct Countries,Has UK,UK Index,All Names Count\n' +
+    'Anthony,Firm X,3,true,1,5\n' +
+    'David,Firm B,2,true,1,5\n' +
+    'Fabrice,Firm A,1,false,-1,3\n' +
+    'John,Firm X,3,true,1,5\n' +
+    'John,Firm X,3,true,1,5\n' +
+    'Oliver,Firm B,2,true,1,5\n' +
+    'Peter,Firm X,3,true,1,5\n'
+  );
+}
+
+// =============================================================================
+// Test 6 — Numeric array aggregations (§2.17)
+// Mapping ops: toMany(@Float)→plus() (sum), toMany(@Float)→max(), min()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testNumericAggregations(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'    : x|$x.firstName,
+      'Total Revenue' : x|$x.totalRevenue,
+      'Max Revenue'   : x|$x.maxRevenue,
+      'Min Revenue'   : x|$x.minRevenue,
+      'Has Rev History': x|$x.hasRevHistory
+    ]),
+    'First Name,Total Revenue,Max Revenue,Min Revenue,Has Rev History\n' +
+    'Anthony,350.75,200.0,50.25,true\n' +
+    'David,500.0,500.0,500.0,true\n' +
+    'Fabrice,0.0,,,false\n' +
+    'John,350.75,200.0,50.25,true\n' +
+    'John,350.75,200.0,50.25,true\n' +
+    'Oliver,500.0,500.0,500.0,true\n' +
+    'Peter,350.75,200.0,50.25,true\n'
+  );
+}
+
+// =============================================================================
+// Test 7 — fold / take / drop (§2.19)
+// Mapping ops: toMany→fold({r,acc|...},''), toMany→take(2)→size(),
+//              toMany→drop(1)→size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFoldTakeDrop(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'    : x|$x.firstName,
+      'Ratings Folded': x|$x.ratingsFolded,
+      'Top Two Count' : x|$x.topTwoRatCt,
+      'Tail Count'    : x|$x.tailRatCt
+    ]),
+    'First Name,Ratings Folded,Top Two Count,Tail Count\n' +
+    'Anthony,",A,B,A,C",2,3\n' +
+    'David,",A,A,B",2,2\n' +
+    'Fabrice,",B",1,0\n' +
+    'John,",A,B,A,C",2,3\n' +
+    'John,",A,B,A,C",2,3\n' +
+    'Oliver,",A,A,B",2,2\n' +
+    'Peter,",A,B,A,C",2,3\n'
+  );
+}
+
+// =============================================================================
+// Test 8 — Computed leaves: arithmetic + string assembly (§2.3)
+// Mapping ops: to(@String) + '(' + FIRSTNAME + ')', to(@Float) * to(@Float)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedArithmetic(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'  : x|$x.firstName,
+      'Display Name': x|$x.displayName,
+      'FTE Equiv'   : x|$x.fteEquiv
+    ]),
+    'First Name,Display Name,FTE Equiv\n' +
+    'Anthony,Firm X (Anthony),22222.0\n' +
+    'David,Firm B (David),111.0\n' +
+    'Fabrice,Firm A (Fabrice),0.5\n' +
+    'John,Firm X (John),22.0\n' +
+    'John,Firm X (John),222.0\n' +
+    'Oliver,Firm B (Oliver),11.0\n' +
+    'Peter,Firm X (Peter),2.0\n'
+  );
+}
+
+// =============================================================================
+// Test 9 — Computed leaves: conditional + boolean logic (§2.3)
+// Mapping ops: if(isNotEmpty, |to(@String), |'N/A'), to(@Boolean) && (to(@Integer) > 2)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testComputedConditional(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'  : x|$x.firstName,
+      'Contact Name': x|$x.contactName,
+      'Is Large MNC': x|$x.isLargeMnc
+    ]),
+    'First Name,Contact Name,Is Large MNC\n' +
+    'Anthony,S1,true\n' +
+    'David,N/A,false\n' +
+    'Fabrice,N/A,false\n' +
+    'John,S1,true\n' +
+    'John,S1,true\n' +
+    'Oliver,S2,false\n' +
+    'Peter,S1,true\n'
+  );
+}
+
+// =============================================================================
+// Test 10 — exists() on variant array (§2.5)
+// Mapping ops: toMany(@String)→exists(n| $n == 'O3')
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testExistsOnArray(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name': x|$x.firstName,
+      'Firm'      : x|$x.firmName,
+      'Exists O3' : x|$x.existsO3
+    ]),
+    'First Name,Firm,Exists O3\n' +
+    'Anthony,Firm X,false\n' +
+    'David,Firm B,false\n' +
+    'Fabrice,Firm A,true\n' +
+    'John,Firm X,false\n' +
+    'John,Firm X,false\n' +
+    'Oliver,Firm B,false\n' +
+    'Peter,Firm X,false\n'
+  );
+}
+
+// =============================================================================
+// Test 11 — filter() on variant array at mapping level (§2.5)
+// Mapping ops: toMany(@String)→filter(n| $n→startsWith('O1'))→size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnArrayAtMapping(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'Firm'            : x|$x.firmName,
+      'Filtered Name Ct': x|$x.filteredNameCt
+    ]),
+    'First Name,Firm,Filtered Name Ct\n' +
+    'Anthony,Firm X,1\n' +
+    'David,Firm B,0\n' +
+    'Fabrice,Firm A,0\n' +
+    'John,Firm X,1\n' +
+    'John,Firm X,1\n' +
+    'Oliver,Firm B,0\n' +
+    'Peter,Firm X,1\n'
+  );
+}
+
+// =============================================================================
+// Test 12 — Whole subtree deserialization (§2.7)
+// Mapping ops: to(@Firm)→toOne() — downstream property navigation
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testWholeSubtreeDeserialize(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'        : x|$x.firstName,
+      'Firm Legal Name'   : x|$x.firm.legalName,
+      'Firm Address Name' : x|$x.firm.address.name,
+      'Firm Employee Ct'  : x|$x.firm.employeeCount
+    ]),
+    'First Name,Firm Legal Name,Firm Address Name,Firm Employee Ct\n' +
+    'Anthony,Firm X,A1,4\n' +
+    'David,Firm B,A3,2\n' +
+    'Fabrice,Firm A,A2,1\n' +
+    'John,Firm X,A1,4\n' +
+    'John,Firm X,A1,4\n' +
+    'Oliver,Firm B,A3,2\n' +
+    'Peter,Firm X,A1,4\n'
+  );
+}
+
+// =============================================================================
+// Test 13 — Filter on mapped Boolean property
+// Query: filter(isMnc == true) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnBoolean(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.isMnc == true)
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Firm'      : x|$x.firmName,
+        'Revenue'   : x|$x.revenue
+      ]),
+    'First Name,Firm,Revenue\n' +
+    'Anthony,Firm X,5555.5\n' +
+    'David,Firm B,55.5\n' +
+    'John,Firm X,5.5\n' +
+    'John,Firm X,55.5\n' +
+    'Oliver,Firm B,5.5\n' +
+    'Peter,Firm X,0.5\n'
+  );
+}
+
+// =============================================================================
+// Test 14 — Filter on mapped Integer property
+// Query: filter(employeeCount > 2) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnInteger(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.employeeCount > 2)
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Firm'      : x|$x.firmName
+      ]),
+    'First Name,Firm\n' +
+    'Anthony,Firm X\n' +
+    'John,Firm X\n' +
+    'John,Firm X\n' +
+    'Peter,Firm X\n'
+  );
+}
+
+// =============================================================================
+// Test 15 — Filter on mapped String property
+// Query: filter(firmName == 'Firm X') + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnString(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firmName == 'Firm X')
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Last Name' : x|$x.lastName
+      ]),
+    'First Name,Last Name\n' +
+    'Anthony,Allen\n' +
+    'John,Hill\n' +
+    'John,Johnson\n' +
+    'Peter,Smith\n'
+  );
+}
+
+// =============================================================================
+// Test 16 — Compound filter on computed Boolean properties
+// Query: filter(isLargeMnc == true && hasRevHistory == true) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterCompound(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | ($x.isLargeMnc == true) && ($x.hasRevHistory == true))
+      ->project(~[
+        'First Name'   : x|$x.firstName,
+        'Total Revenue': x|$x.totalRevenue
+      ]),
+    'First Name,Total Revenue\n' +
+    'Anthony,350.75\n' +
+    'John,350.75\n' +
+    'John,350.75\n' +
+    'Peter,350.75\n'
+  );
+}
+
+// =============================================================================
+// Test 17 — Filter on mapping-level contains() result
+// Query: filter(hasUkOffice == true) + project multiple cols
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnContains(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.hasUkOffice == true)
+      ->project(~[
+        'First Name'        : x|$x.firstName,
+        'Firm'              : x|$x.firmName,
+        'Distinct Countries': x|$x.distinctCtryCount,
+        'UK Index'          : x|$x.ukIndex
+      ]),
+    'First Name,Firm,Distinct Countries,UK Index\n' +
+    'Anthony,Firm X,3,1\n' +
+    'David,Firm B,2,1\n' +
+    'John,Firm X,3,1\n' +
+    'John,Firm X,3,1\n' +
+    'Oliver,Firm B,2,1\n' +
+    'Peter,Firm X,3,1\n'
+  );
+}
+
+// =============================================================================
+// Test 18 — GroupBy on mapped String property with aggregations
+// Query: groupBy([firmName], [agg sum revenue, agg count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByFirmName(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->groupBy(
+      [x|$x.firmName],
+      [agg(x|$x.revenue, y|$y->sum()), agg(x|$x.firstName, y|$y->count())],
+      ['Firm', 'Total Revenue', 'Count']
+    ),
+    'Firm,Total Revenue,Count\n' +
+    'Firm A,0.5,1\n' +
+    'Firm B,61.0,2\n' +
+    'Firm X,5617.0,4\n'
+  );
+}
+
+// =============================================================================
+// Test 19 — GroupBy on mapped entity type (enum-string §2.2)
+// Query: groupBy([entityType], [agg count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByEntityType(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->groupBy(
+      [x|$x.entityType],
+      [agg(x|$x.firstName, y|$y->count())],
+      ['Entity Type', 'Count']
+    ),
+    'Entity Type,Count\n' +
+    ',1\n' +
+    'Company,2\n' +
+    'Organization,4\n'
+  );
+}
+
+// =============================================================================
+// Test 20 — Filter then multi-column project
+// Query: filter(hasRevHistory==true) + project 5 mapped properties
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterThenProjectMany(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.hasRevHistory == true)
+      ->project(~[
+        'First Name'    : x|$x.firstName,
+        'Total Revenue' : x|$x.totalRevenue,
+        'Max Revenue'   : x|$x.maxRevenue,
+        'Min Revenue'   : x|$x.minRevenue,
+        'Ratings Folded': x|$x.ratingsFolded
+      ]),
+    'First Name,Total Revenue,Max Revenue,Min Revenue,Ratings Folded\n' +
+    'Anthony,350.75,200.0,50.25,",A,B,A,C"\n' +
+    'David,500.0,500.0,500.0,",A,A,B"\n' +
+    'John,350.75,200.0,50.25,",A,B,A,C"\n' +
+    'John,350.75,200.0,50.25,",A,B,A,C"\n' +
+    'Oliver,500.0,500.0,500.0,",A,A,B"\n' +
+    'Peter,350.75,200.0,50.25,",A,B,A,C"\n'
+  );
+}
+
+// =============================================================================
+// Test 35 — Cross-feature mix: filter on mapping-level ops + project aggregates
+// Query: filter(filteredNameCt > 0 && totalRevenue > 100) + project 4 cols
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix1(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | ($x.filteredNameCt > 0) && ($x.totalRevenue > 100.0))
+      ->project(~[
+        'First Name'        : x|$x.firstName,
+        'Total Revenue'     : x|$x.totalRevenue,
+        'Distinct Countries': x|$x.distinctCtryCount,
+        'Ratings Folded'    : x|$x.ratingsFolded
+      ]),
+    'First Name,Total Revenue,Distinct Countries,Ratings Folded\n' +
+    'Anthony,350.75,3,",A,B,A,C"\n' +
+    'John,350.75,3,",A,B,A,C"\n' +
+    'John,350.75,3,",A,B,A,C"\n' +
+    'Peter,350.75,3,",A,B,A,C"\n'
+  );
+}
+
+// =============================================================================
+// Test 36 — Cross-feature mix: filter on mapping filter+size result
+// Query: filter(filteredNameCt > 0) + project 4 mixed cols
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCrossFeatureMix2(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.filteredNameCt > 0)
+      ->project(~[
+        'First Name'      : x|$x.firstName,
+        'Firm'            : x|$x.firmName,
+        'First Other Name': x|$x.firstOtherName,
+        'Address Name'    : x|$x.addressName
+      ]),
+    'First Name,Firm,First Other Name,Address Name\n' +
+    'Anthony,Firm X,O1,A1\n' +
+    'John,Firm X,O1,A1\n' +
+    'John,Firm X,O1,A1\n' +
+    'Peter,Firm X,O1,A1\n'
+  );
+}
+
+// =============================================================================
+// Test 38 — GroupBy with multiple aggregation functions
+// Query: groupBy([entityType], [sum totalRevenue, max revenue, count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByMultipleAggs(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->groupBy(
+      [x|$x.entityType],
+      [agg(x|$x.totalRevenue, y|$y->sum()), agg(x|$x.revenue, y|$y->max()), agg(x|$x.firstName, y|$y->count())],
+      ['Entity Type', 'Sum Total Revenue', 'Max Revenue', 'Count']
+    ),
+    'Entity Type,Sum Total Revenue,Max Revenue,Count\n' +
+    ',0.0,0.5,1\n' +
+    'Company,1000.0,55.5,2\n' +
+    'Organization,1403.0,5555.5,4\n'
+  );
+}
+
+// =============================================================================
+// Test 39 — SortBy on mapped variant-extracted property
+// Query: sortBy(firmName) + project — sortCsv normalizes so just tests compilation
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testSortByMappedProp(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->sortBy(#/Person/firmName!firmName#)
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Firm'      : x|$x.firmName
+      ]),
+    'First Name,Firm\n' +
+    'Anthony,Firm X\n' +
+    'David,Firm B\n' +
+    'Fabrice,Firm A\n' +
+    'John,Firm X\n' +
+    'John,Firm X\n' +
+    'Oliver,Firm B\n' +
+    'Peter,Firm X\n'
+  );
+}
+
+// =============================================================================
+// Test 40 — distinct() on projected TDS
+// Query: project(firmName, entityType) → distinct()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testDistinctOnProjection(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->project(~[
+        'Firm'       : x|$x.firmName,
+        'Entity Type': x|$x.entityType
+      ])
+      ->distinct(),
+    'Firm,Entity Type\n' +
+    'Firm A,\n' +
+    'Firm B,Company\n' +
+    'Firm X,Organization\n'
+  );
+}
+
+// =============================================================================
+// Test 41 — Filter + project + limit (pagination)
+// Query: filter(firmName == 'Firm B') + project + limit(5)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testLimitAfterFilter(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firmName == 'Firm B')
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Firm'      : x|$x.firmName,
+        'Revenue'   : x|$x.revenue
+      ])
+      ->limit(5),
+    'First Name,Firm,Revenue\n' +
+    'David,Firm B,55.5\n' +
+    'Oliver,Firm B,5.5\n'
+  );
+}
+
+// =============================================================================
+// Test 42 — Inline computation in projection lambda (if/else)
+// Query: project with if(revenue > 10.0, 'HIGH', 'LOW')
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testInlineComputationInProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'Revenue Category': x|if($x.revenue > 10.0, |'HIGH', |'LOW')
+    ]),
+    'First Name,Revenue Category\n' +
+    'Anthony,HIGH\n' +
+    'David,HIGH\n' +
+    'Fabrice,LOW\n' +
+    'John,LOW\n' +
+    'John,HIGH\n' +
+    'Oliver,LOW\n' +
+    'Peter,LOW\n'
+  );
+}
+
+// =============================================================================
+// Test 43 — Sub-expression (if/isEmpty) in projection on mapped optional prop
+// Query: project with if(addressStreet→isEmpty, 'none', addressStreet)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testSubExprInProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'    : x|$x.firstName,
+      'Street Or None': x|if($x.addressStreet->isEmpty(), |'none', |$x.addressStreet->toOne())
+    ]),
+    'First Name,Street Or None\n' +
+    'Anthony,S1\n' +
+    'David,none\n' +
+    'Fabrice,none\n' +
+    'John,S1\n' +
+    'John,S1\n' +
+    'Oliver,S2\n' +
+    'Peter,S1\n'
+  );
+}
+
+// =============================================================================
+// Test 44 — Null-safe if/isEmpty on optional entityType in projection
+// Query: project with if(entityType→isEmpty, 'Unknown', entityType)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testIfIsEmptyInProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'    : x|$x.firstName,
+      'Entity Display': x|if($x.entityType->isEmpty(), |'Unknown', |$x.entityType->toOne())
+    ]),
+    'First Name,Entity Display\n' +
+    'Anthony,Organization\n' +
+    'David,Company\n' +
+    'Fabrice,Unknown\n' +
+    'John,Organization\n' +
+    'John,Organization\n' +
+    'Oliver,Company\n' +
+    'Peter,Organization\n'
+  );
+}
+
+// =============================================================================
+// Test 45 — Composite: filter → project → distinct
+// Query: filter(isMnc==true) + project(firmName, entityType) + distinct()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterProjectDistinct(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.isMnc == true)
+      ->project(~[
+        'Firm'       : x|$x.firmName,
+        'Entity Type': x|$x.entityType
+      ])
+      ->distinct(),
+    'Firm,Entity Type\n' +
+    'Firm B,Company\n' +
+    'Firm X,Organization\n'
+  );
+}
+
+// =============================================================================
+// Test 46 — Filter on computed property + project display props
+// Query: filter(fteEquiv > 100.0) + project(firstName, fteEquiv, displayName)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnComputed(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.fteEquiv > 100.0)
+      ->project(~[
+        'First Name'  : x|$x.firstName,
+        'FTE Equiv'   : x|$x.fteEquiv,
+        'Display Name': x|$x.displayName
+      ]),
+    'First Name,FTE Equiv,Display Name\n' +
+    'Anthony,22222.0,Firm X (Anthony)\n' +
+    'David,111.0,Firm B (David)\n' +
+    'John,222.0,Firm X (John)\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     ORDER MAPPING TESTS (§2.4 fromJson)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 21 — fromJson basic navigation (§2.4)
+// Mapping ops: fromJson()→get(key)→to(@String/Integer/Float/Boolean)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonBasicNav(conn: Connection[1]):Boolean[1]
+{
+  orderExecute($conn,
+    |Order.all()->project(~[
+      'Order Id': x|$x.orderId,
+      'Side'    : x|$x.side,
+      'Qty'     : x|$x.qty,
+      'Price'   : x|$x.price,
+      'Active'  : x|$x.isActive
+    ]),
+    'Order Id,Side,Qty,Price,Active\n' +
+    'ORD1,BUY,100,25.5,true\n' +
+    'ORD2,SELL,50,30.0,true\n' +
+    'ORD3,BUY,200,10.0,false\n' +
+    'ORD4,SELL,75,40.0,true\n'
+  );
+}
+
+// =============================================================================
+// Test 22 — fromJson nested navigation + computed properties (§2.4 + §2.3)
+// Mapping ops: fromJson()→get('header')→get('source')→to(@String),
+//              to(@Float) * to(@Float), to(@String) + ':' + to(@String)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonNestedComputed(conn: Connection[1]):Boolean[1]
+{
+  orderExecute($conn,
+    |Order.all()->project(~[
+      'Order Id'    : x|$x.orderId,
+      'Header Src'  : x|$x.headerSource,
+      'Total Value' : x|$x.totalValue,
+      'Display Label': x|$x.displayLabel
+    ]),
+    'Order Id,Header Src,Total Value,Display Label\n' +
+    'ORD1,SYS1,2550.0,BUY:ORD1\n' +
+    'ORD2,SYS2,1500.0,SELL:ORD2\n' +
+    'ORD3,SYS1,2000.0,BUY:ORD3\n' +
+    'ORD4,SYS3,3000.0,SELL:ORD4\n'
+  );
+}
+
+// =============================================================================
+// Test 23 — fromJson filter on extracted integer (§2.4)
+// Query: filter(qty > 50) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonFilter(conn: Connection[1]):Boolean[1]
+{
+  orderExecute($conn,
+    |Order.all()
+      ->filter(x | $x.qty > 50)
+      ->project(~[
+        'Order Id'   : x|$x.orderId,
+        'Side'       : x|$x.side,
+        'Total Value': x|$x.totalValue
+      ]),
+    'Order Id,Side,Total Value\n' +
+    'ORD1,BUY,2550.0\n' +
+    'ORD3,BUY,2000.0\n' +
+    'ORD4,SELL,3000.0\n'
+  );
+}
+
+// =============================================================================
+// Test 24 — fromJson groupBy (§2.4)
+// Query: groupBy([side], [sum qty, sum totalValue])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonGroupBy(conn: Connection[1]):Boolean[1]
+{
+  orderExecute($conn,
+    |Order.all()->groupBy(
+      [x|$x.side],
+      [agg(x|$x.qty, y|$y->sum()), agg(x|$x.totalValue, y|$y->sum())],
+      ['Side', 'Total Qty', 'Total Value']
+    ),
+    'Side,Total Qty,Total Value\n' +
+    'BUY,300,4550.0\n' +
+    'SELL,125,4500.0\n'
+  );
+}
+
+// =============================================================================
+// Test 25 — fromJson compound filter (§2.4)
+// Query: filter(isActive && qty > 50) + project 4 cols
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFromJsonCompoundFilter(conn: Connection[1]):Boolean[1]
+{
+  orderExecute($conn,
+    |Order.all()
+      ->filter(x | ($x.isActive == true) && ($x.qty > 50))
+      ->project(~[
+        'Order Id'    : x|$x.orderId,
+        'Total Value' : x|$x.totalValue,
+        'Display Label': x|$x.displayLabel,
+        'Header Src'  : x|$x.headerSource
+      ]),
+    'Order Id,Total Value,Display Label,Header Src\n' +
+    'ORD1,2550.0,BUY:ORD1,SYS1\n' +
+    'ORD4,3000.0,SELL:ORD4,SYS3\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     EVENT MAPPING TESTS (§2.12 / §2.18)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 26 — Conditional discriminator shape (§2.12)
+// Mapping ops: if(kind=='TRADE', counterparty, []), if(kind=='EXEC', venue, [])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCondDiscriminator(conn: Connection[1]):Boolean[1]
+{
+  eventExecute($conn,
+    |PartyEvent.all()->project(~[
+      'Event Id'    : x|$x.eventId,
+      'Kind'        : x|$x.kind,
+      'Counterparty': x|$x.counterparty,
+      'Venue'       : x|$x.venue,
+      'Priority'    : x|$x.priority
+    ]),
+    'Event Id,Kind,Counterparty,Venue,Priority\n' +
+    '1,TRADE,ACME,,1\n' +
+    '2,TRADE,GLOBEX,,2\n' +
+    '3,EXEC,,NYSE,1\n' +
+    '4,SETTLE,,,\n'
+  );
+}
+
+// =============================================================================
+// Test 27 — Filter on discriminator (§2.18)
+// Query: filter(kind == 'TRADE') + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testDiscriminatorFilter(conn: Connection[1]):Boolean[1]
+{
+  eventExecute($conn,
+    |PartyEvent.all()
+      ->filter(x | $x.kind == 'TRADE')
+      ->project(~[
+        'Event Id'    : x|$x.eventId,
+        'Counterparty': x|$x.counterparty,
+        'Priority'    : x|$x.priority
+      ]),
+    'Event Id,Counterparty,Priority\n' +
+    '1,ACME,1\n' +
+    '2,GLOBEX,2\n'
+  );
+}
+
+// =============================================================================
+// Test 28 — GroupBy on discriminator (§2.18)
+// Query: groupBy([kind], [count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testDiscriminatorGroupBy(conn: Connection[1]):Boolean[1]
+{
+  eventExecute($conn,
+    |PartyEvent.all()->groupBy(
+      [x|$x.kind],
+      [agg(x|$x.eventId, y|$y->count())],
+      ['Kind', 'Count']
+    ),
+    'Kind,Count\n' +
+    'EXEC,1\n' +
+    'SETTLE,1\n' +
+    'TRADE,2\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     BLOCK MAPPING TESTS (§2.13 array aggregation)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 29 — Block array aggregations (§2.13)
+// Mapping ops: toMany(@Variant)→filter→size(), →filter→first→get→to,
+//              →filter→fold({e,acc|acc + value}, 0.0)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockArrayAggs(conn: Connection[1]):Boolean[1]
+{
+  blockExecute($conn,
+    |BlockSummary.all()->project(~[
+      'Block Id'     : x|$x.blockId,
+      'Status'       : x|$x.status,
+      'Trade Count'  : x|$x.tradeCount,
+      'First Order'  : x|$x.firstOrderId,
+      'Total Value'  : x|$x.totalValue,
+      'Entity Count' : x|$x.entityCount
+    ]),
+    'Block Id,Status,Trade Count,First Order,Total Value,Entity Count\n' +
+    '1,OPEN,1,O1,150.0,2\n' +
+    '2,CLOSED,2,O2,225.0,3\n' +
+    '3,OPEN,0,O3,25.0,1\n'
+  );
+}
+
+// =============================================================================
+// Test 30 — Filter on mapping-aggregated property (§2.13)
+// Query: filter(tradeCount > 1) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockFilterAggregated(conn: Connection[1]):Boolean[1]
+{
+  blockExecute($conn,
+    |BlockSummary.all()
+      ->filter(x | $x.tradeCount > 1)
+      ->project(~[
+        'Block Id'   : x|$x.blockId,
+        'Trade Count': x|$x.tradeCount,
+        'Total Value': x|$x.totalValue
+      ]),
+    'Block Id,Trade Count,Total Value\n' +
+    '2,2,225.0\n'
+  );
+}
+
+// =============================================================================
+// Test 31 — Filter on mapping-level filter→isNotEmpty result
+// Query: filter(hasTradeEntities == true) + project
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockHasTradeFilter(conn: Connection[1]):Boolean[1]
+{
+  blockExecute($conn,
+    |BlockSummary.all()
+      ->filter(x | $x.hasTradeEntities == true)
+      ->project(~[
+        'Block Id'   : x|$x.blockId,
+        'Trade Count': x|$x.tradeCount,
+        'Status'     : x|$x.status
+      ]),
+    'Block Id,Trade Count,Status\n' +
+    '1,1,OPEN\n' +
+    '2,2,CLOSED\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     PET MAPPING TESTS (§2.6 polymorphic + §2.16)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 32 — Polymorphic deserialization (§2.6)
+// Mapping ops: to(@Pet, '_type', [pair('Dog', @Dog), pair('Cat', @Cat)])→toOne()
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testPolyDeserialize(conn: Connection[1]):Boolean[1]
+{
+  petExecute($conn,
+    |PersonWithPet.all()->project(~[
+      'Person Id': x|$x.personId,
+      'Pet Name' : x|$x.pet.name
+    ]),
+    'Person Id,Pet Name\n' +
+    '1,Buddy\n' +
+    '2,Whiskers\n' +
+    '3,Rex\n'
+  );
+}
+
+// =============================================================================
+// Test 33 — instanceOf on polymorphic variant (§2.16)
+// Mapping ops: $src.PAYLOAD→instanceOf(@Dog), →instanceOf(@Cat)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testInstanceOf(conn: Connection[1]):Boolean[1]
+{
+  petExecute($conn,
+    |PersonWithPet.all()->project(~[
+      'Person Id': x|$x.personId,
+      'Is Dog'   : x|$x.isDog,
+      'Is Cat'   : x|$x.isCat
+    ]),
+    'Person Id,Is Dog,Is Cat\n' +
+    '1,true,false\n' +
+    '2,false,true\n' +
+    '3,true,false\n'
+  );
+}
+
+// =============================================================================
+// Test 34 — match dispatch on polymorphic variant (§2.16)
+// Mapping ops: $src.PAYLOAD→match([d:Dog|'dog', c:Cat|'cat', a:Any|'unknown'])
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMatchDispatch(conn: Connection[1]):Boolean[1]
+{
+  petExecute($conn,
+    |PersonWithPet.all()->project(~[
+      'Person Id': x|$x.personId,
+      'Pet Type' : x|$x.petType
+    ]),
+    'Person Id,Pet Type\n' +
+    '1,dog\n' +
+    '2,cat\n' +
+    '3,dog\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     ADDITIONAL CROSS-MAPPING TESTS
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 47 — Event: filter on hasPriority + project (§2.18)
+// Query: filter(hasPriority == true) + project(eventId, kind, priority)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testEventFilterHasPriority(conn: Connection[1]):Boolean[1]
+{
+  eventExecute($conn,
+    |PartyEvent.all()
+      ->filter(x | $x.hasPriority == true)
+      ->project(~[
+        'Event Id': x|$x.eventId,
+        'Kind'    : x|$x.kind,
+        'Priority': x|$x.priority
+      ]),
+    'Event Id,Kind,Priority\n' +
+    '1,TRADE,1\n' +
+    '2,TRADE,2\n' +
+    '3,EXEC,1\n'
+  );
+}
+
+// =============================================================================
+// Test 48 — Block: groupBy on mapped status property
+// Query: groupBy([status], [sum totalValue, count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testBlockGroupByStatus(conn: Connection[1]):Boolean[1]
+{
+  blockExecute($conn,
+    |BlockSummary.all()->groupBy(
+      [x|$x.status],
+      [agg(x|$x.totalValue, y|$y->sum()), agg(x|$x.blockId, y|$y->count())],
+      ['Status', 'Total Value', 'Count']
+    ),
+    'Status,Total Value,Count\n' +
+    'CLOSED,225.0,1\n' +
+    'OPEN,175.0,2\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     COLLECTION OPS TESTS (§A)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 49 — Collection last() (§A)
+// Mapping ops: toMany(@String)->last()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionLast(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'      : x|$x.firstName,
+      'Last Other Name' : x|$x.lastOtherName
+    ]),
+    'First Name,Last Other Name\n' +
+    'Anthony,O2\n' +
+    'David,O6\n' +
+    'Fabrice,O4\n' +
+    'John,O2\n' +
+    'John,O2\n' +
+    'Oliver,O6\n' +
+    'Peter,O2\n'
+  );
+}
+
+// =============================================================================
+// Test 50 — Collection init() and tail() (§A)
+// Mapping ops: toMany(@String)->init()->size(), ->tail()->size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionInitTail(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'       : x|$x.firstName,
+      'Init Rating Count': x|$x.initRatingCt,
+      'Tail Rating Count': x|$x.tailRatingCt
+    ]),
+    'First Name,Init Rating Count,Tail Rating Count\n' +
+    'Anthony,3,3\n' +
+    'David,2,2\n' +
+    'Fabrice,0,0\n' +
+    'John,3,3\n' +
+    'John,3,3\n' +
+    'Oliver,2,2\n' +
+    'Peter,3,3\n'
+  );
+}
+
+// =============================================================================
+// Test 51 — Collection sort() and reverse() (§A)
+// Mapping ops: toMany(@String)->sort()->first(), ->reverse()->first()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionSortReverse(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'           : x|$x.firstName,
+      'Sorted First Country' : x|$x.sortedCountries,
+      'Reversed First Name'  : x|$x.reversedFirst
+    ]),
+    'First Name,Sorted First Country,Reversed First Name\n' +
+    'Anthony,DE,O2\n' +
+    'David,UK,O6\n' +
+    'Fabrice,FR,O4\n' +
+    'John,DE,O2\n' +
+    'John,DE,O2\n' +
+    'Oliver,UK,O6\n' +
+    'Peter,DE,O2\n'
+  );
+}
+
+// =============================================================================
+// Test 52 — Collection add() (§A)
+// Mapping ops: toMany(@String)->add('NEW')->size() vs ->size()
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testCollectionAdd(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->project(~[
+      'First Name'       : x|$x.firstName,
+      'With Extra Count' : x|$x.withExtraName,
+      'Original Count'   : x|$x.otherNameCount
+    ]),
+    'First Name,With Extra Count,Original Count\n' +
+    'Anthony,3,2\n' +
+    'David,3,2\n' +
+    'Fabrice,3,2\n' +
+    'John,3,2\n' +
+    'John,3,2\n' +
+    'Oliver,3,2\n' +
+    'Peter,3,2\n'
+  );
+}
+
+// =============================================================================
+// Test 53 — toJson round-trip (§C)
+// Mapping ops: $src.FIRM_DETAILS->toJson()
+// Verify result is non-null (contains expected key)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToJsonRoundTrip(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Has JSON'  : x|$x.firmDetailsJson->length() > 0
+      ]),
+    'First Name,Has JSON\n' +
+    'Fabrice,true\n'
+  );
+}
+
+// =============================================================================
+// Test 54 — Filter on last() result (§A)
+// Query: filter(lastOtherName == 'O2') + project(firstName, firmName)
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testFilterOnLastElement(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.lastOtherName == 'O2')
+      ->project(~[
+        'First Name': x|$x.firstName,
+        'Firm'      : x|$x.firmName
+      ]),
+    'First Name,Firm\n' +
+    'Anthony,Firm X\n' +
+    'John,Firm X\n' +
+    'John,Firm X\n' +
+    'Peter,Firm X\n'
+  );
+}
+
+// =============================================================================
+// Test 55 — GroupBy with collection ops (§A)
+// Query: groupBy([firmName], [agg withExtraName sum, count])
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testGroupByWithCollectionOps(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()->groupBy(
+      [x|$x.firmName],
+      [agg(x|$x.withExtraName, y|$y->sum()), agg(x|$x.firstName, y|$y->count())],
+      ['Firm', 'Total With Extra', 'Count']
+    ),
+    'Firm,Total With Extra,Count\n' +
+    'Firm A,3,1\n' +
+    'Firm B,6,2\n' +
+    'Firm X,12,4\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     MAP OPERATION TESTS (§B — to(@Map<String,String>))
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 56 — Map get() via to(@Map<String,String>) (§B)
+// Mapping ops: ->to(@Map<String,String>)->get('role'), ->get('dept')
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapGet(conn: Connection[1]):Boolean[1]
+{
+  mapExecute($conn,
+    |MapPerson.all()->project(~[
+      'Name'     : x|$x.name,
+      'Tag Role' : x|$x.tagRole,
+      'Tag Dept' : x|$x.tagDept
+    ]),
+    'Name,Tag Role,Tag Dept\n' +
+    'Alice,admin,eng\n' +
+    'Bob,user,sales\n' +
+    'Carol,admin,ops\n'
+  );
+}
+
+// =============================================================================
+// Test 57 — Map keys() via to(@Map<String,String>) (§B)
+// Mapping ops: ->to(@Map<String,String>)->keys()
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapKeys(conn: Connection[1]):Boolean[1]
+{
+  mapExecute($conn,
+    |MapPerson.all()
+      ->filter(x | $x.name == 'Alice')
+      ->project(~[
+        'Name'     : x|$x.name,
+        'Tag Keys' : x|$x.tagKeys
+      ]),
+    'Name,Tag Keys\n' +
+    'Alice,role\n' +
+    'Alice,dept\n'
+  );
+}
+
+// =============================================================================
+// Test 58 — Map values() via to(@Map<String,String>) (§B)
+// Mapping ops: ->to(@Map<String,String>)->values()
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapValues(conn: Connection[1]):Boolean[1]
+{
+  mapExecute($conn,
+    |MapPerson.all()
+      ->filter(x | $x.name == 'Alice')
+      ->project(~[
+        'Name'       : x|$x.name,
+        'Tag Values' : x|$x.tagValues
+      ]),
+    'Name,Tag Values\n' +
+    'Alice,admin\n' +
+    'Alice,eng\n'
+  );
+}
+
+// =============================================================================
+// Test 59 — Map put() + get() via to(@Map<String,String>) (§B)
+// Mapping ops: ->to(@Map<String,String>)->put('extra','yes')->get('extra')
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapPut(conn: Connection[1]):Boolean[1]
+{
+  mapExecute($conn,
+    |MapPerson.all()->project(~[
+      'Name'          : x|$x.name,
+      'With Extra Tag': x|$x.withExtraTag
+    ]),
+    'Name,With Extra Tag\n' +
+    'Alice,yes\n' +
+    'Bob,yes\n' +
+    'Carol,yes\n'
+  );
+}
+
+// =============================================================================
+// Test 60 — Filter on Map get() result (§B)
+// Query: filter(tagRole == 'admin') + project(name)
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testMapFilterOnGet(conn: Connection[1]):Boolean[1]
+{
+  mapExecute($conn,
+    |MapPerson.all()
+      ->filter(x | $x.tagRole == 'admin')
+      ->project(~[
+        'Name': x|$x.name
+      ]),
+    'Name\n' +
+    'Alice\n' +
+    'Carol\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     toMany TESTS (§D — direct array flatten)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 61 — toMany primitive project (§D)
+// Mapping ops: toMany(@String) — direct projection flattens array to rows
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name'        : x|$x.firstName,
+        'Other Names Direct': x|$x.otherNamesDirect
+      ]),
+    'First Name,Other Names Direct\n' +
+    'Fabrice,O3\n' +
+    'Fabrice,O4\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilterInProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name'         : x|$x.firstName,
+        'Other Names Direct1': x|$x.otherNamesDirect->filter(n|$n->startsWith('O3')),
+        'Other Names Direct2': x|$x.otherNamesDirect->distinct(),
+        'Other Names Direct3': x|$x.otherNamesDirect->sort()
+      ]),
+    'First Name,Other Names Direct\n' +
+    'Fabrice,O3\n' +
+    'Fabrice,O4\n'
+  );
+}
+
+// =============================================================================
+// Test 62 — toMany primitive filter (§D)
+// Query: filter on flattened array value
+// =============================================================================
+function <<paramTest.Ignore>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyPrimitiveFilter(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.otherNamesDirect->exists(n | $n == 'O3'))
+      ->project(~[
+        'First Name': x|$x.firstName
+      ]),
+    'First Name\n' +
+    'Fabrice\n'
+  );
+}
+
+// =============================================================================
+// Test 63 — toMany numeric project (§D)
+// Mapping ops: toMany(@Float) — numeric array flatten
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyNumericProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Oliver')
+      ->project(~[
+        'First Name'     : x|$x.firstName,
+        'Revenues Direct': x|$x.revenuesDirect
+      ]),
+    'First Name,Revenues Direct\n' +
+    'Oliver,500.0\n'
+  );
+}
+
+// =============================================================================
+// Test 64 — toMany countries with distinct values (§D)
+// Query: project countries (flattened) for a specific person
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyCountriesProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name'      : x|$x.firstName,
+        'Countries Direct': x|$x.countriesDirect
+      ]),
+    'First Name,Countries Direct\n' +
+    'Fabrice,FR\n'
+  );
+}
+
+// =============================================================================
+// Test 65 — toMany class: flatten + downstream property navigation (§D)
+// Mapping ops: toMany(@AddressLine) — lateral flatten then navigate .details
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testToManyClassProject(conn: Connection[1]):Boolean[1]
+{
+  firmExecute($conn,
+    |Person.all()
+      ->filter(x | $x.firstName == 'Fabrice')
+      ->project(~[
+        'First Name'  : x|$x.firstName,
+        'Line Details': x|$x.addressLines.details
+      ]),
+    'First Name,Line Details\n' +
+    'Fabrice,D4\n' +
+    'Fabrice,D5\n'
+  );
+}
+
+// =============================================================================
+// =============================================================================
+//                     CHAINED getMany→getMany TESTS (§D)
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test 65 — Chained getMany: toMany(@Variant)->map(->toMany(@String)) (§D)
+// Mapping ops: nested array flatten via processVariantMap + array_flatten
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetMany(conn: Connection[1]):Boolean[1]
+{
+  nestedExecute($conn,
+    |NestedDoc.all()->project(~[
+      'Doc Id'   : x|$x.docId,
+      'All Items': x|$x.allItems
+    ]),
+    'Doc Id,All Items\n' +
+    '1,A\n' +
+    '1,B\n' +
+    '1,C\n' +
+    '2,D\n'
+  );
+}
+
+// =============================================================================
+// Test 66 — Chained getMany with scalar body (§D)
+// Mapping ops: toMany(@Variant)->map(->to(@String)->toOne()) — single flatten
+// =============================================================================
+function <<paramTest.Test>> meta::relational::tests::mapping::relation::variant::comprehensive::testChainedGetManyScalar(conn: Connection[1]):Boolean[1]
+{
+  nestedExecute($conn,
+    |NestedDoc.all()->project(~[
+      'Doc Id'    : x|$x.docId,
+      'All Titles': x|$x.allTitles
+    ]),
+    'Doc Id,All Titles\n' +
+    '1,S1\n' +
+    '1,S2\n' +
+    '2,S3\n'
+  );
+}
+
