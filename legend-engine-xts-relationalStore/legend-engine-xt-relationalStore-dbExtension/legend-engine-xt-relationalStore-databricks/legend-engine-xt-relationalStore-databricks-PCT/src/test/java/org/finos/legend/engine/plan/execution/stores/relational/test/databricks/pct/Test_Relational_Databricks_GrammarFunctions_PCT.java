@@ -40,17 +40,11 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
 
             //conjunctions
             one("meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(false AND (((1.0 * 12) / 0) > 0))\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"STRING\" and \"BOOLEAN\")."),
             one("meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(((1 = 1) AND (NOT (2 = 3))) AND true)\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"BOOLEAN\" and \"STRING\")"),
             one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT false)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"false\" has the type \"STRING\"."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotFalse_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT false)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"false\" has the type \"STRING\"."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT true)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"true\" has the type \"STRING\"."),
+            one("meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND false)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 12"),
             one("meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"),
             one("meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(true OR (((1.0 * 12) / 0) > 0))\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"STRING\" and \"BOOLEAN\")."),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(((NOT (1 = 1)) OR (2 = 3)) OR true)\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"BOOLEAN\" and \"STRING\")."),
 
             //equality
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic.", AdapterQualifier.unsupportedFeature),
@@ -65,10 +59,8 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\"", AdapterQualifier.unsupportedFeature),
 
             //inequalities
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT true)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"true\" has the type \"STRING\"."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT true)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"true\" has the type \"STRING\"."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT false)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"false\" has the type \"STRING\"."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"(NOT false)\" due to data type mismatch: The first parameter requires the \"BOOLEAN\" type, however \"false\" has the type \"STRING\"."),
+            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "\"Assert failed\""),
+            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_", "\"Assert failed\""),
 
             //filter
             one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code", AdapterQualifier.unsupportedFeature),
@@ -120,15 +112,16 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\nexpected: -4.0D\nactual:   -4.0"),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "[PARSE_SYNTAX_ERROR] org.apache.spark.sql.catalyst.parser.ParseException: \n[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 1, pos 10)"),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_subtract' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error."),
 
             //plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\nexpected: 6.0D\nactual:   6.0"),
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -9223372036854775790\""),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_add' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error"),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
 
             //times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\nexpected: 353791.470D\nactual:   353791.47"),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "\"\nexpected: -1\nactual:   -2\""),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_multiply' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error"),
 
             //string-plus
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"),

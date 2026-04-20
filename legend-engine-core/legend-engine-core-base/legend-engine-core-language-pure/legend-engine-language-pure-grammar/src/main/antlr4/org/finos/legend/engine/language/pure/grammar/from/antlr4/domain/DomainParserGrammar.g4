@@ -45,19 +45,6 @@ elementDefinition:                              (
                                                 )
 ;
 
-
-// -------------------------------------- SHARED --------------------------------------
-
-stereotypes:                                    LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
-;
-stereotype:                                     qualifiedName DOT identifier
-;
-taggedValues:                                   BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
-;
-taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
-;
-
-
 // -------------------------------------- CLASS --------------------------------------
 
 classDefinition:                                CLASS stereotypes? taggedValues? qualifiedName typeParametersWithContravarianceAndMultiplicityParameters?

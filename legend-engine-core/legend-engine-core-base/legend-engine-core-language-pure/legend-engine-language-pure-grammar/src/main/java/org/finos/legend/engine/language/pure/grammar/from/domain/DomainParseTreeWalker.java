@@ -1421,6 +1421,8 @@ public class DomainParseTreeWalker
         colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
         colSpec.genericType = oneColSpec.type() == null ? null : processGenericType(oneColSpec.type());
         colSpec.multiplicity = oneColSpec.multiplicity() == null ? null : buildMultiplicity(oneColSpec.multiplicity().multiplicityArgument());
+        colSpec.stereotypes = oneColSpec.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(oneColSpec.stereotypes());
+        colSpec.taggedValues = oneColSpec.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(oneColSpec.taggedValues());
         if (oneColSpec.anyLambda() != null)
         {
             colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());

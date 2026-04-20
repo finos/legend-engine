@@ -43,13 +43,13 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class DataQualityLambdaGenerator
 {
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, String queryType)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, boolean includeTotalDefectCount, String queryType)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(qualifiedPath);
-        return generateLambda(pureModel, packageableElement, validationNames, runQuery, resultLimit, enrichDQColumns, queryType);
+        return generateLambda(pureModel, packageableElement, validationNames, runQuery, resultLimit, enrichDQColumns, includeTotalDefectCount, queryType);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, String queryType)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, PackageableElement packageableElement, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, boolean includeTotalDefectCount, String queryType)
     {
         if (packageableElement instanceof Root_meta_external_dataquality_DataQuality)
         {
@@ -57,7 +57,7 @@ public class DataQualityLambdaGenerator
         }
         else if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationValidation)
         {
-            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationNames, runQuery, resultLimit, enrichDQColumns, queryType);
+            return generateRelationValidationLambda(pureModel, (Root_meta_external_dataquality_DataQualityRelationValidation) packageableElement, validationNames, runQuery, resultLimit, enrichDQColumns, includeTotalDefectCount, queryType);
         }
         throw new EngineException("Unsupported Dataquality element! " + packageableElement.getClass().getSimpleName(), ExceptionCategory.USER_EXECUTION_ERROR);
     }
@@ -67,7 +67,7 @@ public class DataQualityLambdaGenerator
         return core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataQualityQuery_DataQuality_1__Integer_$0_1$__LambdaFunction_1_(packageableElement, Objects.isNull(queryLimit) ? null : queryLimit.longValue(), pureModel.getExecutionSupport());
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, String queryType)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateRelationValidationLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, Set<String> validationNames, Boolean runQuery, Integer resultLimit, boolean enrichDQColumns, boolean includeTotalDefectCount, String queryType)
     {
         if (isNotBlank(queryType) && !core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(packageableElement._query(), pureModel.getExecutionSupport()))
         {
@@ -77,7 +77,7 @@ public class DataQualityLambdaGenerator
         {
             return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) packageableElement._query();
         }
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_MANY__Integer_$0_1$__Boolean_1__LambdaFunction_1_(packageableElement, Sets.immutable.ofAll(validationNames), Objects.isNull(resultLimit) ? null : resultLimit.longValue(), enrichDQColumns, pureModel.getExecutionSupport());
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDataqualityRelationValidationLambda_DataQualityRelationValidation_1__String_MANY__Integer_$0_1$__Boolean_1__Boolean_1__Boolean_1__Boolean_1__LambdaFunction_1_(packageableElement, Sets.immutable.ofAll(validationNames), Objects.isNull(resultLimit) ? null : resultLimit.longValue(), enrichDQColumns, false, false, includeTotalDefectCount, pureModel.getExecutionSupport());
     }
 
     public static LambdaFunction transformLambda(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions)

@@ -39,6 +39,11 @@ function <<access.private>> meta::external::format::shared::externalFormatExtens
    )
 }
 
+Class meta::external::format::shared::JsonNodeInputOption extends meta::pure::executionPlan::ExecutionOption
+{
+  useJsonNode: Boolean[0..1];
+}
+
 function <<access.private>> meta::external::format::shared::serializerExtensionName(version:String[1]): String[1]
 {
    'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'

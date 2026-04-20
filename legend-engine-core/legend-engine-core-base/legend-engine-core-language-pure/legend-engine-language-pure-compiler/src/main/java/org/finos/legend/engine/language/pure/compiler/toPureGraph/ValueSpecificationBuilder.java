@@ -103,6 +103,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapAggregation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_TdsOlapRank_Impl;
 import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
@@ -436,7 +438,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                                 cols.collect(c ->
                                 {
                                     Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getLast()._rawType())._columns().getFirst();
-                                    return _Column.getColumnInstance(theCol._name(), false, _Column.getColumnType(theCol), _Column.getColumnMultiplicity(theCol), null, processorSupport);
+                                    return _Column.getColumnInstance(theCol._name(), false, _Column.getColumnType(theCol), _Column.getColumnMultiplicity(theCol), theCol._stereotypes(), theCol._taggedValues(), null, processorSupport);
                                 }),
                                 null,
                                 processorSupport
@@ -514,7 +516,18 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             {
                 multiplicity = this.context.pureModel.getMultiplicity(colSpec.multiplicity);
             }
-            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, gt, multiplicity, this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
+            RichIterable<? extends Stereotype> stereotypes = null;
+            if (colSpec.stereotypes != null)
+            {
+                stereotypes = Lists.mutable.fromStream(colSpec.stereotypes.stream().map(this.context::resolveStereotype));
+            }
+            RichIterable<? extends TaggedValue> taggedValues = null;
+            if (colSpec.taggedValues != null)
+            {
+                taggedValues = Lists.mutable.fromStream(colSpec.taggedValues.stream().map(this.context::newTaggedValue));
+            }
+
+            return Handlers.wrapInstanceValue(Handlers.buildColSpec(colSpec.name, gt, multiplicity, stereotypes, taggedValues, this.context.pureModel, this.context.pureModel.getExecutionSupport().getProcessorSupport()), this.context.pureModel);
         }
         else if (colSpec.function2 == null)
         {
@@ -522,6 +535,17 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) funcVS._values().getFirst();
 
             FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func, this.context.pureModel.getExecutionSupport().getProcessorSupport());
+
+            RichIterable<? extends Stereotype> stereotypes = null;
+            if (colSpec.stereotypes != null)
+            {
+                stereotypes = Lists.mutable.fromStream(colSpec.stereotypes.stream().map(this.context::resolveStereotype));
+            }
+            RichIterable<? extends TaggedValue> taggedValues = null;
+            if (colSpec.taggedValues != null)
+            {
+                taggedValues = Lists.mutable.fromStream(colSpec.taggedValues.stream().map(this.context::newTaggedValue));
+            }
 
             GenericType colSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
                     ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::FuncColSpec"))
@@ -531,7 +555,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.immutable.with(_Column.getColumnInstance(colSpec.name, false, Handlers.funcReturnType(funcVS, this.context.pureModel), Handlers.funcReturnMul(funcVS, this.context.pureModel), null, processorSupport)),
+                                                            Lists.immutable.with(_Column.getColumnInstance(colSpec.name, false, Handlers.funcReturnType(funcVS, this.context.pureModel), Handlers.funcReturnMul(funcVS, this.context.pureModel), stereotypes, taggedValues, null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )
@@ -561,6 +585,17 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func1, this.context.pureModel.getExecutionSupport().getProcessorSupport());
             FunctionType func2Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func2, this.context.pureModel.getExecutionSupport().getProcessorSupport());
 
+            RichIterable<? extends Stereotype> stereotypes = null;
+            if (colSpec.stereotypes != null)
+            {
+                stereotypes = Lists.mutable.fromStream(colSpec.stereotypes.stream().map(this.context::resolveStereotype));
+            }
+            RichIterable<? extends TaggedValue> taggedValues = null;
+            if (colSpec.taggedValues != null)
+            {
+                taggedValues = Lists.mutable.fromStream(colSpec.taggedValues.stream().map(this.context::newTaggedValue));
+            }
+
             GenericType aggColSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
                     ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::AggColSpec"))
                     ._typeArguments(
@@ -570,7 +605,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                                     new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType))
                                             ._rawType(
                                                     _RelationType.build(
-                                                            Lists.immutable.with(_Column.getColumnInstance(colSpec.name, false, Handlers.funcReturnType(func2VS, this.context.pureModel), Handlers.funcReturnMul(func2VS, this.context.pureModel), null, processorSupport)),
+                                                            Lists.immutable.with(_Column.getColumnInstance(colSpec.name, false, Handlers.funcReturnType(func2VS, this.context.pureModel), Handlers.funcReturnMul(func2VS, this.context.pureModel), stereotypes, taggedValues, null, processorSupport)),
                                                             null,
                                                             processorSupport
                                                     )

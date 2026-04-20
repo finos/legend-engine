@@ -20,6 +20,9 @@ Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::Pla
 {
    {doc.doc = 'Plan Id - To namespace platform code of different plans'}
    planId: String[0..1];
+
+    {doc.doc = 'Extra classes to include in code generation (e.g. subclasses not discoverable via specializations)'}
+   suppliedClassesForGeneration: meta::pure::metamodel::type::Class<Any>[*];
 }
 
 
@@ -110,10 +113,15 @@ function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanT
   generatePlatformCode($plan, $platformId, ^PlatformBindingConfig(), extractClasspathExtensions())
 }
 
+function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions(plan: ExecutionPlan[1], platformId: String[1], suppliedClassesForGeneration: meta::pure::metamodel::type::Class<Any>[*]): ExecutionPlan[1]
+{
+  generatePlatformCode($plan, $platformId, ^PlatformBindingConfig(suppliedClassesForGeneration = $suppliedClassesForGeneration), extractClasspathExtensions())
+}
+
 function meta::pure::executionPlan::platformBinding::localBinding::extractClasspathExtensions(): Extension[*]
 {
   let errorMessage = 'bindTestPlanToPlatformWithClasspathExtensions works only if meta::pure::extension::runtime::getExtensions__Extension_MANY__ function (defined in core_external_extensions repo) is available';
-  
+
   meta::pure::extension.children
     ->filter(x | $x->instanceOf(Package) && $x.name == 'runtime')->toOne($errorMessage)
     ->cast(@Package).children

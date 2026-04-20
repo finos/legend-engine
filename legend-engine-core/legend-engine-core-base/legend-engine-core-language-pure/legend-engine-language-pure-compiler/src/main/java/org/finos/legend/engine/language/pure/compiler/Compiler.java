@@ -81,7 +81,7 @@ public class Compiler
 
     public static org.finos.legend.engine.protocol.pure.m3.relation.RelationType getLambdaRelationType(LambdaFunction lambda, PureModel pureModel)
     {
-        return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel));
+        return RelationTypeHelper.convert(buildLambdaRelationType(lambda, pureModel), pureModel);
     }
 
     public static String getLambdaReturnType(LambdaFunction lambda, PureModel pureModel)

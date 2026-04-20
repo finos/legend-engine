@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -69,10 +71,44 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
     {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = Identity.makeIdentity(subject);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
+        return this.getDatabaseConnectionInternal(identity, databaseConnection, java.util.Collections.emptyMap(), runtimeContext, false);
     }
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection)
+    {
+        return this.getDatabaseConnectionInternal(identity, databaseConnection, java.util.Collections.emptyMap(), StoreExecutionState.emptyRuntimeContext(), false);
+    }
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults, StoreExecutionState.RuntimeContext runtimeContext)
+    {
+        return this.getDatabaseConnectionInternal(identity, databaseConnection, allocationResults, runtimeContext, false);
+    }
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
+    {
+        return this.getDatabaseConnectionInternal(identity, databaseConnection, java.util.Collections.emptyMap(), runtimeContext, false);
+    }
+
+    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults, StoreExecutionState.RuntimeContext runtimeContext, boolean skipPreprocessing)
+    {
+        return this.getDatabaseConnectionInternal(identity, databaseConnection, allocationResults, runtimeContext, skipPreprocessing);
+    }
+
+    /**
+     * Preprocesses a {@link DatabaseConnection} by delegating to the registered
+     * {@link ConnectionManager} instances. Extensions may enrich the connection
+     * using the executing user's identity and/or allocation variables.
+     * <p>
+     * If no registered manager modifies the connection, the original instance is returned.
+     */
+    public DatabaseConnection preprocessConnection(DatabaseConnection databaseConnection, Identity identity, Map<String, Result> allocationResults)
+    {
+        DatabaseConnection preprocessed = this.connectionManagers.collect(c -> c.preprocessConnection(databaseConnection, identity, allocationResults)).detect(Objects::nonNull);
+        return preprocessed != null ? preprocessed : databaseConnection;
+    }
+
+    // ── internal ────────────────────────────────────────────────────────────
 
     private DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection)
     {
@@ -84,23 +120,22 @@ public class ConnectionManagerSelector
         return datasource;
     }
 
-    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection)
+    /**
+     * Single internal workhorse – every public getDatabaseConnection overload
+     * funnels through here.  Preprocessing runs exactly once unless the caller
+     * has already done it and sets {@code skipPreprocessing}.
+     */
+    private Connection getDatabaseConnectionInternal(Identity identity, DatabaseConnection databaseConnection, Map<String, Result> allocationResults, StoreExecutionState.RuntimeContext runtimeContext, boolean skipPreprocessing)
     {
-        return this.getDatabaseConnection(identity, databaseConnection, StoreExecutionState.emptyRuntimeContext());
-    }
+        DatabaseConnection resolvedConnection = skipPreprocessing
+                ? databaseConnection
+                : this.preprocessConnection(databaseConnection, identity, allocationResults);
 
-    public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
-    {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
-    }
+        DataSourceSpecification datasource = getDataSourceSpecification(resolvedConnection);
 
-    public Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecification datasource, StoreExecutionState.RuntimeContext runtimeContext)
-    {
-        if (databaseConnection instanceof RelationalDatabaseConnection)
+        if (resolvedConnection instanceof RelationalDatabaseConnection)
         {
-            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
-
+            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) resolvedConnection;
             Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity, runtimeContext);
             return datasource.getConnectionUsingIdentity(identity, databaseCredentialHolder);
         }
@@ -108,6 +143,17 @@ public class ConnectionManagerSelector
             In some cases, connection managers can return DatabaseConnections that are not RelationalDatabaseConnection.
             Without the metadata associated with a RelationalDatabaseConnection we cannot compute a credential.
         */
+        return datasource.getConnectionUsingIdentity(identity, Optional.empty());
+    }
+
+     Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecification datasource, StoreExecutionState.RuntimeContext runtimeContext)
+    {
+        if (databaseConnection instanceof RelationalDatabaseConnection)
+        {
+            RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
+            Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity, runtimeContext);
+            return datasource.getConnectionUsingIdentity(identity, databaseCredentialHolder);
+        }
         return datasource.getConnectionUsingIdentity(identity, Optional.empty());
     }
 
@@ -120,6 +166,7 @@ public class ConnectionManagerSelector
         }
         return key;
     }
+
 
     public Connection getTestDatabaseConnection()
     {

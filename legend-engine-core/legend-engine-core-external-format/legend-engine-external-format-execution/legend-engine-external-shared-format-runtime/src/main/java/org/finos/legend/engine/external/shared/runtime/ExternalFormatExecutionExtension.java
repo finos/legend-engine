@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 public class ExternalFormatExecutionExtension implements ExecutionExtension
@@ -95,6 +96,7 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
 
     private Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, Identity identity, ExecutionState executionState)
     {
+        StreamingObjectResult<?> streamingObjectResult;
         ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
         if (extension == null)
         {
@@ -102,8 +104,16 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         }
 
         Result sourceResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(identity, new ExecutionState(executionState)));
-        InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
-        StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, identity, executionState);
+        if (node.useJsonNodeType)
+        {
+            JsonNode jsonNode =  (JsonNode) ((ConstantResult) sourceResult).getValue();
+            streamingObjectResult = extension.executeInternalizeExecutionNode(node, jsonNode, identity, executionState);
+        }
+        else
+        {
+            InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
+            streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, identity, executionState);
+        }
         StreamingObjectResult<?> withConstraints = applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
         if (!executionState.realizeInMemory)
         {

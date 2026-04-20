@@ -1,0 +1,126 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+import meta::pure::functions::math::*;
+
+function
+<<PCT.function>>
+{doc.doc='Returns how many standard deviations a value is from the mean within its window partition. A z-score of 0 indicates the value equals the mean; positive values are above average, negative below. Commonly used for outlier detection and normalizing data.'}
+meta::pure::functions::math::zScore<T>(partition: Relation<T>[1], window: _Window<T>[1], row: T[1], colToZScore:ColSpec<(?:Number)⊆T>[1]):Float[1]
+{
+    (eval($colToZScore, $row)->toOne() - average($partition, $window, $row, $colToZScore)) / max(stdDevPopulation($partition, $window, $row, $colToZScore), 0.0000000001)
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  grp, x
+                  A, 11
+                  A, 9
+                  A, 13
+                  A, 7
+                  A, 10
+                  B, 20
+                  B, 26
+                  B, 14
+                  B, 22
+                  B, 18
+                #->extend(over(~grp), ~x_zscore: {p,w,r| zScore($p, $w, $r, ~x)})
+               };
+
+    let res = $f->eval($expr);
+
+    assertTdsEquivalent(
+                  #TDS
+                     grp, x, x_zscore
+                     A, 7, -1.5
+                     A, 9, -0.5
+                     A, 10, 0.0
+                     A, 11, 0.5
+                     A, 13, 1.5
+                     B, 14, -1.5
+                     B, 18, -0.5
+                     B, 20, 0.0
+                     B, 22, 0.5
+                     B, 26, 1.5
+                  #,
+                  $res->cast(@Relation<(grp:String, x:Integer, x_zscore:Float)>)->sort([~grp->ascending(), ~x->ascending()]),
+                  0
+    );
+}
+
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    // When all values in a partition are the same, stdDev=0, so z-score should be 0.0
+    let expr = {
+                | #TDS
+                  grp, x
+                  A, 5
+                  A, 5
+                  A, 5
+                  B, 10
+                #->extend(over(~grp), ~x_zscore: {p,w,r| zScore($p, $w, $r, ~x)})
+               };
+
+    let res = $f->eval($expr);
+
+    assertTdsEquivalent(
+                  #TDS
+                     grp, x, x_zscore
+                     A, 5, 0.0
+                     A, 5, 0.0
+                     A, 5, 0.0
+                     B, 10, 0.0
+                  #,
+                  $res->cast(@Relation<(grp:String, x:Integer, x_zscore:Float)>)->sort([~grp->ascending(), ~x->ascending()]),
+                  0
+    );
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::zScore::testZScore_FloatValues<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    // Values: 1.0, 2.0, 3.0, 4.0, 5.0 -> mean=3.0, variance=2.0, stdDev=sqrt(2)≈1.414
+    // z-scores: (1-3)/sqrt(2)≈-1.414, (2-3)/sqrt(2)≈-0.707, (3-3)/sqrt(2)=0, (4-3)/sqrt(2)≈0.707, (5-3)/sqrt(2)≈1.414
+    let expr = {
+                | #TDS
+                  grp, x
+                  A, 1.0
+                  A, 2.0
+                  A, 3.0
+                  A, 4.0
+                  A, 5.0
+                #->extend(over(~grp), ~x_zscore: {p,w,r| zScore($p, $w, $r, ~x)})
+               };
+
+    let res = $f->eval($expr);
+    let sqrt2 = sqrt(2.0);
+
+    assertTdsEquivalent(
+                  #TDS
+                     grp, x, x_zscore
+                     A, 1.0, -1.414213562373095
+                     A, 2.0, -0.7071067811865476
+                     A, 3.0, 0.0
+                     A, 4.0, 0.7071067811865476
+                     A, 5.0, 1.414213562373095
+                  #,
+                  $res->cast(@Relation<(grp:String, x:Float, x_zscore:Float)>)->sort([~grp->ascending(), ~x->ascending()]),
+                  0.0001
+    );
+}

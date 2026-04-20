@@ -64,7 +64,7 @@ public class QueryStoreManager
     private static final int GET_QUERIES_LIMIT = 50;
 
     private final MongoClient mongoClient;
-    private final ApplicationQueryDao queryDao;
+    private ApplicationQueryDao queryDao;
 
     public QueryStoreManager(MongoClient mongoClient)
     {
@@ -102,6 +102,15 @@ public class QueryStoreManager
             return this.getQueryDatabase().getCollection(Vault.INSTANCE.getValue("query.mongo.collection.queryEvent"));
         }
         throw new RuntimeException("Query event MongoDB collection has not been configured properly");
+    }
+
+    private ApplicationQueryDao getQueryDao()
+    {
+        if (this.queryDao == null)
+        {
+            this.queryDao = new ApplicationQueryDao(mongoClient, getQueryDatabaseName(), getQueryCollectionName());
+        }
+        return this.queryDao;
     }
 
     private Query convertFromStoredQuery(ApplicationStoredQuery storedQuery)
@@ -174,6 +183,18 @@ public class QueryStoreManager
         {
             QueryDataSpaceExecutionContext queryDataSpaceExecutionContext = (QueryDataSpaceExecutionContext) query.executionContext;
             validateNonEmptyQueryField(queryDataSpaceExecutionContext.dataSpacePath, "Query data Space execution context dataSpace path is missing or empty");
+        }
+        else if (query.executionContext instanceof DataProductModelAccessExecutionContext)
+        {
+            DataProductModelAccessExecutionContext dataProductModelAccessExecutionContext = (DataProductModelAccessExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(dataProductModelAccessExecutionContext.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
+            validateNonEmptyQueryField(dataProductModelAccessExecutionContext.accessPointGroupId, "Query data product model access execution context accessPointGroupId is missing or empty");
+        }
+        else if (query.executionContext instanceof DataProductNativeExecutionContext)
+        {
+            DataProductNativeExecutionContext dataProductNativeExecutionContext = (DataProductNativeExecutionContext) query.executionContext;
+            validateNonEmptyQueryField(dataProductNativeExecutionContext.dataProductPath, "Query data product execution context dataProduct path is missing or empty");
+            validateNonEmptyQueryField(dataProductNativeExecutionContext.executionKey, "Query data product native execution context executionKey is missing or empty");
         }
         validateNonEmptyQueryField(query.content, "Query content is missing or empty");
         validate(SourceVersion.isName(query.groupId), "Query project group ID is invalid");
@@ -346,7 +367,7 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Can't fetch more than " + GET_QUERIES_LIMIT + " queries", Response.Status.BAD_REQUEST);
         }
-        List<Query> matchingQueries = this.queryDao.find(Maps.fixedSize.of("id", queryIds), false, true, StoredVersionedAssetFetchOptions.builder().withLimit(GET_QUERIES_LIMIT).build())
+        List<Query> matchingQueries = getQueryDao().find(Maps.fixedSize.of("id", queryIds), false, true, StoredVersionedAssetFetchOptions.builder().withLimit(GET_QUERIES_LIMIT).build())
                 .map(this::convertFromStoredQuery).collect(Collectors.toList());
         // validate
         MutableSortedSet<String> notFoundQueries = SortedSets.mutable.empty();
@@ -388,7 +409,7 @@ public class QueryStoreManager
         {
             return new ArrayList<>();
         }
-        return this.queryDao.getAll(StoredVersionedAssetFetchOptions.builder()
+        return getQueryDao().getAll(StoredVersionedAssetFetchOptions.builder()
                 .sortAsc("id")
                 .withSkip(from)
                 .withLimit(to - from)
@@ -397,15 +418,15 @@ public class QueryStoreManager
 
     public Query getQuery(String queryId)
     {
-        Optional<ApplicationStoredQuery> matchingQuery = this.queryDao.get(queryId);
+        Optional<ApplicationStoredQuery> matchingQuery = getQueryDao().get(queryId);
         if (!matchingQuery.isPresent())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
         }
         ApplicationStoredQuery storedQuery = matchingQuery.get();
-        
+
         storedQuery.lastOpenAt = Instant.now().toEpochMilli();
-        this.queryDao.update(queryId, storedQuery, null, false);
+        getQueryDao().update(queryId, storedQuery, null, false);
         return this.convertFromStoredQuery(storedQuery);
     }
 
@@ -415,13 +436,13 @@ public class QueryStoreManager
 
         query.owner = currentUser;
 
-        Optional<ApplicationStoredQuery> existingQuery = this.queryDao.get(query.id);
+        Optional<ApplicationStoredQuery> existingQuery = getQueryDao().get(query.id);
         if (existingQuery.isPresent())
         {
             throw new ApplicationQueryException("Query with ID '" + query.id + "' already existed", Response.Status.BAD_REQUEST);
         }
-        
-        ApplicationStoredQuery createdQuery = this.queryDao.create(convertToStoredQuery(query), currentUser);
+
+        ApplicationStoredQuery createdQuery = getQueryDao().create(convertToStoredQuery(query), currentUser);
         query = this.convertFromStoredQuery(createdQuery);
 
         QueryEvent createdEvent = createEvent(query.id, QueryEvent.QueryEventType.CREATED);
@@ -438,7 +459,7 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Updating query ID is not supported", Response.Status.BAD_REQUEST);
         }
-        Optional<ApplicationStoredQuery> existingQuery = this.queryDao.get(queryId);
+        Optional<ApplicationStoredQuery> existingQuery = getQueryDao().get(queryId);
         if (!existingQuery.isPresent())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
@@ -454,7 +475,7 @@ public class QueryStoreManager
         }
         ApplicationStoredQuery storedQuery = convertToStoredQuery(query);
 
-        ApplicationStoredQuery updatedQuery = this.queryDao.update(queryId, storedQuery, currentUser);
+        ApplicationStoredQuery updatedQuery = getQueryDao().update(queryId, storedQuery, currentUser);
         query = this.convertFromStoredQuery(updatedQuery);
 
         QueryEvent updatedEvent = createEvent(query.id, QueryEvent.QueryEventType.UPDATED);
@@ -491,7 +512,7 @@ public class QueryStoreManager
                 throw new ApplicationQueryException("Can't modify query field" + field.getName(), Response.Status.BAD_REQUEST);
             }
         }
-        ApplicationStoredQuery storedQuery = this.queryDao.update(queryId, convertToStoredQuery(currentQuery), currentUser);
+        ApplicationStoredQuery storedQuery = getQueryDao().update(queryId, convertToStoredQuery(currentQuery), currentUser);
         currentQuery = convertFromStoredQuery(storedQuery);
 
         QueryEvent updatedEvent = createEvent(queryId, QueryEvent.QueryEventType.UPDATED);
@@ -502,7 +523,7 @@ public class QueryStoreManager
 
     public void deleteQuery(String queryId, String currentUser) throws JsonProcessingException
     {
-        Optional<ApplicationStoredQuery> existingQuery = this.queryDao.get(queryId);
+        Optional<ApplicationStoredQuery> existingQuery = getQueryDao().get(queryId);
         if (!existingQuery.isPresent())
         {
             throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
@@ -511,7 +532,7 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Only owner can delete the query", Response.Status.FORBIDDEN);
         }
-        this.queryDao.delete(queryId, currentUser);
+        getQueryDao().delete(queryId, currentUser);
         this.getQueryEventCollection().insertOne(queryEventToDocument(createEvent(queryId, QueryEvent.QueryEventType.DELETED)));
     }
 

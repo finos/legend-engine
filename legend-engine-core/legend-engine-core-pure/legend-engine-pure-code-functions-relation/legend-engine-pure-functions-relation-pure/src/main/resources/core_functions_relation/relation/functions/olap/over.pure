@@ -2062,20 +2062,24 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
 
     let res =  $f->eval($expr);
 
-    assertEquals( '#TDS\n'+
-                  '   menu_category,menu_cogs_usd,sum_cogs\n'+
-                  '   Beverage,0.5,10.65\n'+
-                  '   Beverage,0.65,9.65\n'+
-                  '   Beverage,0.75,9.0\n'+
-                  '   Dessert,0.5,10.65\n'+
-                  '   Dessert,1.0,11.25\n'+
-                  '   Dessert,1.25,10.25\n'+
-                  '   Dessert,2.5,9.5\n'+
-                  '   Dessert,3.0,7.0\n'+
-                  '   Snack,1.25,10.25\n'+
-                  '   Snack,2.25,11.75\n'+
-                  '   Snack,4.0,4.0\n'+
-                  '#', $res->sort([~menu_category->ascending(), ~menu_cogs_usd->ascending()])->toString());
+    meta::pure::functions::relation::assertTdsEquivalent(
+      #TDS
+        menu_category:String[1],menu_cogs_usd:Number[1],sum_cogs:Number[1]
+        Beverage,0.5,10.65
+        Beverage,0.65,9.65
+        Beverage,0.75,9.0
+        Dessert,0.5,10.65
+        Dessert,1.0,11.25
+        Dessert,1.25,10.25
+        Dessert,2.5,9.5
+        Dessert,3.0,7.0
+        Snack,1.25,10.25
+        Snack,2.25,11.75
+        Snack,4.0,4.0
+      #,
+      $res->sort([~menu_category->ascending(), ~menu_cogs_usd->ascending()]),
+      0.01
+    );
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

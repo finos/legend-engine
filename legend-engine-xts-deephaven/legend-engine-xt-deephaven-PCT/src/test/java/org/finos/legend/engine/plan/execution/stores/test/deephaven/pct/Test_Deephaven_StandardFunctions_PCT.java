@@ -35,6 +35,10 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
     private static final Adapter adapter = CoreDeephavenPCTCodeRepositoryProvider.deephavenAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
+            one("meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
+            one("meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::multiplicity::toOne_T_MANY__T_1_\""),
+
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
@@ -45,7 +49,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""),
 
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
+            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_\""),
             
             one("meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_\""),
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_\""),
@@ -79,7 +83,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
 
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_\""),
 
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
+            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_\""),
 
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),
@@ -104,32 +108,26 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
-            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
+            one("meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_", "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitAnd_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitNot_Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_NegativeNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
+            one("meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitOr::testBitOr_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitOr_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
-            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"function not supported yet: meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitShiftLeft_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"function not supported yet: meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
-            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitShiftRight_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
+            one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
 
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_NegativeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
-            one("meta::pure::functions::math::tests::bitXor::testBitXor_SmallNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::bitXor_Integer_1__Integer_1__Integer_1_\""),
+            one("meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::parseInteger_String_1__Integer_1_\""),
 
             one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"), // io.deephaven.function.Numeric.cor(new int[]{1, 3.0, 6.0}, 10, -20, 30) -> Cannot find method cor([I, int, int, int) in class io.deephaven.function.Numeric
             one("meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
@@ -141,14 +139,24 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::max::testMax_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::max::testMax_Floats_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
+            one("meta::pure::functions::date::tests::max::testMax_Date_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::max_Date_MANY__Date_$0_1$_\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::max_DateTime_MANY__DateTime_$0_1$_\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_\""),
+            one("meta::pure::functions::date::tests::max::testExtendMaxDate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_\""),
             one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
@@ -162,14 +170,24 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
+            one("meta::pure::functions::date::tests::min::testMin_Date_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::min_Date_MANY__Date_$0_1$_\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::min_DateTime_MANY__DateTime_$0_1$_\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_\""),
+            one("meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_\""),
             one("meta::pure::functions::math::tests::minBy::testSimpleGroupByMinBy_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
@@ -184,7 +202,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
-            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::map_T_m__Function_1__V_m_\""),
+            one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
@@ -197,7 +215,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::stdDev_Number_$1_MANY$__Boolean_1__Number_1_\""),
             one("meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
             one("meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationSample_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_\""),
-            one("meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
+            one("meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_", "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""),
             one("meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationSample_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""),
 
             one("meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Aggregate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_\""),
@@ -228,7 +246,7 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuid_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::generation::generateGuid__String_1_\""),
 
             one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_\""),
-            one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\"")
+            one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_\"")
     );
 
     public static Test suite()

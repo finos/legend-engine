@@ -278,15 +278,10 @@ public class Test_Relational_ClickHouse_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   0.9999999987491066\""),
             one("meta::pure::functions::math::tests::log::testSimple_Function_1__Boolean_1_", "\"\nexpected: 4.0\nactual:   3.99999999928146\""),
 
-            // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"mod only expect two arguments, but got 3\""),
-
             // Pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
 
             // Rem
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14000000000000012\""),
 
             // ToDecimal

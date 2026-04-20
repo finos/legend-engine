@@ -93,6 +93,8 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
                 }
                 _snowflake._organization(snowflakeDatasourceSpecification.organization);
                 _snowflake._role(snowflakeDatasourceSpecification.role);
+                _snowflake._setSessionTimezone(snowflakeDatasourceSpecification.setSessionTimezone);
+                _snowflake._setSessionQuotedIdentifiersIgnoreCase(snowflakeDatasourceSpecification.setSessionQuotedIdentifiersIgnoreCase);
 
                 return _snowflake;
             }

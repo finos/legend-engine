@@ -42,6 +42,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,12 +51,16 @@ import java.util.stream.StreamSupport;
 
 public abstract class JsonDataReader<T>
 {
-    private final JsonParser parser;
-    private final ObjectMapper objectMapper;
+    private  JsonParser parser;
+    private  ObjectMapper objectMapper;
 
     private boolean finishedReading = false;
     private boolean inArray = false;
+    private final AtomicInteger arrayCounter = new AtomicInteger(0);
     private long recordCount = 0;
+    
+    private JsonNode node;
+    private JsonNode nextNode;
 
     private final Queue<IChecked<T>> queue = new LinkedList<>();
     private final Set<String> declaredMethods = Arrays.stream(this.getClass().getDeclaredMethods()).map(Method::getName).collect(Collectors.toSet());
@@ -84,6 +89,11 @@ public abstract class JsonDataReader<T>
         {
             throw new RuntimeException(e);
         }
+    }
+
+    public JsonDataReader(JsonNode node)
+    {
+        this.node = node;
     }
 
     public Stream<IChecked<T>> startStream()
@@ -119,6 +129,42 @@ public abstract class JsonDataReader<T>
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).onClose(this::close);
     }
 
+    public Stream<IChecked<T>> startStreamOptimized()
+    {
+        Iterator<IChecked<T>> iterator = new Iterator<IChecked<T>>()
+        {
+            @Override
+            public boolean hasNext()
+            {
+                if (queue.peek() == null)
+                {
+                    if (node.isArray() && !arrayIsFinished())
+                    {
+                        queue.addAll(readCheckedObjectsOptimized());
+                    }
+                    else if (!finishedReading)
+                    {
+                        nextNode = node;
+                        queue.addAll(readCheckedObjectsOptimized());
+                        finishedReading = true;
+                    }
+                }
+                return queue.peek() != null;
+            }
+
+            @Override
+            public IChecked<T> next()
+            {
+                if (!this.hasNext())
+                {
+                    throw new NoSuchElementException("End of stream has passed");
+                }
+                return queue.remove();
+            }
+        };
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).onClose(this::close);
+    }
+
     protected abstract IChecked<T> readCheckedObject(JsonNode node, JsonDataRecord source);
 
     private Collection<IChecked<T>> readCheckedObjects()
@@ -130,6 +176,19 @@ public abstract class JsonDataReader<T>
             return Collections.singleton(readCheckedObject(node, new JsonDataRecord(this.recordCount, node.toString())));
         }
         catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Collection<IChecked<T>> readCheckedObjectsOptimized()
+    {
+        try
+        {
+            this.recordCount++;
+            return Collections.singleton(readCheckedObject(this.nextNode, new JsonDataRecord(this.recordCount, this.nextNode)));
+        }
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }
@@ -151,6 +210,16 @@ public abstract class JsonDataReader<T>
         }
         this.finishedReading |= getCurrentToken() == null;
         return this.finishedReading;
+    }
+
+    private boolean arrayIsFinished()
+    {
+        if (!finishedReading && this.node.isArray())
+        {
+            this.nextNode = this.node.path(arrayCounter.getAndIncrement());
+        }
+        this.finishedReading |= this.nextNode.isMissingNode() ? true : false;
+        return finishedReading;
     }
 
     private void close()

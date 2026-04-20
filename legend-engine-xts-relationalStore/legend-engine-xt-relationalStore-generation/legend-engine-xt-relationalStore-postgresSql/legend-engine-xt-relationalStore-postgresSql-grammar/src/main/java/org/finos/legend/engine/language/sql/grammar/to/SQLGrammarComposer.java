@@ -224,6 +224,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(CurrentUser val)
+            {
+                return "CURRENT_USER";
+            }
+
+            @Override
             public String visit(LogicalBinaryExpression val)
             {
                 String left = val.left.accept(this);

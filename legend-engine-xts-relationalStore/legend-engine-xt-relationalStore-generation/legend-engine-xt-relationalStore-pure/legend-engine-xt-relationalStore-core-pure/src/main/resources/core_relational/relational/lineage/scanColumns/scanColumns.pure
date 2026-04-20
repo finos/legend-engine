@@ -34,7 +34,14 @@ function meta::pure::lineage::scanColumns::scanColumns(p:PropertyPathTree[1], m:
 
 function meta::pure::lineage::scanColumns::scanColumns(p:PropertyPathTree[1], m:Mapping[1], classToSets: Map<Class<Any>, List<InstanceSetImplementation>>[1], idToSet: Map<String, List<SetImplementation>>[1]):ColResWithState[*]
 {
-   let enrichedTree = $p->enrichPropertyPathTreeWithDataSetMapping($m);
+  let sets = $m->classMappings()->map(s|$s->resolveOperation($m));
+  let setsWithSuper = $sets->map(s|$s->allSuperSetImplementations($m))->concatenate($sets)->cast(@InstanceSetImplementation)->removeDuplicatesBy(x | $x.id);
+  scanColumns($p, $setsWithSuper, $classToSets, $idToSet);
+}
+
+function meta::pure::lineage::scanColumns::scanColumns(p:PropertyPathTree[1], sets:SetImplementation[*], classToSets: Map<Class<Any>, List<InstanceSetImplementation>>[1], idToSet: Map<String, List<SetImplementation>>[1]):ColResWithState[*]
+{
+   let enrichedTree = $p->enrichPropertyPathTreeWithDataSetMapping($sets);
    let columns = $enrichedTree->getColumnsWithContext();
    ^ColResWithState(colRes=^ColRes(columns=$columns), classToSets=$classToSets, idToSet=$idToSet);
 }
@@ -48,7 +55,12 @@ function meta::pure::lineage::scanColumns::enrichPropertyPathTreeWithDataSetMapp
 {
   let sets = $m->classMappings()->map(s|$s->resolveOperation($m));
   let setsWithSuper = $sets->map(s|$s->allSuperSetImplementations($m))->concatenate($sets)->cast(@InstanceSetImplementation)->removeDuplicatesBy(x | $x.id);
-  $p->enrichPropertyPathTreeWithDataSetMapping(^EnrichedTreesStateContext(setsInScope=[], sets=$setsWithSuper), true, noDebug()).enrichedTrees->toOne();
+  enrichPropertyPathTreeWithDataSetMapping($p, $setsWithSuper);
+}
+
+function meta::pure::lineage::scanColumns::enrichPropertyPathTreeWithDataSetMapping(p:PropertyPathTree[1], sets:SetImplementation[*]):DataSetMappingEnrichedPropertyTree[1]
+{
+  $p->enrichPropertyPathTreeWithDataSetMapping(^EnrichedTreesStateContext(setsInScope=[], sets=$sets), true, noDebug()).enrichedTrees->toOne();
 }
 
 Class meta::pure::lineage::scanColumns::DataSetMappingEnrichedPropertyTree

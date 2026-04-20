@@ -16,14 +16,28 @@
 package org.finos.legend.engine.query.sql.api;
 
 import org.eclipse.collections.api.LazyIterable;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.test.GrammarParseTestUtils;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.sql.providers.core.SQLContext;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
@@ -31,27 +45,121 @@ import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
 import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.ServiceLoader;
 
 public class TestSQLSourceProvider implements SQLSourceProvider
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestSQLSourceProvider.class);
     private static final PureModelContextData pureModelContextData = GrammarParseTestUtils.loadPureModelContextFromResource("proj-1.pure", TestSQLSourceProvider.class);
-    private static final String service = "service";
+    private static final String SERVICE_TYPE = "service";
+
+    private final boolean enablePreGeneratedPlans;
+    private final Map<String, ExecutionPlan> preGeneratedPlans;
+    private PureModel compiledModel;
+    private RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
+    private Iterable<? extends PlanTransformer> transformers;
+
+    public TestSQLSourceProvider()
+    {
+        this(false);
+    }
+
+    public TestSQLSourceProvider(boolean enablePreGeneratedPlans)
+    {
+        this.enablePreGeneratedPlans = enablePreGeneratedPlans;
+        this.preGeneratedPlans = Maps.mutable.empty();
+
+        if (enablePreGeneratedPlans)
+        {
+            initializePlans();
+        }
+    }
+
+    /**
+     * Initialize pre-generated execution plans for all services.
+     * This simulates what AlloyServiceState does when services are registered.
+     */
+    private void initializePlans()
+    {
+        try
+        {
+            ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+            this.compiledModel = modelManager.loadModel(pureModelContextData, PureClientVersions.production, Identity.getAnonymousIdentity(), "");
+
+            this.extensions = PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(compiledModel.getExecutionSupport()));
+            MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+            this.transformers = generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
+
+            LazyIterable<Service> services = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
+                    .collect(e -> (Service) e);
+
+            for (Service service : services)
+            {
+                if (service.execution instanceof PureSingleExecution)
+                {
+                    try
+                    {
+                        ExecutionPlan plan = generatePlanForService(service, (PureSingleExecution) service.execution);
+                        if (plan != null)
+                        {
+                            preGeneratedPlans.put(service.pattern, plan);
+                            LOGGER.debug("Pre-generated plan for service: {}", service.pattern);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.warn("Failed to generate plan for service {}: {}", service.pattern, e.getMessage());
+                    }
+                }
+            }
+
+            LOGGER.info("Initialized {} pre-generated execution plans", preGeneratedPlans.size());
+        }
+        catch (Exception e)
+        {
+            LOGGER.error("Failed to initialize pre-generated plans: {}", e.getMessage(), e);
+        }
+    }
+
+    private ExecutionPlan generatePlanForService(Service service, PureSingleExecution execution)
+    {
+        LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(execution.func.body, execution.func.parameters, compiledModel.getContext());
+
+        Mapping mapping = compiledModel.getMapping(execution.mapping);
+        Root_meta_core_runtime_Runtime runtime;
+
+        if (execution.runtime instanceof RuntimePointer)
+        {
+            runtime = compiledModel.getRuntime(((RuntimePointer) execution.runtime).runtime);
+        }
+        else
+        {
+            LOGGER.warn("Unsupported runtime type for service {}: {}", service.pattern, execution.runtime.getClass().getSimpleName());
+            return null;
+        }
+
+        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(pureLambda, mapping, runtime,null, compiledModel, PureClientVersions.production, PlanPlatform.JAVA,null, extensions, transformers);
+
+        return plan;
+    }
 
     @Override
     public String getType()
     {
-        return service;
+        return SERVICE_TYPE;
     }
 
     @Override
@@ -91,7 +199,8 @@ public class TestSQLSourceProvider implements SQLSourceProvider
 
             if (service.execution instanceof PureSingleExecution)
             {
-                sqlSources.add(from((PureSingleExecution) service.execution, keys));
+                ExecutionPlan preGeneratedPlan = enablePreGeneratedPlans ? preGeneratedPlans.get(pattern) : null;
+                sqlSources.add(from((PureSingleExecution) service.execution, keys, preGeneratedPlan));
             }
         });
         return new SQLSourceResolvedContext(pureModelContextData, sqlSources);
@@ -102,8 +211,18 @@ public class TestSQLSourceProvider implements SQLSourceProvider
         return pureModelContextData;
     }
 
-    private SQLSource from(PureSingleExecution pse, List<SQLSourceArgument> keys)
+    public boolean isPreGeneratedPlansEnabled()
     {
-        return new SQLSource(service, pse.func, pse.mapping, pse.runtime, pse.executionOptions, null, keys);
+        return enablePreGeneratedPlans;
+    }
+
+    public int getPreGeneratedPlanCount()
+    {
+        return preGeneratedPlans.size();
+    }
+
+    private SQLSource from(PureSingleExecution pse, List<SQLSourceArgument> keys, ExecutionPlan preGeneratedPlan)
+    {
+        return new SQLSource(SERVICE_TYPE, pse.func, pse.mapping, pse.runtime, pse.executionOptions, null, keys, preGeneratedPlan);
     }
 }

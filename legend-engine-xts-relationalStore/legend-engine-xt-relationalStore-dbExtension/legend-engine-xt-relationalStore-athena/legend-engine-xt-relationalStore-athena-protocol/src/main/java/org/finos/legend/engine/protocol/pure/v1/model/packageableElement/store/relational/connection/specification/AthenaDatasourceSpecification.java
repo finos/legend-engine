@@ -16,9 +16,12 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 public class AthenaDatasourceSpecification extends DatasourceSpecification
 {
-    public String awsRegion;
-    public String s3OutputLocation;
-    public String databaseName;
+    public String region;
+    public String catalog;
+    public String database;
+    public String workGroup;
+    public String outputLocation;
+    public String athenaEndpoint;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

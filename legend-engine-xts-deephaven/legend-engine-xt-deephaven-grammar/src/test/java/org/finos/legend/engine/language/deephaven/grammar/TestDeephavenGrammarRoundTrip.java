@@ -44,10 +44,14 @@ public class TestDeephavenGrammarRoundTrip extends TestGrammarRoundtrip.TestGram
                         "(\n" +
                         "    Table xyz\n" +
                         "    (\n" +
-                        "      prop1: String,\n" +
-                        "      prop2: Integer,\n" +
-                        "      prop3: Boolean,\n" +
-                        "      prop4: DateTime\n" +
+                        "      prop1: STRING,\n" +
+                        "      prop2: INT,\n" +
+                        "      prop3: BOOLEAN,\n" +
+                        "      prop4: DATETIME,\n" +
+                        "      prop5: FLOAT,\n" +
+                        "      prop6: DOUBLE,\n" +
+                        "      prop7: TIMESTAMP,\n" +
+                        "      prop8: DECIMAL(10, 2)\n" +
                         "    )\n" +
                         ")\n" +
                         "\n" +

@@ -29,6 +29,11 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
     if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
 }
 
+function <<PCT.function>> {doc.doc='Returns the average of the non-NULL values on the given column of the current window, and frame for the current row'} meta::pure::functions::math::average<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Float[1]
+{
+    reduce($partition, $window, $row, x|eval($colToAgg, $x), y|$y->average());
+}
+
 function <<PCT.test>> meta::pure::functions::math::tests::average::testAverage_Integers<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     assertEquals(1.0, $f->eval(|average([1])));
@@ -156,23 +161,25 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   9, 5, I
                   10, 0, J
                 #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->average())
+                 ->extend(over(~grp), ~newCol2:{p,w,r|average($p, $w, $r, ~id)})
+
                };
 
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
-                  '   10,0,J,10.0\n'+
-                  '   2,1,B,5.0\n'+
-                  '   6,1,F,5.0\n'+
-                  '   7,1,H,5.0\n'+
-                  '   1,2,A,3.0\n'+
-                  '   5,2,E,3.0\n'+
-                  '   3,3,C,5.0\n'+
-                  '   7,3,G,5.0\n'+
-                  '   4,4,D,4.0\n'+
-                  '   9,5,I,9.0\n'+
+                  '   id,grp,name,newCol,newCol2\n'+
+                  '   10,0,J,10.0,10.0\n'+
+                  '   2,1,B,5.0,5.0\n'+
+                  '   6,1,F,5.0,5.0\n'+
+                  '   7,1,H,5.0,5.0\n'+
+                  '   1,2,A,3.0,3.0\n'+
+                  '   5,2,E,3.0,3.0\n'+
+                  '   3,3,C,5.0,5.0\n'+
+                  '   7,3,G,5.0,5.0\n'+
+                  '   4,4,D,4.0,4.0\n'+
+                  '   9,5,I,9.0,9.0\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 

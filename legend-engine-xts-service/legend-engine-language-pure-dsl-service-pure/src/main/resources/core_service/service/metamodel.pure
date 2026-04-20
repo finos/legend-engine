@@ -39,6 +39,7 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    <<doc.deprecated>> owners : String[*];
    ownership: Ownership[0..1];
    autoActivateUpdates : Boolean[1];
+   title: String[0..1];
    documentation : String[1];
    execution : Execution[1];
    tags: ServiceTag[*];

@@ -385,7 +385,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (cm instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
-                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)));
+                        String classMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
+                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
 
                         HelperRelationalBuilder.processRootRelationalClassMapping(rsi, classMapping, context);
                     }
@@ -449,7 +450,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(
                 (cm, parentMapping, context) ->
                 {
-                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(cm, context)));
+                    String classMappingId = HelperMappingBuilder.getClassMappingId(cm, context);
+                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
                     if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
@@ -460,9 +462,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         if (agg.setImplementation instanceof RootRelationalClassMapping)
                         {
                             RootRelationalClassMapping classMapping = (RootRelationalClassMapping) agg.setImplementation;
+                            String aggClassMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
                             asi._aggregateSetImplementations().forEach(c ->
                             {
-                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)))
+                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(aggClassMappingId))
                                 {
                                     HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation) c._setImplementation(), classMapping, context);
                                 }
@@ -704,11 +707,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(
-                                        handlers.grp(Handlers.JoinInference, handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function"))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
-                                )
+                                handlers.grp(Handlers.JoinInference,
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function")),
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name())),
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "columnValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
@@ -723,7 +725,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                         handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "rowValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                                handlers.grp(Handlers.ZScoreInference, handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4 && handlers.typeOne(ps.get(0), "TabularDataSet")))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "iqrClassify", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
@@ -941,7 +943,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), col._stereotypes(), col._taggedValues(), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))

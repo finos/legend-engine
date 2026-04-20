@@ -135,33 +135,4 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
         }
         return res;
     }
-
-    @Override
-    public void insertFunctionHandlerAtIndex(int idx, FunctionHandler functionHandler)
-    {
-        throw new UnsupportedOperationException("Composite function expression builder does not support inserting function handler at a particular index");
-    }
-
-    @Override
-    public FunctionExpressionBuilder getFunctionExpressionBuilderAtIndex(int idx)
-    {
-        if (idx < 0)
-        {
-            return builders.get(0);
-        }
-        return builders.get(Math.min(idx, builders.size() - 1));
-    }
-
-    @Override
-    public void insertFunctionExpressionBuilderAtIndex(int idx, FunctionExpressionBuilder functionExpressionBuilder)
-    {
-        if (idx < 0)
-        {
-            builders.add(0, functionExpressionBuilder);
-        }
-        else
-        {
-            builders.add(Math.min(idx, builders.size() - 1), functionExpressionBuilder);
-        }
-    }
 }

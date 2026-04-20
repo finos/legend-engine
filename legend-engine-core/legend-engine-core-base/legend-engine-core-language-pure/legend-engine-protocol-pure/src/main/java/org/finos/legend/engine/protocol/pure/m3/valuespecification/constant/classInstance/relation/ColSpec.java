@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
+import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
@@ -27,7 +30,10 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
+import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processMany;
 import static org.finos.legend.engine.protocol.pure.v1.ProcessHelper.processOne;
 
 @JsonDeserialize(using = ColSpec.ColSpecDeserializer.class)
@@ -39,6 +45,8 @@ public class ColSpec
     public Multiplicity multiplicity;
     public LambdaFunction function1;
     public LambdaFunction function2;
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<StereotypePtr> stereotypes = Collections.emptyList();
+    public @JsonInclude(JsonInclude.Include.NON_EMPTY) List<TaggedValue> taggedValues = Collections.emptyList();
 
     public static class ColSpecDeserializer extends JsonDeserializer<ColSpec>
     {
@@ -65,6 +73,10 @@ public class ColSpec
             colSpec.function1 = processOne(node, "function1", LambdaFunction.class, codec);
             colSpec.function2 = processOne(node, "function2", LambdaFunction.class, codec);
             colSpec.sourceInformation = processOne(node, "sourceInformation", SourceInformation.class, codec);
+
+            colSpec.stereotypes = processMany(node, "stereotypes", StereotypePtr.class, codec);
+            colSpec.taggedValues = processMany(node, "taggedValues", TaggedValue.class, codec);
+
             return colSpec;
         }
     }

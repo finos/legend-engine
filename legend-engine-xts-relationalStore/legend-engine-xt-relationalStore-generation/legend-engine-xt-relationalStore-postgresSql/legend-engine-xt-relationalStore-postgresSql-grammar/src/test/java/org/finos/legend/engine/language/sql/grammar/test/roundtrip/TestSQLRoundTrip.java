@@ -309,9 +309,15 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testCurrentTIme()
+    public void testCurrentTime()
     {
         check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM myTable");
+    }
+
+    @Test
+    public void testCurrentUser()
+    {
+        check("SELECT CURRENT_USER FROM myTable");
     }
 
     @Test
@@ -367,6 +373,12 @@ public class TestSQLRoundTrip
     public void testNested()
     {
         check("SELECT * from (SELECT col from myTable)");
+    }
+
+    @Test
+    public void testTableSubQuery()
+    {
+        check("SELECT * from ((SELECT * from myTable))");
     }
 
     @Test

@@ -237,6 +237,14 @@ public class ProjectExtend extends AggregationShared
             processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getDecimalValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
             return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
         }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, processorSupport)))
+        {
+            Double[] finalRes = new Double[(int) source.getOne().getRowCount()];
+            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
         else
         {
             throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(type) + " is not supported yet!");
@@ -274,10 +282,10 @@ public class ProjectExtend extends AggregationShared
             {
                 if (twoParamsFunc)
                 {
-                    parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), false, processorSupport));
-                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveHandler(repository)), false, processorSupport));
+                    parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), true, processorSupport));
+                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveHandler(repository)), true, processorSupport));
                 }
-                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType, -1, repository, false), false, processorSupport));
+                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType._typeArguments().getAny().getValueForMetaPropertyToOne("rawType"), -1, repository, false), true, processorSupport));
                 CoreInstance newValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
                 setter.value(k++, newValue.getValueForMetaPropertyToOne("values"));
             }

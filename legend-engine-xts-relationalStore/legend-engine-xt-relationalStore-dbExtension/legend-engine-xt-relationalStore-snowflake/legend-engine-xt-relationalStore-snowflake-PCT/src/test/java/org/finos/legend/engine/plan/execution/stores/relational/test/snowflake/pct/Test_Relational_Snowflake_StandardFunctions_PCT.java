@@ -62,14 +62,26 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
 
             // Max
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "SQL compilation error: error line 1 at position 7\ntoo many arguments for function [MAX_BY(1, 2, 10, 20)] expected 3, got 4"),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "SQL compilation error: error line 1 at position 7\ntoo many arguments for function [MIN_BY(1, 2, 10, 20)] expected 3, got 4"),
@@ -84,12 +96,6 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""),
             one("meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""),
 
-            // And
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
-
-            // Or
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
-
             // Average
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
@@ -101,15 +107,6 @@ public class Test_Relational_Snowflake_StandardFunctions_PCT extends PCTReportCo
 
             // Sum
             one("meta::pure::functions::math::tests::sum::testSum_Numbers_Function_1__Boolean_1_", "\"\nexpected: 32.0\nactual:   32\""),
-
-            // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
-
-            // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
-
-            // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
 
             // Greatest
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),

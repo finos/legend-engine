@@ -1,3 +1,4 @@
+import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::runtime::*;
@@ -37,12 +38,12 @@ function meta::external::function::activator::snowflakeApp::generation::generate
 
   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>), $contextWithEnumPushDown, $extensions, noDebug());
   let variables = $plan.rootExecutionNode.childNodes->filter(n| $n->instanceOf(ConstantExecutionNode) && $n->cast(@ConstantExecutionNode).values->type()==VariableDeclaration)->cast(@ConstantExecutionNode)->first().values->cast(@VariableDeclaration);
-  let resultStub = if($s.function->functionReturnType().rawType==Relation,
+  let resultStub = if($s.function->functionReturnType().rawType==meta::pure::metamodel::relation::Relation,
       | let resultStub = relationGenerateResultTypeStub($s.function);,
       | let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
     );
   let generatedQueryNode = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)->filter(node|$node.sqlQuery->toLower()->startsWith('select'))->last()->toOne('candidate query not found');
-  let usedTables =  $generatedQueryNode.metadata->filter(m|$m->instanceOf(TableMetadata))->cast(@TableMetadata)->toOne('No table info found').tables->map(i|$i.schema.name + '.' + $i.name);
+  let usedTables =  $generatedQueryNode.metadata->filter(m|$m->instanceOf(RelationMetadata))->cast(@RelationMetadata).relations->filter(r|$r->instanceOf(Table))->cast(@Table)->map(i|$i.schema.name + '.' + $i.name)->removeDuplicates();
   if($variables->isEmpty(),
     |
       let query = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.' + $deploymentSchema + '.' +$s.applicationName->toUpper() +'('+ $inputParamsStub + ') RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS $$ '+ $generatedQueryNode.sqlQuery +' $$;';

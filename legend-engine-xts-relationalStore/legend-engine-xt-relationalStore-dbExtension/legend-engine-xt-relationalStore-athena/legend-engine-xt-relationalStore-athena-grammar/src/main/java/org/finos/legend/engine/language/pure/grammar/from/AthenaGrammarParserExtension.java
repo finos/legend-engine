@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class AthenaGrammarParserExtension implements IRelationalGrammarParserExtension
@@ -59,12 +60,25 @@ public class AthenaGrammarParserExtension implements IRelationalGrammarParserExt
     {
         AthenaDatasourceSpecification dsSpec = new AthenaDatasourceSpecification();
         dsSpec.sourceInformation = code.getSourceInformation();
-        AthenaParserGrammar.AwsRegionContext awsRegionContext = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.awsRegion(), "awsRegion", dsSpec.sourceInformation);
-        dsSpec.awsRegion = PureGrammarParserUtility.fromGrammarString(awsRegionContext.STRING().getText(), true);
-        AthenaParserGrammar.S3OutputLocationContext s3OutputLocationContext = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.s3OutputLocation(), "s3OutputLocation", dsSpec.sourceInformation);
-        dsSpec.s3OutputLocation = PureGrammarParserUtility.fromGrammarString(s3OutputLocationContext.STRING().getText(), true);
-        AthenaParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
-        dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+
+        AthenaParserGrammar.AthenaRegionContext awsRegionContext = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.athenaRegion(), "region", dsSpec.sourceInformation);
+        dsSpec.region = PureGrammarParserUtility.fromGrammarString(awsRegionContext.STRING().getText(), true);
+
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaOutputLocation(), "outputLocation", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.outputLocation = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaDatabase(), "database", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.database = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaCatalog(), "catalog", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.catalog = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaWorkGroup(), "workGroup", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.workGroup = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
+        Optional.ofNullable(PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.athenaEndpoint(), "athenaEndpoint", dsSpec.sourceInformation)).ifPresent(x ->
+                dsSpec.athenaEndpoint = PureGrammarParserUtility.fromGrammarString(x.STRING().getText(), true));
+
         return dsSpec;
     }
 }

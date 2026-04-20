@@ -13,6 +13,6 @@
 // limitations under the License.
 
 ###Pure
-native function meta::external::store::deephaven::executionTest::utils::createTableFromCSV(tableName: String[1], csv: String[1]): Boolean[1];
+native function meta::external::store::deephaven::executionTest::utils::createTableFromCSV(tableName: String[1], csv: String[1], columnTypes: String[1]): Boolean[1];
 
 native function meta::external::store::deephaven::executionTest::utils::getDeephavenTestConnection(): meta::external::store::deephaven::metamodel::runtime::DeephavenConnection[1];

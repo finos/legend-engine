@@ -347,7 +347,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
           $result;
       );
 
-      if($currentPropertyMapping->size() == 1 && ($propMappings->size() > 1),
+      if($currentPropertyMapping->size() == 1 && ($propMappings->size() > 1) && ($currentPropertyMapping->toOne().property->toOne()->functionReturnType().rawType->toOne()->_subTypeOf($propertyOwnerClass) || $propertyOwnerClass->_subTypeOf($currentPropertyMapping->toOne().property->toOne()->functionReturnType().rawType->toOne())), 
         | //In this use case, the precedent mappings were filtered (and we have nothing to union ... so we can't take the first one)
           let result = $propMappings->filter(p|$p.sourceSetImplementationId == $currentPropertyMapping.targetSetImplementationId);
           assert(!$result->isEmpty(),| 'Error can\'t find a mapping for the property:\''+$property.name->toOne()+'\' (owner class:"'+$propertyOwnerClass.name->toOne()+'") in the set implement id:"'+$currentPropertyMapping.targetSetImplementationId->toOne()+'" in ['+$propMappings->map(p|$p.owner->toOne().id+' : ('+$p.sourceSetImplementationId+' -> '+$p.targetSetImplementationId+')')->joinStrings(',')+']');

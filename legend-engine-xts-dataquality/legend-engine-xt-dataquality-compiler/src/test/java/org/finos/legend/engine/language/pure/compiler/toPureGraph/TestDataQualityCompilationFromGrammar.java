@@ -442,6 +442,148 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
         );
     }
 
+    @Test
+    public void testRelationComparison_happyPath()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "   source: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "   target: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "   keys: [FIRSTNAME, LASTNAME];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}");
+    }
+
+    @Test
+    public void testRelationComparison_withAllOptions()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "   source: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "   target: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "   keys: [FIRSTNAME];\n" +
+                "   columnsToCompare: [LASTNAME, AGE];\n" +
+                "   strategy: MD5Hash\n" +
+                "   {\n" +
+                "     sourceHashColumn: FIRSTNAME;\n" +
+                "     targetHashColumn: LASTNAME;\n" +
+                "     aggregatedHash: true;\n" +
+                "   };\n" +
+                "   expectedMatch: 0.95;\n" +
+                "}");
+    }
+
+    
+    @Test
+    public void testRelationComparison_invalidKey_notInSource()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['NONEXISTENT'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-110:1]: keys column(s) [NONEXISTENT] not found in the source relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_invalidKey_notInTarget()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['LASTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-110:1]: keys column(s) [LASTNAME] not found in the target relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_invalidColumnsToCompare_notInSource()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['LASTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-111:1]: columnsToCompare column(s) [LASTNAME] not found in the source relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_invalidColumnsToCompare_notInTarget()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['LASTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-111:1]: columnsToCompare column(s) [LASTNAME] not found in the target relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_invalidSourceHashColumn()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    strategy: MD5Hash\n" +
+                "    {\n" +
+                "       sourceHashColumn: 'MISSING_SRC_HASH';\n" +
+                "       targetHashColumn: 'LASTNAME';\n" +
+                "    };\n" +
+                "}\n",
+                "COMPILATION error at [104:1-114:1]: sourceHashColumn 'MISSING_SRC_HASH' is not present in the source relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_invalidTargetHashColumn()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    strategy: MD5Hash\n" +
+                "    {\n" +
+                "       sourceHashColumn: 'LASTNAME';\n" +
+                "       targetHashColumn: 'MISSING_TGT_HASH';\n" +
+                "    };\n" +
+                "}\n",
+                "COMPILATION error at [104:1-114:1]: targetHashColumn 'MISSING_TGT_HASH' is not present in the target relation"
+        );
+    }
+
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
             "RelationalDatabaseConnection meta::dataquality::H2\n" +

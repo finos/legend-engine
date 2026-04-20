@@ -50,6 +50,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
       binding           = $node.binding->elementToPath(),
       enableConstraints = $node.enableConstraints,
       checked           = $node.checked,
-      contentType       = $node.binding.contentType
+      contentType       = $node.binding.contentType,
+      useJsonNodeType   = $node.useJsonNodeType
    );
 }

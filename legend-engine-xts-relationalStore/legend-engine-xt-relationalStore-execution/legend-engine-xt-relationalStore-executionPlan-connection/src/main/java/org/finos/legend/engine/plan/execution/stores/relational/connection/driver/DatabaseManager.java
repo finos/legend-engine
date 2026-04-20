@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -85,7 +86,7 @@ public abstract class DatabaseManager
     /*
     * These properties will be put directly on the datasource object instead of the jdbc string and are useful for when the properties  are not primitive  types
      */
-    public Properties getObjectDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    public Properties getObjectDataSourceProperties(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, Identity identity)
     {
         return new Properties();
     }

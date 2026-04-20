@@ -18,7 +18,7 @@ import junit.framework.Test;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
-import org.finos.legend.pure.generated.core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi;
+import org.finos.legend.pure.generated.core_external_python_reverse_pct_shared_pythonReversePCTShared;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
@@ -33,7 +33,7 @@ public class Test_External_PythonLegendQL_GrammarFunctions_Reverse_PCT extends P
     private static final ReportScope reportScope = PlatformCodeRepositoryProvider.grammarFunctions;
     private static final Adapter adapter = Core_External_PythonLegendQL_ReversePCTReportProvider.LegendQLAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi.Root_meta_external_python_reversePCT_legendQL_pythonLegendQLReversesGrammar__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_shared_pythonReversePCTShared.Root_meta_external_python_reversePCT_shared_pythonSharedReversesGrammar__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = PythonLegendQLReversePCTHelper.build(reverseInfo);
 
     static

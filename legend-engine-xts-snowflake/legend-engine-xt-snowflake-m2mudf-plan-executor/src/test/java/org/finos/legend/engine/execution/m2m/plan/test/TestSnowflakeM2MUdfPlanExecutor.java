@@ -30,12 +30,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -46,6 +48,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestSnowflakeM2MUdfPlanExecutor
 {
@@ -111,6 +115,49 @@ public class TestSnowflakeM2MUdfPlanExecutor
         String parameter = ((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters.get(0).name;
         String actual = SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, "{\"firms\": [{\"employees\": [{\"firstName\": \"ABC\",\"lastName\": \"DEF\"},{\"firstName\": \"XYZ\",\"lastName\": \"PQR\"}],\"legalName\":\"IJK\"}]}");
         String expected = "{\"firms\":[{\"legalName\":\"IJK\",\"employees\":[{\"firstName\":\"ABC\",\"lastName\":\"DEF\"},{\"firstName\":\"XYZ\",\"lastName\":\"PQR\"}]}]}";
+        Assert.assertEquals(expected, actual);
+    }
+    
+    @Test
+    public void testM2MJsonPlanExecutorWithStringInput()
+    {
+        FunctionDefinition<?> function = (FunctionDefinition<?>) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_("test::query::getFirmDetailsWithStringInput_String_1__String_1_", pureModel.getExecutionSupport());
+        SingleExecutionPlan singleExecutionPlan = generatePlan(function);
+        EngineJavaCompiler engineJavaCompiler = null;
+        String parameter = ((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters.get(0).name;
+        String input = "{\"firms\": [{\"employees\": [{\"firstName\": \"ABC\",\"lastName\": \"DEF\"},{\"firstName\": \"XYZ\",\"lastName\": \"PQR\"}],\"legalName\":\"IJK\"}]}";
+        try
+        {
+            engineJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
+        }
+        catch (JavaCompileException e)
+        {
+            throw new RuntimeException(e);
+        }
+        String actual = SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, input);
+        String expected = "{\"firms\":[{\"legalName\":\"IJK\",\"employees\":[{\"firstName\":\"ABC\",\"lastName\":\"DEF\"},{\"firstName\":\"XYZ\",\"lastName\":\"PQR\"}]}]}";
+        Assert.assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testM2MJsonPlanExecutorWithVariantInput() throws IOException
+    {
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        FunctionDefinition<?> function = (FunctionDefinition<?>) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_("test::query::getFirmDetailsWithVariantInput_String_1__String_1_", pureModel.getExecutionSupport());
+        SingleExecutionPlan singleExecutionPlan = generatePlan(function);
+        EngineJavaCompiler engineJavaCompiler = null;
+        String parameter = ((FunctionParametersValidationNode) singleExecutionPlan.rootExecutionNode.executionNodes.get(0)).functionParameters.get(0).name;
+        String input = "[{\"@type\":\"Firms\",\"firms\":[{\"@type\":\"Firm\",\"legalName\":\"employer_1\",\"employees\":[{\"@type\":\"Person\",\"firstName\":\"Josh\",\"lastName\":\"ABC\"}]}]},{\"@type\":\"Firms\",\"firms\":[{\"@type\":\"Firm\",\"legalName\":\"employer_2\",\"employees\":[{\"@type\":\"Person\",\"firstName\":\"Joe\",\"lastName\":\"BCD\"}]}]}]";
+        try
+        {
+            engineJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
+        }
+        catch (JavaCompileException e)
+        {
+            throw new RuntimeException(e);
+        }
+        String actual = SnowflakeM2MUdfPlanExecutor.executeSnowflakeM2MUdfPlanWithArg(singleExecutionPlan, engineJavaCompiler, parameter, objectMapper.readTree(input));
+        String expected = "[{\"firms\":[{\"legalName\":\"employer_1\",\"employees\":[{\"firstName\":\"Josh\",\"lastName\":\"ABC\"}]}]},{\"firms\":[{\"legalName\":\"employer_2\",\"employees\":[{\"firstName\":\"Joe\",\"lastName\":\"BCD\"}]}]}]";
         Assert.assertEquals(expected, actual);
     }
 

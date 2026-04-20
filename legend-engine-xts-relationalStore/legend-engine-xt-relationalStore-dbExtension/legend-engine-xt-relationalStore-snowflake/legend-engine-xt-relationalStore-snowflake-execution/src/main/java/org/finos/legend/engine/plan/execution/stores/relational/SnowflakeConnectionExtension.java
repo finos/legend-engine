@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -105,6 +107,16 @@ public class SnowflakeConnectionExtension implements ConnectionExtension, Strate
             if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
             {
                 SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
+                String sessionTimezone = null;
+                if (BooleanUtils.isTrue(snowflakeDatasourceSpecification.setSessionTimezone))
+                {
+                    sessionTimezone = StringUtils.isNotEmpty(connection.timeZone) ? connection.timeZone : "UTC";
+                }
+                String sessionQuoteIdentifiersIgnoreCase = null;
+                if (BooleanUtils.isTrue(snowflakeDatasourceSpecification.setSessionQuotedIdentifiersIgnoreCase))
+                {
+                    sessionQuoteIdentifiersIgnoreCase = snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase != null ? String.valueOf(snowflakeDatasourceSpecification.quotedIdentifiersIgnoreCase) : "false";
+                }
                 return new SnowflakeDataSourceSpecificationKey(
                         snowflakeDatasourceSpecification.accountName,
                         snowflakeDatasourceSpecification.region,
@@ -120,7 +132,9 @@ public class SnowflakeConnectionExtension implements ConnectionExtension, Strate
                         snowflakeDatasourceSpecification.organization,
                         snowflakeDatasourceSpecification.role,
                         snowflakeDatasourceSpecification.tempTableDb,
-                        snowflakeDatasourceSpecification.tempTableSchema);
+                        snowflakeDatasourceSpecification.tempTableSchema,
+                        sessionTimezone,
+                        sessionQuoteIdentifiersIgnoreCase);
             }
             return null;
         };
@@ -143,7 +157,7 @@ public class SnowflakeConnectionExtension implements ConnectionExtension, Strate
     }
 
     @Override
-    public Boolean getQuotedIdentifiersIgnoreCase(DatasourceSpecification datasourceSpecification)
+    public Boolean getIdentifiersCaseSensitivity(DatasourceSpecification datasourceSpecification)
     {
         if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {

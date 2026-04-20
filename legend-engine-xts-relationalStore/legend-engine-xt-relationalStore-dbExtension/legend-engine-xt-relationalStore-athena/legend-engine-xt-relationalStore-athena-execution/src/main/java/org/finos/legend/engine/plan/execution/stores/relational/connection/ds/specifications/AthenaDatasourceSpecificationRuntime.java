@@ -29,17 +29,12 @@ public class AthenaDatasourceSpecificationRuntime extends org.finos.legend.engin
     private static Properties addPropertiesFromDataSource(AthenaDatasourceSpecificationKey key)
     {
         Properties props = new Properties();
-        props.put("awsRegion", key.getAwsRegion());
-        props.put("s3OutputLocation", key.getS3OutputLocation());
+        props.put("Region", key.getRegion());
+        props.put("Catalog", key.getCatalog());
+        props.put("Database", key.getDatabase());
+        props.put("WorkGroup", key.getWorkGroup());
+        props.put("OutputLocation", key.getOutputLocation());
+        props.put("AthenaEndpoint", key.getAthenaEndpoint());
         return props;
-    }
-
-    @Override
-    protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
-    {
-        // usually defaults for host, port and databaseName are passed to this method in the original call.
-        // This method is supposed to reset to correct values, if required, and construct the jdbc url by relaying to super class, which in turn relays to Driver.
-        AthenaDatasourceSpecificationKey key = (AthenaDatasourceSpecificationKey) this.datasourceKey;
-        return super.getJdbcUrl(host, port, key.getDatabaseName(), properties);
     }
 }

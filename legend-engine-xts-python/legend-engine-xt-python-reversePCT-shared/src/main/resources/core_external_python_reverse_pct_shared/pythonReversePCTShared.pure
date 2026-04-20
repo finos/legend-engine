@@ -1,0 +1,92 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::shared::*;
+
+
+function meta::external::python::reversePCT::shared::pythonSharedReversesAll(): ReversesForSource[*]
+{
+  pythonSharedReversesEssential()
+    ->concatenate(
+      pythonSharedReversesGrammar()
+    )
+    ->concatenate(
+      pythonSharedReversesStandard()
+    )
+    ->concatenate(
+      pythonSharedReversesUnclassified()
+    )
+}
+
+function meta::external::python::reversePCT::shared::pythonSharedReversesEssential(): ReversesForSource[*]
+{
+  pythonSharedReversesEssentialMath()
+    ->concatenate(
+      pythonSharedReversesEssentialDate()
+    )
+    ->concatenate(
+      pythonSharedReversesEssentialLang()
+    )
+    ->concatenate(
+      pythonSharedReversesEssentialString()
+    )
+    ->concatenate(
+      pythonSharedReversesEssentialCollection()
+    )
+}
+
+function meta::external::python::reversePCT::shared::pythonSharedReversesGrammar(): ReversesForSource[*]
+{
+  pythonSharedReversesGrammarString()
+    ->concatenate(
+      pythonSharedReversesGrammarMath()
+    )
+    ->concatenate(
+      pythonSharedReversesGrammarBoolean()
+    )
+}
+
+function meta::external::python::reversePCT::shared::pythonSharedReversesStandard(): ReversesForSource[*]
+{
+  pythonSharedReversesStandardMath()
+    ->concatenate(
+      pythonSharedReversesStandardBoolean()
+    )
+    ->concatenate(
+      pythonSharedReversesStandardDate()
+    )
+}
+
+function meta::external::python::reversePCT::shared::pythonSharedReversesUnclassified(): ReversesForSource[*]
+{
+  pythonSharedReversesUnclassifiedString()
+    ->concatenate(pythonSharedReversesUnclassifiedTbd())
+}
+
+function meta::external::python::reversePCT::shared::testRev(testFunc: meta::pure::metamodel::function::ConcreteFunctionDefinition<Any>[1], reverses: Reverse[*]): ReversesForSource[1]
+{
+  ^ReversesForSource(source = $testFunc->sourceInformation().source->toOne(), reverses = revsForTest($testFunc->elementToPath(), $reverses))
+}
+
+function meta::external::python::reversePCT::shared::combine(testRevs: ReversesForSource[1..*]): ReversesForSource[1]
+{
+  if ($testRevs->size() == 1,
+      | $testRevs->at(0),
+      | let sources = $testRevs.source->removeDuplicates();
+        assert($sources->size() == 1, | 'Cannot combine test reverses defined in different source files: ' + $testRevs.source->removeDuplicates()->joinStrings('[', ', ', ']'));
+        ^ReversesForSource(source = $sources->at(0), reverses = $testRevs.reverses);
+  )
+}

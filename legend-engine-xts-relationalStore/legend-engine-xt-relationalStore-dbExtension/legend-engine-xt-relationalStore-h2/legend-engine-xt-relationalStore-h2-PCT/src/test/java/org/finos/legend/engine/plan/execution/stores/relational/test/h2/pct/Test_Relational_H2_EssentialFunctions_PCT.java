@@ -220,12 +220,7 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
 
             // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, IntegerSqlType, IntegerSqlType).\n" +
-                    "Available variations for that function - [\n" +
-                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
-                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
-                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
+            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
             // Rem
@@ -233,18 +228,6 @@ public class Test_Relational_H2_EssentialFunctions_PCT extends PCTReportConfigur
             one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
             one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   3\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, DoubleSqlType, IntegerSqlType).\n" +
-                    "Available variations for that function - [\n" +
-                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
-                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
-                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"No matched function in function registry for - mod(IntegerSqlType, IntegerSqlType, IntegerSqlType).\n" +
-                    "Available variations for that function - [\n" +
-                    "  mod(AbstractIntegerSqlType, AbstractIntegerSqlType):AbstractIntegerSqlType,\n" +
-                    "  mod(DoubleSqlType, DoubleSqlType):DoubleSqlType,\n" +
-                    "  mod(AbstractNumericSqlType, AbstractNumericSqlType):AbstractNumericSqlType\n" +
-                    "]\""),
 
             // Round
             one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\"\nexpected: -16\nactual:   -17\""),

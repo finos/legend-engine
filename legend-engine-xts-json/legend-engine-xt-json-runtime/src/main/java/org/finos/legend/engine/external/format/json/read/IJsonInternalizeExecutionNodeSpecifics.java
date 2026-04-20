@@ -14,9 +14,12 @@
 
 package org.finos.legend.engine.external.format.json.read;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.io.InputStream;
 
 public interface IJsonInternalizeExecutionNodeSpecifics
 {
     JsonDataReader<?> createReader(InputStream sourceStream);
+    
+    JsonDataReader<?> createReader(JsonNode node);
 }

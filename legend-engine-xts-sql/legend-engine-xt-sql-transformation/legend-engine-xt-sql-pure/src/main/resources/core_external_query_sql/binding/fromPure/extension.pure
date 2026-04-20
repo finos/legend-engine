@@ -18,13 +18,31 @@ Class meta::external::query::sql::SQLExtension
 {
    name:String[1];
    udfs: meta::external::query::sql::UserDefinedFunctions[0..1];
+   udtfs: meta::external::query::sql::UserDefinedTableFunctions[0..1];
 
    udf(name:String[1]){
     $this.udfs.processors->filter(p | toLower($this.udfs->toOne().prefix + '_' + $p.name) == $name->toLower())
    }:meta::external::query::sql::transformation::queryToPure::FunctionProcessor[*];
+
+   udtf(name:String[1]){
+    $this.udtfs.processors->filter(p | toLower($this.udtfs->toOne().prefix + '_' + $p.name) == $name->toLower())
+   }:meta::external::query::sql::transformation::queryToPure::FunctionProcessor[*];
 }
 
 Class meta::external::query::sql::UserDefinedFunctions[
+  prefixNotBlank: $this.prefix->length() > 0,
+  prefixOnlyChars: $this.prefix->matches('[a-zA-Z]*')
+]
+{
+  prefix: String[1];
+  processors: meta::external::query::sql::transformation::queryToPure::FunctionProcessor[*];
+
+  names(){
+    $this.processors->map(p | $this.prefix + '_' + $p.name)
+  }:String[*];
+}
+
+Class meta::external::query::sql::UserDefinedTableFunctions[
   prefixNotBlank: $this.prefix->length() > 0,
   prefixOnlyChars: $this.prefix->matches('[a-zA-Z]*')
 ]
