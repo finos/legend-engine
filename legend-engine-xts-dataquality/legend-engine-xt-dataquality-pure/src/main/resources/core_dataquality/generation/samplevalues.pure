@@ -1,0 +1,261 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::query::sql::transformation::utils::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::router::preeval::*;
+import meta::relational::extension::*;
+import meta::external::dataquality::*;
+import meta::external::dataquality::samplevalues::*;
+import meta::pure::metamodel::relation::*;
+
+function meta::external::dataquality::samplevalues::wrapFunctionDefinitionAsLambda(f: FunctionDefinition<Any>[1]): LambdaFunction<Any>[1]
+{
+  lambda($f->functionType(), $f.expressionSequence);
+}
+
+function meta::external::dataquality::samplevalues::getSampleValuesLambda(lambda: LambdaFunction<Any>[1], wrapWithFrom: Boolean[1]): LambdaFunction<Any>[1]
+{
+  getSampleValuesLambda($lambda, 20, $wrapWithFrom);
+}
+
+function meta::external::dataquality::samplevalues::getSampleValuesLambda(lambda: LambdaFunction<Any>[1], maxNumberOfSampleValues: Integer[1], wrapWithFrom:Boolean[1]): LambdaFunction<Any>[1]
+{
+  assert($lambda->functionReturnType().rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::Relation), 'only relation functions supported');
+  assert($lambda->isEndingWithFromFunction(), 'Query must end with a from in order to execute');
+  let poppedLambda = $lambda->popTerminalFunctionExpression();
+
+  let from = $lambda.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
+  let runtime = getInstanceValueOfType($from.parametersValues, meta::pure::runtime::PackageableRuntime)->concatenate(getInstanceValueOfType($from.parametersValues, Runtime));
+  let mapping = getInstanceValueOfType($from.parametersValues, Mapping);
+
+  assert($runtime->isEmpty() || $runtime->size() == 1, | 'multiple runtimes not supported');
+  assert($mapping->isEmpty() || $mapping->size() == 1, | 'multiple mappings not supported');
+
+  getSampleValuesLambda($poppedLambda, $mapping->first(), $runtime->first(), $maxNumberOfSampleValues, $wrapWithFrom);
+}
+
+function meta::external::dataquality::samplevalues::getSampleValuesLambda(l: LambdaFunction<Any>[1], mapping: Mapping[0..1], runtime: Any[0..1], maxNumberOfSampleValues: Integer[1], wrapWithFrom: Boolean[1]): LambdaFunction<Any>[1]
+{
+  let relationType = $l.expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>);
+
+  let cte = var('cte', PureOne, $l->genericType());
+
+  let queries = $relationType.columns->map(c |
+    // Group By on the column value with count aggregate
+    let columnName = $c.name->toOne();
+    let colType = $c.classifierGenericType.typeArguments->last()->toOne();
+    let colMultiplicity = $c.classifierGenericType.multiplicityArguments->first()->toOne();
+    let relTypeGT = $c.classifierGenericType.typeArguments->at(0);
+
+    let groupByExpr = sfe(
+      groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_,
+      [
+        $cte,
+        ^ColSpecArray<Any>(names = [$columnName])->iv(),
+        ^AggColSpec<Any, Any, Any>(
+          name = name(SampleValuesColumn.COUNT),
+          map = lambda(functionType('row', $relTypeGT, PureOne, $colType, $colMultiplicity), col($c, var('row'))),
+          reduce = lambda(functionType('y', $colType, ZeroMany, gt(Integer), PureOne), sfe(count_Any_MANY__Integer_1_, var('y')))
+        )->iv()
+      ]
+    );
+
+    // Sort descending by count
+    let sortExpr = sfe(
+      sort_Relation_1__SortInfo_MANY__Relation_1_,
+      [$groupByExpr, sfe(descending_ColSpec_1__SortInfo_1_, ^ColSpec<Any>(name = name(SampleValuesColumn.COUNT))->iv())]
+    );
+
+    // Limit to maxNumberOfSampleValues
+    let limitExpr = sfe(
+      limit_Relation_1__Integer_1__Relation_1_,
+      [$sortExpr, iv($maxNumberOfSampleValues)]
+    );
+
+    // Extend with constant and type-switched columns
+    let columnTypeName = getColumnTypeName($c);
+
+    let funcColSpecs = [
+      // column_name: constant string with the column name
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.COLUMN_NAME),
+        function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnName))
+      ),
+      // column_data_type: constant string with the column type name
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.COLUMN_DATA_TYPE),
+        function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnTypeName))
+      ),
+      // string_value: cast value to String if column is String type, else null
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.STRING_VALUE),
+        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(String), parameters = var('row')),
+          if(isStringColumn($c), | createCast(col($c, var('row')), String), | createCast(iv([]), String))->evaluateAndDeactivate())
+      ),
+      // int_value: cast value to Integer if column is Integer type, else null
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.INT_VALUE),
+        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Integer), parameters = var('row')),
+          if(isIntegerColumn($c), | createCast(col($c, var('row')), Integer), | createCast(iv([]), Integer))->evaluateAndDeactivate())
+      ),
+      // float_value: cast value to Float if column is Float type, else null
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.FLOAT_VALUE),
+        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Float), parameters = var('row')),
+          if(isFloatColumn($c), | createCast(col($c, var('row')), Float), | createCast(iv([]), Float))->evaluateAndDeactivate())
+      ),
+      // date_value: cast value to StrictDate if column is Date type, else null
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.DATE_VALUE),
+        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(StrictDate), parameters = var('row')),
+          if(isDateColumn($c), | createCast(col($c, var('row')), StrictDate), | createCast(iv([]), StrictDate))->evaluateAndDeactivate())
+      ),
+      // boolean_value: cast value to Boolean if column is Boolean type, else null
+      ^FuncColSpec<Any, Any>(
+        name = name(SampleValuesColumn.BOOLEAN_VALUE),
+        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Boolean), parameters = var('row')),
+          if(isBooleanColumn($c), | createCast(col($c, var('row')), Boolean), | createCast(iv([]), Boolean))->evaluateAndDeactivate())
+      )
+    ];
+
+    let extendExpr = sfe(
+      extend_Relation_1__FuncColSpecArray_1__Relation_1_,
+      [$limitExpr, ^FuncColSpecArray<Any, Any>(funcSpecs = $funcColSpecs)->iv()]
+    );
+
+    // Select all output columns (drops the original groupBy key column)
+    let outputColumns = [
+      name(SampleValuesColumn.COLUMN_NAME),
+      name(SampleValuesColumn.COLUMN_DATA_TYPE),
+      name(SampleValuesColumn.COUNT),
+      name(SampleValuesColumn.STRING_VALUE),
+      name(SampleValuesColumn.INT_VALUE),
+      name(SampleValuesColumn.FLOAT_VALUE),
+      name(SampleValuesColumn.DATE_VALUE),
+      name(SampleValuesColumn.BOOLEAN_VALUE)
+    ];
+
+    sfe(
+      select_Relation_1__ColSpecArray_1__Relation_1_,
+      [$extendExpr, ^ColSpecArray<Any>(names = $outputColumns)->iv()]
+    );
+  );
+
+  // UNION ALL per-column sub-queries using concatenate
+  let func = $queries->tail()->fold({val, acc |
+      sfe(concatenate_Relation_1__Relation_1__Relation_1_, [$acc->evaluateAndDeactivate(), $val->evaluateAndDeactivate()])
+    }, $queries->head()->toOne()->evaluateAndDeactivate());
+
+  let letCte = createLet('cte', $l.expressionSequence->evaluateAndDeactivate()->last()->toOne());
+
+  let lambda = ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->init()->concatenate([$letCte, $func])->toOneMany());
+
+  // Compile and optionally wrap with from
+  if ($wrapWithFrom,
+                    | ^$lambda(expressionSequence = sfe(eval_Function_1__V_m_, [iv($lambda)])
+                        ->compileViaGrammar()
+                        ->wrapWithFrom($mapping, $runtime, [], true)
+                      ),
+                    | $lambda->compileViaGrammar());
+}
+
+// Helper: reference a column on a row variable
+function meta::external::dataquality::samplevalues::col(column:Column<Nil,Any|*>[1], var:VariableExpression[1]):SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression
+  (
+      importGroup = system::imports::coreImport,
+      func = $column,
+      multiplicity = $column.classifierGenericType.multiplicityArguments->first()->orElse(ZeroOne),
+      parametersValues = $var,
+      genericType = $column.classifierGenericType.typeArguments->last()->toOne()
+  );
+}
+
+// Returns the base type name for a column — maps precise primitives (Varchar, Int, Timestamp, etc.)
+// to their base type names (String, Integer, StrictDate, etc.)
+function meta::external::dataquality::samplevalues::getColumnTypeName(c: Column<Nil, Any|*>[1]): String[1]
+{
+  let colType = $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne();
+  [
+    pair($colType->subTypeOf(Boolean),      | 'Boolean'),
+    pair($colType->subTypeOf(Integer),      | 'Integer'),
+    pair($colType->subTypeOf(Float),        | 'Float'),
+    pair($colType->subTypeOf(Decimal),      | 'Decimal'),
+    pair($colType->subTypeOf(Number),       | 'Number'),
+    pair($colType->subTypeOf(StrictDate),   | 'StrictDate'),
+    pair($colType->subTypeOf(DateTime),     | 'DateTime'),
+    pair($colType->subTypeOf(Date),         | 'Date'),
+    pair($colType->subTypeOf(String),       | 'String')
+  ]->filter(p | $p.first)->first().second->map(f | $f->eval())->orElse($colType->toString());
+}
+
+function meta::external::dataquality::samplevalues::isStringColumn(c: Column<Nil, Any|*>[1]): Boolean[1]
+{
+  $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne()->subTypeOf(String);
+}
+
+function meta::external::dataquality::samplevalues::isIntegerColumn(c: Column<Nil, Any|*>[1]): Boolean[1]
+{
+  $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne()->subTypeOf(Integer);
+}
+
+function meta::external::dataquality::samplevalues::isFloatColumn(c: Column<Nil, Any|*>[1]): Boolean[1]
+{
+  let colType = $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne();
+  $colType->subTypeOf(Float) || $colType->subTypeOf(Decimal) || ($colType->subTypeOf(Number) && !$colType->subTypeOf(Integer));
+}
+
+function meta::external::dataquality::samplevalues::isDateColumn(c: Column<Nil, Any|*>[1]): Boolean[1]
+{
+  $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne()->subTypeOf(Date);
+}
+
+function meta::external::dataquality::samplevalues::isBooleanColumn(c: Column<Nil, Any|*>[1]): Boolean[1]
+{
+  $c.classifierGenericType.typeArguments->last()->toOne().rawType->toOne()->subTypeOf(Boolean);
+}
+
+function meta::external::dataquality::samplevalues::getInstanceValueOfType<T>(vs: ValueSpecification[*], types: Class<T>[1]): T[*]
+{
+  $vs->map(v |
+    $v->match([
+        i:InstanceValue[1] | $i.values->filter(i | $types->exists(t | $i->instanceOf($t)))->cast(@T),
+        v:ValueSpecification[*] | []
+      ])
+  )
+}
+
+
+Enum meta::external::dataquality::samplevalues::SampleValuesColumn
+{
+  {doc.doc='column_name'}      COLUMN_NAME,
+  {doc.doc='column_data_type'} COLUMN_DATA_TYPE,
+  {doc.doc='count'}            COUNT,
+  {doc.doc='string_value'}     STRING_VALUE,
+  {doc.doc='int_value'}        INT_VALUE,
+  {doc.doc='float_value'}      FLOAT_VALUE,
+  {doc.doc='date_value'}       DATE_VALUE,
+  {doc.doc='boolean_value'}    BOOLEAN_VALUE
+}
+
+function meta::external::dataquality::samplevalues::name(col:SampleValuesColumn[1]):String[1]
+{
+  $col->value4Tag('doc', meta::pure::profiles::doc).value->toOne();
+}
+

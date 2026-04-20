@@ -1,0 +1,354 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::dataquality::samplevalues::*;
+import meta::external::dataquality::tests::*;
+import meta::pure::router::preeval::*;
+
+// ─── String column: values appear in string_value; all other value columns null ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesStringColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME]);
+    $cte
+      ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'FIRSTNAME',
+          column_data_type: row|'String',
+          string_value: row|$row.FIRSTNAME->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Integer column: values appear in int_value; all other value columns null ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesIntegerColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[AGE])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[AGE]);
+    $cte
+      ->groupBy(~[AGE], ~count: row|$row.AGE : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'AGE',
+          column_data_type: row|'Integer',
+          string_value: row|[]->cast(@String),
+          int_value: row|$row.AGE->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Float column: values appear in float_value; all other value columns null ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesFloatColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[CODE])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[CODE]);
+    $cte
+      ->groupBy(~[CODE], ~count: row|$row.CODE : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'CODE',
+          column_data_type: row|'Float',
+          string_value: row|[]->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|$row.CODE->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Decimal column (non-integer Number): values appear in float_value ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDecimalColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[COUPOUN])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[COUPOUN]);
+    $cte
+      ->groupBy(~[COUPOUN], ~count: row|$row.COUPOUN : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'COUPOUN',
+          column_data_type: row|'Decimal',
+          string_value: row|[]->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|$row.COUPOUN->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Date column: values appear in date_value; all other value columns null ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDateColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB]);
+    $cte
+      ->groupBy(~[DOB], ~count: row|$row.DOB : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'DOB',
+          column_data_type: row|'DateTime',
+          string_value: row|[]->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|$row.DOB->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Column prefixed with a keyword like "owner" ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesKeywordPrefixedColumn():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.assetTable}#->select(~[ownerId])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.assetTable}#->select(~[ownerId]);
+    $cte
+      ->groupBy(~[ownerId], ~count: row|$row.ownerId : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'ownerId',
+          column_data_type: row|'Integer',
+          string_value: row|[]->cast(@String),
+          int_value: row|$row.ownerId->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── With maxNumberOfSampleValues=2, at most 2 rows returned per column ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesMaxNumberOfSampleValuesRespected():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME]);
+    $cte
+      ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(2)
+      ->extend(~[
+          column_name: row|'FIRSTNAME',
+          column_data_type: row|'String',
+          string_value: row|$row.FIRSTNAME->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  doSampleValuesTest($query, $expected, 2);
+}
+
+// ─── Calling with default maxNumberOfSampleValues uses 20 as the limit ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDefaultMaxNumberOfSampleValues():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME]);
+    $cte
+      ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'FIRSTNAME',
+          column_data_type: row|'String',
+          string_value: row|$row.FIRSTNAME->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value]);
+  };
+
+  // Use the 5-arg overload with no mapping/runtime to verify default limit of 20
+  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], 20, false);
+
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
+}
+
+// ─── UNION ALL produces rows for every column in the relation ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesMultipleColumns():Boolean[1]
+{
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, AGE])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, AGE]);
+    $cte
+      ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'FIRSTNAME',
+          column_data_type: row|'String',
+          string_value: row|$row.FIRSTNAME->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|[]->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
+      ->concatenate(
+        $cte
+          ->groupBy(~[AGE], ~count: row|$row.AGE : y|$y->count())
+          ->sort(descending(~count))
+          ->limit(20)
+          ->extend(~[
+              column_name: row|'AGE',
+              column_data_type: row|'Integer',
+              string_value: row|[]->cast(@String),
+              int_value: row|$row.AGE->cast(@Integer),
+              float_value: row|[]->cast(@Float),
+              date_value: row|[]->cast(@StrictDate),
+              boolean_value: row|[]->cast(@Boolean)
+            ])
+          ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
+      );
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Within each column block rows are sorted descending by count; column blocks follow relation column order ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesOrdering():Boolean[1]
+{
+  // Using 3 columns: DOB (Date), AGE (Integer), FIRSTNAME (String)
+  // Verify column blocks appear in relation column order and each has sort(desc(~count))
+  let query = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME])};
+
+  let expected = {|
+    let cte = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[DOB, AGE, FIRSTNAME]);
+    $cte
+      ->groupBy(~[DOB], ~count: row|$row.DOB : y|$y->count())
+      ->sort(descending(~count))
+      ->limit(20)
+      ->extend(~[
+          column_name: row|'DOB',
+          column_data_type: row|'DateTime',
+          string_value: row|[]->cast(@String),
+          int_value: row|[]->cast(@Integer),
+          float_value: row|[]->cast(@Float),
+          date_value: row|$row.DOB->cast(@StrictDate),
+          boolean_value: row|[]->cast(@Boolean)
+        ])
+      ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
+      ->concatenate(
+        $cte
+          ->groupBy(~[AGE], ~count: row|$row.AGE : y|$y->count())
+          ->sort(descending(~count))
+          ->limit(20)
+          ->extend(~[
+              column_name: row|'AGE',
+              column_data_type: row|'Integer',
+              string_value: row|[]->cast(@String),
+              int_value: row|$row.AGE->cast(@Integer),
+              float_value: row|[]->cast(@Float),
+              date_value: row|[]->cast(@StrictDate),
+              boolean_value: row|[]->cast(@Boolean)
+            ])
+          ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
+      )->concatenate(
+        $cte
+          ->groupBy(~[FIRSTNAME], ~count: row|$row.FIRSTNAME : y|$y->count())
+          ->sort(descending(~count))
+          ->limit(20)
+          ->extend(~[
+              column_name: row|'FIRSTNAME',
+              column_data_type: row|'String',
+              string_value: row|$row.FIRSTNAME->cast(@String),
+              int_value: row|[]->cast(@Integer),
+              float_value: row|[]->cast(@Float),
+              date_value: row|[]->cast(@StrictDate),
+              boolean_value: row|[]->cast(@Boolean)
+            ])
+          ->select(~[column_name, column_data_type, count, string_value, int_value, float_value, date_value, boolean_value])
+      );
+  };
+
+  doSampleValuesTest($query, $expected, 20);
+}
+
+// ─── Output column names match the SampleValuesColumn doc-tag strings ──
+function <<test.Test>> meta::external::dataquality::tests::testSampleValuesColumnNames():Boolean[1]
+{
+  // Verify that the SampleValuesColumn doc-tags resolve to the expected strings
+  assertEquals('column_name', name(SampleValuesColumn.COLUMN_NAME));
+  assertEquals('column_data_type', name(SampleValuesColumn.COLUMN_DATA_TYPE));
+  assertEquals('count', name(SampleValuesColumn.COUNT));
+  assertEquals('string_value', name(SampleValuesColumn.STRING_VALUE));
+  assertEquals('int_value', name(SampleValuesColumn.INT_VALUE));
+  assertEquals('float_value', name(SampleValuesColumn.FLOAT_VALUE));
+  assertEquals('date_value', name(SampleValuesColumn.DATE_VALUE));
+  assertEquals('boolean_value', name(SampleValuesColumn.BOOLEAN_VALUE));
+}
+
+// ─── Test helper ──
+function meta::external::dataquality::tests::doSampleValuesTest(query: FunctionDefinition<Any>[1], expected: FunctionDefinition<Any>[1], maxNumberOfSampleValues: Integer[1]):Boolean[1]
+{
+  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], $maxNumberOfSampleValues, false);
+  assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
+}

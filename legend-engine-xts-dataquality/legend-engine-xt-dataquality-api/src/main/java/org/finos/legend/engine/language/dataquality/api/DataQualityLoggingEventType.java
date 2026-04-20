@@ -26,4 +26,7 @@ public enum DataQualityLoggingEventType implements ILoggingEventType
 
     DATAQUALITY_RECON_START,
     DATAQUALITY_RECON_END,
+
+    DATAQUALITY_SAMPLE_VALUES_START,
+    DATAQUALITY_SAMPLE_VALUES_END,
 }

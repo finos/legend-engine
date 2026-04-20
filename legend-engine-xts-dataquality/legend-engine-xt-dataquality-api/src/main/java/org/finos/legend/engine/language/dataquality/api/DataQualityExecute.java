@@ -32,6 +32,7 @@ import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.generation.dataquality.DataQualityLambdaGenerator;
 import org.finos.legend.engine.generation.dataquality.DataQualityProfilingLambdaGenerator;
 import org.finos.legend.engine.generation.dataquality.DataQualityReconLambdaGenerator;
+import org.finos.legend.engine.generation.dataquality.DataQualitySampleValuesLambdaGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -59,6 +60,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -509,4 +512,68 @@ public class DataQualityExecute
 
     }
 
+    @POST
+    @Path("sampleValues")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response sampleValues(
+            @Context HttpServletRequest request,
+            DataQualitySampleValuesInput input,
+            @DefaultValue(SerializationFormat.defaultFormatString)
+            @QueryParam("serializationFormat") SerializationFormat format,
+            @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm,
+            @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_SAMPLE_VALUES_START).toString());
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - sampleValues: execute").startActive(true))
+        {
+            PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion, identity, null);
+            SingleExecutionPlan plan = generateSampleValuesPlan(pureModel, input);
+            Map<String, Object> params = buildParamMap(input.lambdaParameterValues);
+            Response response = executePlan(request, identity, format, start, plan, params);
+            if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
+            {
+                MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
+            }
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_SAMPLE_VALUES_END, System.currentTimeMillis() - start).toString());
+            return response;
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error("Unable to execute sample values profiling", ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
+        }
+    }
+
+    private SingleExecutionPlan generateSampleValuesPlan(PureModel pureModel, DataQualitySampleValuesInput input)
+    {
+        if (input.query == null && input.functionPath == null)
+        {
+            throw new EngineException("Either 'query' or 'functionPath' must be provided",
+                    ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        if (input.query != null && input.functionPath != null)
+        {
+            throw new EngineException("Only one of 'query' or 'functionPath' may be provided, not both",
+                    ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda =
+                input.query != null
+                        ? DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.query, input.maxNumberOfSampleValues)
+                        : DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.functionPath, input.maxNumberOfSampleValues);
+        return PlanGenerator.generateExecutionPlan(
+                lambda, null, null, null, pureModel,
+                input.clientVersion, PlanPlatform.JAVA, null,
+                extensions.apply(pureModel), transformers);
+    }
+
+    private static Map<String, Object> buildParamMap(List<ParameterValue> lambdaParameterValues)
+    {
+        return lambdaParameterValues != null
+                ? lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())))
+                : Maps.mutable.empty();
+    }
 }

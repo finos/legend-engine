@@ -56,6 +56,15 @@ Database demo::PersonDB
     SALARY DECIMAL(10, 2),
     DOB DATE
   )
+  Table SAMPLE_VAL_TBL
+  (
+    ID INTEGER PRIMARY KEY,
+    STR_COL VARCHAR(200),
+    INT_COL INTEGER,
+    FLOAT_COL FLOAT,
+    DATE_COL DATE,
+    BOOL_COL BIT
+  )
 )
 
 
@@ -68,6 +77,16 @@ Class demo::Person
   emailAddress: String[0..1];
   annualSalary: Float[0..1];
   dateOfBirth: StrictDate[0..1];
+}
+
+Class demo::SampleData
+{
+  id: Integer[1];
+  strCol: String[0..1];
+  intCol: Integer[0..1];
+  floatCol: Float[0..1];
+  dateCol: StrictDate[0..1];
+  boolCol: Boolean[0..1];
 }
 
 ###Mapping
@@ -87,6 +106,21 @@ Mapping demo::PersonMap
     annualSalary: [demo::PersonDB]PERSON_TBL.SALARY,
     dateOfBirth: [demo::PersonDB]PERSON_TBL.DOB
   }
+
+  *demo::SampleData: Relational
+  {
+    ~primaryKey
+    (
+      [demo::PersonDB]SAMPLE_VAL_TBL.ID
+    )
+    ~mainTable [demo::PersonDB]SAMPLE_VAL_TBL
+    id: [demo::PersonDB]SAMPLE_VAL_TBL.ID,
+    strCol: [demo::PersonDB]SAMPLE_VAL_TBL.STR_COL,
+    intCol: [demo::PersonDB]SAMPLE_VAL_TBL.INT_COL,
+    floatCol: [demo::PersonDB]SAMPLE_VAL_TBL.FLOAT_COL,
+    dateCol: [demo::PersonDB]SAMPLE_VAL_TBL.DATE_COL,
+    boolCol: [demo::PersonDB]SAMPLE_VAL_TBL.BOOL_COL
+  }
 )
 
 
@@ -105,7 +139,19 @@ RelationalDatabaseConnection demo::H2Connection
       'INSERT INTO PERSON_TBL VALUES (2, \'Bob Johnson\', 25, \'bob@test.com\', 60000.50, \'2000-03-01\');',
       'INSERT INTO PERSON_TBL VALUES (3, \'Charlie Brown\', 35, \'charlie@test.com\', 75000.75, \'1990-01-01\');',
       'INSERT INTO PERSON_TBL VALUES (4, \'Diana Prince\', NULL, \'diana@test.com\', 45000.00, NULL);',
-      'INSERT INTO PERSON_TBL VALUES (5, \'Eve Davis\', 28, NULL, 55000.00, NULL);'
+      'INSERT INTO PERSON_TBL VALUES (5, \'Eve Davis\', 28, NULL, 55000.00, NULL);',
+      'DROP TABLE IF EXISTS SAMPLE_VAL_TBL;',
+      'CREATE TABLE SAMPLE_VAL_TBL(ID INT PRIMARY KEY, STR_COL VARCHAR(200), INT_COL INT, FLOAT_COL DOUBLE, DATE_COL DATE, BOOL_COL BOOLEAN);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (1,  \'A\', 10, 1.1, \'2024-01-01\', true);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (2,  \'A\', 10, 1.1, \'2024-01-01\', true);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (3,  \'A\', 10, 2.2, \'2024-02-01\', false);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (4,  \'A\', 10, 2.2, \'2024-02-01\', false);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (5,  \'A\', 20, 3.3, \'2024-03-01\', true);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (6,  \'B\', 20, 3.3, NULL,          NULL);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (7,  \'B\', 20, NULL, NULL,          NULL);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (8,  \'B\', NULL, NULL, NULL,        NULL);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (9,  \'C\', NULL, NULL, NULL,        NULL);',
+      'INSERT INTO SAMPLE_VAL_TBL VALUES (10, NULL, NULL, NULL, NULL,         NULL);'
       ];
   };
   auth: DefaultH2;

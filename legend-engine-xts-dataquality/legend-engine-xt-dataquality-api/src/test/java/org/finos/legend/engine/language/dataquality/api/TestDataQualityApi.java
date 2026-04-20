@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.dataquality.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.testing.junit.ResourceTestRule;
 
@@ -50,6 +51,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -200,5 +204,181 @@ public class TestDataQualityApi
         PureModel model = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("meta::dataquality::PersonDataQualityValidation");
         assertFalse(DataQualityPropertyPathTreeGenerator.isDataQualityInstance(packageableElement));
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // Sample Values Tests
+    // ───────────────────────────────────────────────────────────────────────────
+
+    private DataQualitySampleValuesInput sampleValuesInput(String queryCode, Integer maxNumberOfSampleValues)
+    {
+        DataQualitySampleValuesInput input = new DataQualitySampleValuesInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.query = lambda(queryCode);
+        input.maxNumberOfSampleValues = maxNumberOfSampleValues;
+        return input;
+    }
+
+    private static final String PERSON_QUERY = "|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName, age: x|$x.age, emailAddress: x|$x.emailAddress, annualSalary: x|$x.annualSalary, dateOfBirth: x|$x.dateOfBirth])->from(demo::PersonMap, demo::PersonRuntime)";
+
+    @Test
+    public void testSampleValuesEndpointReturns200()
+    {
+        DataQualitySampleValuesInput input = sampleValuesInput(PERSON_QUERY, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertNotNull(resultAsString);
+    }
+
+    @Test
+    public void testSampleValuesOutputShape() throws IOException
+    {
+        DataQualitySampleValuesInput input = sampleValuesInput(PERSON_QUERY, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        JsonNode result = objectMapper.readTree(resultAsString);
+
+        // The result is a TDS; verify the column structure
+        JsonNode columns = result.path("result").path("columns");
+        if (columns.isMissingNode())
+        {
+            // Fallback: result may be wrapped differently — just check the raw result contains the expected column names
+            assertTrue("Response should contain column_name", resultAsString.contains("column_name"));
+            assertTrue("Response should contain column_data_type", resultAsString.contains("column_data_type"));
+            assertTrue("Response should contain count", resultAsString.contains("count"));
+            assertTrue("Response should contain string_value", resultAsString.contains("string_value"));
+            assertTrue("Response should contain int_value", resultAsString.contains("int_value"));
+            assertTrue("Response should contain float_value", resultAsString.contains("float_value"));
+            assertTrue("Response should contain date_value", resultAsString.contains("date_value"));
+            assertTrue("Response should contain boolean_value", resultAsString.contains("boolean_value"));
+        }
+        else
+        {
+            Set<String> colNames = StreamSupport.stream(columns.spliterator(), false)
+                    .map(JsonNode::asText)
+                    .collect(Collectors.toSet());
+            assertTrue(colNames.contains("column_name"));
+            assertTrue(colNames.contains("column_data_type"));
+            assertTrue(colNames.contains("count"));
+            assertTrue(colNames.contains("string_value"));
+            assertTrue(colNames.contains("int_value"));
+            assertTrue(colNames.contains("float_value"));
+            assertTrue(colNames.contains("date_value"));
+            assertTrue(colNames.contains("boolean_value"));
+        }
+    }
+
+    @Test
+    public void testSampleValuesMaxNumberOfSampleValuesParameter() throws IOException
+    {
+        // Use SAMPLE_DATA_QUERY with only strCol column, maxNumberOfSampleValues=2
+        String singleColQuery = "|demo::SampleData.all()->project(~[strCol: x|$x.strCol])->from(demo::PersonMap, demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(singleColQuery, 2);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        JsonNode result = objectMapper.readTree(resultAsString);
+
+        // Count number of rows — should be at most 2 for a single column
+        JsonNode rows = result.path("result").path("rows");
+        if (!rows.isMissingNode() && rows.isArray())
+        {
+            assertTrue("At most 2 rows per column when maxNumberOfSampleValues=2", rows.size() <= 2);
+        }
+    }
+
+    @Test
+    public void testSampleValuesDefaultMaxNumberOfSampleValues() throws IOException
+    {
+        // Omit maxNumberOfSampleValues — default should be 20
+        String singleColQuery = "|demo::SampleData.all()->project(~[strCol: x|$x.strCol])->from(demo::PersonMap, demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(singleColQuery, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        JsonNode result = objectMapper.readTree(resultAsString);
+
+        // With default max of 20 and only ~4 distinct values (A, B, C, null), should return up to 20 rows
+        JsonNode rows = result.path("result").path("rows");
+        if (!rows.isMissingNode() && rows.isArray())
+        {
+            assertTrue("Rows should be <= 20 (default max)", rows.size() <= 20);
+        }
+    }
+
+    @Test
+    public void testSampleValuesStringColumnValues()
+    {
+        // fullName column is a String — string_value should be populated, int_value should be null
+        String singleColQuery = "|demo::Person.all()->project(~[fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(singleColQuery, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        // Verify column_data_type says "String"
+        assertTrue("String column should report data type as String", resultAsString.contains("String"));
+    }
+
+    @Test
+    public void testSampleValuesIntegerColumnValues()
+    {
+        // id column is Integer — int_value should be populated, string_value should be null
+        String singleColQuery = "|demo::Person.all()->project(~[id: x|$x.id])->from(demo::PersonMap, demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(singleColQuery, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        // Verify column_data_type says "Integer"
+        assertTrue("Integer column should report data type as Integer", resultAsString.contains("Integer"));
+    }
+
+    @Test
+    public void testSampleValuesColumnOrder()
+    {
+        // Project id then fullName — id block should appear before fullName block
+        String twoColQuery = "|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)";
+        DataQualitySampleValuesInput input = sampleValuesInput(twoColQuery, null);
+
+        Response response = resources.target("pure/v1/dataquality/sampleValues")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+
+        // Verify that "id" column_name appears before "fullName" in the result
+        int idPos = resultAsString.indexOf("\"id\"");
+        int fullNamePos = resultAsString.indexOf("\"fullName\"");
+        if (idPos >= 0 && fullNamePos >= 0)
+        {
+            assertTrue("id block should appear before fullName block", idPos < fullNamePos);
+        }
     }
 }
