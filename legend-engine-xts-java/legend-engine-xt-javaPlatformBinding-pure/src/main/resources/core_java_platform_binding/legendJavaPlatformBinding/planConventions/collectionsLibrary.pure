@@ -77,7 +77,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
         fc3(dropAt_T_MANY__Integer_1__Integer_1__T_MANY_,                       {ctx,collection,index,cnt     | dropAt($ctx, $collection, $index, $cnt, $library)}),
 
         fc(meta::pure::functions::collection::isEqual_T_1__T_1__RootGraphFetchTree_1__Boolean_1_, IsEqualCoder_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
-        fc(meta::pure::functions::collection::isDistinct_T_MANY__RootGraphFetchTree_1__Boolean_1_, IsDistinctFetchTreeCoder_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_)
+        fc(meta::pure::functions::collection::isDistinct_T_MANY__RootGraphFetchTree_1__Boolean_1_, IsDistinctFetchTreeCoder_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+
+        fc2(pair_U_1__V_1__Pair_1_,                                             {ctx,first,second             | javaClass('org.eclipse.collections.impl.tuple.Tuples')->j_invoke('pair', [$first, $second], javaPair($first.type->toBoxed(), $second.type->toBoxed()))}),
+        fc1(newMap_Pair_MANY__Map_1_,                                           {ctx,pairs                    | $library->j_invoke('newMap', [$pairs], $ctx.returnType())}),
+        fc2(get_Map_1__U_1__V_$0_1$_,                                           {ctx,map,key                  | $map->j_invoke('get', [$key], javaObject())->j_cast($ctx.returnType())}),
+        fc3(put_Map_1__U_1__V_1__Map_1_,                                        {ctx,map,key,value            | $library->j_invoke('put', [$map, $key, $value], $map.type)}),
+        fc2(zip_T_MANY__U_MANY__Pair_MANY_,                                     {ctx,a,b                      | $library->j_invoke('zip', [$a, $b], $ctx.returnType())})
       ]);
 
    $conventions->registerLibrary($lib);

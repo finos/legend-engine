@@ -226,7 +226,12 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
               | $conventions->dateType($mult),
               |
            if($type == Map,
-              | javaMap($typeArgs->at(0), $typeArgs->at(1))->listIfMulti($mult),
+              | javaMap(if($typeArgs->size() > 0, | $typeArgs->at(0), | javaObject()),
+                        if($typeArgs->size() > 1, | $typeArgs->at(1), | javaObject()))->listIfMulti($mult),
+              |
+           if($type == Pair,
+              | javaPair(if($typeArgs->size() > 0, | $typeArgs->at(0), | javaObject()),
+                         if($typeArgs->size() > 1, | $typeArgs->at(1), | javaObject()))->listIfMulti($mult),
               |
            if($type->instanceOf(meta::pure::metamodel::type::Enumeration) || $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(Unit) || $type->instanceOf(Measure),
               {|
@@ -244,7 +249,7 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
                       ^meta::external::language::java::metamodel::Type();
                 );    
               }       
-   ))))))))))));
+   )))))))))))));
 }
 
 function meta::external::language::java::transform::stringType(     conventions:Conventions[1]): meta::external::language::java::metamodel::Type[1] { $conventions->stringType(     PureOne); }
@@ -1221,16 +1226,13 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 
       // Maps
       groupBy_X_MANY__Function_1__Map_1_,
-      get_Map_1__U_1__V_$0_1$_,
       getIfAbsentPutWithKey_Map_1__U_1__Function_1__V_$0_1$_,
       getMapStats_Map_1__MapStats_$0_1$_,
       keys_Map_1__U_MANY_,
       keyValues_Map_1__Pair_MANY_,
       merge_Map_1__Map_1__Map_1_,
-      newMap_Pair_MANY__Map_1_,
       newMap_Pair_MANY__Property_MANY__Map_1_,
       newMultiValueMap_Pair_MANY__Map_1_,
-      put_Map_1__U_1__V_1__Map_1_,
       putAll_Map_1__Map_1__Map_1_,
       putAll_Map_1__Pair_MANY__Map_1_,
       replaceAll_Map_1__Pair_MANY__Map_1_,

@@ -136,6 +136,11 @@ function meta::external::language::java::factory::javaMap(key:meta::external::la
    ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaClass('java.util.Map'), typeArguments=[$key->toBoxed(), $value->toBoxed()]);
 }
 
+function meta::external::language::java::factory::javaPair(first:meta::external::language::java::metamodel::Type[1], second:meta::external::language::java::metamodel::Type[1]) : meta::external::language::java::metamodel::Type[1]
+{
+   ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaClass('org.eclipse.collections.api.tuple.Pair'), typeArguments=[$first->toBoxed(), $second->toBoxed()]);
+}
+
 function meta::external::language::java::factory::javaTreeMap(key:meta::external::language::java::metamodel::Type[1], value:meta::external::language::java::metamodel::Type[1]) : meta::external::language::java::metamodel::Type[1]
 {
    ^meta::external::language::java::metamodel::ParameterizedType(rawType=javaTreeMap(), typeArguments=[$key->toBoxed(), $value->toBoxed()]);
