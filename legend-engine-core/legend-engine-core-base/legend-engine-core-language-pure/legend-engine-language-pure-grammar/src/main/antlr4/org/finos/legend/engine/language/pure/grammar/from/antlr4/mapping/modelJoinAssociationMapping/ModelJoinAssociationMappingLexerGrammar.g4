@@ -1,0 +1,3 @@
+lexer grammar ModelJoinAssociationMappingLexerGrammar;
+
+import M3LexerGrammar;

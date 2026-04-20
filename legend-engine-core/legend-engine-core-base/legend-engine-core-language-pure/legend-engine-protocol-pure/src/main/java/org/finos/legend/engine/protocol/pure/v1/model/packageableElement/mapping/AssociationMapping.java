@@ -20,11 +20,13 @@ import java.util.Collections;
 import java.util.List;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = XStoreAssociationMapping.class, name = "xStore")
+        @JsonSubTypes.Type(value = XStoreAssociationMapping.class, name = "xStore"),
+        @JsonSubTypes.Type(value = ModelJoinAssociationMapping.class, name = "modelJoin")
 })
 public abstract class AssociationMapping
 {

@@ -22,6 +22,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.junit.Test;
 
@@ -3457,6 +3459,120 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    age: AGE\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+
+    @Test
+    public void testModelJoinAssociationMapping()
+    {
+        String mapping = "###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        // Valid ModelJoin — should compile successfully
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employer.id == employees.firmId\n" +
+                "   }"));
+
+        // Valid Complex ModelJoin — should compile successfully
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employer.employees.employer.id == employees.firmId && employees.name->toLower() != 'abc'\n" +
+                "   }"));
+
+        // Invalid: non-boolean return type
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employer.id + employees.firmId\n" +
+                "   }"),
+                "COMPILATION error at [36:19-36]: ModelJoin property mapping function should return 'Boolean[1]'");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingProducesAssociationImplementation()
+    {
+        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employer.id == employees.firmId\n" +
+                "   }\n" +
+                ")\n");
+
+        PureModel pureModel = result.getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping compiledMapping = pureModel.getMapping("test::modelJoinMapping");
+
+        // Should produce an association implementation with two property mappings (both directions)
+        RichIterable<? extends AssociationImplementation> associationImpls = compiledMapping._associationMappings();
+        assertEquals(1, associationImpls.size());
+
+        AssociationImplementation assocImpl = associationImpls.toList().get(0);
+        assertTrue(assocImpl instanceof ModelJoinAssociationImplementation);
+
+        // Two property mappings — one per direction
+        assertEquals(2, assocImpl._propertyMappings().size());
+        assocImpl._propertyMappings().forEach(
+                propertyMapping -> assertTrue(propertyMapping instanceof ModelJoinPropertyMapping)
+        );
     }
 
 }

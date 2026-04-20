@@ -1035,4 +1035,43 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testModelJoinAssociationMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping test::myMapping\n" +
+                "(\n" +
+                "  test::Firm_Person: ModelJoin\n" +
+                "  {\n" +
+                "    firm.id == person.firmId\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithId()
+    {
+        test("###Mapping\n" +
+                "Mapping test::myMapping\n" +
+                "(\n" +
+                "  test::Firm_Person[myId]: ModelJoin\n" +
+                "  {\n" +
+                "    firm.id == person.firmId\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingComplexExpression()
+    {
+        test("###Mapping\n" +
+                "Mapping test::myMapping\n" +
+                "(\n" +
+                "  test::Firm_Person: ModelJoin\n" +
+                "  {\n" +
+                "    (firm.id == person.firmId) && (firm.name == person.firmName)\n" +
+                "  }\n" +
+                ")\n");
+    }
 }
