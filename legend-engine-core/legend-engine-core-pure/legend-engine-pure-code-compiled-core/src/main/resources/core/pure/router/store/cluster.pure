@@ -600,7 +600,16 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
 
 function meta::pure::router::store::clustering::areStoreClustersCompatible(cluster1:StoreClusteredValueSpecification[1], cluster2:StoreClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-   ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
+   let storesCompatible = ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) ||
+                           $cluster1.store->isStoreIncluded($cluster2.store) ||
+                           $cluster2.store->isStoreIncluded($cluster1.store) ||
+                           $cluster1.runtime.connectionStores.element->cast(@meta::pure::store::Store)->exists(s | $s->isStoreIncluded($cluster1.store) && $s->isStoreIncluded($cluster2.store));
+   $storesCompatible && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
+}
+
+function <<access.private>> meta::pure::router::store::clustering::isStoreIncluded(parent:meta::pure::store::Store[1], child:meta::pure::store::Store[1]):Boolean[1]
+{
+   $parent.includes->exists(included | ($included->elementToPath() == $child->elementToPath()) || $included->isStoreIncluded($child));
 }
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1],  parentCluster:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
