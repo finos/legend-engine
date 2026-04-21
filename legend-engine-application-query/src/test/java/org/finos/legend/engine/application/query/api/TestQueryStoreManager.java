@@ -1627,7 +1627,7 @@ public class TestQueryStoreManager
     private QuerySearchSpecification createPaginatedSpec(QuerySearchSpecification searchSpec, Integer cursor, Integer pageSize)
     {
         QuerySearchSpecification spec = searchSpec != null ? searchSpec : new QuerySearchSpecification();
-        spec.paginatedQuerySpecification = new PaginatedQuerySpecification();
+        spec.paginatedQuerySpecification = new QuerySearchSpecification.PaginatedQuerySpecification();
         spec.paginatedQuerySpecification.cursor = cursor;
         spec.paginatedQuerySpecification.pageSize = pageSize;
         return spec;
@@ -1766,7 +1766,7 @@ public class TestQueryStoreManager
         }
 
         QuerySearchSpecification paginatedSpec = new QuerySearchSpecification();
-        paginatedSpec.paginatedQuerySpecification = new PaginatedQuerySpecification();
+        paginatedSpec.paginatedQuerySpecification = new QuerySearchSpecification.PaginatedQuerySpecification();
         paginatedSpec.paginatedQuerySpecification.pageSize = pageSize;
 
         PaginatedResult result = store.searchQueries(paginatedSpec, currentUser);

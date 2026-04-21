@@ -69,7 +69,6 @@ public class QueryStoreManager
     public QueryStoreManager(MongoClient mongoClient)
     {
         this.mongoClient = mongoClient;
-        this.queryDao = new ApplicationQueryDao(mongoClient, getQueryDatabaseName(), getQueryCollectionName());
     }
 
     private MongoDatabase getQueryDatabase()
@@ -313,7 +312,7 @@ public class QueryStoreManager
             // Fetch one extra to determine if there's a next page
             builder.withLimit(pageSize + 1);
 
-            List<Query> queries = this.queryDao.find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
+            List<Query> queries = getQueryDao().find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
                     .map(this::convertFromStoredQuery)
                     .sorted(Comparator.comparing(query -> query.owner != null && query.owner.equals(currentUser) ? 0 : 1))
                     .collect(Collectors.toList());
@@ -337,7 +336,7 @@ public class QueryStoreManager
             }
             builder.withLimit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit));
 
-            List<Query> queries = this.queryDao.find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
+            List<Query> queries = getQueryDao().find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
                     .map(this::convertFromStoredQuery)
                     .sorted(Comparator.comparing(query -> query.owner != null && query.owner.equals(currentUser) ? 0 : 1))
                     .collect(Collectors.toList());

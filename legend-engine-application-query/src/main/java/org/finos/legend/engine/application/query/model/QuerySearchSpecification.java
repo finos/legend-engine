@@ -34,4 +34,10 @@ public class QuerySearchSpecification
     public QuerySearchSortBy sortByOption;
 
     public PaginatedQuerySpecification paginatedQuerySpecification;
+
+    public static class PaginatedQuerySpecification
+    {
+        public Integer pageSize;
+        public Integer cursor;
+    }
 }
