@@ -350,16 +350,25 @@ public class DataQualityExecute
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction;
+        MutableMap<String, Object> lambdaParameterMap = Maps.mutable.empty();
 
         if (input.runSourceQuery)
         {
             // return source query results directly
             dqLambdaFunction = HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext());
+            if (input.sourceLambdaParameterValues != null)
+            {
+                input.sourceLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
         }
         else if (input.runTargetQuery)
         {
             // return target query results directly
             dqLambdaFunction = HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext());
+            if (input.targetLambdaParameterValues != null)
+            {
+                input.targetLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
         }
         else
         {
@@ -369,13 +378,22 @@ public class DataQualityExecute
             );
             // 2. call DQ PURE func to generate recon lambda
             dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+            // 3. build parameter map with source_/target_ prefixes for the recon lambda
+            if (input.sourceLambdaParameterValues != null)
+            {
+                input.sourceLambdaParameterValues.forEach(p -> lambdaParameterMap.put("source_" + p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+            if (input.targetLambdaParameterValues != null)
+            {
+                input.targetLambdaParameterValues.forEach(p -> lambdaParameterMap.put("target_" + p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
         }
 
         // 3. Generate Plan from the lambda generated in the previous step
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
         // 4. Execute plan
-        return executePlanToResult(request, identity, singleExecutionPlan, Maps.mutable.empty());
+        return executePlanToResult(request, identity, singleExecutionPlan, lambdaParameterMap);
     }
 
     private SingleExecutionPlan generateExecutionPlan(DataQualityExecuteTrialInput dataQualityExecuteInput, Identity identity, boolean rowCount, String queryType)

@@ -18,6 +18,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
+import java.util.List;
 import java.util.Set;
 
 
@@ -40,5 +42,7 @@ public class DataQualityReconInput
     public boolean runSourceQuery = false;
     public boolean runTargetQuery = false;
     public Long defectLimit; //optional limit on the number of defect rows returned
+    public List<ParameterValue> sourceLambdaParameterValues; //parameter values for the source lambda
+    public List<ParameterValue> targetLambdaParameterValues; //parameter values for the target lambda
 
 }
