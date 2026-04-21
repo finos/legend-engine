@@ -202,6 +202,75 @@ public class TestDataQualityApi
         assertNotNull(resultAsString);
     }
 
+    @Test
+    public void testDataQualityReconThrowsExceptionWhenSourceDoesNotHaveFrom()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])");
+        input.target = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(500, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertTrue(resultAsString.contains("The source query for the Data Quality Recon Input does not end with a 'from' so unable to execute it."));
+    }
+
+    @Test
+    public void testDataQualityReconThrowsExceptionWhenTargetDoesNotHaveFrom()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.source = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime)");
+        input.target = lambda("|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])");
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(500, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertTrue(resultAsString.contains("The target query for the Data Quality Recon Input does not end with a 'from' so unable to execute it."));
+    }
+
+    @Test
+    public void testDataQualityReconThrowsExceptionWhenPackagePathNotPointingToComparisonElement()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.clientVersion = "vX_X_X";
+        input.model = new PureModelContextPointer();
+        input.packagePath = "demo::PersonRuntime";
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(500, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertTrue(resultAsString.contains("Expected package path to point to DataQualityRelationComparison but found Root_meta_pure_runtime_PackageableRuntime_Impl"));
+    }
+
+    @Test
+    public void testDataQualityReconWhenProvidePackagePathToComparisonElement()
+    {
+        DataQualityReconInput input = new DataQualityReconInput();
+        input.packagePath = "meta::dataquality::TestRelationComparison";
+        input.model = new PureModelContextPointer();
+
+        Response response = resources.target("pure/v1/dataquality/reconciliation")
+                .request()
+                .post(Entity.json(input));
+
+        assertEquals(200, response.getStatus());
+        String resultAsString = response.readEntity(String.class);
+        assertNotNull(resultAsString);
+    }
+
     private LambdaFunction lambda(String code)
     {
         return PureGrammarParser.newInstance().parseLambda(code, "", false);

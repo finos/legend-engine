@@ -65,10 +65,8 @@ Class meta::external::dataquality::RelationValidation
 
 Class meta::external::dataquality::datarecon::DataQualityReconInput
 [
-  sourceMustEndWithRuntime: $this.source->isEndingWithFromFunction(),
-  targetMustEndWithRuntime: $this.target->isEndingWithFromFunction(),
-  sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),
-  targetMustReturnRelation: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation)
+  sourceMustReturnRelationOrTds: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation) || $this.source->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet),
+  targetMustReturnRelationOrTds: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation) || $this.target->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet)
 ]
 {
   source: LambdaFunction<Any>[1]; //query pointing to source dataset
@@ -80,12 +78,11 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   targetHashCol: String[0..1]; //if there already exists a column on target that contains the hash that you want to use in recon
   includeColumnValues: Boolean[1]; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
   defectLimit: Integer[0..1]; //optional limit on the number of defect rows returned
+  removeFrom: Boolean[1] = false; //whether the from function should be removed on source and target queries
 }
 
 Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement
 [
-  sourceMustEndWithRuntime: $this.source->isEndingWithFromFunction(),
-  targetMustEndWithRuntime: $this.target->isEndingWithFromFunction(),
   sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),
   targetMustReturnRelation: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation)
 ]

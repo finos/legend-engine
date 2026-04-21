@@ -173,3 +173,12 @@ Runtime demo::PersonRuntime
     ]
   ];
 }
+
+###DataQualityValidation
+DataQualityRelationComparison meta::dataquality::TestRelationComparison
+{
+  source: |demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);
+  target: |demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->from(demo::PersonMap, demo::PersonRuntime);
+  keys: [id, fullName];
+  strategy: MD5Hash;
+}

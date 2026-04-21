@@ -21,6 +21,8 @@ import meta::pure::functions::relation::*;
 import meta::pure::functions::meta::*;
 import meta::external::dataquality::*;
 import meta::pure::precisePrimitives::*;
+import meta::external::dataquality::tests::domain::*;
+import meta::pure::metamodel::relation::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_dynamicHash():Boolean[1]
 {
@@ -373,6 +375,98 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   testRecon($lambda, $source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
 }
 
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_noFromFunctions():Boolean[1]
+{
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,HASH])
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
+    ->select(~[ID_SOURCE,HASH_SOURCE])
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,HASH])
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,HASH_TARGET]),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+  };
+
+  let input = {| #>{meta::external::dataquality::tests::domain::db.personTable}#};
+  testRecon($expected, $input, $input, 'ID', false, [], 'HASH', 'HASH', false, [], false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_removesFrom():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,HASH])
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
+    ->select(~[ID_SOURCE,HASH_SOURCE])
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,HASH])
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,HASH_TARGET]),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#};
+  testRecon($expected, $source, $target, 'ID', false, [], 'HASH', 'HASH', false, [], true);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_withTabularDataSet():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,HASH])
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
+    ->select(~[ID_SOURCE,HASH_SOURCE])
+    ->from($runtime)
+    ->join(
+        Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH'])
+          ->cast(@Relation<(ID: String[1], HASH: String[1])>)
+          ->select(~[ID,HASH])
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,HASH_TARGET])
+          ->from($mapping, $runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH'])->from($mapping, $runtime)};
+  testRecon($expected, $source, $target, 'ID', false, [], 'HASH', 'HASH', false, [], false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_withTabularDataSetAndRemoveFrom():Boolean[1]
+{
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let mapping = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::dataqualitymappings')->toOne()->cast(@Mapping);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,HASH])
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH])
+    ->select(~[ID_SOURCE,HASH_SOURCE])
+    ->join(
+        Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH'])
+          ->cast(@Relation<(ID: String[1], HASH: String[1])>)
+          ->select(~[ID,HASH])
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,HASH_TARGET]),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| Person.all()->project([ x|$x.id, x|$x.hash ],[ 'ID', 'HASH'])->from($mapping, $runtime)};
+  testRecon($expected, $source, $target, 'ID', false, [], 'HASH', 'HASH', false, [], true);
+}
+
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
   testRecon($expected, $runtime, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);
@@ -382,16 +476,16 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 {
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit);
+  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, false);
 }
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
-  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);
+  testRecon($expected, $source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false);
 }
 
-function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1]):Boolean[1]
+function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]):Boolean[1]
 {
-  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit));
+  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom));
   assertLambdaEquals($expected, $actual, false);
 }

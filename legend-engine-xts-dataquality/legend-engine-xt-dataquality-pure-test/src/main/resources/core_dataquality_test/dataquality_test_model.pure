@@ -77,6 +77,8 @@ Class meta::external::dataquality::tests::domain::Person
   name: String[1];
   age: Integer[1];
   addresses: meta::external::dataquality::tests::domain::Address[*];
+  id: String[0..1];
+  hash: String[0..1];
 }
 
 Class meta::external::dataquality::tests::domain::Address
