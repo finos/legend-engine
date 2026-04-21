@@ -258,8 +258,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='to_char(%s)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->toTimestampOracle()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateOracle()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::transformFormatDateOracle(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.FF9\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::transformSubstring(params:String[*]):String[1]

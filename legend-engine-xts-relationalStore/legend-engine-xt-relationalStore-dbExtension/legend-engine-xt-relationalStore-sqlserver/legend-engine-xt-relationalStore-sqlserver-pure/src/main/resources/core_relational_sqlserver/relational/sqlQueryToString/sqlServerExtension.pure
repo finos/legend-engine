@@ -135,8 +135,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='varp(%s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSqlServer()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::transformFormatDateSqlServer(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'yyyy-MM-ddTHH:mm:ss.fffffff00\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('FORMAT(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processJoinStringsOperationForSqlServer(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]

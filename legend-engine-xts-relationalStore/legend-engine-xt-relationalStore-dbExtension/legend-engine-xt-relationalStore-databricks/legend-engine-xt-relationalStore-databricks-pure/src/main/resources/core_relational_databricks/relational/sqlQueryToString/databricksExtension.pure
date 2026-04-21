@@ -144,8 +144,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='to_json(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformFormatDateDatabricks(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'yyyy-MM-dd\'\'T\'\'HH:mm:ss.SSSSSSSSS\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]

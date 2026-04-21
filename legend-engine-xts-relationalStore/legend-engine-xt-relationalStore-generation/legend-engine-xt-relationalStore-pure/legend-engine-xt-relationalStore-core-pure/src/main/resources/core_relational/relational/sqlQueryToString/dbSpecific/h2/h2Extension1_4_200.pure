@@ -157,9 +157,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()}))
+    dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()})),
+    dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()}))
 
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformFormatDate(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.FF9\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformConvertTimeZone(params:String[3]):String[1]

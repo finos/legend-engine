@@ -97,8 +97,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateBigQuery()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::transformFormatDateBigQuery(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'%Y-%m-%dT%H:%M:%E9S\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('FORMAT_TIMESTAMP(%s,%s)', [$sqlFmt, $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]

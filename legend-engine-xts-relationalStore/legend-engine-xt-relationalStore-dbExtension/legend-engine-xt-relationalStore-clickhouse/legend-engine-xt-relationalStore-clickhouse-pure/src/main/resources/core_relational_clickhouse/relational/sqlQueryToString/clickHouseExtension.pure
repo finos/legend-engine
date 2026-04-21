@@ -140,8 +140,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varPop', $p)})),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varSamp', $p)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='toISOWeek(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformFormatDateClickHouse(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'%Y-%m-%dT%H:%i:%S.%f\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('formatDateTime(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]

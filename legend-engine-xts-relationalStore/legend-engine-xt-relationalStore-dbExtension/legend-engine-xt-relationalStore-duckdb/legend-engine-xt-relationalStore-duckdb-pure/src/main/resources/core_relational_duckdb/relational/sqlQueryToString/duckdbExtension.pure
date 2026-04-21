@@ -273,8 +273,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_samp('+$p->toOne()+')',|'list_var_samp('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
-    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDuckDB()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformFormatDateDuckDB(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', 'strftime(%s, \'%%Y-%%m-%%dT%%H:%%M:%%S.\') || lpad(cast(extract(\'microsecond\' from %s) %% 1000000 as varchar), 6, \'0\') || \'000\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format($sqlFmt, [$params->at(0), $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processExtractFromSemiStructuredParamsFoDuckDb(params:String[3]):String[1]

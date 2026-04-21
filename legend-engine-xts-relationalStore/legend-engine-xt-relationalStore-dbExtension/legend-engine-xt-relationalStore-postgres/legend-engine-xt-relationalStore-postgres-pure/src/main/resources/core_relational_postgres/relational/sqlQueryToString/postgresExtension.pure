@@ -245,8 +245,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePostgres()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformFormatDatePostgres(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.US000\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processExtractFromSemiStructuredParamsForPostgres(params:String[3]):String[1]

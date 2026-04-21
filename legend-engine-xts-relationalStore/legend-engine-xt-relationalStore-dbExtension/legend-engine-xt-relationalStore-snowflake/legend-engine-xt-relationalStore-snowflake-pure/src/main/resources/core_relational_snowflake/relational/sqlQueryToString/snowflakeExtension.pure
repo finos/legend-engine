@@ -380,7 +380,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
+    dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)})),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSnowflake()}))
   ];
 }
 
@@ -728,6 +729,16 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
   );
 }
 
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformFormatDateSnowflake(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let formatPairs = [
+    pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.FF9\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformConvertTimeZone(params:String[3],context:SqlGenerationContext[1]):String[1]
 {

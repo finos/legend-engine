@@ -243,6 +243,7 @@ meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_
 meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_
 meta::pure::functions::date::timeBucket_StrictDate_$0_1$__Integer_1__DurationUnit_1__StrictDate_$0_1$_
 meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_
+meta::pure::functions::date::formatDate_DateTime_1__DateTimeFormat_1__String_1_
 meta::pure::functions::date::dateDiff_Date_$0_1$__Date_$0_1$__DurationUnit_1__Integer_$0_1$_
 meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_
 meta::pure::functions::date::datePart_Date_$0_1$__Date_$0_1$_
