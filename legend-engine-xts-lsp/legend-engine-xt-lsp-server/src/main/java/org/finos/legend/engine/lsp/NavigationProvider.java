@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 public class NavigationProvider
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(NavigationProvider.class);
+
     /**
      * Find the definition location for the element at the given position.
      * Returns null if no navigable element is found at that position.

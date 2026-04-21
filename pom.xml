@@ -112,6 +112,9 @@
         <!-- MCP -->
         <module>legend-engine-xts-mcp</module>
 
+        <!-- LSP -->
+        <module>legend-engine-xts-lsp</module>
+
         <!-- Docs -->
         <module>legend-engine-docs</module>
     </modules>

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  *   {@code referenceUsages} (structural type references)
  * - For other elements: reads {@code referenceUsages}
  *
- * @see pure_ide/findUsage.pure in legend-engine for the reference implementation
+ * See {@code pure_ide/findUsage.pure} in legend-engine for the reference implementation.
  */
 public class ReferencesProvider
 {

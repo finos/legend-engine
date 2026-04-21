@@ -134,7 +134,17 @@ public class UriMapperTest
 
         // Cleanup
         java.nio.file.Files.walk(tempDir).sorted(java.util.Comparator.reverseOrder())
-                .forEach(p -> { try { java.nio.file.Files.delete(p); } catch (Exception ignored) {} });
+                .forEach(p ->
+                {
+                    try
+                    {
+                        java.nio.file.Files.delete(p);
+                    }
+                    catch (Exception ignored)
+                    {
+                        // Best-effort cleanup for the temporary test workspace.
+                    }
+                });
     }
 
     @Test
