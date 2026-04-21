@@ -505,7 +505,6 @@ Association meta::relational::tests::milestoning::ChildEntity_LeafEntity
    leaves : LeafEntity[*];
 }
 
-// Root (non-temporal) -> Entity (temporal) -> RegData (temporal)
 Class meta::relational::tests::milestoning::RootEntity
 {
    rootId : String[1];
