@@ -301,12 +301,12 @@ public class QueryStoreManager
         builder.withExcludeFields(EXCLUDED_PROJECTION_FIELDS);
 
         // Check if pagination is requested (pageSize is specified)
-        boolean isPaginated = searchSpecification.pageSize != null;
+        boolean isPaginated = searchSpecification.paginatedQuerySpecification != null && searchSpecification.paginatedQuerySpecification.pageSize != null;
 
         if (isPaginated)
         {
-            int pageSize = Math.min(searchSpecification.pageSize, MAX_PAGE_SIZE);
-            int offset = searchSpecification.cursor != null ? searchSpecification.cursor : 0;
+            int pageSize = Math.min(searchSpecification.paginatedQuerySpecification.pageSize, MAX_PAGE_SIZE);
+            int offset = searchSpecification.paginatedQuerySpecification.cursor != null ? searchSpecification.paginatedQuerySpecification.cursor : 0;
             int pageNumber = (offset / pageSize) + 1;
 
             builder.withSkip(offset);

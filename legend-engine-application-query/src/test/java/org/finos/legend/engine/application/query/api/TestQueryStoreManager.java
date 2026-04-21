@@ -1398,7 +1398,7 @@ public class TestQueryStoreManager
         store.updateQuery("1", createdQuery, currentUser);
 
         // Search should only return the latest version, not historical versions
-        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries;
         Assert.assertEquals(1, queries.size());
         Assert.assertEquals("query1_v2", queries.get(0).name);
     }
@@ -1627,8 +1627,9 @@ public class TestQueryStoreManager
     private QuerySearchSpecification createPaginatedSpec(QuerySearchSpecification searchSpec, Integer cursor, Integer pageSize)
     {
         QuerySearchSpecification spec = searchSpec != null ? searchSpec : new QuerySearchSpecification();
-        spec.cursor = cursor;
-        spec.pageSize = pageSize;
+        spec.paginatedQuerySpecification = new PaginatedQuerySpecification();
+        spec.paginatedQuerySpecification.cursor = cursor;
+        spec.paginatedQuerySpecification.pageSize = pageSize;
         return spec;
     }
 
@@ -1765,7 +1766,8 @@ public class TestQueryStoreManager
         }
 
         QuerySearchSpecification paginatedSpec = new QuerySearchSpecification();
-        paginatedSpec.pageSize = pageSize;
+        paginatedSpec.paginatedQuerySpecification = new PaginatedQuerySpecification();
+        paginatedSpec.paginatedQuerySpecification.pageSize = pageSize;
 
         PaginatedResult result = store.searchQueries(paginatedSpec, currentUser);
         Assert.assertEquals(3, result.queries.size());

@@ -66,6 +66,26 @@ public class ApplicationQuery
     {
         try
         {
+            return Response.ok().entity(this.queryStoreManager.searchQueries(searchSpecification, getCurrentUser(profileManager)).queries).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.SEARCH_QUERIES_ERROR, null);
+        }
+    }
+
+    @POST
+    @Path("search/paginated")
+    @ApiOperation(value = "Search queries with pagination")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response searchQueriesPaginated(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try
+        {
             return Response.ok().entity(this.queryStoreManager.searchQueries(searchSpecification, getCurrentUser(profileManager))).build();
         }
         catch (Exception e)

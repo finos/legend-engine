@@ -26,7 +26,6 @@ public class QuerySearchSpecification
     public List<TaggedValue> taggedValues;
     public List<StereotypePtr> stereotypes;
     public Integer limit;
-    public Integer pageSize;
     public Boolean showCurrentUserQueriesOnly;
     // This boolean flag helps to perform And condition on filter we apply for tagged values
     // so that we can search if a query contains all the taggedValues specified in the
@@ -34,5 +33,5 @@ public class QuerySearchSpecification
     public Boolean combineTaggedValuesCondition;
     public QuerySearchSortBy sortByOption;
 
-    public Integer cursor;
+    public PaginatedQuerySpecification paginatedQuerySpecification;
 }
