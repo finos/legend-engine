@@ -156,7 +156,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     pair('ISO8601', '\'%Y-%m-%dT%H:%M:%E9S\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
-  format('FORMAT_TIMESTAMP(%s,%s)', [$sqlFmt, $params->at(0)]);
+  format('FORMAT_TIMESTAMP(%s,CAST(%s AS TIMESTAMPTZ))', [$sqlFmt, $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::generateDateDiffExpressionForSpanner(params:String[*]):String[1]
