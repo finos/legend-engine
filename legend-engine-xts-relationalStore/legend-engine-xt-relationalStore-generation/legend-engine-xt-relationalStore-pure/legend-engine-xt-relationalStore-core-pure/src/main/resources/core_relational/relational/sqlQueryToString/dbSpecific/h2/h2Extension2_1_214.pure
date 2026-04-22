@@ -275,7 +275,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::transformFormatDate(params:String[2]):String[1]
 {
-  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
     pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.FF9\'')
   ];

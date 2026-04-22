@@ -147,12 +147,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformFormatDateClickHouse(params:String[2]):String[1]
 {
-  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
     pair('ISO8601', '\'%Y-%m-%dT%H:%i:%S.%f\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
-  format('formatDateTime(%s,%s)', [$params->at(0), $sqlFmt]);
+  format('concat(formatDateTime(%s,%s), \'000\')', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]

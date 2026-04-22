@@ -122,7 +122,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformFormatDateTrino(params:String[2]):String[1]
 {
-  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
     pair('ISO8601', '\'%Y-%m-%dT%H:%i:%s.%f000\'')
   ];

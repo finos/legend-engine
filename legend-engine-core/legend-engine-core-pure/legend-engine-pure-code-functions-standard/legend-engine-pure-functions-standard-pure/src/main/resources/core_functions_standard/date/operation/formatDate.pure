@@ -27,11 +27,17 @@ function
    }
 meta::pure::functions::date::formatDate(dateTime:DateTime[1], dateTimeFormat:DateTimeFormat[1]):String[1]
 {
-   let fmt = [
-      pair(DateTimeFormat.ISO8601, 'yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS')
-   ]->filter(p | $p.first == $dateTimeFormat).second;
-   assert($fmt->isNotEmpty(), |'Unsupported DateTimeFormat: ' + $dateTimeFormat->toString());
-   format('%t{' + $fmt->toOne() + '}', $dateTime);
+   if($dateTimeFormat == DateTimeFormat.ISO8601,
+      | formatDateISO8601($dateTime),
+      | assert(false, |'Unsupported DateTimeFormat: ' + $dateTimeFormat->toString()); '';);
+}
+
+function <<access.private>> meta::pure::functions::date::formatDateISO8601(dateTime:DateTime[1]):String[1]
+{
+   let base = format('%t{yyyy-MM-dd"T"HH:mm:ss}', $dateTime);
+   if($dateTime->hasSubsecond(),
+      | $base + '.' + format('%t{SSSSSSSSS}', $dateTime),
+      | $base + '.000000000');
 }
 
 function <<PCT.test>> meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

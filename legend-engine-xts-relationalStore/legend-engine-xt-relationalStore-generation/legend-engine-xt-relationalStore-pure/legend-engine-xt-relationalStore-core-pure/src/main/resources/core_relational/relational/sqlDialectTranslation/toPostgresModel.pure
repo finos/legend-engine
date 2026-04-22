@@ -385,6 +385,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('dayOfWeek',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', $p->concatenate(literal('Day')))}),
     pair('parseDate',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),
     pair('adjust',                    {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('dateadd', [$p->at(0), $p->at(1), $p->at(2)->cast(@StringLiteral)->convertDurationUnit()])}),
+    pair('formatDate',                {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', [$p->at(0), $p->at(1)->cast(@StringLiteral)->convertDateTimeFormat()])}),
     pair('toLower',                   functionCall('lower')),
     pair('toUpper',                   functionCall('upper')),
     pair('rem',                       functionCall('mod')),
@@ -659,6 +660,16 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   ]->filter(p | $p.first == $unit.value).second->toOne('Postgres conversion for DurationUnit not found: ' + $unit.value);
 
   ^StringLiteral(value = $convertedUnit);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertDateTimeFormat(fmt:StringLiteral[1]):StringLiteral[1]
+{
+  let normalized = $fmt.value->replace('Text', '');
+  let convertedFormat = [
+    pair('ISO8601', 'YYYY-MM-DD"T"HH24:MI:SS.FF9')
+  ]->filter(p | $p.first == $normalized).second->toOne('Postgres conversion for DateTimeFormat not found: ' + $fmt.value);
+
+  ^StringLiteral(value = $convertedFormat);
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::isEqualsFromFilter(d:DynaFunction[1], state:ModelConversionState[1]):Boolean[1]

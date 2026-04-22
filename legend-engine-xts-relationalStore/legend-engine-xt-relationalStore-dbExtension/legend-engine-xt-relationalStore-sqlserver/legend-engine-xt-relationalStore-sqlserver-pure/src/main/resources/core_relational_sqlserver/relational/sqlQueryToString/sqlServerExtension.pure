@@ -142,12 +142,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::transformFormatDateSqlServer(params:String[2]):String[1]
 {
-  let enumValue = $params->at(1)->removeQuotesIfExist();
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
     pair('ISO8601', '\'yyyy-MM-ddTHH:mm:ss.fffffff00\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
-  format('FORMAT(%s,%s)', [$params->at(0), $sqlFmt]);
+  format('FORMAT(CAST(%s AS DATETIME2),%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processJoinStringsOperationForSqlServer(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
