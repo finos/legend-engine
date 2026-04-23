@@ -25,12 +25,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                         rev('|0->meta::pure::functions::math::tan()', 'select tan(0)'),
                         rev('|2->meta::pure::functions::math::tan()', 'select tan(2)')
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::tan_Number_1__Float_1_->meta::pure::functions::lang::eval(2)')
-                      ]
                  )
                 ]
   )

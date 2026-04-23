@@ -89,9 +89,13 @@ public class Test_Relational_H2_GrammarFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
             one("meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
             one("meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
             one("meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
             one("meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
             one("meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for range()."),
+
+            // GetAll
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"),
 
             // Size
             one("meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toVariantList()."),

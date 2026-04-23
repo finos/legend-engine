@@ -48,13 +48,6 @@ function meta::external::query::sql::reversePCT::tests::essential::date::operati
                       ]
                  ),
                  revsForTest(
-                      'meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::eval(%2015-02-28, 1, meta::pure::functions::date::DurationUnit.YEARS)'),
-                        noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::evaluate([^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=%2015-02-28), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=1), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=meta::pure::functions::date::DurationUnit.YEARS)])')
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_',
                       [
                         revError('|%2012-03->meta::pure::functions::date::adjust(36, meta::pure::functions::date::DurationUnit.MONTHS)',

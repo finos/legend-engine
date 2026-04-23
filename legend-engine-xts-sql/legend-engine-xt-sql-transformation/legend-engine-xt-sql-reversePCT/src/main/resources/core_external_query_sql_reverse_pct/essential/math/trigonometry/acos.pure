@@ -31,14 +31,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                             'select acos(0.5)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testArcCosineEval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::acos_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)',
-                            'select acos(0.5)'
-                        )
-                      ]
                  )
                ]
   )
@@ -47,5 +39,4 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
 function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::acos::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::trigonometry::testArcCosine(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::testArcCosineEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

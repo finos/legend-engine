@@ -98,13 +98,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|meta::pure::functions::math::mod(-12, 5)', 'c(-12) % 5'),
           rev('|meta::pure::functions::math::mod(-5, 12)', 'c(-5) % 12')
         ]
-      ),
-      meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(12, 5)'),
-          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(-12, 5)'),
-          noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
       )
     ]->combine(),
     [ // rem
@@ -143,34 +136,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
         [
           rev('|3.14->meta::pure::functions::math::rem(1.5D)', 'c(3.14).rem(PythonDecimal(\'1.5\'))')
         ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(12, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(-12, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(7.5, 5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 2.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, 1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
-      ),
-      meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, -1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, -1.5)'),
-          noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-        ]
       )
     ]->combine(),
     // ------------------------------------------------------------------
@@ -183,9 +148,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|27->meta::pure::functions::math::cbrt()', 'c(27).cbrt()'),
           rev('|0.001->meta::pure::functions::math::cbrt()', 'c(0.001).cbrt()')
         ]
-      ),
-      meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::cbrt_Number_1__Float_1_->meta::pure::functions::lang::eval(27)')
       )
     ]->combine(),
     [ // pow
@@ -213,9 +175,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|9->meta::pure::functions::math::sqrt()', 'c(9).sqrt()'),
           rev('|0.01->meta::pure::functions::math::sqrt()', 'c(0.01).sqrt()')
         ]
-      ),
-      meta::pure::functions::math::tests::testSquareRootEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::sqrt_Number_1__Float_1_->meta::pure::functions::lang::eval(9)')
       )
     ]->combine(),
     // ------------------------------------------------------------------
@@ -353,9 +312,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|meta::pure::functions::math::acos(-1)', 'c(-1).acos()'),
           rev('|0.5->meta::pure::functions::math::acos()', 'c(0.5).acos()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testArcCosineEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::acos_Number_1__Float_1_->meta::pure::functions::lang::eval(0.5)')
       )
     ]->combine(),
     [ // asin
@@ -365,9 +321,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|1->meta::pure::functions::math::asin()', 'c(1).asin()'),
           rev('|meta::pure::functions::math::asin(-0.5)', 'c(-0.5).asin()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testArcSineEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::asin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
       )
     ]->combine(),
     [ // atan
@@ -377,9 +330,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|1.5->meta::pure::functions::math::atan()', 'c(1.5).atan()'),
           rev('|100->meta::pure::functions::math::atan()', 'c(100).atan()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testArcTangentEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::atan_Number_1__Float_1_->meta::pure::functions::lang::eval(100)')
       )
     ]->combine(),
     [ // atan2
@@ -389,9 +339,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|1->meta::pure::functions::math::atan2(0)', 'c(1).atan2(0)'),
           rev('|0.5->meta::pure::functions::math::atan2(3.5)', 'c(0.5).atan2(3.5)')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testArcTangent2Eval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_->meta::pure::functions::lang::eval(1, 0)')
       )
     ]->combine(),
     [ // cos
@@ -401,9 +348,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|meta::pure::functions::math::cos(-1)', 'c(-1).cos()'),
           rev('|meta::pure::functions::math::cos(-1.5)', 'c(-1.5).cos()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testCosEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::cos_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
       )
     ]->combine(),
     [ // cot
@@ -412,9 +356,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|1->meta::pure::functions::math::cot()', 'c(1).cot()'),
           rev('|1.5->meta::pure::functions::math::cot()', 'c(1.5).cot()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::cot_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)')
       )
     ]->combine(),
     [ // sin
@@ -424,9 +365,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|1->meta::pure::functions::math::sin()', 'c(1).sin()'),
           rev('|1.5->meta::pure::functions::math::sin()', 'c(1.5).sin()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testSineEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::sin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
       )
     ]->combine(),
     [ // tan
@@ -435,9 +373,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|0->meta::pure::functions::math::tan()', 'c(0).tan()'),
           rev('|2->meta::pure::functions::math::tan()', 'c(2).tan()')
         ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::math::tan_Number_1__Float_1_->meta::pure::functions::lang::eval(2)')
       )
     ]->combine()
     // ------------------------------------------------------------------

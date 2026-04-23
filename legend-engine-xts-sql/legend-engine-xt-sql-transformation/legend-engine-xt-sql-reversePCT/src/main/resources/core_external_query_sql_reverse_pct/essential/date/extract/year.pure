@@ -47,14 +47,6 @@ function meta::external::query::sql::reversePCT::tests::essential::date::extract
                             'select date_part(\'year\', Timestamp\'2015-04-15 17:09:21.398\')'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::date::year_Date_1__Integer_1_->meta::pure::functions::lang::eval(%2015-04-15)',
-                            'select date_part(\'year\', Date\'2015-04-15\')'
-                        )
-                      ]
                  )
                ]
   )
@@ -63,5 +55,4 @@ function meta::external::query::sql::reversePCT::tests::essential::date::extract
 function meta::external::query::sql::reversePCT::tests::essential::date::extract::year::exec():Boolean[1]
 {
    meta::pure::functions::date::tests::testYear(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::date::tests::testYeaReflect(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

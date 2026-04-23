@@ -160,9 +160,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|%2015-04-15T17:09:21+0000->meta::pure::functions::date::year()', 'c(datetime(2015, 4, 15, 17, 9, 21)).year()'),
           noRev('|%2015-04-15T17:09:21.398+0000->meta::pure::functions::date::year()')
         ]
-      ),
-      meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_->testRev(
-        noRev('|meta::pure::functions::date::year_Date_1__Integer_1_->meta::pure::functions::lang::eval(%2015-04-15)')
       )
     ]->combine(),
     // ------------------------------------------------------------------
@@ -178,12 +175,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
         ]
       ),
 
-      meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::eval(%2015-02-28, 1, meta::pure::functions::date::DurationUnit.YEARS)'),
-          noRev('|meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_->meta::pure::functions::lang::evaluate([^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=%2015-02-28), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=1), ^meta::pure::functions::collection::List<meta::pure::metamodel::type::Any>(values=meta::pure::functions::date::DurationUnit.YEARS)])')
-        ]
-      ),
 
       meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_->testRev(
         [
@@ -339,7 +330,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           noRev('|%2016-02-29T00:00:00.000+0000->meta::pure::functions::date::adjust(-12345678912, meta::pure::functions::date::DurationUnit.MILLISECONDS)')
         ]
       )
-
     ]->combine(),
     [
       meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_->testRev(
@@ -461,7 +451,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           noRev('|$ny->meta::pure::functions::date::dateDiff($paris, meta::pure::functions::date::DurationUnit.SECONDS)')
         ]
       )
-
     ]->combine()
   ]
 }

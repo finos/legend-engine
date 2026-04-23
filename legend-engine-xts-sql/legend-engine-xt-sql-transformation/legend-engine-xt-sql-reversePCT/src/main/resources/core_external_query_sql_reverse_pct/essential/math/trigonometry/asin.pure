@@ -31,14 +31,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                             'select asin(-0.5)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testArcSineEval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::asin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)',
-                            'select asin(1)'
-                        )
-                      ]
                  )
                ]
   )
@@ -47,5 +39,4 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
 function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::asin::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::trigonometry::testArcSine(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::testArcSineEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

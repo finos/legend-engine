@@ -77,38 +77,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::operati
                       ]
                  ),
                  revsForTest(
-                      'meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(12, 5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(-12, 5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-                      ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 1.5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(7.5, 5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-                      ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, 2.5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, 1.5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-                      ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5, -1.5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval(5.5, -1.5)'),
-                        noRev('|meta::pure::functions::math::rem_Number_1__Number_1__Number_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_',
                       [
                         rev('|3.14->meta::pure::functions::math::rem(1.5D)',
