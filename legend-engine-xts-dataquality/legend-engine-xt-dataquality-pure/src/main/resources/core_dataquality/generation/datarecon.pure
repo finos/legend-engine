@@ -92,7 +92,8 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   let colsToSelect = if ($colsForHash->isEmpty() && $hashCol->isEmpty(),
     | [], //if no cols given for hash then we will calculate hash on all columns
     | let colsRequiredForHash = if ($hashCol->isNotEmpty(), | $hashCol, | $colsForHash);
-      let selectColsBeforeNormalize = $keys->union($colsRequiredForHash)->distinct();
+      let withIncludedCols = if ($includeColumnValues, | $colsRequiredForHash->union($colsForHash), | $colsRequiredForHash);
+      let selectColsBeforeNormalize = $keys->union($withIncludedCols)->distinct();
   );
   let withSelectBeforeNormalize = if ($colsToSelect->isEmpty(), | $input, | buildSelectExpression($input, $colsToSelect));
   

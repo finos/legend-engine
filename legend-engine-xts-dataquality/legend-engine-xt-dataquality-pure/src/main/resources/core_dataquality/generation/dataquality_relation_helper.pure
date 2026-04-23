@@ -112,9 +112,11 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
 
 function meta::external::dataquality::normalizeDateTime(value:DateTime[0..1]):String[0..1]
 {
+  //TODO - this is converting to ISO8601 format but change to use formatDate function when available
   if ($value->isEmpty(),
     | [],
-    | convertTimeZone($value->toOne(), 'UTC', 'yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS')
+    | $value->toOne()->year()->toString() + '-' + $value->toOne()->monthNumber()->toString()->lpad(2, '0') + '-' + $value->toOne()->dayOfMonth()->toString()->lpad(2, '0') + 'T' + 
+        $value->toOne()->hour()->toString()->lpad(2, '0') + ':' + $value->toOne()->minute()->toString()->lpad(2, '0') + ':' + $value->toOne()->second()->toString()->lpad(2, '0') + '.000000000';
   );
 }
 

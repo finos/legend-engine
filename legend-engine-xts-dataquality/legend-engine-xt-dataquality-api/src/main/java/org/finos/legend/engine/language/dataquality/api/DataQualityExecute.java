@@ -27,6 +27,8 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.generation.dataquality.DataQualityLambdaGenerator;
@@ -350,7 +352,29 @@ public class DataQualityExecute
         }
     }
 
-    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    @POST
+    @Path("reconciliation/generatePlan")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reconciliationPlanGeneration(DataQualityReconInput dataQualityReconInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
+        {
+            PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
+            SingleExecutionPlan singleExecutionPlan = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity).getOne();
+            return ManageConstantResult.manageResult(identity.getName(), singleExecutionPlan, objectMapper);
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    private Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
 
@@ -405,10 +429,15 @@ public class DataQualityExecute
         }
 
         // 3. Generate Plan from the lambda generated in the previous step
-        SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
-        // 4. Execute plan
-        return executePlanToResult(request, identity, singleExecutionPlan, lambdaParameterMap);
+        return Tuples.pair(plan, lambdaParameterMap);
+    }
+
+    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    {
+        Pair<SingleExecutionPlan, MutableMap<String, Object>> plan = generateDataReconciliationPlan(pureModel, input, start, identity);
+        return executePlanToResult(request, identity, plan.getOne(), plan.getTwo());
     }
 
     private static Root_meta_external_dataquality_datarecon_DataQualityReconInput createReconInput(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationComparison dqComparisonElement, DataQualityReconInput input, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction)

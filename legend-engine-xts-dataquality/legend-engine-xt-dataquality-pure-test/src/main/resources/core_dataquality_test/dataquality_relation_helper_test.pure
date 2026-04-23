@@ -201,7 +201,8 @@ function <<test.Test>> meta::external::dataquality::tests::rowsWithColumnDiffers
 
 function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeWithValueTest():Boolean[1]
 {
-  assertEquals('2026-02-18T15:30:15.999999999', %2026-02-18T15:30:15.999999999->normalizeDateTime());
+  assertEquals('2026-02-18T04:07:03.000000000', %2026-02-18T04:07:03->normalizeDateTime());
+  assertEquals('2026-02-18T15:30:15.000000000', %2026-02-18T15:30:15.999999999->normalizeDateTime());
 }
 
 function <<test.Test>> meta::external::dataquality::tests::normalizeDateTimeWithoutValueTest():Boolean[1]
