@@ -70,6 +70,7 @@ public class Test_Relational_ClickHouse_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "\"pivot is not supported for ClickHouse\""),
             one("meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_", "\"pivot is not supported for ClickHouse\""),
             one("meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot_Function_1__Boolean_1_", "\"pivot is not supported for ClickHouse\""),
+            one("meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_", "\"pivot is not supported for ClickHouse\""),
             one("meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"),
             one("meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"),
             one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.SimpleNumbersTypeForCompositionTests"),
