@@ -566,12 +566,12 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                   d:Date[1] | ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=$d)),|^$select(columns = ^Literal(value=$d)))),
                                   b:Boolean[1] | ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=$b)),|^$select(columns = ^Literal(value=$b)))),
                                   e:Enum[1] | let ev = mapEnumValue($e, $currentPropertyMapping, $context); ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=$ev)),|^$select(columns = ^Literal(value=$ev))));,
-                                  v:PlanSetPlaceHolder[1] | let newTable = ^VarSetPlaceHolder(varName=$v.name,
-                                                                                              columns=$v.tdsColumns->map(c|^Column(owner =^VarSetPlaceHolder(varName=$v.name),
-                                                                                                                                   name= $c.name,
-                                                                                                                                   type = ^meta::relational::metamodel::datatype::Integer())),
-                                                                                              paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
-                                                                                          ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
+                                  v:PlanSetPlaceHolder[1] | let varSetColumns = $v.tdsColumns->map(c|^Column(owner =^VarSetPlaceHolder(varName=$v.name), name= $c.name->addQuotesIfNecessary(), type = ^meta::relational::metamodel::datatype::Integer()));
+                                                            let newTable = ^VarSetPlaceHolder(varName=$v.name,
+                                                                columns= $varSetColumns,
+                                                                paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
+                                                            let varSetAlias = ^TableAlias(name = 'root', relationalElement = $newTable);
+                                                            ^$operation(select = ^TdsSelectSqlQuery(columns = $varSetColumns->map(c | ^Alias(name = $c.name, relationalElement = ^TableAliasColumn(column = $c, alias = $varSetAlias))), data = ^RootJoinTreeNode(alias = $varSetAlias), paths = $newTable.paths));,
                                   v:PlanVarPlaceHolder[1] |
                                      // do we have a reference already? 
                                      let resolvedPlanVar = $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
