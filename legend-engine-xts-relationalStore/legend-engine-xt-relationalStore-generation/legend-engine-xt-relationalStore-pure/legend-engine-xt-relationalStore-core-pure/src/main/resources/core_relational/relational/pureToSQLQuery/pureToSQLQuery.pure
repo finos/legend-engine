@@ -2420,11 +2420,9 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
    let res = if ($operation.select.data->isEmpty(),
       |print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n')->makeString('')));
-       let allSelects = $transformed.element->cast(@SelectWithCursor).select;
-       let tdsSelect = $allSelects->filter(s | $s->instanceOf(TdsSelectSqlQuery));
-       let firstSel = if($tdsSelect->isEmpty(), |$allSelects->at(0), |$tdsSelect->at(0));
+       let firstSel = $transformed->at(0).element->cast(@SelectWithCursor).select;
 
-       let selects = $allSelects->map(s | $s->pushSavedFilteringOperation($extensions));
+       let selects = $transformed.element->cast(@SelectWithCursor).select->map(s | $s->pushSavedFilteringOperation($extensions));
 
        let rootTable = ^TableAlias(
                                      name = 'union',
