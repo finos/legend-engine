@@ -244,12 +244,12 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 TDSResultType tdsResultType = (TDSResultType) node.resultType;
                 SQLExecutionNode sqlExecutionNode = (SQLExecutionNode) node.executionNodes.get(0);
-                if (sqlExecutionNode.isResultColumnsDynamic != null && sqlExecutionNode.isResultColumnsDynamic)
+                if (tdsResultType.tdsColumns == null || sqlExecutionNode.isResultColumnsDynamic)
                 {
                     tdsResultType.tdsColumns = Lists.mutable.empty();
                     for (int columnIndex = 1; columnIndex <= this.columnCount; columnIndex++)
                     {
-                        TDSColumn c = new TDSColumn(this.resultColumns.get(columnIndex - 1).label, this.resultColumns.get(columnIndex - 1).labelTypePair().getTwo());
+                        TDSColumn c = new TDSColumn(this.sqlColumns.get(columnIndex - 1), this.resultColumns.get(columnIndex - 1).labelTypePair().getTwo());
                         tdsResultType.tdsColumns.add(c);
                     }
                 }

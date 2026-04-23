@@ -3058,7 +3058,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
   ]);
 
   ^$query(select = $newSelect,
-          currentTreeNode = if($query.currentTreeNode->isEmpty(),| $query.currentTreeNode,| $query.currentTreeNode->toOne()->findOneNode($select.data->toOne(), $newNode))
+          currentTreeNode = $query.currentTreeNode->map(ctn | $ctn->findNode($select.data->toOne(), $newNode)->orElse($newNode))
   );
 }
 
@@ -5506,7 +5506,7 @@ function meta::relational::functions::pureToSqlQuery::getAllNodeNames(t:Relation
 }
 
 
-function meta::relational::functions::pureToSqlQuery::findNode(oldTarget:RelationalTreeNode[1], oldNode:RelationalTreeNode[1], newNode:RelationalTreeNode[1]):RelationalTreeNode[*]
+function meta::relational::functions::pureToSqlQuery::findNode(oldTarget:RelationalTreeNode[1], oldNode:RelationalTreeNode[1], newNode:RelationalTreeNode[1]):RelationalTreeNode[0..1]
 {
    if ($oldTarget == $oldNode,
          | $newNode,

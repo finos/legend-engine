@@ -1938,3 +1938,35 @@ meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerived
       0
     );
 }
+
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let expr = {|
+      let a = #TDS
+                 id, category, val
+                 1, A, 100
+                 2, B, 200
+              #;
+      let b = #TDS
+                 id, category, val
+                 3, A, 300
+                 4, B, 400
+              #;
+      $a->concatenate($b)->pivot(~category, ['A', 'B'], ~newCol : x | $x.val : y | $y->plus());
+   };
+
+   let res = $f->eval($expr);
+
+   meta::pure::functions::relation::assertTdsEquivalent(
+      #TDS
+         id, 'A__|__newCol', 'B__|__newCol'
+         1, 100, null
+         2, null, 200
+         3, 300, null
+         4, null, 400
+      #,
+      $res->cast(@Relation<(id:Integer, '\'A__|__newCol\'':Number, '\'B__|__newCol\'':Number)>)->sort([ascending(~id)]),
+      0.00001
+   );
+}
+
