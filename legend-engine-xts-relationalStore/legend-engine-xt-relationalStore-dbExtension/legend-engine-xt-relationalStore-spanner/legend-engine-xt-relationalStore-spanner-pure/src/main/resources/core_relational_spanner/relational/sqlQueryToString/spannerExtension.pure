@@ -153,10 +153,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', '\'YYYY-MM-DD"T"HH24:MI:SS.US000\'')
+    pair('ISO8601', '\'%Y-%m-%dT%H:%M:%E9S\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
-  format('to_char(CAST(%s AS TIMESTAMPTZ), %s)', [$params->at(0), $sqlFmt]);
+  format('FORMAT_TIMESTAMP(%s,CAST(%s AS TIMESTAMPTZ))', [$sqlFmt, $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::generateDateDiffExpressionForSpanner(params:String[*]):String[1]
