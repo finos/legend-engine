@@ -173,9 +173,6 @@ public class Test_Deephaven_GrammarFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Unexpected token"),
             one("meta::pure::functions::string::tests::plus::testPlus_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::plus_String_MANY__String_1_\""),
             // New PCT tests from legend-pure2 migration
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testBasicParse_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_"),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testBasicParse_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::boolean::not_Boolean_1__Boolean_1_"),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testBasicParse_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_"),
             one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
             one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::collection::isEmpty_Any_MANY__Boolean_1_")
     );
