@@ -62,6 +62,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-tds-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m3-precisePrimitives</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure
                                 </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure
@@ -147,6 +148,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-variant-pure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-precisePrimitives</artifactId>
         </dependency>
 
         <dependency>
