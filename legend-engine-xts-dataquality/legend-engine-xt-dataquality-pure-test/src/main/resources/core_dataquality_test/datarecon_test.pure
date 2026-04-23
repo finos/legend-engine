@@ -31,7 +31,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -39,7 +39,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -132,7 +132,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -140,7 +140,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -158,7 +158,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[FIRSTNAME,LASTNAME])
     ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -166,7 +166,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[FIRSTNAME,LASTNAME])
           ->extend(~[FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -184,7 +184,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[FIRSTNAME,LASTNAME])
     ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -208,7 +208,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[FIRSTNAME,LASTNAME])
     ->extend(~[FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[DIGEST_SOURCE])
     ->sort(~DIGEST_SOURCE->ascending())
     ->aggregate(~AGG_HASH : x | $x.DIGEST_SOURCE : y | $y->joinStrings(''))
@@ -220,7 +220,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[FIRSTNAME,LASTNAME])
           ->extend(~[FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[DIGEST_TARGET])
           ->sort(~DIGEST_TARGET->ascending())
           ->aggregate(~AGG_HASH : x | $x.DIGEST_TARGET : y | $y->joinStrings(''))
@@ -242,21 +242,20 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
-          ->select(~[ID,FIRSTNAME,LASTNAME])
-          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
-          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID,HASH,FIRSTNAME,LASTNAME])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET,HASH_TARGET])
           ->from($runtime),
         JoinKind.FULL,
         {x,y| $x.ID_SOURCE == $y.ID_TARGET}
-    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
   };
 
-  testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], true);
+  testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH', true);
 }
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_withDefectLimit():Boolean[1]
@@ -266,7 +265,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -274,7 +273,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -296,7 +295,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -305,7 +304,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -326,7 +325,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -334,7 +333,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
@@ -355,7 +354,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     ->select(~[ID,FIRSTNAME,LASTNAME])
     ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME])
     ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE])
-    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
     ->select(~[ID_SOURCE,DIGEST_SOURCE])
     ->from($runtime)
     ->join(
@@ -364,7 +363,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID,FIRSTNAME,LASTNAME])
           ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME])
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET])
-          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'FIRSTNAME' + '\\x1E\\x1F\\x1D' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'ID' + '\\x1E\\x1F\\x1D' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'\\x1E\\x1F\\x1D' + 'LASTNAME' + '\\x1E\\x1F\\x1D' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
