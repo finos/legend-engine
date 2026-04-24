@@ -39,7 +39,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -570,5 +572,58 @@ public class QueryStoreManager
         storeStats.setQueryCreatedFromDataSpaceCount(this.getQueryDatabase().getCollection(getQueryCollectionName())
                 .countDocuments(dataSpaceFilter));
         return storeStats;
+    }
+
+    /**
+     * Get all versions (current and historical) for a batch of query IDs.
+     * Returns a map where each query ID maps to a list of all its versions,
+     * sorted by version number in descending order (latest first).
+     * Query IDs that are not found will have an empty list in the result.
+     *
+     * @param queryIds List of query IDs to fetch versions for (max 50)
+     * @return QueryVersionsResult containing a map of query ID to list of versions
+     */
+    public QueryVersionsResult getQueriesVersions(List<String> queryIds)
+    {
+        if (queryIds == null || queryIds.isEmpty())
+        {
+            throw new ApplicationQueryException("Query IDs list cannot be null or empty", Response.Status.BAD_REQUEST);
+        }
+        if (queryIds.size() > GET_QUERIES_LIMIT)
+        {
+            throw new ApplicationQueryException("Can't fetch versions for more than " + GET_QUERIES_LIMIT + " queries", Response.Status.BAD_REQUEST);
+        }
+
+        // Build filter: match query IDs and exclude deleted records
+        Bson filter = Filters.and(
+                Filters.in("id", queryIds),
+                Filters.eq("audit.deletedAt", null)
+        );
+
+        // Fetch all versions (including historical) for the given query IDs, excluding deleted ones
+        List<Query> allVersions = this.queryDao.find(
+                filter,
+                true,  // includeHistory = true to get all versions
+                StoredVersionedAssetFetchOptions.builder()
+                        .sortDesc("audit.version")
+                        .build()
+        ).map(this::convertFromStoredQuery).collect(Collectors.toList());
+
+        // Group by query ID
+        Map<String, List<Query>> queryVersionsMap = new HashMap<>();
+        for (String queryId : queryIds)
+        {
+            queryVersionsMap.put(queryId, new ArrayList<>());
+        }
+
+        for (Query query : allVersions)
+        {
+            if (queryVersionsMap.containsKey(query.id))
+            {
+                queryVersionsMap.get(query.id).add(query);
+            }
+        }
+
+        return new QueryVersionsResult(queryVersionsMap);
     }
 }
