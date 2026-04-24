@@ -859,7 +859,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
    // Else, it can cause problems like 'where' clause getting generated for aggregated columns (which is invalid)
    if ($select.groupBy->isEmpty() && ($state.functionExpressionStack->size() > 1),
        | isolateTdsSelect($select, $query, $extensions),
-       | ^$query(select=$select)
+       | let newData = $select.data->toOne();
+         ^$query(select = $select,
+                 currentTreeNode = $query.currentTreeNode->map(ctn | $ctn->findNode($query.select.data->toOne(), $newData)->orElse($newData)));
    )
 }
 
