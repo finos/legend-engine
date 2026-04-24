@@ -317,6 +317,35 @@ The `State` object threads all intermediate context through the recursion:
 - `inFilter` / `inProject` — tracks the position within the expression to guide SQL shape.
 - `milestoningContext` — active temporal dates for milestoned classes.
 
+### 4.4.1 Multi-statement bodies and CTE generation
+
+Lambda bodies with more than one top-level expression are only accepted when every
+non-terminal expression is a `let`. `processFunctionDefinition` (in `pureToSQLQuery.pure`)
+enforces this with the guard `"Multi expression that are not let statement are not supported!"`
+and, when the guard passes, lifts each top-level `let` into a `CommonTableExpression` on the
+resulting `SelectSQLQuery`. `let`s inside nested lambdas are NOT promoted to CTEs — only
+top-level ones.
+
+In PCT-relational, this path is reached via `eval`: the adapter in
+`core_external_test_connection/pct_relational.pure` (`addWith`) wraps any multi-statement
+test body in `eval(...)`, and `processEvaluate` in `pureToSQLQuery.pure` routes the single-arg
+form back through `processValueSpecification`, which dispatches the lambda into
+`processFunctionDefinition`. Test expressions without `let` skip this entirely and hit
+the normal single-expression path.
+
+**Practical consequence for expected-failure wiring:** stores that reject CTEs
+(`"Common table expression not supported on DB <X>"`) only surface that error for PCT
+tests whose Pure expression contains top-level `let`s. A structurally similar test without
+`let`s will produce a different error (typically a direct dialect rejection such as
+`"pivot is not supported"`, `"function not supported yet: <fn>"`, or a column-resolution
+error from the SQL engine). Do not copy expected-failure messages between sibling tests
+without confirming the expression's multi-statement shape. See also
+[docs/pct/expected-failures-howto.md](../../pct/expected-failures-howto.md).
+
+Two other CTE sources exist in the Pure-to-SQL layer — a CTE extraction post-processor
+and the SQL DSL `WithQuery` — but neither fires in default PCT execution, so they do
+not affect expected-failure wiring.
+
 ### 4.5 Property Navigation → JOIN Tree
 
 When the processor encounters a property navigation (e.g. `$person.address.city`), it:

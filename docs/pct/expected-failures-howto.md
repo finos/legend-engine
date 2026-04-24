@@ -26,6 +26,18 @@ update the expectedFailures to exclude that test.
 
 2. If the failure is unexpected, fix the failure. 
 
+> **Note on CTE-related errors in PCT-relational:** stores that reject common table
+> expressions only produce `"Common table expression not supported on DB <X>"` errors
+> for PCT tests whose Pure expression contains top-level `let` statements. The PCT
+> relational adapter wraps multi-statement bodies in `eval()`, which triggers
+> `processFunctionDefinition` to lift each top-level `let` into a `CommonTableExpression`.
+> Structurally similar tests without `let`s skip this path and surface a different error
+> (typically `"pivot is not supported"`, `"function not supported yet: <fn>"`, or a
+> column-resolution error from the SQL engine). Do not copy expected-failure messages
+> between sibling tests without confirming the expression's multi-statement shape. See
+> [../engineering/architecture/router-and-pure-to-sql.md](../engineering/architecture/router-and-pure-to-sql.md#441-multi-statement-bodies-and-cte-generation)
+> for the code path.
+
 3. Once failure is fixed or excluded via expectedFailures, use the ```Resume Build From Specified Module``` button
    to continue the mvn clean install from where you left off. See image below for the location of the button.
 
