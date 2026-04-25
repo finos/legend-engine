@@ -859,9 +859,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
    // Else, it can cause problems like 'where' clause getting generated for aggregated columns (which is invalid)
    if ($select.groupBy->isEmpty() && ($state.functionExpressionStack->size() > 1),
        | isolateTdsSelect($select, $query, $extensions),
-       | let newData = $select.data->toOne();
-         ^$query(select = $select,
-                 currentTreeNode = $query.currentTreeNode->map(ctn | $ctn->findNode($query.select.data->toOne(), $newData)->orElse($newData)));
+       | ^$query(select=$select)
    )
 }
 
@@ -6381,12 +6379,13 @@ function meta::relational::functions::pureToSqlQuery::processStaticPivot(express
   );
   let newPivotedColumns = $staticPivotValues->map(v | $aggAliases->map(a | ^ColumnName(name = '"\'' + $v.value->toString() + meta::relational::functions::sqlQueryToString::default::pivotColumnDelimeter() + $a.name + '\'"')));
 
+  let pivotData = ^RootJoinTreeNode(alias = $inputTableAlias);
   ^TdsSelectSqlQuery(
     columns = $allButPivotAndAggregateColumns->concatenate($newPivotedColumns),
-    data = ^RootJoinTreeNode(alias = $inputTableAlias),
+    data = $pivotData,
     pivot = $staticPivot,
     paths = $pathInfos
-  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($inputQuery, $state, $extensions);
+  )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns(^$inputQuery(currentTreeNode = $pivotData), $state, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
