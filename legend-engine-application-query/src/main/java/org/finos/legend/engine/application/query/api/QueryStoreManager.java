@@ -386,6 +386,17 @@ public class QueryStoreManager
                 .build()).map(this::convertFromStoredQuery).collect(Collectors.toList());
     }
 
+    public List<Query> getQueryHistory(String queryId)
+    {
+        if (!getQueryDao().get(queryId).isPresent())
+        {
+            throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
+        }
+        return getQueryDao().getHistory(queryId)
+                .map(this::convertFromStoredQuery)
+                .collect(Collectors.toList());
+    }
+
     public Query getQuery(String queryId)
     {
         Optional<ApplicationStoredQuery> matchingQuery = getQueryDao().get(queryId);

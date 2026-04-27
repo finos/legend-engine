@@ -138,6 +138,26 @@ public class ApplicationQuery
         }
     }
 
+    @GET
+    @Path("{queryId}/history")
+    @ApiOperation(value = "Get all previous versions of the query with the specified ID")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueryHistory(@PathParam("queryId") String queryId)
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getQueryHistory(queryId)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_HISTORY_ERROR, null);
+        }
+    }
+
     @POST
     @ApiOperation(value = "Create a new query")
     @Consumes({MediaType.APPLICATION_JSON})
