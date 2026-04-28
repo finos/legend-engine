@@ -58,6 +58,11 @@
                     <repositories>
                         <repository>core_persistence_relational</repository>
                     </repositories>
+                    <extraRepositories>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_persistence_relational.definition.json
+                        </extraRepository>
+                    </extraRepositories>
                 </configuration>
                 <executions>
                     <execution>

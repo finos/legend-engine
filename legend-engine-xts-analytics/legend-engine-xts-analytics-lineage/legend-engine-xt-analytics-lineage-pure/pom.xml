@@ -62,6 +62,11 @@
                         <repository>core_relational</repository>
                         <repository>core_analytics_lineage</repository>
                     </repositories>
+                    <extraRepositories>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_analytics_lineage.definition.json
+                        </extraRepository>
+                    </extraRepositories>
                 </configuration>
                 <executions>
                     <execution>
