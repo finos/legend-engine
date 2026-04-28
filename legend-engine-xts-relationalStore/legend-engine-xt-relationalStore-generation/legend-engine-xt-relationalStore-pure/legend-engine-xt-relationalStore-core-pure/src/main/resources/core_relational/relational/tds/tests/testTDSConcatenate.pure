@@ -229,8 +229,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsConcaten
    let result = execute(
       |Person.all()
          ->project([col(p|$p.lastName, 'lastName')])
-         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')]))
-      ,
+         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')])),
       simpleRelationalMapping, //with store substitution
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
@@ -247,8 +246,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsConcaten
    let plan = executionPlan(
       |Person.all()
          ->project([col(p|$p.lastName, 'lastName')])
-         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')]))
-      ,
+         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')])),
       simpleRelationalMappingWithoutStoreSubstitution, //without store substitution
       meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   
