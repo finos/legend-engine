@@ -157,7 +157,7 @@ Jackson is the **primary JSON serialisation library**. Key usage:
 | PostgreSQL driver | `postgres.version = 42.7.4` |
 | Snowflake JDBC | `snowflake.version = 3.13.5` |
 | DuckDB | `duckdb.version = 1.3.0.0` |
-| Databricks | `databricks.version = 2.6.27` |
+| Databricks | `databricks.version = 3.1.1` |
 | ClickHouse | `clickhouse.version = 0.9.6` |
 | MariaDB | `mariadb.version = 3.0.6` |
 | Redshift | `redshiftJDBC.version = 2.0.0.3` |
