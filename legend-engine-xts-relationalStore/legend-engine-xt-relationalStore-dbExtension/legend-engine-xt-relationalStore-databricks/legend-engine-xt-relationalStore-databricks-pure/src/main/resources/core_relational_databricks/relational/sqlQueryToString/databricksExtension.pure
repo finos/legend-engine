@@ -56,7 +56,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorForDatabricks()
+      ddlCommandsTranslator = getDDLCommandsTranslatorForDatabricks(),
+      dataTypeToSqlText = meta::relational::functions::typeConversion::databricks::dataTypeToSqlTextDatabricks_DataType_1__String_1_,
+      pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::databricks::convert_GenericType_1__DataType_1_,
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::databricks::buildDummyConnection__RelationalDatabaseConnection_1_
    );
 }
 
@@ -122,6 +125,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as bigint)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -137,10 +141,41 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='to_json(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  $l->insertValuesToDbTableForDatabricks($dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::insertValuesToDbTableForDatabricks(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+  if ($loadTableSQL.parsedData.values->isEmpty(),
+    | [],
+    |
+      let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values';
+
+      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->convertValuesToCsvForDatabricks($loadTableSQL.columnsToLoad.type) + ')')
+        ->joinStrings($sql, ', ', ';');
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertValuesToCsvForDatabricks(strs : String[*], types : Any[*]): String[1]
+{
+  range($types->size())->map(x |
+    let literalStr = $strs->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x));
+    $types->at($x)->match([
+      s:meta::relational::metamodel::datatype::SemiStructured[*] | 'PARSE_JSON(%s)'->format($literalStr),
+      a:Any[1] | $literalStr
+    ]);)->makeString(', ');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowColumnForDatabricks(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
@@ -336,7 +371,7 @@ function meta::relational::functions::sqlQueryToString::databricks::getDDLComman
         dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
         createTable = translateCreateTableStatementForDatabricks_CreateTableSQL_1__DbConfig_1__String_1_,
         dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
-        loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+        loadTable =  loadValuesToDbTableForDatabricks_LoadTableSQL_1__DbConfig_1__String_MANY_
     );
 }
 
