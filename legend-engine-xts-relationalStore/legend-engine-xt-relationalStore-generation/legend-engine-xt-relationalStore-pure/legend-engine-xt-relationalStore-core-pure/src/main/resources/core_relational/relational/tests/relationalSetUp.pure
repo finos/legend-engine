@@ -83,6 +83,12 @@ Database meta::relational::tests::dbInc
 )
 
 ###Relational
+Database meta::relational::tests::dbInc2
+(
+   Table personTable2 (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+)
+
+###Relational
 Database meta::relational::tests::dbIncWithStoreFilter
 (
    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
@@ -103,6 +109,7 @@ Database meta::relational::tests::dbIncWithStoreFilter
 Database meta::relational::tests::db
 (
     include meta::relational::tests::dbInc
+    include meta::relational::tests::dbInc2
 
     Table interactionTable(ID INT PRIMARY KEY, sourceId INT, targetId INT, time INT, active VARCHAR(1))
     Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
@@ -719,6 +726,21 @@ Mapping meta::relational::tests::simpleRelationalMappingInc
    }
 )
 
+Mapping meta::relational::tests::simpleRelationalMappingInc2
+(
+    Person2 : Relational
+    {
+      ~primaryKey
+      (
+        [dbInc2]personTable2.ID
+      )
+      ~mainTable [dbInc2]personTable2
+      firstName: [dbInc2]personTable2.FIRSTNAME,
+      lastName: [dbInc2]personTable2.LASTNAME,
+      age: [dbInc2]personTable2.AGE
+    }
+)
+
 Mapping meta::relational::tests::NestedRelationalMapping
 (
   Address: Relational
@@ -785,6 +807,7 @@ Mapping meta::relational::tests::simpleRelationalMappingWithEnumConstant
 Mapping meta::relational::tests::simpleRelationalMapping
 (
    include simpleRelationalMappingInc[dbInc->db]
+   include simpleRelationalMappingInc2[dbInc2->db]
 
    Product : Relational
              {
@@ -947,6 +970,11 @@ Mapping meta::relational::tests::simpleRelationalMapping
         }
 )
 
+Mapping meta::relational::tests::simpleRelationalMappingWithoutStoreSubstitution
+(
+   include simpleRelationalMappingInc
+   include simpleRelationalMappingInc2
+)
 
 Mapping meta::relational::tests::simpleRelationalMappingWithConstraints
 (
@@ -1268,6 +1296,16 @@ function meta::relational::tests::createPersonTableAndFillDb(connection : meta::
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
+
+   executeInDb('Drop table if exists PersonTable2;', $connection);
+   executeInDb('Create Table PersonTable2(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',23, 1,1,2);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (2, \'John\', \'Johnson\',22, 2,1,4);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (3, \'John\', \'Hill\',12, 3,1,2);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (4, \'Anthony\', \'Allen\',22, 4,1,null);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);', $connection);
+   executeInDb('insert into PersonTable2 (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);', $connection);
 
    executeInDb('Drop table if exists ValidPersonTable;', $connection);
    executeInDb('Create Table ValidPersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), age INT, addressId INT, firmId INT, managerId INT);', $connection);
