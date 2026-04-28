@@ -203,4 +203,20 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
                 "function x::f<T,X|m,m>(x:String[1]):String[1]{'ok'}"));
         Assert.assertEquals("PARSER error at [1:14-22]: Type and/or multiplicity parameters are not authorized in Legend Engine", e.toPretty());
     }
+
+    @Test
+    public void testFunctionTestWithUnsupportedEmbeddedDataType()
+    {
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => Unsupported\n" +
+                "  #{\n" +
+                "    id, name\n" +
+                "    1 , John\n" +
+                "  }#;\n" +
+                "}\n", "PARSER error at [6:29-10:4]: Unsupported embedded data type for function test assertion: Unsupported. Only 'Relation' is supported.");
+    }
 }

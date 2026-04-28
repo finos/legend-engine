@@ -70,11 +70,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToRelationAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
@@ -142,6 +144,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
                         .withSubtype(EqualTo.class, "equalTo")
                         .withSubtype(EqualToJson.class, "equalToJson")
+                        .withSubtype(EqualToRelation.class, "equalToRelation")
                         .build(),
                 // Test Result
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
@@ -157,6 +160,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(AssertPass.class, "assertPass")
                         .withSubtype(AssertFail.class, "assertFail")
                         .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
+                        .withSubtype(EqualToRelationAssertFail.class, "equalToRelationAssertFail")
                         .build(),
                 // Execution Node
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)

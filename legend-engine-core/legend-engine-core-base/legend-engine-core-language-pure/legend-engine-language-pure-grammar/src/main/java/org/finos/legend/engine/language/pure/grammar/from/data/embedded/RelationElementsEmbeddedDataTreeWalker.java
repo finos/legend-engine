@@ -31,14 +31,10 @@ import java.util.stream.Collectors;
 public class RelationElementsEmbeddedDataTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
-    private final SourceInformation sourceInformation;
-    private final PureGrammarParserExtensions extensions;
 
     public RelationElementsEmbeddedDataTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
         this.walkerSourceInformation = walkerSourceInformation;
-        this.sourceInformation = sourceInformation;
-        this.extensions = extensions;
     }
 
     public RelationElementsData visit(RelationElementsDataParserGrammar.DefinitionContext ctx)
@@ -53,18 +49,47 @@ public class RelationElementsEmbeddedDataTreeWalker
     {
         RelationElement relationElement = new RelationElement();
         relationElement.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        relationElement.paths = ctx.paths().identifier().stream().map(PureGrammarParserUtility::fromIdentifier).collect(Collectors.toList());
-        RelationElementsDataParserGrammar.TableContext tableContext = ctx.table();
-        relationElement.columns = tableContext.columnNames().cell().stream()
-                .map(cellContext -> StringEscapeUtils.unescapeJava(cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : ""))
+
+        // Determine if this is a path-based relationElement (paths TABLE_START table)
+        // or a flat CSV relationElement (TABLE_START tableCSV)
+        RelationElementsDataParserGrammar.ColumnNamesContext columnNamesCtx;
+        RelationElementsDataParserGrammar.RowsContext rowsCtx;
+
+        if (ctx.table() != null)
+        {
+            relationElement.paths = ctx.paths().identifier().stream().map(PureGrammarParserUtility::fromIdentifier).collect(Collectors.toList());
+            columnNamesCtx = ctx.table().columnNames();
+            rowsCtx = ctx.table().rows();
+        }
+        else
+        {
+            relationElement.paths = java.util.Collections.emptyList();
+            columnNamesCtx = ctx.tableCSV().columnNames();
+            rowsCtx = ctx.tableCSV().rows();
+        }
+
+        // For tableCSV (flat CSV from assertions), trim whitespace padding added by the composer.
+        // For table (path-based format), preserve spaces as they may be intentional.
+        boolean shouldTrim = ctx.tableCSV() != null;
+
+        relationElement.columns = columnNamesCtx.cell().stream()
+                .map(cellContext ->
+                {
+                    String text = cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : "";
+                    return StringEscapeUtils.unescapeJava(shouldTrim ? text.trim() : text);
+                })
                 .collect(Collectors.toList());
         relationElement.rows = new ArrayList<>();
-        tableContext.rows().rowValues().forEach(rowValuesContext ->
+        rowsCtx.rowValues().forEach(rowValuesContext ->
         {
             RelationRowTestData row = new RelationRowTestData();
             row.values = rowValuesContext.cell().stream()
-                    .map(cellContext -> StringEscapeUtils.unescapeJava(cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : ""))
-                    .collect(Collectors.toList());;
+                    .map(cellContext ->
+                    {
+                        String text = cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : "";
+                        return StringEscapeUtils.unescapeJava(shouldTrim ? text.trim() : text);
+                    })
+                    .collect(Collectors.toList());
             relationElement.rows.add(row);
         });
         return relationElement;

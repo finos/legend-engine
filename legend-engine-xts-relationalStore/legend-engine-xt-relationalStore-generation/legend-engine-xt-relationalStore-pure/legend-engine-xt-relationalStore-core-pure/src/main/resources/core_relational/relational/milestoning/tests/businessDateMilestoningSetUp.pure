@@ -413,6 +413,12 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('insert into leaf_entity values(200, 20, \'other\', \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
    executeInDb('insert into leaf_entity values(300, 30, \'test\', \'2015-8-26 00:00:00\', \'9999-12-31 00:00:00\');', $connection);
 
+   executeInDb('drop table if exists root_entity;', $connection);
+   executeInDb('create table root_entity (root_id VARCHAR(100), child_id INTEGER);', $connection);
+   executeInDb('insert into root_entity values(\'R1\', 10);', $connection);
+   executeInDb('insert into root_entity values(\'R2\', 20);', $connection);
+   executeInDb('insert into root_entity values(\'R3\', 30);', $connection);
+
    ^Runtime(connectionStores=$connectionStore);
 }
 
@@ -2458,6 +2464,14 @@ Database meta::relational::tests::milestoning::db(
    Join Bridge_Child(parent_child_bridge.child_id = child_entity.child_id and (parent_child_bridge.link_status = 'ACTIVE' or parent_child_bridge.link_status is null or parent_child_bridge.link_status = ''))
    Join Child_Leaf(child_entity.child_id = leaf_entity.child_id)
 
+   Table root_entity
+   (
+      root_id VARCHAR(100) PRIMARY KEY,
+      child_id INTEGER
+   )
+
+   Join Root_Child(root_entity.child_id = child_entity.child_id)
+
    Filter IsStockType(ProductTable.type='STOCK')
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
    Filter NewActivityWithValidProduct(NewActivityInfoTable.productId > 0)
@@ -2484,6 +2498,41 @@ Mapping meta::relational::tests::milestoning::nestedExistsEmbeddedMapping
       leaves
       (
          leafValue : [db]@Child_Leaf | leaf_entity.leaf_value
+      )
+   }
+)
+
+Mapping meta::relational::tests::milestoning::derivedPropertyAssociationMilestoningMap
+(
+   RootEntity : Relational
+   {
+      rootId : [db]root_entity.root_id
+   }
+
+   ChildEntity : Relational
+   {
+      childId : [db]child_entity.child_id,
+      childName : [db]child_entity.child_name
+   }
+
+   LeafEntity : Relational
+   {
+      leafValue : [db]leaf_entity.leaf_value
+   }
+
+   RootEntity_ChildEntity : Relational
+   {
+      AssociationMapping
+      (
+         rootChild : [db]@Root_Child
+      )
+   }
+
+   ChildEntity_LeafEntity : Relational
+   {
+      AssociationMapping
+      (
+         leaves : [db]@Child_Leaf
       )
    }
 )

@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -349,11 +351,11 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
             }
             case "colSpec":
             {
-                return proccessColSpec((ColSpec) iv.value);
+                return processColSpec((ColSpec) iv.value);
             }
             case "colSpecArray":
             {
-                return proccessColSpecArray((ColSpecArray) iv.value);
+                return processColSpecArray((ColSpecArray) iv.value);
             }
             case "propertyGraphFetchTree":
             {
@@ -418,11 +420,35 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         }
     }
 
-    private ValueSpecification proccessColSpecArray(ColSpecArray value)
+    private ValueSpecification processColSpecArray(ColSpecArray value)
     {
         ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
 
-        MutableList<ValueSpecification> cols = ListIterate.collect(value.colSpecs, this::proccessColSpec);
+        // Pre-compile shared lambda parameters once so that buildLambdaWithContext can reuse them
+        // instead of recompiling the same parameter definition for every ColSpec in the array.
+        // Uses a dedicated map on ProcessingContext (separate from inferredVariableList) to avoid
+        // incorrectly reusing same-named variables from outer scopes.
+        MutableMap<String, VariableExpression> preCompiledLambdaParam = org.eclipse.collections.impl.map.mutable.UnifiedMap.newMap();
+
+        if (!value.colSpecs.isEmpty())
+        {
+            ColSpec firstWithFunction = ListIterate.detect(value.colSpecs, cs -> cs.function1 != null);
+
+            if (firstWithFunction != null && firstWithFunction.function1.parameters != null)
+            {
+
+                for (Variable param : firstWithFunction.function1.parameters)
+                {
+                    if (param.genericType != null && param.multiplicity != null)
+                    {
+                        preCompiledLambdaParam.put(param.name, (VariableExpression) param.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("ColSpecArrayParametersPreCompilation"))));
+                    }
+                }
+            }
+        }
+
+        MutableList<ValueSpecification> cols = ListIterate.collect(value.colSpecs, c -> processColSpec(c, preCompiledLambdaParam));
+
         RichIterable<?> processedValues = cols.flatCollect(v -> ((InstanceValue) v)._values());
         Object resO = processedValues.getFirst();
 
@@ -500,7 +526,12 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 ._typeArguments(args);
     }
 
-    private ValueSpecification proccessColSpec(ColSpec colSpec)
+    private ValueSpecification processColSpec(ColSpec colSpec)
+    {
+        return processColSpec(colSpec, Maps.mutable.empty());
+    }
+
+    private ValueSpecification processColSpec(ColSpec colSpec, MutableMap<String, VariableExpression> function1Parameters)
     {
         ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
         if (colSpec.function1 == null)
@@ -531,7 +562,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         }
         else if (colSpec.function2 == null)
         {
+            processingContext.setPreCompiledLambdaParameters(function1Parameters);
             InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(this);
+            processingContext.clearPreCompiledLambdaParameters();
+
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) funcVS._values().getFirst();
 
             FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func, this.context.pureModel.getExecutionSupport().getProcessorSupport());
@@ -576,7 +610,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         }
         else
         {
+            processingContext.setPreCompiledLambdaParameters(function1Parameters);
             InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(this);
+            processingContext.clearPreCompiledLambdaParameters();
+
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?> func1 = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition<?>) funcVS._values().getFirst();
 
             InstanceValue func2VS = (InstanceValue) colSpec.function2.accept(this);

@@ -1337,3 +1337,34 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testN
    let tds = $result.values->at(0);
    assertEquals(['Parent1,true', 'Parent2,false', 'Parent3,false'], $tds.rows->map(r|$r.values->makeString(','))->sort());
 }
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedPropertyOnNonTemporalClassWithMilestonedChain():Boolean[1]
+{
+   let derivedResult = execute(
+      |RootEntity.all()
+         ->project(
+            [x | $x.rootId, x | $x.childLeafValueDerived],
+            ['Id', 'LeafValue']
+         ),
+      derivedPropertyAssociationMilestoningMap,
+      meta::external::store::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+   let derivedTds = $derivedResult.values->at(0).rows->map(r|$r.values->makeString(','));
+
+   let inlineResult = execute(
+      |RootEntity.all()
+         ->project(
+            [x | $x.rootId, x | $x.rootChild(today()).leaves(today()).leafValue],
+            ['Id', 'LeafValue']
+         ),
+      derivedPropertyAssociationMilestoningMap,
+      meta::external::store::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+   let inlineTds = $inlineResult.values->at(0).rows->map(r|$r.values->makeString(','));
+   assertEquals(['R1,test', 'R2,other', 'R3,test'],$inlineTds);
+
+   assertEquals($inlineTds, $derivedTds);
+}
+

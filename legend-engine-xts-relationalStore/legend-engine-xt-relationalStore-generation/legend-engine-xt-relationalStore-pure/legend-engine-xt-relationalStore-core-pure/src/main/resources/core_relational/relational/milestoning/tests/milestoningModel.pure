@@ -479,6 +479,7 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::Parent
 {
    parentId : Integer[1];
    parentName : String[1];
+   childLeafValue(){$this.children($this.businessDate).leaves($this.businessDate).leafValue}:String[*];
 }
 
 Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::ChildEntity
@@ -502,4 +503,16 @@ Association meta::relational::tests::milestoning::ChildEntity_LeafEntity
 {
    child : ChildEntity[1];
    leaves : LeafEntity[*];
+}
+
+Class meta::relational::tests::milestoning::RootEntity
+{
+   rootId : String[1];
+   childLeafValueDerived(){$this.rootChild(today()).leaves(today()).leafValue}: String[*];
+}
+
+Association meta::relational::tests::milestoning::RootEntity_ChildEntity
+{
+   root : RootEntity[*];
+   rootChild : ChildEntity[0..1];
 }

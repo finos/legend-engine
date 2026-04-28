@@ -34,6 +34,26 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
       meta::pure::functions::math::tests::toFloat::testDecimalToFloat_Function_1__Boolean_1_->testRev(
         rev('|3.8D->meta::pure::functions::math::toFloat()', 'c(PythonDecimal(\'3.8\')).to_float()')
       )
+    ]->combine(),
+    [
+      meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_->testRev(
+        [
+          rev('|true->meta::pure::functions::lang::if(|\'truesentence\', |\'falsesentence\')', 
+               'c(True).case(c(\'truesentence\'), c(\'falsesentence\'))'),
+          rev('|false->meta::pure::functions::lang::if(|\'truesentence\', |\'falsesentence\')', 
+               'c(False).case(c(\'truesentence\'), c(\'falsesentence\'))')
+        ]
+      ),
+
+      meta::pure::functions::lang::tests::if::testIfWithEvaluate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|meta::pure::functions::lang::if(1 == 1, |\'truesentence\', |\'falsesentence\')', 
+               '(c(1) == c(1)).case(c(\'truesentence\'), c(\'falsesentence\'))'),
+          rev('|meta::pure::functions::lang::if(1 == 3, |\'truesentence\', |\'falsesentence\')', 
+               '(c(1) == c(3)).case(c(\'truesentence\'), c(\'falsesentence\'))')
+        ]
+      )
+
     ]->combine()
   ]
 }

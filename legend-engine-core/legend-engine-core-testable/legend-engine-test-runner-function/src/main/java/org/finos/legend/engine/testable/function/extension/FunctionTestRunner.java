@@ -59,6 +59,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -101,6 +103,7 @@ public class FunctionTestRunner implements TestRunner
     private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
     private List<Closeable> closeables = Lists.mutable.empty();
     private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
+    private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
 
     public FunctionTestRunner(ConcreteFunctionDefinition functionDefinition, String pureVersion)
     {
@@ -127,6 +130,8 @@ public class FunctionTestRunner implements TestRunner
         String testablePath = getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
         try
         {
+            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(this.functionDefinition, pureModel);
+            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
             // handle data
             Function protocolFunc = ListIterate.detect(pureModelContextData.getElementsOfType(Function.class), el -> el.getPath().equals(testablePath));
             FunctionTestSuite protocolSuite = ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
@@ -349,7 +354,7 @@ public class FunctionTestRunner implements TestRunner
                 }
             }
         }
-        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap)).select(Objects::nonNull).select(Optional::isPresent)
+        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap, this.hints)).select(Objects::nonNull).select(Optional::isPresent)
                 .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported test data for function test suite: " + context.getTestSuite()._id()));
     }
 

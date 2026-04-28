@@ -78,9 +78,9 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
                 }
 
                 LOGGER.debug("Executing test data setup SQLs");
-                for (String sql : _key.getTestDataSetupSqls())
+                try (Statement statement = connection.createStatement())
                 {
-                    try (Statement statement = connection.createStatement())
+                    for (String sql : _key.getTestDataSetupSqls())
                     {
                         statement.executeUpdate(sql);
                     }

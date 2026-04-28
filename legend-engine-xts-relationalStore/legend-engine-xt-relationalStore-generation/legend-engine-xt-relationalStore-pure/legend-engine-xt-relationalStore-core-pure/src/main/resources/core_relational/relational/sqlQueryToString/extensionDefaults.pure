@@ -592,25 +592,25 @@ function meta::relational::functions::sqlQueryToString::default::processTempTabl
 
 function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-   'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';
+   'Create Schema if not exists ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';';
 }
 
 function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
-   'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
+   'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ' cascade;';
 }
 
 function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $dropTableSQL.table;
-  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+';';
 }
 
 function meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+  'Create Table '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  $dbConfig.dataTypeToSqlText($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))

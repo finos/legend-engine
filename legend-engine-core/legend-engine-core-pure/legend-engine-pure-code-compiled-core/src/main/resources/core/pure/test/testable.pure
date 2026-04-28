@@ -98,3 +98,15 @@ Class meta::pure::test::assertion::EqualToJson extends TestAssertion
 {
     expected    : EmbeddedData[1];
 }
+
+Class meta::pure::test::assertion::EqualToRelation extends TestAssertion
+{
+    expected    : EmbeddedData[1];
+}
+
+Class meta::pure::test::assertion::EqualToRelationAssertFail extends AssertFail
+{
+    expected    : String[1];
+    actual      : String[1];
+}
+

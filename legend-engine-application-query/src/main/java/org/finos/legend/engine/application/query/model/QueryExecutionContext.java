@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = QueryDataSpaceExecutionContext.class, name = "dataSpaceExecutionContext"),
         @JsonSubTypes.Type(value = DataProductNativeExecutionContext.class, name = "dataProductNativeExecutionContext"),
         @JsonSubTypes.Type(value = DataProductModelAccessExecutionContext.class, name = "dataProductModelAccessExecutionContext"),
+        @JsonSubTypes.Type(value = DataProductLakehouseAccessExecutionContext.class, name = "dataProductLakehouseAccessExecutionContext"),
 })
 public abstract class QueryExecutionContext
 {

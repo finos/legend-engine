@@ -179,7 +179,7 @@ packageableElementPointer:                      qualifiedName
 ;
 functionDataValue:                              (qualifiedName | externalFormatValue | embeddedData)
 ;
-simpleFunctionTest:                             identifier (STRING)? PIPE identifier PAREN_OPEN functionParams PAREN_CLOSE EQUAL GREATER_THAN (externalFormatValue | primitiveValue) SEMI_COLON
+simpleFunctionTest:                             identifier (STRING)? PIPE identifier PAREN_OPEN functionParams PAREN_CLOSE EQUAL GREATER_THAN (externalFormatValue | embeddedData | primitiveValue) SEMI_COLON
 ;
 externalFormatValue:                            contentType STRING
 ;

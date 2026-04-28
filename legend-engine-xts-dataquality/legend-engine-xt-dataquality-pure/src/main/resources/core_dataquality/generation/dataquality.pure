@@ -1252,7 +1252,7 @@ function meta::external::dataquality::addColumnNameToValue(columnValue: ValueSpe
         ^InstanceValue (
           genericType = ^GenericType(rawType=String),
           multiplicity = OneMany,
-          values = ['\\x1E\\x1F\\x1D', $colName, '\\x1E\\x1F\\x1D', $columnValue]
+          values = ['', $colName, '', $columnValue]
         )
      ]
    )->evaluateAndDeactivate();

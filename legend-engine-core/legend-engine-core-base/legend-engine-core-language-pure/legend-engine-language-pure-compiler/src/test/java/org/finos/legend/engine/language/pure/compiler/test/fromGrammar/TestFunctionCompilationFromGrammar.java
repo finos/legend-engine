@@ -129,6 +129,43 @@ public class TestFunctionCompilationFromGrammar
     }
 
     @Test
+    public void testFunctionTestWithRelationAssertion()
+    {
+        // Simple function test with Relation assertion compiles
+        test("function model::MyFunc(): meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>[1]\n" +
+                "{\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>)\n" +
+                "}\n" +
+                "{\n" +
+                "  testPass | MyFunc() => Relation\n" +
+                "  #{\n" +
+                "    id, name\n" +
+                "    1 , John\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFunctionTestWithRelationAssertionInSuite()
+    {
+        // Function test suite with Relation assertion compiles
+        test("function model::MyFunc(name: String[1]): meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>[1]\n" +
+                "{\n" +
+                "  []->cast(@meta::pure::metamodel::relation::Relation<(id:Integer, name:String)>)\n" +
+                "}\n" +
+                "{\n" +
+                "  testSuite1\n" +
+                "  (\n" +
+                "    testPass | MyFunc('John') => Relation\n" +
+                "    #{\n" +
+                "      id, name\n" +
+                "      1 , John\n" +
+                "    }#;\n" +
+                "  )\n" +
+                "}\n");
+    }
+
+    @Test
     public void testRecursiveAppliedFunction()
     {
         test("function model::FunctionA(int: Integer[1]): String[1]\n" +

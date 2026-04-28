@@ -333,4 +333,121 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossSto
   assertEquals('temp_db2.temp_schema2.cross_temp_table_node_0', $employeeChild.processedParentTempTableName);
   assertEquals('temp_db2.temp_schema2.temp_table_node_2', $ceoChild.processedTempTableName);
   assertEquals('temp_db2.temp_schema2.temp_table_node_5', $employeeChild.processedTempTableName);
-}  
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeTempTableColumnOrderConsistency():Boolean[1]
+{
+   let tree = #{
+      meta::pure::executionPlan::tests::snowflake::model::ParentRecord {
+         zFieldAccount,
+         quantity,
+         children {
+            detail
+         }
+      }
+   }#;
+
+   let query = {|meta::pure::executionPlan::tests::snowflake::model::ParentRecord.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::executionPlan::tests::snowflake::mapping::ParentChildOrderMapping;
+   let conn1 = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName', databaseName='databaseName', accountName = 'accountName', tempTableDb = 'temp_db1', tempTableSchema = 'temp_schema1'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+   let conn2 = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName', databaseName='databaseName', accountName = 'accountName', tempTableDb = 'temp_db2', tempTableSchema = 'temp_schema2'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+
+   let generatedPlan = executionPlan($query, $mapping, ^Runtime(connectionStores=[^ConnectionStore(element = meta::pure::executionPlan::tests::snowflake::database::ParentDB, connection=$conn1), ^ConnectionStore(element = meta::pure::executionPlan::tests::snowflake::database::ChildDB, connection=$conn2)]), meta::relational::extension::relationalExtensions());
+   let rootGlobalNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode);
+   let crossChild = $rootGlobalNode.children->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalCrossRootQueryTempTableGraphFetchExecutionNode);
+
+   let expectedExpressionTraversalOrder = ['zFieldAccount', 'bFieldId', 'mFieldType', 'aFieldDate'];
+   let createTableColumnOrder = $crossChild.parentTempTableColumns.label;
+   assertEquals($expectedExpressionTraversalOrder, $createTableColumnOrder,
+      'parentTempTableColumns must be in XStore expression traversal order. ' +
+      'Expected: [' + $expectedExpressionTraversalOrder->joinStrings(', ') + '] but got: [' + $createTableColumnOrder->joinStrings(', ') + '].'
+   );
+}
+
+Class meta::pure::executionPlan::tests::snowflake::model::ParentRecord
+{
+   zFieldAccount: String[1];
+   aFieldDate: Date[1];
+   mFieldType: String[1];
+   bFieldId: String[1];
+   quantity: Float[1];
+}
+
+Class meta::pure::executionPlan::tests::snowflake::model::ChildRecord
+{
+   accountNumber: String[1];
+   underlierID: String[1];
+   balanceType: String[1];
+   businessDate: Date[1];
+   detail: String[1];
+}
+
+Association meta::pure::executionPlan::tests::snowflake::model::Parent_Child
+{
+   parent: meta::pure::executionPlan::tests::snowflake::model::ParentRecord[*];
+   children: meta::pure::executionPlan::tests::snowflake::model::ChildRecord[*];
+}
+
+###Relational
+Database meta::pure::executionPlan::tests::snowflake::database::ParentDB
+(
+   Table parent_record
+   (
+      id INT PRIMARY KEY,
+      z_field_account VARCHAR(100),
+      a_field_date DATE,
+      m_field_type VARCHAR(100),
+      b_field_id VARCHAR(100),
+      quantity FLOAT
+   )
+)
+
+###Relational
+Database meta::pure::executionPlan::tests::snowflake::database::ChildDB
+(
+   Table child_record
+   (
+      id INT PRIMARY KEY,
+      account_number VARCHAR(100),
+      underlier_id VARCHAR(100),
+      balance_type VARCHAR(100),
+      business_date DATE,
+      detail VARCHAR(200)
+   )
+)
+
+###Mapping
+Mapping meta::pure::executionPlan::tests::snowflake::mapping::ParentChildOrderMapping
+(
+   meta::pure::executionPlan::tests::snowflake::model::ParentRecord : Relational
+   {
+      zFieldAccount : [meta::pure::executionPlan::tests::snowflake::database::ParentDB]parent_record.z_field_account,
+      aFieldDate : [meta::pure::executionPlan::tests::snowflake::database::ParentDB]parent_record.a_field_date,
+      mFieldType : [meta::pure::executionPlan::tests::snowflake::database::ParentDB]parent_record.m_field_type,
+      bFieldId : [meta::pure::executionPlan::tests::snowflake::database::ParentDB]parent_record.b_field_id,
+      quantity : [meta::pure::executionPlan::tests::snowflake::database::ParentDB]parent_record.quantity
+   }
+   meta::pure::executionPlan::tests::snowflake::model::ChildRecord : Relational
+   {
+      accountNumber : [meta::pure::executionPlan::tests::snowflake::database::ChildDB]child_record.account_number,
+      underlierID : [meta::pure::executionPlan::tests::snowflake::database::ChildDB]child_record.underlier_id,
+      balanceType : [meta::pure::executionPlan::tests::snowflake::database::ChildDB]child_record.balance_type,
+      businessDate : [meta::pure::executionPlan::tests::snowflake::database::ChildDB]child_record.business_date,
+      detail : [meta::pure::executionPlan::tests::snowflake::database::ChildDB]child_record.detail
+   }
+   meta::pure::executionPlan::tests::snowflake::model::Parent_Child : XStore
+   {
+      children : $this.zFieldAccount == $that.accountNumber &&
+                 $this.bFieldId == $that.underlierID &&
+                 $this.mFieldType == $that.balanceType &&
+                 $this.aFieldDate == $that.businessDate
+   }
+)

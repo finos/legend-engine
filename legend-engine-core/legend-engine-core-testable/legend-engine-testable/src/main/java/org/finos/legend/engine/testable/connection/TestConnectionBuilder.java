@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -40,11 +41,18 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
 {
     private List<EmbeddedData> embeddedData;
     private PureModelContextData pureModelContextData;
+    private TestConnectionBuildParameters hints;
 
     public TestConnectionBuilder(List<EmbeddedData> embeddedData, PureModelContextData pureModelContextData)
     {
+        this(embeddedData, pureModelContextData, TestConnectionBuildParameters.NONE);
+    }
+
+    public TestConnectionBuilder(List<EmbeddedData> embeddedData, PureModelContextData pureModelContextData, TestConnectionBuildParameters hints)
+    {
         this.embeddedData = Objects.isNull(embeddedData) ? Lists.mutable.empty() : ListIterate.select(embeddedData, Objects::nonNull);
         this.pureModelContextData = pureModelContextData;
+        this.hints = hints;
     }
 
     @Override
@@ -52,7 +60,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
     {
         MutableList<ConnectionFactoryExtension> factories = Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
         return factories
-                .collect(f -> f.tryBuildTestConnection(connection, embeddedData))
+                .collect(f -> f.tryBuildTestConnection(connection, embeddedData, hints))
                 .select(Objects::nonNull)
                 .select(Optional::isPresent)
                 .collect(Optional::get)

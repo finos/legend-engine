@@ -27,9 +27,16 @@ Database meta::external::dataquality::tests::domain::db
     STREET VARCHAR(200),
     LOCALITY VARCHAR(200)
   )
+  Table assetTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    ownerId INTEGER
+  )
 
   Join Address_Person(addressTable.ID = personTable.ADDRESSID)
   Join Address_Location(addressTable.LOCATIONID = locationTable.ID)
+  Join Asset_Person(assetTable.ownerId = personTable.ID)
 )
 
 
@@ -52,6 +59,11 @@ Mapping meta::external::dataquality::tests::domain::dataqualitymappings
     street: [meta::external::dataquality::tests::domain::db]locationTable.STREET,
     locality: [meta::external::dataquality::tests::domain::db]locationTable.LOCALITY
   }
+  meta::external::dataquality::tests::domain::Asset: Relational
+  {
+    name: [meta::external::dataquality::tests::domain::db]assetTable.NAME,
+    person: [meta::external::dataquality::tests::domain::db]@Asset_Person
+  }
 )
 
 ###Pure
@@ -65,6 +77,8 @@ Class meta::external::dataquality::tests::domain::Person
   name: String[1];
   age: Integer[1];
   addresses: meta::external::dataquality::tests::domain::Address[*];
+  id: String[0..1];
+  hash: String[0..1];
 }
 
 Class meta::external::dataquality::tests::domain::Address
@@ -81,6 +95,12 @@ Class meta::external::dataquality::tests::domain::Location
 {
   street: String[1];
   locality: String[1];
+}
+
+Class meta::external::dataquality::tests::domain::Asset
+{
+  name: String[1];
+  person: meta::external::dataquality::tests::domain::Person[1];
 }
 
 

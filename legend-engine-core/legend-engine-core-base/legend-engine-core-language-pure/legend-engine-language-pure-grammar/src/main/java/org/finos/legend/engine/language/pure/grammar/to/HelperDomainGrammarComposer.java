@@ -36,7 +36,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -282,13 +285,13 @@ public class HelperDomainGrammarComposer
         }
         if (functionTest.assertions.size() == 1)
         {
-            str.append(renderTestAssertion(functionTest.assertions.get(0), context));
+            str.append(renderTestAssertion(functionTest.assertions.get(0), currentInt, context));
         }
         str.append(";");
         return str.toString();
     }
 
-    private static String renderTestAssertion(TestAssertion testAssertion, PureGrammarComposerContext context)
+    private static String renderTestAssertion(TestAssertion testAssertion, int currentInt, PureGrammarComposerContext context)
     {
         if (testAssertion instanceof EqualTo)
         {
@@ -300,10 +303,114 @@ public class HelperDomainGrammarComposer
             ExternalFormatData externalFormatData = equalToJson.expected;
             return renderSimpleExternalFormat(externalFormatData);
         }
+        else if (testAssertion instanceof EqualToRelation)
+        {
+            EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
+            return renderRelationAssertion(equalToRelation.expected, currentInt);
+        }
         else
         {
             throw new EngineException("Unknown test assertion type: " + testAssertion.toString(), testAssertion.sourceInformation, EngineErrorType.COMPOSER);
         }
+    }
+
+    private static String renderRelationAssertion(RelationElement element, int currentInt)
+    {
+        return "Relation\n" + renderAlignedRelationElement(element, getTabString(currentInt));
+    }
+
+    /**
+     * Renders a RelationElement as an aligned table inside #{ ... }#.
+     * Computes max column widths and pads values with spaces for readability.
+     *
+     * Example output:
+     * <pre>
+     *   #{
+     *       id, firstName, lastName
+     *       1 , John     , Smith
+     *       2 , Jane     , Doe
+     *   }#
+     * </pre>
+     */
+    public static String renderAlignedRelationElement(RelationElement element, String baseIndentation)
+    {
+        String innerIndent = baseIndentation + getTabString(1);
+        List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
+        List<RelationRowTestData> rows = element.rows != null ? element.rows : Collections.emptyList();
+
+        // Compute max width for each column
+        int numCols = columns.size();
+        int[] maxWidths = new int[numCols];
+        for (int i = 0; i < numCols; i++)
+        {
+            maxWidths[i] = escapeRelationValue(columns.get(i)).length();
+        }
+        for (RelationRowTestData row : rows)
+        {
+            for (int i = 0; i < numCols && i < row.values.size(); i++)
+            {
+                maxWidths[i] = Math.max(maxWidths[i], escapeRelationValue(row.values.get(i)).length());
+            }
+        }
+
+        StringBuilder str = new StringBuilder();
+        str.append(baseIndentation).append("#{\n");
+
+        // Column header
+        str.append(innerIndent);
+        for (int i = 0; i < numCols; i++)
+        {
+            if (i > 0)
+            {
+                str.append(", ");
+            }
+            String val = escapeRelationValue(columns.get(i));
+            str.append(i < numCols - 1 ? padRight(val, maxWidths[i]) : val);
+        }
+        str.append("\n");
+
+        // Data rows
+        for (RelationRowTestData row : rows)
+        {
+            str.append(innerIndent);
+            for (int i = 0; i < numCols; i++)
+            {
+                if (i > 0)
+                {
+                    str.append(", ");
+                }
+                String value = i < row.values.size() ? escapeRelationValue(row.values.get(i)) : "";
+                str.append(i < numCols - 1 ? padRight(value, maxWidths[i]) : value);
+            }
+            str.append("\n");
+        }
+
+        str.append(baseIndentation).append("}#");
+        return str.toString();
+    }
+
+    private static String padRight(String s, int width)
+    {
+        if (s.length() >= width)
+        {
+            return s;
+        }
+        StringBuilder sb = new StringBuilder(width);
+        sb.append(s);
+        for (int i = s.length(); i < width; i++)
+        {
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    private static String escapeRelationValue(String input)
+    {
+        if (input == null)
+        {
+            return "";
+        }
+        return org.apache.commons.text.StringEscapeUtils.escapeJava(input).replace("\\\"", "\"").replace(",", "\\,").replace(";", "\\;");
     }
 
     private static String renderSimpleExternalFormat(ExternalFormatData externalFormatData)

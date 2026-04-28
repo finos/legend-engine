@@ -25,4 +25,3 @@ Class meta::relational::metamodel::data::RelationalCSVTable
   table: String[1];
   values: String[1];
 }
-

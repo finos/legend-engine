@@ -20,11 +20,17 @@ import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToRelationAssertFail;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 
 public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator
 {
@@ -100,6 +106,57 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
             try
             {
                 return TestAssertionHelper.compareAssertionJSON(testAssertion, ((EqualToJson) testAssertion).expected.data, actualJson);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (testAssertion instanceof EqualToRelation)
+        {
+            EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
+
+            // 1. Get actual result as JSON
+            String actualJson;
+            if (result instanceof ConstantResult)
+            {
+                actualJson = (String) ((ConstantResult) result).getValue();
+            }
+            else if (result instanceof StreamingResult)
+            {
+                actualJson = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
+            }
+            else
+            {
+                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualToRelation Assert !!");
+            }
+
+            try
+            {
+                // 2. Convert expected RelationElement to JSON
+                String expectedJson = RelationResultHelper.relationElementToJson(equalToRelation.expected);
+
+                // 3. Compare as JSON internally
+                ObjectMapper objectMapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
+                JsonNode expectedNode = objectMapper.readTree(expectedJson.getBytes());
+                JsonNode actualNode = objectMapper.readTree(actualJson.getBytes());
+
+                AssertionStatus assertionStatus;
+                if (JsonNodeComparator.NULL_MISSING_EQUIVALENT.compare(expectedNode, actualNode) == 0)
+                {
+                    assertionStatus = new AssertPass();
+                }
+                else
+                {
+                    // 4. On failure, format both sides as TDS tables for user-friendly error
+                    EqualToRelationAssertFail fail = new EqualToRelationAssertFail();
+                    fail.expected = RelationResultHelper.relationElementToTdsString(equalToRelation.expected);
+                    fail.actual = RelationResultHelper.jsonToTdsString(actualJson, equalToRelation.expected.columns);
+                    fail.message = "Actual result does not match Expected result";
+                    assertionStatus = fail;
+                }
+                assertionStatus.id = testAssertion.id;
+                return assertionStatus;
             }
             catch (Exception e)
             {

@@ -21,6 +21,7 @@ import meta::external::dataquality::datarecon::*;
 import system::imports::*;
 import meta::external::dataquality::dataprofile::*;
 import meta::relational::metamodel::datatype::*;
+import meta::pure::tds::schema::*;
 
 /*
   This method will:
@@ -35,8 +36,19 @@ import meta::relational::metamodel::datatype::*;
 function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1]): LambdaFunction<Any>[1]
 {  
   let baseLambda = $reconInput.source;
-  let sourceDataset = prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues);
-  let targetDataset = prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues);
+
+  // Extract parameters from source and target lambdas
+  let sourceParams = $baseLambda->functionType().parameters->evaluateAndDeactivate();
+  let targetParams = $reconInput.target->functionType().parameters->evaluateAndDeactivate();
+
+  let renamedSourceParams = $sourceParams->map(p | ^$p(name = 'source_' + $p.name));
+
+  let renamedTargetParams = $targetParams->map(p | ^$p(name = 'target_' + $p.name));
+
+  let allParams = $renamedSourceParams->concatenate($renamedTargetParams);
+
+  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom));
+  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom));
 
   //join by keys
   let withJoin = buildJoinExpression($sourceDataset, $targetDataset, JoinKind.FULL, getJoinColumns($reconInput.keys), $reconInput.sourceHashCol, $reconInput.targetHashCol);
@@ -47,28 +59,41 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
   let targetHashCol = if ($reconInput.targetHashCol->isNotEmpty() && !$reconInput.aggregatedHash, | $reconInput.targetHashCol->toOne() + '_TARGET', | 'DIGEST_TARGET');
   let filterCondition = negatedFunctionExpression(buildComparisonExpression(equal_Any_MANY__Any_MANY__Boolean_1_, 'row', $joinRelType, $sourceHashCol, 'row', $joinRelType, $targetHashCol, ^GenericType(rawType=String)));
   let withFilter = buildFilterExpression($withJoin, $joinRelType, $filterCondition);
-
   let withLimit = if($reconInput.defectLimit->isEmpty(),
     | $withFilter,
     | $withFilter->buildRelationLimitFilterExpression($reconInput.defectLimit->toOne(), $withFilter.genericType)
   );
 
-  ^$baseLambda(expressionSequence=$withLimit);
+  // Build final lambda - if there are parameters, create new lambda with merged params; otherwise preserve baseLambda structure
+  if ($allParams->isEmpty(),
+    | ^$baseLambda(expressionSequence=$withLimit),
+    | lambda(^FunctionType(returnMultiplicity=$withLimit.multiplicity, returnType=$withLimit.genericType, parameters=$allParams), $withLimit)
+  );
 }
 
-function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1]): ValueSpecification[1]
+function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1]): ValueSpecification[1]
 {  
-  validateColumns($dataset, $type, $keys, $colsForHash, $hashCol);
-  //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
-  let from = $dataset.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
-  let input = $dataset->popTerminalFunctionExpression().expressionSequence->evaluateAndDeactivate()->last()->toOne();
+  let hasFrom = $dataset->isEndingWithFromFunction();
+  let withoutFrom = if ($hasFrom,
+    | $dataset->popTerminalFunctionExpression().expressionSequence->evaluateAndDeactivate()->last()->toOne(), //need to remove from and add back after compileViaGrammar as runtime not yet supported in compileViaGrammar flow - once fixed we can remove this code
+    | $dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne()
+  );
+
+  //if lambda returning Tablular Data Set (TDS) then add cast to Relation
+  let input = if ($dataset->functionReturnType().rawType->toOne()->subTypeOf(TabularDataSet),
+    | $dataset->buildCastToRelation($withoutFrom),
+    | $withoutFrom
+  );
+  validateColumns($input, $type, $keys, $colsForHash, $hashCol);
+
   let suffix = '_' + $type->toUpper();
     
   //select relevant columns before normalization
   let colsToSelect = if ($colsForHash->isEmpty() && $hashCol->isEmpty(),
     | [], //if no cols given for hash then we will calculate hash on all columns
     | let colsRequiredForHash = if ($hashCol->isNotEmpty(), | $hashCol, | $colsForHash);
-      let selectColsBeforeNormalize = $keys->union($colsRequiredForHash)->distinct();
+      let withIncludedCols = if ($includeColumnValues, | $colsRequiredForHash->union($colsForHash), | $colsRequiredForHash);
+      let selectColsBeforeNormalize = $keys->union($withIncludedCols)->distinct();
   );
   let withSelectBeforeNormalize = if ($colsToSelect->isEmpty(), | $input, | buildSelectExpression($input, $colsToSelect));
   
@@ -78,7 +103,7 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   //create hash
   let withHash = if ($hashCol->isNotEmpty(), 
     | $withNormalizedCols,
-    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true);
+    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true, $dataset);
       if ($includeColumnValues && !$aggregatedHash,
         | $withRowHash,
         | //select only hash col + keys
@@ -90,17 +115,21 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   //create aggregated hash
   let hashColumn = if ($hashCol->isNotEmpty(), | $hashCol->toOne(), | 'DIGEST') + $suffix;
   let withAggregatedHash = if ($aggregatedHash,
-    | buildAggregatedHash($withHash, getRelType($withHash->compileViaGrammar()), $hashColumn, $keys->map(col | $col + $suffix), $suffix, $type),
+    | buildAggregatedHash($withHash, getRelType($withHash->compileViaGrammarWithContext($dataset)), $hashColumn, $keys->map(col | $col + $suffix), $suffix, $type, $dataset),
     | $withHash
   );
 
-  let compiled = $withAggregatedHash->compileViaGrammar();
-  sfe($from.func, $compiled.genericType, [], $compiled->concatenate($from.parametersValues->tail()));
+  let compiled = $withAggregatedHash->compileViaGrammarWithContext($dataset);
+  if ($hasFrom && !$removeFrom,
+    | let from = $dataset.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
+      sfe($from.func, $compiled.genericType, [], $compiled->concatenate($from.parametersValues->tail()));,
+    | $compiled
+  );
 }
 
-function meta::external::dataquality::datarecon::validateColumns(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], colsForHash: String[*], hashCol: String[0..1]): Boolean[*]
+function meta::external::dataquality::datarecon::validateColumns(input: ValueSpecification[1], type: String[1], keys: String[*], colsForHash: String[*], hashCol: String[0..1]): Boolean[*]
 {  
-  let relType = getRelType($dataset.expressionSequence->evaluateAndDeactivate()->last()->toOne());
+  let relType = getRelType($input);
   validateColumnExists($relType, $keys, $type, 'keys');
   validateColumnExists($relType, $colsForHash, $type, 'column to include for generated hash');
   validateColumnExists($relType, $hashCol, $type, 'column with pre-calculated hash');
@@ -109,6 +138,28 @@ function meta::external::dataquality::datarecon::validateColumns(dataset: Lambda
 function meta::external::dataquality::datarecon::validateColumnExists(relType: RelationType<Any>[1], columns: String[*], type: String[1], field: String[1]): Boolean[*]
 {
   $columns->map(column | assert($relType.columns->exists(col | $col.name->toOne() == $column), 'Expected ' + $type + ' table to contain field ' + $column + ' which was specified as ' + $field));
+}
+
+function meta::external::dataquality::datarecon::buildCastToRelation(dataset: LambdaFunction<Any>[1], input: ValueSpecification[1]): ValueSpecification[1]
+{
+  let columns = $dataset->resolveSchema([])->map(c |
+    let col = ^Column<Nil,Any|*>(name = $c.name->toOne(), nameWildCard = false);
+    let type = ^GenericType(rawType = Column, typeArguments = [ ^GenericType(rawType = Nil), ^GenericType(rawType = $c.type->toOne())], multiplicityArguments = PureOne);
+    ^$col(classifierGenericType = $type); //need to copy column and set correct type as can't set type directly in constructor since this is set by the generic type provided to ^Column<Nil,Any|*>
+  );
+  let genericType = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=^RelationType<Nil>(columns = $columns)));
+  ^SimpleFunctionExpression
+  (
+    func = cast_Any_m__T_1__T_m_,
+    multiplicity = PureOne,
+    genericType  = $genericType,
+    importGroup  = coreImport,
+    parametersValues =
+    [
+      $input,
+      ^InstanceValue(multiplicity = PureOne, genericType = $genericType)
+    ]
+  )->evaluateAndDeactivate();
 }
 
 function meta::external::dataquality::datarecon::normalizeColumns(input: ValueSpecification[1], relType: RelationType<Any>[1], colsToNormalize: String[*], suffix: String[1]):ValueSpecification[1]
@@ -134,7 +185,7 @@ function meta::external::dataquality::datarecon::normalizeColumns(input: ValueSp
   let withSelect = buildSelectExpression($withNormalized, $columns.name->map(col | $col + $suffix));
 }
 
-function meta::external::dataquality::datarecon::buildAggregatedHash(input: ValueSpecification[1], relType: RelationType<Any>[1], hashColumn: String[1], groupingCols: String[*], suffix: String[1], type: String[1]):ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildAggregatedHash(input: ValueSpecification[1], relType: RelationType<Any>[1], hashColumn: String[1], groupingCols: String[*], suffix: String[1], type: String[1], contextLambda: LambdaFunction<Any>[1]):ValueSpecification[1]
 {
   //sort by hash column to ensure aggregated hash created in determinstic manner. 
   //TODO- the correct order by is not used in the generated SQL, we need the order by to be within the group in the aggregation to ensure consistency across different sql engines
@@ -150,7 +201,7 @@ function meta::external::dataquality::datarecon::buildAggregatedHash(input: Valu
   );
 
   //calculate hash of hashes
-  let aggHash = buildRowHash($groupBy, $suffix, $type, false);
+  let aggHash = buildRowHash($groupBy, $suffix, $type, false, $contextLambda);
 
   //select only grouping cols and hash col
   let selectCols = $groupingCols->union('DIGEST' + $suffix);
@@ -184,9 +235,9 @@ function meta::external::dataquality::datarecon::buildExtendExpression(input: Va
   );
 }
 
-function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1]):ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1], contextLambda: LambdaFunction<Any>[1]):ValueSpecification[1]
 {
-  let relType = getRelType($input->compileViaGrammar());
+  let relType = getRelType($input->compileViaGrammarWithContext($contextLambda));
   $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $relType.columns.name->sort(), 'row', $includeColName, $suffix));
 }
 
@@ -391,13 +442,19 @@ function meta::external::dataquality::datarecon::getRelType(input: ValueSpecific
 {  
   $input.genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
 }
-  
-function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]): DataQualityReconInput[1]
+
+function meta::external::dataquality::datarecon::compileViaGrammarWithContext(vs:ValueSpecification[1], contextLambda: LambdaFunction<Any>[1]):ValueSpecification[1]
 {
-  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);
+  let compiled = ^$contextLambda(expressionSequence = $contextLambda.expressionSequence->evaluateAndDeactivate()->init()->concatenate([$vs])->toOneMany())->compileViaGrammar();
+  $compiled.expressionSequence->evaluateAndDeactivate()->last()->toOne();
 }
 
-function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1]): DataQualityReconInput[1]
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]): DataQualityReconInput[1]
 {
-  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit);
+  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false);
+}
+
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]): DataQualityReconInput[1]
+{
+  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit, removeFrom = $removeFrom);
 }

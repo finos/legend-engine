@@ -62,18 +62,33 @@ public interface ConnectionFactoryExtension extends LegendConnectionExtension
         return Optional.empty();
     }
 
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data, TestConnectionBuildParameters hints)
+    {
+        return tryBuildTestConnection(sourceConnection, data);
+    }
+
     default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement> dataElements, Store store, EmbeddedData data)
     {
         return Optional.empty();
     }
 
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement> dataElements, Store store, EmbeddedData data, TestConnectionBuildParameters hints)
+    {
+        return tryBuildTestConnectionsForStore(dataElements, store, data);
+    }
+
     default Optional<Pair<Connection, List<Closeable>>> tryBuildConnectionForStoreData(Map<String, DataElement> dataElements, Map<Store, EmbeddedData> storeTestData)
+    {
+        return tryBuildConnectionForStoreData(dataElements, storeTestData, TestConnectionBuildParameters.NONE);
+    }
+
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildConnectionForStoreData(Map<String, DataElement> dataElements, Map<Store, EmbeddedData> storeTestData, TestConnectionBuildParameters hints)
     {
         if (storeTestData.size() == 1)
         {
             Store store = storeTestData.keySet().stream().findFirst().get();
             EmbeddedData embeddedData = storeTestData.values().stream().findFirst().get();
-            return tryBuildTestConnectionsForStore(dataElements, store, embeddedData);
+            return tryBuildTestConnectionsForStore(dataElements, store, embeddedData, hints);
         }
         return Optional.empty();
     }

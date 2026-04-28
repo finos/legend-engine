@@ -864,6 +864,45 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testFunctionTestWithRelationAssertion()
+    {
+        // Simple function with a Relation assertion
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => Relation\n" +
+                "  #{\n" +
+                "    id, firstName, lastName\n" +
+                "    1 , John     , Smith\n" +
+                "    2 , Jane     , Doe\n" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFunctionTestWithRelationAssertionInSuite()
+    {
+        // Function test suite with Relation assertion and store test data
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  MySuite\n" +
+                "  (\n" +
+                "    ModelStore: (JSON) '{}';\n" +
+                "    myTest | Hello('John') => Relation\n" +
+                "    #{\n" +
+                "      id, name\n" +
+                "      1 , John\n" +
+                "    }#;\n" +
+                "  )\n" +
+                "}\n");
+    }
+
+    @Test
     public void testBooleanPrecedence1()
     {
         testFormat("function withPath::f(s: Integer[1]): String[1]\n" +

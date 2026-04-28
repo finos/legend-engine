@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License.
@@ -12,40 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ===========================================================================================================
-// Tests for scalar operations on semi-structured arrays.
-//
-// These tests verify that scalar operations on semi-structured arrays produce correct SQL
-// without triggering the auto-flatten (LATERAL FLATTEN) behavior. The key mechanism is the disableAutoFlatten
-// flag which suppresses row-expansion and instead generates vendor-specific scalar array functions
-// (e.g. Snowflake's FILTER, ARRAY_SIZE, etc.).
-//
-// Covered patterns (direct, no intermediate operation):
-//   - isEmpty()                 : scalar boolean
-//   - isNotEmpty()              : scalar boolean
-//   - size()                    : scalar integer
-//   - fold(fn, init)            : scalar aggregation
-//   - at(n).prop                : uses existing processAt handler (one row per person, scalar)
-//
-// Covered patterns (with intermediate operations like filter, map):
-//   - filter()->isEmpty()       : scalar boolean
-//   - filter()->first().prop    : scalar extraction
-//   - filter()->at(n).prop      : scalar extraction
-//   - filter()->size()          : scalar integer
-//   - filter()->map(a|a.prop)   : array projection (still to-many)
-//   - filter()->fold(fn, init)  : scalar aggregation
-//   - if(cond, filter()->first().prop, fallback) : scalar extraction within conditional logic
-//
-// The query functions are defined in semiStructuredFlattening.legend alongside the shared model/mapping/store.
-// ===========================================================================================================
-
 import meta::relational::tests::semistructured::flattening::*;
 import meta::pure::test::*;
 import meta::core::runtime::*;
 
+function meta::relational::tests::semistructured::flattening::arrayScalarExecute(conn: Connection[1], func: String[1], mapping: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'PERSON_SCHEMA\n' +
+        'PERSON_TABLE\n' +
+        'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
+        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A1\\"}, {\\"name\\": \\"A11\\"}]}",2\n' +
+        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A2\\"}, {\\"name\\": \\"A22\\"}]}",4\n' +
+        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A3\\"}, {\\"name\\": \\"A32\\"}]}",2\n' +
+        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A4\\"}]}",\n' +
+        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"addresses\\": [{\\"name\\": \\"A5\\"}, {\\"name\\": \\"A52\\"}]}",\n' +
+        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A6\\"}]}",7\n' +
+        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A7\\"}]}",\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredArrayScalarOperations.legend';
+  let store = 'flatten::store::H2DB';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+}
+
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectIsEmpty__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Has No Addresses\n' +
@@ -61,7 +55,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectSize__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Address Count\n' +
@@ -75,10 +69,9 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectIsNotEmpty__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Has Addresses\n' +
@@ -94,7 +87,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectAt__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,First Address Name\n' +
@@ -108,10 +101,9 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectFold__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,All Address Names\n' +
@@ -127,7 +119,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterWithIsEmpty__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Has No Matching Address\n' +
@@ -143,7 +135,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterOnly__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Filtered Address Name\n' +
@@ -154,7 +146,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterAtIndex__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,First Matching Address Name\n' +
@@ -170,7 +162,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFirst__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,First Matching Address Name\n' +
@@ -186,7 +178,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterSize__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Matching Address Count\n' +
@@ -202,7 +194,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterMap__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Matching Address Names\n' +
@@ -213,7 +205,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFold__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Concatenated Address Names\n' +
@@ -229,7 +221,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
 
 function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
 {
-  semiStructuredExecute($conn,
+  arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFirstInIfElse__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Conditional Address Name\n' +
@@ -243,3 +235,39 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
+function meta::relational::tests::semistructured::flattening::semiRecordExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'SEMI_SCHEMA\n' +
+        'RECORD_TABLE\n' +
+        'ID,FIRSTNAME,CONTENT\n' +
+        '1,Peter,"{\\"payload\\": {\\"recordId\\": \\"R1\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B1\\", \\"action\\": \\"CREATE\\", \\"tags\\": [{\\"code\\": \\"P1\\", \\"category\\": \\"Primary\\"}, {\\"code\\": \\"S1\\", \\"category\\": \\"Secondary\\"}], \\"participants\\": [{\\"participantId\\": \\"A1\\", \\"role\\": \\"Active\\"}, {\\"participantId\\": \\"V1\\", \\"role\\": \\"Passive\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L1\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L2\\", \\"itemVersion\\": 2}]}}"\n' +
+        '2,Fabrice,"{\\"payload\\": {\\"recordId\\": \\"R2\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B2\\", \\"action\\": \\"UPDATE\\", \\"tags\\": [{\\"code\\": \\"S2\\", \\"category\\": \\"Secondary\\"}, {\\"code\\": \\"X2\\", \\"category\\": \\"Other\\"}], \\"participants\\": [{\\"participantId\\": \\"V2\\", \\"role\\": \\"Passive\\"}, {\\"participantId\\": \\"Z2\\", \\"role\\": \\"Other\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L3\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L4\\", \\"itemVersion\\": 2}]}}"\n' +
+        '3,Anthony,"{\\"payload\\": {\\"recordId\\": \\"R3\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B3\\", \\"action\\": \\"CREATE\\", \\"tags\\": [{\\"code\\": \\"X3\\", \\"category\\": \\"Other\\"}, {\\"code\\": \\"Y3\\", \\"category\\": \\"Unknown\\"}], \\"participants\\": [{\\"participantId\\": \\"Z3\\", \\"role\\": \\"Other\\"}, {\\"participantId\\": \\"W3\\", \\"role\\": \\"Unknown\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L5\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L6\\", \\"itemVersion\\": 2}]}}"\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredArrayScalarOperations.legend';
+  let store = 'flatten::store::SemiDB';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, 'flatten::mapping::SemiRecordMapping', $store, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists(conn: Connection[1]):Boolean[1]
+{
+  semiRecordExecute($conn,
+    'flatten::multiArrayOlapWithNestedIfExists__TabularDataSet_1_',
+    'recordId,recordVersion,revision,section,batchId,action,tagCode,tagCategory,_tagCategoryRanking,participantId,_participantRoleRanking,itemId,itemVersion,_revisionRecencyIndex,_versionRecencyIndex,_tagCategoryRankingIndex,_participantRoleRankingIndex\n' +
+    'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L1,1,1,1,1,1\n' +
+    'R1,1,1,GroupA,B1,CREATE,P1,Primary,1,A1,1,L2,2,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L3,1,1,1,1,1\n' +
+    'R2,1,1,GroupA,B2,UPDATE,S2,Secondary,2,V2,2,L4,2,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L5,1,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,X3,Other,999,W3,999,L6,2,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,X3,Other,999,Z3,999,L5,1,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,X3,Other,999,Z3,999,L6,2,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,W3,999,L5,1,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,W3,999,L6,2,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,Z3,999,L5,1,1,1,1,1\n' +
+    'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,Z3,999,L6,2,1,1,1,1\n'
+  );
+}

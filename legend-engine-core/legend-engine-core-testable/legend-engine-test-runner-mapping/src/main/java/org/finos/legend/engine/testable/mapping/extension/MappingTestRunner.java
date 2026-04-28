@@ -47,8 +47,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.slf4j.Logger;
@@ -71,6 +73,7 @@ public class MappingTestRunner implements TestRunner
     private final PlanExecutor executor;
     private final String pureVersion;
     private final MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+    private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
 
     public MappingTestRunner(Mapping pureMapping, String pureVersion)
     {
@@ -98,6 +101,8 @@ public class MappingTestRunner implements TestRunner
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
         MappingTestRunnerContext context = buildMappingContext(testSuite, pureModel, pureModelContextData);        try
         {
+            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(context.getMetamodelTestSuite()._query(), pureModel);
+            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
             MappingTestSuite mappingTestSuite = ListIterate.detect(context.getMapping().testSuites, ts -> ts.id.equals(testSuite._id()));
             // build plan, executor args
             List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
@@ -138,6 +143,8 @@ public class MappingTestRunner implements TestRunner
         MappingTestRunnerContext context = buildMappingContext(testSuite, pureModel, pureModelContextData);
         try
         {
+            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(context.getMetamodelTestSuite()._query(), pureModel);
+            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
             MappingTestSuite mappingTestSuite = ListIterate.detect(context.getMapping().testSuites, ts -> ts.id.equals(testSuite._id()));
             // build plan, executor args
             List<MappingTest> mappingTests = mappingTestSuite.tests.stream().filter(t -> t instanceof MappingTest).map(t -> (MappingTest)t).collect(Collectors.toList());
@@ -239,7 +246,7 @@ public class MappingTestRunner implements TestRunner
         Root_meta_core_runtime_Runtime_Impl runtime = new Root_meta_core_runtime_Runtime_Impl("");
         List<Pair<String, EmbeddedData>> connectionInfo = mappingTest.storeTestData.stream().map(testData -> Tuples.pair(testData.store.path, EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), testData.data))).collect(Collectors.toList());
         List<Pair<Connection, List<Closeable>>> connections = connectionInfo.stream()
-                .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo())).select(Objects::nonNull).select(Optional::isPresent)
+                .map(pair -> this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), pair.getOne()), pair.getTwo(), this.hints)).select(Objects::nonNull).select(Optional::isPresent)
                         .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for:'" + pair.getOne() + "' mentioned while running the mapping tests"))).collect(Collectors.toList());
         connections.forEach(connection ->
         {

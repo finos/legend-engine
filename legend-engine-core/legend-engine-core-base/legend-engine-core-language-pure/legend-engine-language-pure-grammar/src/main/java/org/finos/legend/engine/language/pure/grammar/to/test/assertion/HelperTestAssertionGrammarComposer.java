@@ -17,12 +17,14 @@ package org.finos.legend.engine.language.pure.grammar.to.test.assertion;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.Objects;
@@ -72,6 +74,14 @@ public class HelperTestAssertionGrammarComposer
                     + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(equalToJson.expected, updatedContext) + ";";
 
             return new ContentWithType(EqualToJsonGrammarParser.TYPE, content);
+        }
+        else if (testAssertion instanceof EqualToRelation)
+        {
+            EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
+            String content = context.getIndentationString() + "expected:\n"
+                    + HelperDomainGrammarComposer.renderAlignedRelationElement(equalToRelation.expected, indentedString) + ";";
+
+            return new ContentWithType("EqualToRelation", content);
         }
         else
         {

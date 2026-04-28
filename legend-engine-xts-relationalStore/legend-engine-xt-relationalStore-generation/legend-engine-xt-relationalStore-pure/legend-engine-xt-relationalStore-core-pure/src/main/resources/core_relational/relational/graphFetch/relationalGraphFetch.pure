@@ -195,7 +195,7 @@ function meta::relational::graphFetch::executionPlan::sqlsForTempTableLoadFromSu
 
 function meta::relational::graphFetch::executionPlan::sqlsForInsertIntoTableUsingResultSet(temporaryTable: Table[1], dbConfig:DbConfig[1]):String[1]
 {
-  'INSERT INTO '+ $temporaryTable->tableToString($dbConfig) + ' VALUES ' + stringToPlaceHolder('temp_table_rows_from_result_set');
+  'INSERT INTO ' + $temporaryTable->tableToString($dbConfig) + ' VALUES ' + stringToPlaceHolder('temp_table_rows_from_result_set');
 }
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::tempTableName(index: Integer[1]):String[1]
@@ -566,14 +566,13 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    let sourceCls = $mapping->classMappingById($xStorePropertyMapping.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
    let targetCls = $mapping->classMappingById($xStorePropertyMapping.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation)->map(i | if($i.mappingClass->isNotEmpty(), | $i.mappingClass->toOne(), | $i.class));
 
-   let sourcePropertyPathNodes = $propertyPathNodes->filter(ppn | $sourceCls->_subTypeOf($ppn->get(0).class));
-   let sourceFetchTree         = $sourcePropertyPathNodes->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()->propertyTreeToGraphFetchTree($sourceCls);
-   let srcProperties           = $sourceFetchTree.subTrees->cast(@PropertyGraphFetchTree)->map(st |
-      assert($st.property->isPrimitiveValueProperty() && ($st.property->instanceOf(Property) || ($st.property->instanceOf(QualifiedProperty) && $st.property->functionType().parameters->evaluateAndDeactivate()->size() == 1)),
-             | 'Only primitive properties / primitive no-arg qualifiers are supported as source properties in XStore mapping expression in relational graph fetch. Found incompatible property: ' + $st.property.name->toOne()
-      );
-      $st.property;
-   );
+   let allCrossProperties = $crossExpression->findPropertiesInValueSpecification();
+   let srcProperties = $allCrossProperties->filter(x | $sourceCls->_subTypeOf($x.owner->cast(@Class<Any>)) || $x.owner->cast(@Class<Any>)->_subTypeOf($sourceCls))
+                         ->map(x | assert($x->isPrimitiveValueProperty() && ($x->instanceOf(Property) || ($x->instanceOf(QualifiedProperty) && $x->functionType().parameters->evaluateAndDeactivate()->size() == 1)),
+                                         | 'Only primitive properties / primitive no-arg qualifiers are supported as source properties in XStore mapping expression in relational graph fetch. Found incompatible property: ' + $x.name->toOne()
+                                         );
+                               $x;
+                             );
 
    let targetPropertyPathNodes = $propertyPathNodes->filter(ppn | $targetCls->_subTypeOf($ppn->get(0).class));
    let targetFetchTree         = $targetPropertyPathNodes->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree()->propertyTreeToGraphFetchTree($targetCls);

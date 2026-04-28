@@ -21,7 +21,9 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::duckDB
         d:meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification[1] |
                   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DuckDBDatasourceSpecification(
                       _type = 'duckDB',
-                      path = $d.path
+                      path = $d.path,
+                      testDataSetupCsv = $d.testDataSetupCsv,
+                      testDataSetupSqls = $d.testDataSetupSqls
                  )
     ],
     reverse_transfers_typeLookups = [
@@ -31,7 +33,9 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::duckDB
         d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DuckDBDatasourceSpecification[1] |
                   ^meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification(
                       // _type = 'duckDB',
-                      path = $d.path
+                      path = $d.path,
+                      testDataSetupCsv = $d.testDataSetupCsv,
+                      testDataSetupSqls = $d.testDataSetupSqls
                  )
     ]
   )

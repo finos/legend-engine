@@ -449,7 +449,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "###DataQualityValidation\n" +
                 "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
                 "{\n" +
-                "   source: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "   source: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE]);\n" +
                 "   target: |#>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
                 "   keys: [FIRSTNAME, LASTNAME];\n" +
                 "   strategy: MD5Hash;\n" +

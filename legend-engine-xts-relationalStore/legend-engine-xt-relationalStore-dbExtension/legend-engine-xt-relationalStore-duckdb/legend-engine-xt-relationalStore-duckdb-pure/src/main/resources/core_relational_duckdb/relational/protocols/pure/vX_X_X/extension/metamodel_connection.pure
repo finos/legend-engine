@@ -15,4 +15,6 @@
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DuckDBDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
     path:String[0..1];
+    testDataSetupCsv:String[0..1];
+    testDataSetupSqls:String[*];
 }

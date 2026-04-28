@@ -47,7 +47,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
       buildDummyConnection = meta::relational::functions::sqlQueryToString::duckDB::buildDummyConnection__RelationalDatabaseConnection_1_,
       lambdaParameterProcessor = buildLambdaParameter_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
-      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_
+      lambdaProcessor = buildLambda_RelationalLambda_1__SqlGenerationContext_1__String_1_,
+      processTestConnectionDatasourceSpecification = {d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1], databases:meta::relational::metamodel::Database[*] |
+         $d->match([
+            duckDB:meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification[1] |
+               ^$duckDB(
+                  testDataSetupSqls = $duckDB.testDataSetupSqls->concatenate(
+                     if($duckDB.testDataSetupCsv->isEmpty(),
+                        | [],
+                        | $duckDB.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLsV2($databases, createDbConfig(DatabaseType.DuckDB))
+                     )
+                  )
+               ),
+            d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | [];
+         ])
+      }
    );
 }
 
@@ -126,10 +140,10 @@ function meta::relational::functions::sqlQueryToString::duckDB::translateCreateT
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+  'Create Table '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  dataTypeToSqlTextDuckDB($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' + dataTypeToSqlTextDuckDB($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
         ->joinStrings(',')
       + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
       +');';

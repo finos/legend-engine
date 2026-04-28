@@ -1,0 +1,407 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// ===== Person / Firm / Address model (array scalar tests on nested binding) =====
+
+###Pure
+Class flatten::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  firm: flatten::model::Firm[1];
+  manager: flatten::model::Person[1];
+  conditionalAddressName() {
+    if($this.firstName != 'Peter',
+      |$this.firm.legalName,
+      |$this.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name
+    )
+  }: String[0..1];
+}
+
+Class flatten::model::Firm
+{
+  legalName: String[1];
+  otherNames: String[*];
+  addresses: flatten::model::Address[*];
+}
+
+Class flatten::model::Address
+{
+  name: String[1];
+}
+
+###Relational
+Database flatten::store::H2DB
+(
+  Schema PERSON_SCHEMA
+  (
+    Table PERSON_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRM_DETAILS SEMISTRUCTURED,
+      MANAGERID INTEGER
+    )
+  )
+
+  Join manager(PERSON_SCHEMA.PERSON_TABLE.MANAGERID = {target}.ID)
+)
+
+###ExternalFormat
+Binding flatten::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    flatten::model::Firm,
+    flatten::model::Address
+  ];
+}
+
+###Mapping
+Mapping flatten::mapping::H2Mapping
+(
+  flatten::model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.ID
+    )
+    ~mainTable [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE
+    firstName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRSTNAME,
+    lastName: [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.LASTNAME,
+    firm: Binding flatten::store::FirmBinding : [flatten::store::H2DB]PERSON_SCHEMA.PERSON_TABLE.FIRM_DETAILS,
+    manager[flatten_model_Person]: [flatten::store::H2DB]@manager
+  }
+)
+
+###Pure
+function flatten::semiStructuredArrayDirectIsEmpty(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->isEmpty(), 'Has No Addresses')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectSize(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->size(), 'Address Count')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectIsNotEmpty(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->isNotEmpty(), 'Has Addresses')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectAt(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->at(0).name, 'First Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayDirectFold(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->fold({a, acc | $acc + $a.name}, ''), 'All Address Names')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterWithIsEmpty(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->isEmpty(), 'Has No Matching Address')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterOnly(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1')).name, 'Filtered Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterAtIndex(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->at(0).name, 'First Matching Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterFirst(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name, 'First Matching Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterSize(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->size(), 'Matching Address Count')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterMap(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->map(a | $a.name), 'Matching Address Names')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterFold(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->fold({a, acc | $acc + $a.name}, ''), 'Concatenated Address Names')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterFirstInIfElse(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.conditionalAddressName, 'Conditional Address Name')
+    ])
+}
+
+// ===== SemiRecord / Tag / Participant / LineItem model (multi-array binding test) =====
+
+###Pure
+Class flatten::model::Tag
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class flatten::model::Participant
+{
+  role: String[1];
+  participantId: String[1];
+}
+
+Class flatten::model::LineItem
+{
+  itemId: String[1];
+  itemVersion: Integer[1];
+}
+
+Class flatten::model::SemiRecord
+{
+  firstName: String[1];
+  recordId: String[0..1];
+  recordVersion: Integer[0..1];
+  revision: Integer[0..1];
+  section: String[0..1];
+  batchId: String[0..1];
+  action: String[0..1];
+  tags: flatten::model::Tag[*];
+  participants: flatten::model::Participant[*];
+  lineItems: flatten::model::LineItem[*];
+}
+
+###Relational
+Database flatten::store::SemiDB
+(
+  Schema SEMI_SCHEMA
+  (
+    Table RECORD_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      CONTENT SEMISTRUCTURED
+    )
+  )
+)
+
+###ExternalFormat
+Binding flatten::store::TagBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    flatten::model::Tag
+  ];
+}
+
+Binding flatten::store::ParticipantBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    flatten::model::Participant
+  ];
+}
+
+Binding flatten::store::LineItemBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    flatten::model::LineItem
+  ];
+}
+
+###Mapping
+Mapping flatten::mapping::SemiRecordMapping
+(
+  flatten::model::SemiRecord: Relational
+  {
+    ~primaryKey
+    (
+      [flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.ID
+    )
+    ~mainTable [flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE
+    firstName: [flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.FIRSTNAME,
+    recordId: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.recordId', 'VARCHAR'),
+    recordVersion: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.recordVersion', 'INTEGER'),
+    revision: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.revision', 'INTEGER'),
+    section: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.section', 'VARCHAR'),
+    batchId: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.batchId', 'VARCHAR'),
+    action: extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.action', 'VARCHAR'),
+    tags: Binding flatten::store::TagBinding : parseJson(extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'VARCHAR')),
+    participants: Binding flatten::store::ParticipantBinding : parseJson(extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'VARCHAR')),
+    lineItems: Binding flatten::store::LineItemBinding : parseJson(extractFromSemiStructured([flatten::store::SemiDB]SEMI_SCHEMA.RECORD_TABLE.CONTENT, 'payload.lineItems', 'VARCHAR'))
+  }
+)
+
+###Pure
+function flatten::rankTagCategories(items: flatten::model::Tag[*]): Integer[1]
+{
+    if($items->exists(t1 | $t1.category == 'Primary'),
+      |1,
+      |if($items->exists(t2 | $t2.category == 'Secondary'),
+        |2,
+        |999
+      )
+    )
+}
+
+function flatten::rankParticipantRoles(items: flatten::model::Participant[*]): Integer[1]
+{
+    if($items->exists(p1 | $p1.role == 'Active'),
+      |1,
+      |if($items->exists(p2 | $p2.role == 'Passive'),
+        |2,
+        |999
+      )
+    )
+}
+
+function flatten::multiArrayOlapWithNestedIfExists(): TabularDataSet[1]
+{
+    flatten::model::SemiRecord.all()
+    ->project(
+      [
+        x | $x.recordId,
+        x | $x.recordVersion,
+        x | $x.revision,
+        x | $x.section,
+        x | $x.batchId,
+        x | $x.action,
+        x | $x.tags.code,
+        x | $x.tags.category,
+        x | $x.tags->flatten::rankTagCategories(),
+        x | $x.participants.participantId,
+        x | $x.participants->flatten::rankParticipantRoles(),
+        x | $x.lineItems.itemId,
+        x | $x.lineItems.itemVersion
+      ],
+      [
+        'recordId',
+        'recordVersion',
+        'revision',
+        'section',
+        'batchId',
+        'action',
+        'tagCode',
+        'tagCategory',
+        '_tagCategoryRanking',
+        'participantId',
+        '_participantRoleRanking',
+        'itemId',
+        'itemVersion'
+      ]
+    )
+    ->olapGroupBy(
+      ['recordId', 'section', 'batchId', 'recordVersion'],
+      desc('revision'),
+      x | $x->rank(),
+      '_revisionRecencyIndex'
+    )
+    ->olapGroupBy(
+      ['recordId', 'section', 'batchId'],
+      desc('recordVersion'),
+      x | $x->rank(),
+      '_versionRecencyIndex'
+    )
+    ->olapGroupBy(
+      ['recordId', 'section', 'batchId'],
+      asc('_tagCategoryRanking'),
+      x | $x->rank(),
+      '_tagCategoryRankingIndex'
+    )
+    ->olapGroupBy(
+      ['recordId', 'section', 'batchId'],
+      asc('_participantRoleRanking'),
+      x | $x->rank(),
+      '_participantRoleRankingIndex'
+    )
+    ->filter(
+      row |
+        ($row.getNumber('_versionRecencyIndex') == 1) &&
+        (($row.getNumber('_revisionRecencyIndex') == 1) &&
+        (($row.getNumber('_tagCategoryRankingIndex') == 1) &&
+        ($row.getNumber('_participantRoleRankingIndex') == 1)))
+    )
+    ->distinct()
+}
