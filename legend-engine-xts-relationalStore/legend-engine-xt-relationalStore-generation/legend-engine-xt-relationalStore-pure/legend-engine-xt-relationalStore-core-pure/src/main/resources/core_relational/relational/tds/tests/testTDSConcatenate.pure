@@ -21,6 +21,7 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
+import meta::pure::executionPlan::*;
 
 function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleConcatenate():Boolean[1]
 {
@@ -221,4 +222,62 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('select "unionalias_0"."lhs_lastName" as "lhs_lastName", "unionalias_0"."rhs_firstName" as "rhs_firstName" from (select "unionalias_1"."lhs_lastName" as "lhs_lastName", "persontable_1"."rhs_lastName" as "rhs_lastName", "persontable_1"."rhs_firstName" as "rhs_firstName" from (select "unionalias_2"."lhs_lastName" as "lhs_lastName" from (select "root".LASTNAME as "lhs_lastName" from personTable as "root" union all select "root".LASTNAME as "lhs_lastName" from personTable as "root") as "unionalias_2") as "unionalias_1" inner join (select "root".LASTNAME as "rhs_lastName", "root".FIRSTNAME as "rhs_firstName" from personTable as "root") as "persontable_1" on ("unionalias_1"."lhs_lastName" = "persontable_1"."rhs_lastName")) as "unionalias_0"',
      $result->sqlRemoveFormatting());
 
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsConcatenate::testConcatenateWithDifferentStores():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping, //with store substitution
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->toOne()->sort([asc('lastName')]);
+
+   assertSize($tds.columns, 1);
+
+   assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable2 as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
+
+   let plan = executionPlan(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person2.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMappingWithoutStoreSubstitution, //without store substitution
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  
+   assertEquals('Sequence\n' + 
+                '(\n' + 
+                '  type = TDS[(lastName, String, VARCHAR(200), "")]\n' + 
+                '  (\n' + 
+                '    Allocation\n' + 
+                '    (\n' + 
+                '      type = TDS[(lastName, String, VARCHAR(200), "")]\n' + 
+                '      name = tdsVar\n' + 
+                '      value = \n' + 
+                '        (\n' + 
+                '          Relational\n' + 
+                '          (\n' + 
+                '            type = TDS[(lastName, String, VARCHAR(200), "")]\n' + 
+                '            resultColumns = [("lastName", VARCHAR(200))]\n' + 
+                '            sql = select "root".LASTNAME as "lastName" from personTable as "root"\n' + 
+                '            connection = TestDatabaseConnection(type = "H2")\n' + 
+                '          )\n' + 
+                '        )\n' + 
+                '    )\n' + 
+                '    Relational\n' + 
+                '    (\n' + 
+                '      type = TDS[(lastName, String, VARCHAR(200), "")]\n' + 
+                '      resultColumns = [("lastName", INT)]\n' + 
+                '      sql = select "unionalias_0"."lastName" as "lastName" from (select null as "lastName" from (${tdsVar}) as "root" union all select "root".LASTNAME as "lastName" from personTable2 as "root") as "unionalias_0"\n' + 
+                '      connection = TestDatabaseConnection(type = "H2")\n' + 
+                '    )\n' + 
+                '  )\n' + 
+                ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
