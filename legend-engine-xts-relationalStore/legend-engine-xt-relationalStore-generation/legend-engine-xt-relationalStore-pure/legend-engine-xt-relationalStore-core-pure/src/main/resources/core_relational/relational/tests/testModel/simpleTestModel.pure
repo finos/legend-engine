@@ -177,6 +177,13 @@ Class meta::relational::tests::model::simple::Person extends EntityWithAddress, 
     activeEmployment: Boolean[0..1];
 }
 
+Class meta::relational::tests::model::simple::Person2
+{
+    firstName : String[1];
+    lastName : String[1];
+    age : Integer[0..1];
+}
+
 Class meta::relational::tests::model::simple::Person_ExtendedPrimitives extends EntityWithAddress, EntityWithLocations
 {
     firstName : ExtendedString[1];
