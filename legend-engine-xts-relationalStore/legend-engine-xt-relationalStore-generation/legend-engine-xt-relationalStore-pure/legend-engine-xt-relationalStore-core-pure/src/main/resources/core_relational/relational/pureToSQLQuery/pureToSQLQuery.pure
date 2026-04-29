@@ -571,7 +571,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                                                                                                    name= $c.name,
                                                                                                                                    type = ^meta::relational::metamodel::datatype::Integer())),
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
-                                                                                          ^$operation(select = ^TdsSelectSqlQuery(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable)), paths = $newTable.paths));,
+                                                                                          ^$operation(select = ^TdsSelectSqlQuery(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable)), paths = $newTable.paths));, 
                                   v:PlanVarPlaceHolder[1] |
                                      // do we have a reference already? 
                                      let resolvedPlanVar = $state.functionReferenceScope->map(x | $x.resolveFunctionReferenceByName($v.name));
