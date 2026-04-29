@@ -37,37 +37,16 @@ public class Test_Relational_Databricks_VariantFunctions_PCT extends PCTReportCo
     private static final Adapter adapter = CoreRelationalDatabricksCodeRepositoryProvider.databricksAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            pack("meta::pure::functions::variant::convert::tests::fromJson", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
 
-            pack("meta::pure::functions::variant::convert::tests::toJson", "[unsupported-api] The function 'toJson' (state: [Select, false]) is not supported yet"),
-
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_", "Invalid Pure Boolean: 'hello'"),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTimeFromWrongString_Function_1__Boolean_1_", "DateTime must include time information, got: 2020-01-01"),
+            one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "\"\nexpected: %2020-01-01T01:01:00.000+0000\nactual:   %2020-01-01T01:01:00.000000000+0000\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_", "Integer is not managed yet"),
+            one("meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"For input string: \"1.25\"\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"List<Variant> is not managed yet!\"\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\""),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"),
-
-            pack("meta::pure::functions::variant::convert::tests::toMany", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
 
             pack("meta::pure::functions::variant::convert::tests::toVariant", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"),
@@ -91,10 +70,11 @@ public class Test_Relational_Databricks_VariantFunctions_PCT extends PCTReportCo
             pack("meta::pure::functions::variant::navigation::tests::get", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"),
 
 
-            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToClass_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Person\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person\""),
+            one("meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\""),
 
             one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks"),
             one("meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToOne_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Databricks"),
