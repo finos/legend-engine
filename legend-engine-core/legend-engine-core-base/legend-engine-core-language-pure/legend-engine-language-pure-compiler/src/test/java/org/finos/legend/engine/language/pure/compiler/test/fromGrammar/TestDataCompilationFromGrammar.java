@@ -26,6 +26,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Override
@@ -114,7 +116,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                 "  #{\n" +
                 "    default.PersonTable:\n" +
                 "       id,firstName,lastName\n" +
-                "       1,I\\'m John,\"Doe, Jr\"\n" +
+                "       1,I'm John,\"Doe, Jr\"\n" +
                 "       2,Nicole,Smith\n" +
                 "       3,Time,Smith;\n" +
                 "  }#\n" +
@@ -149,7 +151,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                 "  #{\n" +
                 "    default.PersonTable:\n" +
                 "      id,firstName,lastName\n" +
-                "      1,I\\'m John,\"Doe, Jr\"\n" +
+                "      1,I'm John,\"Doe, Jr\"\n" +
                 "      2,Nicole,Smith\n" +
                 "      3,Time,Smith;\n" +
                 "    default.PersonTable:\n" +
@@ -157,6 +159,28 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                 "  }#\n" +
                 "}", "COMPILATION error at [11:5-12:28]: Duplicated relation element path: 'default.PersonTable'"
         );
+    }
+
+    @Test
+    public void testEmbeddedDataWithDataResolverFailure()
+    {
+        test("###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,I'm John,\"Doe, Jr\";\n" +
+                "  }#\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,John,Doe;" +
+                "  }#;\n" +
+                "}\n", "COMPILATION error at [2:1-16:1]: Data element cannot have both embedded data and data resolvers", new ArrayList<>());
     }
 
     @Test

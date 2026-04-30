@@ -131,9 +131,12 @@ public class Test_Relational_Oracle_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'"),
             one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'", AdapterQualifier.unsupportedFeature)
-
-
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'", AdapterQualifier.unsupportedFeature),
+            // New PCT tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "The function 'range' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"),
+            // NOT on a boolean literal surfaces as String on Oracle — needs investigation
+            one("meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

@@ -44,6 +44,8 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
 
     public static final String SNOWFLAKE_TEMP_TABLE_DB = "LEGEND_TEMP_DB";
     public static final String SNOWFLAKE_TEMP_TABLE_SCHEMA = "LEGEND_TEMP_SCHEMA";
+    public static final String SNOWFLAKE_SESSION_TIMEZONE = "TIMEZONE";
+    public static final String SNOWFLAKE_QUOTED_IDENTIFIERS_IGNORE_CASE = "QUOTED_IDENTIFIERS_IGNORE_CASE";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
@@ -82,6 +84,9 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_TEMP_TABLE_SCHEMA, updateSnowflakeIdentifiers(key.getTempTableSchema(), key.getQuoteIdentifiers()));
 
         this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
+
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_SESSION_TIMEZONE, key.getSessionTimezone());
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_QUOTED_IDENTIFIERS_IGNORE_CASE, key.getSetSessionQuotedIdentifiersIgnoreCase());
     }
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)

@@ -17,9 +17,15 @@ package org.finos.legend.engine.plan.execution.stores.relational.ds.specificatio
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.plan.execution.stores.relational.ds.specifications.keys.DuckDBDataSourceSpecificationKey;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 public class DuckDBDataSourceSpecification extends DataSourceSpecification
 {
@@ -42,4 +48,26 @@ public class DuckDBDataSourceSpecification extends DataSourceSpecification
         this(key, databaseManager, authenticationStrategy, new Properties());
     }
 
+    @Override
+    protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourceBuilder)
+    {
+        Connection connection = super.getConnection(identityState, dataSourceBuilder);
+        DuckDBDataSourceSpecificationKey key = (DuckDBDataSourceSpecificationKey) this.datasourceKey;
+
+        if (key.getTestDataSetupSqls() != null && !key.getTestDataSetupSqls().isEmpty())
+        {
+            try (Statement statement = connection.createStatement())
+            {
+                for (String sql : key.getTestDataSetupSqls())
+                {
+                    statement.executeUpdate(sql);
+                }
+            }
+            catch (SQLException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        return connection;
+    }
 }

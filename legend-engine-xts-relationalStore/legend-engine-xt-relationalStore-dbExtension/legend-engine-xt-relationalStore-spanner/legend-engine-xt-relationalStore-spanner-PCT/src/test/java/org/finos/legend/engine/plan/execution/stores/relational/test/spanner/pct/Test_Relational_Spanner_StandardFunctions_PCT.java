@@ -42,29 +42,43 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             //in
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception"),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] operator does not exist: bigint = text\nHint: No operator matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select 1 in (1, 2, 5, 2, Text'a', Boolean'true', Date'2014-02-01', Text'c')'"),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "[ERROR] operator does not exist: bigint = text"),
 
             //max
-            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::tests::max::testMax_Floats_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
-            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::tests::max::testMax_Integers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2D\nactual:   2.0\""),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::max::testMax_Date_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testExtendMaxDate_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
 
             //min
-            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
-            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::min::testMin_Date_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone"),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""),
@@ -72,13 +86,13 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
 
             // Median
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""),
-            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function median(double precision) does not exist"),
+            one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_", "[ERROR] function median(double precision) does not exist"),
             one("meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""),
-            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function median(bigint) does not exist"),
+            one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_", "[ERROR] function median(bigint) does not exist"),
             one("meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""),
-            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function median(double precision) does not exist"),
+            one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_", "[ERROR] function median(double precision) does not exist"),
             one("meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             // Mode
@@ -171,12 +185,6 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashCode' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""),
 
-            // And
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
-
-            // Or
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
-
             // Inequalities
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_", "The Postgres Type is not supported: timestamp without time zone - Statement: 'select (((Timestamp'1032-01-01 00:32:34.000000000' is not null and Timestamp'1031-12-31 07:22:22.000000000' is not null) and Timestamp'1032-01-01 00:32:34.000000000' >= Timestamp'1031-12-31 07:22:22.000000000') and ((Timestamp'1032-01-01 00:32:34.000000000' is not null and Timestamp'1951-10-01 14:01:01.000000000' is not null) and Timestamp'1032-01-01 00:32:34.000000000' <= Timestamp'1951-10-01 14:01:01.000000000'))'"),
 
@@ -197,6 +205,11 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             //dayofweek
             one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "[ERROR] column \"%A\" does not exist - Statement: 'select format_datetime(\"%A\", DATETIME(Date'1985-01-12'))'"),
             one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
+
+            //zscore
+            one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
+            one("meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
+            one("meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
 
             // UUID
             pack("meta::pure::functions::string::generation::tests::generateGuid", "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet")

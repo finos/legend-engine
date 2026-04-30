@@ -17,6 +17,11 @@ import meta::pure::test::pct::*;
 
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::assertTdsEquivalent(one:Relation<Any>[1], two:Relation<Any>[1], delta:Number[1]):Boolean[1]
 {
+   meta::pure::functions::relation::assertTdsEquivalent($one, $two, $delta, 0);
+}
+
+function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::assertTdsEquivalent(one:Relation<Any>[1], two:Relation<Any>[1], delta:Number[1], timeDeltaInSeconds:Number[1]):Boolean[1]
+{
    let oneCol = $one->meta::pure::functions::relation::columns();
    let twoCol = $two->meta::pure::functions::relation::columns();
    $oneCol->size() == $twoCol->size() && $oneCol.name == $twoCol.name && $one->size() == $two->size() &&
@@ -25,7 +30,10 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
           let twoVals = $two->map(x|$cols.second->eval($x));
           $acc && if ($cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
             |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta)))}, true),
-            |$oneVals == $twoVals
+            |if ($cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
+              |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds)))}, true),
+              |$oneVals == $twoVals
+            )
           );
         },
         true
@@ -64,5 +72,41 @@ function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::te
         2, bla
       #,
       0.001
+  )
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testAssertTdsEquivalentWithTimeDelta():Boolean[1]
+{
+  assertTdsEquivalent(
+      #TDS
+        name:String[1], ts:Date[1]
+        a, 2026-01-07T00:00:00.000+0000
+        b, 2026-01-07T00:01:00.000+0000
+      #,
+      #TDS
+        name:String[1], ts:Date[1]
+        a, 2026-01-07T00:00:00.001+0000
+        b, 2026-01-07T00:01:00.000+0000
+      #,
+      1,
+      0
+  )
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testAssertTdsEquivalentMixedCols():Boolean[1]
+{
+  assertTdsEquivalent(
+      #TDS
+        val:Integer[1], name:String[1], ts:Date[1]
+        1, a, 2026-01-07T00:00:00.000+0000
+        2, b, 2026-01-07T00:01:00.000+0000
+      #,
+      #TDS
+        val:Integer[1], name:String[1], ts:Date[1]
+        0, a, 2026-01-07T00:00:00.002+0000
+        3, b, 2026-01-07T00:00:59.998+0000
+      #,
+      2,
+      1
   )
 }

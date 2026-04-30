@@ -29,6 +29,8 @@ public class ExternalFormatInternalizeExecutionNode extends ExecutionNode
 
     public boolean enableConstraints;
 
+    public boolean useJsonNodeType; 
+    
     public boolean checked;
 
     public RootGraphFetchTree tree;

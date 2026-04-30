@@ -210,7 +210,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
 function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):SQLExecutionNode[1]
 {
    let sql = toSqlString($query, $connection, false, $extensions);
-   let tables = $query->meta::relational::milestoning::getQueryTableAliases()->map(a|$a.relationalElement)->cast(@Table)->removeDuplicatesBy(t|$t.schema.database.name->orElse('') + $t.schema.name + '.' + $t.name);
+   let relations = $query->meta::relational::milestoning::getQueryRelationAliases()->map(a|$a.relationalElement)->cast(@NamedRelation)->removeDuplicatesBy(t| $t.name);
 
    ^SQLExecutionNode
    (
@@ -220,7 +220,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       resultType = ^ResultType(genericType=^GenericType(rawType=Any)),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@meta::external::store::relational::runtime::DatabaseConnection),
       supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions),
-      metadata = ^meta::relational::mapping::TableMetadata(tables = $tables),
+      metadata = ^meta::relational::mapping::RelationMetadata(relations = $relations),
       // the only case that we yield result with dynamic columns is when pivot() is used and no casting is done afterwards, resulting
       // in a select statement with no columns being specified
       isResultColumnsDynamic = $query->match([sel:SelectSQLQuery[1] | if(isResultColumnsDynamic($sel), |true,|[]), a:Any[1] | []]),

@@ -53,14 +53,24 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
 
             // Max
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
 
             // MaxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'"),
 
             // Min
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'"),
@@ -84,27 +94,12 @@ public class Test_Relational_DuckDB_StandardFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "No function matches the given name and argument types 'quantile_cont(BIGINT[], DECIMAL(3,2))'"),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "java.sql.SQLException: Catalog Error: Aggregate Function with name percentile_cont does not exist!"),
 
-            // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
-
-            // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
-
-            // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
-
             // Bitwise
             one("meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
             one("meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""),
 
             // Hash
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""),
-
-            // And
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
-
-            // Or
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
 
             // Greatest
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),

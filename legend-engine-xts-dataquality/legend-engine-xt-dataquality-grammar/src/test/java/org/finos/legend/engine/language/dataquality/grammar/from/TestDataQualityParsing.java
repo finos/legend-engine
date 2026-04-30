@@ -304,4 +304,128 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "}", "PARSER error at [2:1-10:1]: Field 'assertion' is required");
     }
 
+    @Test
+    public void testParserForValidRelationComparisonGrammar_allFields()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id, name];\n" +
+                "    columnsToCompare: [amount, quantity];\n" +
+                "    strategy: MD5Hash\n" +
+                "    {\n" +
+                "        sourceHashColumn: srcHash;\n" +
+                "        targetHashColumn: tgtHash;\n" +
+                "        aggregatedHash: true;\n" +
+                "    };\n" +
+                "    expectedMatch: 0.99;\n" +
+                "}");
+    }
+
+    @Test
+    public void testParserForValidRelationComparisonGrammar_requiredFieldsOnly()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}");
+    }
+
+    @Test
+    public void testParserForValidRelationComparisonGrammar_withEmptyStrategyOptions()
+    {
+        // test with nothing - should fail
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    strategy: MD5Hash\n" +
+                "    {\n" +
+                "    };\n" +
+                "}", "PARSER error at [9:5]: Unexpected token '}'. Valid alternatives: ['sourceHashColumn', 'targetHashColumn', 'aggregatedHash']");
+    }
+
+    @Test
+    public void testParserErrorForMandatoryFields_relationComparison_missingSource()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}", "PARSER error at [2:1-7:1]: Field 'source' is required");
+    }
+
+    @Test
+    public void testParserErrorForMandatoryFields_relationComparison_missingTarget()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}", "PARSER error at [2:1-7:1]: Field 'target' is required");
+    }
+
+    @Test
+    public void testParserErrorForMandatoryFields_relationComparison_missingKeys()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    strategy: MD5Hash;\n" +
+                "}", "PARSER error at [2:1-7:1]: Field 'keys' is required");
+    }
+
+    @Test
+    public void testParserErrorForMandatoryFields_relationComparison_missingStrategy()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "}", "PARSER error at [2:1-7:1]: Field 'strategy' is required");
+    }
+
+    @Test
+    public void testParserErrorForValidRelationComparisonGrammar_emptyColumnsToCompare()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    columnsToCompare: [];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}", "PARSER error at [7:24]: Unexpected token");
+    }
+
+        @Test
+    public void testParserErrorForValidRelationComparisonGrammar_emptyKeys()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}", "PARSER error at [6:12]: Unexpected token");
+    }
+
 }

@@ -135,6 +135,37 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testServiceWithTitle()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceWithTitle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  title: 'My Service Title';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'ownerName'\n" +
+                "  ];\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'testData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "      { [], res: Result<Any|*>[1]|$res.values->cast(@TabularDataSet).rows->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+    }
+
+    @Test
     public void testInlineService()
     {
         test("###Service\n" +

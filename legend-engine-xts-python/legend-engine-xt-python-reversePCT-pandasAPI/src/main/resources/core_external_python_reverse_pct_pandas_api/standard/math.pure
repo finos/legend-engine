@@ -1,0 +1,1348 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+import meta::external::python::reversePCT::pandasAPI::*;
+
+function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesStandardMath(): ReversesForSource[*]
+{
+  [
+    // ==========================================
+    // Corr
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::corr([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::corr([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::corr([10, -20, 30])'),
+          noRev('|1->meta::pure::functions::math::corr([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::corr())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].corr(frame.groupby("id")["valB"]))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // CovarPopulation
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::covarPopulation([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarPopulation([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::covarPopulation([10, -20, 30])'),
+          noRev('|[1]->meta::pure::functions::math::covarPopulation([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::covarPopulation::testSimpleWindowCovarPopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::covarPopulation())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].cov(frame.groupby("id")["valB"], ddof=0))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // CovarSample
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1->meta::pure::functions::math::covarSample(10)'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarSample([10, 20])'),
+          noRev('|[1, 2]->meta::pure::functions::math::covarSample([30, 10])'),
+          noRev('|[1, 3.0, 6.0]->meta::pure::functions::math::covarSample([10, -20, 30])'),
+          noRev('|1->meta::pure::functions::math::covarSample([])')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,valA,valB\n'+
+                '1,1,10\n'+
+                '1,2,20\n'+
+                '2,2,40\n'+
+                '2,4,15}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])>[1], r: (id:Integer[0..1], valA:Integer[0..1], valB:Integer[0..1])[1]|$r.valA->meta::pure::functions::math::mathUtility::rowMapper($r.valB)}:y: meta::pure::functions::math::mathUtility::RowMapper<Integer, Integer>[*]|$y->meta::pure::functions::math::covarSample())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda r: frame.groupby("id")["valA"].cov(frame.groupby("id")["valB"]))' +
+               ')(csv_frame("id,valA,valB\\n1,1,10\\n1,2,20\\n2,2,40\\n2,4,15"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // StdDevSample
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2, 3]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[2, 4, 6]->meta::pure::functions::math::stdDevSample()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1.0, 2.0, 3.0]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[1.5, 2.5, 3.5]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[3.14, 6.28, 9.42]->meta::pure::functions::math::stdDevSample()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1.0, 2, 3.0]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[1, 1.5, 2]->meta::pure::functions::math::stdDevSample()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[-2, -4, -6]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[-5, 0, 5]->meta::pure::functions::math::stdDevSample()'),
+          noRev('|[-5.0, 0.0, 5.0]->meta::pure::functions::math::stdDevSample()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3\n'+
+                '2,1.5\n'+
+                '2,2.5\n'+
+                '2,3.5\n'+
+                '3,1\n'+
+                '3,1.5\n'+
+                '3,2.0}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Float[0..1])[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::stdDevSample()])',
+              '(lambda frame:' +
+               '  frame.groupby("id").std().rename(columns={"val": "newCol"})' +
+               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3\n'+
+                '2,1.5\n'+
+                '2,2.5\n'+
+                '2,3.5\n'+
+                '3,1\n'+
+                '3,1.5\n'+
+                '3,2.0}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Float[0..1])>[1], r: (id:Integer[0..1], val:Float[0..1])[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::stdDevSample())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("std_dev_sample"))' +
+               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // StdDevPopulation
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::stdDevPopulation()'),
+          noRev('|[2, 4]->meta::pure::functions::math::stdDevPopulation()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testSimpleGroupByStandardDeviationPopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1\n'+
+                '1,2\n'+
+                '2,2\n'+
+                '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Integer[0..1])[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation()])',
+              '(lambda frame:' +
+               '  frame.groupby("id").std(ddof=0).rename(columns={"val": "newCol"})' +
+               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::stdDev::testSimpleWindowStandardDeviationPopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1\n'+
+                '1,2\n'+
+                '2,2\n'+
+                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::stdDevPopulation())->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol2:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1], newCol:Number[1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1], newCol:Number[1])>[1], r: (id:Integer[0..1], val:Integer[0..1], newCol:Number[1])[1]|$p->meta::pure::functions::math::stdDevPopulation($w, $r, ~val)})',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("std_dev_population")).assign(newCol2=lambda _r: frame.groupby("id")["val"].transform("std_dev_population"))' +
+               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // VarianceSample
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1.0, 2.0, 3.0]->meta::pure::functions::math::varianceSample()'),
+          noRev('|[2, 4, 6]->meta::pure::functions::math::varianceSample()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::variance::testSimpleGroupByVarianceSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3.0\n'+
+                '2,2\n'+
+                '2,4\n'+
+                '2,6}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Float[0..1])[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::varianceSample()])',
+              '(lambda frame:' +
+               '  frame.groupby("id").var().rename(columns={"val": "newCol"})' +
+               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3.0\\n2,2\\n2,4\\n2,6"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3.0\n'+
+                '2,2\n'+
+                '2,4\n'+
+                '2,6}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Float[0..1])>[1], r: (id:Integer[0..1], val:Float[0..1])[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::varianceSample())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("variance_sample"))' +
+               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3.0\\n2,2\\n2,4\\n2,6"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // VariancePopulation
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::variancePopulation()'),
+          noRev('|[2, 4]->meta::pure::functions::math::variancePopulation()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::variance::testSimpleGroupByVariancePopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1\n'+
+                '1,2\n'+
+                '2,2\n'+
+                '2,4}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Integer[0..1])[1]|$x.val:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation()])',
+              '(lambda frame:' +
+               '  frame.groupby("id").var(ddof=0).rename(columns={"val": "newCol"})' +
+               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::variance::testSimpleWindowVariancePopulation_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1\n'+
+                '1,2\n'+
+                '2,2\n'+
+                '2,4}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Integer[0..1])>[1], r: (id:Integer[0..1], val:Integer[0..1])[1]|$r.val}:y: Integer[*]|$y->meta::pure::functions::math::variancePopulation())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("id")["val"].transform("variance_population"))' +
+               ')(csv_frame("\\nid,val\\n1,1\\n1,2\\n2,2\\n2,4"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Variance (variance with isBiasCorrected param)
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1, 2]->meta::pure::functions::math::variance(false)'),
+          noRev('|[2, 4]->meta::pure::functions::math::variance(false)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[1.0, 2.0, 3.0]->meta::pure::functions::math::variance(true)'),
+          noRev('|[2, 4, 6]->meta::pure::functions::math::variance(true)')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Median
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[5.0, 1.0, 2.0, 8.0, 3.0]->meta::pure::functions::math::median()'),
+          noRev('|[5.0, 1.0, 2.0, 8.0, 3.0, 4.0]->meta::pure::functions::math::median()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[5, 1, 2, 8, 3]->meta::pure::functions::math::median()'),
+          noRev('|[5, 1, 2, 8, 3, 4]->meta::pure::functions::math::median()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[5.0, 1.0, 2, 8.0, 3]->meta::pure::functions::math::median()'),
+          noRev('|[5, 1.0, 2, 8.0, 3, 4]->meta::pure::functions::math::median()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21.0\n'+
+                '2,1,B,41.0\n'+
+                '3,3,C,71.0\n'+
+                '4,4,D,31.0\n'+
+                '5,2,E,11.0\n'+
+                '6,1,F,1.0\n'+
+                '7,3,G,91.0\n'+
+                '8,1,H,81.0\n'+
+                '9,5,I,51.0\n'+
+                '10,0,J,101.0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").median().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21.0\\n2,1,B,41.0\\n3,3,C,71.0\\n4,4,D,31.0\\n5,2,E,11.0\\n6,1,F,1.0\\n7,3,G,91.0\\n8,1,H,81.0\\n9,5,I,51.0\\n10,0,J,101.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").median().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21d\n'+
+                '2,1,B,31.0d\n'+
+                '3,3,C,71d\n'+
+                '4,4,D,31d\n'+
+                '5,2,E,11d\n'+
+                '6,1,F,1d\n'+
+                '7,3,G,91d\n'+
+                '8,1,H,81d\n'+
+                '9,5,I,51d\n'+
+                '10,0,J,101.0d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").median().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21d\\n2,1,B,31.0d\\n3,3,C,71d\\n4,4,D,31d\\n5,2,E,11d\\n6,1,F,1d\\n7,3,G,91d\\n8,1,H,81d\\n9,5,I,51d\\n10,0,J,101.0d"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.0,2,A\n'+
+                '2.0,1,B\n'+
+                '3.0,3,C\n'+
+                '4.0,4,D\n'+
+                '5.0,2,E\n'+
+                '6.0,1,F\n'+
+                '7.0,3,G\n'+
+                '7.0,1,H\n'+
+                '9.0,5,I\n'+
+                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("median"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '7,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("median"))' +
+               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n7,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::median())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("median"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Mode
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|5->meta::pure::functions::math::mode()'),
+          noRev('|[3, 3.0, 3, 2, 2]->meta::pure::functions::math::mode()'),
+          noRev('|[3, 2, 3.0, 7.0, 2, 2, 3, 2.0, 2.0]->meta::pure::functions::math::mode()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.0->meta::pure::functions::math::mode()'),
+          noRev('|[5.0, 5.0, 5.0, 2.0, 2.0]->meta::pure::functions::math::mode()'),
+          noRev('|[1.2, 1.7, 1.2, 2.3, 1.7, 1.2]->meta::pure::functions::math::mode()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|5->meta::pure::functions::math::mode()'),
+          noRev('|[1, 1, 1, 2, 2]->meta::pure::functions::math::mode()'),
+          noRev('|[2, 3, 2, 1, 2, 4, 1, 3, 4, 2]->meta::pure::functions::math::mode()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,101.0\n'+
+                '2,0,B,32.0\n'+
+                '3,3,C,71.0\n'+
+                '4,1,D,41.0\n'+
+                '5,2,E,11.0\n'+
+                '6,1,F,5.0\n'+
+                '7,1,G,5.0\n'+
+                '8,1,H,5.0\n'+
+                '9,2,I,51.0\n'+
+                '10,2,J,101.0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mode().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,101.0\\n2,0,B,32.0\\n3,3,C,71.0\\n4,1,D,41.0\\n5,2,E,11.0\\n6,1,F,5.0\\n7,1,G,5.0\\n8,1,H,5.0\\n9,2,I,51.0\\n10,2,J,101.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,101\n'+
+                '2,0,B,32\n'+
+                '3,3,C,71\n'+
+                '4,1,D,41\n'+
+                '5,2,E,11\n'+
+                '6,1,F,5\n'+
+                '7,1,G,5\n'+
+                '8,1,H,5\n'+
+                '9,2,I,51\n'+
+                '10,2,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mode().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,101\\n2,0,B,32\\n3,3,C,71\\n4,1,D,41\\n5,2,E,11\\n6,1,F,5\\n7,1,G,5\\n8,1,H,5\\n9,2,I,51\\n10,2,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,101\n'+
+                '2,0,B,32.0\n'+
+                '3,3,C,71\n'+
+                '4,1,D,41\n'+
+                '5,2,E,11.0\n'+
+                '6,1,F,5.0\n'+
+                '7,1,G,5.00\n'+
+                '8,1,H,5\n'+
+                '9,2,I,51\n'+
+                '10,2,J,101.00}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mode().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,101\\n2,0,B,32.0\\n3,3,C,71\\n4,1,D,41\\n5,2,E,11.0\\n6,1,F,5.0\\n7,1,G,5.00\\n8,1,H,5\\n9,2,I,51\\n10,2,J,101.00"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,value\n'+
+                '1,2,1.0\n'+
+                '2,3,7.0\n'+
+                '3,3,7.0\n'+
+                '4,1,10.0\n'+
+                '5,1,2.0\n'+
+                '6,5,9.0\n'+
+                '7,0,10.0\n'+
+                '8,1,7.0\n'+
+                '9,4,4.0\n'+
+                '10,1,10.0}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])[1]|$r.value}:y: Float[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["value"].transform("mode"))' +
+               ')(csv_frame("\\nid,grp,value\\n1,2,1.0\\n2,3,7.0\\n3,3,7.0\\n4,1,10.0\\n5,1,2.0\\n6,5,9.0\\n7,0,10.0\\n8,1,7.0\\n9,4,4.0\\n10,1,10.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,value\n'+
+                '1,2,1\n'+
+                '2,3,7\n'+
+                '3,3,7\n'+
+                '4,1,10\n'+
+                '5,1,2\n'+
+                '6,5,9\n'+
+                '7,0,10\n'+
+                '8,1,7\n'+
+                '9,4,4\n'+
+                '10,1,10}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], value:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], value:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], value:Integer[0..1])[1]|$r.value}:y: Integer[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["value"].transform("mode"))' +
+               ')(csv_frame("\\nid,grp,value\\n1,2,1\\n2,3,7\\n3,3,7\\n4,1,10\\n5,1,2\\n6,5,9\\n7,0,10\\n8,1,7\\n9,4,4\\n10,1,10"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,value\n'+
+                '1,2,1\n'+
+                '2,3,7.0\n'+
+                '3,3,7\n'+
+                '4,1,10.00\n'+
+                '5,1,2\n'+
+                '6,5,9\n'+
+                '7,0,10\n'+
+                '8,1,7.0\n'+
+                '9,4,4.0\n'+
+                '10,1,10}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], value:Float[0..1])[1]|$r.value}:y: Float[*]|$y->meta::pure::functions::math::mode())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["value"].transform("mode"))' +
+               ')(csv_frame("\\nid,grp,value\\n1,2,1\\n2,3,7.0\\n3,3,7\\n4,1,10.00\\n5,1,2\\n6,5,9\\n7,0,10\\n8,1,7.0\\n9,4,4.0\\n10,1,10"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Percentile
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|10->meta::pure::functions::collection::range()->meta::pure::functions::collection::map(x: Integer[1]|$x + 1)->meta::pure::functions::math::percentile(0.75)'),
+          noRev('|10->meta::pure::functions::collection::range()->meta::pure::functions::collection::map(x: Integer[1]|$x + 1)->meta::pure::functions::math::percentile(0.75, true, false)'),
+          noRev('|10->meta::pure::functions::collection::range()->meta::pure::functions::collection::map(x: Integer[1]|$x + 1)->meta::pure::functions::math::percentile(0.75, false, true)'),
+          noRev('|10->meta::pure::functions::collection::range()->meta::pure::functions::collection::map(x: Integer[1]|$x + 1)->meta::pure::functions::math::percentile(0.0, true, false)'),
+          noRev('|10->meta::pure::functions::collection::range()->meta::pure::functions::collection::map(x: Integer[1]|$x + 1)->meta::pure::functions::math::percentile(1.0, true, false)')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3\n'+
+                '2,1.5\n'+
+                '2,2.5\n'+
+                '2,3.5\n'+
+                '3,1\n'+
+                '3,1.5\n'+
+                '3,2.0}#->meta::pure::functions::relation::groupBy(~[id], ~[newCol:x: (id:Integer[0..1], val:Float[0..1])[1]|$x.val:y: Float[*]|$y->meta::pure::functions::math::percentile(0.6, true, false)])',
+              '(lambda frame:' +
+               '  frame.groupby("id").agg({"val": lambda c: c.percentile(0.6, ascending=True, continuous=False)}).rename(columns={"val": "newCol"})' +
+               ')(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,val\n'+
+                '1,1.0\n'+
+                '1,2.0\n'+
+                '1,3\n'+
+                '2,1.5\n'+
+                '2,2.5\n'+
+                '2,3.5\n'+
+                '3,1\n'+
+                '3,1.5\n'+
+                '3,2.0}#->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], val:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], val:Float[0..1])>[1], r: (id:Integer[0..1], val:Float[0..1])[1]|$r.val}:y: Float[*]|$y->meta::pure::functions::math::percentile(0.6, false, true))',
+              '(lambda f, wf, ws: f.assign(newCol=lambda _r: ws.aggregate(lambda c: c.percentile(0.6, ascending=False, continuous=True), 0)))' +
+               '(csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0"),' +
+               ' PandasApiWindowTdsFrame(base_frame=csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0").groupby(by="id"), partition_only=True),' +
+               ' WindowSeries(window_frame=PandasApiWindowTdsFrame(base_frame=csv_frame("\\nid,val\\n1,1.0\\n1,2.0\\n1,3\\n2,1.5\\n2,2.5\\n2,3.5\\n3,1\\n3,1.5\\n3,2.0").groupby(by="id"), partition_only=True), column_name="val"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Sum
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::sum::testSum_Numbers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[15, 13, 2.0, 1, 1.0]->meta::pure::functions::math::sum()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Integers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[15, 13, 2, 1, 1]->meta::pure::functions::math::sum()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Floats_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|[12.5, 13.5, 4.0, 1.5, 0.5]->meta::pure::functions::math::sum()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").sum().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21.12\n'+
+                '2,1,B,41.14\n'+
+                '3,3,C,71.17\n'+
+                '4,4,D,31.13\n'+
+                '5,2,E,11.11\n'+
+                '6,1,F,1.11\n'+
+                '7,3,G,91.19\n'+
+                '8,1,H,81.18\n'+
+                '9,5,I,51.15\n'+
+                '10,0,J,101.1}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").sum().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.11\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.1"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21d\n'+
+                '2,1,B,41.14d\n'+
+                '3,3,C,71d\n'+
+                '4,4,D,31.13d\n'+
+                '5,2,E,11d\n'+
+                '6,1,F,1.11d\n'+
+                '7,3,G,91d\n'+
+                '8,1,H,81.18d\n'+
+                '9,5,I,51d\n'+
+                '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").sum().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21d\\n2,1,B,41.14d\\n3,3,C,71d\\n4,4,D,31.13d\\n5,2,E,11d\\n6,1,F,1.11d\\n7,3,G,91d\\n8,1,H,81.18d\\n9,5,I,51d\\n10,0,J,101.101d"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("sum"))' +
+               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("sum"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("sum"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Min
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1->meta::pure::functions::math::min(2)'),
+          noRev('|2->meta::pure::functions::math::min(1)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::min()'),
+          noRev('|1->meta::pure::functions::math::min()'),
+          noRev('|[4, 7, 1, 3, 4]->meta::pure::functions::math::min()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.23->meta::pure::functions::math::min(2.8)'),
+          noRev('|2.8->meta::pure::functions::math::min(1.23)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::min()'),
+          noRev('|1.0->meta::pure::functions::math::min()'),
+          noRev('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::min()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.23->meta::pure::functions::math::min(2)'),
+          noRev('|2->meta::pure::functions::math::min(1.23)'),
+          noRev('|2->meta::pure::functions::math::min(1.23D)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::min()'),
+          noRev('|1.0D->meta::pure::functions::math::min()'),
+          noRev('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::min()'),
+          noRev('|[4.23D, 7.345, 1.0D, 3, 4]->meta::pure::functions::math::min()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Integers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").min().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21.12\n'+
+                '2,1,B,41.14\n'+
+                '3,3,C,71.17\n'+
+                '4,4,D,31.13\n'+
+                '5,2,E,11.11\n'+
+                '6,1,F,1.1\n'+
+                '7,3,G,91.19\n'+
+                '8,1,H,81.18\n'+
+                '9,5,I,51.15\n'+
+                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").min().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.1\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21d\n'+
+                '2,1,B,41.14d\n'+
+                '3,3,C,71d\n'+
+                '4,4,D,31.13d\n'+
+                '5,2,E,11d\n'+
+                '6,1,F,1.1d\n'+
+                '7,3,G,91d\n'+
+                '8,1,H,81.18d\n'+
+                '9,5,I,51d\n'+
+                '10,0,J,101.101d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").min().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21d\\n2,1,B,41.14d\\n3,3,C,71d\\n4,4,D,31.13d\\n5,2,E,11d\\n6,1,F,1.1d\\n7,3,G,91d\\n8,1,H,81.18d\\n9,5,I,51d\\n10,0,J,101.101d"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("min"))' +
+               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("min"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("min"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Max
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1->meta::pure::functions::math::max(2)'),
+          noRev('|2->meta::pure::functions::math::max(1)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::max()'),
+          noRev('|1->meta::pure::functions::math::max()'),
+          noRev('|[4, 7, 1, 3, 4]->meta::pure::functions::math::max()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.23->meta::pure::functions::math::max(2.8)'),
+          noRev('|2.8->meta::pure::functions::math::max(1.23)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::max()'),
+          noRev('|1.0->meta::pure::functions::math::max()'),
+          noRev('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::max()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.23->meta::pure::functions::math::max(2)'),
+          noRev('|2->meta::pure::functions::math::max(1.23)'),
+          noRev('|2D->meta::pure::functions::math::max(1.23)'),
+          noRev('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::max()'),
+          noRev('|1.0D->meta::pure::functions::math::max()'),
+          noRev('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::max()'),
+          noRev('|[4.23, 7.345D, 1.0, 3, 4]->meta::pure::functions::math::max()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Integers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").max().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21.12\n'+
+                '2,1,B,41.14\n'+
+                '3,3,C,71.17\n'+
+                '4,4,D,31.13\n'+
+                '5,2,E,11.11\n'+
+                '6,1,F,1.1\n'+
+                '7,3,G,91.19\n'+
+                '8,1,H,81.18\n'+
+                '9,5,I,51.15\n'+
+                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").max().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21.12\\n2,1,B,41.14\\n3,3,C,71.17\\n4,4,D,31.13\\n5,2,E,11.11\\n6,1,F,1.1\\n7,3,G,91.19\\n8,1,H,81.18\\n9,5,I,51.15\\n10,0,J,101.101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41.14\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31.13\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1.1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81.18\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101.101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").max().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41.14\\n3,3,C,71\\n4,4,D,31.13\\n5,2,E,11\\n6,1,F,1.1\\n7,3,G,91\\n8,1,H,81.18\\n9,5,I,51\\n10,0,J,101.101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '8,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("max"))' +
+               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("max"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.1,2,A\n'+
+                '2.2,1,B\n'+
+                '3.3,3,C\n'+
+                '4.4,4,D\n'+
+                '5.5,2,E\n'+
+                '6.6,1,F\n'+
+                '7.7,3,G\n'+
+                '8.8,1,H\n'+
+                '9.9,5,I\n'+
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::max())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("max"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // Average
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1->meta::pure::functions::math::average()'),
+          noRev('|[5, 1, 2, 8, 3]->meta::pure::functions::math::average()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1.0->meta::pure::functions::math::average()'),
+          noRev('|[5.0, 1.0, 2.0, 8.0, 3.0]->meta::pure::functions::math::average()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_->testRev(
+        [
+          noRev('|1D->meta::pure::functions::math::average()'),
+          noRev('|[5D, 1.0, 2, 8, 3]->meta::pure::functions::math::average()')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21\n'+
+                '2,1,B,41\n'+
+                '3,3,C,71\n'+
+                '4,4,D,31\n'+
+                '5,2,E,11\n'+
+                '6,1,F,1\n'+
+                '7,3,G,91\n'+
+                '8,1,H,81\n'+
+                '9,5,I,51\n'+
+                '10,0,J,101}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Integer[0..1])[1]|$x.employeeNumber:y: Integer[*]|$y->meta::pure::functions::math::average())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mean().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21\\n2,1,B,41\\n3,3,C,71\\n4,4,D,31\\n5,2,E,11\\n6,1,F,1\\n7,3,G,91\\n8,1,H,81\\n9,5,I,51\\n10,0,J,101"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21.0\n'+
+                '2,1,B,41.0\n'+
+                '3,3,C,71.0\n'+
+                '4,4,D,31.0\n'+
+                '5,2,E,11.0\n'+
+                '6,1,F,1.0\n'+
+                '7,3,G,91.0\n'+
+                '8,1,H,81.0\n'+
+                '9,5,I,51.0\n'+
+                '10,0,J,101.0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber:y: Float[*]|$y->meta::pure::functions::math::average())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mean().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21.0\\n2,1,B,41.0\\n3,3,C,71.0\\n4,4,D,31.0\\n5,2,E,11.0\\n6,1,F,1.0\\n7,3,G,91.0\\n8,1,H,81.0\\n9,5,I,51.0\\n10,0,J,101.0"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Aggregate_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name,employeeNumber\n'+
+                '1,2,A,21d\n'+
+                '2,1,B,41.0d\n'+
+                '3,3,C,71d\n'+
+                '4,4,D,31d\n'+
+                '5,2,E,11d\n'+
+                '6,1,F,1d\n'+
+                '7,3,G,91d\n'+
+                '8,1,H,81d\n'+
+                '9,5,I,51d\n'+
+                '10,0,J,101.0d}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], employeeNumber:Float[0..1])[1]|$x.employeeNumber->meta::pure::functions::lang::cast(@Number):y: Number[*]|$y->meta::pure::functions::math::average())',
+              '(lambda frame:' +
+               '  frame.groupby("grp").mean().rename(columns={"employeeNumber": "newCol"})' +
+               ')(csv_frame("\\nid,grp,name,employeeNumber\\n1,2,A,21d\\n2,1,B,41.0d\\n3,3,C,71d\\n4,4,D,31d\\n5,2,E,11d\\n6,1,F,1d\\n7,3,G,91d\\n8,1,H,81d\\n9,5,I,51d\\n10,0,J,101.0d"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1,2,A\n'+
+                '2,1,B\n'+
+                '3,3,C\n'+
+                '4,4,D\n'+
+                '5,2,E\n'+
+                '6,1,F\n'+
+                '7,3,G\n'+
+                '7,1,H\n'+
+                '9,5,I\n'+
+                '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average())->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol2:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1], newCol:Float[1])[1]|$p->meta::pure::functions::math::average($w, $r, ~id)})',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("mean")).assign(newCol2=lambda _r: frame.groupby("grp")["id"].transform("mean"))' +
+               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n7,1,H\\n9,5,I\\n10,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Floats_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.0,2,A\n'+
+                '2.0,1,B\n'+
+                '3.0,3,C\n'+
+                '4.0,4,D\n'+
+                '5.0,2,E\n'+
+                '6.0,1,F\n'+
+                '7.0,3,G\n'+
+                '7.0,1,H\n'+
+                '9.0,5,I\n'+
+                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("mean"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp,name\n'+
+                '1.0,2,A\n'+
+                '2.0,1,B\n'+
+                '3.0,3,C\n'+
+                '4.0,4,D\n'+
+                '5.0,2,E\n'+
+                '6.0,1,F\n'+
+                '7.0,3,G\n'+
+                '7.0,1,H\n'+
+                '9.0,5,I\n'+
+                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::average())',
+              '(lambda frame:' +
+               '  frame.assign(newCol=lambda _r: frame.groupby("grp")["id"].transform("mean"))' +
+               ')(csv_frame("\\nid,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'id,grp\n'+
+                '1,2\n'+
+                '2,1\n'+
+                '3,3\n'+
+                '4,4\n'+
+                '5,2\n'+
+                '6,1\n'+
+                '7,3\n'+
+                '7,1\n'+
+                '9,5\n'+
+                '10,0}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~avg:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1])[1]|$r.id}:y: Integer[*]|$y->meta::pure::functions::math::average()->meta::pure::functions::math::round())',
+              '(lambda frame:' +
+               '  frame.assign(avg=lambda _r: frame.groupby("grp")["id"].transform(lambda c: c.mean().round()))' +
+               ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n7,1\\n9,5\\n10,0"))')
+        ]
+      )
+    ]->combine(),
+
+    // ==========================================
+    // zScore
+    // ==========================================
+    [
+      meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'grp,x\n'+
+                'A,11\n'+
+                'A,9\n'+
+                'A,13\n'+
+                'A,7\n'+
+                'A,10\n'+
+                'B,20\n'+
+                'B,26\n'+
+                'B,14\n'+
+                'B,22\n'+
+                'B,18}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
+              '(lambda frame:' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
+               ')(csv_frame("\\ngrp,x\\nA,11\\nA,9\\nA,13\\nA,7\\nA,10\\nB,20\\nB,26\\nB,14\\nB,22\\nB,18"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::zScore::testZScore_SingleValuePartition_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'grp,x\n'+
+                'A,5\n'+
+                'A,5\n'+
+                'A,5\n'+
+                'B,10}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Integer[0..1])>[1], r: (grp:String[0..1], x:Integer[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
+              '(lambda frame:' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
+               ')(csv_frame("\\ngrp,x\\nA,5\\nA,5\\nA,5\\nB,10"))')
+        ]
+      ),
+
+      meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_->testRev(
+        [
+          rev('|#TDS{\n'+
+                'grp,x\n'+
+                'A,1.0\n'+
+                'A,2.0\n'+
+                'A,3.0\n'+
+                'A,4.0\n'+
+                'A,5.0}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~x_zscore:{p: meta::pure::metamodel::relation::Relation<(grp:String[0..1], x:Float[0..1])>[1], w: meta::pure::functions::relation::_Window<(grp:String[0..1], x:Float[0..1])>[1], r: (grp:String[0..1], x:Float[0..1])[1]|$p->meta::pure::functions::math::zScore($w, $r, ~x)})',
+              '(lambda frame:' +
+               '  frame.assign(x_zscore=lambda r: frame.groupby("grp")["x"].zscore_legend_ext())' +
+               ')(csv_frame("\\ngrp,x\\nA,1.0\\nA,2.0\\nA,3.0\\nA,4.0\\nA,5.0"))')
+        ]
+      )
+    ]->combine()
+  ]
+}

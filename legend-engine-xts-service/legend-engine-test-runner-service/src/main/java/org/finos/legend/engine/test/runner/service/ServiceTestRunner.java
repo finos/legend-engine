@@ -63,6 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DuckDBDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
@@ -473,6 +474,23 @@ public class ServiceTestRunner
                         }
                         localH2DatasourceSpecification.testDataSetupCsv = null;
                         localH2DatasourceSpecification.testDataSetupSqls = null;
+                    }
+                }
+                else if (relationalDatabaseConnection.datasourceSpecification instanceof DuckDBDatasourceSpecification)
+                {
+                    DuckDBDatasourceSpecification duckDBDatasourceSpecification = (DuckDBDatasourceSpecification) relationalDatabaseConnection.datasourceSpecification;
+                    if (duckDBDatasourceSpecification.testDataSetupSqls != null)
+                    {
+                        if (results == null)
+                        {
+                            results = Lists.mutable.withAll(duckDBDatasourceSpecification.testDataSetupSqls);
+                        }
+                        else
+                        {
+                            results.addAll(duckDBDatasourceSpecification.testDataSetupSqls);
+                        }
+                        duckDBDatasourceSpecification.testDataSetupCsv = null;
+                        duckDBDatasourceSpecification.testDataSetupSqls = null;
                     }
                 }
             }

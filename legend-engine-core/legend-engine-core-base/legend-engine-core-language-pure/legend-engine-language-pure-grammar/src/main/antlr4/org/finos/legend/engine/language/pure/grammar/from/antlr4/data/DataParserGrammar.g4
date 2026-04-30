@@ -33,7 +33,17 @@ identifier:                 VALID_STRING | STRING
 definition:                 (dataElement)*
                             EOF
 ;
-dataElement:                DATA stereotypes? taggedValues? qualifiedName BRACE_OPEN embeddedData BRACE_CLOSE
+dataElement:                DATA stereotypes? taggedValues? qualifiedName
+                                BRACE_OPEN
+                                    embeddedData?
+                                    (dataResolver (dataResolver)*)?
+                                BRACE_CLOSE
+;
+dataResolver:               (baseDataResolver | referenceDataResolver) SEMI_COLON
+;
+referenceDataResolver:      qualifiedName
+;
+baseDataResolver:           qualifiedName COLON embeddedData
 ;
 embeddedData:               identifier ISLAND_OPEN (embeddedDataContent)*
 ;

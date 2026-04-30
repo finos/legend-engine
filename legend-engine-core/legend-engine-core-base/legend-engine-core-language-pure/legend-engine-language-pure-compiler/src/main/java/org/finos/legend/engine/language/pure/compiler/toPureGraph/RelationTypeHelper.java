@@ -26,6 +26,11 @@ public class RelationTypeHelper
 {
     public static RelationType convert(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> src)
     {
+        return convert(src, null);
+    }
+
+    public static RelationType convert(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> src, org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel pureModel)
+    {
         RelationType res = new RelationType();
         res.columns = src._columns().collect(c ->
         {
@@ -34,6 +39,12 @@ public class RelationTypeHelper
             col.genericType = CompileContext.convertGenericType(_Column.getColumnType(c));
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity m = _Column.getColumnMultiplicity(c);
             col.multiplicity = new Multiplicity(m._lowerBound()._value().intValue(), m._upperBound()._value() == null ? null : m._upperBound()._value().intValue());
+            col.stereotypes = pureModel != null
+                ? c._stereotypes().collect(s -> CompileContext.convertStereotype(s, pureModel)).toList()
+                : org.eclipse.collections.api.factory.Lists.mutable.empty();
+            col.taggedValues = pureModel != null
+                    ? c._taggedValues().collect(tv -> CompileContext.convertTaggedValue(tv, pureModel)).toList()
+                    : org.eclipse.collections.api.factory.Lists.mutable.empty();
             return col;
         }).toList();
         return res;
@@ -50,11 +61,11 @@ public class RelationTypeHelper
                                     false,
                                     ctx.newGenericType(c.genericType),
                                     ctx.pureModel.getMultiplicity(c.multiplicity),
+                                    ListIterate.collect(c.stereotypes, ctx::resolveStereotype),
+                                    ListIterate.collect(c.taggedValues, ctx::newTaggedValue),
                                     SourceInformationHelper.toM3SourceInformation(c.sourceInformation),
                                     processorSupport
                             );
-                            col._stereotypes(ListIterate.collect(c.stereotypes, ctx::resolveStereotype));
-                            col._taggedValues(ListIterate.collect(c.taggedValues, ctx::newTaggedValue));
                             if (c.sourceInformation != null)
                             {
                                 col.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.sourceInformation));

@@ -24,12 +24,18 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.sql.expression.protocol.SQLExpressionProtocol;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
+import org.finos.legend.engine.language.sql.grammar.from.SQLParserException;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.PureCompiledLambda;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_expression_SQLExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Query;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Statement;
@@ -37,16 +43,23 @@ import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.exception.PureAssertFailException;
+import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m3.navigation.type.Type;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.DefaultPureLambdaFunction1;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Map;
 
 public class SQLCompilerExtension implements CompilerExtension
 {
+    //TODO added as a temporary backout if issues detected.
+    private static final  boolean useCompile = Boolean.valueOf(System.getProperty("legend.sql.compile", "true"));
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
@@ -56,7 +69,7 @@ public class SQLCompilerExtension implements CompilerExtension
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "SQL");
+        return Lists.mutable.with("Query", "SQL");
     }
 
     @Override
@@ -64,35 +77,64 @@ public class SQLCompilerExtension implements CompilerExtension
     {
         return Maps.mutable.with("SQL", (obj, context, processingContext) ->
                 {
-                    String sqlText = ((SQLExpressionProtocol) obj).sql;
-                    Statement parsed = SQLGrammarParser.newInstance().parseStatement(sqlText);
-
-                    Root_meta_external_query_sql_metamodel_Statement statement = new ModifiedTranslator().translate(parsed, context.pureModel);
-
-                    RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_DynamicSQLSource> sources = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSources__DynamicSQLSource_MANY_(context.pureModel.getExecutionSupport());
-                    PureMap scopedVariables = processingContext.inferredVariableList.isEmpty() ? new PureMap(Maps.mutable.empty()) : new PureMap(processingContext.inferredVariableList.getLast());
-                    RichIterable<? extends PackageableElement> extraElements = FastList.newList(new TableFunctionElementExtractor(context.pureModel).visit(parsed));
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> x = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__DynamicSQLSource_MANY__PackageableElement_MANY__Map_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, sources, extraElements, scopedVariables, context.pureModel.getExecutionSupport());
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType returnType = ((FunctionType) x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
-                    if (!Type.subTypeOf(returnType._rawType(), context.pureModel.getClass("meta::pure::metamodel::relation::Relation"), context.pureModel.getExecutionSupport().getProcessorSupport()))
+                    try
                     {
-                        throw new RuntimeException("The expected return-type should be a subType of 'Relation' but it was " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(returnType, context.pureModel.getExecutionSupport().getProcessorSupport()));
-                    }
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType relationType = returnType._typeArguments().getFirst();
+                        String sqlText = ((SQLExpressionProtocol) obj).sql;
+                        Statement parsed = SQLGrammarParser.newInstance().parseStatement(sqlText);
 
-                    GenericType genericType = context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression").copy()._typeArguments(Lists.mutable.with(relationType));
-                    return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
-                            ._genericType(genericType)
-                            ._multiplicity(context.pureModel.getMultiplicity("one"))
-                            ._values(
-                                    Lists.mutable.with(
-                                            new Root_meta_external_query_sql_expression_SQLExpression_Impl<Object>("", null, context.pureModel.getClass("meta::external::query::sql::expression::SQLExpression"))
-                                                    ._classifierGenericType(genericType)
-                                                    ._sqlString(sqlText)
-                                                    ._linkedStatement(statement)
-                                                    ._pureFunction(x)
-                                    )
-                            );
+                        Root_meta_external_query_sql_metamodel_Statement statement = new ModifiedTranslator().translate(parsed, context.pureModel);
+
+                        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_DynamicSQLSource> sources = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSources__DynamicSQLSource_MANY_(context.pureModel.getExecutionSupport());
+                        PureMap scopedVariables = processingContext.inferredVariableList.isEmpty() ? new PureMap(Maps.mutable.empty()) : new PureMap(processingContext.inferredVariableList.getLast());
+                        RichIterable<? extends PackageableElement> extraElements = FastList.newList(new TableFunctionElementExtractor(context.pureModel).visit(parsed));
+
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> compile = new PureCompiledLambda(context.pureModel.getExecutionSupport(), "", new DefaultPureLambdaFunction1<java.lang.String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<? extends java.lang.Object>>()
+                        {
+                            @Override
+                            public LambdaFunction<? extends Object> value(String code, ExecutionSupport executionSupport)
+                            {
+                                return HelperValueSpecificationBuilder.buildLambda(PureGrammarParser.newInstance().parseLambda(code), context);
+                            }
+                        });
+
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object> x = useCompile ?
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, sources, extraElements, scopedVariables, compile, context.pureModel.getExecutionSupport()) :
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, sources, extraElements, scopedVariables, context.pureModel.getExecutionSupport());
+
+                        GenericType returnType = ((FunctionType) x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
+                        if (!Type.subTypeOf(returnType._rawType(), context.pureModel.getClass("meta::pure::metamodel::relation::Relation"), context.pureModel.getExecutionSupport().getProcessorSupport()))
+                        {
+                            throw new RuntimeException("The expected return-type should be a subType of 'Relation' but it was " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(returnType, context.pureModel.getExecutionSupport().getProcessorSupport()));
+                        }
+                        GenericType relationType = returnType._typeArguments().getFirst();
+
+                        GenericType genericType = context.pureModel.getGenericType("meta::external::query::sql::expression::SQLExpression").copy()._typeArguments(Lists.mutable.with(relationType));
+                        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                                ._genericType(genericType)
+                                ._multiplicity(context.pureModel.getMultiplicity("one"))
+                                ._values(
+                                        Lists.mutable.with(
+                                                new Root_meta_external_query_sql_expression_SQLExpression_Impl<Object>("", null, context.pureModel.getClass("meta::external::query::sql::expression::SQLExpression"))
+                                                        ._classifierGenericType(genericType)
+                                                        ._sqlString(sqlText)
+                                                        ._linkedStatement(statement)
+                                                        ._pureFunction(x)
+                                        )
+                                );
+                    }
+                    catch (PureAssertFailException e)
+                    {
+                        throw new EngineException(e.getInfo(), EngineErrorType.COMPILATION);
+                    }
+                    catch (SQLParserException e)
+                    {
+                        throw new EngineException(e.getMessage(), EngineErrorType.PARSER);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new EngineException(e.getMessage(), EngineErrorType.COMPILATION);
+                    }
+
                 }
         );
     }

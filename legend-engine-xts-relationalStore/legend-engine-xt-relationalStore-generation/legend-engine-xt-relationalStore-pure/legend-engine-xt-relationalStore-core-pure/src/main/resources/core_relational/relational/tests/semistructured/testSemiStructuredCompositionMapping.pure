@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::testable::*;
+import meta::relational::tests::semistructured::composition::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::composition::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let t1 =
+      'S\n' +
+      'TRADE\n' +
+      'ID,UNIQUE_REF,ENTITY_ID,TRADE_CONTENT\n' +
+      '1,A,1,"{\\"tradeName\\": \\"trade1\\"}"\n' +
+      '2,B,2,"{\\"tradeName\\": \\"trade2\\"}"\n' +
+      '3,C,3,"{\\"tradeName\\": \\"trade3\\"}"\n';
+  let t2 =
+      'S\n' +
+      'ENTITY\n' +
+      'ID,NAME\n' +
+      '1,Entity One\n' +
+      '2,Entity Two\n' +
+      '3,Entity Three\n';
+  let t3 =
+      'S\n' +
+      'ENTITY_ALIAS\n' +
+      'ENTITY_ID,ALIAS_NAME\n' +
+      '1,Alias A1\n' +
+      '2,\n';
+  let t4 =
+      'S\n' +
+      'EXTENSION_TABLE\n' +
+      'UNIQUE_REF,INSTANCE_CONTENT\n' +
+      'A,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 1\\", \\"instanceName\\": \\"Instance A\\"}}"\n' +
+      'B,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 2\\", \\"instanceName\\": \\"Instance A\\"}}"\n' +
+      'C,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 3\\", \\"instanceName\\": \\"Instance A\\"}}"\n';
+
+  let csv = [$t1, $t2, $t3, $t4];
+
+    let model = '/core_relational/relational/tests/semistructured/model/semiStructuredCompositionMapping.legend';
+    let mapping = 'composition::mapping::CompositionMapping';
+    let store = 'composition::store::DB';
+
+    meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::composition::testSemiStructuredThenDerivedPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'composition::semiStructuredThenDerivedPrimitivePropertyAccess__TabularDataSet_1_',
+    'Id,Trade Name,Unique Ref,Display Name\n' +
+    '1,trade1,A,Alias A1\n' +
+    '2,trade2,B,Entity Two\n' +
+    '3,trade3,C,Entity Three'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::composition::testEmbeddedMappingSemiStructuredAccess(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'composition::embeddedMappingSemiStructuredAccess__TabularDataSet_1_',
+    'Id,InstanceId,InstanceName\n' +
+    '1,Raw 1,Instance A\n' +
+    '2,Raw 2,Instance A\n' +
+    '3,Raw 3,Instance A'
+  );
+}

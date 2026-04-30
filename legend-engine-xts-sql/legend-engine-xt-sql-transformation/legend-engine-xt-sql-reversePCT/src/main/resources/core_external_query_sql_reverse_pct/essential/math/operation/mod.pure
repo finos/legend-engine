@@ -39,14 +39,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::operati
                             'select mod(mod(-5, 12) + 12, 12)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(12, 5)'),
-                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval(-12, 5)'),
-                        noRev('|meta::pure::functions::math::mod_Integer_1__Integer_1__Integer_1_->meta::pure::functions::lang::eval($dividend, $divisor)')
-                      ]
                  )
                ]
   )

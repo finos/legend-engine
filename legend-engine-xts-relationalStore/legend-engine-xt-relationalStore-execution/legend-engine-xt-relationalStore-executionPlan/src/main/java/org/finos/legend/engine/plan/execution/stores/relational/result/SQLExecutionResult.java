@@ -93,7 +93,7 @@ public class SQLExecutionResult extends SQLResult
             this.columnCount = this.resultSetMetaData.getColumnCount();
 
             // dynamically update the result columns based off the execution result
-            if (this.SQLExecutionNode.isResultColumnsDynamic != null && this.SQLExecutionNode.isResultColumnsDynamic)
+            if (this.SQLExecutionNode.isResultColumnsDynamic)
             {
                 MutableList<SQLResultColumn> sqlResultColumns = Lists.mutable.empty();
                 for (int i = 1; i <= this.columnCount; i++)

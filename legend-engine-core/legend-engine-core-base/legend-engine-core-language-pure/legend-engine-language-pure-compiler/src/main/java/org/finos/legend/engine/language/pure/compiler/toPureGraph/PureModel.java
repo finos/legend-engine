@@ -99,6 +99,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpa
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.VersionControlledClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.composite.CompositeCodeStorage;
 import org.finos.legend.pure.m4.ModelRepository;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.tools.ConcurrentHashSet;
 import org.finos.legend.pure.runtime.java.compiled.compiler.JavaCompilerState;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -844,28 +845,42 @@ public class PureModel implements IPureModel
             return packageableElement;
         }
 
-        Type type = getType_safe(fullPath);
-        if (type != null)
+        Metadata metadata = this.executionSupport.getMetadata();
+        if (metadata.supportsElementByPath())
         {
-            return (type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ?
-                    (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type :
-                    null;
+            CoreInstance found = metadata.getElementByPath(fullPath);
+            if (found instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)
+            {
+                packageableElement = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) found;
+                this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, packageableElement);
+                return packageableElement;
+            }
         }
+        else
+        {
+            Type type = getType_safe(fullPath);
+            if (type != null)
+            {
+                return (type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) ?
+                       (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) type :
+                       null;
+            }
 
-        packageableElement = getGraphFunctions(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
-        }
-        packageableElement = getAssociation_safe(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
-        }
-        packageableElement = getProfile_safe(fullPath);
-        if (packageableElement != null)
-        {
-            return packageableElement;
+            packageableElement = getGraphFunctions(fullPath);
+            if (packageableElement != null)
+            {
+                return packageableElement;
+            }
+            packageableElement = getAssociation_safe(fullPath);
+            if (packageableElement != null)
+            {
+                return packageableElement;
+            }
+            packageableElement = getProfile_safe(fullPath);
+            if (packageableElement != null)
+            {
+                return packageableElement;
+            }
         }
 
         // For other elements search the package tree
@@ -938,10 +953,22 @@ public class PureModel implements IPureModel
         }
 
         // Search for system types in the Pure graph
-        type = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
-        if (type == null)
+        Metadata metadata = this.executionSupport.getMetadata();
+        if (metadata.supportsElementByPath())
         {
-            type = tryGetUnitByLegacyId(fullPath);
+            CoreInstance element = metadata.getElementByPath(fullPath);
+            if (element instanceof Type)
+            {
+                type = (Type) element;
+            }
+        }
+        else
+        {
+            type = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getClass, MetadataAccessor::getEnumeration, MetadataAccessor::getPrimitiveType, MetadataAccessor::getMeasure, MetadataAccessor::getUnit);
+            if (type == null)
+            {
+                type = tryGetUnitByLegacyId(fullPath);
+            }
         }
         if (type != null)
         {
@@ -1056,11 +1083,18 @@ public class PureModel implements IPureModel
     public PackageableFunction<?> getGraphFunctions(String fullPath)
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
-        PackageableFunction<?> packageableFunction = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
-        if (packageableFunction == NULL_ELEMENT_SENTINEL)
+        PackageableFunction<?> packageableFunction;
+        Metadata metadata = this.executionSupport.getMetadata();
+        if (metadata.supportsElementByPath())
         {
-            return null;
+            CoreInstance element = metadata.getElementByPath(fullPath);
+            packageableFunction = (element instanceof PackageableFunction) ? (PackageableFunction<?>) element : null;
         }
+        else
+        {
+            packageableFunction = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getConcreteFunctionDefinition, MetadataAccessor::getNativeFunction);
+        }
+
         if (packageableFunction != null)
         {
             this.immutables.add(fullPathWithPrefix);
@@ -1084,7 +1118,19 @@ public class PureModel implements IPureModel
         if (association == null)
         {
             // Search for system types in the Pure graph
-            association = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getAssociation);
+            Metadata metadata = this.executionSupport.getMetadata();
+            if (metadata.supportsElementByPath())
+            {
+                CoreInstance element = metadata.getElementByPath(fullPath);
+                if (element instanceof Association)
+                {
+                    association = (Association) element;
+                }
+            }
+            else
+            {
+                association = tryGetFromMetadataAccessor(fullPath, MetadataAccessor::getAssociation);
+            }
             if (association != null)
             {
                 this.immutables.add(fullPathWithPrefix);
@@ -1120,7 +1166,19 @@ public class PureModel implements IPureModel
         }
         if (profile == null)
         {
-            profile = tryGetFromMetadataAccessor(pathWithTypeReference, MetadataAccessor::getProfile);
+            Metadata metadata = this.executionSupport.getMetadata();
+            if (metadata.supportsElementByPath())
+            {
+                CoreInstance element = metadata.getElementByPath(fullPath);
+                if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile)
+                {
+                    profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) element;
+                }
+            }
+            else
+            {
+                profile = tryGetFromMetadataAccessor(pathWithTypeReference, MetadataAccessor::getProfile);
+            }
             if (profile != null)
             {
                 this.packageableElementsIndex.put(pathWithTypeReference, profile);

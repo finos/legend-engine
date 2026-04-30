@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.duckdb.DuckDBManager;
@@ -76,10 +77,8 @@ public class DuckDBConnectionExtension implements ConnectionExtension, Strategic
         {
             if (datasourceSpecification instanceof DuckDBDatasourceSpecification)
             {
-                DuckDBDatasourceSpecification databricksSpecification = (DuckDBDatasourceSpecification) datasourceSpecification;
-                return new DuckDBDataSourceSpecificationKey(
-                        databricksSpecification.path
-                );
+                DuckDBDatasourceSpecification duckDBSpec = (DuckDBDatasourceSpecification) datasourceSpecification;
+                return new DuckDBDataSourceSpecificationKey(duckDBSpec.path, duckDBSpec.testDataSetupSqls);
             }
             return null;
         };
@@ -92,6 +91,15 @@ public class DuckDBConnectionExtension implements ConnectionExtension, Strategic
         {
             if (datasourceSpecification instanceof DuckDBDatasourceSpecification)
             {
+                DuckDBDatasourceSpecification duckDBDatasourceSpecification = (DuckDBDatasourceSpecification) datasourceSpecification;
+                if (duckDBDatasourceSpecification.testDataSetupSqls != null && !duckDBDatasourceSpecification.testDataSetupSqls.isEmpty())
+                {
+                    return new DuckDBDataSourceSpecification(
+                            new DuckDBDataSourceSpecificationKey(duckDBDatasourceSpecification.path, duckDBDatasourceSpecification.testDataSetupSqls),
+                            new DuckDBManager(),
+                            new TestDatabaseAuthenticationStrategy()
+                    );
+                }
                 return new DuckDBDataSourceSpecification(
                         (DuckDBDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
                         new DuckDBManager(),

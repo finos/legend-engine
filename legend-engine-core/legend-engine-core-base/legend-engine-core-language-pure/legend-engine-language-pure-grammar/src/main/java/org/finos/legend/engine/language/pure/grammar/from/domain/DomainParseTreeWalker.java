@@ -36,6 +36,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.PackageableElementPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
@@ -73,6 +75,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
@@ -593,6 +596,19 @@ public class DomainParseTreeWalker
             String value = PureGrammarParserUtility.fromGrammarString(functionTestSuiteContext.externalFormatValue().STRING().getText(), true);
             assertion = createEqualToJSON(contentType, value, walkerSourceInformation.getSourceInformation(functionTestSuiteContext.externalFormatValue()));
         }
+        else if (functionTestSuiteContext.embeddedData() != null)
+        {
+            DomainParserGrammar.EmbeddedDataContext embeddedDataCtx = functionTestSuiteContext.embeddedData();
+            String type = PureGrammarParserUtility.fromIdentifier(embeddedDataCtx.identifier());
+            if ("Relation".equals(type))
+            {
+                assertion = parseRelationResultAssertion(embeddedDataCtx);
+            }
+            else
+            {
+                throw new EngineException("Unsupported embedded data type for function test assertion: " + type + ". Only 'Relation' is supported.", walkerSourceInformation.getSourceInformation(embeddedDataCtx), EngineErrorType.PARSER);
+            }
+        }
         else
         {
             DomainParser parser = new DomainParser();
@@ -609,6 +625,20 @@ public class DomainParseTreeWalker
         }
         assertion.id = DEFAULT_TESTABLE_ID;
         return assertion;
+    }
+
+    private EqualToRelation parseRelationResultAssertion(DomainParserGrammar.EmbeddedDataContext embeddedDataCtx)
+    {
+        String content = HelperTestAssertionGrammarParser.extractIslandContent(embeddedDataCtx.embeddedDataContent());
+        ParseTreeWalkerSourceInformation innerWalkerSourceInformation = HelperTestAssertionGrammarParser.buildIslandSourceInformation(embeddedDataCtx.ISLAND_OPEN(), walkerSourceInformation);
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(embeddedDataCtx);
+
+        RelationElement element = HelperTestAssertionGrammarParser.parseRelationElement(content, innerWalkerSourceInformation, sourceInformation);
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.expected = element;
+        equalToRelation.sourceInformation = sourceInformation;
+        return equalToRelation;
     }
 
     private EqualToJson createEqualToJSON(String contentType, String val, SourceInformation sourceInformation)
@@ -1421,6 +1451,8 @@ public class DomainParseTreeWalker
         colSpec.name = PureGrammarParserUtility.fromIdentifier(oneColSpec.identifier());
         colSpec.genericType = oneColSpec.type() == null ? null : processGenericType(oneColSpec.type());
         colSpec.multiplicity = oneColSpec.multiplicity() == null ? null : buildMultiplicity(oneColSpec.multiplicity().multiplicityArgument());
+        colSpec.stereotypes = oneColSpec.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(oneColSpec.stereotypes());
+        colSpec.taggedValues = oneColSpec.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(oneColSpec.taggedValues());
         if (oneColSpec.anyLambda() != null)
         {
             colSpec.function1 = processLambda(oneColSpec.anyLambda(), typeParametersNames, lambdaContext, space, wrapFlag, addLines, Lists.mutable.empty());

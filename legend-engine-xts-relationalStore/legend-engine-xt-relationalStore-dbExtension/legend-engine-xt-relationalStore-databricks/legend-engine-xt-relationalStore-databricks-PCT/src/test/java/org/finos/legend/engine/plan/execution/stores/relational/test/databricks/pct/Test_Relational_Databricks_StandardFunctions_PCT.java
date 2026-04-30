@@ -37,15 +37,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
     private static final Adapter adapter = CoreRelationalDatabricksCodeRepositoryProvider.databricksAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-
-            //and
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
-
-            //or
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
-
             //xor
-            one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_DIFF_TYPES] Cannot resolve \"(true OR (NOT (2 = 3)))\" due to data type mismatch: the left and right operands of the binary operator have incompatible types (\"STRING\" and \"BOOLEAN\")"),
             one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\"."),
     
             // StD Dev
@@ -64,6 +56,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             // In
             one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "NullPointer exception"),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"),
 
             // Date
             pack("meta::pure::functions::date::tests::timeBucket::dateTime", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
@@ -76,21 +69,33 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
             one("meta::pure::functions::math::tests::average::testAverage_Numbers_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""),
+            one("meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,wavgCol1,wavgCol2\n   1,180.0,220.0\n   2,150.0,175.0\n   3,362.5,325.0\n   4,700.0,700.0\n   5,350.0,350.0\n#'\nactual:   '#TDS\n   grp,wavgCol1,wavgCol2\n   1,180.00000268220901,220.00000029802322\n   2,150.0,175.0\n   3,362.5,325.0\n   4,700.0,700.0\n   5,350.0,350.0\n#'\""),
+            one("meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   grp,wavgCol\n   1,180.0\n   2,150.0\n   3,362.5\n   4,700.0\n   5,350.0\n#'\nactual:   '#TDS\n   grp,wavgCol\n   1,180.00000268220901\n   2,150.0\n   3,362.5\n   4,700.0\n   5,350.0\n#'\""),
 
             //max
+            one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
-            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
 
             //maxBy
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires 2 parameters but the actual number is 4."),
 
             //min
+            one("meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
-            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
 
             //minBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires 2 parameters but the actual number is 4."),
@@ -108,15 +113,6 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""),
             one("meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""),
             one("meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_", "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""),
-
-            // CosH
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
-
-            // SinH
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
-
-            // TanH
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
 
             // Greatest
             one("meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
@@ -151,7 +147,10 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_", "Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\""),
             one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "Unused format args. [4] arguments provided to expression \"CORR(%s, %s)\""),
 
-            pack("meta::pure::functions::string::generation::tests::generateGuid", "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet")
+            pack("meta::pure::functions::string::generation::tests::generateGuid", "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet"),
+
+            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')")
     );
 
     public static Test suite()

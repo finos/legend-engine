@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
@@ -50,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
@@ -59,6 +59,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -101,6 +103,7 @@ public class FunctionTestRunner implements TestRunner
     private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
     private List<Closeable> closeables = Lists.mutable.empty();
     private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
+    private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
 
     public FunctionTestRunner(ConcreteFunctionDefinition functionDefinition, String pureVersion)
     {
@@ -127,6 +130,8 @@ public class FunctionTestRunner implements TestRunner
         String testablePath = getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
         try
         {
+            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(this.functionDefinition, pureModel);
+            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
             // handle data
             Function protocolFunc = ListIterate.detect(pureModelContextData.getElementsOfType(Function.class), el -> el.getPath().equals(testablePath));
             FunctionTestSuite protocolSuite = ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
@@ -242,14 +247,17 @@ public class FunctionTestRunner implements TestRunner
 
     private void setupNonStoreRelationTestData(List<FunctionTestData> nonStoreRelationTestData, FunctionTestRunnerContext context)
     {
-        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, EmbeddedData> relationData = Maps.mutable.empty();
+        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, RelationElementsData> relationData = Maps.mutable.empty();
         nonStoreRelationTestData.forEach(testData ->
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = context.getPureModel().getPackageableElement(testData.packageableElementPointer.path, testData.packageableElementPointer.sourceInformation);
             EmbeddedData data = (testData.data instanceof DataElementReference)
                     ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) testData.data, context.getPureModelContextData())
                     : testData.data;
-            relationData.put(element, data);
+            if (data instanceof RelationElementsData)
+            {
+                relationData.put(element, (RelationElementsData) data);
+            }
         });
         List<FunctionDefinition<?>> modifiedFunctions = new ArrayList<>(this.connectionAndDatabaseBuilders.collect(f -> f.rewriteFunctionForTestDataExecution(this.functionDefinition, relationData, context.getPureModel())).select(Objects::nonNull));
         if (modifiedFunctions.size() > 1)
@@ -349,7 +357,7 @@ public class FunctionTestRunner implements TestRunner
                 }
             }
         }
-        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap)).select(Objects::nonNull).select(Optional::isPresent)
+        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap, this.hints)).select(Objects::nonNull).select(Optional::isPresent)
                 .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported test data for function test suite: " + context.getTestSuite()._id()));
     }
 

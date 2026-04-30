@@ -19,6 +19,7 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
 import java.util.ListIterator;
 import java.util.Stack;
@@ -29,6 +30,43 @@ public class ProcessingContext
     public Stack<MilestoningDatePropagationContext> milestoningDatePropagationContext = new Stack<>();
     private final Stack<String> tags = new Stack<>();
     public boolean isDatePropagationSupported = true;
+
+    // Pre-compiled lambda parameters for batch processing (e.g., ColSpecArray).
+    // Kept separate from inferredVariableList so that same-named variables from
+    // outer scopes are never incorrectly reused.
+    // The targetVariableLevel tracks the exact variable level depth at which these
+    // parameters should be consumed (one level deeper than where they were set),
+    // preventing nested lambdas (e.g., c | $c.values->exists(c | true)) from
+    // incorrectly matching.
+    private MutableMap<String, VariableExpression> preCompiledLambdaParameters = null;
+    private int preCompiledLambdaParametersTargetLevel = -1;
+
+    public void setPreCompiledLambdaParameters(MutableMap<String, VariableExpression> params)
+    {
+        this.preCompiledLambdaParameters = params;
+        this.preCompiledLambdaParametersTargetLevel = this.inferredVariableList.size() + 1;
+    }
+
+    public void clearPreCompiledLambdaParameters()
+    {
+        this.preCompiledLambdaParameters = null;
+        this.preCompiledLambdaParametersTargetLevel = -1;
+    }
+
+    public VariableExpression getPreCompiledLambdaParameter(String name)
+    {
+        if (this.preCompiledLambdaParameters == null)
+        {
+            return null;
+        }
+        // Only return pre-compiled parameters at the target depth.
+        // This ensures nested lambdas which add additional variable levels) don't incorrectly reuse them.
+        if (this.inferredVariableList.size() != this.preCompiledLambdaParametersTargetLevel)
+        {
+            return null;
+        }
+        return this.preCompiledLambdaParameters.get(name);
+    }
 
     public void pushMilestoningDatePropagationContext(MilestoningDatePropagationContext milestoningContext)
     {

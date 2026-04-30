@@ -31,14 +31,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::power::
                             'select sqrt(0.01)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::testSquareRootEval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::sqrt_Number_1__Float_1_->meta::pure::functions::lang::eval(9)',
-                            'select sqrt(9)'
-                        )
-                      ]
                  )
                ]
   )
@@ -47,5 +39,4 @@ function meta::external::query::sql::reversePCT::tests::essential::math::power::
 function meta::external::query::sql::reversePCT::tests::essential::math::power::sqrt::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::testSquareRoot(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::testSquareRootEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

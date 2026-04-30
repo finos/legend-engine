@@ -345,4 +345,58 @@ public class TestDataGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         );
     }
 
+    @Test
+    public void testDataElementWithReferencesResolvers()
+    {
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  my::data::MyData2;\n" +
+                "  my::data::MyData3;\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testDataElementWithBaseDataResolvers()
+    {
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  my::database:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.PersonTable:\n" +
+                "          id, firstName, lastName\n" +
+                "          1 , John     , Doe;\n" +
+                "    }#;\n" +
+                "  my::database2:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      schema.FirmTable:\n" +
+                "          id, legalName\n" +
+                "          1 , financeCorp;\n" +
+                "    }#;\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testDataElementWithAllDataResolvers()
+    {
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  my::data::MyData2;\n" +
+                "  my::database:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.PersonTable:\n" +
+                "          id, firstName , lastName\n" +
+                "          1 , \"John, Jr\", Doe;\n" +
+                "    }#;\n" +
+                "  my::data::MyData3;\n" +
+                "}\n"
+        );
+    }
 }

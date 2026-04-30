@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.121.4-SNAPSHOT</version>
+    <version>4.128.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -103,6 +103,7 @@
 
         <!-- Application -->
         <module>legend-engine-application-query</module>
+        <module>legend-engine-shared-mongo</module>
         <module>legend-engine-xts-identity</module>
 
         <!-- Python -->
@@ -114,10 +115,10 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.78.0</legend.pure.version>
-        <legend.shared.version>0.33.0</legend.shared.version>
+        <legend.pure.version>5.83.0</legend.pure.version>
+        <legend.shared.version>0.34.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
-        <legend.pylegend.version>0.14.0</legend.pylegend.version>
+        <legend.pylegend.version>0.21.0</legend.pylegend.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -142,7 +143,7 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1771879213</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1777319699</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
@@ -1318,6 +1319,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-SDT-pure</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-test-http-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1632,6 +1639,27 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-aurora-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-aurora-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-aurora-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-aurora-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-trino-execution</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1648,6 +1676,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-trino-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-trino-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -2812,6 +2845,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-expression-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgresSqlModel-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2993,6 +3031,11 @@
                 <artifactId>legend-engine-pure-code-reversePCT-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-shared-mongo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!-- ENGINE -->
 
             <!-- PURE -->
@@ -3051,6 +3094,11 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-unclassified</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -3338,6 +3386,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-reversePCT-pandasAPI</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-python-reversePCT-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-mcp-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -3426,6 +3484,11 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>

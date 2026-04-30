@@ -27,11 +27,14 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.generation.dataquality.DataQualityLambdaGenerator;
 import org.finos.legend.engine.generation.dataquality.DataQualityProfilingLambdaGenerator;
 import org.finos.legend.engine.generation.dataquality.DataQualityReconLambdaGenerator;
+import org.finos.legend.engine.generation.dataquality.DataQualitySampleValuesLambdaGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -59,16 +62,22 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidation;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStrategy;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_ReconStrategy;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_datarecon_DataQualityReconInput;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_rule_suggestions_RuleSuggestion;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_dataquality_generation_dataquality;
 import org.finos.legend.pure.generated.core_dataquality_generation_datarecon;
 import org.finos.legend.pure.generated.core_dataquality_generation_rule_suggestions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -93,6 +102,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "DataQuality - Execution")
@@ -342,20 +352,146 @@ public class DataQualityExecute
         }
     }
 
-    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    @POST
+    @Path("reconciliation/generatePlan")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reconciliationPlanGeneration(DataQualityReconInput dataQualityReconInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
+        {
+            PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
+            SingleExecutionPlan singleExecutionPlan = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity).getOne();
+            return ManageConstantResult.manageResult(identity.getName(), singleExecutionPlan, objectMapper);
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    private Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
-        // 1. create DQ recon input
-        Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__DataQualityReconInput_1_(
-                HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()), HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()), Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, pureModel.getExecutionSupport()
-        );
-        // 2. call DQ PURE func to generate lambda
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction =  DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+
+        Root_meta_external_dataquality_DataQualityRelationComparison dqComparisonElement = getDqComparisonElement(pureModel, input.packagePath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction = dqComparisonElement == null ? HelperValueSpecificationBuilder.buildLambda(input.source, pureModel.getContext()) : dqComparisonElement._source();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction = dqComparisonElement == null ? HelperValueSpecificationBuilder.buildLambda(input.target, pureModel.getContext()) : dqComparisonElement._target();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> dqLambdaFunction;
+
+        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(sourceLambdaFunction, pureModel.getExecutionSupport()))
+        {
+            throw new EngineException("The source query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        if (!core_dataquality_generation_dataquality.Root_meta_external_dataquality_isEndingWithFromFunction_FunctionDefinition_1__Boolean_1_(targetLambdaFunction, pureModel.getExecutionSupport()))
+        {
+            throw new EngineException("The target query for the Data Quality Recon Input does not end with a 'from' so unable to execute it.", ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        MutableMap<String, Object> lambdaParameterMap = Maps.mutable.empty();
+
+        if (input.runSourceQuery)
+        {
+            // return source query results directly
+            dqLambdaFunction = sourceLambdaFunction;
+            if (input.sourceLambdaParameterValues != null)
+            {
+                input.sourceLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+        }
+        else if (input.runTargetQuery)
+        {
+            // return target query results directly
+            dqLambdaFunction = targetLambdaFunction;
+            if (input.targetLambdaParameterValues != null)
+            {
+                input.targetLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+        }
+        else
+        {
+            // 1. create DQ recon input
+            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = createReconInput(pureModel, dqComparisonElement, input, sourceLambdaFunction, targetLambdaFunction);
+            // 2. call DQ PURE func to generate recon lambda
+            dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
+            // 3. build parameter map with source_/target_ prefixes for the recon lambda
+            if (input.sourceLambdaParameterValues != null)
+            {
+                input.sourceLambdaParameterValues.forEach(p -> lambdaParameterMap.put("source_" + p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+            if (input.targetLambdaParameterValues != null)
+            {
+                input.targetLambdaParameterValues.forEach(p -> lambdaParameterMap.put("target_" + p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
+            }
+        }
+
         // 3. Generate Plan from the lambda generated in the previous step
-        SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
+        SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
-        // 4. Execute plan
-        return executePlanToResult(request, identity, singleExecutionPlan, Maps.mutable.empty());
+        return Tuples.pair(plan, lambdaParameterMap);
+    }
+
+    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    {
+        Pair<SingleExecutionPlan, MutableMap<String, Object>> plan = generateDataReconciliationPlan(pureModel, input, start, identity);
+        return executePlanToResult(request, identity, plan.getOne(), plan.getTwo());
+    }
+
+    private static Root_meta_external_dataquality_datarecon_DataQualityReconInput createReconInput(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationComparison dqComparisonElement, DataQualityReconInput input, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction)
+    {
+        if (dqComparisonElement == null)
+        {
+            return core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__DataQualityReconInput_1_(
+                    sourceLambdaFunction, targetLambdaFunction, Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, input.defectLimit, false, pureModel.getExecutionSupport()
+            );
+        }
+        return core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__DataQualityReconInput_1_(
+                dqComparisonElement._source(), dqComparisonElement._target(), dqComparisonElement._keys(), getAggregatedHash(dqComparisonElement._strategy()), dqComparisonElement._columnsToCompare(), getSourceHashColumn(dqComparisonElement._strategy()), getTargetHashColumn(dqComparisonElement._strategy()), input.includeColumnValues, input.defectLimit, false, pureModel.getExecutionSupport()
+        );
+    }
+
+    private static boolean getAggregatedHash(Root_meta_external_dataquality_ReconStrategy reconStrategy)
+    {
+        if (reconStrategy instanceof Root_meta_external_dataquality_MD5HashStrategy)
+        {
+            return ((Root_meta_external_dataquality_MD5HashStrategy) reconStrategy)._aggregatedHash();
+        }
+        return false;
+    }
+
+    private static String getSourceHashColumn(Root_meta_external_dataquality_ReconStrategy reconStrategy)
+    {
+        if (reconStrategy instanceof Root_meta_external_dataquality_MD5HashStrategy)
+        {
+            return ((Root_meta_external_dataquality_MD5HashStrategy) reconStrategy)._sourceHashColumn();
+        }
+        return null;
+    }
+
+    private static String getTargetHashColumn(Root_meta_external_dataquality_ReconStrategy reconStrategy)
+    {
+        if (reconStrategy instanceof Root_meta_external_dataquality_MD5HashStrategy)
+        {
+            return ((Root_meta_external_dataquality_MD5HashStrategy) reconStrategy)._targetHashColumn();
+        }
+        return null;
+    }
+
+    private static Root_meta_external_dataquality_DataQualityRelationComparison getDqComparisonElement(PureModel pureModel, String packagePath)
+    {
+        if (packagePath != null)
+        {
+            PackageableElement packageableElement = pureModel.getPackageableElement(packagePath);
+            if (packageableElement instanceof Root_meta_external_dataquality_DataQualityRelationComparison)
+            {
+                return (Root_meta_external_dataquality_DataQualityRelationComparison) packageableElement;
+            }
+            throw new EngineException(format("Expected package path to point to DataQualityRelationComparison but found %s", packageableElement.getClass().getSimpleName()), ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        return null;
     }
 
     private SingleExecutionPlan generateExecutionPlan(DataQualityExecuteTrialInput dataQualityExecuteInput, Identity identity, boolean rowCount, String queryType)
@@ -384,7 +520,7 @@ public class DataQualityExecute
         {
             return DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
         }
-        return DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, queryType);
+        return DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, queryType);
     }
 
     @POST
@@ -398,7 +534,7 @@ public class DataQualityExecute
         // 1. load pure model from PureModelContext
         PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
         // 2. call DQ PURE func to generate lambda
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, null);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, null);
         LambdaFunction lambda = DataQualityLambdaGenerator.transformLambda(dqLambdaFunction, pureModel, this.extensions);
         return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }
@@ -492,4 +628,68 @@ public class DataQualityExecute
 
     }
 
+    @POST
+    @Path("sampleValues")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response sampleValues(
+            @Context HttpServletRequest request,
+            DataQualitySampleValuesInput input,
+            @DefaultValue(SerializationFormat.defaultFormatString)
+            @QueryParam("serializationFormat") SerializationFormat format,
+            @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm,
+            @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_SAMPLE_VALUES_START).toString());
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - sampleValues: execute").startActive(true))
+        {
+            PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion, identity, null);
+            SingleExecutionPlan plan = generateSampleValuesPlan(pureModel, input);
+            Map<String, Object> params = buildParamMap(input.lambdaParameterValues);
+            Response response = executePlan(request, identity, format, start, plan, params);
+            if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
+            {
+                MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
+            }
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_SAMPLE_VALUES_END, System.currentTimeMillis() - start).toString());
+            return response;
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error("Unable to execute sample values profiling", ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, identity.getName());
+        }
+    }
+
+    private SingleExecutionPlan generateSampleValuesPlan(PureModel pureModel, DataQualitySampleValuesInput input)
+    {
+        if (input.query == null && input.functionPath == null)
+        {
+            throw new EngineException("Either 'query' or 'functionPath' must be provided",
+                    ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        if (input.query != null && input.functionPath != null)
+        {
+            throw new EngineException("Only one of 'query' or 'functionPath' may be provided, not both",
+                    ExceptionCategory.USER_EXECUTION_ERROR);
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda =
+                input.query != null
+                        ? DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.query, input.maxNumberOfSampleValues)
+                        : DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.functionPath, input.maxNumberOfSampleValues);
+        return PlanGenerator.generateExecutionPlan(
+                lambda, null, null, null, pureModel,
+                input.clientVersion, PlanPlatform.JAVA, null,
+                extensions.apply(pureModel), transformers);
+    }
+
+    private static Map<String, Object> buildParamMap(List<ParameterValue> lambdaParameterValues)
+    {
+        return lambdaParameterValues != null
+                ? lambdaParameterValues.stream().collect(Collectors.<ParameterValue, String, Object>toMap(p -> p.name, p -> p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())))
+                : Maps.mutable.empty();
+    }
 }

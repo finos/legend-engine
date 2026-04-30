@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperRelationElementsDataComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -36,7 +37,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -282,13 +285,13 @@ public class HelperDomainGrammarComposer
         }
         if (functionTest.assertions.size() == 1)
         {
-            str.append(renderTestAssertion(functionTest.assertions.get(0), context));
+            str.append(renderTestAssertion(functionTest.assertions.get(0), currentInt, context));
         }
         str.append(";");
         return str.toString();
     }
 
-    private static String renderTestAssertion(TestAssertion testAssertion, PureGrammarComposerContext context)
+    private static String renderTestAssertion(TestAssertion testAssertion, int currentInt, PureGrammarComposerContext context)
     {
         if (testAssertion instanceof EqualTo)
         {
@@ -300,10 +303,38 @@ public class HelperDomainGrammarComposer
             ExternalFormatData externalFormatData = equalToJson.expected;
             return renderSimpleExternalFormat(externalFormatData);
         }
+        else if (testAssertion instanceof EqualToRelation)
+        {
+            EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
+            return renderRelationAssertion(equalToRelation.expected, currentInt);
+        }
         else
         {
             throw new EngineException("Unknown test assertion type: " + testAssertion.toString(), testAssertion.sourceInformation, EngineErrorType.COMPOSER);
         }
+    }
+
+    private static String renderRelationAssertion(RelationElement element, int currentInt)
+    {
+        return "Relation\n" + renderAlignedRelationElement(element, getTabString(currentInt));
+    }
+
+    /**
+     * Renders a RelationElement as an aligned table inside #{ ... }#.
+     * Computes max column widths and pads values with spaces for readability.
+     *
+     * Example output:
+     * <pre>
+     *   #{
+     *       id, firstName, lastName
+     *       1 , John     , Smith
+     *       2 , Jane     , Doe
+     *   }#
+     * </pre>
+     */
+    public static String renderAlignedRelationElement(RelationElement element, String baseIndentation)
+    {
+        return HelperRelationElementsDataComposer.renderAlignedRelationElement(element, baseIndentation, true);
     }
 
     private static String renderSimpleExternalFormat(ExternalFormatData externalFormatData)

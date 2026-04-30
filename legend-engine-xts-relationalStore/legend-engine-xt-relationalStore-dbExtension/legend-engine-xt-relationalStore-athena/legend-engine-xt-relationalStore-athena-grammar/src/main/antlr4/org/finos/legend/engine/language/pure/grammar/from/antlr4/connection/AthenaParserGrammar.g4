@@ -13,15 +13,24 @@ identifier:                                 VALID_STRING
 athenaDsp:                                  ATHENA_DSP
                                                 BRACE_OPEN
                                                     (
-                                                        dbName
-                                                        | awsRegion
-                                                        | s3OutputLocation
+                                                        athenaRegion
+                                                        | athenaOutputLocation
+                                                        | athenaDatabase
+                                                        | athenaCatalog
+                                                        | athenaWorkGroup
+                                                        | athenaEndpoint
                                                     )*
                                                 BRACE_CLOSE
 ;
-awsRegion:                                  AWS_REGION COLON STRING SEMI_COLON
+athenaRegion:                                   ATHENA_REGION COLON STRING SEMI_COLON
 ;
-s3OutputLocation:                           S3_OUTPUT_LOCATION COLON STRING SEMI_COLON
+athenaOutputLocation:                           ATHENA_OUTPUT_LOCATION COLON STRING SEMI_COLON
 ;
-dbName:                                     NAME COLON STRING SEMI_COLON
+athenaDatabase:                                 ATHENA_DATABASE COLON STRING SEMI_COLON
+;
+athenaCatalog:                                  ATHENA_CATALOG COLON STRING SEMI_COLON
+;
+athenaWorkGroup:                                ATHENA_WORK_GROUP COLON STRING SEMI_COLON
+;
+athenaEndpoint:                                ATHENA_ENDPOINT COLON STRING SEMI_COLON
 ;

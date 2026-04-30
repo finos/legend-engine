@@ -46,6 +46,6 @@ Class meta::external::format::shared::executionPlan::ExternalFormatInternalizeEx
   tree              : RootGraphFetchTree<Any>[1]; 
   enableConstraints : Boolean[1];
   checked           : Boolean[1];
-
+  useJsonNodeType   : Boolean[0..1];
   config            : ExternalFormatInternalizeConfig[0..1];   
 }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
@@ -123,6 +124,7 @@ public class CompileContext
 
     public final PureModel pureModel;
     private final ImmutableSet<String> imports;
+    private final ConcurrentHashMap<String, String> SEARCH_IMPORTS_CACHE = new ConcurrentHashMap<>();
 
     private CompileContext(Builder builder)
     {
@@ -586,6 +588,26 @@ public class CompileContext
     private <T> MutableMap<String, T> searchImports(String name, Function<String, T> resolver)
     {
         MutableMap<String, T> results = Maps.mutable.empty();
+
+        String cachedPath = SEARCH_IMPORTS_CACHE.get(name);
+        if (cachedPath != null)
+        {
+            try
+            {
+                T result = resolver.apply(cachedPath);
+                if (result != null)
+                {
+                    results.put(cachedPath, result);
+                    return results;
+                }
+            }
+            catch (Exception ignored)
+            {
+                // cached path didn't work with this resolver; fall through to full search
+            }
+        }
+
+        // Full import search
         this.imports.forEach(importPackage ->
         {
             String fullPath = importPackage + PACKAGE_SEPARATOR + name;
@@ -603,6 +625,13 @@ public class CompileContext
                 results.put(fullPath, result);
             }
         });
+
+        // Cache the result if exactly one match was found
+        if (results.size() == 1)
+        {
+            SEARCH_IMPORTS_CACHE.put(name, results.keysView().getAny());
+        }
+
         return results;
     }
 
@@ -653,6 +682,25 @@ public class CompileContext
         return new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(m._lowerBound()._value().intValue(), m._upperBound()._value() == null ? null : m._upperBound()._value().intValue());
     }
 
+    public static org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr convertStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype s, PureModel pureModel)
+    {
+        org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr pointer = new org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr();
+        pointer.profile = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(s._profile(), pureModel.getExecutionSupport());
+        pointer.value = s._value();
+        return pointer;
+    }
+
+    public static org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue convertTaggedValue(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue t, PureModel pureModel)
+    {
+        org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue taggedValue = new org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue();
+        org.finos.legend.engine.protocol.pure.m3.extension.TagPtr tagPtr = new org.finos.legend.engine.protocol.pure.m3.extension.TagPtr();
+        tagPtr.profile = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(t._tag()._profile(), pureModel.getExecutionSupport());
+        tagPtr.value = t._tag()._value();
+        taggedValue.tag = tagPtr;
+        taggedValue.value = t._value();
+        return taggedValue;
+    }
+
     public GenericType newGenericType(org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType genericType)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
@@ -669,7 +717,16 @@ public class CompileContext
         {
             si = ((RelationType) protocolType).sourceInformation;
             type = _RelationType.build(
-                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(x.name, false, this.newGenericType(x.genericType), pureModel.getMultiplicity(x.multiplicity), null, processorSupport)),
+                    ListIterate.collect(((RelationType) protocolType).columns, x -> _Column.getColumnInstance(
+                            x.name,
+                            false,
+                            this.newGenericType(x.genericType),
+                            pureModel.getMultiplicity(x.multiplicity),
+                            ListIterate.collect(x.stereotypes, this::resolveStereotype),
+                            ListIterate.collect(x.taggedValues, this::newTaggedValue),
+                            null,
+                            processorSupport
+                    )),
                     SourceInformationHelper.toM3SourceInformation(si),
                     processorSupport
             );

@@ -49,6 +49,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::external
       binding           = $node.binding->elementToPath(),
       enableConstraints = $node.enableConstraints,
       checked           = $node.checked,
-      contentType       = $node.binding.contentType
+      contentType       = $node.binding.contentType,
+      useJsonNodeType   = $node.useJsonNodeType
    );
 }

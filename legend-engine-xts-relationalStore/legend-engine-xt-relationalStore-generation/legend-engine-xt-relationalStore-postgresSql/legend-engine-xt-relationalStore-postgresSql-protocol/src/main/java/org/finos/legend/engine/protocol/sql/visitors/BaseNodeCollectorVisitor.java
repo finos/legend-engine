@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.BooleanLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Cast;
 import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
+import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
 import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
@@ -223,6 +224,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
 
     @Override
     public T visit(CurrentTime val)
+    {
+        return defaultValue();
+    }
+
+    @Override
+    public T visit(CurrentUser val)
     {
         return defaultValue();
     }

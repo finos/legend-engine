@@ -39,8 +39,11 @@ definition:                            relationElement*
                                        EOF
 ;
 relationElement:                       paths TABLE_START table
+                                       | TABLE_START tableCSV
 ;
 table:                                 columnNames rows TABLE_END
+;
+tableCSV:                              NEWLINE* columnNames rows TABLE_END
 ;
 paths:                                 identifier (DOT identifier)*
 ;
@@ -50,5 +53,7 @@ rows:                                  (NEWLINE rowValues)*
 ;
 rowValues:                             cell (ROW_COMMA cell)*
 ;
-cell:                                  ROW_VALUE?
+cell:                                  ROW_VALUE
+                                       | QUOTED_ROW_VALUE
+                                       |
 ;

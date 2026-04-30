@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.athena;
 
+import java.util.List;
 import java.util.Properties;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -32,10 +33,21 @@ public class AthenaManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
-        return "jdbc:awsathena://"
-                + "AwsRegion=" + extraUserDataSourceProperties.getProperty("awsRegion") + ";"
-                + "S3OutputLocation=" + extraUserDataSourceProperties.getProperty("s3OutputLocation") + ";"
-                + "databaseName=" + databaseName;
+        StringBuilder builder = new StringBuilder("jdbc:awsathena://");
+        builder.append("Region=").append(extraUserDataSourceProperties.getProperty("Region")).append(";");
+
+        List<String> optionalKeys = Lists.fixedSize.of("Catalog", "WorkGroup", "OutputLocation", "Database", "AthenaEndpoint");
+
+        for (String optionalKey : optionalKeys)
+        {
+            String keyVal = extraUserDataSourceProperties.getProperty(optionalKey);
+            if (keyVal != null)
+            {
+                builder.append(optionalKey).append("=").append(keyVal).append(";");
+            }
+        }
+
+        return builder.toString();
     }
 
     @Override

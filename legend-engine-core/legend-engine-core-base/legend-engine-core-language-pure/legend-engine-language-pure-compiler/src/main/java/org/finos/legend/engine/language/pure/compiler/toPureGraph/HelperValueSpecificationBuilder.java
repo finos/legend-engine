@@ -117,7 +117,23 @@ public class HelperValueSpecificationBuilder
     {
         ctx.push("new lambda");
         ctx.addVariableLevel();
-        MutableList<VariableExpression> pureParameters = ListIterate.collect(parameters, p -> (VariableExpression) p.accept(valueSpecificationBuilderFactory.value(context, Lists.mutable.empty(), ctx)));
+        MutableList<VariableExpression> pureParameters = ListIterate.collect(parameters, p ->
+        {
+            // Reuse pre-compiled parameter if available (set by ColSpecArray batch processing).
+            // This is separate from inferredVariableList to avoid incorrectly reusing
+            // same-named variables from outer scopes (e.g., nested ->exists(c | ... ->exists(c | ...))).
+            if (p.genericType != null && p.multiplicity != null)
+            {
+                VariableExpression preCompiled = ctx.getPreCompiledLambdaParameter(p.name);
+                if (preCompiled != null)
+                {
+                    ctx.addInferredVariables(p.name, preCompiled);
+                    return preCompiled;
+                }
+            }
+            return (VariableExpression) p.accept(valueSpecificationBuilderFactory.value(context, Lists.mutable.empty(), ctx));
+        });
+
         if (parameters.size() != 0 && !parameters.get(0).name.equals("v_automap"))
         {
             if (ctx.milestoningDatePropagationContext.size() == 0)

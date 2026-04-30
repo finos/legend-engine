@@ -875,6 +875,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -897,6 +898,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -932,6 +934,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -982,6 +985,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service meta::pure::myServiceSingle\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:[];\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1008,6 +1012,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service meta::pure::myServiceMulti\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:[];\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1042,6 +1047,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service meta::pure::myServiceSingleWithEmbeddedRuntime\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'this is just for context';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
@@ -1106,6 +1112,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1130,6 +1137,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1154,6 +1162,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1171,7 +1180,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      {['parameter1', Enum.reference],1+280+1}\n" + //test expression
                 "    ];\n" +
                 "  }\n" +
-                "}\n", "COMPILATION error at [37:23-36]: Can't find enumeration 'Enum'");
+                "}\n", "COMPILATION error at [38:23-36]: Can't find enumeration 'Enum'");
 
 
         // check for multiple test asserts
@@ -1179,6 +1188,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1205,6 +1215,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1230,6 +1241,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1254,6 +1266,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1369,12 +1382,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1393,12 +1407,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1439,12 +1454,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1497,12 +1513,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1561,12 +1578,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1635,12 +1653,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1697,12 +1716,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1775,12 +1795,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1856,12 +1877,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -1920,12 +1942,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -2014,12 +2037,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -2551,12 +2575,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'my Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'adding some documentation';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -2615,12 +2640,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2670,19 +2696,20 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION error at [123:9-141:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2731,19 +2758,20 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value required for parameter: 'param'"
+                "COMPILATION error at [123:9-141:9]: Parameter value required for parameter: 'param'"
         );
 
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2793,19 +2821,20 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [1] doesn't subsume [2]"
+                "COMPILATION error at [123:9-141:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2855,19 +2884,20 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [0..1] doesn't subsume [2]"
+                "COMPILATION error at [123:9-141:9]: Parameter value type does not match with parameter type for parameter: 'param' - Multiplicity error: [0..1] doesn't subsume [2]"
         );
 
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2917,19 +2947,20 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION error at [123:9-141:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
                         "  pattern: '/testFirmService';\n" +
+                        "  title: 'my Service';\n" +
                         "  owners:\n" +
                         "  [\n" +
                         "    'owner1',\n" +
                         "    'owner2'\n" +
                         "  ];\n" +
-                        "  documentation: '';\n" +
+                        "  documentation: 'adding some documentation';\n" +
                         "  autoActivateUpdates: true;\n" +
                         "  execution: Single\n" +
                         "  {\n" +
@@ -2979,7 +3010,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-140:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
+                "COMPILATION error at [123:9-141:9]: Parameter value type does not match with parameter type for parameter: 'param' - Type error: 'Integer' is not a subtype of 'String'"
         );
 
         //TODO: Test data with wrong connection id
@@ -3121,6 +3152,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3138,6 +3170,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3155,6 +3188,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3172,6 +3206,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3214,6 +3249,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3256,6 +3292,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::firm::model::myService\n" +
                 "{\n" +
                 "  pattern: '/showcase/binding';\n" +
+                "  title: 'my Service';\n" +
                 "  documentation: 'Showcase service with binding';\n" +
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
@@ -3291,7 +3328,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ]\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", "COMPILATION error at [87:9-106:9]: Parameter value type does not match with parameter type for parameter: 'data' - Type error: 'String' is not a subtype of 'Byte'");
+                "}\n", "COMPILATION error at [88:9-107:9]: Parameter value type does not match with parameter type for parameter: 'data' - Type error: 'String' is not a subtype of 'Byte'");
     }
 
     @Test
@@ -3322,6 +3359,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/'; \n" +
+                "  title: 'My Service'; \n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3347,6 +3385,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/'; \n" +
+                "  title: 'my Service'; \n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3368,13 +3407,14 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", "COMPILATION error at [20:1-44:1]: Multiple post validation assertions found with ids : 'testAssert'");
+                "}", "COMPILATION error at [20:1-45:1]: Multiple post validation assertions found with ids : 'testAssert'");
 
         // check matching query and assertion types
         test(resource + "###Service \n" +
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/'; \n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3394,13 +3434,14 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function parameter type 'Integer[1]' does not match with service execution return type 'TabularDataSet[1]'");
+                "}", " at [20:1-43:1]: Error in 'test::Service': Post validation assertion function parameter type 'Integer[1]' does not match with service execution return type 'TabularDataSet[1]'");
 
         // check parameter count matches service parameter count (multi execution)
         test(resource + "###Service \n" +
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/{executionKey}'; \n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3427,13 +3468,14 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", " at [20:1-44:1]: Error in 'test::Service': Post validation parameter count '0' does not match with service parameter count '1'");
+                "}", " at [20:1-45:1]: Error in 'test::Service': Post validation parameter count '0' does not match with service parameter count '1'");
 
         // check assertion lambda has parameter
         test(resource + "###Service \n" +
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/'; \n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3453,7 +3495,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "      ];\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function expects 1 parameter");
+                "}", " at [20:1-43:1]: Error in 'test::Service': Post validation assertion function expects 1 parameter");
     }
 
     @Test
@@ -3654,6 +3696,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service \n" +
                 "{ \n" +
                 "  pattern: 'url/myUrl/'; \n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName']; \n" +
                 "  documentation: 'test'; \n" +
                 "  autoActivateUpdates: true; \n" +
@@ -3663,12 +3706,13 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    mapping: test::mapping2; \n" +
                 "    runtime: test::runtime; \n" +
                 "  }\n" +
-                "}", null, FastList.newListWith("COMPILATION warning at [33:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                "}", null, FastList.newListWith("COMPILATION warning at [34:14-26]: Service 'test::Service' Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         test(resource + "###Service\n" +
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -3688,8 +3732,8 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    }\n" +
                 "  }\n" +
                 "}\n", null, FastList.newListWith(
-                        "COMPILATION warning at [36:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
-                "COMPILATION warning at [41:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
+                        "COMPILATION warning at [37:16-28]: Service 'test::Service', key: 'PROD', Runtime 'test::runtime' does not cover mapping 'test::mapping2'",
+                "COMPILATION warning at [42:16-28]: Service 'test::Service', key: 'QA', Runtime 'test::runtime' does not cover mapping 'test::mapping2'"));
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +
@@ -3732,6 +3776,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "Service test::Service\n" +
                 "{\n" +
                 "  pattern: '/url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
                 "  owners: ['ownerName', 'ownerName2'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -3741,5 +3786,68 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 "  mcpServer: ab;\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testServiceWarningWhenTitleIsMissingOrEmpty()
+    {
+        // Test warning when title is missing
+        test("Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[0..1];\n" +
+                "}\n" +
+                "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->project(x | $x.prop1, 'prop1');\n" +
+                "  }\n" +
+                "}\n", null, FastList.newListWith("COMPILATION warning at [6:1-16:1]: Service 'Service' has no title, it is recommended to provide a title for better readability"));
+
+        // Test warning when title is empty
+        test("Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[0..1];\n" +
+                "}\n" +
+                "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  title: '';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->project(x | $x.prop1, 'prop1');\n" +
+                "  }\n" +
+                "}\n", null, FastList.newListWith("COMPILATION warning at [6:1-17:1]: Service 'Service' has no title, it is recommended to provide a title for better readability"));
+    }
+
+    @Test
+    public void testServiceWarningWhenDocumentationIsEmpty()
+    {
+        test("Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[0..1];\n" +
+                "}\n" +
+                "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  title: 'my Service';\n" +
+                "  owners: ['ownerName'];\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->project(x | $x.prop1, 'prop1');\n" +
+                "  }\n" +
+                "}\n", null, FastList.newListWith("COMPILATION warning at [6:1-17:1]: Service 'Service' has empty documentation"));
     }
 }

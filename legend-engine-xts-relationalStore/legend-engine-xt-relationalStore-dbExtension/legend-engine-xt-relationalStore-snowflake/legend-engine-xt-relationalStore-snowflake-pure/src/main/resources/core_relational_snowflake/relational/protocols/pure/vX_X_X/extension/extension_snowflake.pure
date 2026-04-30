@@ -44,7 +44,9 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::snowfl
                      accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
                      organization = $s.organization,
                      role = $s.role,
-                     enableQueryTags = $s.enableQueryTags
+                     enableQueryTags = $s.enableQueryTags,
+                     setSessionTimezone = $s.setSessionTimezone,
+                     setSessionQuotedIdentifiersIgnoreCase = $s.setSessionQuotedIdentifiersIgnoreCase
                  )
     ],
     reverse_transfers_typeLookups = [
@@ -75,7 +77,9 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::snowfl
                                  |extractEnumValue(meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType, $s.accountType->toOne())),
                 organization = $s.organization,
                 role = $s.role,
-                enableQueryTags = $s.enableQueryTags
+                enableQueryTags = $s.enableQueryTags,
+                setSessionTimezone = $s.setSessionTimezone,
+                setSessionQuotedIdentifiersIgnoreCase = $s.setSessionQuotedIdentifiersIgnoreCase
             )
     ]
   )

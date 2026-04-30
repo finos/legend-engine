@@ -194,4 +194,37 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "}\n");
     }
 
+    @Test
+    public void testRelationComparison_allFields()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "   source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "   keys: [id, name];\n" +
+                "   columnsToCompare: [amount, quantity];\n" +
+                "   strategy: MD5Hash\n" +
+                "   {\n" +
+                "     sourceHashColumn: srcHash;\n" +
+                "     targetHashColumn: tgtHash;\n" +
+                "     aggregatedHash: true;\n" +
+                "   };\n" +
+                "   expectedMatch: 0.99;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationComparison_requiredFieldsOnly()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "   source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "   keys: [id];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}\n");
+    }
+
 }

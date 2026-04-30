@@ -65,6 +65,7 @@ public class TestDefaultSupportedFlows
                 {DatabaseType.Postgres, StaticDatasourceSpecification.class, MiddleTierUserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Trino, TrinoDatasourceSpecification.class, TrinoDelegatedKerberosAuthenticationStrategy.class},
                 {DatabaseType.Trino, TrinoDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
+                {DatabaseType.Trino, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.MemSQL, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Oracle, OracleDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class}
         });

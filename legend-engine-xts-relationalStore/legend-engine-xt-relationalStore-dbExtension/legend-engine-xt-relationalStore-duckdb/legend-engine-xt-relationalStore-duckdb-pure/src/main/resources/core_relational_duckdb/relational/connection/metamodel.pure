@@ -15,4 +15,6 @@
 Class meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
     <<equality.Key>> path:String[0..1];
+    <<equality.Key>> testDataSetupCsv:String[0..1];
+    <<equality.Key>> testDataSetupSqls:String[*];
 }

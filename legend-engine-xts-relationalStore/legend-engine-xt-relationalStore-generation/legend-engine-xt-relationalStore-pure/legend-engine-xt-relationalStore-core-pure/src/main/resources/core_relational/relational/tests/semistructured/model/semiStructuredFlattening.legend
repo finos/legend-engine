@@ -19,6 +19,12 @@ Class flatten::model::Person
   lastName: String[1];
   firm: flatten::model::Firm[1];
   manager: flatten::model::Person[1];
+  conditionalAddressName() {
+    if($this.firstName != 'Peter',
+      |$this.firm.legalName,
+      |$this.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name
+    )
+  }: String[0..1];
 }
 
 Class flatten::model::Firm
@@ -288,3 +294,6 @@ function flatten::semiStructuredMultiLevelFlattenMerging(): TabularDataSet[1]
         col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->subType(@flatten::model::CityAddressLine).city, 'Firm Address City')
     ])
 }
+
+
+

@@ -62,6 +62,76 @@ function test::query::getFirmDetailsWithInput(input: String[1]): String[1]
   )
 }
 
+function test::query::getFirmDetailsWithStringInput(input: String[1]): String[1]
+{
+  test::model::Firms.all()->graphFetch(
+    #{
+      test::model::Firms{
+        firms{
+          legalName,
+          employees{
+            firstName,
+            lastName
+          }
+        }
+      }
+    }#
+  )->serialize(
+    #{
+      test::model::Firms{
+        firms{
+          legalName,
+          employees{
+            firstName,
+            lastName
+          }
+        }
+      }
+    }#
+  )->from(
+    test::mapping::firmMapping,
+    test::model::Firms->getRuntimeWithModelQueryConnection(
+      'application/json',
+      $input
+    )
+  )
+}
+
+function test::query::getFirmDetailsWithVariantInput(input: String[1]): String[1]
+{
+  test::model::Firms.all()->meta::pure::executionPlan::featureFlag::withFeatureFlags([meta::pure::executionPlan::features::Feature.VARIANT_TYPE_AS_INPUT])->graphFetch(
+    #{
+      test::model::Firms{
+        firms{
+          legalName,
+          employees{
+            firstName,
+            lastName
+          }
+        }
+      }
+    }#
+  )->serialize(
+    #{
+      test::model::Firms{
+        firms{
+          legalName,
+          employees{
+            firstName,
+            lastName
+          }
+        }
+      }
+    }#
+  )->from(
+    test::mapping::firmMapping,
+    test::model::Firms->getRuntimeWithModelQueryConnection(
+      'application/json',
+      $input
+    )
+  )
+}
+
 ###Mapping
 Mapping test::mapping::firmMapping
 (
@@ -75,6 +145,11 @@ Mapping test::mapping::firmMapping
     ~src test::model::Firm
     legalName: $src.legalName,
     employees: $src.employees
+  }
+  *test::model::Person: Pure
+  {
+    ~src test::model::Person
+    firstName: $src.firstName
   }
 )
 

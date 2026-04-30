@@ -31,14 +31,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                             'select atan2(0.5,3.5)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testArcTangent2Eval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_->meta::pure::functions::lang::eval(1, 0)',
-                            'select atan2(1,0)'
-                        )
-                      ]
                  )
                ]
   )
@@ -47,5 +39,4 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
 function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::atan2::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::trigonometry::testArcTangent2(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::testArcTangent2Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

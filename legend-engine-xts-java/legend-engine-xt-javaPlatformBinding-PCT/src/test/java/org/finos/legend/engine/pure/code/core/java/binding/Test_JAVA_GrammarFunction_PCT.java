@@ -84,7 +84,13 @@ public class Test_JAVA_GrammarFunction_PCT extends PCTReportConfiguration
 
             // String plus
             one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""),
-            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\"")
+            one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""),
+
+            // GetAll (Java Binding prohibits getAll)
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "getAll_Class_1__T_MANY_ is prohibited!"),
+
+            // Range
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]")
 
     );
 

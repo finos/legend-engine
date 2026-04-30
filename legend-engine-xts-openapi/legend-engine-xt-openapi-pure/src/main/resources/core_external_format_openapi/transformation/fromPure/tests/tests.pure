@@ -41,6 +41,13 @@ Class meta::external::function::description::openapi::transformation::fromPure::
   name: String[1];
 }
 
+Class meta::external::function::description::openapi::transformation::fromPure::tests::Trade
+{
+  tradeId: Integer[1];
+  quantity: Decimal[1];
+  price: Float[1];
+}
+
 function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service join'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceJoin():Service[1]
 {
  ^Service
@@ -257,6 +264,39 @@ function <<test.Test>> meta::external::function::description::openapi::transform
   assertJsonStringsEqual($expected, $openapi);
 }
 
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testDecimalTypeMapping():Boolean[1]
+{
+  let openapi = simpleServiceWithDecimal()->serviceToOpenApi(packageableElemWithTrade(), ^Server(url='test'), meta::relational::extension::relationalExtensions());
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testOpenApiSpecWithDecimal.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test service with Decimal type'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceWithDecimal():Service[1]
+{
+  let tree = #{Trade{tradeId, quantity, price}}#;
+  let func = {|Trade.all()->graphFetchChecked($tree)->serialize($tree)};
+  ^Service
+  (
+    pattern = '/service/testDecimal',
+    owners = ['dummy'],
+    documentation = 'test service with Decimal type',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+                (
+                  func = $func,
+                  mapping = tradeMapping,
+                  runtime = []
+                )
+  );
+}
+
+function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElemWithTrade():PackageableElement[*]
+{
+  [
+    pathToElement('meta::external::function::description::openapi::transformation::fromPure::tests::Trade')
+  ]
+}
+
 function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElem():PackageableElement[*]
 {
   [
@@ -278,3 +318,13 @@ Mapping meta::external::function::description::openapi::transformation::fromPure
   }
 )
 
+Mapping meta::external::function::description::openapi::transformation::fromPure::tests::tradeMapping
+(
+  Trade : Pure
+  {
+    ~src Trade
+    tradeId : $src.tradeId;
+    quantity : $src.quantity;
+    price : $src.price;
+  }
+)

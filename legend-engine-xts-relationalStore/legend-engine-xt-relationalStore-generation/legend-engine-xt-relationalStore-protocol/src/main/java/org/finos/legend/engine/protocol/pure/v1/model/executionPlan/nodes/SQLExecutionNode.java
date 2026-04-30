@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
@@ -30,7 +31,8 @@ public class SQLExecutionNode extends ExecutionNode
     public String onConnectionCloseRollbackQuery;
     public DatabaseConnection connection;
     public List<SQLResultColumn> resultColumns = Collections.emptyList();
-    public Boolean isResultColumnsDynamic;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public boolean isResultColumnsDynamic;
     public boolean isMutationSQL;
 
     @Override

@@ -71,14 +71,6 @@ dataSpaceElement:                   DATA_SPACE stereotypes? taggedValues? qualif
                                             )*
                                         BRACE_CLOSE
 ;
-stereotypes:                        LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
-;
-stereotype:                         qualifiedName DOT identifier
-;
-taggedValues:                       BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
-;
-taggedValue:                        qualifiedName DOT identifier EQUAL STRING
-;
 
 title:                              DATA_SPACE__TITLE COLON STRING SEMI_COLON
 ;

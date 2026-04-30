@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -22,6 +23,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
@@ -61,6 +64,7 @@ public class RelationalConnectionManager implements ConnectionManager
     private MutableList<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>> authenticationStrategyTrans;
     private MutableList<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>> dataSourceKeys;
     private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>> dataSourceTrans;
+    private MutableList<Function3<DatabaseConnection, Identity, Map<String, Result>, DatabaseConnection>> connectionPreprocessors;
     private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
 
     public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles)
@@ -85,6 +89,9 @@ public class RelationalConnectionManager implements ConnectionManager
         this.dataSourceKeys =
                 Lists.mutable.<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>>with(c -> new DataSourceSpecificationKeyGenerator(testDbPort, c))
                         .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)));
+
+        this.connectionPreprocessors =
+                extensions.collect(StrategicConnectionExtension::getExtraConnectionPreprocessor);
 
         Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyProvider =
                 r -> ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
@@ -215,6 +222,13 @@ public class RelationalConnectionManager implements ConnectionManager
             ConnectionKey connectionKey = this.generateKeyFromDatabaseConnection(connection);
             return buildDataSourceTrans(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection, connectionKey);
         }
+    }
+
+    @Override
+    public DatabaseConnection preprocessConnection(DatabaseConnection connection, Identity identity, Map<String, Result> allocationResults)
+    {
+        DatabaseConnection result = this.connectionPreprocessors.collect(f -> f.value(connection, identity, allocationResults)).detect(Objects::nonNull);
+        return result != null ? result : connection;
     }
 
     private boolean resolveLocalMode(RelationalDatabaseConnection relationalDatabaseConnection)

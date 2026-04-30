@@ -100,7 +100,13 @@ public class Test_Relational_DuckDB_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
             one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
             one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
-            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'.")
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
+
+            // Range
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "No error was thrown"),
+
+            // GetAll
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification")
     );
 
     public static Test suite()

@@ -23,6 +23,8 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.deephaven.metamodel.DeephavenApp;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.language.deephaven.from.DeephavenGrammarParserExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.IAuthenticationGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -33,6 +35,9 @@ import org.finos.legend.engine.protocol.deephaven.metamodel.store.Column;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.DeephavenStore;
 import org.finos.legend.engine.protocol.deephaven.metamodel.store.Table;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.FloatType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DoubleType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.DecimalType;
+import org.finos.legend.engine.protocol.deephaven.metamodel.type.TimestampType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.deephaven.metamodel.type.BooleanType;
@@ -60,6 +65,10 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
         {
             return renderDeephavenStore((DeephavenStore) element, context);
         }
+        if (element instanceof DeephavenApp)
+        {
+            return renderDeephavenApp((DeephavenApp) element);
+        }
         return null;
     });
 
@@ -75,6 +84,25 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
             builder.append("\n");
         }
         builder.append(")");
+        return builder.toString();
+    }
+
+    private static String renderDeephavenApp(DeephavenApp app)
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("DeephavenApp ").append(PureGrammarComposerUtility.convertPath(app.getPath())).append("\n");
+        builder.append("{\n");
+        builder.append(getTabString()).append("applicationName: '").append(app.applicationName).append("';\n");
+        builder.append(getTabString()).append("function: ").append(app.function.path).append(";\n");
+        if (app.description != null)
+        {
+            builder.append(getTabString()).append("description: '").append(app.description).append("';\n");
+        }
+        if (app.ownership instanceof DeploymentOwner)
+        {
+            builder.append(getTabString()).append("ownership: Deployment { identifier: '").append(((DeploymentOwner) app.ownership).id).append("' };\n");
+        }
+        builder.append("}");
         return builder.toString();
     }
 
@@ -102,23 +130,36 @@ public class DeephavenGrammarComposerExtension implements PureGrammarComposerExt
         builder.append(getTabString(baseIndentation)).append(column.name).append(": ");
         if (column.type instanceof StringType)
         {
-            builder.append("String");
+            builder.append("STRING");
         }
         else if (column.type instanceof IntType)
         {
-            builder.append("Integer");
+            builder.append("INT");
         }
         else if (column.type instanceof BooleanType)
         {
-            builder.append("Boolean");
-        }
-        else if (column.type instanceof DateTimeType)
-        {
-            builder.append("DateTime");
+            builder.append("BOOLEAN");
         }
         else if (column.type instanceof FloatType)
         {
-            builder.append("Float");
+            builder.append("FLOAT");
+        }
+        else if (column.type instanceof DoubleType)
+        {
+            builder.append("DOUBLE");
+        }
+        else if (column.type instanceof DecimalType)
+        {
+            DecimalType decimalType = (DecimalType) column.type;
+            builder.append("DECIMAL(").append(decimalType.precision).append(", ").append(decimalType.scale).append(")");
+        }
+        else if (column.type instanceof TimestampType)
+        {
+            builder.append("TIMESTAMP");
+        }
+        else if (column.type instanceof DateTimeType)
+        {
+            builder.append("DATETIME");
         }
         else
         {

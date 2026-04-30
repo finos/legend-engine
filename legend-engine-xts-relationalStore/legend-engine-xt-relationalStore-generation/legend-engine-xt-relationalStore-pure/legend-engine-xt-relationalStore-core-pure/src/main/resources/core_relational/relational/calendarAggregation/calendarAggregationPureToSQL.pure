@@ -22,9 +22,9 @@ import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 
-function meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoins(dateColCursor:SelectWithCursor[1], endDate:RelationalOperationElement[1], calendarType:String[1], nodeId:String[1], operation:SelectWithCursor[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
-{
-  let calendarTableName = $calendarType->cast(@String)+'_Calendar';
+function meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoins(dateColCursor:SelectWithCursor[1], endDate:RelationalOperationElement[1], calendarType:String[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]  
+{  
+  let calendarTableName = $calendarType->cast(@String)+'_Calendar';  
   assert(isNotEmpty(table(schema(CalendarDatabase,'LegendCalendarSchema')->toOne(),$calendarTableName)), | 'A new calendar type requires a table in meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase store, LegendCalendarSchema schema.');
 
   // build calendar select.
@@ -40,7 +40,8 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
   // define table aliases for each side of the join.
    let leftAlias  = $dateColCursor.currentTreeNode.alias->toOne(); //  left side of the join (user class)
    let rightAlias = $calendarSelect.data.alias->toOne();           // right side of the join, 'Calendar'
-
+   let rightAliasEnd = ^$rightAlias(name = 'calendar_end');        // right side of the join, 'CalendarEndJoin'
+  
   // define the calendar joins...
   // ... on userClass.dateCol == CalendarTable.date.
   let join    = ^Join(name='calendarJoin'   +$nodeId, aliases=[pair($leftAlias,$rightAlias),pair($rightAlias,$leftAlias)],
@@ -52,20 +53,35 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::inse
     );
 
   // ... on userClass.dateCol == CalendarTable.date and CalendarTable.date == $endDate.
-  let joinEnd = ^Join(name='calendarEndJoin'+$endDate->buildUniqueName(true, $extensions)+$nodeId, aliases=[pair($leftAlias,$rightAlias),pair($rightAlias,$leftAlias)],
+  let joinEnd = ^Join(name='calendarEndJoin'+$endDate->buildUniqueName(true, $extensions)+$nodeId, aliases=[pair($leftAlias,$rightAliasEnd),pair($rightAliasEnd,$leftAlias)],
           operation=[^DynaFunction(name = 'equal',
                                   parameters=[ $endDate,
-                                               ^TableAliasColumn(alias=$rightAlias, column=^Column(owner = meta::relational::functions::database::tableReference(CalendarDatabase,'LegendCalendarSchema',$calendarTableName), name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
+                                               ^TableAliasColumn(alias=$rightAliasEnd, column=^Column(owner = meta::relational::functions::database::tableReference(CalendarDatabase,'LegendCalendarSchema',$calendarTableName), name = 'date', type = ^meta::relational::metamodel::datatype::Date()) )
                                              ])
                     ]->cast(@Operation)->toOne('First parameter should be one date column.')
     );
 
   // insert the joins in the tree.
   let child    = ^JoinTreeNode(alias=$rightAlias, join=$join   , joinType=JoinType.LEFT_OUTER, database=meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase, joinName='calendarJoin'   +$nodeId);
-  let childEnd = ^JoinTreeNode(alias=$rightAlias, join=$joinEnd, joinType=JoinType.LEFT_OUTER, database=meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase, joinName='calendarEndJoin'+$nodeId);
-  let treeWithCalendarJoin      = applyJoinInTree(       $dateColCursor.select.data->toOne(),        $dateColCursor.currentTreeNode->toOne(), $child   , $dateColCursor       , $nodeId       , JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);
-  let treeWithBothCalendarJoins = applyJoinInTree($treeWithCalendarJoin.select.data->toOne(), $treeWithCalendarJoin.currentTreeNode->toOne(), $childEnd, $treeWithCalendarJoin, $nodeId+'_end', JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);
-  $treeWithBothCalendarJoins;
+  let childEnd = ^JoinTreeNode(alias=$rightAliasEnd, join=$joinEnd, joinType=JoinType.LEFT_OUTER, database=meta::relational::functions::pureToSqlQuery::calendarAggregations::CalendarDatabase, joinName='calendarEndJoin'+$nodeId);
+  
+  let currentTreeNode = $dateColCursor.currentTreeNode->toOne();  
+  if ($leftAlias.relationalElement->instanceOf(Union),  
+    | let newCurrentTreeNode = ^$currentTreeNode(  
+        childrenData = $currentTreeNode.childrenData->concatenate([$child, $childEnd])  
+      );  
+      let oldData = $dateColCursor.select.data->toOne();  
+      let newData = $oldData->replaceTreeNode($currentTreeNode, $newCurrentTreeNode)->cast(@RootJoinTreeNode);  
+      let dateColCursorSelect = $dateColCursor.select;  
+      let newSelect = ^$dateColCursorSelect(data = $newData, columns = []);  
+      ^$dateColCursor(  
+        select = $newSelect,  
+        currentTreeNode = $newCurrentTreeNode  
+      );,  
+    | let treeWithCalendarJoin      = applyJoinInTree($dateColCursor.select.data->toOne(), $dateColCursor.currentTreeNode->toOne(), $child,    $dateColCursor,        $nodeId,        JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);  
+      let treeWithBothCalendarJoins = applyJoinInTree($treeWithCalendarJoin.select.data->toOne(), $treeWithCalendarJoin.currentTreeNode->toOne(), $childEnd, $treeWithCalendarJoin, $nodeId + '_end', JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);  
+      $treeWithBothCalendarJoins;  
+  );  
 }
 
 function meta::relational::functions::pureToSqlQuery::calendarAggregations::processCalendarAggPureToSQL(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -80,7 +96,7 @@ function meta::relational::functions::pureToSqlQuery::calendarAggregations::proc
   let calendarFunction = getSupportedCalendarFunctions()->filter(x|$x.aggFunction == $expression.func);
 
   // Insert the two Calendar joins.
-  let selectWithBothCalendarJoins = meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoins($dateCol,$endDate, $calendarType, $nodeId, $operation, $state, $context, $extensions);
+  let selectWithBothCalendarJoins = meta::relational::functions::pureToSqlQuery::calendarAggregations::insertCalendarJoins($dateCol,$endDate, $calendarType, $nodeId, $state, $context, $extensions);
 
   // Merge the 'calendarJoins' and 'valueCol' SQLs
   let sqlWithBothCalendarJoins = $selectWithBothCalendarJoins.select->concatenate($valueCol.select)->mergeSQLQueryData($nodeId, $state, $context, $extensions);

@@ -38,7 +38,7 @@ public class MongoDBSchemaComposer
 
     private static void renderCollection(Collection c, StringBuilder builder, int indent)
     {
-        builder.append(getTabString(indent)).append("Collection ").append(c.name).append("\n");
+        builder.append(getTabString(indent)).append("Collection ").append(PureGrammarComposerUtility.convertIdentifier(c.name, true)).append("\n");
         builder.append(getTabString(indent)).append("(\n");
         renderValidatorProperties(c.validator, builder, indent + 1);
         builder.append(getTabString(indent)).append(")\n");

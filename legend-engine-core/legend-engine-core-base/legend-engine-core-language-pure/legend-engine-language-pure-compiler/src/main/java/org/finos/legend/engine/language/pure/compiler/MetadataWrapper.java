@@ -94,4 +94,27 @@ public class MetadataWrapper implements Metadata
     {
         return this.lazy.getEnum(enumerationName, enumName);
     }
+
+    @Override
+    public boolean supportsElementByPath()
+    {
+        return this.lazy.supportsElementByPath();
+    }
+
+    @Override
+    public boolean hasElement(String path)
+    {
+        return (supportsElementByPath() && isRoot(path)) || this.lazy.hasElement(path);
+    }
+
+    @Override
+    public CoreInstance getElementByPath(String path)
+    {
+        return (supportsElementByPath() && isRoot(path)) ? this.root : this.lazy.getElementByPath(path);
+    }
+
+    private static boolean isRoot(String path)
+    {
+        return M3Paths.Root.equals(path) || "::".equals(path);
+    }
 }

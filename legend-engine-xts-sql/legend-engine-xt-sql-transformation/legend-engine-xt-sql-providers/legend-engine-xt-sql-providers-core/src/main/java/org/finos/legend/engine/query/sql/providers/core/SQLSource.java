@@ -16,6 +16,7 @@
 package org.finos.legend.engine.query.sql.providers.core;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
@@ -32,8 +33,14 @@ public class SQLSource
     private final List<ExecutionOption> executionOptions;
     private final ExecutionContext executionContext;
     private final List<SQLSourceArgument> key;
+    private final ExecutionPlan preGeneratedPlan;
 
     public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key)
+    {
+        this(type, func, mapping, runtime, executionOptions, executionContext, key, null);
+    }
+
+    public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key, ExecutionPlan preGeneratedPlan)
     {
         this.type = type;
         this.func = func;
@@ -42,6 +49,7 @@ public class SQLSource
         this.executionOptions = executionOptions;
         this.executionContext = executionContext;
         this.key = key == null ? Collections.emptyList() : key;
+        this.preGeneratedPlan = preGeneratedPlan;
     }
 
     public String getType()
@@ -77,5 +85,10 @@ public class SQLSource
     public List<SQLSourceArgument> getKey()
     {
         return key;
+    }
+
+    public ExecutionPlan getPreGeneratedPlan()
+    {
+        return preGeneratedPlan;
     }
 }

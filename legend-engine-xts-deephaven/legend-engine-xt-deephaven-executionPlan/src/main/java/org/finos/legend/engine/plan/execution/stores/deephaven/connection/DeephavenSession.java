@@ -18,11 +18,13 @@ package org.finos.legend.engine.plan.execution.stores.deephaven.connection;
 import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.BarrageSessionFactoryConfig;
 import io.deephaven.client.impl.BarrageSessionFactoryConfig.Factory;
+import io.deephaven.client.impl.ClientChannelFactory;
 import io.deephaven.client.impl.ClientConfig;
 import io.deephaven.client.impl.Session;
 import io.deephaven.client.impl.SessionConfig;
 import io.deephaven.uri.DeephavenTarget;
 import io.grpc.ManagedChannel;
+import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
@@ -32,12 +34,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class DeephavenSession
+public class DeephavenSession implements AutoCloseable
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeephavenSession.class);
     private final Session clientSession;
     private final BarrageSession barrageSession;
-    private final RootAllocator bufferAllocator;
+    private final BufferAllocator bufferAllocator;
+    private final boolean ownsAllocator;
     private final ScheduledExecutorService scheduler;
     private final Factory factory;
     private final ManagedChannel managedChannel;
@@ -46,6 +49,7 @@ public class DeephavenSession
     {
         // TODO: there should be a constructor(s) that accept params "mtls" and "explicit" - however, would need to incorporate these concepts into AuthenticationSpecification first
         this.bufferAllocator = new RootAllocator();
+        this.ownsAllocator = true;
 
         // Create a scheduler thread pool. This is used by the Flight session.
         this.scheduler = Executors.newScheduledThreadPool(4);
@@ -63,6 +67,26 @@ public class DeephavenSession
         // Create a FlightSessionFactory. This stitches together the above components to create the real, live API session with the server.
         this.factory = BarrageSessionFactoryConfig.builder()
                 .clientConfig(clientConfig)
+                .allocator(bufferAllocator)
+                .scheduler(scheduler)
+                .build()
+                .factory();
+
+        this.barrageSession = factory.newBarrageSession(sessionConfig);
+        this.clientSession = this.barrageSession.session();
+        this.managedChannel = factory.managedChannel();
+    }
+
+    public DeephavenSession(ClientConfig clientConfig, SessionConfig sessionConfig, ClientChannelFactory clientChannelFactory, BufferAllocator bufferAllocator)
+    {
+        this.bufferAllocator = bufferAllocator;
+        this.ownsAllocator = false;
+
+        this.scheduler = Executors.newScheduledThreadPool(4);
+
+        this.factory = BarrageSessionFactoryConfig.builder()
+                .clientConfig(clientConfig)
+                .clientChannelFactory(clientChannelFactory)
                 .allocator(bufferAllocator)
                 .scheduler(scheduler)
                 .build()
@@ -118,7 +142,10 @@ public class DeephavenSession
                     LOGGER.warn("Scheduler failed to terminate even after shutdownNow");
                 }
             }
-            bufferAllocator.close();
+            if (ownsAllocator)
+            {
+                bufferAllocator.close();
+            }
         }
         catch (Exception e)
         {

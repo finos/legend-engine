@@ -139,7 +139,13 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                                 )
                                                             )
                                                   ),
-                                                d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
+                                                d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] |
+                                                  let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($r.type);
+                                                  let handler = $dbConfig.dbExtension.processTestConnectionDatasourceSpecification;
+                                                  if ($handler->isEmpty(),
+                                                      | $d,
+                                                      | $handler->toOne()->eval($d, $specificConnectionStores.element->cast(@meta::relational::metamodel::Database))
+                                                  );
                                             ])
                                           ),
                                     conn:Connection[1] | $conn

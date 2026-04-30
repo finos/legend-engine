@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
+import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.sql.Connection;
+import java.util.Map;
 
 public interface ConnectionManager
 {
@@ -27,4 +30,21 @@ public interface ConnectionManager
     ConnectionKey generateKeyFromDatabaseConnection(DatabaseConnection databaseConnection);
 
     Connection getTestDatabaseConnection();
+
+    /**
+     * Preprocesses a DatabaseConnection before it enters key generation and DataSourceSpecification
+     * construction. Extensions may enrich the connection using the executing user's identity
+     * and/or allocation variables from the execution state.
+     * <p>
+     * The default implementation returns the connection unchanged.
+     *
+     * @param connection       the database connection to preprocess
+     * @param identity         the identity of the executing user
+     * @param allocationResults  allocation variables (name &rarr; Result) from the current execution state
+     * @return the (possibly enriched) DatabaseConnection
+     */
+    default DatabaseConnection preprocessConnection(DatabaseConnection connection, Identity identity, Map<String, Result> allocationResults)
+    {
+        return connection;
+    }
 }

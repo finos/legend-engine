@@ -14,9 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
 
+import java.util.List;
+
 public class DuckDBDatasourceSpecification extends DatasourceSpecification
 {
     public String path;
+
+    public String testDataSetupCsv;
+    public List<String> testDataSetupSqls;
 
     @Override
     public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)

@@ -165,6 +165,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
             "Service test::Service \n" +
             "{\n" +
             "  pattern : 'test';\n" +
+            "  title: 'test';\n" +
             "  documentation : 'test';\n" +
             "  autoActivateUpdates: true;\n" +
             "  execution: Single\n" +
@@ -349,6 +350,7 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
                 "Service test::Service \n" +
                 "{\n" +
                 "  pattern : 'test';\n" +
+                "  title : 'test';\n" +
                 "  documentation : 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
@@ -608,12 +610,13 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'Test Firm Service';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'testing';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
@@ -878,12 +881,13 @@ public class TestPersistenceV2CompilationFromGrammar extends TestCompilationFrom
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'testFirmService';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'testing';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +

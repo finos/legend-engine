@@ -1,0 +1,168 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::standard::date::aggregator::min::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_standard/date/aggregator/min.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_Date_Function_1__Boolean_1_',
+                      [
+                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::min(%2025-02-10)',
+                            'select case when Date\'2025-02-10\' < Timestamp\'2025-02-10 20:10:20\' then Date\'2025-02-10\' else Timestamp\'2025-02-10 20:10:20\' end'
+                        ),
+                        rev('|%2025-02-10->meta::pure::functions::date::min(%2025-02-10T20:10:20+0000)',
+                            'select case when Timestamp\'2025-02-10 20:10:20\' < Date\'2025-02-10\' then Timestamp\'2025-02-10 20:10:20\' else Date\'2025-02-10\' end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_',
+                      [
+                        revError('|[]->meta::pure::functions::lang::cast(@Date)->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-10T20:10:20+0000, %2025-02-10]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-10, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-09, %2025-04-09, %2025-02-09T01:15:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_',
+                      [
+                        rev('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::min(%2025-01-10T15:25:30+0000)',
+                            'select case when Timestamp\'2025-01-10 15:25:30\' < Timestamp\'2025-02-10 20:10:20\' then Timestamp\'2025-01-10 15:25:30\' else Timestamp\'2025-02-10 20:10:20\' end'
+                        ),
+                        rev('|%2025-01-10T15:25:30+0000->meta::pure::functions::date::min(%2025-02-10T20:10:20+0000)',
+                            'select case when Timestamp\'2025-02-10 20:10:20\' < Timestamp\'2025-01-10 15:25:30\' then Timestamp\'2025-02-10 20:10:20\' else Timestamp\'2025-01-10 15:25:30\' end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_',
+                      [
+                        revError('|[]->meta::pure::functions::lang::cast(@DateTime)->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|%2025-02-10T20:10:20+0000->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-10T20:10:20+0000, %2025-01-10T15:25:30+0000]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-01-10T15:25:30+0000, %2025-02-10T20:10:20+0000]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-01-10T15:25:30+0000, %2025-02-10T10:11:15+0000, %2025-02-10T20:10:20+0000, %2024-05-17T23:11:14+0000]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_StrictDate_Function_1__Boolean_1_',
+                      [
+                        rev('|%2025-04-09->meta::pure::functions::date::min(%2025-02-09)',
+                            'select case when Date\'2025-02-09\' < Date\'2025-04-09\' then Date\'2025-02-09\' else Date\'2025-04-09\' end'
+                        ),
+                        rev('|%2025-02-09->meta::pure::functions::date::min(%2025-04-09)',
+                            'select case when Date\'2025-04-09\' < Date\'2025-02-09\' then Date\'2025-04-09\' else Date\'2025-02-09\' end'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_',
+                      [
+                        revError('|[]->meta::pure::functions::lang::cast(@StrictDate)->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|%2025-02-09->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-04-09, %2025-02-09]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-09, %2025-04-09]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        ),
+                        revError('|[%2025-02-09, %2025-04-09, %2025-01-01, %2024-12-14, %2025-04-02]->meta::pure::functions::date::min()',
+                                 '',
+                                 'Unexpected token',
+                                 '"Unused format args. [2] arguments provided to expression "max(%s)""'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_',
+                      [
+                        noRev('|#TDS{\n'+
+                              'id:Integer[1],time:Date[1],volume:Integer[1]\n'+
+                              '1,2026-01-07T00:00:00.000+0000,820000\n'+
+                              '2,2026-01-07T06:00:00.000+0000,520000\n'+
+                              '3,2026-01-07T06:00:00.000+0000,480000\n'+
+                              '4,2026-01-08T00:00:00.000+0000,480000\n'+
+                              '5,2026-01-08T00:00:00.000+0000,480000\n'+
+                              '6,2026-01-09T00:00:00.000+0000,520000\n'+
+                              '7,2026-01-09T01:00:00.000+0000,820000\n'+
+                              '}#->meta::pure::functions::relation::extend(~volume->meta::pure::functions::relation::over(), ~minDate:{p: meta::pure::metamodel::relation::Relation<(id:Integer[1], time:Date[1], volume:Integer[1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[1], time:Date[1], volume:Integer[1])>[1], r: (id:Integer[1], time:Date[1], volume:Integer[1])[1]|$r.time}:y: Date[*]|$y->meta::pure::functions::date::min())')
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::standard::date::aggregator::min::exec():Boolean[1]
+{
+   meta::pure::functions::date::tests::min::testMin_Date(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::min::testMin_DateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::min::testMin_DateTime(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::min::testMin_DateTimeArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::date::tests::min::testMin_StrictDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::min::testMin_StrictDateArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   //meta::pure::functions::date::tests::min::testExtendMinDate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

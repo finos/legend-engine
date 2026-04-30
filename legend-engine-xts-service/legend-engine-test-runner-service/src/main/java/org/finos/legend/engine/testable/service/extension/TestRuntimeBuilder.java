@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.testable.connection.TestConnectionBuilder;
 
 import java.io.Closeable;
@@ -37,6 +38,11 @@ import java.util.List;
 public class TestRuntimeBuilder
 {
     protected static Pair<Runtime, List<Closeable>> getTestRuntimeAndClosableResources(Runtime runtime, TestData testData, PureModelContextData pureModelContextData)
+    {
+        return getTestRuntimeAndClosableResources(runtime, testData, pureModelContextData, TestConnectionBuildParameters.NONE);
+    }
+
+    protected static Pair<Runtime, List<Closeable>> getTestRuntimeAndClosableResources(Runtime runtime, TestData testData, PureModelContextData pureModelContextData, TestConnectionBuildParameters hints)
     {
         List<Closeable> closeables = Lists.mutable.empty();
         EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
@@ -71,7 +77,7 @@ public class TestRuntimeBuilder
                     }
                 }
             }
-            Pair<Connection, List<Closeable>> connectionWithCloseables = connectionStores.connectionPointer.accept(new TestConnectionBuilder(data, pureModelContextData));
+            Pair<Connection, List<Closeable>> connectionWithCloseables = connectionStores.connectionPointer.accept(new TestConnectionBuilder(data, pureModelContextData, hints));
 
             closeables.addAll(connectionWithCloseables.getTwo());
 
@@ -106,7 +112,7 @@ public class TestRuntimeBuilder
                     }
                 }
 
-                Pair<Connection, List<Closeable>> connectionWithCloseables = identifiedConnection.connection.accept(new TestConnectionBuilder(embeddedData, pureModelContextData));
+                Pair<Connection, List<Closeable>> connectionWithCloseables = identifiedConnection.connection.accept(new TestConnectionBuilder(embeddedData, pureModelContextData, hints));
 
                 closeables.addAll(connectionWithCloseables.getTwo());
 

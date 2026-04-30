@@ -17,16 +17,23 @@ package org.finos.legend.engine.testable.assertion;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToRelationAssertFail;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CInteger;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 
 public class TestTestAssertionEvaluator
@@ -227,5 +234,110 @@ public class TestTestAssertionEvaluator
         data.data = "{\"negExp\":[6.2292853E-8, 6.2292853E-7, 0.0000062292853, 0.62292853], \"posExp\":[6.2292853, 62.292853, 62529285, 62292853, 622928534], \"noExp\":[0.62, 62, 6.2]}";
         AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
         Assert.assertTrue(assertionStatus instanceof AssertPass);
+    }
+
+    // ======================== EqualToRelation Tests ========================
+
+    @Test
+    public void testEqualToRelationAssertionPass()
+    {
+        // Actual result from execution engine (JSON format)
+        ConstantResult constantResult = new ConstantResult("[{\"id\":1,\"firstName\":\"John\",\"lastName\":\"Smith\"},{\"id\":2,\"firstName\":\"Jane\",\"lastName\":\"Doe\"}]");
+
+        // Expected result as RelationElement
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("id", "firstName", "lastName");
+        element.rows = Arrays.asList(
+                makeRow("1", "John", "Smith"),
+                makeRow("2", "Jane", "Doe")
+        );
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof AssertPass);
+        Assert.assertEquals("assert1", status.id);
+    }
+
+    @Test
+    public void testEqualToRelationAssertionFail()
+    {
+        // Actual result has "Johnny" instead of "John"
+        ConstantResult constantResult = new ConstantResult("[{\"id\":1,\"firstName\":\"Johnny\",\"lastName\":\"Smith\"},{\"id\":2,\"firstName\":\"Jane\",\"lastName\":\"Doe\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("id", "firstName", "lastName");
+        element.rows = Arrays.asList(
+                makeRow("1", "John", "Smith"),
+                makeRow("2", "Jane", "Doe")
+        );
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof EqualToRelationAssertFail);
+        Assert.assertEquals("assert1", status.id);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToRelationAssertFail) status).message);
+
+        // Verify TDS format in expected
+        String expectedTds = ((EqualToRelationAssertFail) status).expected;
+        Assert.assertTrue(expectedTds.contains("id"));
+        Assert.assertTrue(expectedTds.contains("firstName"));
+        Assert.assertTrue(expectedTds.contains("John"));
+
+        // Verify TDS format in actual
+        String actualTds = ((EqualToRelationAssertFail) status).actual;
+        Assert.assertTrue(actualTds.contains("Johnny"));
+    }
+
+    @Test
+    public void testEqualToRelationAssertionWithEmptyResult()
+    {
+        // Actual: empty array
+        ConstantResult constantResult = new ConstantResult("[]");
+
+        // Expected: has rows
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("id", "name");
+        element.rows = Collections.singletonList(makeRow("1", "John"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof EqualToRelationAssertFail);
+    }
+
+    @Test
+    public void testEqualToRelationAssertionWithSingleRow()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"name\":\"Alice\",\"age\":30}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("name", "age");
+        element.rows = Collections.singletonList(makeRow("Alice", "30"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    private static RelationRowTestData makeRow(String... values)
+    {
+        RelationRowTestData row = new RelationRowTestData();
+        row.values = Arrays.asList(values);
+        return row;
     }
 }

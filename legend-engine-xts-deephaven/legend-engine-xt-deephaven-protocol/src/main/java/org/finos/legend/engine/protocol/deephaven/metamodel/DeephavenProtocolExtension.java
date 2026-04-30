@@ -47,6 +47,7 @@ public class DeephavenProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(DeephavenStore.class, "deephavenStore")
+                        .withSubtype(DeephavenApp.class, "DeephavenApp")
                         .build(),
                 // Connection
                 ProtocolSubTypeInfo.newBuilder(Connection.class)
@@ -67,6 +68,9 @@ public class DeephavenProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(DeephavenStore.class, "meta::external::store::deephaven::metamodel::store::DeephavenStore");
+        return Maps.mutable.with(
+                DeephavenStore.class, "meta::external::store::deephaven::metamodel::store::DeephavenStore",
+                DeephavenApp.class, "meta::external::function::activator::deephavenApp::DeephavenApp"
+        );
     }
 }

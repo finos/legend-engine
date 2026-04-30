@@ -30,7 +30,7 @@ public class DataSourceIdentifiersCaseSensitiveVisitor implements DatasourceSpec
     {
         MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
         return ListIterate
-                .collect(extensions, extension -> extension.getQuotedIdentifiersIgnoreCase(datasourceSpecification))
+                .collect(extensions, extension -> extension.getIdentifiersCaseSensitivity(datasourceSpecification))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElse(null);

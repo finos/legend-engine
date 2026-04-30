@@ -154,8 +154,10 @@ public class Test_Relational_ClickHouse_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
             one("meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
             one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
-            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'.")
-
+            one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."),
+            // New PCT tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification")
     );
 
     public static Test suite()

@@ -85,9 +85,12 @@ public class RelationalValidator
                     {
                         ((RootRelationalInstanceSetImplementation) cm)._propertyMappings().select(p -> p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping && !(p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.SemiStructuredRelationalPropertyMapping)).forEach(pm -> validateRelationalPropertyMapping((RootRelationalInstanceSetImplementation) cm, pureModel, (org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping) pm, s, mappingValidatorContext));
                     });
-                    mapping._associationMappings().select(a -> a instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalAssociationImplementation).forEach(relAssoc ->
+
+                    RichIterable<? extends AssociationImplementation> associationMappings = mapping._associationMappings().select(a -> a instanceof RelationalAssociationImplementation);
+                    MapIterable<String, SetImplementation> classMappingIndex = associationMappings.isEmpty() ? Maps.immutable.empty() : getClassMappingsByIdIncludeEmbedded(pureModel, mapping, mappingValidatorContext);
+                    associationMappings.forEach(relAssoc ->
                     {
-                        validateAssociationImplementation((RelationalAssociationImplementation) relAssoc, pureModel, s, mappingValidatorContext);
+                        validateAssociationImplementation((RelationalAssociationImplementation) relAssoc, classMappingIndex, pureModel, s, mappingValidatorContext);
                     });
                 }
         );
@@ -304,10 +307,8 @@ public class RelationalValidator
     }
 
 
-    public static void validateAssociationImplementation(RelationalAssociationImplementation associationMapping, PureModel pureModel, String mappingID, MappingValidatorContext mappingValidatorContext) throws PureCompilationException
+    public static void validateAssociationImplementation(RelationalAssociationImplementation associationMapping, MapIterable<String, SetImplementation> classMappingIndex, PureModel pureModel, String mappingID, MappingValidatorContext mappingValidatorContext) throws PureCompilationException
     {
-        Mapping parentMapping = (Mapping) associationMapping._parent();
-        MapIterable<String, SetImplementation> classMappingIndex = getClassMappingsByIdIncludeEmbedded(pureModel, parentMapping, mappingValidatorContext);
 
         RichIterable<? extends PropertyMapping> propertyMappings = associationMapping._propertyMappings();
         for (PropertyMapping propertyMapping : propertyMappings)

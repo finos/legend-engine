@@ -111,29 +111,4 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     {
         return this.handlers;
     }
-
-    @Override
-    public void insertFunctionHandlerAtIndex(int idx, FunctionHandler functionHandler)
-    {
-        if (idx < 0)
-        {
-            handlers.add(0, functionHandler);
-        }
-        else
-        {
-            handlers.add(Math.min(idx, handlers.size() - 1), functionHandler);
-        }
-    }
-
-    @Override
-    public FunctionExpressionBuilder getFunctionExpressionBuilderAtIndex(int idx)
-    {
-        throw new UnsupportedOperationException("Multi-handler function expression builder does not support getting function expression builder at a particular index");
-    }
-
-    @Override
-    public void insertFunctionExpressionBuilderAtIndex(int idx, FunctionExpressionBuilder functionExpressionBuilder)
-    {
-        throw new UnsupportedOperationException("Multi-handler function expression builder does not support inserting function expression builder at a particular index");
-    }
 }

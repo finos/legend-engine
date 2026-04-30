@@ -61,20 +61,30 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "ERROR: operator does not exist: integer = text"),
 
             // Max
-            one("meta::pure::functions::math::tests::max::testMax_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::math::tests::max::testMax_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_", "\"\nexpected: 2D\nactual:   2.0\""),
             one("meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
 
             // MaxBY
             one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::tests::maxBy::testSimpleGroupByMaxBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""),
 
             // Min
-            one("meta::pure::functions::math::tests::min::testMin_Floats_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::math::tests::min::testMin_Integers_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_", "\"\nexpected: 1.0D\nactual:   1.0\""),
             one("meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_", "\"\nexpected: 1.23D\nactual:   1.23\""),
             one("meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
+            one("meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_", "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_", "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""),
+            one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
 
             // MinBy
             one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""),
@@ -118,10 +128,6 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type: Postgres"),
             one("meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: OVER is not supported for ordered-set aggregate percentile_cont"),
 
-            one("meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"cosh(%s)\"\""),
-            one("meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"sinh(%s)\"\""),
-            one("meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"tanh(%s)\"\""),
-
             // Bitwise
             pack("meta::pure::functions::math::tests::bitAnd", "\"[unsupported-api] The function 'bitAnd' (state: [Select, false]) is not supported yet\""),
             pack("meta::pure::functions::math::tests::bitNot", "\"[unsupported-api] The function 'bitNot' (state: [Select, false]) is not supported yet\""),
@@ -136,12 +142,6 @@ public class Test_Relational_Postgres_StandardFunctions_PCT extends PCTReportCon
             // Hash
             one("meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashCode' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""),
-
-            // And
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "Can't find the packageable element 'andtrue'"),
-
-            // Or
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "Can't find the packageable element 'ortrue'"),
 
             // Inequalities
             one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_String_Function_1__Boolean_1_", "Assert failed"),

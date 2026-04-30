@@ -129,7 +129,7 @@ function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
           #{
             default.PersonTable:
                id,firm_id,firstName,lastName,employeeType
-               1,1,I'm John,"Doe\, Jr",FTO
+               1,1,I'm John,"Doe, Jr",FTO
                2,1,Nicole,Smith,FTC
                3,2,Time,Smith,FTE;
           }#;
@@ -163,7 +163,7 @@ function model::PersonWithParams(firstName: String[1]): meta::pure::tds::Tabular
           #{
             default.PersonTable:
               id,firm_id,firstName,lastName,employeeType
-              1,1,I'm John,"Doe\, Jr",FTO\n
+              1,1,I'm John,"Doe, Jr",FTO
               2,1,Nicole,Smith,FTC
               3,2,Time,Smith,FTE;
           }#;

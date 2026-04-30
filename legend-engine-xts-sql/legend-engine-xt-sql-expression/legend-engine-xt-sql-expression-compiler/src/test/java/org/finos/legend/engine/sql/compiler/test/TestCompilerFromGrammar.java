@@ -25,12 +25,50 @@ import static org.junit.Assert.*;
 public class TestCompilerFromGrammar
 {
     @Test
-    public void testSimple()
+    public void testCSV()
     {
         testCompile("function pack::f():Boolean[1]\n" +
                 "{\n" +
                 "   #SQL{select a from csv('a,b\n1,2\n3,4')}#->filter(x|$x.a == 1);" +
                 "   true;" +
+                "}");
+    }
+
+    @Test
+    public void testFunc()
+    {
+        testCompile("function pack::f2(): Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select a from csv('a,b\n1,2\n3,4')}#\n" +
+                "}\n\n" + "function pack::f(): String[1]\n" +
+                "{\n" +
+                "  #SQL{select * from func('pack::f2__Relation_1_')}#;\n" +
+                "  '';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFuncSubqueries()
+    {
+        testCompile("###Relational\n" +
+                "Database pack::DB" +
+                "(\n" +
+                "   Table myTab(a INT, b INT)" +
+                ")\n" +
+                "###Pure\n" +
+                "function pack::func3(r:Relation<(a:Integer[0..1], b:Integer[0..1])>[1]):Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from var('r')}#\n" +
+                "}\n" +
+                "\n" +
+                "function pack::func4():Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from csv('a,b\n1,2\n3,4')))}#\n" +
+                "}" +
+                "\n" +
+                "function pack::func5():Relation<Any>[1]\n" +
+                "{\n" +
+                "  #SQL{select * from func('pack::func3_Relation_1__Relation_1_', r => (select * from tb('pack::DB.myTab')))}#\n" +
                 "}");
     }
 
@@ -42,6 +80,26 @@ public class TestCompilerFromGrammar
                 "   #SQL{select a from csv('a,b\n1,2\n3,4')}#->filter(x|$x.ba == 1);" +
                 "   true;" +
                 "}","COMPILATION error at [5:22-23]: The column 'ba' can't be found in the relation (a:Integer)");
+    }
+
+    @Test
+    public void  testTranspileErrorWithinSQL()
+    {
+        testCompile("function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #SQL{select a from abc}#;" +
+                "   true;" +
+                "}","COMPILATION error at [1:1-3:37]: Error in 'pack::f__Boolean_1_': no cte named \"abc\"\" found. Known ctes []");
+    }
+
+    @Test
+    public void  testParseErrorWithinSQL()
+    {
+        testCompile("function pack::f():Boolean[1]\n" +
+                "{\n" +
+                "   #SQL{select a frm abc}#;" +
+                "   true;" +
+                "}","PARSER error at [1:1-3:36]: Error in 'pack::f__Boolean_1_': Unexpected token");
     }
 
     @Test
@@ -77,7 +135,7 @@ public class TestCompilerFromGrammar
                 " #SQL{select FIRSTNAME,FIRMID from tb('meta::analytics::lineage::tests::db.personTable') as t }#->join( #SQL{select FIRM_ID, NAME from tb('meta::analytics::lineage::tests::db.firmTable')}#, JoinKind.INNER, {x,y| $x.FIRMID == $y.FIRM_ID}) ;\n" +
                 "true;\n" +
                 "}\n"
-             );
+        );
     }
 
 

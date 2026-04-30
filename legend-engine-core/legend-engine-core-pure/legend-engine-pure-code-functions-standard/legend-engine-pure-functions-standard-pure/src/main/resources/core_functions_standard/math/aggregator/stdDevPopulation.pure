@@ -29,6 +29,11 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
     meta::pure::functions::math::stdDev($numbers, false);
 }
 
+function <<PCT.function>> {doc.doc='Returns the population standard deviation (square root of variance) of non-NULL values on the given column of the current window, and frame for the current row'} meta::pure::functions::math::stdDevPopulation<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Number[1]
+{
+    reduce($partition, $window, $row, x|eval($colToAgg, $x), y|$y->stdDevPopulation());
+}
+
 function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
    assertEq(0.5, $f->eval(|stdDevPopulation([1,2])));
@@ -66,15 +71,16 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   2, 2
                   2, 4
                 #->extend(over(~id), ~newCol:{p,w,r|$r.val}:y|$y->meta::pure::functions::math::stdDevPopulation())
+                 ->extend(over(~id), ~newCol2:{p,w,r|stdDevPopulation($p, $w, $r, ~val)})
                };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   id,val,newCol\n'+
-                  '   1,1,0.5\n'+
-                  '   1,2,0.5\n'+
-                  '   2,2,1.0\n'+
-                  '   2,4,1.0\n'+
+                  '   id,val,newCol,newCol2\n'+
+                  '   1,1,0.5,0.5\n'+
+                  '   1,2,0.5,0.5\n'+
+                  '   2,2,1.0,1.0\n'+
+                  '   2,4,1.0,1.0\n'+
                   '#', $res->sort([~id->ascending(), ~val->ascending()])->toString());
 }

@@ -33,6 +33,10 @@ import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamo
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_store_Table;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_store_Table_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_store_Column_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_DecimalType;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_DecimalType_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_TimestampType;
+import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_TimestampType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_Type;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_BooleanType;
 import org.finos.legend.pure.generated.Root_meta_external_store_deephaven_metamodel_type_BooleanType_Impl;
@@ -178,6 +182,21 @@ public class HelperDeephavenStoreBuilder
         public Root_meta_external_store_deephaven_metamodel_type_DateTimeType visit(DateTimeType val)
         {
             return new Root_meta_external_store_deephaven_metamodel_type_DateTimeType_Impl(val.getClass().getName(), null, this.context.pureModel.getClass("meta::external::store::deephaven::metamodel::type::DateTimeType")).__type("dateTimeType");
+        }
+
+        @Override
+        public Root_meta_external_store_deephaven_metamodel_type_DecimalType visit(DecimalType val)
+        {
+            return new Root_meta_external_store_deephaven_metamodel_type_DecimalType_Impl(val.getClass().getName(), null, this.context.pureModel.getClass("meta::external::store::deephaven::metamodel::type::DecimalType"))
+                    .__type("decimalType")
+                    ._precision((long) val.precision)
+                    ._scale((long) val.scale);
+        }
+
+        @Override
+        public Root_meta_external_store_deephaven_metamodel_type_TimestampType visit(TimestampType val)
+        {
+            return new Root_meta_external_store_deephaven_metamodel_type_TimestampType_Impl(val.getClass().getName(), null, this.context.pureModel.getClass("meta::external::store::deephaven::metamodel::type::TimestampType")).__type("timestampType");
         }
     }
 

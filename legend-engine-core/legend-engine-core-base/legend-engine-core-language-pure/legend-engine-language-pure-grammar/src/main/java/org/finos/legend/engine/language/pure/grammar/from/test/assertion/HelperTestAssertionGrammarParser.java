@@ -14,15 +14,19 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.test.assertion;
 
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.RelationElementsEmbeddedDataTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -30,6 +34,83 @@ import java.util.List;
 
 public class HelperTestAssertionGrammarParser
 {
+    // -------------------------------------- Island Content Extraction --------------------------------------
+
+    /**
+     * Extracts raw text content from island grammar content contexts (the tokens between #{ and }#).
+     * Strips the trailing }# (last 2 characters).
+     */
+    public static String extractIslandContent(List<? extends ParseTree> contentContexts)
+    {
+        StringBuilder builder = new StringBuilder();
+        contentContexts.forEach(cc -> builder.append(cc.getText()));
+        if (builder.length() >= 2)
+        {
+            builder.setLength(builder.length() - 2);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Builds a ParseTreeWalkerSourceInformation for island grammar content,
+     * adjusting line/column offsets based on the island open token position.
+     */
+    public static ParseTreeWalkerSourceInformation buildIslandSourceInformation(
+            TerminalNode islandOpen,
+            ParseTreeWalkerSourceInformation parentWalkerSourceInformation)
+    {
+        int startLine = islandOpen.getSymbol().getLine();
+        int lineOffset = parentWalkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? parentWalkerSourceInformation.getColumnOffset() : 0)
+                + islandOpen.getSymbol().getCharPositionInLine()
+                + islandOpen.getSymbol().getText().length();
+        return new ParseTreeWalkerSourceInformation.Builder(parentWalkerSourceInformation)
+                .withLineOffset(lineOffset)
+                .withColumnOffset(columnOffset)
+                .build();
+    }
+
+    // -------------------------------------- Relation Parsing --------------------------------------
+
+    /**
+     * Parses flat CSV content into a RelationElement using the RelationElementsData grammar.
+     * Prepends ':' to trigger TABLE_START in the lexer (entering TABLE_MODE).
+     *
+     * @param flatCsvContent the raw CSV text (column headers + rows)
+     * @param innerWalkerSourceInformation source information for error reporting
+     * @param sourceInformation source information for the resulting element
+     * @return the parsed RelationElement with columns and rows
+     */
+    public static RelationElement parseRelationElement(
+            String flatCsvContent,
+            ParseTreeWalkerSourceInformation innerWalkerSourceInformation,
+            SourceInformation sourceInformation)
+    {
+        // Prepend ':' to trigger TABLE_START in the lexer, entering TABLE_MODE for flat CSV parsing
+        String content = ": " + flatCsvContent.trim();
+
+        org.antlr.v4.runtime.CharStream input = org.antlr.v4.runtime.CharStreams.fromString(content);
+        ParserErrorListener errorListener = new ParserErrorListener(innerWalkerSourceInformation);
+        org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.relation.RelationElementsDataLexerGrammar lexer =
+                new org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.relation.RelationElementsDataLexerGrammar(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.relation.RelationElementsDataParserGrammar parser =
+                new org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.relation.RelationElementsDataParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+
+        RelationElementsEmbeddedDataTreeWalker treeWalker = new RelationElementsEmbeddedDataTreeWalker(innerWalkerSourceInformation, sourceInformation, null);
+        org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData elementsData = treeWalker.visit(parser.definition());
+
+        if (elementsData.relationElements == null || elementsData.relationElements.isEmpty())
+        {
+            throw new EngineException("Expected at least one relation element in Relation assertion", sourceInformation, EngineErrorType.PARSER);
+        }
+
+        return elementsData.relationElements.get(0);
+    }
+
     /**
      * Helper for parsing test assertion grammar.  To use your grammar should include the definitions from
      * TestAssertionParserGrammar.g4:

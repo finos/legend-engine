@@ -26,6 +26,17 @@ identifier:                             VALID_STRING | STRING
                                         | VALIDATION_TYPE
                                         | VALIDATION_TYPE_ROW
                                         | VALIDATION_TYPE_AGG
+                                        | DATAQUALITYRELATIONCOMPARISON
+                                        | RECON_SOURCE
+                                        | RECON_TARGET
+                                        | RECON_KEYS
+                                        | COLUMNS_TO_COMPARE
+                                        | RECON_STRATEGY
+                                        | RECON_STRATEGY_MD5
+                                        | RECON_SOURCE_HASH_COLUMN
+                                        | RECON_TARGET_HASH_COLUMN
+                                        | RECON_AGGREGATED_HASH
+                                        | RECON_EXPECTED_MATCH
 ;
 
 
@@ -36,6 +47,7 @@ definition:                           (validationDefinition)*
 ;
 validationDefinition:                  classValidationDefinition
                                        | relationValidationDefinition
+                                       | relationComparisonDefinition
 ;
 
 classValidationDefinition:              DATAQUALITYVALIDATION stereotypes? taggedValues? qualifiedName
@@ -47,10 +59,6 @@ classValidationDefinition:              DATAQUALITYVALIDATION stereotypes? tagge
                                              )*
                                         BRACE_CLOSE
 ;
-stereotypes:                           LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN;
-stereotype:                            qualifiedName DOT identifier;
-taggedValues:                          BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE;
-taggedValue:                           qualifiedName DOT identifier EQUAL STRING;
 
 
 dqContext:                            DQCONTEXT COLON (fromDataSpace| fromMappingAndRuntime)
@@ -144,4 +152,51 @@ validationAssertion:                   VALIDATION_ASSERTION COLON combinedExpres
 validationType:                        VALIDATION_TYPE COLON validationTypeVal SEMI_COLON
 ;
 validationTypeVal:                     VALIDATION_TYPE_ROW | VALIDATION_TYPE_AGG
+;
+
+
+// -------------------- Relation Comparison Definition ------------------------------------
+relationComparisonDefinition:   DATAQUALITYRELATIONCOMPARISON qualifiedName
+                                BRACE_OPEN
+                                    (
+                                        reconSource
+                                        | reconTarget
+                                        | reconKeys
+                                        | columnsToCompare
+                                        | reconStrategy
+                                        | reconExpectedMatch
+                                    )*
+                                BRACE_CLOSE
+;
+
+reconSource:                            RECON_SOURCE COLON combinedExpression SEMI_COLON
+;
+reconTarget:                            RECON_TARGET COLON combinedExpression SEMI_COLON
+;
+reconKeys:                              RECON_KEYS COLON BRACKET_OPEN
+                                            (identifier (COMMA identifier)*)
+                                        BRACKET_CLOSE SEMI_COLON
+;
+columnsToCompare:                       COLUMNS_TO_COMPARE COLON BRACKET_OPEN
+                                            (identifier (COMMA identifier)*)
+                                        BRACKET_CLOSE SEMI_COLON
+;
+reconStrategy:                          RECON_STRATEGY COLON reconStrategyValue
+                                        (BRACE_OPEN
+                                           (
+                                                reconSourceHashColumn
+                                                | reconTargetHashColumn
+                                                | reconAggregatedHash
+                                            )+
+                                        BRACE_CLOSE)? SEMI_COLON
+;
+reconStrategyValue:                     RECON_STRATEGY_MD5
+;
+reconSourceHashColumn:                  RECON_SOURCE_HASH_COLUMN COLON identifier SEMI_COLON
+;
+reconTargetHashColumn:                  RECON_TARGET_HASH_COLUMN COLON identifier SEMI_COLON
+;
+reconAggregatedHash:                    RECON_AGGREGATED_HASH COLON BOOLEAN SEMI_COLON
+;
+reconExpectedMatch:                     RECON_EXPECTED_MATCH COLON FLOAT SEMI_COLON
 ;

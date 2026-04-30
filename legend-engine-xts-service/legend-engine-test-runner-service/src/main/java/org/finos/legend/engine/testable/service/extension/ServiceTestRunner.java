@@ -63,14 +63,17 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +119,28 @@ public class ServiceTestRunner implements TestRunner
     @Override
     public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data)
     {
+        TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
+        try
+        {
+            if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
+            {
+                Root_meta_legend_service_metamodel_PureExecution pureExecution = (Root_meta_legend_service_metamodel_PureExecution) pureService._execution();
+                if (TestReturnTypeHelper.isRelationReturnType(pureExecution._func(), pureModel))
+                {
+                    hints = TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // If we can't determine the return type, default to H2
+        }
+
+        return executeTestSuiteInternal(testSuite, atomicTestIds, pureModel, data, hints);
+    }
+
+    private List<TestResult> executeTestSuiteInternal(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data, TestConnectionBuildParameters hints)
+    {
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
@@ -136,13 +161,13 @@ public class ServiceTestRunner implements TestRunner
             }
             if (((PureMultiExecution) service.execution).executionParameters != null && !((PureMultiExecution) service.execution).executionParameters.isEmpty())
             {
-                return executeMultiExecutionParametersTestSuite(atomicTestIds, pureModel, data, routerExtensions, planTransformers, service, suite, testResultsByTestId, atomicTestsInScope);
+                return executeMultiExecutionParametersTestSuite(atomicTestIds, pureModel, data, routerExtensions, planTransformers, service, suite, testResultsByTestId, atomicTestsInScope, hints);
             }
-            return executeMultiExecutionEnvironmentTestSuite((PureMultiExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers, testResultsByTestId);
+            return executeMultiExecutionEnvironmentTestSuite((PureMultiExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers, testResultsByTestId, hints);
         }
         else if (service.execution instanceof PureSingleExecution)
         {
-            return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers);
+            return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, atomicTestIds, pureModel, data, routerExtensions, planTransformers, hints);
         }
         else
         {
@@ -150,7 +175,7 @@ public class ServiceTestRunner implements TestRunner
         }
     }
 
-    private List<TestResult> executeMultiExecutionParametersTestSuite(List<String> atomicTestIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Service service, ServiceTestSuite suite, Map<String, MultiExecutionServiceTestResult> testResultsByTestId, List<AtomicTest> atomicTestsInScope)
+    private List<TestResult> executeMultiExecutionParametersTestSuite(List<String> atomicTestIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Service service, ServiceTestSuite suite, Map<String, MultiExecutionServiceTestResult> testResultsByTestId, List<AtomicTest> atomicTestsInScope, TestConnectionBuildParameters hints)
     {
         Pair<Runtime,List<Closeable>> runtimeWithCloseables = null;
         MutableMap<String, Pair<Runtime, List<Closeable>>> runtimeWithKeyMap = Maps.mutable.empty();
@@ -186,12 +211,12 @@ public class ServiceTestRunner implements TestRunner
                     }
                     else
                     {
-                        runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, suite.testData, data);
+                        runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, suite.testData, data, hints);
                         runtimeWithKeyMap.put(param.key, runtimeWithCloseables);
                         pureSingleExecution.runtime = runtimeWithCloseables.getOne();
                     }
                     pureSingleExecution.executionOptions = param.executionOptions;
-                    List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, Collections.singletonList(test.id), pureModel, data, routerExtensions, planTransformers);
+                    List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, Collections.singletonList(test.id), pureModel, data, routerExtensions, planTransformers, hints);
                     testResultsByTestId.get(test.id).addTestResult(param.key, testResultsForKey.get(0));
                 }
             }
@@ -219,7 +244,7 @@ public class ServiceTestRunner implements TestRunner
         return new ArrayList<>(testResultsByTestId.values());
     }
 
-    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeMultiExecutionEnvironmentTestSuite(PureMultiExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Map<String, MultiExecutionServiceTestResult> testResultsByTestId)
+    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeMultiExecutionEnvironmentTestSuite(PureMultiExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, Map<String, MultiExecutionServiceTestResult> testResultsByTestId, TestConnectionBuildParameters hints)
     {
         List<Closeable> closeables = null;
         PureMultiExecution multiExecution = shallowCopyMultiExecution(execution, data);
@@ -304,7 +329,7 @@ public class ServiceTestRunner implements TestRunner
         return testWithKey;
     }
 
-    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeSingleExecutionTestSuite(PureSingleExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers)
+    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeSingleExecutionTestSuite(PureSingleExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, TestConnectionBuildParameters hints)
     {
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
         Pair<Runtime, List<Closeable>> runtimeWithCloseables = null;
@@ -313,7 +338,7 @@ public class ServiceTestRunner implements TestRunner
         {
             if (execution.runtime != null)
             {
-                runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(execution.runtime, suite.testData, data);
+                runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(execution.runtime, suite.testData, data, hints);
                 Runtime testSuiteRuntime = runtimeWithCloseables.getOne();
                 testPureSingleExecution.runtime = testSuiteRuntime;
             }

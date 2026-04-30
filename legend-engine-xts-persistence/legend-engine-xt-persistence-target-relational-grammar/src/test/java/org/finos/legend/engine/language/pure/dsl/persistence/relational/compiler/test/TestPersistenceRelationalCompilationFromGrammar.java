@@ -758,6 +758,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "Service test::Service \n" +
                 "{\n" +
                 "  pattern : 'test';\n" +
+                "  title : 'test';\n" +
                 "  documentation : 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
@@ -994,6 +995,7 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "Service test::Service \n" +
                 "{\n" +
                 "  pattern : 'test';\n" +
+                "  title : 'test';\n" +
                 "  documentation : 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
@@ -1317,12 +1319,13 @@ public class TestPersistenceRelationalCompilationFromGrammar extends TestCompila
                 "Service test::service::FirmService\n" +
                 "{\n" +
                 "  pattern: '/testFirmService';\n" +
+                "  title: 'test';\n" +
                 "  owners:\n" +
                 "  [\n" +
                 "    'owner1',\n" +
                 "    'owner2'\n" +
                 "  ];\n" +
-                "  documentation: '';\n" +
+                "  documentation: 'testing firm service';\n" +
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +

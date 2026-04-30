@@ -21,13 +21,16 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,5 +52,16 @@ public interface ServiceExecutionExtension extends LegendModuleSpecificExtension
     default Optional<List<TestContainer>> tryToBuildTestAsserts(ServiceTest_Legacy test, ObjectMapper objectMapper, PureModel pureModel)
     {
         return Optional.empty();
+    }
+
+    @FunctionalInterface
+    interface ServiceExecutionPlanGenerator
+    {
+        ExecutionPlan generate(Execution execution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers);
+    }
+
+    default List<ServiceExecutionPlanGenerator> getExtraServiceExecutionPlanGenerators()
+    {
+        return Collections.emptyList();
     }
 }

@@ -540,7 +540,7 @@ meta::pure::functions::relation::rowNumber_Relation_1__T_1__Integer_1_
 meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_
 meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_
 meta::pure::functions::relation::select_Relation_1__Relation_1_
-meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_MANY_
+meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_
 meta::pure::functions::relation::size_Relation_1__Integer_1_
 meta::pure::functions::relation::slice_Relation_1__Integer_1__Integer_1__Relation_1_
 meta::pure::functions::relation::sort_Relation_1__SortInfo_MANY__Relation_1_
@@ -768,3 +768,7 @@ meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_
 meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_
 meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_
 meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__PackageableRuntime_1__T_MANY_
+meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_
+meta::pure::functions::math::zScore_Relation_1___Window_1__T_1__ColSpec_1__Float_1_
+meta::pure::functions::math::average_Relation_1___Window_1__T_1__ColSpec_1__Float_1_
+meta::pure::functions::math::stdDevPopulation_Relation_1___Window_1__T_1__ColSpec_1__Number_1_

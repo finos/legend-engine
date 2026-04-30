@@ -55,6 +55,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             //contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"),
 
             //drop
             one("meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet\""),
@@ -196,7 +197,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_", "Date has no day: 2012-03", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "java.sql.SQLException: [Databricks][DatabricksJDBCDriver](500051) ERROR processing query/statement. Error Code: 0, SQL state: org.apache.hive.service.cli.HiveSQLException: Error running query: [INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] org.apache.spark.SparkIllegalArgumentException: [INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] Error parsing ' 12345678912 WEEK' to interval. Please ensure that the value provided is in a valid format for defining an interval. You can reference the documentation for the correct format. Uncaught arithmetic exception while parsing ' 12345678912 WEEK'. SQLSTATE: 22006"),
             one("meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'."),
             one("meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_", "\nexpected: 2\nactual:   3"),
             one("meta::pure::functions::date::tests::testDateDiffMinutes_Function_1__Boolean_1_", "\nexpected: 0\nactual:   1"),
             one("meta::pure::functions::date::tests::testDateDiffMonths_Function_1__Boolean_1_", "\nexpected: 0\nactual:   1"),
@@ -214,7 +214,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasHour_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasHour_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasMinute_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasMinute_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasMonth_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasSecond_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasSecond_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
@@ -244,10 +243,7 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType"),
 
             //math
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "mod only expect two arguments, but got 3"),
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\nexpected: 9.0\nactual:   27.0"),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "Unused format args. [3] arguments provided to expression \"mod(%s,%s)\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "Unused format args. [3] arguments provided to expression \"mod(%s,%s)\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\nexpected: 0.14D\nactual:   0.14"),
             one("meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_", "\nexpected: -16\nactual:   -17"),
             one("meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_", "\nexpected: 16\nactual:   17"),
@@ -261,8 +257,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::format::testFormatFloatWithTruncation_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatFloatWithZeroPadding_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatFloat_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::format::testFormatIntegerWithZeroPadding_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatInteger_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
@@ -299,7 +293,19 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "Cannot cast a collection of size 2 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "Cannot cast a collection of size 0 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'"),
-            one("meta::pure::functions::string::tests::toString::testFloatToStringWithNegativeExponent_Function_1__Boolean_1_", "\"\nexpected: '0.000000013421'\nactual:   '1.3421E-8'\"")
+            one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "[CAST_INVALID_INPUT] The value '3.14159d' of the type \"STRING\" cannot be cast to \"DECIMAL(10,0)\" because it is malformed."),
+            // Error-case tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties"),
+            one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"The low bound (3) can't be higher than the high bound (2) in a slice operation\"\""),
+            one("meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"),
+            one("meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_", "No error was thrown"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_", "No error was thrown"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_", "No error was thrown")
     );
 
     public static Test suite()

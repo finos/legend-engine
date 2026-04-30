@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -52,10 +53,12 @@ public class DuckDBCompilerExtension implements IRelationalCompilerExtension
         {
             if (datasourceSpecification instanceof DuckDBDatasourceSpecification)
             {
-                DuckDBDatasourceSpecification staticDatasourceSpecification = (DuckDBDatasourceSpecification) datasourceSpecification;
-                Root_meta_pure_alloy_connections_alloy_specification_DuckDBDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DuckDBDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification"));
-                _static._path(staticDatasourceSpecification.path);
-                return _static;
+                DuckDBDatasourceSpecification duckDBSpec = (DuckDBDatasourceSpecification) datasourceSpecification;
+                Root_meta_pure_alloy_connections_alloy_specification_DuckDBDatasourceSpecification _spec = new Root_meta_pure_alloy_connections_alloy_specification_DuckDBDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::DuckDBDatasourceSpecification"));
+                _spec._path(duckDBSpec.path);
+                _spec._testDataSetupCsv(duckDBSpec.testDataSetupCsv);
+                _spec._testDataSetupSqls(duckDBSpec.testDataSetupSqls == null ? FastList.newList() : FastList.newList(duckDBSpec.testDataSetupSqls));
+                return _spec;
             }
             return null;
         });

@@ -34,12 +34,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.RuntimeCompilerHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
@@ -51,10 +51,10 @@ import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.consta
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 import org.finos.legend.engine.shared.core.function.Function4;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
@@ -253,7 +253,7 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    default List<Function4<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, FunctionTestData, CompileContext, ProcessingContext, Root_meta_legend_function_metamodel_FunctionTestData>> getExtraFunctionTestDataProcessors()
+    default List<Function5<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, Root_meta_pure_data_EmbeddedData, CompileContext, Boolean, SourceInformation, Root_meta_pure_data_EmbeddedData>> getPackageableElementToEmbeddedDataProcessors()
     {
         return Collections.emptyList();
     }

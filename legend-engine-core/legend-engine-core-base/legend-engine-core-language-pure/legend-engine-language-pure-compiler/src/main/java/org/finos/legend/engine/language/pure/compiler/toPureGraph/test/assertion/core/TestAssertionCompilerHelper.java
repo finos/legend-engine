@@ -24,11 +24,15 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedD
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToJson_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToRelation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
+import java.util.Collections;
 import java.util.Set;
 
 public class TestAssertionCompilerHelper
@@ -48,6 +52,15 @@ public class TestAssertionCompilerHelper
             return new Root_meta_pure_test_assertion_EqualToJson_Impl("")
                     ._expected(equalToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
         }
+        else if (testAssertion instanceof EqualToRelation)
+        {
+            EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
+            // Wrap single RelationElement in RelationElementsData for EmbeddedData compilation
+            RelationElementsData data = new RelationElementsData();
+            data.relationElements = Collections.singletonList(equalToRelation.expected);
+            return new Root_meta_pure_test_assertion_EqualToRelation_Impl("")
+                    ._expected(data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+        }
         else
         {
             return null;
@@ -66,5 +79,6 @@ public class TestAssertionCompilerHelper
             EqualToJson equalToJson = (EqualToJson) testAssertion;
             equalToJson.expected.accept(new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements));
         }
+        // EqualToRelation has no prerequisite elements (inline data, no external references)
     }
 }

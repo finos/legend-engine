@@ -26,12 +26,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                         rev('|1->meta::pure::functions::math::sin()', 'select sin(1)'),
                         rev('|1.5->meta::pure::functions::math::sin()', 'select sin(1.5)')
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testSineEval_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::sin_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
-                      ]
                  )
                 ]
   )

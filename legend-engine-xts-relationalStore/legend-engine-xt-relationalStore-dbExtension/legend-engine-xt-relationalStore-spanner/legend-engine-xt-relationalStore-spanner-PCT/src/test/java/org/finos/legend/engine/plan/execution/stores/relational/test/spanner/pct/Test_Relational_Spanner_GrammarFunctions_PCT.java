@@ -112,7 +112,7 @@ public class Test_Relational_Spanner_GrammarFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
 
             //divide
-            one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] function round(numeric, bigint) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select -round(((1.0 * cast(3.1415 as DECIMAL(32, 16))) / cast(0.1 as DECIMAL(32, 16))),2)'"),
+             one("meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_", "ERROR] function round(numeric, bigint) does not exist"),
 
             //minus
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Statement must produce at least one output column - Statement: 'select --1'"),
@@ -133,7 +133,10 @@ public class Test_Relational_Spanner_GrammarFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithFunctionExpressions_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"),
             one("meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""),
-            one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification")
+            one("meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_", "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification"),
+            // New PCT tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "The function 'range' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification")
             );
 
     public static Test suite()

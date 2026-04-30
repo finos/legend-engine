@@ -17,7 +17,10 @@ package org.finos.legend.engine.plan.execution.stores.deephaven.test.shared;
 
 import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.TableHandle;
+import io.deephaven.csv.CsvSpecs;
 import io.deephaven.csv.CsvTools;
+import io.deephaven.csv.parsers.Parser;
+import io.deephaven.csv.parsers.Parsers;
 import io.deephaven.csv.util.CsvReaderException;
 import io.deephaven.engine.primitive.iterator.CloseableIterator;
 import io.deephaven.engine.primitive.iterator.CloseablePrimitiveIteratorOfByte;
@@ -41,19 +44,24 @@ import io.deephaven.qst.column.Column;
 import io.deephaven.qst.table.NewTable;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
 import io.deephaven.qst.type.StringType;
+import io.deephaven.qst.type.InstantType;
 import org.apache.arrow.memory.BufferAllocator;
 import org.eclipse.collections.api.factory.Maps;
 
 public class CsvToNewTable
 {
     private static final Map<Class<?>, BiFunction<CsvToNewTable, String, Array<?>>> HANDLERS;
+
+    private static final Map<String, Parser<?>> TYPE_TO_PARSER;
 
     static
     {
@@ -73,14 +81,44 @@ public class CsvToNewTable
         handlers.put(char.class, CsvToNewTable::charHandler);
         handlers.put(Character.class, CsvToNewTable::charHandler);
         handlers.put(String.class, CsvToNewTable::stringHandler);
+        handlers.put(Instant.class, CsvToNewTable::instantHandler);
         HANDLERS = handlers;
+
+        Map<String, Parser<?>> typeToParser = new HashMap<>();
+        typeToParser.put("int", Parsers.INT);
+        typeToParser.put("long", Parsers.LONG);
+        typeToParser.put("float", Parsers.DOUBLE);
+        typeToParser.put("double", Parsers.DOUBLE);
+        typeToParser.put("string", Parsers.STRING);
+        typeToParser.put("timestamp", Parsers.DATETIME);
+        typeToParser.put("datetime", Parsers.DATETIME);
+        typeToParser.put("boolean", Parsers.BOOLEAN);
+        typeToParser.put("byte", Parsers.BYTE);
+        typeToParser.put("short", Parsers.SHORT);
+        typeToParser.put("char", Parsers.CHAR);
+        TYPE_TO_PARSER = typeToParser;
     }
 
     private final Table table;
 
-    public CsvToNewTable(String csv) throws CsvReaderException
+    public CsvToNewTable(String csv, String columnTypes) throws CsvReaderException
     {
-        this.table = CsvTools.readCsv(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+        CsvSpecs.Builder specsBuilder = CsvTools.builder();
+
+        String[] columnHeaders = csv.substring(0, csv.indexOf('\n')).split(",", -1);
+        String[] types = columnTypes.split(",", -1);
+
+        for (int i = 0; i < columnHeaders.length && i < types.length; i++)
+        {
+            String typeName = types[i].trim();
+            Parser<?> parser = TYPE_TO_PARSER.get(typeName);
+            if (parser != null)
+            {
+                specsBuilder.putParserForName(columnHeaders[i].trim(), parser);
+            }
+        }
+
+        this.table = CsvTools.readCsv(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)), specsBuilder.build());
     }
 
     public NewTable toNewTable()
@@ -104,8 +142,10 @@ public class CsvToNewTable
     public void publish(String tableName, BufferAllocator bufferAllocator, BarrageSession session) throws Exception
     {
         NewTable newTable = this.toNewTable();
-        TableHandle handle = session.putExport(newTable, bufferAllocator);
-        session.session().publish(tableName, handle).get();
+        try (TableHandle handle = session.putExport(newTable, bufferAllocator))
+        {
+            session.session().publish(tableName, handle).get();
+        }
     }
 
     private Array<?> intHandler(String key)
@@ -214,6 +254,19 @@ public class CsvToNewTable
                 strings.add(iterator.next());
             }
             return io.deephaven.qst.array.GenericArray.of(StringType.of(), strings.toArray(new String[0]));
+        }
+    }
+
+    private Array<?> instantHandler(String key)
+    {
+        try (CloseableIterator<Instant> iterator = this.table.objectColumnIterator(key, Instant.class))
+        {
+            List<Instant> instants = new ArrayList<>();
+            while (iterator.hasNext())
+            {
+                instants.add(iterator.next());
+            }
+            return io.deephaven.qst.array.GenericArray.of(InstantType.of(), instants.toArray(new Instant[0]));
         }
     }
 }

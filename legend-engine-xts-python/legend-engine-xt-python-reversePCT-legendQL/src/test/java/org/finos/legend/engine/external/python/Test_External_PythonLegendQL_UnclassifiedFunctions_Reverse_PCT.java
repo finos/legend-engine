@@ -19,7 +19,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.generated.Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource;
-import org.finos.legend.pure.generated.core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi;
+import org.finos.legend.pure.generated.core_external_python_reverse_pct_shared_pythonReversePCTShared;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
 import org.finos.legend.pure.m3.pct.reports.config.exclusion.ExclusionSpecification;
 import org.finos.legend.pure.m3.pct.reports.model.Adapter;
@@ -33,7 +33,7 @@ public class Test_External_PythonLegendQL_UnclassifiedFunctions_Reverse_PCT exte
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
     private static final Adapter adapter = Core_External_PythonLegendQL_ReversePCTReportProvider.LegendQLAdapter;
     private static final String platform = "compiled";
-    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_legend_ql_pythonReversePCTLegendQLApi.Root_meta_external_python_reversePCT_legendQL_pythonLegendQLReversesUnclassified__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
+    private static final RichIterable<? extends Root_meta_pure_test_pct_reversePCT_framework_ReversesForSource> reverseInfo = core_external_python_reverse_pct_shared_pythonReversePCTShared.Root_meta_external_python_reversePCT_shared_pythonSharedReversesUnclassified__ReversesForSource_MANY_(getClassLoaderExecutionSupport(Thread.currentThread().getContextClassLoader()));
     private static final MutableList<ExclusionSpecification> expectedFailures = PythonLegendQLReversePCTHelper.build(reverseInfo);
 
     static

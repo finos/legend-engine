@@ -235,7 +235,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    let jsonToken   = $conventions->codeType(javaClass('com.fasterxml.jackson.core.JsonToken'))->codeToString($proto);
 
-   let specializations = $class->meta::pure::functions::meta::findAllSpecializations()->filter(x|$x->in($readableClasses));
+   let specializations = $class->meta::pure::functions::meta::findAllSpecializations()->filter(x|$x->in($readableClasses))->concatenate($context.suppliedClassesForGeneration)->removeDuplicatesBy({c | $c->elementToPath()});
    let nodeValueVariable = j_variable(javaString(), 'nodeValue');
    let defectsVariable = j_variable(javaList($conventions->defectClass()), 'defects');
    let specializationByName = $specializations->groupBy(x| $x.name->toOne());

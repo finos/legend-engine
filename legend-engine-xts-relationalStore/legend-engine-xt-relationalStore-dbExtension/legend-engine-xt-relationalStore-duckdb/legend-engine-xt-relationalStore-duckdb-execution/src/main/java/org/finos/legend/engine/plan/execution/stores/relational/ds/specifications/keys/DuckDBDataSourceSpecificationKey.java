@@ -16,15 +16,31 @@ package org.finos.legend.engine.plan.execution.stores.relational.ds.specificatio
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 public class DuckDBDataSourceSpecificationKey implements DataSourceSpecificationKey
 {
     private final String path;
+    private final List<String> testDataSetupSqls;
+    private final long setupCheckSum;
 
     public DuckDBDataSourceSpecificationKey(String path)
     {
+        this(path, Collections.emptyList());
+    }
+
+    public DuckDBDataSourceSpecificationKey(String path, List<String> testDataSetupSqls)
+    {
         this.path = path;
+        this.testDataSetupSqls = testDataSetupSqls != null ? testDataSetupSqls : Collections.emptyList();
+        Checksum crc32 = new CRC32();
+        byte[] bytes = String.join(";", this.testDataSetupSqls).getBytes();
+        crc32.update(bytes, 0, bytes.length);
+        this.setupCheckSum = crc32.getValue();
     }
 
     public String getPath()
@@ -32,6 +48,10 @@ public class DuckDBDataSourceSpecificationKey implements DataSourceSpecification
         return path;
     }
 
+    public List<String> getTestDataSetupSqls()
+    {
+        return testDataSetupSqls;
+    }
 
     @Override
     public String toString()
@@ -45,7 +65,8 @@ public class DuckDBDataSourceSpecificationKey implements DataSourceSpecification
     public String shortId()
     {
         return "DuckDB_" +
-                "path:" + path;
+                "path:" + path +
+                (testDataSetupSqls.isEmpty() ? "" : "_sqlCS:" + setupCheckSum);
     }
 
     @Override
@@ -60,12 +81,13 @@ public class DuckDBDataSourceSpecificationKey implements DataSourceSpecification
             return false;
         }
         DuckDBDataSourceSpecificationKey that = (DuckDBDataSourceSpecificationKey) o;
-        return Objects.equals(path, that.path);
+        return Objects.equals(path, that.path)
+                && Objects.equals(testDataSetupSqls, that.testDataSetupSqls);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(path);
+        return Objects.hash(path, testDataSetupSqls);
     }
 }

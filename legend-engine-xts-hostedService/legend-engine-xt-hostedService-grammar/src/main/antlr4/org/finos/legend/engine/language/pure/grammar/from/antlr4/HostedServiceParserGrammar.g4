@@ -68,14 +68,6 @@ actionValue:                            (ISLAND_START | ISLAND_BRACE_OPEN | ISLA
 ;
 actionType:                             VALID_STRING
 ;
-stereotypes:                            LESS_THAN LESS_THAN stereotype (COMMA stereotype)* GREATER_THAN GREATER_THAN
-;
-stereotype:                             qualifiedName DOT identifier
-;
-taggedValues:                           BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
-;
-taggedValue:                            qualifiedName DOT identifier EQUAL STRING
-;
 servicePattern:                         SERVICE_PATTERN COLON STRING SEMI_COLON
 ;
 

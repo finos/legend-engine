@@ -54,4 +54,57 @@ public class TestMongoDBGrammarRoundTrip extends TestGrammarRoundtrip.TestGramma
                 "  )\n" +
                 ")\n");
     }
+
+    @Test
+    public void testQuotedCollectionNameGrammar()
+    {
+        test("###MongoDB\n" +
+                "Database test::testQuotedCollectionName\n" +
+                "(\n" +
+                "  Collection \"person-records\"\n" +
+                "  (\n" +
+                "    validationLevel: strict;\n" +
+                "    validationAction: warn;\n" +
+                "    jsonSchema: {\n" +
+                "      \"bsonType\": \"object\",\n" +
+                "      \"properties\": {\n" +
+                "        \"name\": {\n" +
+                "          \"bsonType\": \"string\"\n" +
+                "        },\n" +
+                "        \"age\": {\n" +
+                "          \"bsonType\": \"long\"\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"additionalProperties\": true\n" +
+                "    };\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testMultipleCollectionsWithQuotedNamesGrammar()
+    {
+        test("###MongoDB\n" +
+                "Database test::mixedCollectionNames\n" +
+                "(\n" +
+                "  Collection \"firm-data\"\n" +
+                "  (\n" +
+                "    validationLevel: strict;\n" +
+                "    validationAction: error;\n" +
+                "    jsonSchema: {\n" +
+                "      \"bsonType\": \"object\",\n" +
+                "      \"additionalProperties\": false\n" +
+                "    };\n" +
+                "  )\n" +
+                "  Collection Address\n" +
+                "  (\n" +
+                "    validationLevel: moderate;\n" +
+                "    validationAction: warn;\n" +
+                "    jsonSchema: {\n" +
+                "      \"bsonType\": \"object\",\n" +
+                "      \"additionalProperties\": false\n" +
+                "    };\n" +
+                "  )\n" +
+                ")\n");
+    }
 }

@@ -35,7 +35,6 @@ import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
@@ -52,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.DatabaseMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.SchemaMapper;
@@ -89,10 +87,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executi
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData;
 import org.finos.legend.pure.generated.platform_store_relational_functions;
@@ -160,6 +157,7 @@ import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
+import java.lang.Boolean;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -385,7 +383,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (cm instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
-                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)));
+                        String classMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
+                        RootRelationalInstanceSetImplementation rsi = (RootRelationalInstanceSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
 
                         HelperRelationalBuilder.processRootRelationalClassMapping(rsi, classMapping, context);
                     }
@@ -449,7 +448,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList(
                 (cm, parentMapping, context) ->
                 {
-                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(HelperMappingBuilder.getClassMappingId(cm, context)));
+                    String classMappingId = HelperMappingBuilder.getClassMappingId(cm, context);
+                    AggregationAwareSetImplementation asi = (AggregationAwareSetImplementation) parentMapping._classMappings().detect(c -> HelperRelationalBuilder.getClassMappingId(c).equals(classMappingId));
                     if (cm.mainSetImplementation instanceof RootRelationalClassMapping)
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm.mainSetImplementation;
@@ -460,9 +460,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         if (agg.setImplementation instanceof RootRelationalClassMapping)
                         {
                             RootRelationalClassMapping classMapping = (RootRelationalClassMapping) agg.setImplementation;
+                            String aggClassMappingId = HelperMappingBuilder.getClassMappingId(classMapping, context);
                             asi._aggregateSetImplementations().forEach(c ->
                             {
-                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(HelperMappingBuilder.getClassMappingId(classMapping, context)))
+                                if (HelperRelationalBuilder.getClassMappingId(c._setImplementation()).equals(aggClassMappingId))
                                 {
                                     HelperRelationalBuilder.processRootRelationalClassMapping((RootRelationalInstanceSetImplementation) c._setImplementation(), classMapping, context);
                                 }
@@ -704,11 +705,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
         return Collections.singletonList((handlers) ->
                 Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(
-                                        handlers.grp(Handlers.JoinInference, handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function"))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
-                                )
+                                handlers.grp(Handlers.JoinInference,
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && (ps.get(3)._genericType()._rawType()._name()).contains("Function")),
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "String".equals(ps.get(3)._genericType()._rawType()._name())),
+                                        handlers.h("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "join", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> true))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::columnValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "columnValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
@@ -723,7 +723,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                         handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "rowValueDifference", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
-                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                                handlers.grp(Handlers.ZScoreInference, handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "zScore", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4 && handlers.typeOne(ps.get(0), "TabularDataSet")))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", "iqrClassify", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
@@ -867,25 +867,21 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function4<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, FunctionTestData, CompileContext, ProcessingContext, Root_meta_legend_function_metamodel_FunctionTestData>> getExtraFunctionTestDataProcessors()
+    public List<Function5<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, Root_meta_pure_data_EmbeddedData, CompileContext, Boolean, SourceInformation, Root_meta_pure_data_EmbeddedData>> getPackageableElementToEmbeddedDataProcessors()
     {
-        return Collections.singletonList((packageableElement, storeTestData, context, processingContext) ->
+        return Collections.singletonList((packageableElement, metamodelData, context, isReferenceAllowed, sourceInformation) ->
         {
             if (packageableElement instanceof Store)
             {
-                Root_meta_pure_data_EmbeddedData metamodelData = storeTestData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
                 if (metamodelData instanceof Root_meta_pure_data_RelationElementsData || (metamodelData instanceof Root_meta_pure_data_DataElementReference && ((Root_meta_pure_data_DataElementReference) metamodelData)._dataElement()._data() instanceof Root_meta_pure_data_RelationElementsData))
                 {
                     Root_meta_pure_data_RelationElementsData relationElementsTestData =  metamodelData instanceof Root_meta_pure_data_RelationElementsData ? (Root_meta_pure_data_RelationElementsData) metamodelData : (Root_meta_pure_data_RelationElementsData) ((Root_meta_pure_data_DataElementReference) metamodelData)._dataElement()._data();
                     if (relationElementsTestData._relationElements().anySatisfy(relationElement -> relationElement._paths().size() != 2))
                     {
-                        throw new EngineException("Each RelationElement for a database accessor must be of the form schema.table", storeTestData.sourceInformation, EngineErrorType.COMPILATION);
+                        throw new EngineException("Each RelationElement for a database accessor must be of the form schema.table", sourceInformation, EngineErrorType.COMPILATION);
                     }
                 }
-                return new Root_meta_legend_function_metamodel_FunctionTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), context.pureModel.getClass("meta::legend::function::metamodel::FunctionTestData"))
-                        ._element(packageableElement)
-                        ._data(storeTestData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)))
-                        ._doc(storeTestData.doc);
+                return metamodelData;
             }
             return null;
         });
@@ -941,7 +937,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), col._stereotypes(), col._taggedValues(), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))

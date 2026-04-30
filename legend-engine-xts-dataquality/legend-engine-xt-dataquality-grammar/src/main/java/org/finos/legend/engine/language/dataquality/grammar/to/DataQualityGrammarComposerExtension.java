@@ -27,10 +27,13 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtili
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataSpaceDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataqualityRelationValidation;
+import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
@@ -67,6 +70,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         {
             return renderDataQualityRelationValidation((DataqualityRelationValidation) element, context);
         }
+        if (element instanceof DataQualityRelationComparison)
+        {
+            return renderDataQualityRelationComparison((DataQualityRelationComparison) element, context);
+        }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
@@ -91,6 +98,57 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
                 "}";
     }
+
+    private static String renderDataQualityRelationComparison(DataQualityRelationComparison relationComparison, PureGrammarComposerContext context)
+    {
+        String packageName = relationComparison._package == null || relationComparison._package.isEmpty() ? relationComparison.name : relationComparison._package + "::" + relationComparison.name;
+        return "DataQualityRelationComparison " + packageName + "\n" +
+                "{\n" +
+                "   source: " + renderLambdaValue(relationComparison.source, context) + ";\n" +
+                "   target: " + renderLambdaValue(relationComparison.target, context) + ";\n" +
+                "   keys: [" + String.join(", ", relationComparison.keys) + "];\n" +
+                (Objects.isNull(relationComparison.columnsToCompare) || relationComparison.columnsToCompare.isEmpty() ? "" :
+                    "   columnsToCompare: [" + String.join(", ", relationComparison.columnsToCompare) + "];\n") +
+                "   strategy: " + renderReconStrategy(relationComparison.strategy) + ";\n" +
+                (Objects.isNull(relationComparison.expectedMatch) ? "" :
+                    "   expectedMatch: " + relationComparison.expectedMatch + ";\n") +
+                "}";
+    }
+
+    private static String renderLambdaValue(org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction lambda, PureGrammarComposerContext context)
+    {
+        return lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+    }
+
+    private static String renderReconStrategy(ReconStrategy strategy)
+    {
+        if (strategy instanceof MD5HashStrategy)
+        {
+            MD5HashStrategy md5 = (MD5HashStrategy) strategy;
+            List<String> subFields = new java.util.ArrayList<>();
+            if (!Objects.isNull(md5.sourceHashColumn))
+            {
+                subFields.add("     sourceHashColumn: " + md5.sourceHashColumn + ";");
+            }
+            if (!Objects.isNull(md5.targetHashColumn))
+            {
+                subFields.add("     targetHashColumn: " + md5.targetHashColumn + ";");
+            }
+            if (!Objects.isNull(md5.aggregatedHash))
+            {
+                subFields.add("     aggregatedHash: " + md5.aggregatedHash + ";");
+            }
+
+            if (subFields.isEmpty())
+            {
+                return "MD5Hash";
+            }
+
+            return "MD5Hash\n   {\n" + String.join("\n", subFields) + "\n   }";
+        }
+        throw new EngineException("Unsupported ReconStrategy type");
+    }
+
 
     private static String renderLambda(DataQuality dataQuality, PureGrammarComposerContext context)
     {
@@ -242,6 +300,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 {
                     return renderDataQualityRelationValidation((DataqualityRelationValidation) element, context);
                 }
+                if (element instanceof DataQualityRelationComparison)
+                {
+                    return renderDataQualityRelationComparison((DataQualityRelationComparison) element, context);
+                }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
         });
@@ -252,7 +314,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
     {
         return Collections.singletonList((elements, context, composedSections) -> // TODO: use context for render style etc - dont hardcode
         {
-            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof DataQuality || e instanceof  DataqualityRelationValidation), Lists.mutable.empty());
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof DataQuality || e instanceof  DataqualityRelationValidation || e instanceof DataQualityRelationComparison), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(element -> renderElement(element, context)).makeString("###" + DataQualityGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);

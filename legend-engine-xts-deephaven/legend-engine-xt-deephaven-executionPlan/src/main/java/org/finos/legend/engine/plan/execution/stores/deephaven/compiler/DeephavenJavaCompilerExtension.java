@@ -34,6 +34,8 @@ import io.deephaven.api.filter.FilterNot;
 import io.deephaven.api.filter.FilterOr;
 import io.deephaven.api.literal.Literal;
 import io.deephaven.api.literal.LiteralFilter;
+import io.deephaven.api.updateby.UpdateByControl;
+import io.deephaven.api.updateby.UpdateByOperation;
 import io.deephaven.client.impl.BarrageSession;
 import io.deephaven.client.impl.TableHandle;
 import io.deephaven.client.impl.BarrageSubscription;
@@ -48,6 +50,7 @@ import io.deephaven.client.impl.ConfigService;
 import io.deephaven.client.impl.TableService;
 import io.deephaven.client.impl.TableHandleManager;
 import io.deephaven.function.Numeric;
+import io.deephaven.util.QueryConstants;
 import io.deephaven.qst.TableCreator;
 import io.deephaven.qst.table.EmptyTable;
 import io.deephaven.qst.table.TableSpec;
@@ -92,7 +95,10 @@ public class DeephavenJavaCompilerExtension implements ExecutionPlanJavaCompiler
         DEPENDENCIES.put("io.deephaven.api.SortSpec", SortSpec.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperations", TableOperations.class);
         DEPENDENCIES.put("io.deephaven.api.TableOperationsDefaults", TableOperationsDefaults.class);
+        DEPENDENCIES.put("io.deephaven.api.updateby.UpdateByOperation", UpdateByOperation.class);
+        DEPENDENCIES.put("io.deephaven.api.updateby.UpdateByControl", UpdateByControl.class);
         DEPENDENCIES.put("io.deephaven.function", Numeric.class);
+        DEPENDENCIES.put("io.deephaven.util.QueryConstants", QueryConstants.class);
 
         DEPENDENCIES.put("io.deephaven.client.impl.ApplicationService", ApplicationService.class);
         DEPENDENCIES.put("io.deephaven.client.impl.BarrageSession", BarrageSession.class);

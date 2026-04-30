@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
@@ -29,8 +29,8 @@ public class DataElement extends PackageableElement
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
-    @JsonProperty(required = true)
     public EmbeddedData data;
+    public List<DataResolver> dataResolvers;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

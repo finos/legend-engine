@@ -51,9 +51,12 @@ public class AthenaGrammarComposerExtension implements IRelationalGrammarCompose
                 int baseIndentation = 1;
                 return "Athena\n" +
                         context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "awsRegion: " + convertString(spec.awsRegion, true) + ";\n" +
-                        context.getIndentationString() + getTabString(baseIndentation + 1) + "s3OutputLocation: " + convertString(spec.s3OutputLocation, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "region: " + convertString(spec.region, true) + ";\n" +
+                        (spec.database == null       ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "database: " + convertString(spec.database, true) + ";\n") +
+                        (spec.workGroup == null      ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "workGroup: " + convertString(spec.workGroup, true) + ";\n") +
+                        (spec.outputLocation == null ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "outputLocation: " + convertString(spec.outputLocation, true) + ";\n") +
+                        (spec.catalog == null        ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "catalog: " + convertString(spec.catalog, true) + ";\n") +
+                        (spec.athenaEndpoint == null ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "athenaEndpoint: " + convertString(spec.athenaEndpoint, true) + ";\n") +
                         context.getIndentationString() + getTabString(baseIndentation) + "}";
             }
             return null;

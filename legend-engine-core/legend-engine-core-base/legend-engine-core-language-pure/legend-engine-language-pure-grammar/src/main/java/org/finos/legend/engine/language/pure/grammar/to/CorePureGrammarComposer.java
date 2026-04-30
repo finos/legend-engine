@@ -25,8 +25,11 @@ import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataG
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
@@ -34,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 
@@ -63,17 +67,21 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with(buildSectionComposer("Data", renderers));
+        return Lists.mutable.with(
+                buildSectionComposer("Data", renderers)
+        );
     }
 
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
-        return Lists.mutable.with((elements, context, composedSections) ->
-        {
-            List<DataElement> composableElements = ListIterate.selectInstancesOf(elements, DataElement.class);
-            return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, e -> renderDataElement(e, context)).makeString("###Data" + "\n", "\n\n", ""), composableElements);
-        });
+        return Lists.mutable.with(
+                (elements, context, composedSections) ->
+                {
+                    List<DataElement> composableElements = ListIterate.selectInstancesOf(elements, DataElement.class);
+                    return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, e -> renderDataElement(e, context)).makeString("###Data\n", "\n\n", ""), composableElements);
+                }
+        );
     }
 
     @Override
@@ -90,19 +98,46 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
 
     public static String renderDataElement(DataElement dataElement, PureGrammarComposerContext context)
     {
-        PureGrammarComposerContext updatedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(PureGrammarComposerUtility.getTabString()).build();
+        PureGrammarComposerContext indentedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(PureGrammarComposerUtility.getTabString()).build();
         StringBuilder str = new StringBuilder();
 
         str.append("Data ")
                 .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues))
                 .append(PureGrammarComposerUtility.convertPath(dataElement.getPath()))
-                .append("\n");
+                .append("\n{\n");
 
-        str.append("{\n");
-        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, updatedContext));
-        str.append("\n}");
+        if (dataElement.data != null)
+        {
+            str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, indentedContext));
+            str.append("\n");
+        }
 
+        if (dataElement.dataResolvers != null && !dataElement.dataResolvers.isEmpty())
+        {
+            str.append(dataElement.dataResolvers.stream()
+                    .map(dr -> renderDataResolver(dr, indentedContext))
+                    .collect(Collectors.joining("\n")));
+            str.append("\n");
+        }
+
+        str.append("}");
         return str.toString();
+    }
+
+    private static String renderDataResolver(DataResolver resolver, PureGrammarComposerContext context)
+    {
+        if (resolver instanceof ReferenceDataResolver)
+        {
+            return context.getIndentationString() + PureGrammarComposerUtility.convertPath(((ReferenceDataResolver) resolver).elementPointer.path) + ";";
+        }
+        else if (resolver instanceof BaseDataResolver)
+        {
+            BaseDataResolver base = (BaseDataResolver) resolver;
+            PureGrammarComposerContext nestedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(context.getIndentationString() + PureGrammarComposerUtility.getTabString()).build();
+            return context.getIndentationString() + PureGrammarComposerUtility.convertPath(base.elementPointer.path) + ":\n"
+                    + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(base.data, nestedContext) + ";";
+        }
+        throw new UnsupportedOperationException("Unsupported DataResolver type: " + resolver.getClass().getSimpleName());
     }
 
     @Override

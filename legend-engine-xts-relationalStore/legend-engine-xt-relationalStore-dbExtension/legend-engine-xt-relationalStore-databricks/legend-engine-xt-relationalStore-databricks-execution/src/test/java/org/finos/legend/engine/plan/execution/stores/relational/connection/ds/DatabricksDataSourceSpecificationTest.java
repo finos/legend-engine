@@ -92,7 +92,7 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
 
         String url = extractURL(profile);
         Assert.assertEquals(
-                "jdbc:databricks://hostname:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/httpPath;UID=token",
+                "jdbc:databricks://hostname:443/default;ansi_mode=true;transportMode=http;ssl=1;AuthMech=3;httpPath=/httpPath;UID=token",
                 url
         );
 

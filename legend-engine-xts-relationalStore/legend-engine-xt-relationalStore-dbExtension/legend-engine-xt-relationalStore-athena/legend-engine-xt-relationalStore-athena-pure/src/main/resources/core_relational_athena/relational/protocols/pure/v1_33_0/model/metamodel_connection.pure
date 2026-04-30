@@ -14,7 +14,10 @@
 
 Class meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::AthenaDatasourceSpecification extends meta::protocols::pure::v1_33_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
-   awsRegion: String[1];
-   s3OutputLocation: String[1];
-   databaseName: String[1];
+   region: String[1];
+   catalog: String[0..1];
+   database: String[0..1];
+   workGroup: String[0..1];
+   outputLocation: String[0..1];
+   athenaEndpoint: String[0..1];
 }

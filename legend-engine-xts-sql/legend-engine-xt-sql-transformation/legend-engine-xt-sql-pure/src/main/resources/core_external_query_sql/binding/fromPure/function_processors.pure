@@ -1,3 +1,4 @@
+import meta::pure::functions::flow::*;
 import meta::pure::metamodel::variant::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
@@ -330,8 +331,25 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       conditional('coalesce', [], {args, fc, expCtx, ctx |
         let filteredArgs = getNonNullArguments($args);
         let type = $filteredArgs.genericType->first().rawType;
+        let empty = iv([], ^GenericType(rawType = $type));
 
-        sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
+
+        if ($expCtx.relation->isTrue(),
+          |
+            assert($filteredArgs->size() < 4, | 'maximum 3 non null arguments supported for coalesce ' + $filteredArgs->size()->toString() + ' supplied');
+
+            let newArgs = if ($filteredArgs->isEmpty(), | $empty, | $filteredArgs);
+
+            let func = [
+              pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$_),
+              pair(2, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),
+              pair(3, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_)
+            ]->getValue($newArgs->size());
+
+            sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $newArgs->concatenate($empty));,
+          |
+            sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
+        );
       }),
 
       conditional('greatest', [], {args, fc, expCtx, ctx |
@@ -389,6 +407,20 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       json('json_extract_path', Variant, {args, fc, expCtx, ctx | processJSONExtractPath($args)}),
       json('json_extract_path_text', Variant, {args, fc, expCtx, ctx |
         processVariantCast(^Cast(expression = $fc, type = ^ColumnType(name = 'TEXT')), processJSONExtractPath($args));
+      }),
+      json('json_build_object', Map, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_object');
+        assert($args->size()->mod(2) == 0, | 'json_build_object requires an even number of arguments (key-value pairs)');
+
+        let pairs = range(0, $args->size(), 2)->map(i |
+          sfe(pair_U_1__V_1__Pair_1_, [$args->at($i), $args->at($i + 1)])
+        );
+
+        sfe(newMap_Pair_MANY__Map_1_, iv($pairs));
+      }),
+      json('json_build_array', List, {args, fc, expCtx, ctx |
+        assertRelation($expCtx.relation, 'json_build_array');
+        sfe(list_U_MANY__List_1_, iv($args));
       }),
 
       //WINDOW
@@ -490,7 +522,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
       misc('var', Any, {args, fc, expCtx, ctx |
         getVariableReference($args, $ctx);
-      })
+      }) 
   ]
 }
 
@@ -521,11 +553,23 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 {
   let coreProcessor = $processors->filter(p | $p.name == $name->toLower());
 
-  let processor = if ($coreProcessor->isEmpty(),
+  let udfProcessor = if ($coreProcessor->isEmpty(),
   | meta::external::query::sql::getSQLExtensions().udf($name),
+  | []);
+
+  let udtfProcessor = if ($coreProcessor->isEmpty(),
+  | meta::external::query::sql::getSQLExtensions().udtf($name),
+  | []);
+  
+    let processor = if ($coreProcessor->isEmpty(),
+  | if ($udfProcessor->isEmpty(),
+    | if ($udtfProcessor->isEmpty(),
+    | [],
+    | $udtfProcessor),
+  | $udfProcessor),
   | $coreProcessor);
 
-  assertEquals(1, $processor->size(), | 'no handler found for function ' + $name);
+  assertEquals(1, $processor->size(), | 'No function matches the given name "' + $name + '"');
 
   $processor->toOne();
 }
@@ -550,7 +594,7 @@ function meta::external::query::sql::transformation::queryToPure::misc(name:Stri
 
 function meta::external::query::sql::transformation::queryToPure::misc(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
 {
-  processor($name, $returnType, $transform, ProcessorFunctionType.ARRAY)
+  processor($name, $returnType, $transform, ProcessorFunctionType.MISC)
 }
 
 

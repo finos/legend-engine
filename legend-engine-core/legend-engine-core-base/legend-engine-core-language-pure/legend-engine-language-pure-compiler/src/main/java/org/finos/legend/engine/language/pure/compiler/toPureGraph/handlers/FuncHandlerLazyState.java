@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 
+@Deprecated
 public class FuncHandlerLazyState
 {
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func;

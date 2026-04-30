@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration.util;
 
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.RootMongoDBClassMapping;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -25,7 +26,7 @@ public class MongoDBMappingComposer
         StringBuilder stringBuilder = new StringBuilder();
         if (rootMongoDBClassMapping.mainCollectionName != null && rootMongoDBClassMapping.storePath != null)
         {
-            stringBuilder.append(getTabString(2)).append("~mainCollection [" + rootMongoDBClassMapping.storePath + "] " + rootMongoDBClassMapping.mainCollectionName + "\n");
+            stringBuilder.append(getTabString(2)).append("~mainCollection [" + rootMongoDBClassMapping.storePath + "] " + PureGrammarComposerUtility.convertIdentifier(rootMongoDBClassMapping.mainCollectionName) + "\n");
         }
 
         if (rootMongoDBClassMapping.bindingPath != null)

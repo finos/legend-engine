@@ -54,7 +54,7 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
 
             //contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: NOT_FOUND: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: NOT_FOUND: [ERROR] operator does not exist: bigint = text\nHint: No operator matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select 1 in (1, 2, 5, 2, Text'a', Boolean'true', Date'2014-02-01', Text'c')'"),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "[ERROR] operator does not exist: bigint = text"),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
 
             //drop
@@ -206,7 +206,6 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "\"[unsupported-api] The function 'adjust' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::testAdjustByWeeks_Function_1__Boolean_1_", "\"[unsupported-api] The function 'adjust' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_", "\"[unsupported-api] The function 'adjust' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'."),
             one("meta::pure::functions::date::tests::testDateDiffDays_Function_1__Boolean_1_", "\"[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_", "\"[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::date::tests::testDateDiffMilliseconds_Function_1__Boolean_1_", "\"[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet\""),
@@ -230,7 +229,6 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasHour_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasMinute_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMinute_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasMonth_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasSecond_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSecond_Date_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_'.", AdapterQualifier.unsupportedFeature),
@@ -261,15 +259,10 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function log10(double precision) is not supported - Statement: 'select log10(10)'"),
             one("meta::pure::functions::math::tests::log10::testSimpleLog10_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function log10(double precision) is not supported - Statement: 'select log10(10)'"),
 
-            //mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "mod only expect two arguments, but got 3"),
-
             //pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
 
             //rem
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"Unused format args. [3] arguments provided to expression \"mod(%s,%s)\"\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
 
             //round
@@ -292,11 +285,9 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::math::tests::toFloat::testIntToFloat_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toFloat' (state: [Select, false]) is not supported yet\""),
 
             //trigonometry
-            one("meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function cot(double precision) is not supported - Statement: 'select cot(1.5)'"),
             one("meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function cot(double precision) is not supported - Statement: 'select cot(1)'"),
 
             //cubeRoot
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function cbrt(double precision) is not supported - Statement: 'select cbrt(27)'"),
 
             //cubeRoot
             one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: Postgres function cbrt(double precision) is not supported - Statement: 'select cbrt(0)'"),
@@ -311,8 +302,6 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::string::tests::format::testFormatFloatWithTruncation_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatFloatWithZeroPadding_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatFloat_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::format::testFormatIntegerWithZeroPadding_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatInteger_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
@@ -379,7 +368,19 @@ public class Test_Relational_Spanner_EssentialFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "Cannot cast a collection of size 2 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\"")
+            one("meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
+            // Error-case tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties"),
+            one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "The function 'array_slice' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"),
+            one("meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]")
             );
 
     public static Test suite()

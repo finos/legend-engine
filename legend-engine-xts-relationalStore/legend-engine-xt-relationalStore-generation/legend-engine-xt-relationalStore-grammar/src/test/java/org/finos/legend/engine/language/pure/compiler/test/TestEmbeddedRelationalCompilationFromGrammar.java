@@ -14,8 +14,18 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
+import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test;
 
@@ -612,5 +622,133 @@ public class TestEmbeddedRelationalCompilationFromGrammar
                 "    )\n" +
                 "  }\n" +
                 ") \n");
+    }
+
+    @Test
+    public void testDatabasePointingToEmbeddedDataInDataElement()
+    {
+        test("###Relational\n" +
+                "Database store::TestDB\n" +
+                "(\n" +
+                "  Table PersonTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    firstName VARCHAR(200),\n" +
+                "    lastName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,John,Doe;" +
+                "  }#;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationalDataMultipleDataSources()
+    {
+        PureModel pureModel = test("###Relational\n" +
+                "Database store::TestDB\n" +
+                "(\n" +
+                "Table FirmTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    legal_name VARCHAR(200)\n" +
+                "  )\n" +
+                "  Table PersonTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY,\n" +
+                "    firstName VARCHAR(200),\n" +
+                "    lastName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id,firstName,lastName\n" +
+                "      1,John,Doe\n" +
+                "      2,Jane,Doe;\n" +
+                "  }#;\n" +
+                "}\n" +
+                "Data data::RelationalData2\n" +
+                "{\n" +
+                "  data::RelationalData;\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.FirmTable:\n" +
+                "      id,legalname\n" +
+                "      1,financeInc\n" +
+                "      2,devCorp;\n" +
+                "  }#;\n" +
+                "}\n").getTwo();
+
+        Root_meta_pure_data_DataElement dataElement = (Root_meta_pure_data_DataElement) pureModel.getPackageableElement("data::RelationalData2");
+        MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> dataMap = dataElement._resolvedData().getMap();
+        Assert.assertEquals(1, dataMap.size());
+        Root_meta_pure_data_EmbeddedData embeddedData = dataMap.get(pureModel.getPackageableElement("store::TestDB"));
+        Assert.assertTrue(embeddedData instanceof  Root_meta_pure_data_RelationElementsData);
+        Root_meta_pure_data_RelationElementsData relationElementsData = (Root_meta_pure_data_RelationElementsData) embeddedData;
+        Assert.assertEquals(2, relationElementsData._relationElements().size());
+        List<String> paths = relationElementsData._relationElements().collect(relationElement -> String.join(".", relationElement._paths())).toList();
+        Assert.assertTrue(paths.contains("default.FirmTable"));
+        Assert.assertTrue(paths.contains("default.PersonTable"));
+    }
+
+    @Test
+    public void testBaseDataOverrides()
+    {
+        PureModel pureModel = test("###Relational\n" +
+                "Database store::TestDB\n" +
+                "(\n" +
+                "  Table PersonTable\n" +
+                "  (\n" +
+                "    id INTEGER PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n" +
+                "###Data\n" +
+                "Data data::RelationalData\n" +
+                "{\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id\n" +
+                "      2;" +
+                "  }#;\n" +
+                "}\n" +
+                "###Data\n" +
+                "Data data::RelationalData2\n" +
+                "{\n" +
+                "data::RelationalData;\n" +
+                "store::TestDB:\n" +
+                "  Relation\n" +
+                "  #{\n" +
+                "    default.PersonTable:\n" +
+                "      id\n" +
+                "      1;" +
+                "  }#;\n" +
+                "}\n").getTwo();
+
+        Root_meta_pure_data_DataElement dataElement = (Root_meta_pure_data_DataElement) pureModel.getPackageableElement("data::RelationalData2");
+        MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> dataMap = dataElement._resolvedData().getMap();
+        Assert.assertEquals(1, dataMap.size());
+        Root_meta_pure_data_EmbeddedData embeddedData = dataMap.get(pureModel.getPackageableElement("store::TestDB"));
+        Assert.assertTrue(embeddedData instanceof  Root_meta_pure_data_RelationElementsData);
+        Root_meta_pure_data_RelationElementsData relationElementsData = (Root_meta_pure_data_RelationElementsData) embeddedData;
+        Assert.assertEquals(1, relationElementsData._relationElements().size());
+        Root_meta_pure_data_RelationElement relationElement = relationElementsData._relationElements().getOnly();
+        Assert.assertEquals("default.PersonTable", String.join(".", relationElement._paths()));
+        Assert.assertEquals("1", relationElement._rows().getOnly()._values().getOnly());
     }
 }

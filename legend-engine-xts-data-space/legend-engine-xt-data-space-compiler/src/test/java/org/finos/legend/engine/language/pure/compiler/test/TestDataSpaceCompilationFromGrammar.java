@@ -1300,6 +1300,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "Service model::MyService\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title: 'test';\n" +
                 "  owners: ['test'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1357,6 +1358,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "Service model::MyService\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
+                "  title:'test';\n" +
                 "  owners: ['test'];\n" +
                 "  documentation: 'test';\n" +
                 "  autoActivateUpdates: true;\n" +
@@ -1407,6 +1409,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [42:1-54:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
+                "}\n", "COMPILATION error at [43:1-55:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
     }
 }

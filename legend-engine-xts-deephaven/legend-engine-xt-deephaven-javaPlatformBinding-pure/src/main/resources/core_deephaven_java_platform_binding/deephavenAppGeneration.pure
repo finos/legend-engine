@@ -1,0 +1,153 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::function::activator::deephavenApp::*;
+import meta::external::function::activator::deephavenApp::generation::*;
+import meta::external::store::deephaven::metamodel::*;
+import meta::external::store::deephaven::metamodel::store::*;
+import meta::external::store::deephaven::metamodel::pure::*;
+import meta::external::store::deephaven::executionPlan::platformBinding::legendJava::*;
+import meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::extension::*;
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::defaultPackageName(): String[1]
+{
+  'org.finos.legend.engine.deephaven.app.generated'
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::defaultSimpleClassName(appFileName: String[1]): String[1]
+{
+  let sanitized = $appFileName->replace(' ', '')->replace('-', '_')->replace('.', '_');
+  let capitalized = $sanitized->substring(0, 1)->toUpper() + $sanitized->substring(1);
+  $capitalized + 'App';
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::columnDefinitionMethod(type: meta::external::store::deephaven::metamodel::type::Type[1]): String[1]
+{
+  $type->match([
+    t: meta::external::store::deephaven::metamodel::type::IntType[1]       | 'ofInt',
+    t: meta::external::store::deephaven::metamodel::type::LongType[1]      | 'ofLong',
+    t: meta::external::store::deephaven::metamodel::type::FloatType[1]     | 'ofFloat',
+    t: meta::external::store::deephaven::metamodel::type::DoubleType[1]    | 'ofDouble',
+    t: meta::external::store::deephaven::metamodel::type::StringType[1]    | 'ofString',
+    t: meta::external::store::deephaven::metamodel::type::BooleanType[1]   | 'ofBoolean',
+    t: meta::external::store::deephaven::metamodel::type::ShortType[1]     | 'ofShort',
+    t: meta::external::store::deephaven::metamodel::type::ByteType[1]      | 'ofByte',
+    t: meta::external::store::deephaven::metamodel::type::CharType[1]      | 'ofChar',
+    t: meta::external::store::deephaven::metamodel::type::TimestampType[1] | 'ofTime',
+    t: meta::external::store::deephaven::metamodel::type::DateTimeType[1]  | 'ofTime',
+    a: meta::external::store::deephaven::metamodel::type::Type[1]          | 'ofString'
+  ]);
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::generateEngineOperationChain(query: DeephavenQuery[1], tableType: meta::external::language::java::metamodel::Type[1], context: GenerationContext[1]): Code[1]
+{
+  let initial = j_variable($tableType, 'sourceTable');
+  meta::external::store::deephaven::executionPlan::platformBinding::legendJava::applyOperationChain($query, $initial, $tableType);
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::generateArtifact(app: DeephavenApp[1], extensions: Extension[*]): DeephavenAppArtifact[1]
+{
+  let plan = meta::pure::executionPlan::executionPlan($app.function->cast(@ConcreteFunctionDefinition<Any>), ^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
+  let dhNodes = $plan.rootExecutionNode->collectDeephavenExecutionNodes();
+  assert($dhNodes->isNotEmpty(), 'No DeephavenExecutionNode found in execution plan for ' + $app.applicationName);
+
+  let dhNode = $dhNodes->at(0);
+  let query = $dhNode.query;
+
+  assert($query.source->isNotEmpty(), 'Query must have a source table');
+  let sourceTable = $query.source->toOne();
+
+  let appFileName = $app.applicationName->toLower()->replace(' ', '_');
+  let packageName = defaultPackageName();
+  let simpleClassName = defaultSimpleClassName($appFileName);
+  let fullyQualifiedClassName = $packageName + '.' + $simpleClassName;
+
+  let columnDefs = $sourceTable.columns->map(c |
+    'ColumnDefinition.' + columnDefinitionMethod($c.type) + '("' + $c.name + '")'
+  );
+  let columnDefsCode = $columnDefs->joinStrings(',\n');
+
+  let tableType = javaClass('io.deephaven.engine.table.Table');
+  let operationChainCode = generateEngineOperationChain($query, $tableType, ^GenerationContext(conventions = engineConventions($extensions), typeInfos = newTypeInfoSet(), nodeInfos = []))->codeToString();
+
+  let javaSource = generateDynamicAppJavaSource($operationChainCode, $columnDefsCode, $sourceTable.name, $packageName, $simpleClassName, $appFileName, $app.applicationName);
+  let appConfig = meta::external::function::activator::deephavenApp::generation::generateAppConfig($fullyQualifiedClassName, $appFileName, $app.applicationName);
+
+  ^DeephavenAppArtifact(
+    appConfigContent = $appConfig,
+    javaSourceContent = $javaSource
+  );
+}
+
+function meta::external::store::deephaven::executionPlan::platformBinding::legendJava::appGeneration::generateDynamicAppJavaSource(
+    operationChainCode: String[1],
+    columnDefsCode: String[1],
+    sourceTableName: String[1],
+    packageName: String[1],
+    simpleClassName: String[1],
+    appId: String[1],
+    appName: String[1]
+): String[1]
+{
+  'package ' + $packageName + ';\n' +
+  '\n' +
+  'import io.deephaven.appmode.ApplicationState;\n' +
+  'import io.deephaven.engine.context.ExecutionContext;\n' +
+  'import io.deephaven.engine.liveness.LivenessScope;\n' +
+  'import io.deephaven.engine.liveness.LivenessScopeStack;\n' +
+  'import io.deephaven.engine.table.ColumnDefinition;\n' +
+  'import io.deephaven.engine.table.Table;\n' +
+  'import io.deephaven.engine.table.TableDefinition;\n' +
+  'import io.deephaven.engine.table.impl.util.DynamicTableWriter;\n' +
+  'import io.deephaven.engine.updategraph.UpdateGraph;\n' +
+  '\n' +
+  'public class ' + $simpleClassName + ' implements ApplicationState.Factory {\n' +
+  '\n' +
+  '    @Override\n' +
+  '    public ApplicationState create(ApplicationState.Listener listener) {\n' +
+  '        ApplicationState state = new ApplicationState(listener, \"' + $appId + '\", \"' + $appName + '\");\n' +
+  '\n' +
+  '        LivenessScope scope = new LivenessScope();\n' +
+  '        LivenessScopeStack.push(scope);\n' +
+  '        try {\n' +
+  '            TableDefinition definition = TableDefinition.of(\n' +
+  '                ' + $columnDefsCode + '\n' +
+  '            );\n' +
+  '            DynamicTableWriter writer = new DynamicTableWriter(definition);\n' +
+  '            Table sourceTable = writer.getTable();\n' +
+  '\n' +
+  '            UpdateGraph updateGraph = ExecutionContext.getContext().getUpdateGraph();\n' +
+  '            Table result = updateGraph.exclusiveLock().computeLocked(\n' +
+  '                () -> ' + $operationChainCode + '\n' +
+  '            );\n' +
+  '\n' +
+  '            state.setField(\"' + $sourceTableName + '\", sourceTable);\n' +
+  '            state.setField(\"result\", result);\n' +
+  '            state.setField(\"writer\", writer);\n' +
+  '        } finally {\n' +
+  '            LivenessScopeStack.pop(scope);\n' +
+  '        }\n' +
+  '        return state;\n' +
+  '    }\n' +
+  '}\n';
+}

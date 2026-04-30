@@ -95,7 +95,7 @@ public class ClassCompilerExtension implements CompilerExtension
             // validate no duplicated class supertype
             if (!uniqueSuperTypes.add(superType))
             {
-                throw new EngineException("Duplicated super type '" + superType + "' in class '" + context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "'", srcClass.sourceInformation, EngineErrorType.COMPILATION);
+                throw new EngineException("Duplicated super type '" + superType + "' in class '" + fullPath + "'", srcClass.sourceInformation, EngineErrorType.COMPILATION);
             }
             Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", SourceInformationHelper.toM3SourceInformation(superTypePtr.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(context.resolveGenericType(superType, superTypePtr.sourceInformation))._specific(_class);
             if (!context.pureModel.isImmutable(superType))
@@ -122,11 +122,11 @@ public class ClassCompilerExtension implements CompilerExtension
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> restrictedMilestoningProperties = Milestoning.restrictedMilestoningProperties(_class, srcClass, properties, context.pureModel);
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> withMilestoningProperties = properties.select(p -> !restrictedMilestoningProperties.contains(p)).withAll(Milestoning.generateMilestoningProperties(_class, context));
 
-        ProcessingContext ctx = new ProcessingContext("Class '" + context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Second Pass");
-        ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, context.pureModel.buildPackageString(srcClass._package, srcClass.name));
+        ProcessingContext ctx = new ProcessingContext("Class '" + fullPath + "' Second Pass");
+        ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, fullPath);
         ctx.addInferredVariables("this", thisVariable);
 
-        RichIterable<QualifiedProperty<?>> qualifiedProperties = ListIterate.collect(srcClass.qualifiedProperties, HelperModelBuilder.processQualifiedPropertyFirstPass(context, _class, context.pureModel.buildPackageString(srcClass._package, srcClass.name), ctx));
+        RichIterable<QualifiedProperty<?>> qualifiedProperties = ListIterate.collect(srcClass.qualifiedProperties, HelperModelBuilder.processQualifiedPropertyFirstPass(context, _class, fullPath, ctx));
         _class._originalMilestonedProperties(ListIterate.collect(srcClass.originalMilestonedProperties, HelperModelBuilder.processProperty(context, _classGenericType, _class)))
                 ._generalizations(generalization)
                 ._qualifiedProperties(qualifiedProperties)
@@ -143,10 +143,11 @@ public class ClassCompilerExtension implements CompilerExtension
 
     private void classThirdPass(Class srcClass, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = context.pureModel.getClass(context.pureModel.buildPackageString(srcClass._package, srcClass.name), srcClass.sourceInformation);
+        String packageString = context.pureModel.buildPackageString(srcClass._package, srcClass.name);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass = context.pureModel.getClass(packageString, srcClass.sourceInformation);
 
-        ProcessingContext ctx = new ProcessingContext("Class '" + context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Third Pass");
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, context.pureModel.buildPackageString(srcClass._package, srcClass.name));
+        ProcessingContext ctx = new ProcessingContext("Class '" + packageString + "' Third Pass");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(context, packageString);
 
         ListIterate.collect(srcClass.qualifiedProperties, property ->
         {
@@ -160,7 +161,7 @@ public class ClassCompilerExtension implements CompilerExtension
             }
             catch (Exception e)
             {
-                LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build derived property '" + property.name + " of class '" + context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' - stack: " + ctx.getStack()).toString());
+                LOGGER.warn(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build derived property '" + property.name + " of class '" + packageString + "' - stack: " + ctx.getStack()).toString());
                 if (e instanceof EngineException)
                 {
                     throw e;

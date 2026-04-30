@@ -309,9 +309,15 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testCurrentTIme()
+    public void testCurrentTime()
     {
         check("SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE FROM myTable");
+    }
+
+    @Test
+    public void testCurrentUser()
+    {
+        check("SELECT CURRENT_USER FROM myTable");
     }
 
     @Test
@@ -370,6 +376,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testTableSubQuery()
+    {
+        check("SELECT * from ((SELECT * from myTable))");
+    }
+
+    @Test
     public void testCommonTableExpressionSingle()
     {
         check("WITH cte1 (col) AS (SELECT col from myTable) SELECT col from cte1");
@@ -379,6 +391,13 @@ public class TestSQLRoundTrip
     public void testCommonTableExpressionMultiple()
     {
         check("WITH cte1 (col1, col2) AS (SELECT col1, col2 FROM myTable1 AS t1 INNER JOIN myTable2 AS t2 ON (t1.col1 = t2.col2)), cte2 AS (SELECT SUM(), col FROM cte1 GROUP BY col) SELECT col FROM cte1");
+    }
+
+    @Test
+    public void testWindowFunctions() 
+    {
+        check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS UNBOUNDED PRECEDING) AS col from MyTable");
+        check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED PRECEDING) AS col from MyTable");
     }
 
     @Test

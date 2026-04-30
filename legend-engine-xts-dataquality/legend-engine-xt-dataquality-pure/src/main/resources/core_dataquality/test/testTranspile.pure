@@ -1,0 +1,143 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::variant::navigation::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::hash::*;
+import meta::relational::extension::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::queryToPure::tests::*;
+import meta::external::query::sql::*;
+import meta::external::query::sql::schema::metamodel::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::functions::meta::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+
+//SELECT
+function <<test.Test>>meta::external::dataquality::tests::testDataProfile():Boolean[1]
+{
+  test(
+    'SELECT * FROM core_data_profile((SELECT * FROM service."/service/service1"))',
+  
+    [
+      {| eval(|let cte = meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+          );
+          $cte->aggregate(~[
+            column_name: x | 'Boolean': y | 'Boolean',
+            count: x | $x.Boolean : y | $y->count(),
+            count_distinct: x | $x.Boolean : y | $y->distinct()->count(),
+            count_null: x | if($x.Boolean->isEmpty(), |1, |[]) : y | $y->count(),
+
+            'number/max': x | []->cast(@Number) : y | $y->max(),
+            'number/min': x | []->cast(@Number) : y | $y->min(),
+            'date/max': x | []->cast(@Date) : y | $y->max(),
+            'date/min': x | []->cast(@Date) : y | $y->min(),
+            'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+            'string/min_length': x | []->cast(@Integer) : y | $y->min()
+            ])
+          ->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'Integer': y | 'Integer',
+              count: x | $x.Integer : y | $y->count(),
+              count_distinct: x | $x.Integer : y | $y->distinct()->count(),
+              count_null: x | if($x.Integer->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | $x.Integer->cast(@Number) : y | $y->max(),
+              'number/min': x | $x.Integer->cast(@Number) : y | $y->min(),
+              'date/max': x | []->cast(@Date) : y | $y->max(),
+              'date/min': x | []->cast(@Date) : y | $y->min(),
+              'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+              'string/min_length': x | []->cast(@Integer) : y | $y->min()
+              ])
+          )->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'Float': y | 'Float',
+              count: x | $x.Float : y | $y->count(),
+              count_distinct: x | $x.Float : y | $y->distinct()->count(),
+              count_null: x | if($x.Float->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | $x.Float->cast(@Number) : y | $y->max(),
+              'number/min': x | $x.Float->cast(@Number) : y | $y->min(),
+              'date/max': x | []->cast(@Date) : y | $y->max(),
+              'date/min': x | []->cast(@Date) : y | $y->min(),
+              'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+              'string/min_length': x | []->cast(@Integer) : y | $y->min()
+              ])
+         )->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'Decimal': y | 'Decimal',
+              count: x | $x.Decimal : y | $y->count(),
+              count_distinct: x | $x.Decimal : y | $y->distinct()->count(),
+              count_null: x | if($x.Decimal->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | $x.Decimal->cast(@Number) : y | $y->max(),
+              'number/min': x | $x.Decimal->cast(@Number) : y | $y->min(),
+              'date/max': x | []->cast(@Date) : y | $y->max(),
+              'date/min': x | []->cast(@Date) : y | $y->min(),
+              'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+              'string/min_length': x | []->cast(@Integer) : y | $y->min()
+              ])
+          )->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'StrictDate': y | 'StrictDate',
+              count: x | $x.StrictDate : y | $y->count(),
+              count_distinct: x | $x.StrictDate : y | $y->distinct()->count(),
+              count_null: x | if($x.StrictDate->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | []->cast(@Number) : y | $y->max(),
+              'number/min': x | []->cast(@Number) : y | $y->min(),
+              'date/max': x | $x.StrictDate->cast(@Date) : y | $y->max(),
+              'date/min': x | $x.StrictDate->cast(@Date) : y | $y->min(),
+              'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+              'string/min_length': x | []->cast(@Integer) : y | $y->min()
+              ])
+          )->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'DateTime': y | 'DateTime',
+              count: x | $x.DateTime : y | $y->count(),
+              count_distinct: x | $x.DateTime : y | $y->distinct()->count(),
+              count_null: x | if($x.DateTime->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | []->cast(@Number) : y | $y->max(),
+              'number/min': x | []->cast(@Number) : y | $y->min(),
+              'date/max': x | $x.DateTime->cast(@Date) : y | $y->max(),
+              'date/min': x | $x.DateTime->cast(@Date) : y | $y->min(),
+              'string/max_length': x | []->cast(@Integer) : y | $y->max(),
+              'string/min_length': x | []->cast(@Integer) : y | $y->min()
+              ])
+          )->concatenate(
+            $cte->aggregate(~[
+              column_name: x | 'String': y | 'String',
+              count: x | $x.String : y | $y->count(),
+              count_distinct: x | $x.String : y | $y->distinct()->count(),
+              count_null: x | if($x.String->isEmpty(), |1, |[]) : y | $y->count(),
+
+              'number/max': x | []->cast(@Number) : y | $y->max(),
+              'number/min': x | []->cast(@Number) : y | $y->min(),
+              'date/max': x | []->cast(@Date) : y | $y->max(),
+              'date/min': x | []->cast(@Date) : y | $y->min(),
+              'string/max_length': x | $x.String->length() : y | $y->max(),
+              'string/min_length': x | $x.String->length() : y | $y->min()
+              ])
+          );
+        )
+      }
+    ]
+  )
+}

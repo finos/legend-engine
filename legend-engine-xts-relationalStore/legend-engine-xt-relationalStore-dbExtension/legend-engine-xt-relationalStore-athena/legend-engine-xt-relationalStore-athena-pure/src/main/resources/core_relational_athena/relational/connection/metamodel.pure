@@ -14,7 +14,10 @@
 
 Class meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-   <<equality.Key>> awsRegion: String[1];
-   <<equality.Key>> s3OutputLocation: String[1];
-   <<equality.Key>> databaseName: String[1];
+   <<equality.Key>> region: String[1];
+   <<equality.Key>> catalog: String[0..1];
+   <<equality.Key>> database: String[0..1];
+   <<equality.Key>> workGroup: String[0..1];
+   <<equality.Key>> outputLocation: String[0..1];
+   <<equality.Key>> athenaEndpoint: String[0..1];
 }
