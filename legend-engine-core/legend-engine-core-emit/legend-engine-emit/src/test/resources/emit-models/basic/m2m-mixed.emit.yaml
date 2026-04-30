@@ -1,0 +1,23 @@
+name: m2m-mixed
+title: "M2M Mapping with Passing and Failing Tests"
+description: |
+  A model-to-model mapping with one passing test and one failing test.
+  Used to verify that EMIT TEST_EXECUTION reports failure when at least
+  one assertion fails.
+
+modelSources:
+  model:
+    root: m2m-mixed
+    files:
+      - model/model.pure
+      - mapping/mapping.pure
+
+features:
+  - class
+  - m2m-mapping
+  - mapping
+complexity: basic
+tags:
+  - m2m
+  - mapping-test
+  - failure-reporting
