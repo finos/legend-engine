@@ -111,6 +111,9 @@
 
         <!-- MCP -->
         <module>legend-engine-xts-mcp</module>
+
+        <!-- Docs -->
+        <module>legend-engine-docs</module>
     </modules>
 
     <properties>
