@@ -118,25 +118,6 @@ public class ApplicationQuery
         }
     }
 
-    @POST
-    @Path("batch/versions")
-    @ApiOperation(value = "Get all versions of the queries with specified IDs")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueriesVersions(List<String> queryIds)
-    {
-        try
-        {
-            return Response.ok(this.queryStoreManager.getQueriesVersions(queryIds)).build();
-        }
-        catch (Exception e)
-        {
-            if (e instanceof ApplicationQueryException)
-            {
-                return ((ApplicationQueryException) e).toResponse();
-            }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, null);
-        }
-    }
 
     @GET
     @Path("{queryId}")
