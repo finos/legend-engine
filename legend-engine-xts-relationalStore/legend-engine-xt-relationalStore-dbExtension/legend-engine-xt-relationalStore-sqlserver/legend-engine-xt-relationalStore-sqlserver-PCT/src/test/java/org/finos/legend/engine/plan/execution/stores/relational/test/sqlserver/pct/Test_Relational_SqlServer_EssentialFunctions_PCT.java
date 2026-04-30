@@ -182,8 +182,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::format::testFormatFloatWithTruncation_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
             one("meta::pure::functions::string::tests::format::testFormatFloatWithZeroPadding_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
             one("meta::pure::functions::string::tests::format::testFormatFloat_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"The system is trying to get an element at offset 1 where the collection is of size 1\""),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::format::testFormatIntegerWithZeroPadding_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
             one("meta::pure::functions::string::tests::format::testFormatInteger_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
@@ -228,10 +226,8 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
             one("meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_", "\"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over'\""),
 
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
 
             // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
             one("meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 3\nactual:   -2\""),
 
             //Pow
@@ -239,10 +235,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::pow::testSimplePow_Function_1__Boolean_1_", "\"\nexpected: 4.0\nactual:   4\""),
 
             // Rem
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemWithFloats_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'mod' is not a recognized built-in function name."),
@@ -261,7 +253,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.8D\nactual:   4D\""),
 
             //Trigonometry
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'cbrt' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::testCubeRoot_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'cbrt' is not a recognized built-in function name."),
 
             // At
@@ -287,7 +278,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_", "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Arithmetic overflow error converting expression to data type int.\""),
             one("meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_", "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Arithmetic overflow error converting expression to data type int.\""),
             one("meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_", "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Arithmetic overflow error converting expression to data type int.\""),
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'."),
             one("meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_", "[unsupported-api] The function 'date' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'."),
             one("meta::pure::functions::date::tests::testDateFromMinute_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'."),
@@ -298,7 +288,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'."),
             one("meta::pure::functions::date::tests::testHasHour_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasHour_Date_1__Boolean_1_'."),
             one("meta::pure::functions::date::tests::testHasMinute_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMinute_Date_1__Boolean_1_'."),
-            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'."),
             one("meta::pure::functions::date::tests::testHasMonth_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasMonth_Date_1__Boolean_1_'."),
             one("meta::pure::functions::date::tests::testHasSecond_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSecond_Date_1__Boolean_1_'."),
             one("meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_'."),
@@ -359,7 +348,19 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
 
             // StartsWith
             one("meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
-            one("meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'.")
+            one("meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
+            // Error-case tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties"),
+            one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "The function 'array_slice' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"),
+            one("meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic."),
+            one("meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_", "An invalid floating point operation occurred"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_", "An invalid floating point operation occurred"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_", "An invalid floating point operation occurred")
     );
 
     public static Test suite()

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.data.embedded;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -68,30 +67,28 @@ public class RelationElementsEmbeddedDataTreeWalker
             rowsCtx = ctx.tableCSV().rows();
         }
 
-        // For tableCSV (flat CSV from assertions), trim whitespace padding added by the composer.
-        // For table (path-based format), preserve spaces as they may be intentional.
-        boolean shouldTrim = ctx.tableCSV() != null;
-
         relationElement.columns = columnNamesCtx.cell().stream()
-                .map(cellContext ->
-                {
-                    String text = cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : "";
-                    return StringEscapeUtils.unescapeJava(shouldTrim ? text.trim() : text);
-                })
+                .map(this::parseCellValue)
                 .collect(Collectors.toList());
         relationElement.rows = new ArrayList<>();
         rowsCtx.rowValues().forEach(rowValuesContext ->
         {
             RelationRowTestData row = new RelationRowTestData();
             row.values = rowValuesContext.cell().stream()
-                    .map(cellContext ->
-                    {
-                        String text = cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : "";
-                        return StringEscapeUtils.unescapeJava(shouldTrim ? text.trim() : text);
-                    })
+                    .map(this::parseCellValue)
                     .collect(Collectors.toList());
             relationElement.rows.add(row);
         });
         return relationElement;
+    }
+
+    private String parseCellValue(RelationElementsDataParserGrammar.CellContext cellContext)
+    {
+        if (cellContext.QUOTED_ROW_VALUE() != null)
+        {
+            return cellContext.QUOTED_ROW_VALUE().getText().trim();
+        }
+        String text = cellContext.ROW_VALUE() != null ? cellContext.ROW_VALUE().getText() : "";
+        return text.trim();
     }
 }

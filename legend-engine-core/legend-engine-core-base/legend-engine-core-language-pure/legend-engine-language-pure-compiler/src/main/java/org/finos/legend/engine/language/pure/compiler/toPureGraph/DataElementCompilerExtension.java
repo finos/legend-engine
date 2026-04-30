@@ -15,12 +15,18 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
@@ -29,6 +35,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
+
+import java.util.Set;
 
 public class DataElementCompilerExtension implements CompilerExtension
 {
@@ -51,7 +60,9 @@ public class DataElementCompilerExtension implements CompilerExtension
                 Processor.newProcessor(
                         DataElement.class,
                         this::dataElementFirstPass,
-                        this::dataElementSecondPass
+                        this::dataElementSecondPass,
+                        this::dataElementThirdPass,
+                        this::dataPrerequisiteElementPass
                 )
         );
     }
@@ -60,6 +71,10 @@ public class DataElementCompilerExtension implements CompilerExtension
     {
         Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name, SourceInformationHelper.toM3SourceInformation(dataElement.sourceInformation), null);
         GenericType mappingGenericType = context.newGenericType(context.pureModel.getType("meta::pure::data::DataElement"));
+        if (dataElement.data != null && dataElement.dataResolvers != null && !dataElement.dataResolvers.isEmpty())
+        {
+            throw new EngineException("Data element cannot have both embedded data and data resolvers", dataElement.sourceInformation, EngineErrorType.COMPILATION);
+        }
         return compiled._classifierGenericType(mappingGenericType)
                 ._stereotypes(ListIterate.collect(dataElement.stereotypes, context::resolveStereotype))
                 ._taggedValues(ListIterate.collect(dataElement.taggedValues, context::newTaggedValue));
@@ -67,15 +82,53 @@ public class DataElementCompilerExtension implements CompilerExtension
 
     private void dataElementSecondPass(DataElement dataElement, CompileContext context)
     {
-        String fullPath = context.pureModel.buildPackageString(dataElement._package, dataElement.name);
-        Root_meta_pure_data_DataElement compiled = (Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(fullPath);
-
-        ProcessingContext processingContext = new ProcessingContext("Data '" + fullPath + "' Second Pass");
-        Root_meta_pure_data_EmbeddedData compiledData = dataElement.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
-        if (compiledData instanceof Root_meta_pure_data_DataElementReference)
+        if (dataElement.data != null)
         {
-            throw new EngineException("Cannot use Data element reference in a Data element", dataElement.data.sourceInformation, EngineErrorType.COMPILATION);
+            String fullPath = context.pureModel.buildPackageString(dataElement._package, dataElement.name);
+            Root_meta_pure_data_DataElement compiled = (Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(fullPath);
+
+            ProcessingContext processingContext = new ProcessingContext("Data '" + fullPath + "' Second Pass");
+            Root_meta_pure_data_EmbeddedData compiledData = dataElement.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
+            if (compiledData instanceof Root_meta_pure_data_DataElementReference)
+            {
+                throw new EngineException("Cannot use Data element reference in a Data element", dataElement.data.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            compiled._data(compiledData);
         }
-        compiled._data(compiledData);
+    }
+
+    private void dataElementThirdPass(DataElement element, CompileContext context)
+    {
+        if (element.dataResolvers != null)
+        {
+            String fullPath = context.pureModel.buildPackageString(element._package, element.name);
+            Root_meta_pure_data_DataElement compiled = (Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(fullPath);
+            ProcessingContext processingContext = new ProcessingContext("DataElement '" + fullPath + "' Third Pass");
+
+            compiled._resolvedData(new PureMap(new DataResolverHelper().resolveDataFromDataResolvers(element.dataResolvers, context, processingContext)));
+        }
+    }
+
+    private Set<PackageableElementPointer> dataPrerequisiteElementPass(DataElement element, CompileContext compileContext)
+    {
+        MutableSet<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
+        EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(compileContext, prerequisiteElements);
+        if (element.dataResolvers != null)
+        {
+            element.dataResolvers.forEach(dataResolver ->
+            {
+                if (dataResolver instanceof ReferenceDataResolver)
+                {
+                    prerequisiteElements.add(((ReferenceDataResolver) dataResolver).elementPointer);
+                }
+                else if (dataResolver instanceof BaseDataResolver)
+                {
+                    BaseDataResolver baseDataResolver = (BaseDataResolver) dataResolver;
+                    prerequisiteElements.add(baseDataResolver.elementPointer);
+                    baseDataResolver.data.accept(embeddedDataPrerequisiteElementsPassBuilder);
+                }
+            });
+        }
+        return prerequisiteElements;
     }
 }

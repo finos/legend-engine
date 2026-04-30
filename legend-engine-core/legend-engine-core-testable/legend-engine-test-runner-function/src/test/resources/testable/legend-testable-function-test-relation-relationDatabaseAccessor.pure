@@ -5,7 +5,7 @@ Data data::RelationalData
   #{
     default.PersonTable:
       id,firstName,lastName
-      1,I'm John,"Doe\, Jr"
+      1,I'm John,"Doe, Jr"
       2,Nicole,Smith
       3,Time,Smith;
   }#
@@ -46,7 +46,7 @@ function model::RelationQuery(): meta::pure::metamodel::relation::Relation<(firs
       #{
         default.PersonTable:
           id,firstName,lastName
-          1,I'm John,"Doe\, Jr"
+          1,I'm John,"Doe, Jr"
           2,Nicole,Smith
           3,Time,Smith;
       }#;

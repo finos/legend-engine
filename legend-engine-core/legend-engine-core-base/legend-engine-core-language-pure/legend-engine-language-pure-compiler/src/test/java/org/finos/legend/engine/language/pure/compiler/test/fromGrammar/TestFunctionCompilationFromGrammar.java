@@ -140,7 +140,7 @@ public class TestFunctionCompilationFromGrammar
                 "  testPass | MyFunc() => Relation\n" +
                 "  #{\n" +
                 "    id, name\n" +
-                "    1 , John\n" +
+                "    1 , John;\n" +
                 "  }#;\n" +
                 "}\n");
     }
@@ -159,7 +159,7 @@ public class TestFunctionCompilationFromGrammar
                 "    testPass | MyFunc('John') => Relation\n" +
                 "    #{\n" +
                 "      id, name\n" +
-                "      1 , John\n" +
+                "      1 , John;\n" +
                 "    }#;\n" +
                 "  )\n" +
                 "}\n");

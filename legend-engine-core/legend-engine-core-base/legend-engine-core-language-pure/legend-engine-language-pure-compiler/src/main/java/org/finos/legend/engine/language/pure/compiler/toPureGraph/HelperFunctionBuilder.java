@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
@@ -32,11 +33,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
+import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_ParameterValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -151,10 +154,15 @@ public class HelperFunctionBuilder
             element = compileContext.resolvePackageableElement(functionTestData.packageableElementPointer);
         }
         PackageableElement resolvedElement = element;
-        return compileContext.getCompilerExtensions().getExtraFunctionTestDataProcessors().stream().map(processor -> processor.value(resolvedElement, functionTestData, compileContext, ctx))
+        Root_meta_pure_data_EmbeddedData metamodelData = functionTestData.data.accept(new EmbeddedDataFirstPassBuilder(compileContext, ctx));
+        Root_meta_pure_data_EmbeddedData resolvedData = compileContext.getCompilerExtensions().getPackageableElementToEmbeddedDataProcessors().stream().map(processor -> processor.value(resolvedElement, metamodelData, compileContext, true, functionTestData.sourceInformation))
                 .filter(java.util.Objects::nonNull)
                 .findFirst()
                 .orElseThrow(() -> new EngineException("Unsupported relation accessor"));
+        return new Root_meta_legend_function_metamodel_FunctionTestData_Impl("", SourceInformationHelper.toM3SourceInformation(functionTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestData"))
+                ._element(resolvedElement)
+                ._data(resolvedData)
+                ._doc(functionTestData.doc);
     }
 
     private static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(ParameterValue parameterValue, CompileContext context)

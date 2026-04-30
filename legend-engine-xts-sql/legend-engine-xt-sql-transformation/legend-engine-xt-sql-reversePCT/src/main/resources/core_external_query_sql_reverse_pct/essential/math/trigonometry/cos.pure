@@ -26,12 +26,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                         rev('|meta::pure::functions::math::cos(-1)', 'select cos(-1)'),
                         rev('|meta::pure::functions::math::cos(-1.5)', 'select cos(-1.5)')
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testCosEval_Function_1__Boolean_1_',
-                      [
-                        noRev('|meta::pure::functions::math::cos_Number_1__Float_1_->meta::pure::functions::lang::eval(1)')
-                      ]
                  )
                 ]
   )

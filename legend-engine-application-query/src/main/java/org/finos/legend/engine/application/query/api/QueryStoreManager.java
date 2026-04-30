@@ -424,6 +424,23 @@ public class QueryStoreManager
                 .build()).map(this::convertFromStoredQuery).collect(Collectors.toList());
     }
 
+    public List<Query> getQueryHistory(String queryId)
+    {
+        List<Query> history = getQueryDao().getHistory(queryId)
+                .map(this::convertFromStoredQuery)
+                .collect(Collectors.toList());
+        // history is empty for two distinct reasons:
+        //   (a) the query was never created → NOT_FOUND
+        //   (b) the query exists but has never been updated → return empty list
+        // get() still finds case (b) because the current version is live (validUntil == INFINITY).
+        // Deleted queries are intentionally excluded from this check so their history remains visible.
+        if (history.isEmpty() && !getQueryDao().get(queryId).isPresent())
+        {
+            throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
+        }
+        return history;
+    }
+
     public Query getQuery(String queryId)
     {
         Optional<ApplicationStoredQuery> matchingQuery = getQueryDao().get(queryId);

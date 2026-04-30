@@ -35,7 +35,6 @@ import org.eclipse.collections.impl.multimap.list.FastListMultimap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
@@ -52,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.DatabaseMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.SchemaMapper;
@@ -89,10 +87,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executi
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData;
-import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData;
 import org.finos.legend.pure.generated.platform_store_relational_functions;
@@ -160,6 +157,7 @@ import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
+import java.lang.Boolean;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -869,25 +867,21 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function4<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, FunctionTestData, CompileContext, ProcessingContext, Root_meta_legend_function_metamodel_FunctionTestData>> getExtraFunctionTestDataProcessors()
+    public List<Function5<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, Root_meta_pure_data_EmbeddedData, CompileContext, Boolean, SourceInformation, Root_meta_pure_data_EmbeddedData>> getPackageableElementToEmbeddedDataProcessors()
     {
-        return Collections.singletonList((packageableElement, storeTestData, context, processingContext) ->
+        return Collections.singletonList((packageableElement, metamodelData, context, isReferenceAllowed, sourceInformation) ->
         {
             if (packageableElement instanceof Store)
             {
-                Root_meta_pure_data_EmbeddedData metamodelData = storeTestData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext));
                 if (metamodelData instanceof Root_meta_pure_data_RelationElementsData || (metamodelData instanceof Root_meta_pure_data_DataElementReference && ((Root_meta_pure_data_DataElementReference) metamodelData)._dataElement()._data() instanceof Root_meta_pure_data_RelationElementsData))
                 {
                     Root_meta_pure_data_RelationElementsData relationElementsTestData =  metamodelData instanceof Root_meta_pure_data_RelationElementsData ? (Root_meta_pure_data_RelationElementsData) metamodelData : (Root_meta_pure_data_RelationElementsData) ((Root_meta_pure_data_DataElementReference) metamodelData)._dataElement()._data();
                     if (relationElementsTestData._relationElements().anySatisfy(relationElement -> relationElement._paths().size() != 2))
                     {
-                        throw new EngineException("Each RelationElement for a database accessor must be of the form schema.table", storeTestData.sourceInformation, EngineErrorType.COMPILATION);
+                        throw new EngineException("Each RelationElement for a database accessor must be of the form schema.table", sourceInformation, EngineErrorType.COMPILATION);
                     }
                 }
-                return new Root_meta_legend_function_metamodel_FunctionTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), context.pureModel.getClass("meta::legend::function::metamodel::FunctionTestData"))
-                        ._element(packageableElement)
-                        ._data(storeTestData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)))
-                        ._doc(storeTestData.doc);
+                return metamodelData;
             }
             return null;
         });

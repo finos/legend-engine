@@ -28,14 +28,6 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
                             'select cot(1.5)'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::cot_Number_1__Float_1_->meta::pure::functions::lang::eval(1.5)',
-                            'select cot(1.5)'
-                        )
-                      ]
                  )
                ]
   )
@@ -44,5 +36,4 @@ function meta::external::query::sql::reversePCT::tests::essential::math::trigono
 function meta::external::query::sql::reversePCT::tests::essential::math::trigonometry::cot::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::trigonometry::testCoTangent(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::testCoTangentEval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

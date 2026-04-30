@@ -215,7 +215,7 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
                 "  myTest | Hello('John') => Unsupported\n" +
                 "  #{\n" +
                 "    id, name\n" +
-                "    1 , John\n" +
+                "    1 , John;\n" +
                 "  }#;\n" +
                 "}\n", "PARSER error at [6:29-10:4]: Unsupported embedded data type for function test assertion: Unsupported. Only 'Relation' is supported.");
     }

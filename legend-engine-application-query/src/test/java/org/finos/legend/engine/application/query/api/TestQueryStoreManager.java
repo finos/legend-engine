@@ -1251,6 +1251,158 @@ public class TestQueryStoreManager
     }
 
     // ==========================================
+    // Query History Tests
+    // ==========================================
+
+    @Test
+    public void testGetQueryHistoryNotFound()
+    {
+        // A non-existent queryId must throw NOT_FOUND
+        Assert.assertEquals("Can't find query with ID '1'",
+                Assert.assertThrows(ApplicationQueryException.class, () -> store.getQueryHistory("1")).getMessage());
+    }
+
+    @Test
+    public void testGetQueryHistoryIsEmptyAfterCreate() throws Exception
+    {
+        // A freshly-created query has no superseded versions yet → empty history
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        List<Query> history = store.getQueryHistory("1");
+
+        Assert.assertTrue(history.isEmpty());
+    }
+
+    @Test
+    public void testGetQueryHistoryGetDoesNotCreateNewVersion() throws Exception
+    {
+        // getQuery updates lastOpenAt in-place (no versioning) → history stays empty
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        store.getQuery("1");
+        store.getQuery("1");
+        store.getQuery("1");
+
+        List<Query> history = store.getQueryHistory("1");
+
+        Assert.assertTrue("getQuery must not add entries to history", history.isEmpty());
+    }
+
+    @Test
+    public void testGetQueryHistoryAfterUpdate() throws Exception
+    {
+        // A single update supersedes v1; history should contain exactly that one old version
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        createdQuery.name = "query1_v2";
+        store.updateQuery("1", createdQuery, currentUser);
+
+        List<Query> history = store.getQueryHistory("1");
+
+        Assert.assertEquals(1, history.size());
+        Assert.assertEquals(Integer.valueOf(1), history.get(0).version);
+        Assert.assertEquals("query1", history.get(0).name);
+        // Current version (v2) must NOT appear in history
+        Assert.assertTrue(history.stream().noneMatch(q -> q.name.equals("query1_v2")));
+    }
+
+    @Test
+    public void testGetQueryHistoryAfterPatch() throws Exception
+    {
+        // patchQuery also creates a new version → v1 should appear in history
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        Query patch = new Query();
+        patch.id = "1";
+        patch.versionId = "1.0.0";
+        store.patchQuery("1", patch, currentUser);
+
+        List<Query> history = store.getQueryHistory("1");
+
+        Assert.assertEquals(1, history.size());
+        Assert.assertEquals(Integer.valueOf(1), history.get(0).version);
+    }
+
+    @Test
+    public void testGetQueryHistoryAfterMultipleUpdates() throws Exception
+    {
+        // N updates produce N superseded versions in history; current version is excluded
+        String currentUser = "testUser";
+        Query currentQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        currentQuery.name = "query1_v2";
+        currentQuery = store.updateQuery("1", currentQuery, currentUser);
+
+        currentQuery.name = "query1_v3";
+        store.updateQuery("1", currentQuery, currentUser);
+
+        List<Query> history = store.getQueryHistory("1");
+
+        Assert.assertEquals(2, history.size());
+        List<Integer> versions = history.stream().map(q -> q.version).sorted().collect(Collectors.toList());
+        Assert.assertEquals(Arrays.asList(1, 2), versions);
+        // Current version (v3) must not appear in history
+        Assert.assertTrue(history.stream().noneMatch(q -> Integer.valueOf(3).equals(q.version)));
+        // Latest live version is v3
+        Assert.assertEquals(Integer.valueOf(3), store.getQuery("1").version);
+    }
+
+    @Test
+    public void testGetQueryHistoryDeletedQueryStillVisible() throws Exception
+    {
+        // After delete, getQuery fails but the full version trail is still accessible via getQueryHistory.
+        // Specifically:
+        //   v1 — superseded by the update (validUntil set to update time)
+        //   v2 — deleted (validUntil set to deletion time, deletedAt populated)
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        createdQuery.name = "query1_v2";
+        store.updateQuery("1", createdQuery, currentUser);
+
+        store.deleteQuery("1", currentUser);
+
+        // Deleted query must no longer be live
+        Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1"));
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+
+        // Both old versions must still be visible in history
+        List<Query> history = store.getQueryHistory("1");
+        Assert.assertEquals(2, history.size());
+
+        List<Integer> versions = history.stream().map(q -> q.version).sorted().collect(Collectors.toList());
+        Assert.assertEquals(Arrays.asList(1, 2), versions);
+
+        // The deleted version (v2) must carry a deletedAt timestamp
+        Query deletedVersion = history.stream().filter(q -> Integer.valueOf(2).equals(q.version)).findFirst().orElse(null);
+        Assert.assertNotNull(deletedVersion);
+        Assert.assertNotNull("Deleted version must have a deletedAt timestamp", deletedVersion.deletedAt);
+    }
+
+    @Test
+    public void testGetQueryHistoryIsolatedBetweenQueries() throws Exception
+    {
+        // Updating one query must not pollute the history of a different query
+        String currentUser = "testUser";
+        Query q1 = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
+
+        // Update query "1" three times
+        q1.name = "query1_v2";
+        q1 = store.updateQuery("1", q1, currentUser);
+        q1.name = "query1_v3";
+        store.updateQuery("1", q1, currentUser);
+
+        Assert.assertEquals(2, store.getQueryHistory("1").size());
+        // query "2" was never updated → its history must remain empty
+        Assert.assertTrue(store.getQueryHistory("2").isEmpty());
+    }
+
+    // ==========================================
     // Versioning Tests
     // ==========================================
 

@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.language.pure.grammar.to.data;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
@@ -40,31 +43,134 @@ public class HelperRelationElementsDataComposer
     private String visitRelationElement(RelationElement relationElement, String baseIndentation)
     {
         StringBuilder str = new StringBuilder();
-        str.append(baseIndentation).append(String.join(".", relationElement.paths)).append(":");
-        if (relationElement.columns != null)
+        boolean isStandAloneRelation = relationElement.paths == null || relationElement.paths.isEmpty();
+        if (!isStandAloneRelation)
         {
-            String allColumns = String.join(",", relationElement.columns.stream().map(this::escapeRowValue).toArray(String[]::new));
-            str.append("\n").append(baseIndentation).append(getTabString()).append(allColumns).append("\n");
+            str.append(baseIndentation).append(String.join(".", relationElement.paths)).append(":\n");
+            str.append(renderAlignedRelationElement(relationElement, baseIndentation + getTabString(), isStandAloneRelation));
         }
-        if (relationElement.rows != null)
+        else
         {
-            relationElement.rows.forEach(row ->
-            {
-                String allValues = String.join(",", row.values.stream().map(this::escapeRowValue).toArray(String[]::new));
-                str.append(baseIndentation).append(getTabString()).append(allValues).append("\n");
-            });
+            str.append(renderAlignedRelationElement(relationElement, baseIndentation, isStandAloneRelation));
         }
-        str.setLength(str.length() - 1);
-        str.append(";");
         return str.toString();
     }
 
-    private String escapeRowValue(String input)
+    /**
+     * Renders a RelationElement as an aligned table inside #{ ... }#.
+     * Computes max column widths and pads values with spaces for readability.
+     */
+    public static String renderAlignedRelationElement(RelationElement element, String baseIndentation, boolean isStandAloneRelation)
+    {
+        String innerIndent = baseIndentation + getTabString(1);
+        List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
+        List<RelationRowTestData> rows = element.rows != null ? element.rows : Collections.emptyList();
+
+        int numCols = columns.size();
+        int numRows = rows.size();
+        int[] maxWidths = new int[numCols];
+        for (int i = 0; i < numCols; i++)
+        {
+            maxWidths[i] = escapeRelationValue(columns.get(i)).length();
+        }
+        for (RelationRowTestData row : rows)
+        {
+            for (int i = 0; i < numCols && i < row.values.size(); i++)
+            {
+                maxWidths[i] = Math.max(maxWidths[i], escapeRelationValue(row.values.get(i)).length());
+            }
+        }
+
+        StringBuilder str = new StringBuilder();
+        if (isStandAloneRelation)
+        {
+            str.append(baseIndentation).append("#{\n");
+        }
+
+        // Column header
+        str.append(innerIndent);
+        for (int i = 0; i < numCols; i++)
+        {
+            if (i > 0)
+            {
+                str.append(", ");
+            }
+            String val = escapeRelationValue(columns.get(i));
+            str.append(i < numCols - 1 ? padRight(val, maxWidths[i]) : val);
+        }
+        if (numRows == 0)
+        {   str.append(";");
+            return str.toString();
+        }
+
+        str.append("\n");
+
+        // Data rows
+        for (int j = 0; j < numRows; j++)
+        {
+            RelationRowTestData row = rows.get(j);
+            str.append(innerIndent);
+            for (int i = 0; i < numCols; i++)
+            {
+                if (i > 0)
+                {
+                    str.append(", ");
+                }
+                String value = i < row.values.size() ? escapeRelationValue(row.values.get(i)) : "";
+                str.append(i < numCols - 1 ? padRight(value, maxWidths[i]) : value);
+            }
+            if (j < numRows - 1)
+            {
+                str.append("\n");
+            }
+            else
+            {
+                str.append(";");
+                if (!isStandAloneRelation)
+                {
+                    return str.toString();
+                }
+                str.append("\n");
+            }
+        }
+
+        if (isStandAloneRelation)
+        {
+            str.append(baseIndentation).append("}#");
+        }
+        return str.toString();
+    }
+
+    private static String padRight(String s, int width)
+    {
+        if (s.length() >= width)
+        {
+            return s;
+        }
+        StringBuilder sb = new StringBuilder(width);
+        sb.append(s);
+        for (int i = s.length(); i < width; i++)
+        {
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    public static String escapeRelationValue(String input)
     {
         if (input == null)
         {
             return "";
         }
-        return StringEscapeUtils.escapeJava(input).replace("\\\"", "\"").replace(",", "\\,").replace(";", "\\;");
+        if (input.startsWith("\"") && input.endsWith("\""))
+        {
+            return input;
+        }
+        if (input.contains(",") || input.contains(";"))
+        {
+            return "\"" + input.replace("\"", "\\\"") + "\"";
+        }
+        return input;
     }
+
 }

@@ -91,8 +91,6 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::collection::tests::zip", "\"meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
 
             // Format
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "Function does not exist 'evaluate(NativeFunction<{String[1], Any[*]->String[1]}>[1],List<T>[2])'"),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
 
@@ -116,41 +114,29 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Mod
-            one("meta::pure::functions::math::tests::mod::testModInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Pow
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Rem
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14\""),
 
             // Sign
             one("meta::pure::functions::math::tests::sign::testSign_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java"),
 
             // ArcCos
-            one("meta::pure::functions::math::tests::trigonometry::testArcCosineEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // ArcSine
-            one("meta::pure::functions::math::tests::trigonometry::testArcSineEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // ArcTangent2
-            one("meta::pure::functions::math::tests::trigonometry::testArcTangent2Eval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // ArcTangent
-            one("meta::pure::functions::math::tests::trigonometry::testArcTangentEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // CoTangent
-            one("meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Cosine
-            one("meta::pure::functions::math::tests::trigonometry::testCosEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // CubeRoot
-            one("meta::pure::functions::math::tests::testCubeRootEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // String
             one("meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_", "\"\nexpected: 3.1415900000D\nactual:   3.14159D\""),
@@ -161,20 +147,14 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::string::tests::trim::testRTrim_Function_1__Boolean_1_", "\"Type not found for method rtrim from String\""),
 
             // Sine
-            one("meta::pure::functions::math::tests::trigonometry::testSineEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // SquareRoot
-            one("meta::pure::functions::math::tests::testSquareRootEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // Tangent
-            one("meta::pure::functions::math::tests::trigonometry::testTangentEval_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             one("meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::metamodel::function::NativeFunction\""),
 
             // Date
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])'."),
-            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"eval_Function_1__T_n__V_m_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
 
             // If
             one("meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_", "\"Generics not supported (function: meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_)\""),
@@ -185,7 +165,20 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'"),
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'"),
             one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Function does not exist 'deactivate(Any[1])'"),
-            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:")
+            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:"),
+
+            // Error-case tests: Java bytecode execution raises a different (or no) error than the one the Pure test expects
+            one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_", "No error was thrown"),
+            one("meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_", "No error was thrown"),
+            one("meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_", "No error was thrown"),
+            one("meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Double"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Double")
     );
 
     public static Test suite()

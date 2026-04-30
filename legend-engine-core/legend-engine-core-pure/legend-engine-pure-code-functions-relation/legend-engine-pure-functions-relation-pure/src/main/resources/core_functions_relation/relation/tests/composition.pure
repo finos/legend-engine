@@ -1970,3 +1970,40 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testS
    );
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let expr = {|
+      #TDS
+         id, category, val
+         1, A, 100
+         2, A, 200
+         3, B, 300
+      #
+      ->extend(
+          over(~[id], [~category->ascending()]),
+          ~[rnk : {p, w, r | $p->rank($w, $r)->cast(@meta::pure::precisePrimitives::Int)}]
+      )
+      ->concatenate(
+          #TDS
+             id, category, val, rnk
+             4, B, 400, 1
+          #
+      )
+      ->pivot(~category, ['A', 'B'], ~newVal : x | $x.val : y | $y->plus())
+   };
+
+   let res = $f->eval($expr);
+
+   meta::pure::functions::relation::assertTdsEquivalent(
+      #TDS
+         id, rnk, 'A__|__newVal', 'B__|__newVal'
+         1, 1, 100, null
+         2, 1, 200, null
+         3, 1, null, 300
+         4, 1, null, 400
+      #,
+      $res->cast(@Relation<(id:Integer, rnk:Integer, '\'A__|__newVal\'':Number, '\'B__|__newVal\'':Number)>)->sort([ascending(~id)]),
+      0.00001
+   );
+}
+

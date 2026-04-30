@@ -43,7 +43,7 @@ relationElement:                       paths TABLE_START table
 ;
 table:                                 columnNames rows TABLE_END
 ;
-tableCSV:                              NEWLINE* columnNames rows
+tableCSV:                              NEWLINE* columnNames rows TABLE_END
 ;
 paths:                                 identifier (DOT identifier)*
 ;
@@ -53,5 +53,7 @@ rows:                                  (NEWLINE rowValues)*
 ;
 rowValues:                             cell (ROW_COMMA cell)*
 ;
-cell:                                  ROW_VALUE?
+cell:                                  ROW_VALUE
+                                       | QUOTED_ROW_VALUE
+                                       |
 ;

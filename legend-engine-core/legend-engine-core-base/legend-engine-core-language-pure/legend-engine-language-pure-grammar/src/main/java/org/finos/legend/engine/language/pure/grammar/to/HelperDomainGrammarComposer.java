@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperRelationElementsDataComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -39,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
-import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -334,83 +334,7 @@ public class HelperDomainGrammarComposer
      */
     public static String renderAlignedRelationElement(RelationElement element, String baseIndentation)
     {
-        String innerIndent = baseIndentation + getTabString(1);
-        List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
-        List<RelationRowTestData> rows = element.rows != null ? element.rows : Collections.emptyList();
-
-        // Compute max width for each column
-        int numCols = columns.size();
-        int[] maxWidths = new int[numCols];
-        for (int i = 0; i < numCols; i++)
-        {
-            maxWidths[i] = escapeRelationValue(columns.get(i)).length();
-        }
-        for (RelationRowTestData row : rows)
-        {
-            for (int i = 0; i < numCols && i < row.values.size(); i++)
-            {
-                maxWidths[i] = Math.max(maxWidths[i], escapeRelationValue(row.values.get(i)).length());
-            }
-        }
-
-        StringBuilder str = new StringBuilder();
-        str.append(baseIndentation).append("#{\n");
-
-        // Column header
-        str.append(innerIndent);
-        for (int i = 0; i < numCols; i++)
-        {
-            if (i > 0)
-            {
-                str.append(", ");
-            }
-            String val = escapeRelationValue(columns.get(i));
-            str.append(i < numCols - 1 ? padRight(val, maxWidths[i]) : val);
-        }
-        str.append("\n");
-
-        // Data rows
-        for (RelationRowTestData row : rows)
-        {
-            str.append(innerIndent);
-            for (int i = 0; i < numCols; i++)
-            {
-                if (i > 0)
-                {
-                    str.append(", ");
-                }
-                String value = i < row.values.size() ? escapeRelationValue(row.values.get(i)) : "";
-                str.append(i < numCols - 1 ? padRight(value, maxWidths[i]) : value);
-            }
-            str.append("\n");
-        }
-
-        str.append(baseIndentation).append("}#");
-        return str.toString();
-    }
-
-    private static String padRight(String s, int width)
-    {
-        if (s.length() >= width)
-        {
-            return s;
-        }
-        StringBuilder sb = new StringBuilder(width);
-        sb.append(s);
-        for (int i = s.length(); i < width; i++)
-        {
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
-
-    private static String escapeRelationValue(String input)
-    {
-        if (input == null)
-        {
-            return "";
-        }
-        return org.apache.commons.text.StringEscapeUtils.escapeJava(input).replace("\\\"", "\"").replace(",", "\\,").replace(";", "\\;");
+        return HelperRelationElementsDataComposer.renderAlignedRelationElement(element, baseIndentation, true);
     }
 
     private static String renderSimpleExternalFormat(ExternalFormatData externalFormatData)

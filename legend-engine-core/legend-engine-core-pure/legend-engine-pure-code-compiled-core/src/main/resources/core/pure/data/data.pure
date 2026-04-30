@@ -16,10 +16,16 @@ import meta::pure::data::*;
 
 Class meta::pure::data::DataElement extends PackageableElement
 [
-  !$this.data->instanceOf(DataElementReference)
+  $this.data->isEmpty() || !$this.data->toOne()->instanceOf(DataElementReference)
 ]
 {
-  data: EmbeddedData[1];
+  data: EmbeddedData[0..1];
+  resolvedData: Map<PackageableElement, EmbeddedData>[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::pure::data::DataResolver
+{
+  data: EmbeddedData[0..1];
 }
 
 // We aim to model subTypes of EmbeddedData based on following strategy
@@ -57,7 +63,7 @@ Class meta::pure::data::ModelStoreData extends EmbeddedData
   modelTestData: meta::pure::data::ModelData[*];
 }
 
-Class meta::pure::data::ModelData 
+Class meta::pure::data::ModelData
 {
   model: Class<Any>[1];
 }

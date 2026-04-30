@@ -35,6 +35,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
@@ -154,6 +157,11 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 // Test Debug
                 ProtocolSubTypeInfo.newBuilder(TestDebug.class)
                         .withSubtype(TestExecutionPlanDebug.class, "testExecutionPlanDebug")
+                        .build(),
+                // Data Resolver
+                ProtocolSubTypeInfo.newBuilder(DataResolver.class)
+                        .withSubtype(BaseDataResolver.class, "baseDataResolver")
+                        .withSubtype(ReferenceDataResolver.class, "referenceDataResolver")
                         .build(),
                 // Assertion Status
                 ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)

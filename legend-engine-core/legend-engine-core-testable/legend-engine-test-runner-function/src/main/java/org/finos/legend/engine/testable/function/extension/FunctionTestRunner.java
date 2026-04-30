@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
@@ -50,7 +51,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
@@ -247,14 +247,17 @@ public class FunctionTestRunner implements TestRunner
 
     private void setupNonStoreRelationTestData(List<FunctionTestData> nonStoreRelationTestData, FunctionTestRunnerContext context)
     {
-        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, EmbeddedData> relationData = Maps.mutable.empty();
+        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, RelationElementsData> relationData = Maps.mutable.empty();
         nonStoreRelationTestData.forEach(testData ->
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = context.getPureModel().getPackageableElement(testData.packageableElementPointer.path, testData.packageableElementPointer.sourceInformation);
             EmbeddedData data = (testData.data instanceof DataElementReference)
                     ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) testData.data, context.getPureModelContextData())
                     : testData.data;
-            relationData.put(element, data);
+            if (data instanceof RelationElementsData)
+            {
+                relationData.put(element, (RelationElementsData) data);
+            }
         });
         List<FunctionDefinition<?>> modifiedFunctions = new ArrayList<>(this.connectionAndDatabaseBuilders.collect(f -> f.rewriteFunctionForTestDataExecution(this.functionDefinition, relationData, context.getPureModel())).select(Objects::nonNull));
         if (modifiedFunctions.size() > 1)

@@ -22,12 +22,17 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.DataParser
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -60,8 +65,51 @@ public class DataParseTreeWalker
         dataElement.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         dataElement.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         dataElement.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
-        dataElement.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), walkerSourceInformation, extensions);
+        if (ctx.embeddedData() != null)
+        {
+            dataElement.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), walkerSourceInformation, extensions);
+        }
+        if (!ctx.dataResolver().isEmpty())
+        {
+            dataElement.dataResolvers = new ArrayList<>();
+            for (DataParserGrammar.DataResolverContext drCtx : ctx.dataResolver())
+            {
+                dataElement.dataResolvers.add(visitDataResolver(drCtx));
+            }
+        }
         return dataElement;
+    }
+
+    private DataResolver visitDataResolver(DataParserGrammar.DataResolverContext ctx)
+    {
+        if (ctx.baseDataResolver() != null)
+        {
+            return visitBaseDataResolver(ctx.baseDataResolver());
+        }
+        return visitReferenceDataResolver(ctx.referenceDataResolver());
+    }
+
+    private ReferenceDataResolver visitReferenceDataResolver(DataParserGrammar.ReferenceDataResolverContext ctx)
+    {
+        ReferenceDataResolver resolver = new ReferenceDataResolver();
+        resolver.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        resolver.elementPointer = new PackageableElementPointer(
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())
+        );
+        resolver.elementPointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        return resolver;
+    }
+
+    private BaseDataResolver visitBaseDataResolver(DataParserGrammar.BaseDataResolverContext ctx)
+    {
+        BaseDataResolver resolver = new BaseDataResolver();
+        resolver.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        resolver.elementPointer = new PackageableElementPointer(
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier())
+        );
+        resolver.elementPointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        resolver.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), walkerSourceInformation, extensions);
+        return resolver;
     }
 
     private List<TaggedValue> visitTaggedValues(DataParserGrammar.TaggedValuesContext ctx)

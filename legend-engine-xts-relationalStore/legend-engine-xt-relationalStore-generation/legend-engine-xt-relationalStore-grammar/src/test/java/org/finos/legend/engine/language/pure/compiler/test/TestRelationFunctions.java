@@ -1268,7 +1268,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "      #{\n" +
                 "        default.PersonTable:\n" +
                 "           id,firstName,lastName\n" +
-                "           1,I\\'m John,\"Doe, Jr\";\n" +
+                "           1,I'm John,\"Doe, Jr\";\n" +
                 "      }#;\n" +
                 "    test_1 | RelationQuery() => (JSON) '[ {\\n  \"firstName\" : \"I\\'m John\",\\n  \"lastName\" : \"Doe, Jr\"\\n} ]';\n" +
                 "  )\n" +
@@ -1291,7 +1291,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "  #{\n" +
                 "    default.PersonTable:\n" +
                 "      id,firstName,lastName\n" +
-                "      1,I\\'m John,\"Doe, Jr\";\n" +
+                "      1,I'm John,\"Doe, Jr\";\n" +
                 "  }#\n" +
                 "}\n" +
                 "###Relational\n" +
@@ -1369,7 +1369,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "      #{\n" +
                 "        default.PersonTable.unknown:\n" +
                 "           id,firstName,lastName\n" +
-                "           1,I\\'m John,\"Doe, Jr\";\n" +
+                "           1,I'm John,\"Doe, Jr\";\n" +
                 "      }#;\n" +
                 "    test_1 | RelationQuery() => (JSON) '[ {\\n  \"firstName\" : \"I\\'m John\",\\n  \"lastName\" : \"Doe, Jr\"\\n} ]';\n" +
                 "  )\n" +

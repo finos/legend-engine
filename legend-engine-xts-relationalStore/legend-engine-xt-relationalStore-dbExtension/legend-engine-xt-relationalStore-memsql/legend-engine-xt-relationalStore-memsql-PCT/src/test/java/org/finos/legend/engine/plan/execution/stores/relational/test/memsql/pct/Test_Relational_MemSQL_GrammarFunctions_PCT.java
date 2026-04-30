@@ -178,7 +178,14 @@ public class Test_Relational_MemSQL_GrammarFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::collection::tests::isEmpty::testIsEmpty_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
             one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyFalse_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
             one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyMultiple_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')")
+            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
+            // New PCT tests from legend-pure2 migration (mirrored from H2 defaults)
+            one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "The function 'range' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"),
+            // Pure boolean literals surface as numeric on MemSQL — needs investigation
+            one("meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean", AdapterQualifier.needsInvestigation),
+            one("meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_", "class java.lang.Long cannot be cast to class java.lang.Boolean", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

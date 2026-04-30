@@ -170,7 +170,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_\""),
             one("meta::pure::functions::date::tests::testAdjustByWeeks_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_\""),
             one("meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::adjust_Date_1__Integer_1__DurationUnit_1__Date_1_\""),
-            one("meta::pure::functions::date::tests::testAdjustReflectiveEvaluation_Function_1__Boolean_1_", "Can't find a match for function 'meta::pure::functions::lang::eval(NativeFunction<{Date[1], Integer[1], DurationUnit[1]->Date[1]}>[1],StrictDate[1],Integer[1],DurationUnit[1])"),
             one("meta::pure::functions::date::tests::testDateDiffDays_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_\""),
             one("meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_\""),
             one("meta::pure::functions::date::tests::testDateDiffMilliseconds_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_\""),
@@ -195,7 +194,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasDay_Date_1__Boolean_1_\""),
             one("meta::pure::functions::date::tests::testHasHour_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasHour_Date_1__Boolean_1_\""),
             one("meta::pure::functions::date::tests::testHasMinute_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasMinute_Date_1__Boolean_1_\""),
-            one("meta::pure::functions::date::tests::testHasMonthReflect_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasMonth_Date_1__Boolean_1_\""),
             one("meta::pure::functions::date::tests::testHasMonth_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasMonth_Date_1__Boolean_1_\""),
             one("meta::pure::functions::date::tests::testHasSecond_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasSecond_Date_1__Boolean_1_\""),
             one("meta::pure::functions::date::tests::testHasSubsecondWithAtLeastPrecision_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::hasSubsecondWithAtLeastPrecision_Date_1__Integer_1__Boolean_1_\""),
@@ -204,7 +202,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::date::tests::testMinute_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::minute_Date_1__Integer_1_\""),
             one("meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::monthNumber_Date_1__Integer_1_\""),
             one("meta::pure::functions::date::tests::testSecond_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::second_Date_1__Integer_1_\""),
-            one("meta::pure::functions::date::tests::testYeaReflect_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::year_Date_1__Integer_1_\""),
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::year_Date_1__Integer_1_\""),
 
             one("meta::pure::functions::lang::tests::if::testIfWithEvaluate_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""),
@@ -237,10 +234,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
 
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"Unhandled Deephaven Operation Element: meta::external::store::deephaven::metamodel::DeephavenOperationElement\""),
 
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithFloat_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   -2.5\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   -0.5\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEvalWithNegativeNumbers_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   -0.5\""),
-            one("meta::pure::functions::math::tests::rem::testRemInEval_Function_1__Boolean_1_", "\"\nexpected: 2\nactual:   2.0\""),
             one("meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_", "\"\nexpected: 0.14D\nactual:   0.14000000000000012\""),
             one("meta::pure::functions::math::tests::rem::testRemWithFloats_Function_1__Boolean_1_", "\"\nexpected: 1.0\nactual:   -0.5\""),
             one("meta::pure::functions::math::tests::rem::testRemWithMixedIntegersAndFloats_Function_1__Boolean_1_", "\"\nexpected: 2.5\nactual:   -2.5\""),
@@ -257,7 +250,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             
             pack("meta::pure::functions::math::tests::toFloat", "function not supported yet: meta::pure::functions::math::toFloat_Number_1__Float_1_"),
 
-            one("meta::pure::functions::math::tests::trigonometry::testCoTangentEval_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"),
             one("meta::pure::functions::math::tests::trigonometry::testCoTangent_Function_1__Boolean_1_", "Unexpected error executing Deephaven query: io.deephaven.client.impl.TableHandle$TableHandleException"), // cotangent is not part of Numeric library. Need to write expression manually using "Numeric.cos(x) / Numeric.sin(x)"
 
             pack("meta::pure::functions::string::tests::contains", "function not supported yet: meta::pure::functions::string::contains_String_1__String_1__Boolean_1_"),
@@ -270,8 +262,6 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
             one("meta::pure::functions::string::tests::format::testFormatFloatWithTruncation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
             one("meta::pure::functions::string::tests::format::testFormatFloatWithZeroPadding_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
             one("meta::pure::functions::string::tests::format::testFormatFloat_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
-            one("meta::pure::functions::string::tests::format::testFormatInEval_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
-            one("meta::pure::functions::string::tests::format::testFormatInEvaluate_Function_1__Boolean_1_", "Function does not exist 'meta::pure::functions::lang::evaluate(NativeFunction<{String[1], Any[*]->String[1]}>[1],List<Any>[2])'"),
             one("meta::pure::functions::string::tests::format::testFormatIntegerWithZeroPadding_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
             one("meta::pure::functions::string::tests::format::testFormatInteger_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""),
@@ -335,7 +325,19 @@ public class Test_Deephaven_EssentialFunctions_PCT extends PCTReportConfiguratio
 
             one("meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::ltrim_String_1__String_1_\""),
             one("meta::pure::functions::string::tests::trim::testRTrim_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::rtrim_String_1__String_1_\""),
-            one("meta::pure::functions::string::tests::trim::testTrim_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::trim_String_1__String_1_\"")
+            one("meta::pure::functions::string::tests::trim::testTrim_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::string::trim_String_1__String_1_\""),
+            // Error-case tests from legend-pure2 migration
+            one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_"),
+            one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_"),
+            one("meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::date::dayOfMonth_Date_1__Integer_1_"),
+            one("meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::date::hour_Date_1__Integer_1_"),
+            one("meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::date::minute_Date_1__Integer_1_"),
+            one("meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::date::date_Integer_1__Integer_1__Date_1_"),
+            one("meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_", "function not supported yet: meta::pure::functions::date::second_Date_1__Integer_1_"),
+            one("meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_", "Cast exception: String cannot be cast to Number"),
+            one("meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_", "Cast exception: String cannot be cast to Number"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_", "Cast exception: String cannot be cast to Number"),
+            one("meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_", "Cast exception: String cannot be cast to Number")
     );
 
     public static Test suite()
