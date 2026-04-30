@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::modelJoin::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
@@ -93,47 +96,47 @@ function meta::pure::router::store::routing::enrichStoreMappingRoutedValueSpecif
 }
 
 // Convenience overload — delegates to the full build() with an empty idToClassMapping.
-function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function meta::pure::router::store::routing::build(valueSpec:ValueSpecification[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  build($v, $l, $last, $mapping, newMap([]->cast(@Pair<String, List<SetImplementation>>)), $exeCtx, $extensions, $debug);
+  build($valueSpec, $permutationSets, $last, $mapping, newMap([]->cast(@Pair<String, List<SetImplementation>>)), $exeCtx, $extensions, $debug);
 }
 
 // Main build dispatcher — recursively rewrites a routed ValueSpecification tree,
 // resolving permutation sets and attaching propertyMapping metadata for downstream SQL generation.
 // Each VS type is delegated to a dedicated builder function.
-function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function meta::pure::router::store::routing::build(valueSpec:ValueSpecification[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  $v->match([
-    f:FunctionExpression[1]                                                      | $f->buildFunctionExpression($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
-    r:StoreMappingRoutedValueSpecification[1]                                    | $r->buildStoreMappingRouted($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
-    z:NoSetRoutedValueSpecification[1]                                           | $z.value,
-    r:FunctionRoutedValueSpecification[1]                                        | $r->buildFunctionRouted($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
-    i:InstanceValue[1]                                                           | $i->buildInstanceValue($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
-    v:VariableExpression[1]                                                      | $v,
-    a:TDSRoutedValueSpecification[1]                                             | $a->propagateVoid($a.value),
-    s:StoreRoutedValueSpecification[1]                                           | $s,
-    c:meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1]  | $c
+  $valueSpec->match([
+    funcExpr:FunctionExpression[1]                                                      | $funcExpr->buildFunctionExpression($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
+    routedVS:StoreMappingRoutedValueSpecification[1]                                    | $routedVS->buildStoreMappingRouted($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
+    noSetRouted:NoSetRoutedValueSpecification[1]                                        | $noSetRouted.value,
+    funcRoutedVS:FunctionRoutedValueSpecification[1]                                    | $funcRoutedVS->buildFunctionRouted($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
+    instanceVal:InstanceValue[1]                                                        | $instanceVal->buildInstanceValue($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
+    varExpr:VariableExpression[1]                                                       | $varExpr,
+    tdsRouted:TDSRoutedValueSpecification[1]                                            | $tdsRouted->propagateVoid($tdsRouted.value),
+    storeRouted:StoreRoutedValueSpecification[1]                                        | $storeRouted,
+    clustered:meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] | $clustered
   ]);
 }
 
 // Builds a plain FunctionExpression: for serialize() only the first param is routed;
 // otherwise all params are built and QualifiedProperty expression sequences are rebuilt.
-function <<access.private>> meta::pure::router::store::routing::buildFunctionExpression(f:FunctionExpression[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildFunctionExpression(funcExpr:FunctionExpression[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  if($f->isSerialize(),
+  if($funcExpr->isSerialize(),
     | // Serialize — only route the first param, leave the rest (tree/config) untouched
-      if($f.parametersValues->size() > 2,
-        | ^$f(parametersValues = [$f.parametersValues->evaluateAndDeactivate()->at(0)->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $f.parametersValues->evaluateAndDeactivate()->at(1), $f.parametersValues->evaluateAndDeactivate()->at(2)]),
-        | ^$f(parametersValues = [$f.parametersValues->evaluateAndDeactivate()->at(0)->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $f.parametersValues->evaluateAndDeactivate()->at(1)])
+      if($funcExpr.parametersValues->size() > 2,
+        | ^$funcExpr(parametersValues = [$funcExpr.parametersValues->evaluateAndDeactivate()->at(0)->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $funcExpr.parametersValues->evaluateAndDeactivate()->at(1), $funcExpr.parametersValues->evaluateAndDeactivate()->at(2)]),
+        | ^$funcExpr(parametersValues = [$funcExpr.parametersValues->evaluateAndDeactivate()->at(0)->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug), $funcExpr.parametersValues->evaluateAndDeactivate()->at(1)])
       ),
     | // Normal function — build all params, rebuild QP expression sequences
-      let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-      $f.func->match([
+      let params = $funcExpr.parametersValues->evaluateAndDeactivate()->map(v|$v->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      $funcExpr.func->match([
         q:QualifiedProperty<Any>[1] |
-          let sequence = $q.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+          let sequence = $q.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
           let nq = ^$q(expressionSequence = $sequence);
-          ^$f(parametersValues=$params, func = $nq)->propagateVoid($params)->propagateVoid($nq.expressionSequence);,
-        z:Any[1] | ^$f(parametersValues=$params)->propagateVoid($params);
+          ^$funcExpr(parametersValues=$params, func = $nq)->propagateVoid($params)->propagateVoid($nq.expressionSequence);,
+        z:Any[1] | ^$funcExpr(parametersValues=$params)->propagateVoid($params);
       ]);
   );
 }
@@ -141,23 +144,17 @@ function <<access.private>> meta::pure::router::store::routing::buildFunctionExp
 // Entry point for StoreMappingRoutedValueSpecification — resolves the permutation set
 // for this node's id, then dispatches to buildPropertyAccess() if the inner value is
 // a Property/QualifiedProperty access, or recursively builds the inner value otherwise.
-function <<access.private>> meta::pure::router::store::routing::buildStoreMappingRouted(r:StoreMappingRoutedValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildStoreMappingRouted(routedVS:StoreMappingRoutedValueSpecification[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  print(if($debug.debug,|$debug.space+'[BUILD] StoreMappingRoutedVS id='+$r.id->toString()+' existingPropertyMapping='+$r.propertyMapping->size()->toString()+'\n',|''));
-  let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->first();
-  print(if($debug.debug,|$debug.space+'[BUILD] Resolved set s='+if($s->isEmpty(),|'EMPTY',|$s->toOne().id)+'\n',|''));
-
-  let value = $r.value;
-  print(if($debug.debug,|$debug.space+'[BUILD] value isFE='+$value->instanceOf(FunctionExpression)->toString()+if($value->instanceOf(FunctionExpression),|' func='+$value->cast(@FunctionExpression).func->toString()+' isProperty='+$value->cast(@FunctionExpression).func->instanceOf(Property)->toString()+' isQP='+$value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty)->toString(),|'')+'\n',|''));
-
+  let targetSet = $permutationSets.values->filter(v|$v.id->toString() == $routedVS.id).sets->first();
+  let value = $routedVS.value;
   let isPropertyOrQP = $value->instanceOf(FunctionExpression)
                         && (($value->cast(@FunctionExpression).func->instanceOf(Property) && !($value->cast(@FunctionExpression)->meta::pure::milestoning::isMilestonedGeneratedDateProperty()))
                             || $value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty));
 
   let final = if($isPropertyOrQP,
-    | $r->buildPropertyAccess($value->cast(@FunctionExpression), $s, $l, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
-    | print(if($debug.debug,|$debug.space+'[BUILD] Non-property value, rebuilding without propertyMapping\n',|''));
-      ^$r(sets = $s, value = $r.value->evaluateAndDeactivate()->build($l, $s, $r.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+    | $routedVS->buildPropertyAccess($value->cast(@FunctionExpression), $targetSet, $permutationSets, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
+    | ^$routedVS(sets = $targetSet, value = $routedVS.value->evaluateAndDeactivate()->build($permutationSets, $targetSet, $routedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
   );
 
   $final->propagateVoid($final);
@@ -166,23 +163,23 @@ function <<access.private>> meta::pure::router::store::routing::buildStoreMappin
 // Builds the parameters of a Property/QualifiedProperty FunctionExpression, then
 // dispatches based on the first param's type: routed source → full property mapping
 // resolution; Void → propagate; plain VS → pass through unchanged.
-function <<access.private>> meta::pure::router::store::routing::buildPropertyAccess(r:StoreMappingRoutedValueSpecification[1], f:FunctionExpression[1], s:SetImplementation[0..1], l:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildPropertyAccess(propertyRoutedVS:StoreMappingRoutedValueSpecification[1], funcExpr:FunctionExpression[1], targetSet:SetImplementation[0..1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->build($l, $last, $r.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  let params = $funcExpr.parametersValues->evaluateAndDeactivate()->map(v|$v->build($permutationSets, $last, $propertyRoutedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
   $params->at(0)->match([
-    e:StoreMappingRoutedValueSpecification[1] | $r->buildPropertyAccessWithRoutedSource($f, $e, $s, $params, $l, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
-    z:Void[1]                                 | $z,
-    v:ValueSpecification[1]                   | ^$r(sets = $s, value = $r.value->evaluateAndDeactivate())
+    sourceRoutedVS:StoreMappingRoutedValueSpecification[1] | $propertyRoutedVS->buildPropertyAccessWithRoutedSource($funcExpr, $sourceRoutedVS, $targetSet, $params, $permutationSets, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
+    z:Void[1]                                              | $z,
+    v:ValueSpecification[1]                                | ^$propertyRoutedVS(sets = $targetSet, value = $propertyRoutedVS.value->evaluateAndDeactivate())
   ]);
 }
 
 // Extracts property name and return type, handles OtherwiseEmbedded param rewriting,
 // then dispatches to buildNonDataTypePropertyMapping (complex types with source→target
 // join resolution) or buildDataTypePropertyMapping (primitive types with direct lookup).
-function <<access.private>> meta::pure::router::store::routing::buildPropertyAccessWithRoutedSource(r:StoreMappingRoutedValueSpecification[1], f:FunctionExpression[1], e:StoreMappingRoutedValueSpecification[1], s:SetImplementation[0..1], params:ValueSpecification[*], l:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildPropertyAccessWithRoutedSource(propertyRoutedVS:StoreMappingRoutedValueSpecification[1], funcExpr:FunctionExpression[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], targetSet:SetImplementation[0..1], params:ValueSpecification[*], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
   // Extract property name and return type from the func
-  let propReturnTypePair = $f.func->match([
+  let propReturnTypePair = $funcExpr.func->match([
     p:Property<Nil,Any|*>[1]     | pair($p, $p.classifierGenericType.typeArguments->at(1).rawType->toOne()),
     qp:QualifiedProperty<Any>[1] | pair($qp, $qp.genericType.rawType->toOne())
   ])->toOne();
@@ -206,8 +203,8 @@ function <<access.private>> meta::pure::router::store::routing::buildPropertyAcc
 
   // Dispatch based on whether the property returns a complex type or a primitive
   if(!$propReturnTypePair.second->instanceOf(DataType),
-    | $r->buildNonDataTypePropertyMapping($f, $e, $s, $params, $newParams, $propReturnTypePair, $propertyName, $l, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
-    | $r->buildDataTypePropertyMapping($f, $e, $s, $params, $newParams, $propertyName, $exeCtx, $extensions, $debug)
+    | $propertyRoutedVS->buildNonDataTypePropertyMapping($funcExpr, $sourceRoutedVS, $targetSet, $params, $newParams, $propReturnTypePair, $propertyName, $permutationSets, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
+    | $propertyRoutedVS->buildDataTypePropertyMapping($funcExpr, $sourceRoutedVS, $targetSet, $params, $newParams, $propertyName, $permutationSets, $idToClassMapping, $exeCtx, $extensions, $debug)
   );
 }
 
@@ -215,17 +212,15 @@ function <<access.private>> meta::pure::router::store::routing::buildPropertyAcc
 // set combinations. Checks: direct property mapping, association mappings, auto-mapped
 // properties, and OtherwiseEmbedded fallbacks. Returns Void if unmapped and not in hierarchy.
 // Also rebuilds QualifiedProperty expression sequences for the resolved mapping context.
-function <<access.private>> meta::pure::router::store::routing::buildNonDataTypePropertyMapping(r:StoreMappingRoutedValueSpecification[1], f:FunctionExpression[1], e:StoreMappingRoutedValueSpecification[1], s:SetImplementation[0..1], params:ValueSpecification[*], newParams:ValueSpecification[*], propReturnTypePair:Pair<AbstractProperty<Any>, Type>[1], propertyName:String[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildNonDataTypePropertyMapping(propertyRoutedVS:StoreMappingRoutedValueSpecification[1], funcExpr:FunctionExpression[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], targetSet:SetImplementation[0..1], params:ValueSpecification[*], newParams:ValueSpecification[*], propReturnTypePair:Pair<AbstractProperty<Any>, Type>[1], propertyName:String[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  print(if($debug.debug,|$debug.space+'[BUILD] Non-DataType property "'+$propertyName+'" returnType='+$propReturnTypePair.second->toString()+'\n',|''));
-
   // source = the set impl on the "from" side (e.g. Firm set when navigating firm.employees)
   // target = the set impl on the "to" side (e.g. Person set), resolved from the permutation
   let source  = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
-  let target  = $s->toOne();
+  let target  = $targetSet->toOne();
   // Resolve OperationSetImplementations (union/merge) down to concrete InstanceSetImplementations
-  let sources = $source->resolveOperation($e.mapping);
-  let targets = $target->resolveOperation($e.mapping);
+  let sources = $source->resolveOperation($sourceRoutedVS.mapping);
+  let targets = $target->resolveOperation($sourceRoutedVS.mapping);
 
   // Walk all source×target combinations looking for property mappings.
   // For each pair, try a cascading series of lookups (direct → association → auto → otherwise).
@@ -237,11 +232,11 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
       print(if($debug.debug,|$debug.space+'  Looking up propertyMapping for property "'+$propertyName+'" from "'+$s.id+'" to "'+$targetIds->joinStrings('[', ',', ']')+'"',|''));
 
       // 1. Direct property mapping by name+targetId (most common case — explicit mapping in the set)
-      let resByProperty = $targetIds->map(targetId|$s->cast(@InstanceSetImplementation)->meta::pure::mapping::propertyMappingByPropertyNameAndTargetIdWithInlineResolution($propertyName, $targetId))->first();
+      let resByProperty = $targetIds->map(targetId|$s->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetIdWithInlineResolution($propertyName, $targetId))->first();
 
       // 2. Fallback: association property mappings (property defined via Association, not inline in the class mapping)
       let resWithAssoc = if($resByProperty->isEmpty(),
-        | let propMappings = $e.mapping->_associationPropertyMappingsByIdRecursive($s.id);
+        | let propMappings = $sourceRoutedVS.mapping->_associationPropertyMappingsByIdRecursive($s.id);
           // Milestoning QPs need special handling: look up the edge-point property name
           // (e.g. employeesAllVersions) instead of the user-facing milestoned name (employees)
           if($propReturnTypePair.first->instanceOf(QualifiedProperty) && $propReturnTypePair.first->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
@@ -252,7 +247,7 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
       );
 
       // 3. Fallback: auto-mapped properties (property exists on both source and target with same name/type)
-      let res = if($resWithAssoc->isEmpty() && $f.func->instanceOf(Property) && $s->isPropertyAutoMapped($f.func->cast(@Property<Nil, Any|*>), $extensions, $e.mapping),
+      let res = if($resWithAssoc->isEmpty() && $funcExpr.func->instanceOf(Property) && $s->isPropertyAutoMapped($funcExpr.func->cast(@Property<Nil, Any|*>), $extensions, $sourceRoutedVS.mapping),
         | $s->cast(@InstanceSetImplementation)->meta::pure::mapping::propertyMappingsByPropertyName($propertyName),
         | $resWithAssoc
       );
@@ -260,7 +255,7 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
       // 4. Fallback: OtherwiseEmbedded (for graphFetch flow — the parent set always resolves
       //    to the otherwisePropertyMapping, so we check if any embedded set has an "otherwise"
       //    that points to one of our target ids)
-      let withOtherwise = if($res->isEmpty() && $f.func->instanceOf(Property),
+      let withOtherwise = if($res->isEmpty() && $funcExpr.func->instanceOf(Property),
         | let byName = $s->cast(@InstanceSetImplementation)->meta::pure::mapping::_propertyMappingsByPropertyName($propertyName)->filter(pm|$pm->instanceOf(OtherwiseEmbeddedSetImplementation))->map(pm|$pm->cast(@OtherwiseEmbeddedSetImplementation));
           $byName.otherwisePropertyMapping->filter(pm|$pm.targetSetImplementationId->in($targetIds));,
         | $res
@@ -272,19 +267,19 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   );
 
   // Rebuild QualifiedProperty expression sequences in the current mapping context
-  let fWithBuiltExprSeq = if($f.func->instanceOf(QualifiedProperty),
+  let funcExprWithBuiltExprSeq = if($funcExpr.func->instanceOf(QualifiedProperty),
     | print(if($debug.debug,|$debug.space+'\n\t',|''));
-      let qp = $f.func->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate();
-      let routedExprSeq = $qp.expressionSequence->map(es|$es->build($l, $r.sets->first(), $e.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      let qp = $funcExpr.func->cast(@QualifiedProperty<Any>)->evaluateAndDeactivate();
+      let routedExprSeq = $qp.expressionSequence->map(es|$es->build($permutationSets, $propertyRoutedVS.sets->first(), $sourceRoutedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
       let newQp = ^$qp(expressionSequence=$routedExprSeq, owner=^PropertyOwner());
-      ^$f(func=$newQp);,
-    | $f
+      ^$funcExpr(func=$newQp);,
+    | $funcExpr
   );
 
   // Check if mapped via class hierarchy (parent class has the mapping)
   let isMappedInHierarchy = {|
     !$sources->at(0).class->generalizations()->cast(@Class<Any>)
-      ->map(c|$e.mapping->rootClassMappingByClass($c))
+      ->map(c|$sourceRoutedVS.mapping->rootClassMappingByClass($c))
       ->filter(s|$s->instanceOf(InstanceSetImplementation))
       ->map(s|$s->cast(@InstanceSetImplementation)->propertyMappingByPropertyNameAndTargetId($propertyName, $targets->at(0).id))
       ->isEmpty()
@@ -295,18 +290,17 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   // neither is the placeholder 'embdedded_todo', no property mappings found, and
   // not mapped via a superclass in the hierarchy. VOID propagates upward to eliminate
   // this entire branch from the built query (used during permutation to prune invalid combos).
-  print(if($debug.debug,|$debug.space+'[BUILD] propertyMappings.size='+$propertyMappings->size()->toString()+' sources='+$sources.id->joinStrings(',')+' targets='+$targets.id->joinStrings(',')+'\n',|''));
-  let value = $r.value;
+  let value = $propertyRoutedVS.value;
   if($value->cast(@FunctionExpression).func->instanceOf(Property) && $targets->size() == 1 && $sources->size() == 1 && $sources->toOne().id != 'embdedded_todo' && $targets->toOne().id != 'embdedded_todo' && $propertyMappings->isEmpty() && !$isMappedInHierarchy->eval(),
     | print(if($debug.debug,|$debug.space+' -> VOID\n',|''));
       ^Void(genericType=^GenericType(rawType=Nil), multiplicity=PureOne)->evaluateAndDeactivate();,
     | print(if($debug.debug,|$debug.space+'\n',|''));
-      // Deduplicate property mappings that may appear from multiple source×target paths
-      // but represent the same logical mapping (same property, same source id, same target id)
       let deduped = $propertyMappings->removeDuplicates({a,b|$a.property == $b.property && $a.sourceSetImplementationId == $b.sourceSetImplementationId && $a.targetSetImplementationId == $b.targetSetImplementationId});
+      let routedPropertyMapping = $deduped->map(pm|$pm->potentiallyRoutePropertyMapping($sourceRoutedVS, $propertyRoutedVS, $extensions, $debug));
       // Attach the resolved propertyMappings to the StoreMappingRoutedValueSpecification —
-      // these are picked up downstream by pureToSQLQuery as propertyMappingFromRouter
-      let res = ^$r(sets = $s, value = ^$fWithBuiltExprSeq(parametersValues=$newParams), propertyMapping = $deduped);
+      // these are picked up downstream by store-specific executors, for ex. in 
+      // pureToSQLQuery as propertyMappingFromRouter
+      let res = ^$propertyRoutedVS(sets = $targetSet, value = ^$funcExprWithBuiltExprSeq(parametersValues=$newParams), propertyMapping = $routedPropertyMapping);
       if($res.value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty),
         | $res->propagateVoid($res.value->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>).expressionSequence),
         | $res
@@ -314,74 +308,141 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   );
 }
 
+function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourcedRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
+{
+  $pm->match(
+    [
+      m:ModelJoinPropertyMapping[1]|
+        // Build vars map so the router can resolve $this and $that with routing context.
+        // $this = source side (e.g. Firm), $that = target side (e.g. Person)
+        let thisVar = ^VariableExpression(name='_mj_src', genericType=$sourcedRoutedVS.value.genericType, multiplicity=PureOne);
+        let thatVar = ^VariableExpression(name='_mj_tgt', genericType=$propertyRoutedVS.value.genericType, multiplicity=PureOne);
+        let initialVars = newMap(
+          [
+            pair($thisVar->evaluateAndDeactivate(), $sourcedRoutedVS->cast(@ValueSpecification)),
+            pair($thatVar->evaluateAndDeactivate(), $propertyRoutedVS->cast(@ValueSpecification))
+          ],
+          VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)
+        );
+
+        // Find PermutationSets from existing strategy that exactly match source/target SetImplementations.
+        // Traverse in reverse id order (highest first) to pick innermost context match.
+        let routingStrategy = $propertyRoutedVS.routingStrategy->cast(@StoreMappingRoutingStrategy);
+        let sortedSets = $routingStrategy.sets->sort({a,b| $b.id - $a.id});
+        let srcPermSet = $sortedSets->filter(ps| $ps.sets.id->sort() == $sourcedRoutedVS.sets.id->sort())->first()->toOne();
+        let tgtPermSet = $sortedSets->filter(ps| $ps.sets.id->sort() == $propertyRoutedVS.sets.id->sort())->first()->toOne();
+
+        // Pre-populate strategy with source and target PermutationSets, reset setsByDepth
+        let initialSets = [$srcPermSet, $tgtPermSet];
+        let initialCounter = max($srcPermSet.id, $tgtPermSet.id);
+        let newRoutingStrategy = ^$routingStrategy(sets = $initialSets, setsByDepth = ^Map<String, PermutationSet>());
+
+        // Build RoutingState with pre-populated counter so new PermutationSets get non-colliding ids
+        let initialState = ^RoutingState(
+            shouldBeRouted = true,
+            lambdaContext = [],
+            counter = $initialCounter,
+            depth = '',
+            propertyMap = ^PropertyMap(),
+            routingStrategy = $newRoutingStrategy,
+            graphFetchFlow = false
+        );
+
+        let routed = $m.joinCondition->routeFunction(true, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);
+        let clusters = $routed.expressionSequence->evaluateAndDeactivate();
+        assert($clusters->size() == 1, 'Expected exactly one cluster for routed ModelJoin joinCondition, got ' + $clusters->size()->toString());
+        let cluster = $clusters->toOne()->cast(@ClusteredValueSpecification);
+        let routedJoinCondition = ^$routed(expressionSequence = $cluster.val);
+        ^$m(joinCondition = $routedJoinCondition->cast(@LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>));,
+      p:PropertyMapping[1] | $p
+    ]
+  );
+}
+
 // Resolves property mappings for DataType (primitive) properties via direct lookup on the
 // source set implementation. Handles InstanceSet (single mapping) and OperationSet (union/merge)
 // cases, with auto-mapped and default-to-empty fallbacks.
-function <<access.private>> meta::pure::router::store::routing::buildDataTypePropertyMapping(r:StoreMappingRoutedValueSpecification[1], f:FunctionExpression[1], e:StoreMappingRoutedValueSpecification[1], s:SetImplementation[0..1], params:ValueSpecification[*], newParams:ValueSpecification[*], propertyName:String[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildDataTypePropertyMapping(propertyRoutedVS:StoreMappingRoutedValueSpecification[1], funcExpr:FunctionExpression[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], targetSet:SetImplementation[0..1], params:ValueSpecification[*], newParams:ValueSpecification[*], propertyName:String[1], permutationSets:List<PermutationSet>[*], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  if(!$r.value->cast(@FunctionExpression).func->instanceOf(Property),
-    | // QualifiedProperty returning DataType — no property mapping to resolve, the QP's
-      // own expression sequence handles the computation (e.g. a derived property like fullName())
-      ^$r(sets = $s, value = ^$f(parametersValues=$newParams)),
-    |
-      print(if($debug.debug,|$debug.space+'   Looking up propertyMapping for property "'+$f.func->cast(@Property<Nil,Any|*>).name->toOne()+'" in "'+$params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne().id+'" \n',|''));
-      let setImpl  = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
-      let property = $f.func->cast(@Property<Nil,Any|*>);
+  if(
+    [
+      pair(
+        | $propertyRoutedVS.value->cast(@FunctionExpression).func->instanceOf(Property),
+        | let setImplementation = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+          print(if($debug.debug,|$debug.space+'   Looking up propertyMapping for property "'+$funcExpr.func->cast(@Property<Nil,Any|*>).name->toOne()+'" in "'+$params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne().id+'" \n',|''));
+          let setImpl  = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+          let property = $funcExpr.func->cast(@Property<Nil,Any|*>);
 
-      // For DataType properties, lookup is simpler than non-DataType: no source→target
-      // resolution needed since primitive properties don't have a target set implementation.
-      // We just need to find the column/expression mapping for this property on the source set.
-      let propertyMappings = $setImpl->match([
-        i:InstanceSetImplementation[1] |
-          let pMapping = $i->propertyMappingsByPropertyName($propertyName);
-          // Skip assertion for auto-mapped, default-to-empty, or merge-member sets —
-          // these legitimately have no explicit property mapping
-          if($pMapping->isEmpty() && ($i->isPropertyAutoMapped($property, $extensions, $e.mapping) || $i->isNoMappingDefaultToEmpty($property) || $i->isPartOfMerge()),
-            | [],
-            {|
-              assert(!$pMapping->isEmpty(), |'No property mapping found for: "'+$propertyName+'" in "'+$setImpl.id+'" in the mapping "'+$setImpl.parent->elementToPath()+'"');
-              // DataType properties must have exactly one mapping per set (no unions/joins)
-              assert($pMapping->size() == 1, |'Found '+$pMapping->size()->toString()+' property mappings found for: "'+$propertyName+'" in "'+$setImpl.id+'" in the mapping "'+$setImpl.parent->elementToPath()+'"');
-              $pMapping->toOne();
-            }
-          );,
-        o:OperationSetImplementation[1] |
-          // For operation sets (union/merge), resolve to concrete sets and look up each
-          $o->resolveOperation($e.mapping)->map(i|
-            let pMapping = $i->match([
-              e:EmbeddedSetImplementation[1]  | $e->propertyMappingsByPropertyName($propertyName),
-              a:InstanceSetImplementation[1]  | $i->_propertyMappingsByPropertyName($propertyName)
-            ]);
-            if($pMapping->isEmpty() && ($i->isPropertyAutoMapped($property, $extensions, $e.mapping) || $i->isNoMappingDefaultToEmpty($property) || $o->instanceOf(MergeOperationSetImplementation)),
-              | [],
-              {|
-                assert(!$pMapping->isEmpty(), |'No property mapping found for: '+$propertyName+' in mapping '+$i.class.name->toOne()+'['+$i.id+']');
-                $pMapping->toOne();
-              }
+          // For DataType properties, lookup is simpler than non-DataType: no source→target
+          // resolution needed since primitive properties don't have a target set implementation.
+          // We just need to find the column/expression mapping for this property on the source set.
+          let propertyMappings = $setImpl->match([
+            instanceSetImpl:InstanceSetImplementation[1] |
+              let pMapping = $instanceSetImpl->propertyMappingsByPropertyName($propertyName);
+              // Skip assertion for auto-mapped, default-to-empty, or merge-member sets —
+              // these legitimately have no explicit property mapping
+              if($pMapping->isEmpty() && ($instanceSetImpl->isPropertyAutoMapped($property, $extensions, $sourceRoutedVS.mapping) || $instanceSetImpl->isNoMappingDefaultToEmpty($property) || $instanceSetImpl->isPartOfMerge()),
+                | [],
+                {|
+                  assert(!$pMapping->isEmpty(), |'No property mapping found for: "'+$propertyName+'" in "'+$setImpl.id+'" in the mapping "'+$setImpl.parent->elementToPath()+'"');
+                  // DataType properties must have exactly one mapping per set (no unions/joins)
+                  assert($pMapping->size() == 1, |'Found '+$pMapping->size()->toString()+' property mappings found for: "'+$propertyName+'" in "'+$setImpl.id+'" in the mapping "'+$setImpl.parent->elementToPath()+'"');
+                  $pMapping->toOne();
+                }
+              );,
+            operationSetImpl:OperationSetImplementation[1] |
+              // For operation sets (union/merge), resolve to concrete sets and look up each
+              $operationSetImpl->resolveOperation($sourceRoutedVS.mapping)->map(resolvedImpl|
+                let pMapping = $resolvedImpl->match([
+                  embeddedImpl:EmbeddedSetImplementation[1]  | $embeddedImpl->propertyMappingsByPropertyName($propertyName),
+                  instanceImpl:InstanceSetImplementation[1]  | $resolvedImpl->_propertyMappingsByPropertyName($propertyName)
+                ]);
+                if($pMapping->isEmpty() && ($resolvedImpl->isPropertyAutoMapped($property, $extensions, $sourceRoutedVS.mapping) || $resolvedImpl->isNoMappingDefaultToEmpty($property) || $operationSetImpl->instanceOf(MergeOperationSetImplementation)),
+                  | [],
+                  {|
+                    assert(!$pMapping->isEmpty(), |'No property mapping found for: '+$propertyName+' in mapping '+$resolvedImpl.class.name->toOne()+'['+$resolvedImpl.id+']');
+                    $pMapping->toOne();
+                  }
+                );
+              );
+          ]);
+          print(if($debug.debug,|$debug.space+'  propertyMappings found "'+$propertyMappings->size()->toString()+'" \n',|''));
+          let deduped = $propertyMappings->removeDuplicates({a,b|$a.property == $b.property && $a.sourceSetImplementationId == $b.sourceSetImplementationId && $a.targetSetImplementationId == $b.targetSetImplementationId});
+          // Attach resolved DataType property mappings — downstream pureToSQLQuery uses these
+          // to generate column references/expressions in the SQL SELECT clause
+          ^$propertyRoutedVS(sets = $targetSet, value = ^$funcExpr(parametersValues = $newParams), propertyMapping = $deduped);
+        ),
+        pair(
+          | $propertyRoutedVS.value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty),
+          | // QualifiedProperty returning DataType — no property mapping to resolve, the QP's
+            // own expression sequence handles the computation (e.g. a derived property like fullName())
+            let sourceSet = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+            let qp = $funcExpr.func->cast(@QualifiedProperty<Any>);
+            print(if($debug.debug, | $debug.space + '   Looking up propertyMapping for qualified property "' + $qp.name->toOne() + '" in "' + $sourceSet.id + '" \n', | ''));
+            let routedExprSeq = $qp.expressionSequence->map(es | $es->build($permutationSets, $sourceSet, $sourceRoutedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+            let newQp = ^$qp(expressionSequence = $routedExprSeq, owner=^PropertyOwner());
+            ^$propertyRoutedVS(
+              sets = $targetSet,
+              value = ^$funcExpr(parametersValues = $newParams, func = $newQp)
             );
-          );
-      ]);
-
-      print(if($debug.debug,|$debug.space+'  propertyMappings found "'+$propertyMappings->size()->toString()+'" \n',|''));
-      let deduped = $propertyMappings->removeDuplicates({a,b|$a.property == $b.property && $a.sourceSetImplementationId == $b.sourceSetImplementationId && $a.targetSetImplementationId == $b.targetSetImplementationId});
-      // Attach resolved DataType property mappings — downstream pureToSQLQuery uses these
-      // to generate column references/expressions in the SQL SELECT clause
-      ^$r(sets = $s, value = ^$f(parametersValues=$newParams), propertyMapping = $deduped);
+        )
+      ],
+    | ^$propertyRoutedVS(sets = $targetSet, value = ^$funcExpr(parametersValues=$newParams))
   );
 }
 
 // Builds a FunctionRoutedValueSpecification — resolves the property-to-set map
 // from permutations, then recursively builds the inner value.
-function <<access.private>> meta::pure::router::store::routing::buildFunctionRouted(r:FunctionRoutedValueSpecification[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildFunctionRouted(funcRoutedVS:FunctionRoutedValueSpecification[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  let built = $r.propertyMap.v->map(p|
+  let built = $funcRoutedVS.propertyMap.v->map(p|
     let id = $p.second->cast(@StoreMappingRoutedValueSpecification).id;
-    let s = $l.values->filter(v|$v.id->toString() == $id).sets->toOne();
-    pair($p.first, $s);
+    let resolvedSet = $permutationSets.values->filter(v|$v.id->toString() == $id).sets->toOne();
+    pair($p.first, $resolvedSet);
   )->newMap()->cast(@Map<String, SetImplementation>);
 
-  let res = ^$r(
-    value = $r.value->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
+  let res = ^$funcRoutedVS(
+    value = $funcRoutedVS.value->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug),
     builtPropertyMap = $built
   );
   $res->propagateVoid($res.value);
@@ -390,80 +451,80 @@ function <<access.private>> meta::pure::router::store::routing::buildFunctionRou
 // Builds an InstanceValue — recursively processes each contained value:
 // graph fetch trees are routed, lambdas/VS are built, AggregateValues and
 // column specs have their expression sequences rebuilt, and all other values pass through.
-function <<access.private>> meta::pure::router::store::routing::buildInstanceValue(i:InstanceValue[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildInstanceValue(instanceVal:InstanceValue[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  let res = ^$i(values = $i.values->evaluateAndDeactivate()->map(iv|$iv->match([
-    r:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $r->meta::pure::graphFetch::routing::routeRootGraphFetchTree($last->toOne(), $mapping, $exeCtx, $extensions),
+  let res = ^$instanceVal(values = $instanceVal.values->evaluateAndDeactivate()->map(iv|$iv->match([
+    graphFetchTree:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $graphFetchTree->meta::pure::graphFetch::routing::routeRootGraphFetchTree($last->toOne(), $mapping, $exeCtx, $extensions),
     v:ValueSpecification[1] |
-      let t = $v->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);
+      let t = $v->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);
       $t->propagateVoid($t);,
-    f:FunctionDefinition<Any>[1] |
-      let sequence = $f.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+    funcDef:FunctionDefinition<Any>[1] |
+      let sequence = $funcDef.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
       if($sequence->filter(p|$p->isVoid())->isEmpty(),
-        | ^$f(expressionSequence = $sequence),
+        | ^$funcDef(expressionSequence = $sequence),
         | ^Void(genericType=^GenericType(rawType=Nil), multiplicity=PureOne)->evaluateAndDeactivate()
       );,
-    a:meta::pure::functions::collection::AggregateValue<Nil,Any,Any>[1] |
-      let f = $a.mapFn;
-      let sequence = $f.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-      $i.genericType->dynamicNew([^KeyValue(key='mapFn', value=^$f(expressionSequence=$sequence)), ^KeyValue(key='aggregateFn', value=$a.aggregateFn)]);,
-    a:meta::pure::tds::AggregateValue<Any,Any>[1] |
-      let f = $a.mapFn;
-      let sequence = $f.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-      $i.genericType->dynamicNew([
-        ^KeyValue(key='name', value=$a.name),
-        ^KeyValue(key='mapFn', value=^$f(expressionSequence=$sequence)),
-        ^KeyValue(key='aggregateFn', value=$a.aggregateFn)
+    collectionAggVal:meta::pure::functions::collection::AggregateValue<Nil,Any,Any>[1] |
+      let mapFnDef = $collectionAggVal.mapFn;
+      let sequence = $mapFnDef.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      $instanceVal.genericType->dynamicNew([^KeyValue(key='mapFn', value=^$mapFnDef(expressionSequence=$sequence)), ^KeyValue(key='aggregateFn', value=$collectionAggVal.aggregateFn)]);,
+    tdsAggVal:meta::pure::tds::AggregateValue<Any,Any>[1] |
+      let mapFnDef = $tdsAggVal.mapFn;
+      let sequence = $mapFnDef.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      $instanceVal.genericType->dynamicNew([
+        ^KeyValue(key='name', value=$tdsAggVal.name),
+        ^KeyValue(key='mapFn', value=^$mapFnDef(expressionSequence=$sequence)),
+        ^KeyValue(key='aggregateFn', value=$tdsAggVal.aggregateFn)
       ]);,
-    f:FuncColSpec<Any, Any>[1]          | $f->buildFuncColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
-    f:FuncColSpecArray<Any, Any>[1]     |
-      let newFuncSpecs = $f.funcSpecs->map(fs|$fs->buildFuncColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-      $f->genericType()->dynamicNew([^KeyValue(key='funcSpecs', value=$newFuncSpecs)]);,
-    a:AggColSpec<Any, Any, Any>[1]      | $a->buildAggColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
-    a:AggColSpecArray<Any, Any, Any>[1] |
-      let newAggSpecs = $a.aggSpecs->map(as|$as->buildAggColSpec($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-      $a->genericType()->dynamicNew([^KeyValue(key='aggSpecs', value=$newAggSpecs)]);,
+    colSpec:FuncColSpec<Any, Any>[1]          | $colSpec->buildFuncColSpec($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
+    colSpecArray:FuncColSpecArray<Any, Any>[1]     |
+      let newFuncSpecs = $colSpecArray.funcSpecs->map(fs|$fs->buildFuncColSpec($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      $colSpecArray->genericType()->dynamicNew([^KeyValue(key='funcSpecs', value=$newFuncSpecs)]);,
+    aggSpec:AggColSpec<Any, Any, Any>[1]      | $aggSpec->buildAggColSpec($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug);,
+    aggSpecArray:AggColSpecArray<Any, Any, Any>[1] |
+      let newAggSpecs = $aggSpecArray.aggSpecs->map(as|$as->buildAggColSpec($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+      $aggSpecArray->genericType()->dynamicNew([^KeyValue(key='aggSpecs', value=$newAggSpecs)]);,
     a:Any[1] | $a
   ])));
   $res->propagateVoid($res.values->filter(v|$v->instanceOf(ValueSpecification))->cast(@ValueSpecification));
 }
 
 // Builds a FuncColSpec by routing its function's expression sequence.
-function <<access.private>> meta::pure::router::store::routing::buildFuncColSpec(fs:FuncColSpec<Any, Any>[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FuncColSpec<Any, Any>[1]
+function <<access.private>> meta::pure::router::store::routing::buildFuncColSpec(colSpec:FuncColSpec<Any, Any>[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FuncColSpec<Any, Any>[1]
 {
-  let function = $fs.function->cast(@FunctionDefinition<Any>);
-  let sequence = $function.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-  $fs->genericType()->dynamicNew([
-    ^KeyValue(key='name', value=$fs.name),
+  let function = $colSpec.function->cast(@FunctionDefinition<Any>);
+  let sequence = $function.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  $colSpec->genericType()->dynamicNew([
+    ^KeyValue(key='name', value=$colSpec.name),
     ^KeyValue(key='function', value=^$function(expressionSequence=$sequence))
   ])->cast(@FuncColSpec<Any, Any>);
 }
 
 // Builds an AggColSpec by routing both its map and reduce function expression sequences.
-function <<access.private>> meta::pure::router::store::routing::buildAggColSpec(as:AggColSpec<Any, Any, Any>[1], l:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):AggColSpec<Any, Any, Any>[1]
+function <<access.private>> meta::pure::router::store::routing::buildAggColSpec(aggSpec:AggColSpec<Any, Any, Any>[1], permutationSets:List<PermutationSet>[*], last:SetImplementation[0..1], mapping:Mapping[1], idToClassMapping:Map<String, List<SetImplementation>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):AggColSpec<Any, Any, Any>[1]
 {
-  let mapFn            = $as.map->cast(@FunctionDefinition<Any>);
-  let mapFnSequence    = $mapFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-  let reduceFn         = $as.reduce->cast(@FunctionDefinition<Any>);
-  let reduceFnSequence = $reduceFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($l, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
-  $as->genericType()->dynamicNew([
-    ^KeyValue(key='name', value=$as.name),
+  let mapFn            = $aggSpec.map->cast(@FunctionDefinition<Any>);
+  let mapFnSequence    = $mapFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  let reduceFn         = $aggSpec.reduce->cast(@FunctionDefinition<Any>);
+  let reduceFnSequence = $reduceFn.expressionSequence->evaluateAndDeactivate()->map(ex|$ex->build($permutationSets, $last, $mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+  $aggSpec->genericType()->dynamicNew([
+    ^KeyValue(key='name', value=$aggSpec.name),
     ^KeyValue(key='map', value=^$mapFn(expressionSequence=$mapFnSequence)),
     ^KeyValue(key='reduce', value=^$reduceFn(expressionSequence=$reduceFnSequence))
   ])->cast(@AggColSpec<Any, Any, Any>);
 }
 
 // Returns true if the VS is a Void or wraps a Void — signals an unmapped property.
-function <<access.private>> meta::pure::router::store::routing::isVoid(v:ValueSpecification[1]):Boolean[1]
+function <<access.private>> meta::pure::router::store::routing::isVoid(valueSpec:ValueSpecification[1]):Boolean[1]
 {
-  $v->instanceOf(Void) || ($v->instanceOf(StoreMappingRoutedValueSpecification) && $v->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(Void));
+  $valueSpec->instanceOf(Void) || ($valueSpec->instanceOf(StoreMappingRoutedValueSpecification) && $valueSpec->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(Void));
 }
 
 // If any element is Void, replace the entire VS with Void — propagates unmapped state upward.
-function <<access.private>> meta::pure::router::store::routing::propagateVoid(v:ValueSpecification[1], elements:ValueSpecification[*]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::propagateVoid(valueSpec:ValueSpecification[1], elements:ValueSpecification[*]):ValueSpecification[1]
 {
-  if($elements->filter(e|$e->isVoid())->isEmpty(),
-    | $v,
+  if($elements->filter(elem|$elem->isVoid())->isEmpty(),
+    | $valueSpec,
     | ^Void(genericType=^GenericType(rawType=Nil), multiplicity=PureOne)->evaluateAndDeactivate()
   )
 }
@@ -509,9 +570,9 @@ function <<access.private>> meta::pure::router::store::routing::permutationSetOn
 // Each PermutationSet may contain multiple candidate sets; this produces the cartesian product.
 function meta::pure::router::store::routing::permute(var:PermutationSet[*]):List<PermutationSet>[*]
 {
-  let l = $var->map(p|^List<PermutationSet>(values=$p.sets->removeDuplicatesBy(x|$x.id)->map(v|^$p(sets=$v))));
-  let seed = $l->head().values->map(o|^List<PermutationSet>(values=$o));
-  $l->tail()->fold({v,a|$a->combine($v.values)}, $seed);
+  let perSetLists = $var->map(p|^List<PermutationSet>(values=$p.sets->removeDuplicatesBy(x|$x.id)->map(v|^$p(sets=$v))));
+  let seed = $perSetLists->head().values->map(o|^List<PermutationSet>(values=$o));
+  $perSetLists->tail()->fold({current,accumulated|$accumulated->combine($current.values)}, $seed);
 }
 
 // Cartesian product helper — appends each element of second to each list in first.
@@ -521,34 +582,34 @@ function <<access.private>> meta::pure::router::store::routing::combine(first:Li
 }
 
 // Merges lambda expressions from multiple permutations into a single union expression.
-function <<access.private>> meta::pure::router::store::routing::unionLambdas(vs:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::unionLambdas(valueSpecs:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
 {
-  let first = $vs->at(0);
+  let first = $valueSpecs->at(0);
   $first->match([
-    i:InstanceValue[1] |
-      let size = $i.values->size();
-      ^$i(values = range(0, $size, 1)->map(i|$vs->cast(@InstanceValue)->map(v|$v.values->at($i))->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType)));,
-    e:StoreMappingRoutedValueSpecification[1] | $vs->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType),
-    f:FunctionRoutedValueSpecification[1]     | $vs->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType)
+    instanceVal:InstanceValue[1] |
+      let size = $instanceVal.values->size();
+      ^$instanceVal(values = range(0, $size, 1)->map(idx|$valueSpecs->cast(@InstanceValue)->map(v|$v.values->at($idx))->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType)));,
+    routedVS:StoreMappingRoutedValueSpecification[1] | $valueSpecs->cast(@StoreMappingRoutedValueSpecification).value->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType),
+    funcRoutedVS:FunctionRoutedValueSpecification[1] | $valueSpecs->cast(@FunctionRoutedValueSpecification)->unionL($concatenate, $genericType)
   ]);
 }
 
 // Unions the expression sequences of multiple FunctionRoutedValueSpecifications,
 // deduplicating by string representation.
-function <<access.private>> meta::pure::router::store::routing::unionL(vs:FunctionRoutedValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::unionL(funcRoutedSpecs:FunctionRoutedValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
 {
-  let fr  = $vs->at(0);
-  let i   = $fr.value->cast(@InstanceValue);
-  let l   = $i.values->at(0)->cast(@LambdaFunction<Any>);
-  let res = $vs.value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->removeDuplicatesBy(e|$e->asString());
-  ^$fr(value=^$i(values=^$l(expressionSequence=doUnion($res, $concatenate, $l.expressionSequence->toOne().genericType))));
+  let firstRouted     = $funcRoutedSpecs->at(0);
+  let instanceVal     = $firstRouted.value->cast(@InstanceValue);
+  let lambdaFunc      = $instanceVal.values->at(0)->cast(@LambdaFunction<Any>);
+  let dedupedExprSeqs = $funcRoutedSpecs.value->cast(@InstanceValue).values->cast(@LambdaFunction<Any>).expressionSequence->removeDuplicatesBy(e|$e->asString());
+  ^$firstRouted(value=^$instanceVal(values=^$lambdaFunc(expressionSequence=doUnion($dedupedExprSeqs, $concatenate, $lambdaFunc.expressionSequence->toOne().genericType))));
 }
 
 // Folds multiple value specifications into a chain of concatenate/union function expressions.
-function <<access.private>> meta::pure::router::store::routing::doUnion(v:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::doUnion(valueSpecs:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
 {
-  $v->tail()->fold(
-    {a, b|
+  $valueSpecs->tail()->fold(
+    {current, accumulated|
       ^SimpleFunctionExpression(
         func                   = if($concatenate, |concatenate_T_MANY__T_MANY__T_MANY_, |union_T_MANY__T_MANY__T_MANY_),
         functionName           = if($concatenate, |'concatenate', |'union'),
@@ -556,50 +617,50 @@ function <<access.private>> meta::pure::router::store::routing::doUnion(v:ValueS
         multiplicity           = ZeroMany,
         importGroup            = system::imports::coreImport,
         resolvedTypeParameters = ^GenericType(rawType=Any),
-        parametersValues       = [$b, $a]->evaluateAndDeactivate()
+        parametersValues       = [$accumulated, $current]->evaluateAndDeactivate()
       )->evaluateAndDeactivate();
     },
-    $v->head()->toOne()
+    $valueSpecs->head()->toOne()
   )
 }
 
 // Concatenates multiple built queries, using dispatch rules for known functions (groupBy,
 // project, serialize+graphFetch) to merge intelligently rather than naive union.
-function <<access.private>> meta::pure::router::store::routing::buildConcatenate(v:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1], dispatch:Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[*], Boolean[1], GenericType[1]->ValueSpecification[1]}>>[*]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildConcatenate(builtSpecs:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1], dispatch:Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[*], Boolean[1], GenericType[1]->ValueSpecification[1]}>>[*]):ValueSpecification[1]
 {
-  if($v->size() > 1,
-    | let funcExprs = $v->map(k|$k->match([
-        f:FunctionExpression[1]                   | $f,
-        e:StoreMappingRoutedValueSpecification[1] | $e.value->cast(@FunctionExpression)
+  if($builtSpecs->size() > 1,
+    | let funcExprs = $builtSpecs->map(k|$k->match([
+        funcExpr:FunctionExpression[1]                        | $funcExpr,
+        routedVS:StoreMappingRoutedValueSpecification[1]      | $routedVS.value->cast(@FunctionExpression)
       ]));
       let funcs = $funcExprs.func->removeDuplicates();
       let funcsWithConcat = if($funcs->size() == 1,
         | let dispatchProcessing = $dispatch->filter(d|$d.first->eval($funcExprs->at(0)));
           if($dispatchProcessing->isNotEmpty(),
             | $dispatchProcessing->toOne().second->eval($funcExprs, $concatenate, $genericType),
-            | $v->doUnion($concatenate, $genericType)
+            | $builtSpecs->doUnion($concatenate, $genericType)
           );,
-        | $v->doUnion($concatenate, $genericType)
+        | $builtSpecs->doUnion($concatenate, $genericType)
       );
-      if($v->last()->toOne()->instanceOf(StoreMappingRoutedValueSpecification),
-        | let last = $v->last()->toOne()->cast(@StoreMappingRoutedValueSpecification);
-          ^$last(value = $funcsWithConcat);,
+      if($builtSpecs->last()->toOne()->instanceOf(StoreMappingRoutedValueSpecification),
+        | let lastRoutedVS = $builtSpecs->last()->toOne()->cast(@StoreMappingRoutedValueSpecification);
+          ^$lastRoutedVS(value = $funcsWithConcat);,
         | $funcsWithConcat
       );,
-    | $v->toOne()
+    | $builtSpecs->toOne()
   );
 }
 
 // Dispatch overload — sets up merge rules for groupBy, project, and serialize+graphFetch,
 // then delegates to the generic buildConcatenate.
-function <<access.private>> meta::pure::router::store::routing::buildConcatenate(v:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
+function <<access.private>> meta::pure::router::store::routing::buildConcatenate(builtSpecs:ValueSpecification[*], concatenate:Boolean[1], genericType:GenericType[1]):ValueSpecification[1]
 {
   let dispatch = [
     // groupBy: concatenate the left-side inputs, keep groupBy columns/aggs
     pair(
-      f:FunctionExpression[1] | $f.func == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      funcExpr:FunctionExpression[1] | $funcExpr.func == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_->cast(@Function<Any>),
       {funcExprs:FunctionExpression[*], concatenate:Boolean[1], genericType:GenericType[1] |
-        let leftSide = $funcExprs->map(f|$f.parametersValues->at(0));
+        let leftSide = $funcExprs->map(fe|$fe.parametersValues->at(0));
         let res = $leftSide->buildConcatenate($concatenate, $genericType);
         let first = $funcExprs->at(0);
         ^$first(parametersValues = $res->concatenate($first.parametersValues->tail()));
@@ -607,12 +668,12 @@ function <<access.private>> meta::pure::router::store::routing::buildConcatenate
     ),
     // project: if all sets are the same, union the lambdas; otherwise union the whole thing
     pair(
-      f:FunctionExpression[1] | $f.func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
+      funcExpr:FunctionExpression[1] | $funcExpr.func == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_->cast(@Function<Any>),
       {funcExprs:FunctionExpression[*], concatenate:Boolean[1], genericType:GenericType[1] |
-        let leftSide = $funcExprs->map(f|$f.parametersValues->at(0))->cast(@StoreMappingRoutedValueSpecification);
+        let leftSide = $funcExprs->map(fe|$fe.parametersValues->at(0))->cast(@StoreMappingRoutedValueSpecification);
         if($leftSide.sets.id->removeDuplicates()->size() == 1,
           | let first = $funcExprs->at(0);
-            let right = $funcExprs->map(f|$f.parametersValues->at(1)->evaluateAndDeactivate());
+            let right = $funcExprs->map(fe|$fe.parametersValues->at(1)->evaluateAndDeactivate());
             let reprocessed = unionLambdas($right, $concatenate, $genericType);
             ^$first(parametersValues = $first.parametersValues->at(0)->concatenate($reprocessed)->concatenate($first.parametersValues->at(2)));,
           | doUnion($funcExprs, $concatenate, $genericType)
@@ -621,12 +682,12 @@ function <<access.private>> meta::pure::router::store::routing::buildConcatenate
     ),
     // serialize+graphFetch: union the graphFetch inputs, wrap back in serialize
     pair(
-      f:FunctionExpression[1] | $f->isSerializeOnGraphFetch(),
+      funcExpr:FunctionExpression[1] | $funcExpr->isSerializeOnGraphFetch(),
       {funcExprs:FunctionExpression[*], concatenate:Boolean[1], genericType:GenericType[1] |
-        let concatInputs = $funcExprs->map(v|$v->cast(@FunctionExpression).parametersValues->at(0));
+        let concatInputs = $funcExprs->map(fe|$fe->cast(@FunctionExpression).parametersValues->at(0));
         let graphFetchInputType = $concatInputs->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->match([
-          e:StoreMappingRoutedValueSpecification[1] | $e.value.genericType,
-          v:ValueSpecification[1]                   | $v.genericType
+          routedVS:StoreMappingRoutedValueSpecification[1] | $routedVS.value.genericType,
+          vs:ValueSpecification[1]                         | $vs.genericType
         ]);
         let concatenateOverride = $graphFetchInputType.rawType->toOne()->instanceOf(DataType) || $graphFetchInputType.rawType->toOne()->_subTypeOf(TabularDataSet);
         let concat = $concatInputs->doUnion($concatenateOverride, $genericType);
@@ -636,5 +697,5 @@ function <<access.private>> meta::pure::router::store::routing::buildConcatenate
     )
   ];
 
-  $v->buildConcatenate($concatenate, $genericType, $dispatch);
+  $builtSpecs->buildConcatenate($concatenate, $genericType, $dispatch);
 }

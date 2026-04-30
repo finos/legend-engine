@@ -1074,4 +1074,17 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testModelJoinAssociationMappingExplicitLambda()
+    {
+        test("###Mapping\n" +
+                "Mapping test::myMapping\n" +
+                "(\n" +
+                "  test::Firm_Person: ModelJoin\n" +
+                "  {\n" +
+                "    {firm: test::Firm[1], person: test::Person[*]|$firm.id == $person.firmId}\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

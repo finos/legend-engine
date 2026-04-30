@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::modelJoin::*;
+import meta::pure::runtime::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::executionPlan::*;
 import meta::relational::metamodel::*;
@@ -19,29 +21,47 @@ import meta::pure::mapping::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::execute::tests::*;
 
-function meta::relational::metamodel::execute::tests::executeLegendFunction(conn: Connection[1], csvs: String[*], model: String[1], func: String[1], m: String[1], s: String[1], expectedCsv: String[1]):Boolean[1]
+function meta::relational::metamodel::execute::tests::executeLegendFunction(modelFileName: String[1], funcName: String[1], mappingName: String[1], databaseName: String[1], connName: String[1], csvs: String[*] , expectedCsv: String[1]):Boolean[1]
 {
-  let elements = $model->meta::legend::compileLegendFile();
+  executeLegendFunction($modelFileName, $funcName, $mappingName, $databaseName, $connName, $csvs, $expectedCsv, false);
+}
 
-  let function = $elements->filter(x | $x->elementToPath() == $func)->toOne('Not found: ' + $func)->cast(@FunctionDefinition<{->TabularDataSet[1]}>);
-  let mapping = $elements->filter(x | $x->elementToPath() == $m)->toOne('Not found: ' + $m)->cast(@Mapping);
-  let db = $elements->filter(x | $x->elementToPath() == $s)->toOne('Not found: ' + $s)->cast(@Database);
+function meta::relational::metamodel::execute::tests::executeLegendFunction(modelFileName: String[1], funcName: String[1], mappingName: String[1], databaseName: String[1], connName: String[1], csvs: String[*] , expectedCsv: String[1], shouldDebug:Boolean[1]):Boolean[1]
+{
+  let elements = $modelFileName->meta::legend::compileLegendFile();
 
-  let runtime =   ^Runtime
-                  (
-                    connectionStores=^ConnectionStore
-                                      (
-                                        connection=$conn,
-                                        element = $db
-                                      )
-                  );
+  let function = $elements->filter(x | $x->elementToPath() == $funcName)->toOne('Not found: ' + $funcName)->cast(@FunctionDefinition<Any>);
+  let mapping = $elements->filter(x | $x->elementToPath() == $mappingName)->toOne('Not found: ' + $mappingName)->cast(@Mapping);
+  let db = $elements->filter(x | $x->elementToPath() == $databaseName)->toOne('Not found: ' + $databaseName)->cast(@Database);
+  let conn = $elements->filter(x | $x->elementToPath() == $connName)->toOne('Not found: ' + $connName)->cast(@PackageableConnection).connectionValue;
 
+  executeLegendFunction($function, $mapping, $db, $conn, $csvs, $expectedCsv, $shouldDebug);
+}
+
+function meta::relational::metamodel::execute::tests::executeLegendFunction(conn: Connection[1], csvs: String[*], modelFileName: String[1], funcName: String[1], mappingName: String[1], databaseName: String[1], expectedCsv: String[1]):Boolean[1]
+{
+  let elements = $modelFileName->meta::legend::compileLegendFile();
+
+  let function = $elements->filter(x | $x->elementToPath() == $funcName)->toOne('Not found: ' + $funcName)->cast(@FunctionDefinition<Any>);
+  let mapping = $elements->filter(x | $x->elementToPath() == $mappingName)->toOne('Not found: ' + $mappingName)->cast(@Mapping);
+  let db = $elements->filter(x | $x->elementToPath() == $databaseName)->toOne('Not found: ' + $databaseName)->cast(@Database);
+  executeLegendFunction($function, $mapping, $db, $conn, $csvs, $expectedCsv);
+}
+
+function meta::relational::metamodel::execute::tests::executeLegendFunction(func: FunctionDefinition<Any>[1], mapping: Mapping[1], db:Database[1], conn: Connection[1], csvs: String[*], expectedCsv: String[1]):Boolean[1]
+{
+  executeLegendFunction($func, $mapping, $db, $conn, $csvs, $expectedCsv, false)
+}
+
+function meta::relational::metamodel::execute::tests::executeLegendFunction(func: FunctionDefinition<Any>[1], mapping: Mapping[1], db:Database[1], conn: Connection[1], csvs: String[*], expectedCsv: String[1], shouldDebug:Boolean[1]):Boolean[1]
+{
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(connection = $conn, element = $db));
   let setupFunc = 'meta::relational::tests::pct::process::setupDatabase_String_MANY__Database_1__Runtime_1__DebugContext_1__SequenceExecutionNode_1_'
     ->pathToElement()->cast(@Function<{String[*], Database[1], Runtime[1], DebugContext[1]->SequenceExecutionNode[1]}>);
   let setup = $setupFunc->eval($csvs, $db, $runtime, noDebug());
 
   // generate plan
-  let rawPlan = meta::pure::executionPlan::executionPlan($function, $mapping, $runtime, meta::legend::getLegendExtensions());
+  let rawPlan = meta::pure::executionPlan::executionPlan($func, $mapping, $runtime, $shouldDebug, meta::legend::getLegendExtensions());
 
   let planWithTeardown = ^$rawPlan(rootExecutionNode =
       ^meta::pure::executionPlan::RelationalBlockExecutionNode(

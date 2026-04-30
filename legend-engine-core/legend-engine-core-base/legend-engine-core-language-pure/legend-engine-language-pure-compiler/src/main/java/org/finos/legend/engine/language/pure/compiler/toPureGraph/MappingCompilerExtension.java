@@ -163,15 +163,15 @@ public class MappingCompilerExtension implements CompilerExtension
                 }
             }
         }
-        if (mapping.associationMappings != null)
-        {
-            RichIterable<AssociationImplementation> associationImplementations = ListIterate.collect(mapping.associationMappings, cm -> HelperMappingBuilder.processAssociationImplementation(cm, context, pureMapping));
-            pureMapping._associationMappings(associationImplementations);
-        }
         if (mapping.classMappings != null)
         {
             mapping.classMappings.forEach(cm -> cm.accept(new ClassMappingSecondPassBuilder(context, pureMapping)));
             mapping.classMappings.forEach(cm -> cm.accept(new ClassMappingThirdPassBuilder(context, pureMapping)));
+        }
+        if (mapping.associationMappings != null)
+        {
+            RichIterable<AssociationImplementation> associationImplementations = ListIterate.collect(mapping.associationMappings, cm -> HelperMappingBuilder.processAssociationImplementation(cm, context, pureMapping));
+            pureMapping._associationMappings(associationImplementations);
         }
     }
 

@@ -55,15 +55,30 @@ Class meta::pure::router::routing::PropertyMap
 
 function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow),
-                                              $expressions,
-                                              $executionContext,
-                                              newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
-                                              $inScopeVars,
-                                              v:Any[1]|true,
-                                              $extensions,
-                                              $debug
-                                            )->evaluateAndDeactivate();
+   enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars, $graphFetchFlow, $extensions, $debug);
+}
+
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+{
+   enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, $initialVars, $inScopeVars, false, $graphFetchFlow, $extensions, $debug);
+}
+
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldBeRouted:Boolean[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+{
+   enrichFunctionExpressions($expressions, ^RoutingState(shouldBeRouted=$shouldBeRouted, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow), $executionContext, $initialVars, $inScopeVars, $extensions, $debug);
+}
+
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], initialState:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+{
+   let processedFunctions = processCollection($initialState,
+                                               $expressions,
+                                               $executionContext,
+                                               $initialVars,
+                                               $inScopeVars,
+                                               v:Any[1]|true,
+                                               $extensions,
+                                               $debug
+                                             )->evaluateAndDeactivate();
 
    $processedFunctions->map(fxn | $fxn.value->match([
       evs: ExtendedRoutedValueSpecification[1] | $evs,
@@ -180,8 +195,8 @@ function meta::pure::router::routing::routeValueSpecification(state:RoutingState
                                                   if ($result->isEmpty(),
                                                      |$va->resolveVar($state, $debug),
                                                      |$result->evaluateAndDeactivate()->toOne()->match([v:VariableExpression[1]               | $v->resolveVar($state, $debug),
-                                                                                                        i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
-                                                                                                        e:ExtendedRoutedValueSpecification[1] | if($va.name=='this',
+                                                                                                         i:InstanceValue[1]                    | ^$state(value=$i)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug),
+                                                                                                         e:ExtendedRoutedValueSpecification[1] | if($va.name->in(['this', '_mj_src', '_mj_tgt']),
                                                                                                                                                   | let vaExtended=^$e(value=$va);
                                                                                                                                                     ^$state(value=$vaExtended);,
                                                                                                                                                   | ^$state(value=$e)),
@@ -578,6 +593,7 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
 
    // Process Lambda (Or Property)
    let oldPropMap = $state.propertyMap;
+   print(if($debug.debug,|$debug.space+'[LAMBDA] lambdaContext='+$func->id()+' propMap.entries='+$propMap->size()->toString()+' propMap.keys='+$propMap->map(p|$p.first)->joinStrings('[',',',']')+'\n',|''));
    ^$state(
          propertyMap = ^$oldPropMap(v=$propMap->concatenate($oldPropMap.v->filter(p|$p.first != '__propertyOwner'))),
          value=$i,
@@ -982,7 +998,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_,
     meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_,
     meta::pure::functions::date::dayOfYear_Date_1__Integer_1_,
-    meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_,
+    // meta::pure::functions::date::string::isAlphaNumeric_String_1__Boolean_1_,
     meta::pure::functions::collection::max_X_MANY__X_$0_1$_,
     meta::pure::functions::collection::min_X_MANY__X_$0_1$_,
     meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,

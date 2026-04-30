@@ -23,9 +23,10 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.impl.utility.ListIterate;
+
+import java.util.Collections;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
@@ -101,6 +102,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -130,6 +133,75 @@ public class HelperMappingBuilder
     public static ImmutableSet<SetImplementation> getAllClassMappings(Mapping mapping)
     {
         return HelperMappingBuilder.getAllIncludedMappings(mapping).flatCollect(m -> (Iterable<SetImplementation>) m._classMappings()).toSet().toImmutable();
+    }
+
+    /**
+     * Finds all InstanceSetImplementations in allClassMappings whose class equals or is a subtype of the given class.
+     */
+    public static MutableList<InstanceSetImplementation> findAllSetsForClassOrSubtypes(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type clazz, RichIterable<SetImplementation> allClassMappings, CompileContext context)
+    {
+        org.finos.legend.pure.m3.navigation.ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
+        MutableList<InstanceSetImplementation> result = Lists.mutable.empty();
+        for (SetImplementation c : allClassMappings)
+        {
+            if (c instanceof InstanceSetImplementation)
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type mappedClass = c._class();
+                if (mappedClass.equals(clazz) || org.finos.legend.pure.m3.navigation.type.Type.subTypeOf((org.finos.legend.pure.m4.coreinstance.CoreInstance) mappedClass, (org.finos.legend.pure.m4.coreinstance.CoreInstance) clazz, ps))
+                {
+                    result.add((InstanceSetImplementation) c);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Compiles a property mapping for all source×target pairs and adds results to the output list.
+     */
+    public static void compileForAllPairs(
+            MutableList<InstanceSetImplementation> sourceSets,
+            MutableList<InstanceSetImplementation> targetSets,
+            java.util.function.BiFunction<InstanceSetImplementation, InstanceSetImplementation, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiler,
+            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> output)
+    {
+        for (InstanceSetImplementation sourceSet : sourceSets)
+        {
+            for (InstanceSetImplementation targetSet : targetSets)
+            {
+                output.add(compiler.apply(sourceSet, targetSet));
+            }
+        }
+    }
+
+    /**
+     * Resolves source and target classes for an association property mapping.
+     * Given a property name on the association, returns [sourceClass, targetClass] where:
+     * - targetClass = return type of the named property
+     * - sourceClass = return type of the other property (the owner side)
+     */
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[] resolveSourceAndTargetClasses(Association association, String propertyName)
+    {
+        Property<?, ?> mappedProp = resolveAssociationPropertyByName(association, propertyName);
+        Property<?, ?> otherProp = association._properties().detect(p -> !p.equals(mappedProp));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type sourceClass = otherProp._genericType()._rawType();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type targetClass = mappedProp._genericType()._rawType();
+        return new org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[]{sourceClass, targetClass};
+    }
+
+    /**
+     * Resolves a property from an association by name, handling milestoned edge-point properties.
+     */
+    public static Property<?, ?> resolveAssociationPropertyByName(Association association, String propertyName)
+    {
+        String edgePointName = org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions.getEdgePointPropertyName(propertyName);
+        Property<?, ?> prop = association._properties().detect(p ->
+                p._name().equals(propertyName) || p._name().equals(edgePointName));
+        if (prop == null)
+        {
+            prop = association._originalMilestonedProperties().detect(p -> p._name().equals(propertyName));
+        }
+        return prop;
     }
 
     public static ImmutableSet<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping<Object>> getAllEnumerationMappings(Mapping mapping)
@@ -380,11 +452,35 @@ public class HelperMappingBuilder
             XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
             final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association.path, xStoreAssociationMapping.association.sourceInformation);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
-            final String id = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
-            base._id(id)
+            final String xstoreId = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
+            ImmutableSet<SetImplementation> allClassMappings = HelperMappingBuilder.getAllClassMappings(parentMapping);
+            base._id(xstoreId)
                     ._association(pureAssociation)
-                    ._stores(stores)._parent(parentMapping)
-                    ._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
+                    ._stores(stores)._parent(parentMapping);
+
+            PropertyMappingBuilder builder = new PropertyMappingBuilder(context, parentMapping, base, allClassMappings);
+            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiledMappings = Lists.mutable.empty();
+
+            for (PropertyMapping propertyMapping : xStoreAssociationMapping.propertyMappings)
+            {
+                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping xpm =
+                        (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping) propertyMapping;
+                String propertyMappingTargetId = HelperMappingBuilder.getPropertyMappingTargetId(xpm);
+                boolean hasExplicitSourceTarget = !org.apache.commons.lang3.StringUtils.isEmpty(xpm.source) || !org.apache.commons.lang3.StringUtils.isEmpty(propertyMappingTargetId);
+
+                if (hasExplicitSourceTarget)
+                {
+                    compiledMappings.add(builder.visit(xpm));
+                }
+                else
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[] classes = resolveSourceAndTargetClasses(pureAssociation, xpm.property.property);
+                    MutableList<InstanceSetImplementation> sourceSets = findAllSetsForClassOrSubtypes(classes[0], allClassMappings, context);
+                    MutableList<InstanceSetImplementation> targetSets = findAllSetsForClassOrSubtypes(classes[1], allClassMappings, context);
+                    compileForAllPairs(sourceSets, targetSets, (s, t) -> builder.visitXStorePropertyMapping(xpm, s, t), compiledMappings);
+                }
+            }
+            base._propertyMappings(compiledMappings);
             return base;
         }
         else if (associationMapping instanceof ModelJoinAssociationMapping)
@@ -589,7 +685,7 @@ public class HelperMappingBuilder
                 final MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(mappingClassName);
                 mappingClass._name(mappingClassName);
                 GenericType classifierGenericType = context.newGenericType(
-                        context.pureModel.getType("meta::pure::metamodel::type::Class"),
+                        context.pureModel.getType("meta::pure::mapping::MappingClass"),
                         Lists.fixedSize.of(context.newGenericType(mappingClass))
                 );
                 mappingClass._classifierGenericType(classifierGenericType);
@@ -720,13 +816,10 @@ public class HelperMappingBuilder
      *   <li>Generates two ModelJoinPropertyMapping instances (both directions)</li>
      *   <li>Infers root set IDs for source/target</li>
      * </ol>
-     * <p>
-     * Note: Until a dedicated ModelJoin metamodel type is added to legend-pure,
-     * this temporarily produces an XStoreAssociationImplementation at the runtime level.
      */
     private static AssociationImplementation processModelJoinAssociationMapping(ModelJoinAssociationMapping modelJoinMapping, CompileContext context, Mapping parentMapping)
     {
-        ModelJoinAssociationImplementation base = new Root_meta_pure_mapping_modelJoin_ModelJoinAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(modelJoinMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
+        ModelJoinAssociationImplementation base = new Root_meta_pure_mapping_modelJoin_ModelJoinAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(modelJoinMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation"));
         final Association pureAssociation = context.resolveAssociation(modelJoinMapping.association.path, modelJoinMapping.association.sourceInformation);
         MutableList<Store> stores = ListIterate.collect(modelJoinMapping.stores, context::resolveStore);
         final String id = modelJoinMapping.id != null ? modelJoinMapping.id : HelperModelBuilder.getElementFullPath(pureAssociation, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
@@ -739,68 +832,152 @@ public class HelperMappingBuilder
         }
         Property<?, ?> prop1 = associationProperties.toList().get(0);
         Property<?, ?> prop2 = associationProperties.toList().get(1);
-        String prop1Name = prop1._name();
-        String prop2Name = prop2._name();
 
-        // Rewrite the joinCondition expression: replace 'firm.x' with '$this.x' and 'person.x' with '$that.x'
-        // For prop1 direction (e.g. "firm"): prop1Name -> $that, prop2Name -> $this
-        // "this" is the source class, "that" is the target class
+        // Resolve original (pre-milestoning) property names for the join condition rewrite
+        String rewriteProp1Name = resolveOriginalPropertyName(prop1, pureAssociation);
+        String rewriteProp2Name = resolveOriginalPropertyName(prop2, pureAssociation);
 
         LambdaFunction joinCondition = modelJoinMapping.joinCondition;
 
-        // Create two ModelJoinPropertyMappings from the single joinCondition
-        // Direction 1: property = prop1, source = class owning prop2, target = class owning prop1
-        ModelJoinPropertyMapping pm1 = new ModelJoinPropertyMapping();
-        pm1.property = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer();
-        pm1.property._class = modelJoinMapping.association.path;
-        pm1.property.property = prop1Name;
-        pm1.source = "";
-        pm1.target = "";
-        pm1.joinCondition = rewriteModelJoinExpression(joinCondition, prop2Name, prop1Name);
-        pm1.sourceInformation = modelJoinMapping.sourceInformation;
+        // Create two ModelJoinPropertyMappings — one per direction
+        ModelJoinPropertyMapping pm1 = createModelJoinPropertyMapping(modelJoinMapping, rewriteProp1Name,
+                rewriteModelJoinExpression(joinCondition, rewriteProp2Name, rewriteProp1Name, prop2, prop1, context));
+        ModelJoinPropertyMapping pm2 = createModelJoinPropertyMapping(modelJoinMapping, rewriteProp2Name,
+                rewriteModelJoinExpression(joinCondition, rewriteProp1Name, rewriteProp2Name, prop1, prop2, context));
 
-        // Direction 2: property = prop2, source = class owning prop1, target = class owning prop2
-        ModelJoinPropertyMapping pm2 = new ModelJoinPropertyMapping();
-        pm2.property = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer();
-        pm2.property._class = modelJoinMapping.association.path;
-        pm2.property.property = prop2Name;
-        pm2.source = "";
-        pm2.target = "";
-        pm2.joinCondition = rewriteModelJoinExpression(joinCondition, prop1Name, prop2Name);
-        pm2.sourceInformation = modelJoinMapping.sourceInformation;
+        ImmutableSet<SetImplementation> allClassMappings = HelperMappingBuilder.getAllClassMappings(parentMapping);
+        PropertyMappingBuilder builder = new PropertyMappingBuilder(context, parentMapping, base, allClassMappings);
 
-        MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> propertyMappings = Lists.mutable.with(pm1, pm2);
+        // Set association on base before compiling property mappings (needed by getAssociationPropertyNames)
+        base._id(id)._association(pureAssociation)._stores(stores)._parent(parentMapping);
 
-        base._id(id)
-                ._association(pureAssociation)
-                ._stores(stores)._parent(parentMapping)
-                ._propertyMappings(ListIterate.collect(propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
+        // Resolve source/target sets: find all InstanceSetImplementations for subtypes of each association class
+        // prop1 points TO class1, prop2 points TO class2
+        // For pm1 (property = prop1Name): source = class2 sets (owner of prop1), target = class1 sets (return type of prop1)
+        // For pm2 (property = prop2Name): source = class1 sets, target = class2 sets
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type class1 = prop1._genericType()._rawType();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type class2 = prop2._genericType()._rawType();
+        MutableList<InstanceSetImplementation> class1Sets = findAllSetsForClassOrSubtypes(class1, allClassMappings, context);
+        MutableList<InstanceSetImplementation> class2Sets = findAllSetsForClassOrSubtypes(class2, allClassMappings, context);
+
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiledMappings = Lists.mutable.empty();
+
+        // pm1: source=class2Sets, target=class1Sets
+        compileForAllPairs(class2Sets, class1Sets, (s, t) -> builder.visitModelJoinPropertyMapping(pm1, s, t), compiledMappings);
+        // pm2: source=class1Sets, target=class2Sets
+        compileForAllPairs(class1Sets, class2Sets, (s, t) -> builder.visitModelJoinPropertyMapping(pm2, s, t), compiledMappings);
+
+        base._propertyMappings(compiledMappings);
         return base;
+    }
+
+    private static String resolveOriginalPropertyName(Property<?, ?> prop, Association association)
+    {
+        RichIterable<? extends Property<?, ?>> originalMilestonedProps = association._originalMilestonedProperties();
+        if (originalMilestonedProps != null)
+        {
+            for (Property<?, ?> origProp : originalMilestonedProps)
+            {
+                if (prop._genericType()._rawType().equals(origProp._genericType()._rawType()))
+                {
+                    return origProp._name();
+                }
+            }
+        }
+        return prop._name();
+    }
+
+    private static ModelJoinPropertyMapping createModelJoinPropertyMapping(ModelJoinAssociationMapping modelJoinMapping, String propertyName, LambdaFunction rewrittenCondition)
+    {
+        ModelJoinPropertyMapping pm = new ModelJoinPropertyMapping();
+        pm.property = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer();
+        pm.property._class = modelJoinMapping.association.path;
+        pm.property.property = propertyName;
+        pm.source = "";
+        pm.target = "";
+        pm.joinCondition = rewrittenCondition;
+        pm.sourceInformation = modelJoinMapping.sourceInformation;
+        return pm;
     }
 
     /**
      * Rewrites a ModelJoin expression by replacing association property name qualifiers
      * with $this/$that variable references.
-     * <p>
-     * For a given property direction: the property being mapped uses $that for its own side,
-     * and $this for the other side.
-     * <p>
-     * Example: for property "firm" with thisName="firm", thatName="person":
-     * Input:  firm.id == person.firmId
-     * Output: $that.id == $this.firmId
-     *
-     * @param original the original joinCondition lambda
-     * @param thisName association property name that maps to $this (the source side)
-     * @param thatName association property name that maps to $that (the target side)
-     * @return rewritten lambda with $this/$that
      */
-    private static LambdaFunction rewriteModelJoinExpression(LambdaFunction original, String thisName, String thatName)
+    private static LambdaFunction rewriteModelJoinExpression(LambdaFunction original, String thisName, String thatName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
     {
-        // Deep-copy and transform the expression tree
         LambdaFunction result = new LambdaFunction();
-        result.parameters = original.parameters;
-        result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, thisName, thatName));
+
+        if (isExplicitTypedLambda(original))
+        {
+            LambdaFunction innerLambda = (LambdaFunction) original.body.get(0);
+            String[] resolved = resolveExplicitLambdaParamNames(innerLambda, thisProp, thatProp, context);
+            result.parameters = Collections.emptyList();
+            result.body = ListIterate.collect(innerLambda.body, vs -> rewriteValueSpecification(vs, resolved[0], resolved[1]));
+        }
+        else
+        {
+            result.parameters = original.parameters;
+            result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, thisName, thatName));
+        }
         return result;
+    }
+
+    private static boolean isExplicitTypedLambda(LambdaFunction lambda)
+    {
+        return lambda.body != null && lambda.body.size() == 1 && lambda.body.get(0) instanceof LambdaFunction;
+    }
+
+    /**
+     * For an explicit typed lambda {a:TypeA[1], b:TypeB[*]|expr}, determines which param
+     * corresponds to $this and which to $that by comparing param types to association property return types.
+     * Returns [thisParamName, thatParamName].
+     */
+    private static String[] resolveExplicitLambdaParamNames(LambdaFunction innerLambda, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
+    {
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param0 = innerLambda.parameters.get(0);
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param1 = innerLambda.parameters.get(1);
+        String param0Type = getVariableTypePath(param0);
+        String param1Type = getVariableTypePath(param1);
+
+        // Hierarchy match: check if property return type is a subtype of param type
+        ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
+        CoreInstance thisRawType = thisProp._genericType()._rawType();
+        if (param0Type != null)
+        {
+            CoreInstance param0CoreType = context.pureModel.getType(param0Type);
+            if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param0CoreType, ps))
+            {
+                return new String[]{param0.name, param1.name};
+            }
+        }
+        if (param1Type != null)
+        {
+            CoreInstance param1CoreType = context.pureModel.getType(param1Type);
+            if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param1CoreType, ps))
+            {
+                return new String[]{param1.name, param0.name};
+            }
+        }
+
+        // Fallback: positional
+        return new String[]{param0.name, param1.name};
+    }
+
+    private static String getPropertyReturnTypePath(Property<?, ?> prop, CompileContext context)
+    {
+        return HelperModelBuilder.getElementFullPath(
+                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) prop._genericType()._rawType(),
+                context.pureModel.getExecutionSupport());
+    }
+
+    private static String getVariableTypePath(org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var)
+    {
+        if (var.genericType != null && var.genericType.rawType instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType)
+        {
+            return ((org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType) var.genericType.rawType).fullPath;
+        }
+        return null;
     }
 
     private static org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification rewriteValueSpecification(
@@ -819,22 +996,12 @@ public class HelperMappingBuilder
         if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty)
         {
             org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty ap = (org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty) vs;
-            // Check if the base parameter is a PackageableElementPtr matching an association property name
-            // e.g. firm.id → AppliedProperty(property="id", parameters=[PackageableElementPtr(fullPath="firm")])
             if (ap.parameters != null && !ap.parameters.isEmpty())
             {
-                org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification base = ap.parameters.get(0);
-                if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr)
+                String matchedVar = matchBaseToVariable(ap.parameters.get(0), thisName, thatName);
+                if (matchedVar != null)
                 {
-                    org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr ptr = (org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr) base;
-                    if (thisName.equals(ptr.fullPath))
-                    {
-                        return createThisOrThatPropertyAccess("this", ap.property, ap.sourceInformation);
-                    }
-                    else if (thatName.equals(ptr.fullPath))
-                    {
-                        return createThisOrThatPropertyAccess("that", ap.property, ap.sourceInformation);
-                    }
+                    return createThisOrThatPropertyAccess(matchedVar, ap.property, ap.sourceInformation);
                 }
             }
             // Rewrite parameters recursively
@@ -854,8 +1021,54 @@ public class HelperMappingBuilder
             result.parameters = af.parameters != null ? ListIterate.collect(af.parameters, p -> rewriteValueSpecification(p, thisName, thatName)) : null;
             return result;
         }
-        // For literals, variables, PackageableElementPtr, etc. — return as-is
+        else if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
+        {
+            org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var = (org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) vs;
+            String mapped = mapVariableName(var.name, thisName, thatName);
+            if (mapped != null)
+            {
+                org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable();
+                result.name = mapped;
+                result.sourceInformation = var.sourceInformation;
+                return result;
+            }
+        }
         return vs;
+    }
+
+    /**
+     * Checks if a base value specification matches thisName or thatName (as PackageableElementPtr or Variable).
+     * Returns "this", "that", or null if no match.
+     */
+    private static String matchBaseToVariable(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification base, String thisName, String thatName)
+    {
+        if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr)
+        {
+            String fullPath = ((org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr) base).fullPath;
+            return mapVariableName(fullPath, thisName, thatName);
+        }
+        else if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
+        {
+            String name = ((org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) base).name;
+            return mapVariableName(name, thisName, thatName);
+        }
+        return null;
+    }
+
+    public static final String MODEL_JOIN_SOURCE_VAR = "_mj_src";
+    public static final String MODEL_JOIN_TARGET_VAR = "_mj_tgt";
+
+    private static String mapVariableName(String name, String thisName, String thatName)
+    {
+        if (thisName.equals(name))
+        {
+            return MODEL_JOIN_SOURCE_VAR;
+        }
+        else if (thatName.equals(name))
+        {
+            return MODEL_JOIN_TARGET_VAR;
+        }
+        return null;
     }
 
     private static org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty createThisOrThatPropertyAccess(

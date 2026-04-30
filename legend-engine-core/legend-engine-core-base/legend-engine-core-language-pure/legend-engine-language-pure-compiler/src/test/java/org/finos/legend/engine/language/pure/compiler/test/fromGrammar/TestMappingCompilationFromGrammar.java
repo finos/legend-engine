@@ -3511,6 +3511,12 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      employer.employees.employer.id == employees.firmId && employees.name->toLower() != 'abc'\n" +
                 "   }"));
 
+        // Valid ModelJoin — should compile successfully
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.name}\n" +
+                "   }"));
+
         // Invalid: non-boolean return type
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
@@ -3573,6 +3579,308 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         assocImpl._propertyMappings().forEach(
                 propertyMapping -> assertTrue(propertyMapping instanceof ModelJoinPropertyMapping)
         );
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithOneSideMilestoned()
+    {
+        // Only Firm is milestoned (businesstemporal), Person is not.
+        // Using explicit typed lambda avoids edge-point property name issues.
+        test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {firm:test::Firm[1], person:test::Person[*]|$firm.id == $person.firmId}\n" +
+                "   }\n" +
+                ")\n");
+
+        // Only Person is milestoned (processingtemporal), Firm is not.
+        test("###Pure\n" +
+                "Class <<temporal.processingtemporal>> test::Person2\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm2\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person2\n" +
+                "{\n" +
+                "   employees: test::Person2[*];\n" +
+                "   employer: test::Firm2[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping2\n" +
+                "(\n" +
+                "   test::Person2[p]: Pure {\n" +
+                "      ~src test::Person2\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm2[f]: Pure {\n" +
+                "      ~src test::Firm2\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person2: ModelJoin {\n" +
+                "      {firm:test::Firm2[1], person:test::Person2[*]|$firm.id == $person.firmId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithClassHierarchy()
+    {
+        // Test: explicit typed lambda uses a parent class type for param, association targets a subclass
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::EntityOrder\n" +
+                "{\n" +
+                "   entity: test::SpecificEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::EntityOrder: ModelJoin {\n" +
+                "      {base:test::BaseEntity[1], ord:test::Order[*]|$base.id == $ord.entityId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testXStoreAssociationMappingWithClassHierarchy()
+    {
+        // Test: XStore mapping maps a subclass, but association is on a parent class
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::EntityOrder\n" +
+                "{\n" +
+                "   entity: test::SpecificEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyXStoreMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::EntityOrder: XStore {\n" +
+                "      entity: $this.entityId == $that.id,\n" +
+                "      orders: $this.id == $that.entityId\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithAssociationOnBaseClass()
+    {
+        // Association is between BaseEntity and Order, but mapping maps SpecificEntity (subclass)
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::BaseEntityOrder\n" +
+                "{\n" +
+                "   entity: test::BaseEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::BaseEntityOrder: ModelJoin {\n" +
+                "      {e:test::BaseEntity[1], o:test::Order[*]|$e.id == $o.entityId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testXStoreAssociationMappingWithAssociationOnBaseClass()
+    {
+        // Association is between BaseEntity and Order, but mapping maps SpecificEntity (subclass)
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::BaseEntityOrder\n" +
+                "{\n" +
+                "   entity: test::BaseEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyXStoreMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::BaseEntityOrder: XStore {\n" +
+                "      entity: $this.entityId == $that.id,\n" +
+                "      orders: $this.id == $that.entityId\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithUnionSets()
+    {
+        // Test: ModelJoin where one side has Operation (union) set implementations
+        // Should create 2 property mappings per direction (one per union member), total 4
+        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   legalName: String[1];\n" +
+                "}\n\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::unionModelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p1]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   test::Person[p2]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   *test::Person: Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)\n" +
+                "   }\n" +
+                "   *test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employees.name == employer.legalName\n" +
+                "   }\n" +
+                ")\n");
+
+        PureModel pureModel = result.getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("test::unionModelJoinMapping");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation assocImpl = mapping._associationMappings().getFirst();
+        // With union on Person side (2 members), we get 2 property mappings per direction = 4 total
+        org.junit.Assert.assertEquals(4, assocImpl._propertyMappings().size());
     }
 
 }

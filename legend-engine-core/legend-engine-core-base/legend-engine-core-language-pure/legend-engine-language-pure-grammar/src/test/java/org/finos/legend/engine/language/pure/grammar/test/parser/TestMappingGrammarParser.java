@@ -1139,6 +1139,16 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    firm.id == person.firmId\n" +
                 "  }\n" +
                 ")");
+
+        // ModelJoin with explicit typed lambda
+        test("###Mapping\n" +
+                "Mapping mapping::test\n" +
+                "(\n" +
+                "  mapping::SomeClass: ModelJoin\n" +
+                "  {\n" +
+                "    {firm:test::Firm[1], person:test::Person[*]|$firm.id == $person.firmId}\n" +
+                "  }\n" +
+                ")");
     }
 
     @Test

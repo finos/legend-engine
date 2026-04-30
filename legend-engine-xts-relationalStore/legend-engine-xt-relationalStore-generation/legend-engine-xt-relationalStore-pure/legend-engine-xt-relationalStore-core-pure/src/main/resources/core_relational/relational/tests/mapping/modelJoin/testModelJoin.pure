@@ -1,0 +1,2104 @@
+###Pure
+import meta::relational::runtime::*;
+import meta::relational::metamodel::execute::tests::*;
+
+// =============================================================================
+// Test 1: Simple equality — employees.firmId == firm.id
+//
+// Data:
+//   firmTable: (1, 'Apple'), (2, 'Google')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 2, 35)
+//
+// Expected: Firm 'Apple' has employees Alice, Bob; Firm 'Google' has Charlie
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinSimpleEquality():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::SimpleEqualityMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 2: Multiple AND conditions — (employees.firmId == firm.id) && (employees.lastName == firm.code)
+//
+// Data:
+//   firmTable: (1, 'Apple', 'Smith'), (2, 'Google', 'Brown')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 25),
+//                (3, 'Charlie', 'Brown', 2, 35), (4, 'Diana', 'Smith', 2, 28)
+//
+// Expected: Only matches where BOTH firmId and lastName match:
+//   Alice(firmId=1, lastName=Smith) matches Apple(id=1, code=Smith)
+//   Charlie(firmId=2, lastName=Brown) matches Google(id=2, code=Brown)
+//   Bob(firmId=1, lastName=Jones) - no match (Jones != Smith)
+//   Diana(firmId=2, lastName=Smith) - no match (Smith != Brown)
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMultipleAndConditions():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Smith,,\n' +
+    '2,Google,Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n' +
+    '4,Diana,Smith,2,28\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,null\n' +
+    'Charlie,Google\n' +
+    'Diana,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::MultipleAndMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 3: OR conditions — (employees.firmId == firm.id) || (employees.lastName == firm.code)
+//
+// Data:
+//   firmTable: (1, 'Apple', 'Jones'), (2, 'Google', 'Smith')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 3, 25),
+//                (3, 'Charlie', 'Brown', 2, 35)
+//
+// Expected: Match if firmId matches OR lastName matches code:
+//   Alice(firmId=1, lastName=Smith) matches Apple(id=1) by firmId, matches Google(code=Smith) by lastName
+//   Bob(firmId=3, lastName=Jones) matches Apple(code=Jones) by lastName
+//   Charlie(firmId=2, lastName=Brown) matches Google(id=2) by firmId
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinOrConditions():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Jones,,\n' +
+    '2,Google,Smith,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,3,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Alice,Google\n' +
+    'Bob,Apple\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::OrConditionsMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 4: Function in condition — toLower(employees.code) == toLower(firm.code)
+//   (where Person.code is mapped to LASTNAME)
+//
+// Data:
+//   firmTable: (1, 'Apple', 'SMITH'), (2, 'Google', 'brown')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'BROWN', 2, 25),
+//                (3, 'Charlie', 'Jones', 1, 35)
+//
+// Expected: Case-insensitive match via toLower:
+//   Alice(lastName=Smith) matches Apple(code=SMITH) — toLower both = 'smith'
+//   Bob(lastName=BROWN) matches Google(code=brown) — toLower both = 'brown'
+//   Charlie(lastName=Jones) — no match
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinFunctionInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,SMITH,,\n' +
+    '2,Google,brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,BROWN,2,25\n' +
+    '3,Charlie,Jones,1,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' + 
+    'Alice,Apple\n' +
+    'Bob,Google\n' +
+    'Charlie,null';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::FunctionInConditionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 5: Nested property chain — (employees.address.city == firm.city) && (employees.address.country == firm.country)
+//
+// Data:
+//   firmTable: (1, 'Apple', '', 'NYC', 'US'), (2, 'Google', '', 'London', 'UK')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//   addressTable: (1, 1, 'NYC', 'US'), (2, 2, 'London', 'UK'), (3, 3, 'Paris', 'FR')
+//
+// Expected: Match via nested address.city/country:
+//   Alice -> address(NYC, US) -> matches Apple(NYC, US)
+//   Bob -> address(London, UK) -> matches Google(London, UK)
+//   Charlie -> address(Paris, FR) -> no match
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinNestedPropertyChain():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Bob\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::NestedPropertyChainMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 6: Double-nested model joins — both sides traverse model joins
+//   employees.address.city == firm.headquarters.city && employees.address.country == firm.headquarters.country
+//
+//   LHS chain: person → (ModelJoin Person_Address) → address → .city
+//   RHS chain: firm   → (ModelJoin Firm_Headquarters) → headquarters → .city
+//
+// Data:
+//   firmTable: (1, 'Apple', '', '', ''), (2, 'Google', '', '', '')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//   addressTable: (1, 1, 'NYC', 'US'), (2, 2, 'London', 'UK'), (3, 3, 'Paris', 'FR')
+//   headquartersTable: (1, 1, 'NYC', 'US'), (2, 2, 'London', 'UK')
+//
+// Expected: Match where person's address city/country == firm's HQ city/country:
+//   Alice → address(NYC, US) matches Apple → HQ(NYC, US)
+//   Bob → address(London, UK) matches Google → HQ(London, UK)
+//   Charlie → address(Paris, FR) → no match
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinDoubleNestedBothSides():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Bob\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::DoubleNestedModelJoinMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv, $hqCsv],
+    $expected,
+    false
+  );
+}
+
+// =============================================================================
+// Test 7: Column collision during target subselect collapse
+//   Firm→Department→Project chain. Both dept and project have ID and NAME columns.
+//   collapseTargetIntoSubselect must disambiguate these in the subselect.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinColumnCollision():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let deptCsv =
+    'default\n' +
+    'departmentTable\n' +
+    'ID,FIRMID,NAME,CODE\n' +
+    '10,1,Engineering,ENG\n' +
+    '20,1,Marketing,MKT\n' +
+    '30,2,Research,RES\n';
+
+  let projectCsv =
+    'default\n' +
+    'projectTable\n' +
+    'ID,DEPTID,NAME,CITY\n' +
+    '100,10,ProjectX,NYC\n' +
+    '200,10,ProjectY,LA\n' +
+    '300,30,ProjectZ,London\n';
+
+  let expected =
+    'Legal Name,Project Name\n' +
+    'Apple,ProjectX\n' +
+    'Apple,ProjectY\n' +
+    'Google,ProjectZ\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithDeptProjects__Relation_1_',
+    'showcase::modelJoinTests::mapping::ColumnCollisionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $deptCsv, $projectCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 8: String concatenation in join condition
+//   employees.firstName + ' ' + employees.lastName == firm.code
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinConcatCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Alice Smith,,\n' +
+    '2,Google,Bob Jones,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,Google\n' +
+    'Charlie,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::ConcatConditionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 9: Arithmetic in condition — employees.age + 10 == firm.id
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinArithmeticCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '40,Apple,,,\n' +
+    '35,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,99\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,Google\n' +
+    'Charlie,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::ArithmeticConditionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 10: 3 levels of model join nesting — inner condition does multi-depth traversal
+//   Outer: Firm→Person via employees.address.city == firm.headquarters.city
+//   Middle: Person→Address via person.profile.rank == address.country && person.id == address.personId
+//   Innermost: Person→Profile via person_prof.id == profile.personId
+//
+//   Processing the middle condition triggers the innermost model join (person.profile).
+//   This tests 3-level recursive model join resolution.
+//
+//   Data:
+//     profileTable: Alice has rank='US', Bob has rank='UK'
+//     addressTable: addr1(personId=1, city=NYC, country=US), addr2(personId=2, city=London, country=UK)
+//     So person→address matches when profile.rank == address.country AND person.id == address.personId
+//     Alice(rank=US, id=1) → addr1(country=US, personId=1) ✓
+//     Bob(rank=UK, id=2) → addr2(country=UK, personId=2) ✓
+//     Charlie has no profile → no address match
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testNestedModelJoinCompoundInnerCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let profileCsv =
+    'default\n' +
+    'profileTable\n' +
+    'ID,PERSONID,RANK\n' +
+    '1,1,US\n' +
+    '2,2,UK\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Bob\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::NestedModelJoinWithPropertyAccess',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $profileCsv, $addressCsv, $hqCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 11: Direct single-hop model join property access
+//   Person.all()->project(~[firstName, address.city])
+//   Simpler case: query accesses a model-join property directly for projection.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinDirectPropertyAccess():Boolean[1]
+{
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let expected =
+    'First Name,City\n' +
+    'Alice,NYC\n' +
+    'Bob,London\n' +
+    'Charlie,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithAddress__Relation_1_',
+    'showcase::modelJoinTests::mapping::NestedPropertyChainMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$personCsv, $addressCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 12: Sub-filter within project — filter on nested model-join property
+//   Firm.all()->project(~[legalName, employees->filter(e|e.address.city=='NYC').firstName])
+//   Model join used inside a sub-filter within a project column.
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinSubFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  // Firm→Person via NestedPropertyChainMapping (address.city == firm.city && address.country == firm.country)
+  // Then sub-filter: only employees whose address.city == 'NYC'
+  // Apple(NYC,US): employees matched by city/country = Alice(NYC,US), Charlie(NYC,US)
+  //   sub-filter city=='NYC' → Alice, Charlie
+  // Google(London,UK): employee = Bob(London,UK)
+  //   sub-filter city=='NYC' → none
+  let expected =
+    'Legal Name,NYC Employee\n' +
+    'Apple,Alice\n' +
+    'Apple,Charlie\n' +
+    'Google,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithFilteredEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::NestedPropertyChainMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 13: Sub-aggregation within project — count of employees (inline agg)
+//   Firm.all()->project(~[legalName, employees->count()])
+//   Model join traversal used in an aggregation expression within a project column.
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinSubAggregation():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'Legal Name,Employee Count\n' +
+    'Apple,2\n' +
+    'Google,1\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployeeCount__Relation_1_',
+    'showcase::modelJoinTests::mapping::SimpleEqualityMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 14: Filter on double-nested model-join property
+//   Firm.all()->filter(f | f.headquarters.city == 'NYC')->project(~[legalName])
+//   Model join traversal in a filter on a property that itself goes through a model join.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinNestedInFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n' +
+    '3,Meta,,,\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  // Apple has HQ in NYC → included; Google has HQ in London → excluded; Meta has no HQ → excluded
+  let expected =
+    'Legal Name\n' +
+    'Apple\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmsInNYC__Relation_1_',
+    'showcase::modelJoinTests::mapping::DoubleNestedModelJoinMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $hqCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 15: Derived property in model join condition
+//   employees.fullName == firm.code
+//   fullName is a derived property: firstName + ' ' + lastName
+//
+// Data:
+//   firmTable: (1, 'Apple', code='Alice Smith'), (2, 'Google', code='Charlie Brown')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//
+// Expected: Match by derived fullName == firm code:
+//   Alice (fullName='Alice Smith') matches Apple (code='Alice Smith')
+//   Bob (fullName='Bob Jones') — no match
+//   Charlie (fullName='Charlie Brown') matches Google (code='Charlie Brown')
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinDerivedPropertyInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Alice Smith,,\n' +
+    '2,Google,Charlie Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,null\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::DerivedPropertyConditionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 16: Subtype class mapping with model join
+//   ExtendedPerson (extends Person) is mapped with employeeCode.
+//   Model join condition: employees.employeeCode == firm.code
+//   Tests that model join works when target is a subclass mapping.
+//
+// Data:
+//   firmTable: (1, 'Apple', code='Smith'), (2, 'Google', code='Brown')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//   employeeCode maps to LASTNAME
+//
+// Expected:
+//   Alice (employeeCode=Smith) matches Apple (code=Smith)
+//   Bob (employeeCode=Jones) — no match
+//   Charlie (employeeCode=Brown) matches Google (code=Brown)
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinSubtypeMapping():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Smith,,\n' +
+    '2,Google,Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,null\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::SubtypeMappingTest',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 17: Explicit ->subType() cast in model join condition
+//   employees->subType(@ExtendedPerson).employeeCode == firm.code
+//   Tests that the model join condition rewriter handles arrow-syntax
+//   subType cast to access subclass-specific properties.
+//
+// Data: same as Test 16
+// Expected: same as Test 16
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinSubtypeInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Smith,,\n' +
+    '2,Google,Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,null\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::SubtypeInConditionMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 18: Milestoning via model join
+//   Person→Contract via model join, Contract is <<temporal.businesstemporal>>
+//   Query passes business date: contracts(%2024-01-01)
+//
+// Data:
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25)
+//   contractLogTable: (1, 1, 'ContractA', 2023-01-01, 2025-01-01),
+//                     (2, 1, 'ContractB', 2025-01-01, 2099-01-01),
+//                     (3, 2, 'ContractC', 2023-06-01, 2024-06-01)
+//
+// Expected at businessDate=2024-01-01:
+//   Alice → ContractA (2023-01-01 <= 2024-01-01 < 2025-01-01)
+//   Bob → ContractC (2023-06-01 <= 2024-01-01 < 2024-06-01)
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinMilestoning():Boolean[1]
+{
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n';
+
+  let contractCsv =
+    'default\n' +
+    'contractLogTable\n' +
+    'ID,PERSONID,DESCRIPTION,FROM_Z,THRU_Z\n' +
+    '1,1,ContractA,2023-01-01,2025-01-01\n' +
+    '2,1,ContractB,2025-01-01,2099-01-01\n' +
+    '3,2,ContractC,2023-06-01,2024-06-01\n';
+
+  let expected =
+    'First Name,Contract\n' +
+    'Alice,ContractA\n' +
+    'Bob,ContractC\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::personWithContract__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestonedMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$personCsv, $contractCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 19: Union on BOTH sides of model join
+//   Person = union(fullTimeTable, contractTable)
+//   Firm = union(firmTable, firmTableB)
+//   Model join: employees.firmId == firm.id
+//
+// Data:
+//   fullTimeTable: (1, 'Alice', 'Smith', 1, 30)
+//   contractTable: (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 3, 35)
+//   firmTable: (1, 'Apple', '', '', '')
+//   firmTableB: (3, 'Meta', '', '', '')
+//
+// Expected: Firm Apple has Alice, Bob; Firm Meta has Charlie
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinUnionBothSides():Boolean[1]
+{
+  let fullTimeCsv =
+    'default\n' +
+    'fullTimeTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n';
+
+  let contractCsv =
+    'default\n' +
+    'contractTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,3,35\n';
+
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n';
+
+  let firmBCsv =
+    'default\n' +
+    'firmTableB\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '3,Meta,,,\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Meta,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::UnionBothSidesMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$fullTimeCsv, $contractCsv, $firmCsv, $firmBCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 20: Qualified property in query that traverses model joins
+//   Firm.employeesInCity('NYC') — the qualified property body uses
+//   $this.employees (model join) and $emp.address (model join).
+//   Tests that the engine resolves qualified property bodies that
+//   internally traverse model-join-mapped associations.
+//
+// Data:
+//   firmTable: (1, 'Apple', '', 'NYC', 'US'), (2, 'Google', '', 'London', 'UK')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//   addressTable: (1, 1, 'NYC', 'US'), (2, 2, 'London', 'UK'), (3, 3, 'NYC', 'US')
+//
+// Expected:
+//   Apple(NYC) employees matched by city/country: Alice(NYC,US), Charlie(NYC,US)
+//     filtered by employeesInCity('NYC'): Alice, Charlie
+//   Google(London) employees matched: Bob(London,UK)
+//     filtered by employeesInCity('NYC'): none → null
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinQualifiedPropertyInQuery():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  let expected =
+    'Legal Name,Employee In NYC\n' +
+    'Apple,Alice\n' +
+    'Apple,Charlie\n' +
+    'Google,null\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::firmWithEmployeesInCity__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::QualifiedPropertyMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 21: Target milestoned (Order), source NOT milestoned (Warehouse)
+//   Nested condition: orders.product.category == warehouse.section.zone
+//   Only Order has milestoning → expect temporal filter on orderTable (target)
+//
+// Data:
+//   orderTable: (1, 1, 'OrderA', 'REF1', 2023-01-01, 2025-01-01) — active at 2024-01-01
+//               (2, 2, 'OrderB', 'REF2', 2025-01-01, 9999-12-31) — NOT active at 2024-01-01
+//               (3, 3, 'OrderC', 'REF3', 2023-06-01, 2024-06-01) — active at 2024-01-01
+//   productTable: (1, 1, 'ELEC', 'electronics'), (2, 2, 'ELEC', 'electronics'), (3, 3, 'FOOD', 'food')
+//   warehouseTable: (1, 'WarehouseA', 1), (2, 'WarehouseB', 2)
+//   sectionTable: (1, 1, 'electronics'), (2, 2, 'food')
+//
+// Expected at businessDate=2024-01-01:
+//   WarehouseA (section.zone=electronics) → OrderA (product.category=electronics, active)
+//   WarehouseB (section.zone=food) → OrderC (product.category=food, active)
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestoningTargetOnly():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n' +
+    '3,3,OrderC,REF3,2023-06-01,2024-06-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ELEC,electronics\n' +
+    '2,2,ELEC,electronics\n' +
+    '3,3,FOOD,food\n';
+
+  let warehouseCsv =
+    'default\n' +
+    'warehouseTable\n' +
+    'ID,NAME,SECTIONID\n' +
+    '1,WarehouseA,1\n' +
+    '2,WarehouseB,2\n';
+
+  let sectionCsv =
+    'default\n' +
+    'sectionTable\n' +
+    'ID,WAREHOUSEID,ZONE\n' +
+    '1,1,electronics\n' +
+    '2,2,food\n';
+
+  let expected =
+    'Warehouse,Order\n' +
+    'WarehouseA,OrderA\n' +
+    'WarehouseB,OrderC\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::warehouseWithOrders__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestonedOrderWarehouseMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $warehouseCsv, $sectionCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 22: Source milestoned (Order), target NOT milestoned (Warehouse)
+//   Same ModelJoin as test 21 but inverted: Order.all(%2024-01-01)→warehouse.name
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestoningSourceOnly():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n' +
+    '3,3,OrderC,REF3,2023-06-01,2024-06-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ELEC,electronics\n' +
+    '2,2,ELEC,electronics\n' +
+    '3,3,FOOD,food\n';
+
+  let warehouseCsv =
+    'default\n' +
+    'warehouseTable\n' +
+    'ID,NAME,SECTIONID\n' +
+    '1,WarehouseA,1\n' +
+    '2,WarehouseB,2\n';
+
+  let sectionCsv =
+    'default\n' +
+    'sectionTable\n' +
+    'ID,WAREHOUSEID,ZONE\n' +
+    '1,1,electronics\n' +
+    '2,2,food\n';
+
+  let expected =
+    'Order,Warehouse\n' +
+    'OrderA,WarehouseA\n' +
+    'OrderC,WarehouseB\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithWarehouse__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestonedOrderWarehouseMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $warehouseCsv, $sectionCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 23: Both sides milestoned same scheme (Order + Shipment, both business)
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestoningSameScheme():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2024-06-01\n' +
+    '2,2,OrderB,REF2,2024-01-01,2025-01-01\n' +
+    '3,3,OrderC,REF3,2024-06-01,2025-01-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ALPHA,cat1\n' +
+    '2,2,BETA,cat2\n' +
+    '3,3,ALPHA,cat3\n';
+
+  let shipmentCsv =
+    'default\n' +
+    'shipmentTable\n' +
+    'ID,ORDERID,CARRIER,TRACKINGID,FROM_Z,THRU_Z\n' +
+    '1,1,FedEx,1,2024-01-01,2024-06-01\n' +
+    '2,1,DHL,2,2024-06-01,2025-01-01\n' +
+    '3,2,UPS,3,2024-01-01,2025-01-01\n';
+
+  let trackingCsv =
+    'default\n' +
+    'trackingTable\n' +
+    'ID,SHIPMENTID,PREFIX\n' +
+    '1,1,ALPHA\n' +
+    '2,2,BETA\n' +
+    '3,3,BETA\n';
+
+  let expected =
+    'Order,Carrier\n' +
+    'OrderA,null\n' +
+    'OrderB,DHL\n' +
+    'OrderB,UPS\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithShipments__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestoningSameSchemeBothMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $shipmentCsv, $trackingCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 24: Different milestoning schemes (Order=business, AuditEntry=processing)
+//   Nested condition: order_audit.product.code == auditEntries.entityRef
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestoningDiffScheme():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ALPHA,cat1\n' +
+    '2,2,BETA,cat2\n';
+
+  let auditCsv =
+    'default\n' +
+    'auditTable\n' +
+    'ID,ENTITYREF,MESSAGE,IN_Z,OUT_Z\n' +
+    '1,ALPHA,Audit1,2023-01-01 00:00:00,2025-01-01 00:00:00\n' +
+    '2,ALPHA,Audit2,2025-01-01 00:00:00,9999-12-31 00:00:00\n' +
+    '3,BETA,Audit3,2023-01-01 00:00:00,2025-01-01 00:00:00\n';
+
+  let expected =
+    'Order,Audit\n' +
+    'OrderA,Audit1\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithAudit__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestoningDiffSchemeMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $auditCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 25: Milestoned intermediates in join condition
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestonedIntermediates():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2024-01-01,2025-01-01\n' +
+    '3,3,OrderC,REF3,2024-06-01,2025-01-01\n';
+
+  let productMilCsv =
+    'default\n' +
+    'productMilTable\n' +
+    'ID,ORDERID,CODE,CATEGORY,FROM_Z,THRU_Z\n' +
+    '1,1,ALPHA,cat1,2023-01-01,2024-06-01\n' +
+    '2,1,GAMMA,cat1,2024-06-01,2025-01-01\n' +
+    '3,2,BETA,cat2,2024-01-01,2025-01-01\n' +
+    '4,3,ALPHA,cat3,2024-06-01,2025-01-01\n';
+
+  let shipmentCsv =
+    'default\n' +
+    'shipmentTable\n' +
+    'ID,ORDERID,CARRIER,TRACKINGID,FROM_Z,THRU_Z\n' +
+    '1,1,FedEx,1,2024-01-01,2024-06-01\n' +
+    '2,1,DHL,2,2024-06-01,2025-01-01\n' +
+    '3,2,UPS,3,2024-01-01,2025-01-01\n';
+
+  let trackingMilCsv =
+    'default\n' +
+    'trackingMilTable\n' +
+    'ID,SHIPMENTID,PREFIX,FROM_Z,THRU_Z\n' +
+    '1,1,ALPHA,2024-01-01,2024-06-01\n' +
+    '2,2,ALPHA,2024-06-01,2025-01-01\n' +
+    '3,3,BETA,2024-01-01,2024-05-01\n' +
+    '4,3,BETA,2024-05-01,2025-01-01\n';
+
+  let expected =
+    'Order,Carrier\n' +
+    'OrderA,DHL\n' +
+    'OrderB,UPS\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithShipmentsMilestonedIntermediates__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::MilestonedIntermediatesMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productMilCsv, $shipmentCsv, $trackingMilCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// =============================================================================
+// RELATIONAL CLASS MAPPING TESTS
+// The following tests mirror existing Relation-based tests but use traditional
+// Relational class mappings (~mainTable) instead of Relation function mappings.
+// =============================================================================
+// =============================================================================
+
+// =============================================================================
+// Test R1: Simple equality — Relational class mappings
+//   Same scenario as Test 1 but with Relational mappings.
+//   employees.firmId == firm.id
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalSimpleEquality():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::SimpleEqualityMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test R2: Nested property chain — Relational class mappings
+//   Same scenario as Test 5 but with Relational mappings.
+//   employees.address.city == firm.city && employees.address.country == firm.country
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalNestedPropertyChain():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Bob\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::NestedPropertyChainMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test R3: Double-nested model join — Relational class mappings
+//   Same scenario as Test 6 but with Relational mappings.
+//   employees.address.city == firm.headquarters.city
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalDoubleNestedBothSides():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Bob\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::DoubleNestedModelJoinMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv, $hqCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test R4: Filter on double-nested model-join property — Relational class mappings
+//   Same scenario as Test 14 but with Relational mappings.
+//   Firm.all()->filter(f | f.headquarters.city == 'NYC')->project(~[legalName])
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalNestedInFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n' +
+    '3,Meta,,,\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  // Apple has HQ in NYC → included; Google has HQ in London → excluded; Meta has no HQ → excluded
+  let expected =
+    'Legal Name\n' +
+    'Apple\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmsInNYC__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::FilterOnNestedMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $hqCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test R21: Target milestoned (Order) — Relational class mappings
+//   Same scenario as Test 21 but with Relational mappings.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalMilestoningTargetOnly():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n' +
+    '3,3,OrderC,REF3,2023-06-01,2024-06-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ELEC,electronics\n' +
+    '2,2,ELEC,electronics\n' +
+    '3,3,FOOD,food\n';
+
+  let warehouseCsv =
+    'default\n' +
+    'warehouseTable\n' +
+    'ID,NAME,SECTIONID\n' +
+    '1,WarehouseA,1\n' +
+    '2,WarehouseB,2\n';
+
+  let sectionCsv =
+    'default\n' +
+    'sectionTable\n' +
+    'ID,WAREHOUSEID,ZONE\n' +
+    '1,1,electronics\n' +
+    '2,2,food\n';
+
+  let expected =
+    'Warehouse,Order\n' +
+    'WarehouseA,OrderA\n' +
+    'WarehouseB,OrderC\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::warehouseWithOrders__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::MilestonedOrderWarehouseMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $warehouseCsv, $sectionCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test R22: Source milestoned (Order) — Relational class mappings
+//   Same scenario as Test 22 but with Relational mappings.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalMilestoningSourceOnly():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n' +
+    '3,3,OrderC,REF3,2023-06-01,2024-06-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ELEC,electronics\n' +
+    '2,2,ELEC,electronics\n' +
+    '3,3,FOOD,food\n';
+
+  let warehouseCsv =
+    'default\n' +
+    'warehouseTable\n' +
+    'ID,NAME,SECTIONID\n' +
+    '1,WarehouseA,1\n' +
+    '2,WarehouseB,2\n';
+
+  let sectionCsv =
+    'default\n' +
+    'sectionTable\n' +
+    'ID,WAREHOUSEID,ZONE\n' +
+    '1,1,electronics\n' +
+    '2,2,food\n';
+
+  let expected =
+    'Order,Warehouse\n' +
+    'OrderA,WarehouseA\n' +
+    'OrderC,WarehouseB\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithWarehouse__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::MilestonedOrderWarehouseMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $warehouseCsv, $sectionCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test R23: Both sides milestoned same scheme — Relational class mappings
+//   Same scenario as Test 23 but with Relational mappings.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalMilestoningSameScheme():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2024-06-01\n' +
+    '2,2,OrderB,REF2,2024-01-01,2025-01-01\n' +
+    '3,3,OrderC,REF3,2024-06-01,2025-01-01\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ALPHA,cat1\n' +
+    '2,2,BETA,cat2\n' +
+    '3,3,ALPHA,cat3\n';
+
+  let shipmentCsv =
+    'default\n' +
+    'shipmentTable\n' +
+    'ID,ORDERID,CARRIER,TRACKINGID,FROM_Z,THRU_Z\n' +
+    '1,1,FedEx,1,2024-01-01,2024-06-01\n' +
+    '2,1,DHL,2,2024-06-01,2025-01-01\n' +
+    '3,2,UPS,3,2024-01-01,2025-01-01\n';
+
+  let trackingCsv =
+    'default\n' +
+    'trackingTable\n' +
+    'ID,SHIPMENTID,PREFIX\n' +
+    '1,1,ALPHA\n' +
+    '2,2,BETA\n' +
+    '3,3,BETA\n';
+
+  let expected =
+    'Order,Carrier\n' +
+    'OrderA,null\n' +
+    'OrderB,DHL\n' +
+    'OrderB,UPS\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithShipments__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::MilestoningSameSchemeBothMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $shipmentCsv, $trackingCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test R24: Different milestoning schemes — Relational class mappings
+//   Same scenario as Test 24 but with Relational mappings.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalMilestoningDiffScheme():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2025-01-01,9999-12-31\n';
+
+  let productCsv =
+    'default\n' +
+    'productTable\n' +
+    'ID,ORDERID,CODE,CATEGORY\n' +
+    '1,1,ALPHA,cat1\n' +
+    '2,2,BETA,cat2\n';
+
+  let auditCsv =
+    'default\n' +
+    'auditTable\n' +
+    'ID,ENTITYREF,MESSAGE,IN_Z,OUT_Z\n' +
+    '1,ALPHA,Audit1,2023-01-01 00:00:00,2025-01-01 00:00:00\n' +
+    '2,ALPHA,Audit2,2025-01-01 00:00:00,9999-12-31 00:00:00\n' +
+    '3,BETA,Audit3,2023-01-01 00:00:00,2025-01-01 00:00:00\n';
+
+  let expected =
+    'Order,Audit\n' +
+    'OrderA,Audit1\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithAudit__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::MilestoningDiffSchemeMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productCsv, $auditCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test R25: Milestoned intermediates — Relational class mappings
+//   Same scenario as Test 25 but with Relational mappings.
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinRelationalMilestonedIntermediates():Boolean[1]
+{
+  let orderCsv =
+    'default\n' +
+    'orderTable\n' +
+    'ID,PRODUCTID,DESCRIPTION,REFCODE,FROM_Z,THRU_Z\n' +
+    '1,1,OrderA,REF1,2023-01-01,2025-01-01\n' +
+    '2,2,OrderB,REF2,2024-01-01,2025-01-01\n' +
+    '3,3,OrderC,REF3,2024-06-01,2025-01-01\n';
+
+  let productMilCsv =
+    'default\n' +
+    'productMilTable\n' +
+    'ID,ORDERID,CODE,CATEGORY,FROM_Z,THRU_Z\n' +
+    '1,1,ALPHA,cat1,2023-01-01,2024-06-01\n' +
+    '2,1,GAMMA,cat1,2024-06-01,2025-01-01\n' +
+    '3,2,BETA,cat2,2024-01-01,2025-01-01\n' +
+    '4,3,ALPHA,cat3,2024-06-01,2025-01-01\n';
+
+  let shipmentCsv =
+    'default\n' +
+    'shipmentTable\n' +
+    'ID,ORDERID,CARRIER,TRACKINGID,FROM_Z,THRU_Z\n' +
+    '1,1,FedEx,1,2024-01-01,2024-06-01\n' +
+    '2,1,DHL,2,2024-06-01,2025-01-01\n' +
+    '3,2,UPS,3,2024-01-01,2025-01-01\n';
+
+  let trackingMilCsv =
+    'default\n' +
+    'trackingMilTable\n' +
+    'ID,SHIPMENTID,PREFIX,FROM_Z,THRU_Z\n' +
+    '1,1,ALPHA,2024-01-01,2024-06-01\n' +
+    '2,2,ALPHA,2024-06-01,2025-01-01\n' +
+    '3,3,BETA,2024-01-01,2024-05-01\n' +
+    '4,3,BETA,2024-05-01,2025-01-01\n';
+
+  let expected =
+    'Order,Carrier\n' +
+    'OrderA,DHL\n' +
+    'OrderB,UPS\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::orderWithShipmentsMilestonedIntermediates__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::MilestonedIntermediatesMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$orderCsv, $productMilCsv, $shipmentCsv, $trackingMilCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 26: Model Join where target has ~filter (AGE > 25)
+//
+// Data:
+//   firmTable: (1, 'Apple'), (2, 'Google')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 20), (3, 'Charlie', 'Brown', 2, 35)
+//
+// Expected: Bob (age=20) is filtered out by target ~filter (AGE > 25)
+//   Apple has only Alice; Google has Charlie
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinFilterOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::FilterOnTargetMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test 27: Model Join where target has ~filter + nested condition
+//
+// Data:
+//   firmTable: (1, 'Apple', city='NYC'), (2, 'Google', city='SF')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 20), (3, 'Charlie', 'Brown', 2, 35)
+//   addressTable: (1, 1, 'NYC', 'US'), (2, 2, 'NYC', 'US'), (3, 3, 'SF', 'US')
+//
+// Expected: Bob is filtered out by AGE > 25.
+//   Alice (age=30, address=NYC) matches Apple (city=NYC)
+//   Charlie (age=35, address=SF) matches Google (city=SF)
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinFilterOnTargetNestedCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,\n' +
+    '2,Google,,SF,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,NYC,US\n' +
+    '3,3,SF,US\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::FilterOnTargetNestedConditionMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $addressCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 28: Model Join where target has ~distinct
+//
+// Data:
+//   firmTable: (1, 'Apple'), (2, 'Google')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 2, 35)
+//
+// Expected: All persons appear (distinct doesn't remove unique rows)
+//   Apple has Alice, Bob; Google has Charlie
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinDistinctOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::DistinctOnTargetMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 29: Model Join where target has ~filter (same as test 26 but querying from person side)
+//
+// Data:
+//   firmTable: (1, 'Apple'), (2, 'Google')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 20), (3, 'Charlie', 'Brown', 2, 35)
+//
+// Expected: Query from Person -> Firm (reverse direction of the model join)
+//   Only active persons (age>25) have their firm resolved
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinFilterOnTargetReverse():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::FilterOnTargetMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test 30: Model Join where target has inner join filter
+//
+// The person class mapping has ~filter (INNER) @PersonProfile | ProfileRankFilter
+// which inner-joins personTable to profileTable and filters profileTable.RANK = 'US'.
+//
+// Data:
+//   firmTable: (1, 'Apple'), (2, 'Google')
+//   personTable: (1, 'Alice', 'Smith', 1, 30), (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 2, 35)
+//   profileTable: (1, 1, 'US'), (2, 2, 'UK'), (3, 3, 'US')
+//
+// Expected: Only persons with profile rank='US' pass the filter.
+//   Alice (profile rank=US, firmId=1) → Apple
+//   Bob (profile rank=UK) → filtered out
+//   Charlie (profile rank=US, firmId=2) → Google
+// =============================================================================
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinFilterWithInnerJoinOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let profileCsv =
+    'default\n' +
+    'profileTable\n' +
+    'ID,PERSONID,RANK\n' +
+    '1,1,US\n' +
+    '2,2,UK\n' +
+    '3,3,US\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoin.legend',
+    'showcase::modelJoinTests::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::mapping::relational::FilterWithInnerJoinOnTargetMapping',
+    'showcase::modelJoinTests::store::Database',
+    'showcase::modelJoinTests::connection::H2Connection',
+    [$firmCsv, $personCsv, $profileCsv],
+    $expected,
+    true
+  );
+}
+
+// =============================================================================
+// Test: Subtype in model join condition (Relational class mappings)
+//   employees->subType(@ExtendedPerson).employeeCode == firm.code
+//   ExtendedPerson.employeeCode is mapped to LASTNAME column
+//
+// Data:
+//   firmTable: (1, 'Apple', 'Smith', '', ''), (2, 'Google', 'Brown', '', '')
+//   personTable: (1, 'Alice', 'Smith', 0, 30), (2, 'Bob', 'Jones', 0, 25), (3, 'Charlie', 'Brown', 0, 35)
+//
+// Expected: Alice→Apple (Smith==Smith), Charlie→Google (Brown==Brown), Bob→null
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJoinRelationalSubtypeInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Smith,,\n' +
+    '2,Google,Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let expected =
+    'First Name,Firm Name\n' +
+    'Alice,Apple\n' +
+    'Bob,null\n' +
+    'Charlie,Google\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::personWithFirm__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::SubtypeInConditionMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$firmCsv, $personCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test: Union on source side (Relational class mappings)
+//   Person = union(fullTimeTable, contractTable), Firm = firmTable
+//   Model join: employees.firmId == firm.id
+//
+// Data:
+//   fullTimeTable: (1, 'Alice', 'Smith', 1, 30)
+//   contractTable: (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 2, 35)
+//   firmTable: (1, 'Apple', '', '', ''), (2, 'Google', '', '', '')
+//
+// Expected: Firm.all→employees gives Alice+Bob for Apple, Charlie for Google
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJoinRelationalUnionSource():Boolean[1]
+{
+  let fullTimeCsv =
+    'default\n' +
+    'fullTimeTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n';
+
+  let contractCsv =
+    'default\n' +
+    'contractTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Google,Charlie\n';
+
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::UnionSourceMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$fullTimeCsv, $contractCsv, $firmCsv],
+    $expected
+  );
+}
+
+// =============================================================================
+// Test: Union on BOTH sides (Relational class mappings)
+//   Person = union(fullTimeTable, contractTable)
+//   Firm = union(firmTable, firmTableB)
+//   Model join: employees.firmId == firm.id
+//
+// Data:
+//   fullTimeTable: (1, 'Alice', 'Smith', 1, 30)
+//   contractTable: (2, 'Bob', 'Jones', 1, 25), (3, 'Charlie', 'Brown', 3, 35)
+//   firmTable: (1, 'Apple', '', '', '')
+//   firmTableB: (3, 'Meta', '', '', '')
+//
+// Expected: Apple has Alice+Bob; Meta has Charlie
+// =============================================================================
+function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJoinRelationalUnionBothSides():Boolean[1]
+{
+  let fullTimeCsv =
+    'default\n' +
+    'fullTimeTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n';
+
+  let contractCsv =
+    'default\n' +
+    'contractTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,3,35\n';
+
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n';
+
+  let firmBCsv =
+    'default\n' +
+    'firmTableB\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '3,Meta,,,\n';
+
+  let expected =
+    'Legal Name,Employee First Name\n' +
+    'Apple,Alice\n' +
+    'Apple,Bob\n' +
+    'Meta,Charlie\n';
+ 
+  executeLegendFunction(
+    '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
+    'showcase::modelJoinTests::advanced::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::advanced::mapping::relational::UnionBothSidesMapping',
+    'showcase::modelJoinTests::advanced::store::Database',
+    'showcase::modelJoinTests::advanced::connection::H2Connection',
+    [$fullTimeCsv, $contractCsv, $firmCsv, $firmBCsv],
+    $expected,
+    true
+  );
+}

@@ -1,0 +1,1326 @@
+###Relational
+Database showcase::modelJoinTests::advanced::store::Database
+(
+  Schema default
+  (
+    Table firmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table addressTable
+    (
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table fullTimeTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table contractTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table firmTableB
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table contractLogTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      DESCRIPTION VARCHAR(200),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table orderTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      PRODUCTID INTEGER,
+      DESCRIPTION VARCHAR(200),
+      REFCODE VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CODE VARCHAR(50),
+      CATEGORY VARCHAR(50)
+    )
+
+    Table warehouseTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      SECTIONID INTEGER
+    )
+
+    Table sectionTable
+    (
+      ID INTEGER PRIMARY KEY,
+      WAREHOUSEID INTEGER,
+      ZONE VARCHAR(50)
+    )
+
+    Table shipmentTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CARRIER VARCHAR(100),
+      TRACKINGID INTEGER,
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table trackingTable
+    (
+      ID INTEGER PRIMARY KEY,
+      SHIPMENTID INTEGER,
+      PREFIX VARCHAR(50)
+    )
+
+    Table auditTable
+    (
+      milestoning(
+        processing(PROCESSING_IN=IN_Z, PROCESSING_OUT=OUT_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ENTITYREF VARCHAR(50),
+      MESSAGE VARCHAR(200),
+      IN_Z TIMESTAMP,
+      OUT_Z TIMESTAMP
+    )
+
+    Table productMilTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CODE VARCHAR(50),
+      CATEGORY VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table trackingMilTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      SHIPMENTID INTEGER,
+      PREFIX VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+  )
+)
+
+###Pure
+Class showcase::modelJoinTests::advanced::domain::Firm
+{
+  legalName: String[1];
+  city: String[0..1];
+  country: String[0..1];
+  code: String[0..1];
+  employeesInCity(cityParam: String[1]) { $this.employees->filter(emp | $emp.address.city == $cityParam) }: showcase::modelJoinTests::advanced::domain::Person[*];
+}
+
+Class showcase::modelJoinTests::advanced::domain::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::ExtendedPerson extends showcase::modelJoinTests::advanced::domain::Person
+{
+  employeeCode: String[0..1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::Address
+{
+  city: String[1];
+  country: String[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::modelJoinTests::advanced::domain::Contract
+{
+  description: String[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::modelJoinTests::advanced::domain::Order
+{
+  description: String[1];
+  refCode: String[0..1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::Product
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::Warehouse
+{
+  name: String[1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::Section
+{
+  zone: String[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::modelJoinTests::advanced::domain::Shipment
+{
+  carrier: String[1];
+}
+
+Class showcase::modelJoinTests::advanced::domain::TrackingRef
+{
+  prefix: String[1];
+}
+
+Class <<temporal.processingtemporal>> showcase::modelJoinTests::advanced::domain::AuditEntry
+{
+  entityRef: String[1];
+  message: String[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::modelJoinTests::advanced::domain::MilestonedProduct
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class <<temporal.businesstemporal>> showcase::modelJoinTests::advanced::domain::MilestonedTrackingRef
+{
+  prefix: String[1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Person_Firm
+{
+  employees: showcase::modelJoinTests::advanced::domain::Person[*];
+  firm: showcase::modelJoinTests::advanced::domain::Firm[1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Person_Address
+{
+  person: showcase::modelJoinTests::advanced::domain::Person[1];
+  address: showcase::modelJoinTests::advanced::domain::Address[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Person_Contract
+{
+  person_contract: showcase::modelJoinTests::advanced::domain::Person[1];
+  contracts: showcase::modelJoinTests::advanced::domain::Contract[*];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Order_Product
+{
+  order: showcase::modelJoinTests::advanced::domain::Order[1];
+  product: showcase::modelJoinTests::advanced::domain::Product[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Warehouse_Section
+{
+  warehouse: showcase::modelJoinTests::advanced::domain::Warehouse[1];
+  section: showcase::modelJoinTests::advanced::domain::Section[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Order_Warehouse
+{
+  orders: showcase::modelJoinTests::advanced::domain::Order[*];
+  warehouse: showcase::modelJoinTests::advanced::domain::Warehouse[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Order_Shipment
+{
+  order_ship: showcase::modelJoinTests::advanced::domain::Order[1];
+  shipments: showcase::modelJoinTests::advanced::domain::Shipment[*];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Shipment_Tracking
+{
+  shipment: showcase::modelJoinTests::advanced::domain::Shipment[1];
+  trackingRef: showcase::modelJoinTests::advanced::domain::TrackingRef[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Order_Audit
+{
+  order_audit: showcase::modelJoinTests::advanced::domain::Order[1];
+  auditEntries: showcase::modelJoinTests::advanced::domain::AuditEntry[*];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Order_MilestonedProduct
+{
+  order_mp: showcase::modelJoinTests::advanced::domain::Order[1];
+  milestonedProduct: showcase::modelJoinTests::advanced::domain::MilestonedProduct[0..1];
+}
+
+Association showcase::modelJoinTests::advanced::domain::Shipment_MilestonedTracking
+{
+  shipment_mt: showcase::modelJoinTests::advanced::domain::Shipment[1];
+  milestonedTrackingRef: showcase::modelJoinTests::advanced::domain::MilestonedTrackingRef[0..1];
+}
+
+// =========================================================================
+// Relation functions
+// =========================================================================
+function showcase::modelJoinTests::advanced::function::personTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function showcase::modelJoinTests::advanced::function::firmTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.firmTable}#->select(~[ID, LEGALNAME, CITY, COUNTRY, CODE])
+}
+
+function showcase::modelJoinTests::advanced::function::addressTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.addressTable}#->select(~[ID, PERSONID, CITY, COUNTRY])
+}
+
+function showcase::modelJoinTests::advanced::function::fullTimeTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.fullTimeTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function showcase::modelJoinTests::advanced::function::contractTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.contractTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function showcase::modelJoinTests::advanced::function::firmTableB(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.firmTableB}#->select(~[ID, LEGALNAME, CITY, COUNTRY, CODE])
+}
+
+function showcase::modelJoinTests::advanced::function::contractLogTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.contractLogTable}#->select(~[ID, PERSONID, DESCRIPTION, FROM_Z, THRU_Z])
+}
+
+function showcase::modelJoinTests::advanced::function::orderTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.orderTable}#->select(~[ID, PRODUCTID, DESCRIPTION, REFCODE, FROM_Z, THRU_Z])
+}
+
+function showcase::modelJoinTests::advanced::function::productTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.productTable}#->select(~[ID, ORDERID, CODE, CATEGORY])
+}
+
+function showcase::modelJoinTests::advanced::function::warehouseTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.warehouseTable}#->select(~[ID, NAME, SECTIONID])
+}
+
+function showcase::modelJoinTests::advanced::function::sectionTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.sectionTable}#->select(~[ID, WAREHOUSEID, ZONE])
+}
+
+function showcase::modelJoinTests::advanced::function::shipmentTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.shipmentTable}#->select(~[ID, ORDERID, CARRIER, TRACKINGID, FROM_Z, THRU_Z])
+}
+
+function showcase::modelJoinTests::advanced::function::trackingTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.trackingTable}#->select(~[ID, SHIPMENTID, PREFIX])
+}
+
+function showcase::modelJoinTests::advanced::function::auditTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.auditTable}#->select(~[ID, ENTITYREF, MESSAGE, IN_Z, OUT_Z])
+}
+
+function showcase::modelJoinTests::advanced::function::productMilTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.productMilTable}#->select(~[ID, ORDERID, CODE, CATEGORY, FROM_Z, THRU_Z])
+}
+
+function showcase::modelJoinTests::advanced::function::trackingMilTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{showcase::modelJoinTests::advanced::store::Database.trackingMilTable}#->select(~[ID, SHIPMENTID, PREFIX, FROM_Z, THRU_Z])
+}
+
+// =========================================================================
+// Query functions
+// =========================================================================
+function showcase::modelJoinTests::advanced::query::firmWithEmployees(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Firm.all()->project(
+    ~[
+       'Legal Name': x|$x.legalName,
+       'Employee First Name': x|$x.employees.firstName
+     ]
+  )
+}
+
+function showcase::modelJoinTests::advanced::query::personWithFirm(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Person.all()->project(
+    ~[
+       'First Name': x|$x.firstName,
+       'Firm Name': x|$x.firm.legalName
+     ]
+  )
+}
+
+function showcase::modelJoinTests::advanced::query::personWithContract(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Person.all()->project(
+    ~[
+       'First Name': x|$x.firstName,
+       'Contract': x|$x.contracts(%2024-01-01).description
+     ]
+  )
+}
+
+function showcase::modelJoinTests::advanced::query::firmWithEmployeesInCity(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Firm.all()->project(
+    ~[
+       'Legal Name': x|$x.legalName,
+       'Employee In NYC': x|$x.employeesInCity('NYC').firstName
+     ]
+  )
+}
+
+// Test 21: Target milestoned (Order), source NOT milestoned (Warehouse)
+// Nested condition: orders.product.category == warehouse.section.zone
+function showcase::modelJoinTests::advanced::query::warehouseWithOrders(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Warehouse.all()->project(
+    ~[
+       'Warehouse': x|$x.name,
+       'Order': x|$x.orders(%2024-01-01).description
+     ]
+  )
+}
+
+// Test 22: Source milestoned (Order), target NOT milestoned (Warehouse)
+// Same ModelJoin as test 21, inverted: Order.all(%2024-01-01)→warehouse.name
+function showcase::modelJoinTests::advanced::query::orderWithWarehouse(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Order.all(%2024-01-01)->project(
+    ~[
+       'Order': x|$x.description,
+       'Warehouse': x|$x.warehouse.name
+     ]
+  )
+}
+
+// Test 23: Both milestoned same scheme (Order + Shipment both business temporal)
+// Uses DIFFERENT dates: Order at %2024-03-01, Shipment at %2024-07-01
+// Nested condition: order_ship.product.code == shipments.trackingRef.prefix
+function showcase::modelJoinTests::advanced::query::orderWithShipments(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Order.all(%2024-03-01)->project(
+    ~[
+       'Order': x|$x.description,
+       'Carrier': x|$x.shipments(%2024-07-01).carrier
+     ]
+  )
+}
+
+// Test 24: Different schemes (Order=business, AuditEntry=processing)
+// Nested condition: order_audit.product.code == auditEntries.entityRef
+function showcase::modelJoinTests::advanced::query::orderWithAudit(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Order.all(%2024-01-01)->project(
+    ~[
+       'Order': x|$x.description,
+       'Audit': x|$x.auditEntries(%2024-01-01T10:00:00).message
+     ]
+  )
+}
+
+// Test 25: Both milestoned same scheme with milestoned INTERMEDIATES
+// Order at %2024-03-01, Shipment at %2024-07-01
+// Intermediates (MilestonedProduct, MilestonedTrackingRef) are also business temporal
+// Condition traverses through milestoned intermediates:
+//   order_ship.milestonedProduct(%2024-03-01).code == shipments.milestonedTrackingRef(%2024-07-01).prefix
+function showcase::modelJoinTests::advanced::query::orderWithShipmentsMilestonedIntermediates(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  showcase::modelJoinTests::advanced::domain::Order.all(%2024-03-01)->project(
+    ~[
+       'Order': x|$x.description,
+       'Carrier': x|$x.shipments(%2024-07-01).carrier
+     ]
+  )
+}
+
+
+###Mapping
+
+// =========================================================================
+// Union on source side: Person is union of fullTimeTable + contractTable
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::UnionSourceMapping
+(
+  showcase::modelJoinTests::advanced::domain::Person[personFT]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::fullTimeTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  showcase::modelJoinTests::advanced::domain::Person[personCT]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::contractTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm[firm]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  {
+    employees.firmId == firm.id
+  }
+)
+
+// =========================================================================
+// Union on BOTH sides: Person is union, Firm is union
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::UnionBothSidesMapping
+(
+  showcase::modelJoinTests::advanced::domain::Person[personFT]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::fullTimeTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  showcase::modelJoinTests::advanced::domain::Person[personCT]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::contractTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  showcase::modelJoinTests::advanced::domain::Firm[firmA]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  showcase::modelJoinTests::advanced::domain::Firm[firmB]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::firmTableB():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  {
+    employees.firmId == firm.id
+  }
+)
+
+// =========================================================================
+// Explicit ->subType() cast in model join condition
+//   employees->subType(@ExtendedPerson).employeeCode == firm.code
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::SubtypeInConditionMapping
+(
+  *showcase::modelJoinTests::advanced::domain::ExtendedPerson[extPerson]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    employeeCode: LASTNAME,
+    +firmId: Integer[1]: FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm[firm]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  //showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  //{
+  //  employees->subType(@showcase::modelJoinTests::advanced::domain::ExtendedPerson).employeeCode == firm.code
+  //}
+)
+
+// =========================================================================
+// Milestoning via model join: Contract is <<temporal.businesstemporal>>
+//   Person→Contract via model join, query passes business date
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::MilestonedMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Person[person]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Contract[contract]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::contractLogTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    +personId: Integer[1]: PERSONID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Contract: ModelJoin
+  {
+    person_contract.id == contracts.personId
+  }
+)
+
+// =========================================================================
+// Qualified property in query that traverses model joins internally
+//   Firm.employeesInCity('NYC') body uses employees (model join) and
+//   address (model join)
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::QualifiedPropertyMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Person[person]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm[firm]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    city: CITY,
+    country: COUNTRY,
+    +id: Integer[1]: ID
+  }
+  *showcase::modelJoinTests::advanced::domain::Address[address]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::addressTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +personId: Integer[1]: PERSONID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Address: ModelJoin
+  {
+    person.id == address.personId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  {
+    employees.address.city == firm.city && employees.address.country == firm.country
+  }
+)
+
+// =========================================================================
+// Milestoning Test 21/22/24: Order/Warehouse/Product milestoning tests
+//   Order is <<temporal.businesstemporal>>, Warehouse and Product are plain
+//   Nested condition: orders.product.category == warehouse.section.zone
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::MilestonedOrderWarehouseMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Warehouse[warehouse]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::warehouseTable():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID,
+    +sectionId: Integer[1]: SECTIONID
+  }
+  *showcase::modelJoinTests::advanced::domain::Section[section]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::sectionTable():Relation<Any>[1]
+    zone: ZONE,
+    +id: Integer[1]: ID,
+    +warehouseId: Integer[1]: WAREHOUSEID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Warehouse_Section: ModelJoin
+  {
+    warehouse.id == section.warehouseId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Warehouse: ModelJoin
+  {
+    orders.product.category == warehouse.section.zone
+  }
+)
+
+// =========================================================================
+// Milestoning Test 23: Both sides milestoned with SAME scheme (business temporal)
+//   Order is <<temporal.businesstemporal>>, Shipment is <<temporal.businesstemporal>>
+//   Nested condition: order_ship.product.code == shipments.trackingRef.prefix
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::MilestoningSameSchemeBothMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Shipment[shipment]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::shipmentTable():Relation<Any>[1]
+    carrier: CARRIER,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID,
+    +trackingId: Integer[1]: TRACKINGID
+  }
+  *showcase::modelJoinTests::advanced::domain::TrackingRef[tracking]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::trackingTable():Relation<Any>[1]
+    prefix: PREFIX,
+    +id: Integer[1]: ID,
+    +shipmentId: Integer[1]: SHIPMENTID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Shipment_Tracking: ModelJoin
+  {
+    shipment.id == trackingRef.shipmentId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Shipment: ModelJoin
+  {
+    order_ship.product.code == shipments.trackingRef.prefix
+  }
+)
+
+// =========================================================================
+// Milestoning Test 24: Different schemes
+//   Order is <<temporal.businesstemporal>>, AuditEntry is <<temporal.processingtemporal>>
+//   Nested condition: order_audit.product.code == auditEntries.entityRef
+//   (traverses Order→Product model join on source side)
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::MilestoningDiffSchemeMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::AuditEntry[audit]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::auditTable():Relation<Any>[1]
+    entityRef: ENTITYREF,
+    message: MESSAGE,
+    +id: Integer[1]: ID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Audit: ModelJoin
+  {
+    order_audit.product.code == auditEntries.entityRef
+  }
+)
+
+// =========================================================================
+// Milestoning Test 25: Milestoned intermediates in join condition
+//   Order is <<temporal.businesstemporal>>, Shipment is <<temporal.businesstemporal>>
+//   MilestonedProduct is <<temporal.businesstemporal>>, MilestonedTrackingRef is <<temporal.businesstemporal>>
+//   Condition: order_ship.milestonedProduct(%2024-03-01).code == shipments.milestonedTrackingRef(%2024-07-01).prefix
+//   Tests temporal filter propagation through milestoned intermediates within the join condition.
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::MilestonedIntermediatesMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::MilestonedProduct[milProduct]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::productMilTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Shipment[shipment]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::shipmentTable():Relation<Any>[1]
+    carrier: CARRIER,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID,
+    +trackingId: Integer[1]: TRACKINGID
+  }
+  *showcase::modelJoinTests::advanced::domain::MilestonedTrackingRef[milTracking]: Relation
+  {
+    ~func showcase::modelJoinTests::advanced::function::trackingMilTable():Relation<Any>[1]
+    prefix: PREFIX,
+    +id: Integer[1]: ID,
+    +shipmentId: Integer[1]: SHIPMENTID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_MilestonedProduct: ModelJoin
+  {
+    order_mp.id == milestonedProduct.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Shipment_MilestonedTracking: ModelJoin
+  {
+    shipment_mt.id == milestonedTrackingRef.shipmentId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Shipment: ModelJoin
+  {
+    order_ship.milestonedProduct.code == shipments.milestonedTrackingRef.prefix
+  }
+)
+
+
+// =========================================================================
+// Relational Mapping R21/R22: Order/Warehouse with milestoning (Relational class mappings)
+//   Equivalent of MilestonedOrderWarehouseMapping but using Relational mappings.
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::MilestonedOrderWarehouseMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.orderTable
+    description: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.DESCRIPTION,
+    refCode: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.REFCODE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID,
+    +productId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.productTable
+    code: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CODE,
+    category: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CATEGORY,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Warehouse[warehouse]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.warehouseTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.warehouseTable
+    name: [showcase::modelJoinTests::advanced::store::Database]default.warehouseTable.NAME,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.warehouseTable.ID,
+    +sectionId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.warehouseTable.SECTIONID
+  }
+  *showcase::modelJoinTests::advanced::domain::Section[section]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.sectionTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.sectionTable
+    zone: [showcase::modelJoinTests::advanced::store::Database]default.sectionTable.ZONE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.sectionTable.ID,
+    +warehouseId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.sectionTable.WAREHOUSEID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Warehouse_Section: ModelJoin
+  {
+    warehouse.id == section.warehouseId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Warehouse: ModelJoin
+  {
+    orders.product.category == warehouse.section.zone
+  }
+)
+
+// =========================================================================
+// Relational Mapping R23: Both sides milestoned same scheme (Relational)
+//   Equivalent of MilestoningSameSchemeBothMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::MilestoningSameSchemeBothMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.orderTable
+    description: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.DESCRIPTION,
+    refCode: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.REFCODE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID,
+    +productId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.productTable
+    code: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CODE,
+    category: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CATEGORY,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Shipment[shipment]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable
+    carrier: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.CARRIER,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ORDERID,
+    +trackingId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.TRACKINGID
+  }
+  *showcase::modelJoinTests::advanced::domain::TrackingRef[tracking]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.trackingTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.trackingTable
+    prefix: [showcase::modelJoinTests::advanced::store::Database]default.trackingTable.PREFIX,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.trackingTable.ID,
+    +shipmentId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.trackingTable.SHIPMENTID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Shipment_Tracking: ModelJoin
+  {
+    shipment.id == trackingRef.shipmentId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Shipment: ModelJoin
+  {
+    order_ship.product.code == shipments.trackingRef.prefix
+  }
+)
+
+// =========================================================================
+// Relational Mapping R24: Different milestoning schemes (Relational)
+//   Equivalent of MilestoningDiffSchemeMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::MilestoningDiffSchemeMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.orderTable
+    description: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.DESCRIPTION,
+    refCode: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.REFCODE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID,
+    +productId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::Product[product]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.productTable
+    code: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CODE,
+    category: [showcase::modelJoinTests::advanced::store::Database]default.productTable.CATEGORY,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productTable.ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::AuditEntry[audit]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.auditTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.auditTable
+    entityRef: [showcase::modelJoinTests::advanced::store::Database]default.auditTable.ENTITYREF,
+    message: [showcase::modelJoinTests::advanced::store::Database]default.auditTable.MESSAGE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.auditTable.ID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Product: ModelJoin
+  {
+    order.id == product.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Audit: ModelJoin
+  {
+    order_audit.product.code == auditEntries.entityRef
+  }
+)
+
+// =========================================================================
+// Relational Mapping R25: Milestoned intermediates (Relational)
+//   Equivalent of MilestonedIntermediatesMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::MilestonedIntermediatesMapping
+(
+  *showcase::modelJoinTests::advanced::domain::Order[order]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.orderTable
+    description: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.DESCRIPTION,
+    refCode: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.REFCODE,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.ID,
+    +productId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.orderTable.PRODUCTID
+  }
+  *showcase::modelJoinTests::advanced::domain::MilestonedProduct[milProduct]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.productMilTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.productMilTable
+    code: [showcase::modelJoinTests::advanced::store::Database]default.productMilTable.CODE,
+    category: [showcase::modelJoinTests::advanced::store::Database]default.productMilTable.CATEGORY,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productMilTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.productMilTable.ORDERID
+  }
+  *showcase::modelJoinTests::advanced::domain::Shipment[shipment]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable
+    carrier: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.CARRIER,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ID,
+    +orderId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.ORDERID,
+    +trackingId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.shipmentTable.TRACKINGID
+  }
+  *showcase::modelJoinTests::advanced::domain::MilestonedTrackingRef[milTracking]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.trackingMilTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.trackingMilTable
+    prefix: [showcase::modelJoinTests::advanced::store::Database]default.trackingMilTable.PREFIX,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.trackingMilTable.ID,
+    +shipmentId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.trackingMilTable.SHIPMENTID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_MilestonedProduct: ModelJoin
+  {
+    order_mp.id == milestonedProduct.orderId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Shipment_MilestonedTracking: ModelJoin
+  {
+    shipment_mt.id == milestonedTrackingRef.shipmentId
+  }
+
+  showcase::modelJoinTests::advanced::domain::Order_Shipment: ModelJoin
+  {
+    order_ship.milestonedProduct.code == shipments.milestonedTrackingRef.prefix
+  }
+)
+
+// =========================================================================
+// Relational Mapping: Union on source side (Relational)
+//   Equivalent of UnionSourceMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::UnionSourceMapping
+(
+  showcase::modelJoinTests::advanced::domain::Person[personFT]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable
+    firstName: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.FIRSTNAME,
+    lastName: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.LASTNAME,
+    age: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.FIRMID
+  }
+  showcase::modelJoinTests::advanced::domain::Person[personCT]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.contractTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.contractTable
+    firstName: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.FIRSTNAME,
+    lastName: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.LASTNAME,
+    age: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.AGE,
+    +firmId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm[firm]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.firmTable
+    legalName: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  {
+    employees.firmId == firm.id
+  }
+)
+
+// =========================================================================
+// Relational Mapping: Union on BOTH sides (Relational)
+//   Equivalent of UnionBothSidesMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::UnionBothSidesMapping
+(
+  showcase::modelJoinTests::advanced::domain::Person[personFT]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable
+    firstName: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.FIRSTNAME,
+    lastName: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.LASTNAME,
+    age: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.fullTimeTable.FIRMID
+  }
+  showcase::modelJoinTests::advanced::domain::Person[personCT]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.contractTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.contractTable
+    firstName: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.FIRSTNAME,
+    lastName: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.LASTNAME,
+    age: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.AGE,
+    +firmId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.contractTable.FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  showcase::modelJoinTests::advanced::domain::Firm[firmA]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.firmTable
+    legalName: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID
+  }
+  showcase::modelJoinTests::advanced::domain::Firm[firmB]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.firmTableB.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.firmTableB
+    legalName: [showcase::modelJoinTests::advanced::store::Database]default.firmTableB.LEGALNAME,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.firmTableB.ID
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+
+  showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  {
+    employees.firmId == firm.id
+  }
+)
+
+// =========================================================================
+// Relational Mapping: Subtype in condition (Relational)
+//   Equivalent of SubtypeInConditionMapping
+// =========================================================================
+Mapping showcase::modelJoinTests::advanced::mapping::relational::SubtypeInConditionMapping
+(
+  *showcase::modelJoinTests::advanced::domain::ExtendedPerson[extPerson]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.personTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.personTable
+    firstName: [showcase::modelJoinTests::advanced::store::Database]default.personTable.FIRSTNAME,
+    lastName: [showcase::modelJoinTests::advanced::store::Database]default.personTable.LASTNAME,
+    age: [showcase::modelJoinTests::advanced::store::Database]default.personTable.AGE,
+    employeeCode: [showcase::modelJoinTests::advanced::store::Database]default.personTable.LASTNAME,
+    +firmId: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.personTable.FIRMID
+  }
+  *showcase::modelJoinTests::advanced::domain::Firm[firm]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID
+    )
+    ~mainTable [showcase::modelJoinTests::advanced::store::Database]default.firmTable
+    legalName: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.ID,
+    +code: String[0..1]: [showcase::modelJoinTests::advanced::store::Database]default.firmTable.CODE
+  }
+
+  //showcase::modelJoinTests::advanced::domain::Person_Firm: ModelJoin
+  //{
+  //  employees->subType(@showcase::modelJoinTests::advanced::domain::ExtendedPerson).employeeCode == firm.code
+  //}
+)
+
+###Connection
+RelationalDatabaseConnection showcase::modelJoinTests::advanced::connection::H2Connection
+{
+  store: showcase::modelJoinTests::advanced::store::Database;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
