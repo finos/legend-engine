@@ -1205,8 +1205,18 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                            ->concatenate(if($isolateGroupBy,|[],|$select.filteringOperation->concatenate($select.columns)))
                            ->concatenate($select.extraFilteringOperation)
                            ->extractTableAliasColumns()
-                           ->filter(t|$t.alias->in($foundNodeSubNodes))->filter(c|!($c.alias == $child.alias && $nestedSelect.columns->cast(@Alias).name->contains($c.column.name)));
+                           ->filter(t|$t.alias->in($foundNodeSubNodes))
+                           ->filter(c|!($c.alias == $child.alias && $nestedSelect.columns->cast(@Alias).name->contains($c.column.name)))
+                           ->filter(c|!$c.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten) && !$c.alias.relationalElement->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation));
 
+   let flattenColumnsInSelect = if($isolateGroupBy, |[], |
+      $select.columns->filter(c |
+         $c->extractTableAliasColumns()->exists(t |
+            $t.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten) ||
+            $t.alias.relationalElement->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation)
+         )
+      )
+   );
 
    let nestedColumns = $extraColumns->map(a|^$a(alias = $aliasForExtractedColumns->toOne()))
                                     ->concatenate($allColumnsInScope)
@@ -1263,7 +1273,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                       let preIsolationCurrentTreeNode = $updatedCurrentTreeNode->filter(n|$n.alias.relation()->instanceOf(Table))->concatenate($newData)->first();
 
                                                       ^$nestedSelect(
-                                                        columns= if($isolateGroupBy,| $select.groupBy->concatenate($colForGroupBy.second)->reprocessAliases(^OldAliasToNewAlias(first = $child.alias.name, second = $newData.alias)), |$nestedSelect.columns->concatenate($invisibleColumns))->removeDuplicates(),
+                                                        columns= if($isolateGroupBy,| $select.groupBy->concatenate($colForGroupBy.second)->reprocessAliases(^OldAliasToNewAlias(first = $child.alias.name, second = $newData.alias)), |$nestedSelect.columns->concatenate($invisibleColumns)->concatenate($flattenColumnsInSelect))->removeDuplicates(),
                                                         data=$newData,
                                                         filteringOperation=$nestedSelect.filteringOperation
                                                                               ->concatenate(
@@ -1274,7 +1284,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                         orderBy = if($isolateGroupBy, |$select.orderBy, |$parentNestedPartitionedOrderBys.second.values)->map(ob | ^$ob(column = $ob.column->reprocessAliases(^OldAliasToNewAlias(first = $child.alias.name, second = $newData.alias))))
                                                      );,
                                                    | ^$nestedSelect(
-                                                        columns=$nestedColumnsReprocessed.second->concatenate(if($isolateGroupBy, |$colForGroupBy.second, |[])),
+                                                        columns=$nestedColumnsReprocessed.second->concatenate(if($isolateGroupBy, |$colForGroupBy.second, |[]))->concatenate($flattenColumnsInSelect),
                                                         preIsolationCurrentTreeNode = $updatedCurrentTreeNode,
                                                         filteringOperation= $filtersPartition.first->andFilters($extensions),
                                                         groupBy = if($isolateGroupBy, |$select.groupBy, |[]),
@@ -1311,12 +1321,19 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
 
    let newFilters = $colForGroupBy->filter(f|$f.first==$select.filteringOperation).second->map(a|^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer())))->concatenate($select.filteringOperation->filter(f|!$f->in($colForGroupBy.first)));
    let newRoot = $root->replaceJoin($child, $newJoin)->cast(@RootJoinTreeNode);
+   let remappedOuterColumns = if($isolateGroupBy,
+                                   |^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$colForGroupBy.second->toOne().name, type=^meta::relational::metamodel::datatype::Integer())),
+                                   |$select.columns->map(c |
+                                      if($flattenColumnsInSelect->contains($c),
+                                         |let colName = $c->extractColumnName();
+                                          ^Alias(name=$colName, relationalElement=^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$colName, type=^meta::relational::metamodel::datatype::Varchar(size=200))));,
+                                         |$c->reprocessTableAliasColumns($tableAliasColumnRemap)
+                                      )
+                                   )
+                                );
    let newSelect = ^$select(
-                     data = $newRoot,
-                     columns = if ($isolateGroupBy,
-                                    |^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$colForGroupBy.second->toOne().name, type=^meta::relational::metamodel::datatype::Integer())),
-                                    |$select.columns->reprocessTableAliasColumns($tableAliasColumnRemap)
-                               ),
+                      data = $newRoot,
+                      columns = $remappedOuterColumns,
                      leftSideOfFilter = if(!$select.leftSideOfFilter->isEmpty() && $select.leftSideOfFilter->toOne()->instanceOf(JoinTreeNode) && !$child->getAllNodes()->cast(@JoinTreeNode)->filter(n|$n.joinName == $select.leftSideOfFilter->cast(@JoinTreeNode)->toOne().joinName)->isEmpty(),
                                           |$newJoin,
                                           |if($select.leftSideOfFilter->isEmpty() || $shouldIsolateGroupBy  ,|[],|$select.leftSideOfFilter->toOne()->findOneNode($root, $newRoot))
@@ -1817,11 +1834,11 @@ function meta::relational::functions::pureToSqlQuery::processRelationalOperation
   let relElement = $newCurrentTreeNode.alias.relationalElement;
   let res = if (
                 ($relElement->instanceOf(SelectSQLQuery) &&
-                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal)) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(SemiStructuredObjectNavigation)) &&
                   $relElement->cast(@SelectSQLQuery).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
                 ||
                 ($relElement->instanceOf(Union) &&
-                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin)) &&
+                ($mappingImpl->instanceOf(meta::relational::metamodel::operation::Function) || $mappingImpl->instanceOf(Literal) || $mappingImpl->instanceOf(RelationalOperationElementWithJoin) || $mappingImpl->instanceOf(SemiStructuredObjectNavigation)) &&
                   $relElement->cast(@Union).queries->at(0).columns->filter(c|$c->instanceOf(Alias))->cast(@Alias).name->contains($propName))
                 ||
                 ($relElement->instanceOf(SelectSQLQuery) &&
@@ -9572,6 +9589,7 @@ function meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias(
     tac:TableAliasColumn[1] | $tac.alias.relationalElement->findTableForColumnInAlias($tac.column.name);, // ignore passed columnName
     v:View[1] | let rop = $v.columnMappings->filter(c|$c.columnName == $columnName->toOne())->toOne(); $rop.relationalOperationElement->findTableForColumnInAlias([]);,
     t:Table[1] | assert($t.columns->cast(@Column).name->contains($columnName->toOne()), 'can\'t find ' + $columnName->toOne() + ' in Table: ' + $t.schema.name + '.' + $t.name); pair($t, $columnName->toOne());,
+    u:Union[1] | $u.queries->at(0)->findTableForColumnInAlias($columnName),
     r:RelationalOperationElement[1] | $r->extractTableAliasColumns()->toOne('Expected one table alias column in operation')->findTableForColumnInAlias($columnName)
   ]);
 }

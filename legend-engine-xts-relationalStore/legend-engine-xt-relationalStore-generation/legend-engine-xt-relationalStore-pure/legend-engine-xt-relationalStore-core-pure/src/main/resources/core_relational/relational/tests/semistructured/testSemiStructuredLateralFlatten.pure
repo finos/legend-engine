@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::unionFlatten::*;
+import meta::pure::test::*;
+import meta::pure::executionPlan::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+function meta::relational::tests::semistructured::unionFlatten::semiStructuredExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let orderA =
+        'ORDER_SCHEMA\n' +
+        'ORDER_TABLE_A\n' +
+        'ORDER_ID,ORDER_VERSION,ORDER_STATUS\n' +
+        '1,10,Open\n' +
+        '2,20,Closed\n';
+
+  let orderB =
+        'ORDER_SCHEMA\n' +
+        'ORDER_TABLE_B\n' +
+        'ORDER_ID,ORDER_VERSION,ORDER_STATUS\n' +
+        '3,30,Open\n';
+
+  let fulfillmentA =
+        'FULFILLMENT_SCHEMA\n' +
+        'FULFILLMENT_TABLE_A\n' +
+        'FULFILLMENT_ID,FULFILLMENT_VERSION,ORDER_ID,ORDER_VERSION,DETAILS\n' +
+        '100,1,1,10,"{\\"lineItems\\": [{\\"category\\": \\"Electronics\\"}, {\\"category\\": \\"Books\\"}]}"\n' +
+        '101,1,2,20,"{\\"lineItems\\": [{\\"category\\": \\"Clothing\\"}]}"\n';
+
+  let fulfillmentB =
+        'FULFILLMENT_SCHEMA\n' +
+        'FULFILLMENT_TABLE_B\n' +
+        'FULFILLMENT_ID,FULFILLMENT_VERSION,ORDER_ID,ORDER_VERSION,DETAILS\n' +
+        '200,1,3,30,"{\\"lineItems\\": [{\\"category\\": \\"Food\\"}, {\\"category\\": \\"Toys\\"}]}"\n';
+
+  let csv = [$orderA, $orderB, $fulfillmentA, $fulfillmentB];
+
+  let model = '/core_relational/relational/tests/semistructured/model/semiStructuredLateralFlatten.legend';
+
+  let m = 'test::semiStructuredUnionFlatten::TestMapping';
+  let s = 'test::semiStructuredUnionFlatten::DB';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $m, $s, $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::unionFlatten::testSemiStructuredUnionFlattenWithAssociation(conn: Connection[1]):Boolean[1]
+{
+  semiStructuredExecute($conn,
+    'test::semiStructuredUnionFlatten::testQuery__TabularDataSet_1_',
+    'Order Id,Order Status,Order Version,Fulfillment Version,Item Categories\n' +
+    '1,Open,10,1,Electronics\n' +
+    '1,Open,10,1,Books\n' +
+    '2,Closed,20,1,Clothing\n' +
+    '3,Open,30,1,Food\n' +
+    '3,Open,30,1,Toys\n'
+  );
+}
+

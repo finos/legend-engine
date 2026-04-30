@@ -949,9 +949,33 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 {
   let rootTableAndColumnName = $s->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias([]);
 
+  let allTacs = $s.navigation->meta::relational::functions::pureToSqlQuery::extractTableAliasColumns();
+  let unionTac = $allTacs->filter(t | $t.alias.relationalElement->instanceOf(meta::relational::metamodel::relation::Union));
+
+  let baseTable = if($unionTac->isNotEmpty(),
+    | let tac = $unionTac->at(0);
+      let union = $tac.alias.relationalElement->cast(@meta::relational::metamodel::relation::Union);
+      let subQueries = $union.queries->map(q |
+        let tableAndCol = $q->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias($tac.column.name);
+        let colRef = ^meta::external::query::sql::metamodel::QualifiedNameReference(name = qualifiedName($tableAndCol.second));
+        ^meta::external::query::sql::metamodel::QuerySpecification(
+          select = ^meta::external::query::sql::metamodel::Select(selectItems = ^meta::external::query::sql::metamodel::SingleColumn(expression = $colRef)),
+          from = $tableAndCol.first->convertElement($state)->cast(@meta::external::query::sql::metamodel::Relation)
+        );
+      )->cast(@meta::external::query::sql::metamodel::QueryBody);
+      let unionBody = $subQueries->tail()->fold(
+        {q, a | ^meta::external::query::sql::metamodel::Union(left = $a, right = $q, distinct = false)},
+        $subQueries->first()->toOne()
+      );
+      ^meta::external::query::sql::metamodel::TableSubquery(
+        query = ^meta::external::query::sql::metamodel::Query(queryBody = $unionBody)
+      )->cast(@meta::external::query::sql::metamodel::Relation);,
+    | $rootTableAndColumnName.first->convertElement($state)->cast(@meta::external::query::sql::metamodel::Relation)
+  );
+
   ^meta::external::query::sql::metamodel::extension::SemiStructuredArrayFlatten(
     navigation = $s.navigation->convertElementToExpression($state),
-    baseTable = $rootTableAndColumnName.first->convertElement($state)->cast(@meta::external::query::sql::metamodel::Relation),
+    baseTable = $baseTable,
     baseColumn = $rootTableAndColumnName.second
   );
 }
