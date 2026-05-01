@@ -100,6 +100,17 @@ public class TrinoTestConnectionIntegration implements TestConnectionIntegration
         long end = System.currentTimeMillis();
 
         System.out.println("Completed setup of dynamic connection for database: Trino on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):" + (end - start));
+
+        int sleepSecs = 10;
+        System.out.println("Sleeping for " + sleepSecs + " seconds to allow Trino to be ready to accept connections ...");
+        try
+        {
+            Thread.sleep(sleepSecs * 1000);
+        }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void registerVault()
