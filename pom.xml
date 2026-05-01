@@ -119,7 +119,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.84.0</legend.pure.version>
-        <legend.shared.version>0.34.0</legend.shared.version>
+        <legend.shared.version>0.35.1</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
 
