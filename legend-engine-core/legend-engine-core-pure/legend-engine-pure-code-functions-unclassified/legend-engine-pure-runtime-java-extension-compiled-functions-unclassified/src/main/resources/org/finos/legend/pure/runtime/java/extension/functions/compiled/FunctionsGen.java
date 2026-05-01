@@ -205,4 +205,15 @@ public class FunctionsGen extends org.finos.legend.pure.runtime.java.extension.f
     {
         return traceSpan(es, function, operationName, funcToGetTags, tagsCritical, CoreGen.bridge);
     }
+
+    public static RichIterable parseCSV(String csv, SourceInformation sourceInformation)
+    {
+        java.util.List<java.util.List<String>> parsed = org.finos.legend.pure.runtime.java.extension.functions.shared.string.CsvParseHelper.parseCSV(csv);
+        MutableList result = Lists.mutable.ofInitialCapacity(parsed.size());
+        for (java.util.List<String> row : parsed)
+        {
+            result.add(new Root_meta_pure_functions_collection_List_Impl<String>("")._values(Lists.mutable.withAll(row)));
+        }
+        return result;
+    }
 }

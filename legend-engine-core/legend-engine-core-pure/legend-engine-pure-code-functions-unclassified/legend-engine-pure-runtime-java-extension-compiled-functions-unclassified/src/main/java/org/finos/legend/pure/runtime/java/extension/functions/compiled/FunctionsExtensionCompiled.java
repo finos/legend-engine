@@ -50,6 +50,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.r
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.ASCII;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.Char;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.Chunk;
+import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.ParseCSV;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.DecodeBase64;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.DecodeUrl;
 import org.finos.legend.pure.runtime.java.extension.functions.compiled.natives.string.EncodeBase64;
@@ -123,6 +124,7 @@ public class FunctionsExtensionCompiled extends AbstractCompiledExtension
                 new ASCII(),
                 new Char(),
                 new Chunk(),
+                new ParseCSV(),
                 new DecodeBase64(),
                 new EncodeBase64(),
                 new DecodeUrl(),
