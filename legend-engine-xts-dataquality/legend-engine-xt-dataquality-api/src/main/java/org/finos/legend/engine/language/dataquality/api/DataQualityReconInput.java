@@ -38,6 +38,7 @@ public class DataQualityReconInput
     public String sourceHashCol; //if there already exists a column on source that contains the hash that you want to use in recon
     public String targetHashCol; //if there already exists a column on target that contains the hash that you want to use in recon
     public boolean includeColumnValues = false; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
+    public boolean enrichDQColumns = false; //whether to enrich the DQ columns to the response
     public boolean runSourceQuery = false;
     public boolean runTargetQuery = false;
     public Long defectLimit; //optional limit on the number of defect rows returned

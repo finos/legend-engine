@@ -72,13 +72,14 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   source: LambdaFunction<Any>[1]; //query pointing to source dataset
   target: LambdaFunction<Any>[1]; //query pointing to target dataset
   keys: String[*]; //these must exist on both source and target dataset - can either be primary keys or grouping keys if aggregated hash required. If empty then hash column will be used.
-  aggregatedHash: Boolean[1]; //whether aggregated hash should be created based on the keys provided
+  aggregatedHash: Boolean[1] = false; //whether aggregated hash should be created based on the keys provided
   colsForHash: String[*]; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns.
   sourceHashCol: String[0..1]; //if there already exists a column on source that contains the hash that you want to use in recon
   targetHashCol: String[0..1]; //if there already exists a column on target that contains the hash that you want to use in recon
-  includeColumnValues: Boolean[1]; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
+  includeColumnValues: Boolean[1] = false; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
   defectLimit: Integer[0..1]; //optional limit on the number of defect rows returned
   removeFrom: Boolean[1] = false; //whether the from function should be removed on source and target queries
+  enrichDQColumns: Boolean[1] = false; //whether to add DQ columns to the response
 }
 
 Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement
