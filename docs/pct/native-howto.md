@@ -98,15 +98,42 @@ To refine our implementation and ensure proper registration, use ```TestFunction
 your native function.
 
 #### Functions with Multiple Signatures
-If your function has multiple overloaded signatures (e.g., different parameter types or counts), **you will need a separate Java file for each signature**. Each file registers a different canonical function name.
+If your function has multiple overloaded signatures (e.g., different parameter types or counts), **you will typically need a separate Java file per signature in *compiled* mode**, each registering a different canonical function name in `*ExtensionCompiled.java`.
 
-For example, `zScore` has two signatures (with and without window partitioning):
-- [`ZScore.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScore.java) — handles `zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_`
-- [`ZScoreWindow.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScoreWindow.java) — handles the windowed variant with `ColSpecArray`
+A good real example is `extend`, which has **eight** overloaded signatures (single vs. array column-spec, function vs. aggregate, with vs. without window). Each signature gets its own `Native` subclass under [`…/relation/compiled/natives/`](https://github.com/finos/legend-engine/tree/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives):
 
-Similarly, `extend` and `groupBy` have multiple files for their different signatures:
-- [`Extend.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Extend.java), [`ExtendArray.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ExtendArray.java), [`ExtendAgg.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ExtendAgg.java)
-- [`GroupByColSpecAgg.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/GroupByColSpecAgg.java), [`GroupByColSpecAggArray.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/GroupByColSpecAggArray.java), etc.
+| Java file | Canonical Pure name |
+|-----------|--------------------|
+| `Extend.java` | `extend_Relation_1__FuncColSpec_1__Relation_1_` |
+| `ExtendArray.java` | `extend_Relation_1__FuncColSpecArray_1__Relation_1_` |
+| `ExtendAgg.java` | `extend_Relation_1__AggColSpec_1__Relation_1_` |
+| `ExtendAggArray.java` | `extend_Relation_1__AggColSpecArray_1__Relation_1_` |
+| `ExtendWindowAgg.java` | `extend_Relation_1___Window_1__AggColSpec_1__Relation_1_` |
+| `ExtendWindowAggArray.java` | `extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_` |
+| `ExtendWindowFunc.java` | `extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_` |
+| `ExtendWindowFuncArray.java` | `extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_` |
+
+All eight are registered in [`RelationExtensionCompiled.getExtraNatives()`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/RelationExtensionCompiled.java). `groupBy` follows the same pattern with four files (`GroupByColSpecAgg`, `GroupByColSpecAggArray`, `GroupByColSpecArrayAgg`, `GroupByColSpecArrayAggArray`).
+
+> **Note on Interpreted mode:** in `RelationExtensionInterpreted` all eight `extend_Relation_…` canonical names map to the *same* `Extend::new` class (see the `Tuples.pair(...)` block at the top of the file). The "one Java file per signature" rule above is a **compiled-mode** concern — interpreted mode frequently reuses a single class across multiple canonical names. Always check both extension classes when wiring a new function.
+
+The rule of thumb: **the registration list in `*ExtensionCompiled.java` is the source of truth** for which signatures are wired up — when adding overloads, mirror that pattern.
+
+#### Two compiled-mode Native patterns
+When you open the example natives, you'll notice two distinct shapes. Both are valid; pick based on complexity:
+
+1. **Simple delegation** — extend `AbstractNativeFunctionGeneric` and just map the canonical name to a static helper method. This is the `cosh` / `Limit` / `Slice` pattern:
+   ```Java
+   // Limit.java
+   super("org.finos.legend.pure.runtime.java.extension.external.relation.compiled.RelationNativeImplementation.limit",
+         new Class[]{Relation.class, Long.class, ExecutionSupport.class},
+         false, true, false,
+         "limit_Relation_1__Integer_1__Relation_1_");
+   ```
+
+2. **Custom code generation** — extend `AbstractNative` and override `build(...)` / `buildBody(...)` to emit Java source into the generated bytecode. Use this when the arguments need pre-processing (e.g., column-spec lambdas, function compilation, building intermediate transfer objects). This is the `Extend` pattern: the constructor takes only the canonical name and the real work happens in the overridden methods.
+
+If your function can be expressed as "call this static helper with these args", use pattern 1. If it needs to manipulate Pure-graph nodes or compose generated code, use pattern 2 (use `Extend.java` / `GroupByColSpecAgg.java` as templates).
 
 ### Adding the *"Interpreted"* code path
 Within the package: ```legend-engine-pure-runtime-java-extension-interpreted-functions-standard```, you will need to make changes in 2 places:
@@ -147,7 +174,7 @@ The resulting code for [*cosh.pure* can be seen in this PR.](https://github.com/
 
 ## Relation Functions (Different from Standard Functions)
 
-The examples above use **Standard functions** (like `cosh`). If you're adding a **Relation function** (functions that operate on `Relation<T>` types, like `zScore`, `extend`, `groupBy`), the process is similar but uses **different packages and helper classes**.
+The examples above use **Standard functions** (like `cosh`). If you're adding a **Relation function** (functions that operate on `Relation<T>` types, like `extend`, `groupBy`, `cumulativeDistribution`, `rank`), the process is similar but uses **different packages and helper classes**.
 
 ### Key Differences for Relation Functions
 
@@ -155,27 +182,32 @@ The examples above use **Standard functions** (like `cosh`). If you're adding a 
 |--------|-------------------|-------------------|
 | Pure definition package | `legend-engine-pure-code-functions-standard` | `legend-engine-pure-code-functions-relation` |
 | Compiled natives package | `legend-engine-pure-runtime-java-extension-compiled-functions-standard` | `legend-engine-pure-runtime-java-extension-compiled-functions-relation` |
-| Helper class for Java impl | `StandardFunctionsHelper.java` | `RelationNativeImplementation.java` |
-| Shared logic class | `StandardFunctionsHelper.java` | `TestTDS.java` |
+| Interpreted natives package | `legend-engine-pure-runtime-java-extension-interpreted-functions-standard` | `legend-engine-pure-runtime-java-extension-interpreted-functions-relation` |
+| Shared / cross-mode package | `legend-engine-pure-runtime-java-extension-shared-functions-standard` (e.g. `TimeBucketShared.java`) | `legend-engine-pure-runtime-java-extension-shared-functions-relation` (e.g. `TestTDS.java`) |
+| Helper class invoked from generated code | `StandardFunctionsHelper.java` | `RelationNativeImplementation.java` *(lives in the compiled module)* |
 | Extension class (compiled) | `StandardFunctionsExtensionCompiled.java` | `RelationExtensionCompiled.java` |
 | Extension class (interpreted) | `StandardFunctionsExtensionInterpreted.java` | `RelationExtensionInterpreted.java` |
 
+> **Note:** For Relation functions, `RelationNativeImplementation.java` is the entry point that compiled-mode natives delegate to (look at the `super("…RelationNativeImplementation.<method>", …)` calls in classes like `Limit.java` or `Slice.java`, or the inlined `RelationNativeImplementation.projectExtend(...)` call inside `Extend.buildBody()`). The shared `TestTDS.java` is the underlying in-memory tabular data structure that both compiled and interpreted modes manipulate.
+
 ### Relation Function Examples
-- [`ZScore.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/ZScore.java)
-- [`Extend.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Extend.java)
-- [`RelationNativeImplementation.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/RelationNativeImplementation.java)
+- [`Extend.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Extend.java) — a `Relation<T> → Relation<T+R>` function with custom type inference (uses the *custom code generation* pattern)
+- [`Limit.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/Limit.java) — minimal *simple delegation* example for a single-signature relation native
+- [`CumulativeDistribution.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/CumulativeDistribution.java) — a single-signature window scalar returning `Float[1]`
+- [`GroupByColSpecAgg.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/natives/GroupByColSpecAgg.java) — example of one of multiple `groupBy` overloads
+- [`RelationNativeImplementation.java`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-runtime-java-extension-compiled-functions-relation/src/main/java/org/finos/legend/pure/runtime/java/extension/external/relation/compiled/RelationNativeImplementation.java) — the helper class your natives delegate to
 
 ### Type Inference for Relation Functions
-Relation functions often have complex return types like `Relation<T+R>` (input columns plus new columns). These require **custom type inference** in `Handlers.java`.
+Relation functions often have complex return types like `Relation<T+R>` (input columns plus new columns). These require **custom type inference** registered in `Handlers.java`.
 
-For example, `zScore` takes a `Relation<T>` and adds a new Float column, returning `Relation<T+R>`. The compiler needs inference logic to compute this:
+The canonical example is `extend`, which takes a `Relation<T>` plus a column-spec describing one or more new columns, and returns a `Relation<T+R>`:
 
 ```
-Input:  Relation<(name:String, value:Integer)>
-Output: Relation<(name:String, value:Integer, zscore:Float)>
+Input:  Relation<(name:String, value:Integer)>, ~doubled: x | $x.value * 2 : Integer
+Output: Relation<(name:String, value:Integer, doubled:Integer)>
 ```
 
-Look at existing relation function handlers in `Handlers.java` for examples of type inference (search for `zScore` or `extend`).
+The inference logic lives in [`Handlers.ExtendReturnInference(...)`](https://github.com/finos/legend-engine/blob/master/legend-engine-core/legend-engine-core-base/legend-engine-core-language-pure/legend-engine-language-pure-compiler/src/main/java/org/finos/legend/engine/language/pure/compiler/toPureGraph/handlers/Handlers.java) (around line 443) and is wired into all eight `extend_Relation_…` handler registrations in the same file (search for `extend_Relation`). When adding a new relation function whose return type depends on its column-spec arguments, model your inference function after `ExtendReturnInference` and register it the same way.
 
 ---
 
@@ -186,7 +218,7 @@ Look at existing relation function handlers in `Handlers.java` for examples of t
 | `"The function 'xxx' is not supported by this execution platform"` | Function not registered in extension class | Register in **both** `*ExtensionCompiled.java` AND `*ExtensionInterpreted.java` |
 | `"Cannot determine return type"` | Missing or incorrect type inference | Add/fix inference function in `Handlers.java` |
 | Works in Compiled mode but fails in Interpreted (or vice versa) | Only registered in one extension | Register in both compiled and interpreted extensions |
-| `"Native function not found"` | Canonical name mismatch | Verify the function signature string matches exactly (e.g., `zScore_Relation_1__ColSpec_1__ColSpec_1__Relation_1_`) |
+| `"Native function not found"` | Canonical name mismatch | Verify the function signature string matches exactly (e.g., `extend_Relation_1__FuncColSpec_1__Relation_1_`) |
 | SQL works on Postgres but fails on SQL Server | Database-specific syntax differences | Add override in the database-specific extension file (e.g., `sqlServerExtension.pure`) |
 | Handler registered but never called | Canonical name in `Handlers.java` doesn't match Pure signature | Double-check the naming pattern: `functionName_ParamType1_Mult1__ParamType2_Mult2__ReturnType_Mult_` |
 | `"Couldn't find DynaFunction to Postgres model translation for xxx()"` | Function missing from SQL dialect translation | Add entry to `getDynaFunctionConverterMap()` in `toPostgresModel.pure` (see [Wiring How-To](wiring-howto.md#sql-dialect-translation-topostgresmodelpure)) |
