@@ -264,27 +264,27 @@ function registerLanguageModelTools(context: ExtensionContext): void {
     console.log('[Legend Pure] Registering LLM tools...');
 
     /** Wait for both client and PureRuntime to be ready */
-    async function ensureReady(): Promise<string | null> {
+    async function ensureReady(): Promise<LanguageClient | string> {
         if (!client) { return 'Pure LSP not started'; }
         // Wait up to 120s for PureRuntime initialization
         const timeout = new Promise<void>(r => setTimeout(r, 120_000));
         await Promise.race([serverReady, timeout]);
         // Check again after waiting
         if (!client) { return 'Pure LSP not started'; }
-        return null;
+        return client;
     }
 
     // Tool 1: Search Pure symbols
     context.subscriptions.push(
         vscode.lm.registerTool('legend-pure-search-symbols', {
             async invoke(options: vscode.LanguageModelToolInvocationOptions<{ query: string }>, token: vscode.CancellationToken) {
-                const err = await ensureReady();
-                if (err) {
+                const readyClient = await ensureReady();
+                if (typeof readyClient === 'string') {
                     return new vscode.LanguageModelToolResult([
-                        new vscode.LanguageModelTextPart(err),
+                        new vscode.LanguageModelTextPart(readyClient),
                     ]);
                 }
-                const symbols: any[] = await client.sendRequest(
+                const symbols: any[] = await readyClient.sendRequest(
                     'workspace/symbol',
                     { query: options.input.query }
                 );
@@ -315,12 +315,12 @@ function registerLanguageModelTools(context: ExtensionContext): void {
     context.subscriptions.push(
         vscode.lm.registerTool('legend-pure-execute-go', {
             async invoke(options: vscode.LanguageModelToolInvocationOptions<Record<string, never>>, token: vscode.CancellationToken) {
-                const err = await ensureReady();
-                if (err) {
-                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(err)]);
+                const readyClient = await ensureReady();
+                if (typeof readyClient === 'string') {
+                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(readyClient)]);
                 }
                 const result: { success: boolean; error: string | null; output: string | null } =
-                    await client.sendRequest('legend/executeGo');
+                    await readyClient.sendRequest('legend/executeGo');
                 const text = result.success
                     ? (result.output || '(no output)')
                     : `ERROR: ${result.error || 'Unknown error'}`;
@@ -338,11 +338,11 @@ function registerLanguageModelTools(context: ExtensionContext): void {
     context.subscriptions.push(
         vscode.lm.registerTool('legend-pure-get-source', {
             async invoke(options: vscode.LanguageModelToolInvocationOptions<{ sourceId: string }>, token: vscode.CancellationToken) {
-                const err = await ensureReady();
-                if (err) {
-                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(err)]);
+                const readyClient = await ensureReady();
+                if (typeof readyClient === 'string') {
+                    return new vscode.LanguageModelToolResult([new vscode.LanguageModelTextPart(readyClient)]);
                 }
-                const content: string | null = await client!.sendRequest(
+                const content: string | null = await readyClient.sendRequest(
                     'legend/getSourceContent',
                     options.input.sourceId
                 );
