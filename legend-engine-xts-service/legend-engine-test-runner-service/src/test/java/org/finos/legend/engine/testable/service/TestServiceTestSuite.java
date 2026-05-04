@@ -3165,6 +3165,29 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testRelationalServiceWithBitTypeAndRelationReturnType()
+    {
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-bit-type-model.pure", "legend-testable-relational-service-bit-type.pure", "service::RelationalServiceWithBitType");
+        Assert.assertEquals(1, relationalTestResult.size());
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithBitType");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        if (((TestExecuted) testResult).testExecutionStatus == TestExecutionStatus.FAIL)
+        {
+            AssertionStatus status = ((TestExecuted) testResult).assertStatuses.get(0);
+            if (status instanceof EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
     public void testFailingRelationalLegacyServiceSuite()
     {
         // setup

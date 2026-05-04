@@ -1,0 +1,64 @@
+###Pure
+Class model::Feature
+{
+  name: String[1];
+  isActive: Boolean[1];
+}
+
+
+###Relational
+Database store::FeatureDB
+(
+  Table FeatureTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    is_active BIT
+  )
+)
+
+
+###Mapping
+Mapping execution::FeatureMapping
+(
+  *model::Feature: Relational
+  {
+    ~primaryKey
+    (
+      [store::FeatureDB]FeatureTable.id
+    )
+    ~mainTable [store::FeatureDB]FeatureTable
+    name: [store::FeatureDB]FeatureTable.name,
+    isActive: [store::FeatureDB]FeatureTable.is_active
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::FeatureConnection
+{
+  store: store::FeatureDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::FeatureRuntime
+{
+  mappings:
+  [
+    execution::FeatureMapping
+  ];
+  connectionStores:
+  [
+    model::FeatureConnection:
+    [
+      store::FeatureDB
+    ]
+  ];
+}
+

@@ -57,6 +57,7 @@ function meta::relational::functions::typeConversion::duckDB::convert(genericTyp
 function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB specific type'} meta::relational::functions::typeConversion::duckDB::dataTypeToSqlTextDuckDB(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
     $type->match([
+        b : meta::relational::metamodel::datatype::Bit[1] | 'BOOL',
         b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOL',
         i : meta::relational::metamodel::datatype::Integer[1] | 'INT',
         f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT',
