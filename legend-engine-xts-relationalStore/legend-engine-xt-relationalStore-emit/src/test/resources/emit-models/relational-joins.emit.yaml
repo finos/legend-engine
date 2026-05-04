@@ -1,0 +1,39 @@
+name: relational-joins
+title: "Relational Mapping with Join and Association"
+description: |
+  Person and Firm — connected by an Association in the shared
+  `relational-shared-domain` model — are mapped onto the FirmDB tables in
+  the shared `relational-shared-firm-db` store, joined on a foreign key.
+  The mapping demonstrates the `[db]@JoinName` property-mapping syntax for
+  navigating both directions of the association. A mapping test suite
+  loads CSV data into both tables and asserts that projecting
+  `Person.firm.legalName` resolves through the join. This example also
+  shows how an EMIT test composes multiple shared models via the
+  `dependencies` mechanism.
+
+modelSources:
+  model:
+    root: relational-joins
+    files:
+      - data/testData.pure
+      - mapping/joinMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+    - source: relational-shared-firm-db.emit.yaml
+
+features:
+  - class
+  - association
+  - relational-store
+  - relational-mapping
+  - data-element
+  - test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - join
+  - mapping-test
+  - shared-domain
+  - shared-store

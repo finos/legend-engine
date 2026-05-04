@@ -1,0 +1,27 @@
+name: relational-shared-domain
+title: "Shared Domain Types (Person, Firm, Employment)"
+description: |
+  A reusable, store-agnostic domain consumed by most of the relational EMIT
+  examples. Defines a Person class (with a `fullName` derived property), a
+  Firm class, and an Employment association connecting the two — split into
+  one file per element so consumers see a clean separation. This shared model
+  declares no store, mapping or runtime; downstream tests layer those on top
+  via the EMIT `dependencies` mechanism. Its own EMIT run only exercises
+  parse + compile.
+
+modelSources:
+  model:
+    root: relational-shared-domain
+    files:
+      - model/person.pure
+      - model/firm.pure
+      - model/employment.pure
+
+features:
+  - class
+  - association
+  - derived-property
+stores: []
+complexity: basic
+tags:
+  - shared-domain

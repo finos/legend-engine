@@ -1,0 +1,31 @@
+name: relational-enumeration
+title: "Relational Mapping with Enumeration Mapping"
+description: |
+  An Employee class whose `type` property is an `Enum` (FULL_TIME / CONTRACT)
+  mapped to a string column via an `EnumerationMapping`. Demonstrates the
+  `enumProperty: EnumerationMapping <name>: <column>` syntax, including
+  mapping multiple source values to a single enum constant.
+
+modelSources:
+  model:
+    root: relational-enumeration
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/employeeMapping.pure
+
+features:
+  - class
+  - enumeration
+  - relational-store
+  - relational-mapping
+  - enumeration-mapping
+  - data-element
+  - test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - enumeration-mapping

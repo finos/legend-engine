@@ -1,0 +1,45 @@
+name: relational-service-with-join
+title: "Relational Service: Joins, Derived Property, Service Tests, Plan Generation"
+description: |
+  Layers a service on top of the shared firm domain. Reuses Person, Firm and
+  the Employment association from `relational-shared-domain`, the FirmDB
+  tables from `relational-shared-firm-db`, and adds a Mapping (with both
+  class mappings joined via [db]@PersonFirm), a Connection, a Runtime, and
+  a Service whose query projects a derived property (`Person.fullName()`)
+  plus the joined firm legal name. The Service has a testSuite that primes
+  test data per Connection. A single example exercising joins, associations,
+  derived properties, service tests (Phase 5) and plan generation (Phase 6),
+  composing two shared models that other tests also reuse.
+
+modelSources:
+  model:
+    root: relational-service-with-join
+    files:
+      - mapping/joinMapping.pure
+      - connection/h2Connection.pure
+      - runtime/firmRuntime.pure
+      - service/firmService.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+    - source: relational-shared-firm-db.emit.yaml
+
+features:
+  - class
+  - association
+  - derived-property
+  - relational-store
+  - relational-mapping
+  - relational-connection
+  - runtime
+  - service
+  - service-test
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - join
+  - service-test
+  - plan-generation
+  - shared-domain
+  - shared-store
