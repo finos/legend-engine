@@ -26,7 +26,7 @@ public class CsvParseHelper
 {
     public static List<List<String>> parseCSV(String csv)
     {
-        try (CSVParser parser = CSVParser.parse(csv, CSVFormat.RFC4180))
+        try (CSVParser parser = CSVParser.parse(csv, CSVFormat.RFC4180.withEscape('\\')))
         {
             List<List<String>> result = new ArrayList<>();
             for (CSVRecord record : parser)

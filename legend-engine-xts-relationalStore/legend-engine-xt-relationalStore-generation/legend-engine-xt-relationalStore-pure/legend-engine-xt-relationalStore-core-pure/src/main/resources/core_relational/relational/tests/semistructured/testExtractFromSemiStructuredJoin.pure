@@ -25,29 +25,29 @@ function meta::relational::tests::semistructured::join::semiStructuredExecute(co
         'PERSON_SCHEMA\n' +
         'PERSON_TABLE\n' +
         'ID,FIRSTNAME,LASTNAME,FIRM\n' +
-        '1,Peter,Smith,{\\"ID\\": 1}\n' +
-        '2,John,Johnson,{\\"ID\\": 1}\n' +
-        '3,John,Hill,{\\"ID\\": 1}\n' +
-        '4,Anthony,Allen,{\\"ID\\": 1}\n' +
-        '5,Fabrice,Roberts,{\\"ID\\": 2}\n' +
-        '6,Oliver,Hill,{\\"ID\\": 3}\n' +
-        '7,David,Harris,{\\"ID\\": 3}\n';
+        '1,Peter,Smith,"{""ID"": 1}"\n' +
+        '2,John,Johnson,"{""ID"": 1}"\n' +
+        '3,John,Hill,"{""ID"": 1}"\n' +
+        '4,Anthony,Allen,"{""ID"": 1}"\n' +
+        '5,Fabrice,Roberts,"{""ID"": 2}"\n' +
+        '6,Oliver,Hill,"{""ID"": 3}"\n' +
+        '7,David,Harris,"{""ID"": 3}"\n';
 
   let t2 = 
         'FIRM_SCHEMA\n' +
         'FIRM_TABLE\n' +
         'FIRM_DETAILS\n' +
-        '"{\\"ID\\": 1, \\"legalName\\": \\"Firm X\\", \\"employeeCount\\": 4, \\"mnc\\": true, \\"dates\\": {\\"estDate\\": \\"2010-03-04\\", \\"lastUpdate\\": \\"2022-01-16T01:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"O\\"}, \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"address\\": {\\"name\\": \\"A1\\", \\"street\\": \\"S1\\", \\"lines\\": [{\\"details\\": \\"D1\\"}, {\\"details\\": \\"D2\\"}, {\\"details\\": \\"D3\\"}]}}"\n' +
-        '"{\\"ID\\": 2, \\"legalName\\": \\"Firm A\\", \\"employeeCount\\": 1, \\"mnc\\": false, \\"dates\\": {\\"estDate\\": \\"2012-11-13\\", \\"lastUpdate\\": \\"2022-02-14T03:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"O\\"}, \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"address\\": {\\"name\\": \\"A2\\", \\"lines\\": [{\\"details\\": \\"D4\\"}, {\\"details\\": \\"D5\\"}]}}"\n' +
-        '"{\\"ID\\": 3, \\"legalName\\": \\"Firm B\\", \\"employeeCount\\": 2, \\"mnc\\": true, \\"dates\\": {\\"estDate\\": \\"2017-7-7\\", \\"lastUpdate\\": \\"2022-9-01T06:00:00\\"}, \\"entity\\": {\\"entityType\\":\\"C\\"}, \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"address\\": {\\"name\\": \\"A3\\", \\"lines\\": [{\\"details\\": \\"D5\\"},{\\"details\\": \\"D6\\"}]}}"\n';
+        '"{""ID"": 1, ""legalName"": ""Firm X"", ""employeeCount"": 4, ""mnc"": true, ""dates"": {""estDate"": ""2010-03-04"", ""lastUpdate"": ""2022-01-16T01:00:00""}, ""entity"": {""entityType"":""O""}, ""otherNames"": [""O1"", ""O2""], ""address"": {""name"": ""A1"", ""street"": ""S1"", ""lines"": [{""details"": ""D1""}, {""details"": ""D2""}, {""details"": ""D3""}]}}"\n' +
+        '"{""ID"": 2, ""legalName"": ""Firm A"", ""employeeCount"": 1, ""mnc"": false, ""dates"": {""estDate"": ""2012-11-13"", ""lastUpdate"": ""2022-02-14T03:00:00""}, ""entity"": {""entityType"":""O""}, ""otherNames"": [""O3"", ""O4""], ""address"": {""name"": ""A2"", ""lines"": [{""details"": ""D4""}, {""details"": ""D5""}]}}"\n' +
+        '"{""ID"": 3, ""legalName"": ""Firm B"", ""employeeCount"": 2, ""mnc"": true, ""dates"": {""estDate"": ""2017-7-7"", ""lastUpdate"": ""2022-9-01T06:00:00""}, ""entity"": {""entityType"":""C""}, ""otherNames"": [""O5"", ""O6""], ""address"": {""name"": ""A3"", ""lines"": [{""details"": ""D5""},{""details"": ""D6""}]}}"\n';
 
   let t3 =
           'LOCATION_SCHEMA\n' +
           'LOCATION_TABLE\n' +
           'ID,LOCATION_DETAILS\n' +
-          '1,"{\\"residents\\": [{\\"ID\\": 1}, {\\"ID\\": 4}, {\\"ID\\": 7}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"US\\"}, {\\"length\\": 3, \\"name\\": \\"USA\\"}]}"\n'+
-          '2,"{\\"residents\\": [{\\"ID\\": 2}, {\\"ID\\": 5}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"UK\\"}]}"\n'+
-          '3,"{\\"residents\\": [{\\"ID\\": 3}, {\\"ID\\": 6}], \\"identifier\\": [{\\"length\\": 2, \\"name\\": \\"CH\\"}, {\\"length\\": 11, \\"name\\": \\"Switzerland\\"}]}"\n';
+          '1,"{""residents"": [{""ID"": 1}, {""ID"": 4}, {""ID"": 7}], ""identifier"": [{""length"": 2, ""name"": ""US""}, {""length"": 3, ""name"": ""USA""}]}"\n'+
+          '2,"{""residents"": [{""ID"": 2}, {""ID"": 5}], ""identifier"": [{""length"": 2, ""name"": ""UK""}]}"\n'+
+          '3,"{""residents"": [{""ID"": 3}, {""ID"": 6}], ""identifier"": [{""length"": 2, ""name"": ""CH""}, {""length"": 11, ""name"": ""Switzerland""}]}"\n';
 
   let csv = [$t1, $t2, $t3];
 

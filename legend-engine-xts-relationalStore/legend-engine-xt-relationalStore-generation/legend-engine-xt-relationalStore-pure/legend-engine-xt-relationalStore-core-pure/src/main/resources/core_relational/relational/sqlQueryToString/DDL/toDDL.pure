@@ -115,8 +115,11 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                   let sql = loadValuesToDbTable2(list($tab.p.values->slice(3,$tab.p.values->size())),
                                                        $pTable, $columns, $dbConfig);
                                   ^Res(p=^List<List<String>>(), s=$tab.s->concatenate($sql));,
-                                | let r = $tab.p;
-                                  ^Res(p=^$r(values+=$row), s = $tab.s);
+                                | if(($row.values->at(0) == '' || $row.values->at(0)->startsWith('-')) && $tab.p.values->isEmpty() && $row.values->size()==1,
+                                    | $tab;,
+                                    | let r = $tab.p;
+                                      ^Res(p=^$r(values+=$row), s = $tab.s);
+                                  );
                             );
                   },^Res(p=^List<List<String>>(), s = [])
             ).s;

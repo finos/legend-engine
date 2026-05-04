@@ -22,13 +22,13 @@ function meta::relational::tests::semistructured::flattening::arrayScalarExecute
         'PERSON_SCHEMA\n' +
         'PERSON_TABLE\n' +
         'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
-        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A1\\"}, {\\"name\\": \\"A11\\"}]}",2\n' +
-        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A2\\"}, {\\"name\\": \\"A22\\"}]}",4\n' +
-        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A3\\"}, {\\"name\\": \\"A32\\"}]}",2\n' +
-        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A4\\"}]}",\n' +
-        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"addresses\\": [{\\"name\\": \\"A5\\"}, {\\"name\\": \\"A52\\"}]}",\n' +
-        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A6\\"}]}",7\n' +
-        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A7\\"}]}",\n'
+        '1,Peter,Smith,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A1""}, {""name"": ""A11""}]}",2\n' +
+        '2,John,Johnson,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A2""}, {""name"": ""A22""}]}",4\n' +
+        '3,John,Hill,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A3""}, {""name"": ""A32""}]}",2\n' +
+        '4,Anthony,Allen,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A4""}]}",\n' +
+        '5,Fabrice,Roberts,"{""legalName"": ""Firm A"", ""otherNames"": [""O3"", ""O4""], ""addresses"": [{""name"": ""A5""}, {""name"": ""A52""}]}",\n' +
+        '6,Oliver,Hill,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A6""}]}",7\n' +
+        '7,David,Harris,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A7""}]}",\n'
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredArrayScalarOperations.legend';
@@ -241,9 +241,9 @@ function meta::relational::tests::semistructured::flattening::semiRecordExecute(
         'SEMI_SCHEMA\n' +
         'RECORD_TABLE\n' +
         'ID,FIRSTNAME,CONTENT\n' +
-        '1,Peter,"{\\"payload\\": {\\"recordId\\": \\"R1\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B1\\", \\"action\\": \\"CREATE\\", \\"tags\\": [{\\"code\\": \\"P1\\", \\"category\\": \\"Primary\\"}, {\\"code\\": \\"S1\\", \\"category\\": \\"Secondary\\"}], \\"participants\\": [{\\"participantId\\": \\"A1\\", \\"role\\": \\"Active\\"}, {\\"participantId\\": \\"V1\\", \\"role\\": \\"Passive\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L1\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L2\\", \\"itemVersion\\": 2}]}}"\n' +
-        '2,Fabrice,"{\\"payload\\": {\\"recordId\\": \\"R2\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B2\\", \\"action\\": \\"UPDATE\\", \\"tags\\": [{\\"code\\": \\"S2\\", \\"category\\": \\"Secondary\\"}, {\\"code\\": \\"X2\\", \\"category\\": \\"Other\\"}], \\"participants\\": [{\\"participantId\\": \\"V2\\", \\"role\\": \\"Passive\\"}, {\\"participantId\\": \\"Z2\\", \\"role\\": \\"Other\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L3\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L4\\", \\"itemVersion\\": 2}]}}"\n' +
-        '3,Anthony,"{\\"payload\\": {\\"recordId\\": \\"R3\\", \\"recordVersion\\": 1, \\"revision\\": 1, \\"section\\": \\"GroupA\\", \\"batchId\\": \\"B3\\", \\"action\\": \\"CREATE\\", \\"tags\\": [{\\"code\\": \\"X3\\", \\"category\\": \\"Other\\"}, {\\"code\\": \\"Y3\\", \\"category\\": \\"Unknown\\"}], \\"participants\\": [{\\"participantId\\": \\"Z3\\", \\"role\\": \\"Other\\"}, {\\"participantId\\": \\"W3\\", \\"role\\": \\"Unknown\\"}], \\"lineItems\\": [{\\"itemId\\": \\"L5\\", \\"itemVersion\\": 1}, {\\"itemId\\": \\"L6\\", \\"itemVersion\\": 2}]}}"\n'
+        '1,Peter,"{""payload"": {""recordId"": ""R1"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B1"", ""action"": ""CREATE"", ""tags"": [{""code"": ""P1"", ""category"": ""Primary""}, {""code"": ""S1"", ""category"": ""Secondary""}], ""participants"": [{""participantId"": ""A1"", ""role"": ""Active""}, {""participantId"": ""V1"", ""role"": ""Passive""}], ""lineItems"": [{""itemId"": ""L1"", ""itemVersion"": 1}, {""itemId"": ""L2"", ""itemVersion"": 2}]}}"\n' +
+        '2,Fabrice,"{""payload"": {""recordId"": ""R2"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B2"", ""action"": ""UPDATE"", ""tags"": [{""code"": ""S2"", ""category"": ""Secondary""}, {""code"": ""X2"", ""category"": ""Other""}], ""participants"": [{""participantId"": ""V2"", ""role"": ""Passive""}, {""participantId"": ""Z2"", ""role"": ""Other""}], ""lineItems"": [{""itemId"": ""L3"", ""itemVersion"": 1}, {""itemId"": ""L4"", ""itemVersion"": 2}]}}"\n' +
+        '3,Anthony,"{""payload"": {""recordId"": ""R3"", ""recordVersion"": 1, ""revision"": 1, ""section"": ""GroupA"", ""batchId"": ""B3"", ""action"": ""CREATE"", ""tags"": [{""code"": ""X3"", ""category"": ""Other""}, {""code"": ""Y3"", ""category"": ""Unknown""}], ""participants"": [{""participantId"": ""Z3"", ""role"": ""Other""}, {""participantId"": ""W3"", ""role"": ""Unknown""}], ""lineItems"": [{""itemId"": ""L5"", ""itemVersion"": 1}, {""itemId"": ""L6"", ""itemVersion"": 2}]}}"\n'
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredArrayScalarOperations.legend';
