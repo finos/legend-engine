@@ -1,0 +1,47 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+
+function meta::relational::functions::sqlQueryToString::databricks::buildDummyConnection():RelationalDatabaseConnection[1]
+{
+    ^RelationalDatabaseConnection
+    (
+        type = DatabaseType.Databricks,
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
+                                    hostname = 'test',
+                                    port = 'test',
+                                    protocol = 'test',
+                                    httpPath = 'test'
+                                  ),
+        authenticationStrategy = ^TestDatabaseAuthenticationStrategy()
+    )
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::createView(createViewSQL:CreateViewSQL[1], dbConfig:DbConfig[1],  extensions:Extension[*]):String[1]
+{
+    if($createViewSQL.secure, |fail('For Databricks we dont support SECURE views yet.'), |[]);
+    let schemaPart = if($createViewSQL.schemaName->isEmpty(),|'',|'`' + $createViewSQL.schemaName->toOne() + '`.');
+    let viewName = $schemaPart + '`' + $createViewSQL.name + '`';
+    if($createViewSQL.copyGrants,
+       |'CREATE VIEW IF NOT EXISTS ' + $viewName + ' as ' + $createViewSQL.generatedSQL + '; \n' +
+        'ALTER VIEW ' + $viewName + ' as ' + $createViewSQL.generatedSQL + ';',
+       |'CREATE OR REPLACE VIEW ' + $viewName + ' as ' + $createViewSQL.generatedSQL + ';'
+    );
+}
