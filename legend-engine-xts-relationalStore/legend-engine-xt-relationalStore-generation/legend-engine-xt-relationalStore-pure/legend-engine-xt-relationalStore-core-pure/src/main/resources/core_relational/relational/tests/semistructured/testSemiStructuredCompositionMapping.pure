@@ -26,9 +26,9 @@ function meta::relational::tests::semistructured::composition::semiStructuredExe
       'S\n' +
       'TRADE\n' +
       'ID,UNIQUE_REF,ENTITY_ID,TRADE_CONTENT\n' +
-      '1,A,1,"{\\"tradeName\\": \\"trade1\\"}"\n' +
-      '2,B,2,"{\\"tradeName\\": \\"trade2\\"}"\n' +
-      '3,C,3,"{\\"tradeName\\": \\"trade3\\"}"\n';
+      '1,A,1,"{""tradeName"": ""trade1""}"\n' +
+      '2,B,2,"{""tradeName"": ""trade2""}"\n' +
+      '3,C,3,"{""tradeName"": ""trade3""}"\n';
   let t2 =
       'S\n' +
       'ENTITY\n' +
@@ -46,9 +46,9 @@ function meta::relational::tests::semistructured::composition::semiStructuredExe
       'S\n' +
       'EXTENSION_TABLE\n' +
       'UNIQUE_REF,INSTANCE_CONTENT\n' +
-      'A,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 1\\", \\"instanceName\\": \\"Instance A\\"}}"\n' +
-      'B,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 2\\", \\"instanceName\\": \\"Instance A\\"}}"\n' +
-      'C,"{\\"rawData\\": {\\"instanceId\\": \\"Raw 3\\", \\"instanceName\\": \\"Instance A\\"}}"\n';
+      'A,"{""rawData"": {""instanceId"": ""Raw 1"", ""instanceName"": ""Instance A""}}"\n' +
+      'B,"{""rawData"": {""instanceId"": ""Raw 2"", ""instanceName"": ""Instance A""}}"\n' +
+      'C,"{""rawData"": {""instanceId"": ""Raw 3"", ""instanceName"": ""Instance A""}}"\n';
 
   let csv = [$t1, $t2, $t3, $t4];
 

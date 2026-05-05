@@ -25,17 +25,17 @@ function meta::relational::tests::semistructured::union::semiStructuredExecute(c
         'PERSON_SCHEMA\n' +
         'PERSON_TABLE_1\n' +
         'ID,FIRM_DETAILS,NAME\n' +
-        '1,{\\"firm\\": {\\"firmName\\": \\"firm_A\\"}},ABC\n' +
-        '3,{\\"firm\\": {\\"firmName\\": \\"firm_B\\"}},PQR\n' +
-        '5,{\\"firm\\": {\\"firmName\\": \\"firm_C\\"}},XYZ\n';
+        '1,"{""firm"": {""firmName"": ""firm_A""}}",ABC\n' +
+        '3,"{""firm"": {""firmName"": ""firm_B""}}",PQR\n' +
+        '5,"{""firm"": {""firmName"": ""firm_C""}}",XYZ\n';
 
   let t2 =         
         'PERSON_SCHEMA\n' +
         'PERSON_TABLE_2\n' +
         'ID,FIRM_DETAILS,NAME\n' +
-        '2,{\\"firmName\\": \\"firm_D\\"},MNO\n' +
-        '4,{\\"firmName\\": \\"firm_E\\"},DEF\n' +
-        '6,{\\"firmName\\": \\"firm_F\\"},STU\n';
+        '2,"{""firmName"": ""firm_D""}",MNO\n' +
+        '4,"{""firmName"": ""firm_E""}",DEF\n' +
+        '6,"{""firmName"": ""firm_F""}",STU\n';
 
   let csv = [$t1, $t2];
 

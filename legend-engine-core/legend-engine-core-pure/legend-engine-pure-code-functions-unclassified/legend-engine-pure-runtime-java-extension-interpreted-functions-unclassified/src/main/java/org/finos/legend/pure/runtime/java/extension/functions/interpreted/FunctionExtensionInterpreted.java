@@ -46,6 +46,7 @@ import org.finos.legend.pure.runtime.java.extension.functions.interpreted.native
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.ASCII;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.Char;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.Chunk;
+import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.ParseCSV;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.DecodeBase64;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.DecodeUrl;
 import org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.string.EncodeBase64;
@@ -114,6 +115,7 @@ public class FunctionExtensionInterpreted extends BaseInterpretedExtension
                 Tuples.pair("ascii_String_1__Integer_1_", ASCII::new),
                 Tuples.pair("char_Integer_1__String_1_", Char::new),
                 Tuples.pair("chunk_String_1__Integer_1__String_MANY_", Chunk::new),
+                Tuples.pair("parseCSV_String_1__List_MANY_", ParseCSV::new),
                 Tuples.pair("encodeBase64_String_1__String_1_", EncodeBase64::new),
                 Tuples.pair("decodeBase64_String_1__String_1_", DecodeBase64::new),
                 Tuples.pair("encodeUrl_String_1__String_1__String_1_", EncodeUrl::new),
