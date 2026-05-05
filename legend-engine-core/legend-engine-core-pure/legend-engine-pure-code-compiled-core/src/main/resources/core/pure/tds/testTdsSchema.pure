@@ -218,7 +218,8 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
                col(p|%2018-12-12,'constDate'),
                col(p|true,'constBoolean'),
                col(p|1,'constInteger'),
-               col(p|1.5,'constFloat')
+               col(p|1.5,'constFloat'),
+               col(p|^meta::pure::metamodel::variant::Variant(), 'constVariant')
             ])
    });
 

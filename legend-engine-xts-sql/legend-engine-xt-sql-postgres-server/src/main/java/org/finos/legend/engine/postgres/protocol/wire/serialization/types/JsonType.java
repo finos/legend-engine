@@ -21,11 +21,15 @@
 
 package org.finos.legend.engine.postgres.protocol.wire.serialization.types;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.ByteBuf;
+
+import java.io.IOException;
 
 public class JsonType extends PGType<Object>
 {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final JsonType INSTANCE = new JsonType();
     static final int OID = 114;
 
@@ -67,26 +71,35 @@ public class JsonType extends PGType<Object>
     @Override
     protected byte[] encodeAsUTF8Text(Object value)
     {
-       /* if (value instanceof String str) {
-            return str.getBytes(StandardCharsets.UTF_8);
-        }
-        try {
-            XContentBuilder builder = JsonXContent.contentBuilder();
-            if (value instanceof List<?> values) {
-                builder.startArray();
-                for (Object o : values) {
-                    builder.value(o);
+        try
+        {
+            if (value instanceof String)
+            {
+                String str = (String) value;
+                // If the string is already valid JSON (object or array), send as-is
+                if (isJsonObjectOrArray(str))
+                {
+                    // Re-serialize to normalize (compact) the JSON
+                    Object parsed = OBJECT_MAPPER.readValue(str, Object.class);
+                    return OBJECT_MAPPER.writeValueAsBytes(parsed);
                 }
-                builder.endArray();
-            } else {
-                builder.map((Map) value);
             }
-            builder.close();
-            return BytesReference.toBytes(BytesReference.bytes(builder));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
-        throw new UnsupportedOperationException("Not implemented");
+            return OBJECT_MAPPER.writeValueAsBytes(value);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to encode value as JSON", e);
+        }
+    }
+
+    private static boolean isJsonObjectOrArray(String str)
+    {
+        if (str.isEmpty())
+        {
+            return false;
+        }
+        char first = str.charAt(0);
+        return first == '{' || first == '[';
     }
 
     @Override
@@ -100,17 +113,13 @@ public class JsonType extends PGType<Object>
     @Override
     Object decodeUTF8Text(byte[] bytes)
     {
-        /*try {
-            XContentParser parser = JsonXContent.JSON_XCONTENT.createParser(
-                NamedXContentRegistry.EMPTY, DeprecationHandler.THROW_UNSUPPORTED_OPERATION, bytes);
-            if (bytes.length > 1 && bytes[0] == '[') {
-                parser.nextToken();
-                return parser.list();
-            }
-            return parser.map();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }*/
-        throw new UnsupportedOperationException("Not implemented");
+        try
+        {
+            return OBJECT_MAPPER.readValue(bytes, Object.class);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Failed to decode JSON value", e);
+        }
     }
 }

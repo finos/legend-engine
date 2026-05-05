@@ -4269,7 +4269,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function meta::external::query::sql::transformation::queryToPure::tests::testSchemaService1(relation:Boolean[1]):Boolean[1]
 {
-  let sqlString = 'SELECT * FROM service."/service/service1"';
+  let sqlString = 'SELECT *, cast(String as json) as "JSON" FROM service."/service/service1"';
 
   let actualSchema = $sqlString->processQuery(false, $relation).columns->meta::external::query::sql::tdsColsToSchema();
 
@@ -4280,7 +4280,9 @@ function meta::external::query::sql::transformation::queryToPure::tests::testSch
   let expectedCol5 = ^PrimitiveSchemaColumn(name='StrictDate',   type=meta::external::query::sql::schema::metamodel::PrimitiveType.StrictDate);
   let expectedCol6 = ^PrimitiveSchemaColumn(name='DateTime',     type=meta::external::query::sql::schema::metamodel::PrimitiveType.DateTime);
   let expectedCol7 = ^PrimitiveSchemaColumn(name='String',       type=meta::external::query::sql::schema::metamodel::PrimitiveType.String);
-  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4, $expectedCol5, $expectedCol6, $expectedCol7]);
+  let expectedCol8 = ^VariantSchemaColumn(name='JSON',           type=meta::pure::metamodel::variant::Variant->elementToPath());
+
+  let expectedSchema = ^Schema(columns=[$expectedCol1, $expectedCol2, $expectedCol3, $expectedCol4, $expectedCol5, $expectedCol6, $expectedCol7, $expectedCol8]);
 
   assertEquals($expectedSchema, $actualSchema);
 }

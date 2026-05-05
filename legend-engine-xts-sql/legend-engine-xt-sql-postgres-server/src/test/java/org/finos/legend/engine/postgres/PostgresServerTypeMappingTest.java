@@ -34,6 +34,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 
 import java.util.TimeZone;
 
+import org.postgresql.util.PGobject;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.statement.result.LegendDataType;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
@@ -286,6 +287,24 @@ public class PostgresServerTypeMappingTest
     public void testNumberAsDouble() throws Exception
     {
         validate(LegendDataType.NUMBER, "5.5", "float8", 5.5D);
+    }
+
+    @Test
+    public void testJSON() throws Exception
+    {
+        validate(LegendDataType.VARIANT, "\"hello\"", "json", pgJson("\"hello\""));
+        validate(LegendDataType.VARIANT, "\"{\\\"a\\\": 1}\"", "json", pgJson("{\"a\":1}"));
+        validate(LegendDataType.VARIANT, "\"[1,2,3]\"", "json", pgJson("[1,2,3]"));
+        validate(LegendDataType.VARIANT, "123", "json", pgJson("123"));
+        validate(LegendDataType.VARIANT, "null", "json", null);
+    }
+
+    private static PGobject pgJson(String value) throws Exception
+    {
+        PGobject pgObject = new PGobject();
+        pgObject.setType("json");
+        pgObject.setValue(value);
+        return pgObject;
     }
 
 

@@ -236,7 +236,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             let colNames = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@String);
 
             let cols = $colFuncs->zip($colNames)->map(p|
-               ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne()->cast(@DataType))
+               ^TDSColumn(name = $p.second, type = $p.first->functionReturnType().rawType->toOne())
                );
             createSchemaState($cols);
          }),
@@ -259,7 +259,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             let colNames = $fe.parametersValues->at(3)->reactivate($openVars)->cast(@String);
 
             let cols = $groupByColLambdas->concatenate($aggColLambdas.aggregateFn)->zip($colNames)->map(p|
-                  ^TDSColumn(name=$p.second, type=$p.first->functionReturnType().rawType->toOne()->cast(@DataType));
+                  ^TDSColumn(name=$p.second, type=$p.first->functionReturnType().rawType->toOne());
                );
 
             createSchemaState($cols);
@@ -271,7 +271,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
             let aggSpecifications = $fe.parametersValues->at(2)->reactivate($openVars)->cast(@meta::pure::tds::AggregateValue<Any,Any>)->toOneMany();
 
             let aggColumns = $aggSpecifications->map(aggSpecification |
-               ^TDSColumn(name=$aggSpecification.name, type=$aggSpecification.aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType));
+               ^TDSColumn(name=$aggSpecification.name, type=$aggSpecification.aggregateFn->functionReturnType().rawType->toOne());
                );
 
             $tdsSchema.groupBy($colNamesToGroupBy, $aggColumns);
@@ -308,7 +308,7 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
                lf:LambdaFunction<Any>[1]|$lf->functionReturnType().typeArguments->at(1)
             ]);
 
-            let colType = $fType.rawType->toOne()->cast(@DataType);
+            let colType = $fType.rawType->toOne();
             let colName = $fe.parametersValues->at(4)->reactivate($openVars)->cast(@String)->toOne();
 
             $tdsSchema.olap(^TDSColumn(name=$colName, type=$colType));
@@ -354,7 +354,7 @@ function meta::pure::tds::schema::resolveProject(colSpecs : ColumnSpecification<
 {
    let cols = $colSpecs->map(colSpec|
                $colSpec->match([
-                  bcs : BasicColumnSpecification<Any>[1]|^TDSColumn(name = $bcs.name, type = $bcs.func->functionReturnType().rawType->toOne()->cast(@DataType))
+                  bcs : BasicColumnSpecification<Any>[1]|^TDSColumn(name = $bcs.name, type = $bcs.func->functionReturnType().rawType->toOne())
                   ])
                );
    createSchemaState($cols);
