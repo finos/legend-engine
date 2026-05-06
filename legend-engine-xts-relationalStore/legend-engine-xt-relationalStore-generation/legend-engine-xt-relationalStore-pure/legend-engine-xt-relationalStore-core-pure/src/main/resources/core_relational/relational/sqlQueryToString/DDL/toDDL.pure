@@ -131,20 +131,53 @@ function meta::relational::functions::database::loadValuesToDbTable2(data : List
     $dbConfig.translateLoadTable(^LoadTableSQL(table=$table, columnsToLoad=$columns, parsedData=$data));
 }
 
-function meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], dbConfig:DbConfig[1]):String[*]
+function meta::alloy::service::execution::extractSchemaTablePairsFromCsv(data:String[1]):Pair<String,String>[*]
+{
+   let records = $data->split('\n')->map(l | list($l));
+   meta::alloy::service::execution::extractSchemaTablePairsFromRecords($records);
+}
+
+function meta::alloy::service::execution::extractSchemaTablePairsFromRecords(records:List<String>[*]):Pair<String,String>[*]
+{
+   let size = $records->size();
+   let indexed = $records->toIndexed();
+   let blockStartIndices = [0]->concatenate(
+      $indexed->filter(p | $p.second.values->size() == 1 && ($p.second.values->at(0) == '' || $p.second.values->at(0)->startsWith('-')))
+              ->map(p | $p.first + 1)
+              ->filter(i | $i < $size)
+   );
+   $blockStartIndices
+      ->filter(i | $i + 1 < $size)
+      ->filter(i | $records->at($i).values->isNotEmpty() && $records->at($i).values->at(0) != '' && !$records->at($i).values->at(0)->startsWith('-'))
+      ->map(i | pair($records->at($i).values->at(0), $records->at($i + 1).values->at(0)));
+}
+
+function meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], dbConfig:DbConfig[1], dataSchemaTablePairs:Pair<String,String>[*]):String[*]
 {
    let allSchemas = $db->allSchemas();
 
-   let schemaSetup = $allSchemas->map({schema |
+   let filteredSchemas = if($dataSchemaTablePairs->isEmpty(),
+      | $allSchemas,
+      | $allSchemas->filter(s | $dataSchemaTablePairs->exists(p | $p.first == $s.name))
+   );
+
+   let schemaSetup = $filteredSchemas->map({schema |
       meta::relational::functions::toDDL::dropSchemaStatement($schema.name, $dbConfig)->concatenate(
           meta::relational::functions::toDDL::createSchemaStatement($schema.name, $dbConfig))
    });
 
-   let tableSetup = $allSchemas->map({schema |
-      $schema.tables->map({t |
-        dropTableStatement($db, $schema.name, $t.name, $dbConfig)->concatenate(
-            createTableStatement($db, $schema.name, $t.name, $dbConfig))
-      })
+   let tableSetup = $filteredSchemas->map({schema |
+      if($dataSchemaTablePairs->isEmpty(),
+         | $schema.tables->map({t |
+              dropTableStatement($db, $schema.name, $t.name, $dbConfig)->concatenate(
+                  createTableStatement($db, $schema.name, $t.name, $dbConfig))
+           }),
+         | let tablesForSchema = $dataSchemaTablePairs->filter(p | $p.first == $schema.name).second;
+           $schema.tables->filter(t | $tablesForSchema->exists(tn | $tn == $t.name))->map({t |
+              dropTableStatement($db, $schema.name, $t.name, $dbConfig)->concatenate(
+                  createTableStatement($db, $schema.name, $t.name, $dbConfig))
+           });
+      );
    });
 
    $schemaSetup->concatenate($tableSetup);
@@ -152,7 +185,8 @@ function meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], db
 
 function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[*], dbConfig:DbConfig[1]) : String[*]
 {
-   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig));
+   let pairs = meta::alloy::service::execution::extractSchemaTablePairsFromCsv($data);
+   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig, $pairs));
 
    let formattedData = $data->split('\n')
                             ->map(l|list($l->meta::alloy::service::execution::splitWithEmptyValue()))
@@ -164,7 +198,8 @@ function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Datab
 // Properly handle/respect quoted values
 function meta::alloy::service::execution::setUpDataSQLsV2(data:String[1], db:Database[*], dbConfig:DbConfig[1]) : String[*]
 {
-   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig));
+   let pairs = meta::alloy::service::execution::extractSchemaTablePairsFromCsv($data);
+   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig, $pairs));
 
    let formattedData = $data->meta::pure::functions::string::parseCSV()
                             ->concatenate(list(''));
@@ -174,6 +209,7 @@ function meta::alloy::service::execution::setUpDataSQLsV2(data:String[1], db:Dat
 
 function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[*], dbConfig:DbConfig[1]) : String[*]
 {
-   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig));
+   let pairs = meta::alloy::service::execution::extractSchemaTablePairsFromRecords($records);
+   let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig, $pairs));
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, $dbConfig, t:Table[1]|$t));
 }
