@@ -2172,7 +2172,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          $res->validate([], $extensions);
          $res;
    );
-//    );
+   );
 }
 
 function meta::relational::functions::pureToSqlQuery::manageSavedFilteringOperation(res:SelectWithCursor[1], srcOperation:SelectWithCursor[1]):SelectWithCursor[1]
@@ -5426,7 +5426,7 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
     //                           && ($leftSideOp.currentPropertyMapping->size() >= 1)
     //                           && $leftSideOp.currentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));  // Only clear filteringOperation (move to savedFilteringOperation) for projection context when NOT a lateral join
     // let managedFilteredPosition = if ($state.inProjectFunctions && $state.qualifierBase->isEmpty() && !$mergedWithCollapsedFilteringOperation.filteringOperation->isEmpty() && !$isFilterOnLateralJoin,
-    let isFilterOnLateralJoin = $newLastNode->match([j:JoinTreeNode[1]|$j.lateral == true, a:Any[0..1]|false);
+    let isFilterOnLateralJoin = $newLastNode->match([j:JoinTreeNode[1]|$j.lateral == true, a:Any[0..1]|false]);
     let managedFilteredPosition = if ($state.inProjectFunctions && $state.qualifierBase->isEmpty() && !$mergedWithCollapsedFilteringOperation.filteringOperation->isEmpty(),
          |^$mergedWithCollapsedFilteringOperation
            (
