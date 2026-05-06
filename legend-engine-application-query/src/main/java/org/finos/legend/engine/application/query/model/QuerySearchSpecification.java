@@ -32,12 +32,4 @@ public class QuerySearchSpecification
     // search specification
     public Boolean combineTaggedValuesCondition;
     public QuerySearchSortBy sortByOption;
-
-    public PaginatedQuerySpecification paginatedQuerySpecification;
-
-    public static class PaginatedQuerySpecification
-    {
-        public Integer pageSize;
-        public Integer cursor;
-    }
 }

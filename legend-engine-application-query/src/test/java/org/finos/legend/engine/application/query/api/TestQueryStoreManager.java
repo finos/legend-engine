@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.application.query.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.application.query.model.*;
@@ -1368,7 +1369,7 @@ public class TestQueryStoreManager
 
         // Deleted query must no longer be live
         Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1"));
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
 
         // Both old versions must still be visible in history
         List<Query> history = store.getQueryHistory("1");
@@ -1838,12 +1839,23 @@ public class TestQueryStoreManager
     // PAGINATION TESTS
     // ----------------------------------------
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private QuerySearchSpecification createPaginatedSpec(QuerySearchSpecification searchSpec, Integer cursor, Integer pageSize)
     {
-        QuerySearchSpecification spec = searchSpec != null ? searchSpec : new QuerySearchSpecification();
-        spec.paginatedQuerySpecification = new QuerySearchSpecification.PaginatedQuerySpecification();
-        spec.paginatedQuerySpecification.cursor = cursor;
-        spec.paginatedQuerySpecification.pageSize = pageSize;
+        PaginatedQuerySearchSpecification spec;
+        try
+        {
+            spec = searchSpec != null
+                    ? OBJECT_MAPPER.convertValue(searchSpec, PaginatedQuerySearchSpecification.class)
+                    : new PaginatedQuerySearchSpecification();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        spec.cursor = cursor;
+        spec.pageSize = pageSize;
         return spec;
     }
 
@@ -1979,9 +1991,8 @@ public class TestQueryStoreManager
             store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
         }
 
-        QuerySearchSpecification paginatedSpec = new QuerySearchSpecification();
-        paginatedSpec.paginatedQuerySpecification = new QuerySearchSpecification.PaginatedQuerySpecification();
-        paginatedSpec.paginatedQuerySpecification.pageSize = pageSize;
+        PaginatedQuerySearchSpecification paginatedSpec = new PaginatedQuerySearchSpecification();
+        paginatedSpec.pageSize = pageSize;
 
         PaginatedResult result = store.searchQueries(paginatedSpec, currentUser);
         Assert.assertEquals(3, result.queries.size());

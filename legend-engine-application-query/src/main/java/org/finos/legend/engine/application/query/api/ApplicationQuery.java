@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.application.query.model.DataCubeQuery;
+import org.finos.legend.engine.application.query.model.PaginatedQuerySearchSpecification;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
@@ -82,7 +83,7 @@ public class ApplicationQuery
     @Path("search/paginated")
     @ApiOperation(value = "Search queries with pagination")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response searchQueriesPaginated(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response searchQueriesPaginated(PaginatedQuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         try
         {
