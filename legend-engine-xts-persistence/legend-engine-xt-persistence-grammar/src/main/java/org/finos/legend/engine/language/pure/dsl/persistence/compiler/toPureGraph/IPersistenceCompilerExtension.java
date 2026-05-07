@@ -37,12 +37,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IPersistenceCompilerExtension extends CompilerExtension
 {
+    AtomicReference<List<IPersistenceCompilerExtension>> CACHE = new AtomicReference<>();
+
     static List<IPersistenceCompilerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IPersistenceCompilerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IPersistenceCompilerExtension.class)) : existing);
     }
 
     static Root_meta_pure_persistence_metamodel_context_PersistencePlatform process(PersistencePlatform persistencePlatform, List<Function2<PersistencePlatform, CompileContext, Root_meta_pure_persistence_metamodel_context_PersistencePlatform>> processors, CompileContext context)

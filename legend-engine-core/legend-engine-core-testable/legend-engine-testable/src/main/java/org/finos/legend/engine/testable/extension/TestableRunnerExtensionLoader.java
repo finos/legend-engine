@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class TestableRunnerExtensionLoader
 {
+    private static final ConcurrentHashMap<ClassLoader, List<TestableRunnerExtension>> CACHE = new ConcurrentHashMap<>();
+
     public static TestRunner forTestable(Testable testable)
     {
         return forTestable(testable, getCurrentThreadClassLoader());
@@ -81,12 +84,15 @@ public class TestableRunnerExtensionLoader
 
     private static List<TestableRunnerExtension> extensions(ClassLoader classLoader)
     {
-        List<TestableRunnerExtension> extensions = Lists.mutable.empty();
-        for (TestableRunnerExtension extension : ServiceLoader.load(TestableRunnerExtension.class, classLoader))
+        return CACHE.computeIfAbsent(classLoader, cl ->
         {
-            extensions.add(extension);
-        }
-        return extensions;
+            List<TestableRunnerExtension> extensions = Lists.mutable.empty();
+            for (TestableRunnerExtension extension : ServiceLoader.load(TestableRunnerExtension.class, cl))
+            {
+                extensions.add(extension);
+            }
+            return extensions;
+        });
     }
 
     private static ClassLoader getCurrentThreadClassLoader()

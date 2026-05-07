@@ -19,12 +19,21 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.shared.stuctures.TreeNode;
 
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Extensions
 {
+    private static final AtomicReference<MutableList<LegendExtension>> INSTANCE = new AtomicReference<>();
+
     public static MutableList<LegendExtension> get()
     {
-        return Lists.mutable
+        return INSTANCE.updateAndGet(existing ->
+        {
+            if (existing != null)
+            {
+                return existing;
+            }
+            return Lists.mutable
                 // Pure code extension for Store, External Format, etc.
                 .withAll(loadExtensions("org.finos.legend.engine.pure.code.core.LegendPureCoreExtension"))
 
@@ -66,6 +75,7 @@ public class Extensions
 
                 // All Testable Packageable Elements
                 .withAll(loadExtensions("org.finos.legend.engine.testable.extension.TestableRunnerExtension"));
+        });
     }
 
     public static TreeNode buildTree(MutableList<LegendExtension> extensionList)

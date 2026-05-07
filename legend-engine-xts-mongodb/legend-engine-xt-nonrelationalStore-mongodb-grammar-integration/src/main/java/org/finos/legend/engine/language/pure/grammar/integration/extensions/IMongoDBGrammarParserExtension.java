@@ -19,13 +19,14 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IMongoDBGrammarParserExtension extends PureGrammarParserExtension
 {
+    AtomicReference<List<IMongoDBGrammarParserExtension>> CACHE = new AtomicReference<>();
 
     static List<IMongoDBGrammarParserExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IMongoDBGrammarParserExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IMongoDBGrammarParserExtension.class)) : existing);
     }
-
 }

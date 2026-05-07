@@ -23,25 +23,34 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class DeploymentExtensionLoader
 {
+    private static final AtomicReference<List<DeploymentExtension>> EXTENSIONS = new AtomicReference<>();
 
     public static List<DeploymentExtension> extensions()
     {
-        List<DeploymentExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(DeploymentExtension.class));
-        Set<String> extensionKeys = Sets.mutable.empty();
-        for (DeploymentExtension extension : extensions)
+        return EXTENSIONS.updateAndGet(extensions ->
         {
-            if (!extensionKeys.add(extension.getKey()))
+            if (extensions == null)
             {
-                String extensionsWithSameKey = ListIterate.collect(extensions.stream().filter(e -> e.getKey().equals(extension.getKey())).collect(Collectors.toList()), e -> e.getClass().getName())
-                        .makeString(",");
-                throw new EngineException("Deployment extension keys must be unique. Found duplicate key: '" + extension.getKey() + "' on extensions: " + extensionsWithSameKey);
+                List<DeploymentExtension> result = Lists.mutable.withAll(ServiceLoader.load(DeploymentExtension.class));
+                Set<String> extensionKeys = Sets.mutable.empty();
+                for (DeploymentExtension extension : result)
+                {
+                    if (!extensionKeys.add(extension.getKey()))
+                    {
+                        String extensionsWithSameKey = ListIterate.collect(result.stream().filter(e -> e.getKey().equals(extension.getKey())).collect(Collectors.toList()), e -> e.getClass().getName())
+                                .makeString(",");
+                        throw new EngineException("Deployment extension keys must be unique. Found duplicate key: '" + extension.getKey() + "' on extensions: " + extensionsWithSameKey);
+                    }
+                }
+                return result;
             }
-        }
-        return extensions;
+            return extensions;
+        });
     }
 
 

@@ -21,13 +21,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public interface IServiceStoreGrammarComposerExtension extends PureGrammarComposerExtension
 {
+    AtomicReference<List<IServiceStoreGrammarComposerExtension>> CACHE = new AtomicReference<>();
+
     static List<IServiceStoreGrammarComposerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreGrammarComposerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IServiceStoreGrammarComposerExtension.class)) : existing);
     }
 
     default List<Function<SecurityScheme, String>> getExtraSecuritySchemesComposers()

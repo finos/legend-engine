@@ -36,6 +36,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -85,7 +86,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,7 +106,7 @@ public class ServiceTestRunner implements TestRunner
     {
         this.pureService = pureService;
         this.planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        this.extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        this.extensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         this.pureVersion = pureVersion;
     }
 

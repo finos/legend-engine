@@ -24,12 +24,27 @@ import org.pac4j.core.profile.CommonProfile;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Pac4jUtils
 {
+    private static final AtomicReference<MutableList<Pac4jIdentityFactory>> CACHED_FACTORIES = new AtomicReference<>();
+
+    private static MutableList<Pac4jIdentityFactory> loadFactories()
+    {
+        return CACHED_FACTORIES.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                return Iterate.addAllTo(ServiceLoader.load(Pac4jIdentityFactory.class), Lists.mutable.empty());
+            }
+            return existing;
+        });
+    }
+
     public static MutableList<CommonProfile> getProfilesFromIdentity(Identity identity)
     {
-        MutableList<Pac4jIdentityFactory> factories = Iterate.addAllTo(ServiceLoader.load(Pac4jIdentityFactory.class), Lists.mutable.empty());
+        MutableList<Pac4jIdentityFactory> factories = loadFactories();
         MutableList<CommonProfile> profiles = Lists.mutable.empty();
 
         for (Pac4jIdentityFactory identityFactory : factories)

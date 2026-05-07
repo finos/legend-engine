@@ -18,7 +18,6 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
@@ -51,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 
 public class RelationalConnectionManager implements ConnectionManager
@@ -75,7 +73,7 @@ public class RelationalConnectionManager implements ConnectionManager
     public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
         this.flowProviderHolder = flowProviderHolder;
-        MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
+        MutableList<StrategicConnectionExtension> extensions = Lists.mutable.withAll(StrategicConnectionExtensionLoader.extensions());
 
         this.testDbPort = testDbPort;
         this.authenticationStrategyKeyVisitors =
@@ -234,7 +232,7 @@ public class RelationalConnectionManager implements ConnectionManager
     private boolean resolveLocalMode(RelationalDatabaseConnection relationalDatabaseConnection)
     {
         DatasourceSpecification datasourceSpecification = relationalDatabaseConnection.datasourceSpecification;
-        MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
+        List<StrategicConnectionExtension> extensions = StrategicConnectionExtensionLoader.extensions();
         return ListIterate
                 .detect(extensions, extension -> extension.isLocalMode(datasourceSpecification)) != null;
     }

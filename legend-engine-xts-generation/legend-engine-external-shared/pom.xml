@@ -72,6 +72,13 @@
 
         <!-- ENGINE -->
 
+        <!-- LOGS -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- LOGS -->
+
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -94,6 +101,10 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
     </dependencies>

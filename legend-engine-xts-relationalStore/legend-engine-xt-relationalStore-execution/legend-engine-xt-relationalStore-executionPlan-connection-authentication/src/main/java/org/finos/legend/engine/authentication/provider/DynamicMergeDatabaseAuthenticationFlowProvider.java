@@ -22,18 +22,28 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DynamicMergeDatabaseAuthenticationFlowProvider extends AbstractDatabaseAuthenticationFlowProvider
 {
+    private static final AtomicReference<ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>>> CACHED_FLOWS = new AtomicReference<>();
+
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows()
     {
-        return Lists.immutable.withAll(Iterate.addAllTo(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class), Lists.mutable.empty())
-                .collect(c ->
-                        {
-                            c.configure(null);
-                            return c;
-                        }
-                ).flatCollect(x -> x.getFlows().values()).collect(a -> (DatabaseAuthenticationFlow<?, ?>) a));
+        return CACHED_FLOWS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                return Lists.immutable.withAll(Iterate.addAllTo(ServiceLoader.load(DatabaseAuthenticationFlowProvider.class), Lists.mutable.empty())
+                        .collect(c ->
+                                {
+                                    c.configure(null);
+                                    return c;
+                                }
+                        ).flatCollect(x -> x.getFlows().values()).collect(a -> (DatabaseAuthenticationFlow<?, ?>) a));
+            }
+            return existing;
+        });
     }
 
     @Override

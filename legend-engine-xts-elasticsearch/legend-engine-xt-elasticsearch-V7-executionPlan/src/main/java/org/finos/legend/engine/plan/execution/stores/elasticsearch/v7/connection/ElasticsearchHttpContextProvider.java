@@ -24,14 +24,24 @@ import org.finos.legend.engine.shared.core.identity.Credential;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface ElasticsearchHttpContextProvider extends LegendModuleSpecificExtension
 {
+    AtomicReference<List<ElasticsearchHttpContextProvider>> CACHE = new AtomicReference<>();
+
     static List<ElasticsearchHttpContextProvider> providers()
     {
-        MutableList<ElasticsearchHttpContextProvider> providers = Lists.mutable.empty();
-        ServiceLoader.load(ElasticsearchHttpContextProvider.class).iterator().forEachRemaining(providers::add);
-        return providers.asUnmodifiable();
+        return CACHE.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                MutableList<ElasticsearchHttpContextProvider> providers = Lists.mutable.empty();
+                ServiceLoader.load(ElasticsearchHttpContextProvider.class).iterator().forEachRemaining(providers::add);
+                return providers.asUnmodifiable();
+            }
+            return existing;
+        });
     }
 
     Optional<HttpClientContext> provide(Credential credential);

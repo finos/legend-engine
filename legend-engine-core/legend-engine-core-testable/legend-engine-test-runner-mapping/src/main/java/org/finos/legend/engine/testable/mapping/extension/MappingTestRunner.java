@@ -27,8 +27,10 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.PlanWithDebug;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
@@ -72,7 +74,7 @@ public class MappingTestRunner implements TestRunner
     private final MutableList<PlanGeneratorExtension> extensions;
     private final PlanExecutor executor;
     private final String pureVersion;
-    private final MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+    private final MutableList<ConnectionFactoryExtension> factories = Lists.mutable.withAll(ConnectionFactoryExtensionLoader.extensions());
     private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
 
     public MappingTestRunner(Mapping pureMapping, String pureVersion)
@@ -80,7 +82,7 @@ public class MappingTestRunner implements TestRunner
         this.pureMapping = pureMapping;
         this.pureVersion = pureVersion;
         this.executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
-        this.extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        this.extensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
     }
 
     @Override

@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph;
 
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.multimap.list.MutableListMultimap;
-import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
+import org.finos.legend.engine.external.shared.format.extension.GenerationExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -27,7 +27,6 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 public class HelperFileGenerationBuilder
 {
@@ -50,7 +49,7 @@ public class HelperFileGenerationBuilder
 
     public static Root_meta_pure_generation_metamodel_GenerationConfiguration processFileGeneration(FileGenerationSpecification fileGeneration, CompileContext context)
     {
-        MutableListMultimap<String, GenerationExtension> extensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty()).groupBy(x -> x.getKey());
+        MutableListMultimap<String, GenerationExtension> extensions = Lists.mutable.withAll(GenerationExtensionLoader.extensions()).groupBy(x -> x.getKey());
         GenerationExtension extension = extensions.get(fileGeneration.type).getFirst();
         Assert.assertTrue(extension != null, () -> "Can't find a handler for the file type '" + fileGeneration.type.toLowerCase() + "'");
         return extension.defaultConfig(context);

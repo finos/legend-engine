@@ -14,21 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.ServiceLoader;
 
 public class DataSourceIdentifiersCaseSensitiveVisitor implements DatasourceSpecificationVisitor<Boolean>
 {
     public Boolean visit(DatasourceSpecification datasourceSpecification)
     {
-        MutableList<StrategicConnectionExtension> extensions = Iterate.addAllTo(ServiceLoader.load(StrategicConnectionExtension.class), Lists.mutable.empty());
+        List<StrategicConnectionExtension> extensions = StrategicConnectionExtensionLoader.extensions();
         return ListIterate
                 .collect(extensions, extension -> extension.getIdentifiersCaseSensitivity(datasourceSpecification))
                 .select(Objects::nonNull)

@@ -41,13 +41,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public interface IRelationalGrammarParserExtension extends PureGrammarParserExtension
 {
+    AtomicReference<List<IRelationalGrammarParserExtension>> CACHE = new AtomicReference<>();
+
     static List<IRelationalGrammarParserExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IRelationalGrammarParserExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IRelationalGrammarParserExtension.class)) : existing);
     }
 
     static DatasourceSpecification process(DataSourceSpecificationSourceCode code, List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> processors)

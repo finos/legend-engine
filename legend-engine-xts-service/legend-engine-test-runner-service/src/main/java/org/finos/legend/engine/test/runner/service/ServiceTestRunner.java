@@ -96,10 +96,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ServiceTestRunner
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTestRunner.class);
+
+    private static final AtomicReference<MutableList<ServiceExecutionExtension>> CACHED_SERVICE_EXEC_EXTENSIONS = new AtomicReference<>();
+
+    private static MutableList<ServiceExecutionExtension> loadServiceExecutionExtensions()
+    {
+        return CACHED_SERVICE_EXEC_EXTENSIONS.updateAndGet(existing ->
+            existing == null ? Lists.mutable.withAll(ServiceLoader.load(ServiceExecutionExtension.class)) : existing
+        );
+    }
 
     private final Service service;
     private final Root_meta_legend_service_metamodel_Service pureService;
@@ -203,7 +213,7 @@ public class ServiceTestRunner
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Extra Service Execution Tests and Run").startActive(true))
             {
-                MutableList<ServiceExecutionExtension> serviceExecutionExtensions = Lists.mutable.withAll(ServiceLoader.load(ServiceExecutionExtension.class));
+                MutableList<ServiceExecutionExtension> serviceExecutionExtensions = loadServiceExecutionExtensions();
                 Pair<ExecutionPlan, RichIterable<? extends String>> testExecutor = getExtraServiceExecutionPlan(serviceExecutionExtensions, serviceExecution, ((Root_meta_legend_service_metamodel_SingleExecutionTest) this.pureService._test())._data());
                 ExecutionPlan executionPlan = testExecutor.getOne();
                 Assert.assertTrue(executionPlan instanceof SingleExecutionPlan, () -> "Only Single Execution Plan supported");

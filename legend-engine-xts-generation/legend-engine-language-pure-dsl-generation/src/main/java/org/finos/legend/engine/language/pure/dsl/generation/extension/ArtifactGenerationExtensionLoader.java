@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.generation.extension;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
@@ -26,25 +27,32 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 public class ArtifactGenerationExtensionLoader
 {
     public static final String EXTENSION_KEY_REGEX = "^[a-zA-Z_0-9\\-]+$";
+    private static final AtomicReference<List<ArtifactGenerationExtension>> EXTENSIONS = new AtomicReference<>();
 
     public static List<ArtifactGenerationExtension> extensions()
     {
-        List<ArtifactGenerationExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(ArtifactGenerationExtension.class));
-        Set<String> extensionKeys = Sets.mutable.empty();
-        for (ArtifactGenerationExtension extension : extensions)
+        return EXTENSIONS.updateAndGet(extensions ->
         {
-            if (!extensionKeys.add(extension.getKey()))
+            if (extensions == null)
             {
-                String extensionsWithSameKey = ListIterate.collect(extensions.stream().filter(e -> e.getKey().equals(extension.getKey())).collect(Collectors.toList()), e -> e.getClass().getName())
-                    .makeString(",");
-                throw new EngineException("Artifact extension keys must be unique. Found duplicate key: '" + extension.getKey() + "' on extensions: " + extensionsWithSameKey);
+                List<ArtifactGenerationExtension> result = Lists.mutable.withAll(ServiceLoader.load(ArtifactGenerationExtension.class));
+                Set<String> extensionKeys = Sets.mutable.empty();
+                for (ArtifactGenerationExtension extension : result)
+                {
+                    if (!extensionKeys.add(extension.getKey()))
+                    {
+                        String extensionsWithSameKey = ListIterate.collect(result.stream().filter(e -> e.getKey().equals(extension.getKey())).collect(Collectors.toList()), e -> e.getClass().getName())
+                            .makeString(",");
+                        throw new EngineException("Artifact extension keys must be unique. Found duplicate key: '" + extension.getKey() + "' on extensions: " + extensionsWithSameKey);
+                    }
+                    if (!extension.getKey().matches(EXTENSION_KEY_REGEX))
+                    {
+                        throw new EngineException("Artifact extension keys can't have spaces or special characters. Found invalid key: '" + extension.getKey() + "'.");
+                    }
+                }
+                return result;
             }
-            if (!extension.getKey().matches(EXTENSION_KEY_REGEX))
-            {
-                throw new EngineException("Artifact extension keys can't have spaces or special characters. Found invalid key: '" + extension.getKey() + "'.");
-            }
-        }
-        return extensions;
+            return extensions;
+        });
     }
-
 }

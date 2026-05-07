@@ -41,6 +41,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 
@@ -49,6 +50,22 @@ import java.util.function.Supplier;
 @Produces(MediaType.APPLICATION_JSON)
 public class PersistencePlatformActions
 {
+    private static final AtomicReference<List<PersistencePlatformActionsExtension>> CACHED_EXTENSIONS = new AtomicReference<>();
+
+    private static List<PersistencePlatformActionsExtension> loadExtensions()
+    {
+        return CACHED_EXTENSIONS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                List<PersistencePlatformActionsExtension> result = Lists.mutable.empty();
+                ServiceLoader.load(PersistencePlatformActionsExtension.class).forEach(result::add);
+                return result;
+            }
+            return existing;
+        });
+    }
+
     private final Supplier<Identity> systemIdentitySupplier;
     private final ModelManager modelManager;
     private final List<PersistencePlatformActionsExtension> extensions = Lists.mutable.empty();
@@ -57,7 +74,7 @@ public class PersistencePlatformActions
     {
         this.systemIdentitySupplier = systemIdentitySupplier;
         this.modelManager = modelManager;
-        ServiceLoader.load(PersistencePlatformActionsExtension.class).forEach(this.extensions::add);
+        this.extensions.addAll(loadExtensions());
     }
 
     @POST

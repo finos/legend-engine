@@ -105,7 +105,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -120,6 +122,26 @@ import static org.finos.legend.engine.shared.core.operational.prometheus.Metrics
 public class GraphQLExecute extends GraphQL
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GraphQLExecute.class);
+
+    private static final AtomicReference<List<IGraphQLDirectiveExtension>> CACHED_DIRECTIVE_EXTENSIONS = new AtomicReference<>();
+
+    private static List<IGraphQLDirectiveExtension> loadDirectiveExtensions()
+    {
+        return CACHED_DIRECTIVE_EXTENSIONS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                List<IGraphQLDirectiveExtension> result = new ArrayList<>();
+                for (IGraphQLDirectiveExtension ext : ServiceLoader.load(IGraphQLDirectiveExtension.class))
+                {
+                    result.add(ext);
+                }
+                return result;
+            }
+            return existing;
+        });
+    }
+
     private final PlanExecutor planExecutor;
     private final Iterable<? extends PlanTransformer> transformers;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
@@ -134,10 +156,7 @@ public class GraphQLExecute extends GraphQL
         this.transformers = transformers;
         this.extensionsFunc = extensionsFunc;
         this.graphQLPlanCache = planCache;
-        for (IGraphQLDirectiveExtension graphQLExecuteExtension : ServiceLoader.load(IGraphQLDirectiveExtension.class))
-        {
-            this.graphQLExecuteExtensions.add(graphQLExecuteExtension);
-        }
+        this.graphQLExecuteExtensions.addAll(loadDirectiveExtensions());
         MetricsHandler.createMetrics(GraphQLExecute.class);
     }
 

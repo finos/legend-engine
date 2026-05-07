@@ -21,6 +21,7 @@ import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtensi
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
@@ -28,18 +29,27 @@ import java.util.function.Function;
  */
 public interface FlatDataDriverDescription extends LegendModuleSpecificExtension
 {
+    AtomicReference<List<FlatDataDriverDescription>> CACHE = new AtomicReference<>();
+
     static List<FlatDataDriverDescription> loadAll()
     {
-        List<FlatDataDriverDescription> result = new ArrayList<>();
-        for (FlatDataDriverDescription desc : ServiceLoader.load(FlatDataDriverDescription.class))
+        return CACHE.updateAndGet(existing ->
         {
-            if (result.stream().anyMatch(d -> d.getId().equals(desc.getId())))
+            if (existing == null)
             {
-                throw new Error("Duplicate FlatDataDrivers for id: " + desc.getId());
+                List<FlatDataDriverDescription> result = new ArrayList<>();
+                for (FlatDataDriverDescription desc : ServiceLoader.load(FlatDataDriverDescription.class))
+                {
+                    if (result.stream().anyMatch(d -> d.getId().equals(desc.getId())))
+                    {
+                        throw new Error("Duplicate FlatDataDrivers for id: " + desc.getId());
+                    }
+                    result.add(desc);
+                }
+                return result;
             }
-            result.add(desc);
-        }
-        return result;
+            return existing;
+        });
     }
 
     /**

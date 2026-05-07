@@ -23,12 +23,15 @@ import org.finos.legend.pure.generated.Root_meta_external_store_service_metamode
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IServiceStoreCompilerExtension extends CompilerExtension
 {
+    AtomicReference<List<IServiceStoreCompilerExtension>> CACHE = new AtomicReference<>();
+
     static List<IServiceStoreCompilerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreCompilerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IServiceStoreCompilerExtension.class)) : existing);
     }
 
     default List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecurityProcessors()

@@ -18,19 +18,29 @@ import org.eclipse.collections.api.factory.Maps;
 
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ExternalFormatExtensionLoader
 {
+    private static final AtomicReference<Map<String, ExternalFormatExtension<?>>> EXTENSIONS = new AtomicReference<>();
+
     public static Map<String, ExternalFormatExtension<?>> extensions()
     {
-        Map<String, ExternalFormatExtension<?>> result = Maps.mutable.empty();
-        for (ExternalFormatExtension<?> extension : ServiceLoader.load(ExternalFormatExtension.class))
+        return EXTENSIONS.updateAndGet(extensions ->
         {
-            if (result.put(extension.getFormat(), extension) != null)
+            if (extensions == null)
             {
-                throw new IllegalArgumentException("Conflicting extension for external format schema type: " + extension.getFormat());
+                Map<String, ExternalFormatExtension<?>> result = Maps.mutable.empty();
+                for (ExternalFormatExtension<?> extension : ServiceLoader.load(ExternalFormatExtension.class))
+                {
+                    if (result.put(extension.getFormat(), extension) != null)
+                    {
+                        throw new IllegalArgumentException("Conflicting extension for external format schema type: " + extension.getFormat());
+                    }
+                }
+                return result;
             }
-        }
-        return result;
+            return extensions;
+        });
     }
 }

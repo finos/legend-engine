@@ -28,12 +28,15 @@ import org.finos.legend.pure.generated.Root_meta_external_function_activator_pos
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IPostDeploymentCompilerExtension extends CompilerExtension
 {
+    AtomicReference<List<IPostDeploymentCompilerExtension>> CACHE = new AtomicReference<>();
+
     static List<IPostDeploymentCompilerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentCompilerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentCompilerExtension.class)) : existing);
     }
 
     static Root_meta_external_function_activator_postDeploymentAction_PostDeploymentAction process(PostDeploymentAction postDeploymentAction, List<Function2<PostDeploymentAction, CompileContext, Root_meta_external_function_activator_postDeploymentAction_PostDeploymentAction>> processors, CompileContext context)

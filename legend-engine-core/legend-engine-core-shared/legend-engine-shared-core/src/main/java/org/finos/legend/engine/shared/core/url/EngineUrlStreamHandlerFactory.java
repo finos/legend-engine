@@ -23,11 +23,13 @@ import org.slf4j.Logger;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 {
@@ -62,6 +64,25 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
         }
     }
 
+    private static final AtomicReference<List<UrlProtocolHandler>> PROTOCOL_HANDLERS = new AtomicReference<>();
+
+    private static List<UrlProtocolHandler> loadProtocolHandlers()
+    {
+        return PROTOCOL_HANDLERS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                List<UrlProtocolHandler> handlers = new ArrayList<>();
+                for (UrlProtocolHandler handler : ServiceLoader.load(UrlProtocolHandler.class))
+                {
+                    handlers.add(handler);
+                }
+                return handlers;
+            }
+            return existing;
+        });
+    }
+
     private final Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
     @Override
@@ -74,7 +95,7 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 
     private URLStreamHandler findForProtocol(String protocol)
     {
-        for (UrlProtocolHandler handler : ServiceLoader.load(UrlProtocolHandler.class))
+        for (UrlProtocolHandler handler : loadProtocolHandlers())
         {
             if (handler.handles(protocol))
             {

@@ -19,13 +19,14 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IMongoDBStoreCompilerExtension extends CompilerExtension
 {
+    AtomicReference<List<IMongoDBStoreCompilerExtension>> CACHE = new AtomicReference<>();
 
     static List<IMongoDBStoreCompilerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IMongoDBStoreCompilerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IMongoDBStoreCompilerExtension.class)) : existing);
     }
-
 }

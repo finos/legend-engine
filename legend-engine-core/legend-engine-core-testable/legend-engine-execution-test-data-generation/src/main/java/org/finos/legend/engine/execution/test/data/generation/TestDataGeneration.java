@@ -39,6 +39,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.RelationType;
@@ -64,7 +65,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 
@@ -82,7 +82,7 @@ public class TestDataGeneration
             PureModel pureModel = pureModelFunc.value();
             LambdaFunction<?> lambdaFunction = functionFunc.valueOf(pureModel);
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
             MutableList<PlanTransformer> planTransformers = planGeneratorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
             Mapping pureMapping = pureModel.getMapping(mapping);
             Root_meta_core_runtime_Runtime pureRuntime = HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext());
@@ -127,7 +127,7 @@ public class TestDataGeneration
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.GENERATE_SEED_DATA_START, "").toString());
 
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
             MutableList<PlanTransformer> planTransformers = planGeneratorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
             Root_meta_pure_executionPlan_ExecutionPlan seedPlan = SeedDataGeneration.generateSeedDataPlan(lambdaFunction, pureMapping, pureRuntime, executionContext, parameterNameValueMap, pureModel, routerExtensions, identity);
@@ -193,7 +193,7 @@ public class TestDataGeneration
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
         {
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
             MutableList<PlanTransformer> planTransformers = planGeneratorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair<String, Root_meta_pure_functions_collection_List_Impl<Object>>> parameterNameValuePair = FastList.newList();
             for (Map.Entry<String, ?> e : parameterNameValueMap.entrySet())

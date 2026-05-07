@@ -19,11 +19,14 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IMongoDBStoreExecutionExtension extends ExecutionExtension
 {
+    AtomicReference<List<IMongoDBStoreExecutionExtension>> CACHE = new AtomicReference<>();
+
     static List<IMongoDBStoreExecutionExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IMongoDBStoreExecutionExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IMongoDBStoreExecutionExtension.class)) : existing);
     }
 }

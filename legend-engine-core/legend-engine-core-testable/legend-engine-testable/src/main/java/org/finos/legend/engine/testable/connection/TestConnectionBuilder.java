@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -58,7 +59,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
     @Override
     public Pair<Connection, List<Closeable>> visit(Connection connection)
     {
-        MutableList<ConnectionFactoryExtension> factories = Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+        MutableList<ConnectionFactoryExtension> factories = Lists.mutable.withAll(ConnectionFactoryExtensionLoader.extensions());
         return factories
                 .collect(f -> f.tryBuildTestConnection(connection, embeddedData, hints))
                 .select(Objects::nonNull)

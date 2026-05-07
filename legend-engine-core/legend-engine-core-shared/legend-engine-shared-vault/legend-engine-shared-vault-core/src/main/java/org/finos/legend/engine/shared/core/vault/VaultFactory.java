@@ -21,14 +21,31 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
+import org.eclipse.collections.impl.factory.Lists;
 
 public class VaultFactory
 {
+    private static final AtomicReference<List<VaultExtension>> EXTENSIONS = new AtomicReference<>();
+
+    private static List<VaultExtension> extensions()
+    {
+        return EXTENSIONS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                return Lists.mutable.withAll(ServiceLoader.load(VaultExtension.class));
+            }
+            return existing;
+        });
+    }
+
     public static <T extends ObjectMapper> T withVaultConfigurationExtensions(T objectMapper)
     {
-        MutableList<Pair<String, Class<? extends VaultConfiguration>>> subTypes = IterableIterate.flatCollect(ServiceLoader.load(VaultExtension.class),
+        MutableList<Pair<String, Class<? extends VaultConfiguration>>> subTypes = IterableIterate.flatCollect(extensions(),
                 VaultExtension::getExtraVaultConfigurationSubTypes);
 
         Bag<String> duplicateSubTypeNames = subTypes.collect(Pair::getOne).toBag().selectDuplicates();
@@ -49,7 +66,7 @@ public class VaultFactory
 
     public static VaultImplementation generateVaultImplementationFromConfiguration(VaultConfiguration vaultConfiguration)
     {
-        return IterableIterate.flatCollect(ServiceLoader.load(VaultExtension.class), VaultExtension::getExtraVaultImplementationGenerators)
+        return IterableIterate.flatCollect(extensions(), VaultExtension::getExtraVaultImplementationGenerators)
                 .asLazy().collect(x -> x.apply(vaultConfiguration)).detect(Objects::nonNull);
     }
 }

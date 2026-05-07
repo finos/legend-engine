@@ -26,12 +26,15 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IPostDeploymentActionGrammarComposerExtension extends PureGrammarComposerExtension
 {
+    AtomicReference<List<IPostDeploymentActionGrammarComposerExtension>> CACHE = new AtomicReference<>();
+
     static List<IPostDeploymentActionGrammarComposerExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentActionGrammarComposerExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentActionGrammarComposerExtension.class)) : existing);
     }
 
     static String process(PostDeploymentAction postDeploymentAction, List<Function<PostDeploymentAction, String>> processors)

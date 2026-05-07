@@ -37,6 +37,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -80,7 +81,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.ServiceLoader;
 import java.util.function.Function;
 
 public class ServiceTestGenerationHelper
@@ -290,7 +290,7 @@ public class ServiceTestGenerationHelper
 
     private static Connection getTestConnectionFromFactories(Connection connection, String testData, String element)
     {
-        MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+        MutableList<ConnectionFactoryExtension> factories = Lists.mutable.withAll(ConnectionFactoryExtensionLoader.extensions());
         return factories.asLazy()
                 .collect(f -> f.tryBuildFromConnection(connection, testData, element))
                 .select(Optional::isPresent)

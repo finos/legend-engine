@@ -30,7 +30,6 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -59,6 +58,7 @@ import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
 import org.finos.legend.engine.execution.test.data.generation.api.TestDataGenerationAPI;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
+import org.finos.legend.engine.external.shared.format.extension.GenerationExtensionLoader;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
 import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
@@ -113,6 +113,7 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
@@ -376,7 +377,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new Autofix(modelManager));
 
         // Generation and Import
-        MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
+        MutableList<GenerationExtension> genExtensions = Lists.mutable.withAll(GenerationExtensionLoader.extensions());
         environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
         environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
         // generator apis
@@ -388,7 +389,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new AvroGenerationService(modelManager));
 
         // Execution
-        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel pureModel) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
         environment.jersey().register(new Execute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
         environment.jersey().register(new ExecutePlanStrategic(planExecutor));

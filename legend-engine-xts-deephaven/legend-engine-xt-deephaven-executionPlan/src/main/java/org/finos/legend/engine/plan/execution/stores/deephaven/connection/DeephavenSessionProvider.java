@@ -24,14 +24,24 @@ import org.eclipse.collections.impl.factory.Lists;
 import java.util.List;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface DeephavenSessionProvider extends LegendModuleSpecificExtension
 {
+    AtomicReference<List<DeephavenSessionProvider>> CACHE = new AtomicReference<>();
+
     static List<DeephavenSessionProvider> providers()
     {
-        MutableList<DeephavenSessionProvider> providers = Lists.mutable.empty();
-        ServiceLoader.load(DeephavenSessionProvider.class).iterator().forEachRemaining(providers::add);
-        return providers.asUnmodifiable();
+        return CACHE.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                MutableList<DeephavenSessionProvider> providers = Lists.mutable.empty();
+                ServiceLoader.load(DeephavenSessionProvider.class).iterator().forEachRemaining(providers::add);
+                return providers.asUnmodifiable();
+            }
+            return existing;
+        });
     }
 
     Optional<DeephavenSession> provide(PSKAuthenticationSpecification Auth, DeephavenSourceSpecification sourceSpec);

@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperDataSpac
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
@@ -52,7 +53,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.ServiceLoader;
 
 @Api(tags = "Analytics - Model")
 @Path("pure/v1/analytics/dataSpace")
@@ -67,7 +67,7 @@ public class DataSpaceAnalytics
     public DataSpaceAnalytics(ModelManager modelManager)
     {
         this.modelManager = modelManager;
-        this.generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        this.generatorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         this.entitlementServiceExtensions = EntitlementServiceExtensionLoader.extensions();
     }
 

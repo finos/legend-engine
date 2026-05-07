@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -62,7 +63,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 public class SnowflakeM2MUdfGenerator
 {
@@ -98,7 +98,7 @@ public class SnowflakeM2MUdfGenerator
                 .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.SnowflakeM2MUdfDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
         SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
 
-        MutableList<PlanGeneratorExtension> generatorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(
                 (FunctionDefinition<?>) activator._function(),
                 null,

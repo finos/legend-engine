@@ -33,6 +33,7 @@ import org.finos.legend.engine.plan.execution.service.test.SingleTestRun;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
 import org.finos.legend.engine.plan.execution.service.test.TestRun;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -61,7 +62,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
@@ -136,7 +136,7 @@ public class ServiceModeling
 
     private TestRun executeTests(Service service, Root_meta_legend_service_metamodel_Service pureService, Pair<PureModelContextData, PureModel> pureModelPairs, String pureVersion, String metricsContext) throws IOException, JavaCompileException
     {
-        MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModelPairs.getTwo().getExecutionSupport()));
         MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 

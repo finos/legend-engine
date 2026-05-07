@@ -29,12 +29,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IServiceStoreExecutionExtension extends ExecutionExtension
 {
+    AtomicReference<List<IServiceStoreExecutionExtension>> CACHE = new AtomicReference<>();
+
     static List<IServiceStoreExecutionExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreExecutionExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IServiceStoreExecutionExtension.class)) : existing);
     }
 
     default List<Function5<SecurityScheme, Credential, HttpConnectionBuilder, Identity, CredentialProviderProvider, Boolean>> getExtraSecuritySchemeProcessors(List<Function<Credential,String>> credentialProcessors)

@@ -25,13 +25,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public interface IPostDeploymentActionGrammarParserExtension extends PureGrammarParserExtension
 {
+    AtomicReference<List<IPostDeploymentActionGrammarParserExtension>> CACHE = new AtomicReference<>();
+
     static List<IPostDeploymentActionGrammarParserExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentActionGrammarParserExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IPostDeploymentActionGrammarParserExtension.class)) : existing);
     }
 
     default List<Function<PostDeploymentActionSourceCode, PostDeploymentAction>> getExtraPostDeploymentActionParsers()

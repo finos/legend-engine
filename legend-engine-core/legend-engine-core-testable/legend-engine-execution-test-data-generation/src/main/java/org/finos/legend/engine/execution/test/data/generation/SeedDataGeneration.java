@@ -35,6 +35,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -60,7 +61,6 @@ import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 public class SeedDataGeneration
 {
@@ -82,7 +82,7 @@ public class SeedDataGeneration
             Root_meta_pure_runtime_ExecutionContext executionContext = context == null ? new Root_meta_pure_runtime_ExecutionContext_Impl("") : HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext());
 
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
             MutableList<PlanTransformer> planTransformers = planGeneratorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
             SingleExecutionPlan plan = PlanGenerator.transformExecutionPlan(generateSeedDataPlan(lambdaFunction, pureMapping, pureRuntime, executionContext, parameterNameValueMap, pureModel, routerExtensions, identity), pureModel, clientVersion, identity, routerExtensions, planTransformers);

@@ -19,11 +19,14 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface IDeephavenStoreExecutionExtension extends ExecutionExtension
 {
+    AtomicReference<List<IDeephavenStoreExecutionExtension>> CACHE = new AtomicReference<>();
+
     static List<IDeephavenStoreExecutionExtension> getExtensions()
     {
-        return Lists.mutable.withAll(ServiceLoader.load(IDeephavenStoreExecutionExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.withAll(ServiceLoader.load(IDeephavenStoreExecutionExtension.class)) : existing);
     }
 }

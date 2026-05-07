@@ -35,9 +35,11 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -86,6 +88,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
@@ -93,14 +96,24 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 public class FunctionTestRunner implements TestRunner
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(FunctionTestRunner.class);
+
+    private static final AtomicReference<MutableList<RelationAccessorTestConnectionFactory>> CACHED_RELATION_FACTORIES = new AtomicReference<>();
+
+    private static MutableList<RelationAccessorTestConnectionFactory> loadRelationFactories()
+    {
+        return CACHED_RELATION_FACTORIES.updateAndGet(existing ->
+            existing == null ? org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class)) : existing
+        );
+    }
+
     private final ConcreteFunctionDefinition functionDefinition;
     private FunctionDefinition<?> modifiedFunctionDefinition;
     private final MutableList<PlanGeneratorExtension> extensions;
     private final PlanExecutor executor;
     private final String pureVersion;
 
-    private final MutableList<ConnectionFactoryExtension> connectionBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
-    private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
+    private final MutableList<ConnectionFactoryExtension> connectionBuilders = Lists.mutable.withAll(ConnectionFactoryExtensionLoader.extensions());
+    private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = loadRelationFactories();
     private List<Closeable> closeables = Lists.mutable.empty();
     private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
     private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
@@ -110,7 +123,7 @@ public class FunctionTestRunner implements TestRunner
         this.pureVersion = pureVersion;
         this.functionDefinition = functionDefinition;
         this.executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
-        this.extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        this.extensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
     }
 
     @Override

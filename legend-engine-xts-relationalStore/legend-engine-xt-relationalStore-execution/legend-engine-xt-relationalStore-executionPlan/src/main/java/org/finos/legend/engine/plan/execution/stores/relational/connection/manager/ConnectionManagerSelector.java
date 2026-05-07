@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.mana
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceLoader;
 
 public class ConnectionManagerSelector
 {
@@ -52,7 +50,7 @@ public class ConnectionManagerSelector
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
-        MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
+        MutableList<ConnectionManagerExtension> extensions = Lists.mutable.withAll(ConnectionManagerExtensionLoader.extensions());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
                 new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
         ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));

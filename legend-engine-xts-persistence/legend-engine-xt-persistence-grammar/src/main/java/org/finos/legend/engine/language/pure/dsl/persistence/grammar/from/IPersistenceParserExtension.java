@@ -28,13 +28,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 public interface IPersistenceParserExtension extends PureGrammarParserExtension
 {
+    AtomicReference<List<IPersistenceParserExtension>> CACHE = new AtomicReference<>();
+
     static List<IPersistenceParserExtension> getExtensions()
     {
-        return Lists.mutable.ofAll(ServiceLoader.load(IPersistenceParserExtension.class));
+        return CACHE.updateAndGet(existing -> existing == null ? Lists.mutable.ofAll(ServiceLoader.load(IPersistenceParserExtension.class)) : existing);
     }
 
     static PersistencePlatform process(PersistencePlatformSourceCode code, List<Function<PersistencePlatformSourceCode, PersistencePlatform>> processors)

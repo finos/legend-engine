@@ -29,9 +29,28 @@ import org.finos.legend.engine.shared.core.url.UrlFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNodeContext implements IStoreStreamReadingExecutionNodeContext
 {
+    private static final AtomicReference<MutableList<StoreStreamReaderBuilder>> CACHED_BUILDERS = new AtomicReference<>();
+
+    private static MutableList<StoreStreamReaderBuilder> loadBuilders()
+    {
+        return CACHED_BUILDERS.updateAndGet(existing ->
+        {
+            if (existing == null)
+            {
+                MutableList<StoreStreamReaderBuilder> builders = Lists.mutable.empty();
+                for (StoreStreamReaderBuilder desc : ServiceLoader.load(StoreStreamReaderBuilder.class))
+                {
+                    builders.add(desc);
+                }
+                return builders;
+            }
+            return existing;
+        });
+    }
 
     private final ExecutionState state;
 
@@ -52,11 +71,7 @@ public class StoreStreamReadingExecutionNodeContext extends DefaultExecutionNode
     @Override
     public IStoreStreamReader createReader(String s)
     {
-        MutableList<StoreStreamReaderBuilder> builders = Lists.mutable.empty();
-        for (StoreStreamReaderBuilder desc : ServiceLoader.load(StoreStreamReaderBuilder.class))
-        {
-            builders.add(desc);
-        }
+        MutableList<StoreStreamReaderBuilder> builders = loadBuilders();
         return builders.isEmpty()
                 ? null
                 : builders.getFirst().newStoreStreamReader(s, node.store);

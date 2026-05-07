@@ -18,22 +18,32 @@ import org.eclipse.collections.api.factory.Maps;
 
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ExternalFormatRuntimeExtensionLoader
 {
+    private static final AtomicReference<Map<String, ExternalFormatRuntimeExtension>> EXTENSIONS = new AtomicReference<>();
+
     public static Map<String, ExternalFormatRuntimeExtension> extensions()
     {
-        Map<String, ExternalFormatRuntimeExtension> result = Maps.mutable.empty();
-        for (ExternalFormatRuntimeExtension extension : ServiceLoader.load(ExternalFormatRuntimeExtension.class))
+        return EXTENSIONS.updateAndGet(extensions ->
         {
-            for (String contentType: extension.getContentTypes())
+            if (extensions == null)
             {
-                if (result.put(contentType, extension) != null)
+                Map<String, ExternalFormatRuntimeExtension> result = Maps.mutable.empty();
+                for (ExternalFormatRuntimeExtension extension : ServiceLoader.load(ExternalFormatRuntimeExtension.class))
                 {
-                    throw new IllegalArgumentException("Conflicting runtime extension for external format content type: " + contentType);
+                    for (String contentType : extension.getContentTypes())
+                    {
+                        if (result.put(contentType, extension) != null)
+                        {
+                            throw new IllegalArgumentException("Conflicting runtime extension for external format content type: " + contentType);
+                        }
+                    }
                 }
+                return result;
             }
-        }
-        return result;
+            return extensions;
+        });
     }
 }

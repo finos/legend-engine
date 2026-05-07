@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.snowflakeM2MUdf.generator.SnowflakeM2MUd
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtensionLoader;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -46,7 +47,6 @@ import org.finos.legend.pure.generated.core_snowflake_core_snowflakem2mUdf_valid
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
 public class SnowflakeM2MUdfService implements FunctionActivatorService<Root_meta_external_function_activator_snowflakeM2MUdf_SnowflakeM2MUdf, SnowflakeM2MUdfDeploymentConfiguration, SnowflakeM2MUdfDeploymentResult>
 {
@@ -95,7 +95,7 @@ public class SnowflakeM2MUdfService implements FunctionActivatorService<Root_met
     @Override
     public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeM2MUdf_SnowflakeM2MUdf activator, PureModelContext inputModel, List<SnowflakeM2MUdfDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        MutableList<PlanGeneratorExtension> generatorExtensions = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
+        MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(PlanGeneratorExtensionLoader.extensions());
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(
                 (FunctionDefinition<?>) activator._function(),
                 null,
