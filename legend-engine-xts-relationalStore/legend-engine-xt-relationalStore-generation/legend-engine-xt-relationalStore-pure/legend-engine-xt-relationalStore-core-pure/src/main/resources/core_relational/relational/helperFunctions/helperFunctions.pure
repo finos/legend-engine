@@ -499,3 +499,99 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
     );
   );
 }
+
+// ---------------------------------------------------------------------------
+// Primary-key support for RelationFunctionInstanceSetImplementation
+// ---------------------------------------------------------------------------
+// Required for unioning a relation-function class mapping with sibling class
+// mappings under an OperationSetImplementation (union of subclasses). The
+// upstream legend-pure metamodel for RelationFunctionInstanceSetImplementation
+// does not yet carry an explicit `primaryKey` field, so we auto-infer:
+//   - If the relation function's body is (effectively) a #>{db.tbl}# accessor,
+//     i.e. a RelationStoreAccessor optionally chained through `->filter(...)`,
+//     we take the underlying Table's primary-key column names and project them
+//     onto the function's row type (matching by name).
+//   - Otherwise the inference returns empty; the caller decides whether to
+//     fail (e.g. union mapping) or proceed (e.g. simple getAll).
+// When the upstream metamodel gains an explicit primaryKey field, prefer that
+// over the auto-inference (the Java compiler validates user-declared PKs).
+// ---------------------------------------------------------------------------
+
+function meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
+{
+  let exprs = $r.relationFunction.expressionSequence->evaluateAndDeactivate();
+  if($exprs->size() != 1,
+    | [],
+    | $exprs->at(0)->extractRelationStoreAccessorTablePrimaryKeyNames()
+  );
+}
+
+function <<access.private>> meta::relational::mapping::extractRelationStoreAccessorTablePrimaryKeyNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+{
+  $vs->match([
+    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] |
+        $iv.values->map(v | $v->match([
+          rsa: meta::pure::store::RelationStoreAccessor<Any>[1] |
+              $rsa.sourceElement->match([
+                t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
+                a: Any[*] | []
+              ]),
+          a: Any[*] | []
+        ]))->cast(@String),
+    fe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
+        // Walk through ->filter(...) (and similarly innocuous wrappers); peel one parameter at a time.
+        if($fe.parametersValues->isEmpty(),
+          | [],
+          | $fe.parametersValues->at(0)->extractRelationStoreAccessorTablePrimaryKeyNames()
+        ),
+    cvs: meta::pure::router::clustering::ClusteredValueSpecification[1] |
+        $cvs.val->extractRelationStoreAccessorTablePrimaryKeyNames(),
+    a: Any[*] | []
+  ])->cast(@String);
+}
+
+// Convert a RelationFunctionInstanceSetImplementation to a synthesised
+// RootRelationalInstanceSetImplementation backed by the function as a
+// RelationFunction-typed table source. Required to plug relation-function
+// class mappings into union machinery that is shape-coupled to
+// RootRelationalInstanceSetImplementation.
+function meta::relational::mapping::asRootRelationalInstanceSetImplementation(r:RelationFunctionInstanceSetImplementation[1]):RootRelationalInstanceSetImplementation[1]
+{
+  let mainTableAlias = ^TableAlias(name = $r.id, relationalElement = ^RelationFunction(owner = $r));
+  let pkNames = $r->resolveRelationFunctionPrimaryKeyColumnNames();
+  let relationalPropertyMappings = $r.propertyMappings->cast(@RelationFunctionPropertyMapping)->transformRelationPropertyMappingsToRelational($r);
+  let pkColumns = $pkNames->map(n |
+                              let pmCol = $relationalPropertyMappings
+                                              ->filter(pm | $pm.relationalOperationElement->instanceOf(TableAliasColumn)
+                                                       && $pm.relationalOperationElement->cast(@TableAliasColumn).column.name == $n)
+                                              ->first()
+                                              .relationalOperationElement->cast(@TableAliasColumn).column;
+                              $pmCol);
+  ^RootRelationalInstanceSetImplementation
+  (
+    id = $r.id,
+    root = $r.root,
+    class = $r.class,
+    parent = $r.parent,
+    superSetImplementationId = $r.superSetImplementationId,
+    userDefinedPrimaryKey = !$pkColumns->isEmpty(),
+    mainTableAlias = $mainTableAlias,
+    primaryKey = $pkColumns,
+    propertyMappings = $relationalPropertyMappings
+  );
+}
+
+// Convenience: convert an InstanceSetImplementation to a
+// RootRelationalInstanceSetImplementation, normalising relation-function
+// class mappings on the fly. Other shapes are returned as-is (cast).
+function meta::relational::mapping::asRootRelationalInstanceSetImplementationOrSelf(s:InstanceSetImplementation[1]):RootRelationalInstanceSetImplementation[1]
+{
+  $s->match([
+    rf: RelationFunctionInstanceSetImplementation[1] | $rf->asRootRelationalInstanceSetImplementation(),
+    rr: RootRelationalInstanceSetImplementation[1] | $rr,
+    other: InstanceSetImplementation[1] |
+      fail('Cannot normalise set implementation \'' + $other.id + '\' (type ' + $other->type().name->orElse('?') + ') to RootRelationalInstanceSetImplementation');
+      $other->cast(@RootRelationalInstanceSetImplementation);
+  ]);
+}
+

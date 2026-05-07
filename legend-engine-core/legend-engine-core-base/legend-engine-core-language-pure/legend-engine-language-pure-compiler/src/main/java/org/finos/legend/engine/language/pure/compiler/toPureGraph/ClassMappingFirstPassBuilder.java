@@ -183,6 +183,33 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                 ._root(classMapping.root)
                 ._parent(parentMapping)
                 ._propertyMappings(ListIterate.collect(classMapping.propertyMappings, p -> p.accept(new PropertyMappingBuilder(this.context, baseSetImpl, Lists.mutable.empty()))));
+        // Validate explicit primary key column names (if any) against the declared property mappings.
+        // NOTE: explicit PKs cannot yet be persisted on the Pure metamodel because
+        // RelationFunctionInstanceSetImplementation lives in upstream legend-pure (no `primaryKey` field
+        // there as of legend-pure 5.84.0). The Pure runtime currently relies on auto-inference
+        // (see meta::relational::mapping::resolveRelationFunctionPrimaryKey). Once the upstream metamodel
+        // gains a `primaryKey` field, plumb it here via setImpl._primaryKey(...).
+        if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
+        {
+            java.util.Set<String> declaredColumns = new java.util.HashSet<>();
+            classMapping.propertyMappings.stream()
+                    .filter(pm -> pm instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping)
+                    .map(pm -> ((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping) pm).column)
+                    .filter(Objects::nonNull)
+                    .forEach(declaredColumns::add);
+            for (String pkColumn : classMapping.primaryKey)
+            {
+                if (!declaredColumns.contains(pkColumn))
+                {
+                    throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(
+                            "Primary key column '" + pkColumn + "' declared in class mapping '" + id
+                                    + "' does not match any of its relation property mappings ("
+                                    + String.join(", ", declaredColumns) + ")",
+                            classMapping.sourceInformation,
+                            org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType.COMPILATION);
+                }
+            }
+        }
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
         return Tuples.pair(setImpl, Lists.immutable.empty());
     }

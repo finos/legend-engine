@@ -3390,5 +3390,37 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function expecting arguments is not supported!");
     }
-    
+
+    @Test
+    public void testValidRelationFunctionMappingWithPrimaryKey()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithUnknownPrimaryKeyColumn()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person[person]: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FOO]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' does not match any of its relation property mappings (FIRSTNAME, AGE)");
+    }
+
 }

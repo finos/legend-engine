@@ -580,9 +580,15 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(RelationFunctionClassMapping classMapping)
     {
+        String primaryKeyLine = (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
+                ? getTabString(getBaseTabLevel() + 1) + "~primaryKey: ["
+                        + LazyIterate.collect(classMapping.primaryKey, PureGrammarComposerUtility::convertIdentifier).makeString(", ")
+                        + "]\n"
+                : "";
         return ": Relation\n" +
         getTabString(getBaseTabLevel()) + "{\n" +
         getTabString(getBaseTabLevel() + 1) + "~func " + classMapping.relationFunction.path + "\n" +
+        primaryKeyLine +
         LazyIterate.collect(classMapping.propertyMappings, pm -> getTabString(getBaseTabLevel() + 1) + pm.accept(this)).makeString(",\n") + (classMapping.propertyMappings.isEmpty() ? "" : "\n") +
         getTabString(getBaseTabLevel()) + "}";
     }
