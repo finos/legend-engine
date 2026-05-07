@@ -126,7 +126,7 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
       |  pair($keyValue->toOne(), $transformed);,
       |  let tR = if($f->functionType()->cast(@FunctionType).parameters->size() == 1,
                      |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r),
-                     |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1], Integer[1]->RelationalOperationElement[1]}>)->eval($r, $transformed->keyValues()->size()));
+                     |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1], Integer[1]->RelationalOperationElement[1]}>)->eval($r, $transformed->getMapStats().size)); //we use mapstats for size instead of keyValues()/keys()->size for much better performance
          let toReturn = $tR->match([
                       v:VarSetPlaceHolder[1] | pair($v, $transformed),
 
