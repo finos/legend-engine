@@ -815,15 +815,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "      #{\n" +
                 "        Schema.table:\n" +
                 "            id, firm_id, firstName        , lastName, employeeType\n" +
-                "            1 , 1      , \"I'm,John\\\"Doe\\\"\", Jr      , FTO\n" +
+                "            1 , 1      , \"I'm,John\"\"Doe\"\"\", Jr      , FTO\n" +
                 "            2 , 1      , Nicole           , Smith   , FTC\n" +
                 "            3 , 2      ,                  , Smith   , FTE;\n" +
                 "\n" +
                 "        Schema.table2:\n" +
                 "            id, firm_id, firstName        , lastName, employeeType\n" +
-                "            1 , 1      , \"I'm John\\\"Doe\\\"\", Jr      , FTO\n" +
+                "            1 , 1      , \"I'm,John\"\"Doe\"\"\", Jr      , FTO\n" +
                 "            2 , 1      , Nicole           , Smith   , FTC\n" +
-                "            3 , 2      , \"Time;\"          , Smith   , FTE;\n" +
+                "            3 , 2      , \"Time;\"          , \"\"      , FTE;\n" +
                 "\n" +
                 "        Schema.table3:\n" +
                 "            id, firm_id, firstName, lastName, employeeType;\n" +
@@ -863,6 +863,22 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
         test("function withPath::f(d1: Decimal[1], d2: Decimal[1]): Decimal[1]\n" +
                 "{\n" +
                 "  $d1->divide($d2, 2)\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testFunctionTestWithRelationAssertionNoRows()
+    {
+        // Simple function with a Relation assertion
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => Relation\n" +
+                "  #{\n" +
+                "    id, firstName, lastName;\n" +
+                "  }#;\n" +
                 "}\n");
     }
 

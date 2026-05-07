@@ -71,13 +71,13 @@ public class HelperRelationElementsDataComposer
         int[] maxWidths = new int[numCols];
         for (int i = 0; i < numCols; i++)
         {
-            maxWidths[i] = escapeRelationValue(columns.get(i)).length();
+            maxWidths[i] = columns.get(i).length();
         }
         for (RelationRowTestData row : rows)
         {
             for (int i = 0; i < numCols && i < row.values.size(); i++)
             {
-                maxWidths[i] = Math.max(maxWidths[i], escapeRelationValue(row.values.get(i)).length());
+                maxWidths[i] = Math.max(maxWidths[i], row.values.get(i).length());
             }
         }
 
@@ -95,11 +95,16 @@ public class HelperRelationElementsDataComposer
             {
                 str.append(", ");
             }
-            String val = escapeRelationValue(columns.get(i));
+            String val = columns.get(i);
             str.append(i < numCols - 1 ? padRight(val, maxWidths[i]) : val);
         }
         if (numRows == 0)
-        {   str.append(";");
+        {
+            str.append(";");
+            if (isStandAloneRelation)
+            {
+                str.append("\n").append(baseIndentation).append("}#");
+            }
             return str.toString();
         }
 
@@ -116,7 +121,7 @@ public class HelperRelationElementsDataComposer
                 {
                     str.append(", ");
                 }
-                String value = i < row.values.size() ? escapeRelationValue(row.values.get(i)) : "";
+                String value = i < row.values.size() ? row.values.get(i) : "";
                 str.append(i < numCols - 1 ? padRight(value, maxWidths[i]) : value);
             }
             if (j < numRows - 1)
@@ -155,22 +160,4 @@ public class HelperRelationElementsDataComposer
         }
         return sb.toString();
     }
-
-    public static String escapeRelationValue(String input)
-    {
-        if (input == null)
-        {
-            return "";
-        }
-        if (input.startsWith("\"") && input.endsWith("\""))
-        {
-            return input;
-        }
-        if (input.contains(",") || input.contains(";"))
-        {
-            return "\"" + input.replace("\"", "\\\"") + "\"";
-        }
-        return input;
-    }
-
 }
