@@ -33,22 +33,22 @@ import org.eclipse.collections.api.factory.Maps;
 // TODO move to a better module!
 public class Test_Relational_H2_Semistructured
 {
-    private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists_Connection_1__Boolean_1_"
-    );
+//    private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty_Connection_1__Boolean_1_",
+//            "meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists_Connection_1__Boolean_1_"
+//    );
 
     public static Test suite()
     {
@@ -56,14 +56,14 @@ public class Test_Relational_H2_Semistructured
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
         Set<CoreInstance> skippedCoreInstances = Sets.mutable.empty();
-        for (String path : SKIPPED_TESTS)
-        {
-            CoreInstance ci = executionSupport.getProcessorSupport().package_getByUserPath(path);
-            if (ci != null)
-            {
-                skippedCoreInstances.add(ci);
-            }
-        }
+//        for (String path : SKIPPED_TESTS)
+//        {
+//            CoreInstance ci = executionSupport.getProcessorSupport().package_getByUserPath(path);
+//            if (ci != null)
+//            {
+//                skippedCoreInstances.add(ci);
+//            }
+//        }
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {

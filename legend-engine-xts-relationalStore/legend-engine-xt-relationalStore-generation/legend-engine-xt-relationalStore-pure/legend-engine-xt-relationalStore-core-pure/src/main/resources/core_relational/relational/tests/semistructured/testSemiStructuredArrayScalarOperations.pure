@@ -37,7 +37,7 @@ function meta::relational::tests::semistructured::flattening::arrayScalarExecute
   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectIsEmpty__TabularDataSet_1_',
@@ -53,7 +53,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectSize__TabularDataSet_1_',
@@ -69,7 +69,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectIsNotEmpty__TabularDataSet_1_',
@@ -85,7 +85,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectAt__TabularDataSet_1_',
@@ -101,7 +101,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectFold(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayDirectFold__TabularDataSet_1_',
@@ -117,7 +117,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterWithIsEmpty(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterWithIsEmpty__TabularDataSet_1_',
@@ -133,7 +133,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterOnly(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterOnly__TabularDataSet_1_',
@@ -144,7 +144,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterAtIndex__TabularDataSet_1_',
@@ -160,7 +160,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFirst__TabularDataSet_1_',
@@ -176,7 +176,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterSize(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterSize__TabularDataSet_1_',
@@ -192,7 +192,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMap(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterMap__TabularDataSet_1_',
@@ -203,7 +203,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFold(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFold__TabularDataSet_1_',
@@ -219,7 +219,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFirstInIfElse__TabularDataSet_1_',
@@ -252,7 +252,7 @@ function meta::relational::tests::semistructured::flattening::semiRecordExecute(
   meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, 'flatten::mapping::SemiRecordMapping', $store, $expected);
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists(conn: Connection[1]):Boolean[1]
+function  meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists(conn: Connection[1]):Boolean[1]
 {
   semiRecordExecute($conn,
     'flatten::multiArrayOlapWithNestedIfExists__TabularDataSet_1_',
