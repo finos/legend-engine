@@ -1,0 +1,33 @@
+name: relational-filter
+title: "Relational Mapping with Class-Level Filter"
+description: |
+  Reuses the Person class from `relational-shared-domain`. The class mapping
+  applies a `~filter` clause restricting which rows flow into the materialised
+  entities. The Database defines a named `Filter` expression and the class
+  mapping references it; only rows satisfying the predicate are returned by
+  the test query. The store stays local because the schema needs an extra
+  `active` column not present in the shared FirmDB.
+
+modelSources:
+  model:
+    root: relational-filter
+    files:
+      - store/db.pure
+      - data/testData.pure
+      - mapping/personMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - class
+  - relational-store
+  - relational-mapping
+  - data-element
+  - test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - filter
+  - shared-domain

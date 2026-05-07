@@ -1,0 +1,18 @@
+name: compile-failure
+title: "Class Referencing an Undefined Type"
+description: |
+  A Class whose property type does not exist. PARSE succeeds (the grammar
+  is well-formed) but COMPILE fails. Used to verify that a COMPILE failure
+  correctly cascades — downstream phases are reported as NOT_RUN.
+
+modelSources:
+  model:
+    root: compile-failure
+    files:
+      - model.pure
+
+features:
+  - class
+complexity: basic
+tags:
+  - failure-mode

@@ -1,0 +1,62 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::primary::PrimaryMapping
+(
+  *demo::primary::TargetPerson: Pure
+  {
+    ~src demo::primary::SourcePerson
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+
+  testSuites:
+  [
+    primarySuite:
+    {
+      function: |demo::primary::TargetPerson.all()->graphFetch(#{demo::primary::TargetPerson{fullName}}#)->serialize(#{demo::primary::TargetPerson{fullName}}#);
+      tests:
+      [
+        primaryTest:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::primary::SourcePerson:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"Primary","lastName":"Person"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":"Primary Person"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

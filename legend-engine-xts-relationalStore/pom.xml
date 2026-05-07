@@ -36,6 +36,7 @@
         <module>legend-engine-xt-relationalStore-PCT</module>
         <module>legend-engine-xt-relationalStore-connection-http-api</module>
         <module>legend-engine-xt-relationalStore-MFT-pure</module>
+        <module>legend-engine-xt-relationalStore-emit</module>
 
     </modules>
 </project>
