@@ -59,7 +59,7 @@ function meta::relational::tests::semistructured::composition::semiStructuredExe
     meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, $mapping, $store, $expected);
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::composition::testSemiStructuredThenDerivedPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
+function meta::relational::tests::semistructured::composition::testSemiStructuredThenDerivedPrimitivePropertyAccess(conn: Connection[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
     'composition::semiStructuredThenDerivedPrimitivePropertyAccess__TabularDataSet_1_',

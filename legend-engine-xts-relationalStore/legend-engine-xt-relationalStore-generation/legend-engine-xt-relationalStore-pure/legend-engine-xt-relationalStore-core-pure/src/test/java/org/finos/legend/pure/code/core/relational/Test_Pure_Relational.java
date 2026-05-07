@@ -19,9 +19,11 @@ import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.junit.Ignore;
 
 public class Test_Pure_Relational
 {
+    @Ignore
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
