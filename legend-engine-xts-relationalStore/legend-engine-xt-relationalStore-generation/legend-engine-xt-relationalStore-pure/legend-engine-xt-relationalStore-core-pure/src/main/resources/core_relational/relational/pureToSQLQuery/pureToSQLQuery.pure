@@ -2608,9 +2608,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::alignJo
 
 function meta::relational::functions::pureToSqlQuery::processNoOp(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   assert(!($state.disableAutoFlatten == true && $f.func == first_T_MANY__T_$0_1$_), 'first_T_MANY__T_$0_1$_ is not supported for semistructured array!');
    //Ignores the function and only processes the first parameter
-   processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+   processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()
 }
 
 function meta::relational::functions::pureToSqlQuery::processCast(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -3774,6 +3773,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 
 function meta::relational::functions::pureToSqlQuery::processSemiStructuredArrayFirst(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+  fail('Processing semiStructuredArrayFirst');
   let firstParam = $f.parametersValues->evaluateAndDeactivate()->at(0);
 
   // Resolve property mapping by walking through the chain to find the base semi-structured property
