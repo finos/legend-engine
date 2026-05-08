@@ -1,0 +1,15 @@
+name: diamond-clash-a
+title: "Clash dependency A"
+description: |
+  Declares a file at virtual path 'model/shared.pure' with one absolute
+  resolution. Combined with clash-b in clash-test to verify that the
+  loader still raises a clash error when two dependencies contribute
+  the same virtual path with different absolute paths.
+
+modelSources:
+  model:
+    root: clash-a
+    files:
+      - model/shared.pure
+
+complexity: basic

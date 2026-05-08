@@ -1,0 +1,14 @@
+name: diamond-clash-b
+title: "Clash dependency B"
+description: |
+  Declares a file at virtual path 'model/shared.pure' resolving to a
+  different absolute path than clash-a, exercising the loader's clash
+  detection.
+
+modelSources:
+  model:
+    root: clash-b
+    files:
+      - model/shared.pure
+
+complexity: basic

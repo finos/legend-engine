@@ -1,0 +1,18 @@
+name: diamond-clash-test
+title: "Clash detection across dependencies"
+description: |
+  Top-level descriptor that pulls in clash-a and clash-b as dependencies.
+  Both contribute a file at virtual path 'model/shared.pure' but with
+  different absolute paths, so the loader should raise a clash error
+  rather than silently dedupe.
+
+modelSources:
+  model:
+    root: clash-test
+    files:
+      - model/main.pure
+  dependencies:
+    - source: clash-a.emit.yaml
+    - source: clash-b.emit.yaml
+
+complexity: basic
