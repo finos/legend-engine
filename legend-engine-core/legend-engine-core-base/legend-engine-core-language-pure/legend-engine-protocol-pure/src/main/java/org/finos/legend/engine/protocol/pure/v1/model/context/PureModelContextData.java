@@ -20,7 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.block.HashingStrategy;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
 import org.eclipse.collections.impl.utility.ArrayIterate;
@@ -309,6 +311,45 @@ public class PureModelContextData extends PureModelContextConcrete
         public Builder withPureModelContextData(PureModelContextData pureModelContextData)
         {
             addPureModelContextData(pureModelContextData);
+            return this;
+        }
+
+        public boolean mergeSectionIndexes()
+        {
+            if (this.elements.size() <= 1)
+            {
+                return false;
+            }
+
+            MutableMap<String, MutableList<SectionIndex>> sectionIndexesByPath = Maps.mutable.empty();
+            boolean removed = this.elements.removeIf(e -> (e instanceof SectionIndex) &&
+                    (sectionIndexesByPath.getIfAbsentPut(e.getPath(), Lists.mutable::empty).with((SectionIndex) e).size() > 1));
+            if (removed)
+            {
+                this.elements.forEachWithIndex((element, i) ->
+                {
+                    if (element instanceof SectionIndex)
+                    {
+                        String path = element.getPath();
+                        MutableList<SectionIndex> sectionIndexes = sectionIndexesByPath.get(path);
+                        if (sectionIndexes.size() > 1)
+                        {
+                            SectionIndex merged = new SectionIndex();
+                            merged._package = sectionIndexes.get(0)._package;
+                            merged.name = sectionIndexes.get(0).name;
+                            merged.sourceInformation = sectionIndexes.get(0).sourceInformation;
+                            sectionIndexes.forEach(si -> merged.sections.addAll(si.sections));
+                            this.elements.set(i, merged);
+                        }
+                    }
+                });
+            }
+            return removed;
+        }
+
+        public Builder withSectionIndexesMerged()
+        {
+            mergeSectionIndexes();
             return this;
         }
 

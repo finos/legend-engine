@@ -124,7 +124,7 @@ public final class EMITTasks
                     primarySourceIds.add(file.getVirtualPath());
                 }
             });
-            return new ParseResult(builder.distinct().build(), primarySourceIds, totalElements[0]);
+            return new ParseResult(builder.withSectionIndexesMerged().build(), primarySourceIds, totalElements[0]);
         }
         catch (EngineException e)
         {
