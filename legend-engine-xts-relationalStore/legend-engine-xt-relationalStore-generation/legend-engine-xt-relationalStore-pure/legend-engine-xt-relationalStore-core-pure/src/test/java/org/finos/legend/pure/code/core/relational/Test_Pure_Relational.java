@@ -23,7 +23,6 @@ import org.junit.Ignore;
 
 public class Test_Pure_Relational
 {
-    @Ignore
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
