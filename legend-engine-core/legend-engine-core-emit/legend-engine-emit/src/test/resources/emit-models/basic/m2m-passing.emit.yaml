@@ -1,0 +1,25 @@
+name: m2m-passing
+title: "M2M Mapping with Passing Tests"
+description: |
+  A model-to-model mapping with an embedded test suite that passes.
+  Sources are split across three files (source class, target class, mapping)
+  to exercise multi-file parse + SectionIndex merging in addition to the
+  PARSE, COMPILE, and TEST_EXECUTION phases of the EMIT runner.
+
+modelSources:
+  model:
+    root: m2m-passing
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/personMapping.pure
+
+features:
+  - class
+  - m2m-mapping
+  - mapping
+  - data-element
+complexity: basic
+tags:
+  - m2m
+  - mapping-test

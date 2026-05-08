@@ -21,17 +21,17 @@ import org.finos.legend.pure.generated.Package_Impl;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m3.navigation.enumeration.Enumeration;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.type.MetadataJavaPaths;
-import org.finos.legend.pure.m3.navigation.enumeration.Enumeration;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 
 public class InterpretedMetadata implements Metadata
 {
-    private ProcessorSupport processorSupport;
+    private final ProcessorSupport processorSupport;
 
     public InterpretedMetadata(ProcessorSupport processorSupport)
     {
@@ -56,36 +56,36 @@ public class InterpretedMetadata implements Metadata
 
     }
 
-    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
+    private static final MetadataPelt METADATA_LAZY = MetadataPelt.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
 
     @Override
-    public CoreInstance getMetadata(String s, String s1)
+    public CoreInstance getMetadata(String classifier, String id)
     {
-        if (s1.startsWith("Root::"))
+        if (id.startsWith("Root::"))
         {
-            s1 = s1.substring(6);
+            id = id.substring(6);
         }
-        if (s.equals(MetadataJavaPaths.LambdaFunction))
+        if (classifier.equals(MetadataJavaPaths.LambdaFunction))
         {
             // This path is used when Java generated code is called using a Pure IDE mixed context
             // (The SQL compiler is calling Pure generated code in compiled phase).
-            return new MetadataWrapper(new Package_Impl(M3Paths.Root)._name(M3Paths.Root), METADATA_LAZY).getMetadata(s, s1);
+            return new MetadataWrapper(new Package_Impl(M3Paths.Root)._name(M3Paths.Root), METADATA_LAZY).getMetadata(classifier, id);
         }
         else
         {
-            return _Package.getByUserPath(s1, processorSupport);
+            return _Package.getByUserPath(id, processorSupport);
         }
     }
 
     @Override
-    public MapIterable<String, CoreInstance> getMetadata(String s)
+    public MapIterable<String, CoreInstance> getMetadata(String classifier)
     {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public CoreInstance getEnum(String s, String s1)
+    public CoreInstance getEnum(String enumerationName, String enumName)
     {
-        return Enumeration.findEnum(this.getMetadata(MetadataJavaPaths.Enumeration, s), s1);
+        return Enumeration.findEnum(getMetadata(MetadataJavaPaths.Enumeration, enumerationName), enumName);
     }
 }

@@ -64,10 +64,16 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
     | $withFilter->buildRelationLimitFilterExpression($reconInput.defectLimit->toOne(), $withFilter.genericType)
   );
 
+  //enrich DQ columns if required
+  let withDqCols = if ($reconInput.enrichDQColumns,
+    | enrichDqColumns($withLimit, $sourceHashCol, $targetHashCol, $joinRelType),
+    | $withLimit
+  );
+
   // Build final lambda - if there are parameters, create new lambda with merged params; otherwise preserve baseLambda structure
   if ($allParams->isEmpty(),
-    | ^$baseLambda(expressionSequence=$withLimit),
-    | lambda(^FunctionType(returnMultiplicity=$withLimit.multiplicity, returnType=$withLimit.genericType, parameters=$allParams), $withLimit)
+    | ^$baseLambda(expressionSequence=$withDqCols),
+    | lambda(^FunctionType(returnMultiplicity=$withLimit.multiplicity, returnType=$withLimit.genericType, parameters=$allParams), $withDqCols)
   );
 }
 
@@ -138,6 +144,17 @@ function meta::external::dataquality::datarecon::validateColumns(input: ValueSpe
 function meta::external::dataquality::datarecon::validateColumnExists(relType: RelationType<Any>[1], columns: String[*], type: String[1], field: String[1]): Boolean[*]
 {
   $columns->map(column | assert($relType.columns->exists(col | $col.name->toOne() == $column), 'Expected ' + $type + ' table to contain field ' + $column + ' which was specified as ' + $field));
+}
+
+function meta::external::dataquality::datarecon::enrichDqColumns(input: ValueSpecification[1], sourceHasCol: String[1], targetHashCol: String[1], relType: RelationType<Any>[1]): ValueSpecification[1]
+{  
+  let relParamName = 'row';
+
+  let newRelTypeWithRuleName = $relType->addColumns(~[DQ_RULE_NAME: String[1]])->evaluateAndDeactivate();
+  let withRuleName = $input->buildExtendExpression('DQ_RULE_NAME', ^InstanceValue(values='DQ_RECONCILIATION', genericType=^GenericType(rawType=String), multiplicity=PureOne), $relParamName, $relType, $newRelTypeWithRuleName, String);
+
+  let newRelTypeWithLogicalDefectId = $newRelTypeWithRuleName->addColumns(~[DQ_LOGICAL_DEFECT_ID: String[1]])->evaluateAndDeactivate();
+  $withRuleName->buildExtendExpression('DQ_LOGICAL_DEFECT_ID', buildHashFunctionExpression($newRelTypeWithRuleName, [$sourceHasCol, $targetHashCol], $relParamName, false, []), $relParamName, $newRelTypeWithRuleName, $newRelTypeWithLogicalDefectId, String);
 }
 
 function meta::external::dataquality::datarecon::buildCastToRelation(dataset: LambdaFunction<Any>[1], input: ValueSpecification[1]): ValueSpecification[1]
@@ -451,10 +468,10 @@ function meta::external::dataquality::datarecon::compileViaGrammarWithContext(vs
 
 function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]): DataQualityReconInput[1]
 {
-  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false);
+  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false, false);
 }
 
-function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]): DataQualityReconInput[1]
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1], enrichDQColumns: Boolean[1]): DataQualityReconInput[1]
 {
-  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit, removeFrom = $removeFrom);
+  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit, removeFrom = $removeFrom, enrichDQColumns = $enrichDQColumns);
 }

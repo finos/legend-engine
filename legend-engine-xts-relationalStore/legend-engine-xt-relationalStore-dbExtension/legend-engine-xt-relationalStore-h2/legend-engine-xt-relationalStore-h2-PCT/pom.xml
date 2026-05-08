@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-h2</artifactId>
-        <version>4.128.3-SNAPSHOT</version>
+        <version>4.129.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,10 +43,15 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compiler</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -209,16 +214,20 @@
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -258,20 +267,21 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-h2-sqlDialectTranslation-pure</artifactId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
         <!-- TEST -->

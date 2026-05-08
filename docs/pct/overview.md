@@ -2,6 +2,16 @@
 Pure functions can be thought of as the platform's api. The Pure Compatibility Testing (PCT) Framework is how
 we specify expectations around the api. This guide enables you to contribute platform functions while leveraging PCT.
 
+## Quick Start: Which Guide Do I Need?
+
+| I want to... | Guide |
+|--------------|-------|
+| Add a function implemented in Pure | [Pure Function How-To](purefunction-howto.md) |
+| Add a function implemented in Java (native) | [Native How-To](native-howto.md) |
+| Make my function work on databases | [Wiring How-To](wiring-howto.md) |
+| Run PCT tests and handle failures | [Expected Failures How-To](expected-failures-howto.md) |
+| Understand concepts like routing, DynaFunction | [Concepts & Glossary](concepts-glossary.md) |
+
 ## Development Setup
 Set up development environment for *legend-engine*:
 - https://github.com/finos/legend-engine/blob/master/README.md#development-setup

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code-functions-standard</artifactId>
-        <version>4.128.3-SNAPSHOT</version>
+        <version>4.129.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-functions-standard-pure</artifactId>
@@ -69,6 +69,10 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compiler</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>

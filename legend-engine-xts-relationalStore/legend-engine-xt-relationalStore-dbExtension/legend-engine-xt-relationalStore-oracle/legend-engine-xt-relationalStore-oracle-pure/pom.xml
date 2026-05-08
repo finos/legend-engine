@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-relationalStore-oracle</artifactId>
-        <version>4.128.3-SNAPSHOT</version>
+        <version>4.129.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,10 +43,15 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-graph-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-path-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-json-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compiler</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
@@ -120,6 +125,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-json-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

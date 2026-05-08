@@ -24,6 +24,21 @@ update the expectedFailures to exclude that test.
      - AdapterQualifier.assertErrorMismatch: used for functions that used assertError but the error message is not matching the expected error message
      - AdapterQualifier.needsImplementation: used for functions that are not yet implemented on the target platform
 
+##### Example: Adding Expected Failures
+In the PCT test file (e.g., `Test_Relational_Postgres_PCT.java`), add to the `expectedFailures` method:
+
+```java
+// Single test exclusion
+one("meta::pure::functions::relation::tests::zscore::testZScore_Nulls_Function_1__Boolean_1_",
+    "Postgres throws type error on non-numeric values",
+    AdapterQualifier.unsupportedFeature)
+
+// Exclude all tests in a package
+pack("meta::pure::functions::relation::tests::pivot",
+    "Pivot not yet supported on Postgres",
+    AdapterQualifier.needsImplementation)
+```
+
 2. If the failure is unexpected, fix the failure. 
 
 > **Note on CTE-related errors in PCT-relational:** stores that reject common table

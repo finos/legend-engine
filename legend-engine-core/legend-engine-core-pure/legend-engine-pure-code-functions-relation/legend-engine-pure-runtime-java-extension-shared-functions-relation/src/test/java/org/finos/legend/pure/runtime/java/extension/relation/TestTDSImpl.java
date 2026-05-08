@@ -21,7 +21,6 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.pure.m2.inlinedsl.tds.TDSExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.TDS;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.relation._Column;
@@ -40,7 +39,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
 
 public class TestTDSImpl extends TestTDS
@@ -51,7 +50,7 @@ public class TestTDSImpl extends TestTDS
     {
         RichIterable<CodeRepository> codeRepos = CodeRepositoryProviderHelper.findCodeRepositories().select((r) -> !r.getName().equals("test_generic_repository") && !r.getName().equals("other_test_generic_repository"));
         ClassLoader classLoader = TestTDSImpl.class.getClassLoader();
-        CompiledExecutionSupport cs = new CompiledExecutionSupport(new JavaCompilerState((MemoryFileManager) null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, codeRepos.collect(CodeRepository::getName)), Sets.mutable.empty()), (SourceRegistry) null, new CompositeCodeStorage(new RepositoryCodeStorage[]{new ClassLoaderCodeStorage(classLoader, codeRepos)}), (IncrementalCompiler) null, (ExecutionActivityListener) null, new ConsoleCompiled(), (MetadataProvider) null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
+        CompiledExecutionSupport cs = new CompiledExecutionSupport(new JavaCompilerState((MemoryFileManager) null, classLoader), new CompiledProcessorSupport(classLoader, MetadataPelt.fromClassLoader(classLoader, codeRepos.collect(CodeRepository::getName)), Sets.mutable.empty()), (SourceRegistry) null, new CompositeCodeStorage(new RepositoryCodeStorage[]{new ClassLoaderCodeStorage(classLoader, codeRepos)}), (IncrementalCompiler) null, (ExecutionActivityListener) null, new ConsoleCompiled(), (MetadataProvider) null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
         ps = cs.getProcessorSupport();
     }
 

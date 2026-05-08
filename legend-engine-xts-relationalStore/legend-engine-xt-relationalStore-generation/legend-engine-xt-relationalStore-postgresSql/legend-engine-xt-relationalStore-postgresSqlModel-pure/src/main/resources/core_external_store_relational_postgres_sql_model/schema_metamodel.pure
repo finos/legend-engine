@@ -13,6 +13,11 @@ Class meta::external::query::sql::schema::metamodel::EnumSchemaColumn extends me
   <<equality.Key>> type: String[1];
 }
 
+Class meta::external::query::sql::schema::metamodel::VariantSchemaColumn extends meta::external::query::sql::schema::metamodel::SchemaColumn
+{
+  <<equality.Key>> type: String[1];
+}
+
 
 Class meta::external::query::sql::schema::metamodel::Schema
 {

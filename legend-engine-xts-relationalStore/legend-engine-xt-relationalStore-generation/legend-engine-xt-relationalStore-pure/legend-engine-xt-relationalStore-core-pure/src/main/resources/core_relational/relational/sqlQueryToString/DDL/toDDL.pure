@@ -115,8 +115,11 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                   let sql = loadValuesToDbTable2(list($tab.p.values->slice(3,$tab.p.values->size())),
                                                        $pTable, $columns, $dbConfig);
                                   ^Res(p=^List<List<String>>(), s=$tab.s->concatenate($sql));,
-                                | let r = $tab.p;
-                                  ^Res(p=^$r(values+=$row), s = $tab.s);
+                                | if(($row.values->at(0) == '' || $row.values->at(0)->startsWith('-')) && $tab.p.values->isEmpty() && $row.values->size()==1,
+                                    | $tab;,
+                                    | let r = $tab.p;
+                                      ^Res(p=^$r(values+=$row), s = $tab.s);
+                                  );
                             );
                   },^Res(p=^List<List<String>>(), s = [])
             ).s;
@@ -163,8 +166,7 @@ function meta::alloy::service::execution::setUpDataSQLsV2(data:String[1], db:Dat
 {
    let schemaAndTableSetup = $db->map(d|$d->meta::alloy::service::execution::schemaAndTableSetup($dbConfig));
 
-   let formattedData = $data->split('\n')
-                            ->map(l|list($l->meta::alloy::service::execution::splitWithEmptyValueV2()))
+   let formattedData = $data->meta::pure::functions::string::parseCSV()
                             ->concatenate(list(''));
 
    $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($formattedData, $db, $dbConfig, t:Table[1]|$t));

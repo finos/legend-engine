@@ -23,10 +23,12 @@ on:
     branches:
       - master
       - 'legend-release-*'
+      - 'release-legend-release-*'
   pull_request:
     branches:
       - master
       - 'legend-release-*'
+      - 'release-legend-release-*'
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch

@@ -32,9 +32,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
-import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -55,7 +53,7 @@ public abstract class GenerateJavaProject
         ClassLoader classLoader = Pure.class.getClassLoader();
         this.executionSupport = new CompiledExecutionSupport(
                 new JavaCompilerState(null, classLoader),
-                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories(classLoader).collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(classLoader, MetadataPelt.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories(classLoader).collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                         CodeRepositoryProviderHelper.findPlatformCodeRepository()
@@ -63,8 +61,6 @@ public abstract class GenerateJavaProject
                 null,
                 null,
                 new ConsoleCompiled(),
-                new FunctionCache(),
-                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()

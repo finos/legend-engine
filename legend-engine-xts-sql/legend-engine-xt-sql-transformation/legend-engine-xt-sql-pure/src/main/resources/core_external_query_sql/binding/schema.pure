@@ -41,6 +41,11 @@ function meta::external::query::sql::schema::tdsColToSchemaCol(col: TDSColumn[1]
   let columnPrimitiveType = $col.type->match([
     s:PrimitiveType[1]      | ^meta::external::query::sql::schema::metamodel::PrimitiveSchemaColumn(type=$tdsType->meta::external::query::sql::schema::typeToPrimitiveType(),name=$columnName),
     e:Enumeration<Any>[1]   | ^meta::external::query::sql::schema::metamodel::EnumSchemaColumn(type=$tdsType->meta::pure::functions::meta::elementToPath(),name=$columnName),
+    c:Class<Any>[1]         | if ([
+                                pair(| $c == meta::pure::metamodel::variant::Variant, | ^meta::external::query::sql::schema::metamodel::VariantSchemaColumn(type = meta::pure::metamodel::variant::Variant->elementToPath(),name=$columnName))
+                              ],
+                                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported')
+                              );,
     a:Any[*]                | fail('Unsupported type on column: ' + $columnName + ' (' + $tdsType->meta::pure::functions::meta::elementToPath() + '), only primitive types and enums are supported');
   ])->cast(@meta::external::query::sql::schema::metamodel::SchemaColumn);
 }

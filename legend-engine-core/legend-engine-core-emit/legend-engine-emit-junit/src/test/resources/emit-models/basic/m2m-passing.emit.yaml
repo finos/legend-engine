@@ -1,0 +1,23 @@
+name: m2m-passing
+title: "M2M Mapping with Passing Tests"
+description: |
+  A model-to-model mapping with an embedded test suite that passes. Used to
+  verify that the JUnit integration emits one DynamicTest per atomic test
+  inside a TestSuite.
+
+modelSources:
+  model:
+    root: m2m-passing
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/personMapping.pure
+
+features:
+  - class
+  - m2m-mapping
+  - mapping
+complexity: basic
+tags:
+  - m2m
+  - mapping-test

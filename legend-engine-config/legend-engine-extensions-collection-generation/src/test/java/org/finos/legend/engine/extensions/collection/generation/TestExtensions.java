@@ -166,9 +166,7 @@ import org.finos.legend.pure.code.core.XMLLegendPureCoreExtension;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
-import org.finos.legend.pure.runtime.java.compiled.serialization.binary.DistributedBinaryGraphDeserializer;
-import org.finos.legend.pure.runtime.java.compiled.serialization.binary.DistributedMetadataSpecification;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -248,27 +246,6 @@ public class TestExtensions
     }
 
     @Test
-    public void testMetadataSpecifications()
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Iterable<String> expectedRepos = getExpectedCodeRepositories();
-
-        MutableSet<String> allSpecNames = Iterate.collect(DistributedMetadataSpecification.loadAllSpecifications(classLoader), DistributedMetadataSpecification::getName, Sets.mutable.empty());
-        Assert.assertEquals(Lists.fixedSize.empty(), Iterate.reject(expectedRepos, allSpecNames::contains, Lists.mutable.empty()));
-
-        MutableSet<String> specNames = Iterate.collect(DistributedMetadataSpecification.loadSpecifications(classLoader, expectedRepos), DistributedMetadataSpecification::getName, Sets.mutable.empty());
-
-        MutableSet<String> expected = Sets.mutable.withAll(expectedRepos).with("platform");
-        MutableSet<String> actual = specNames.select(c -> !c.startsWith("platform_"));
-
-        MutableSet<String> extraOnExpected = expected.difference(actual);
-        MutableSet<String> extraOnActual = actual.difference(expected);
-
-        Assert.assertEquals("Expected but not found on actual: ", extraOnExpected, Sets.mutable.empty());
-        Assert.assertEquals("Actual missing on expected: ", extraOnActual, Sets.mutable.empty());
-    }
-
-    @Test
     public void testPackageableElementProtocolDefineClassifier()
     {
         List<PureProtocolExtension> extensions = PureProtocolExtensionLoader.extensions();
@@ -291,7 +268,7 @@ public class TestExtensions
     public void testMetadata()
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        MetadataLazy metadataLazy = MetadataLazy.fromClassLoader(classLoader, getExpectedCodeRepositories());
+        MetadataPelt metadata = MetadataPelt.fromClassLoader(classLoader, getExpectedCodeRepositories());
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
         Assert.assertEquals(
                 Lists.fixedSize.empty(),
@@ -299,9 +276,9 @@ public class TestExtensions
                 {
                     try
                     {
-                        return metadataLazy.getMetadata(M3Paths.Class, cl) == null;
+                        return metadata.getMetadata(M3Paths.Class, cl) == null;
                     }
-                    catch (DistributedBinaryGraphDeserializer.UnknownInstanceException ignore)
+                    catch (Exception ignore)
                     {
                         return true;
                     }

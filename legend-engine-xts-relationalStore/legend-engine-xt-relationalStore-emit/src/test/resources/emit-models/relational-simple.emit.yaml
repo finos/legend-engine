@@ -1,0 +1,31 @@
+name: relational-simple
+title: "Relational Mapping with Embedded Test"
+description: |
+  The Person class from `relational-shared-domain` is mapped relationally to
+  an H2-shaped table, with an embedded mapping test suite that loads CSV-
+  style test data via a Data element. Verifies that EMIT can drive parse,
+  compile, and test execution against a relational mapping end-to-end.
+
+modelSources:
+  model:
+    root: relational-simple
+    files:
+      - store/db.pure
+      - data/testData.pure
+      - mapping/personMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - class
+  - relational-store
+  - relational-mapping
+  - data-element
+  - test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - mapping-test
+  - shared-domain

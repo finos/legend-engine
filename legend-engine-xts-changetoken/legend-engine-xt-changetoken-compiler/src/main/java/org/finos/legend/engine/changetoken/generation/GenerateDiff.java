@@ -19,8 +19,8 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
@@ -40,9 +40,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
-import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +71,7 @@ public class GenerateDiff
         newEntities = ElementPathTransformer.newTransformer((e) -> newDependenciesPaths.contains(e) ? "new::dependencies::vX_X_X::".concat(e) : "new::entities::vX_X_X::".concat(e)).addElements(newEntities).transformElements();
         pureModelContextDataBuilder.addElements(newEntities);
         PureModelContextData pureModelContextData = pureModelContextDataBuilder.build();
-        executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(classLoader), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
+        executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataPelt.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
         pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
     }
 

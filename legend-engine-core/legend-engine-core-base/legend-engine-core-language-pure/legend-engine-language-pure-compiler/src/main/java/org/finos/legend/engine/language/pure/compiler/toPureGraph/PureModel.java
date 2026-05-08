@@ -64,14 +64,13 @@ import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath;
 import org.finos.legend.pure.m3.coreinstance.Package;
+import org.finos.legend.pure.m3.coreinstance.lazy.LazyCoreInstance;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -107,15 +106,17 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.AbstractLazyReflectiveCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +141,8 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final Root_meta_pure_metamodel_type_Class_Impl NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_type_Class_Impl("Anonymous_NoCounter");
-    public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
+    private static final Root_meta_pure_metamodel_type_Class_Impl<?> NULL_ELEMENT_SENTINEL = new Root_meta_pure_metamodel_type_Class_Impl<>("Anonymous_NoCounter");
+    public static final MetadataPelt METADATA_LAZY = MetadataPelt.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
     private static final RichIterable<CodeRepository> repositories = CodeRepositoryProviderHelper.findCodeRepositories().select(CodeRepositoryProviderHelper.platformAndCore);
     private static final MutableList<CompiledExtension> compiledExtensions = CompiledExtensionLoader.extensions();
     private static final ConcurrentMutableMap<String, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object>>> fcache = ConcurrentHashMap.newMap();
@@ -534,32 +535,37 @@ public class PureModel implements IPureModel
      */
     private void registerElementsForPathToElement()
     {
-        registerElementForPathToElement("meta::pure::mapping::modelToModel::contract", Lists.mutable.with(
+        registerElementForPathToElement("meta::pure::mapping::modelToModel::contract",
                 "supports_FunctionExpression_1__Boolean_1_",
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_",
                 "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_",
                 "getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_",
                 "getterOverrideNonMapped_Any_1__Property_1__Any_MANY_"
-        ));
-        registerElementForPathToElement("meta::pure::mapping::aggregationAware::contract", Lists.mutable.with(
+        );
+        registerElementForPathToElement("meta::pure::mapping::aggregationAware::contract",
                 "supports_FunctionExpression_1__Boolean_1_",
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_",
                 "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_"
-        ));
-        registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute", Lists.mutable.with(
+        );
+        registerElementForPathToElement("meta::protocols::pure::vX_X_X::invocation::execution::execute",
                 "alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_",
                 "executePlan_ExecutionPlan_1__String_1__Integer_1__Extension_MANY__String_1_"
-        ));
-        registerElementForPathToElement("meta::pure::tds", Lists.mutable.with(
+        );
+        registerElementForPathToElement("meta::pure::tds",
                 "TDSRow"
-        ));
-        registerElementForPathToElement("meta::pure::metamodel::relation", Lists.mutable.with(
+        );
+        registerElementForPathToElement("meta::pure::metamodel::relation",
                 "Column"
-        ));
-        registerElementForPathToElement("meta::pure::metamodel::variant", Lists.mutable.with(
+        );
+        registerElementForPathToElement("meta::pure::metamodel::variant",
                 "Variant"
-        ));
+        );
         this.extensions.getExtraElementForPathToElementRegisters().forEach(register -> register.value(this::registerElementForPathToElement));
+    }
+
+    private void registerElementForPathToElement(String pack, String... children)
+    {
+        registerElementForPathToElement(pack, Arrays.asList(children));
     }
 
     private void registerElementForPathToElement(String pack, List<String> children)
@@ -567,7 +573,7 @@ public class PureModel implements IPureModel
         try (AutoCloseableLock ignored = this.pureModelProcessParameter.writeLock())
         {
             org.finos.legend.pure.m3.coreinstance.Package newPkg = getOrCreatePackage(root, pack);
-            org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pack);
+            org.finos.legend.pure.m3.coreinstance.Package oldPkg = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getElementByPath(M3Paths.Root), pack);
             for (String child : children)
             {
                 // allow duplicated registration, but only the first one will actually get registered
@@ -845,15 +851,26 @@ public class PureModel implements IPureModel
             return packageableElement;
         }
 
-        Metadata metadata = this.executionSupport.getMetadata();
-        if (metadata.supportsElementByPath())
+        MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+        if (metadataAccessor.supportsGetPackageableElement())
         {
-            CoreInstance found = metadata.getElementByPath(fullPath);
-            if (found instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)
+            packageableElement = metadataAccessor.getPackageableElement(fullPath);
+            if (packageableElement instanceof Type)
             {
-                packageableElement = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) found;
-                this.packageableElementsIndex.putIfAbsent(fullPathWithPrefix, packageableElement);
-                return packageableElement;
+                this.immutables.add(fullPathWithPrefix);
+                this.typesIndex.putIfAbsent(fullPathWithPrefix, (Type) packageableElement);
+            }
+            else if ((packageableElement instanceof Association) || (packageableElement instanceof PackageableFunction))
+            {
+                this.immutables.add(fullPathWithPrefix);
+            }
+            else if (!(packageableElement instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile))
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement foundPackageableElement = findPackageableElement(fullPathWithPrefix);
+                if (foundPackageableElement != null)
+                {
+                    packageableElement = foundPackageableElement;
+                }
             }
         }
         else
@@ -881,10 +898,10 @@ public class PureModel implements IPureModel
             {
                 return packageableElement;
             }
-        }
 
-        // For other elements search the package tree
-        packageableElement = findPackageableElement(fullPathWithPrefix);
+            // For other elements search the package tree
+            packageableElement = findPackageableElement(fullPathWithPrefix);
+        }
         if (packageableElement != null)
         {
             this.packageableElementsIndex.put(fullPathWithPrefix, packageableElement);
@@ -953,11 +970,15 @@ public class PureModel implements IPureModel
         }
 
         // Search for system types in the Pure graph
-        Metadata metadata = this.executionSupport.getMetadata();
-        if (metadata.supportsElementByPath())
+        MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+        if (metadataAccessor.supportsGetPackageableElement())
         {
-            CoreInstance element = metadata.getElementByPath(fullPath);
-            if (element instanceof Type)
+            CoreInstance element = metadataAccessor.getPackageableElement(fullPath);
+            if (element == null)
+            {
+                type = tryGetUnitByLegacyId(fullPath);
+            }
+            else if (element instanceof Type)
             {
                 type = (Type) element;
             }
@@ -1084,10 +1105,10 @@ public class PureModel implements IPureModel
     {
         String fullPathWithPrefix = addPrefixToTypeReference(fullPath);
         PackageableFunction<?> packageableFunction;
-        Metadata metadata = this.executionSupport.getMetadata();
-        if (metadata.supportsElementByPath())
+        MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+        if (metadataAccessor.supportsGetPackageableElement())
         {
-            CoreInstance element = metadata.getElementByPath(fullPath);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = metadataAccessor.getPackageableElement(fullPath);
             packageableFunction = (element instanceof PackageableFunction) ? (PackageableFunction<?>) element : null;
         }
         else
@@ -1118,10 +1139,10 @@ public class PureModel implements IPureModel
         if (association == null)
         {
             // Search for system types in the Pure graph
-            Metadata metadata = this.executionSupport.getMetadata();
-            if (metadata.supportsElementByPath())
+            MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+            if (metadataAccessor.supportsGetPackageableElement())
             {
-                CoreInstance element = metadata.getElementByPath(fullPath);
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = metadataAccessor.getPackageableElement(fullPath);
                 if (element instanceof Association)
                 {
                     association = (Association) element;
@@ -1166,10 +1187,10 @@ public class PureModel implements IPureModel
         }
         if (profile == null)
         {
-            Metadata metadata = this.executionSupport.getMetadata();
-            if (metadata.supportsElementByPath())
+            MetadataAccessor metadataAccessor = this.executionSupport.getMetadataAccessor();
+            if (metadataAccessor.supportsGetPackageableElement())
             {
-                CoreInstance element = metadata.getElementByPath(fullPath);
+                CoreInstance element = metadataAccessor.getPackageableElement(fullPath);
                 if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile)
                 {
                     profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) element;
@@ -1640,7 +1661,7 @@ public class PureModel implements IPureModel
 
     public RichIterable<? extends Type> getModelClasses()
     {
-        return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof Root_meta_pure_metamodel_type_Class_LazyImpl) || (t instanceof Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl));
+        return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof LazyCoreInstance) || (t instanceof AbstractLazyReflectiveCoreInstance));
     }
 
     public Handlers getHandlers()

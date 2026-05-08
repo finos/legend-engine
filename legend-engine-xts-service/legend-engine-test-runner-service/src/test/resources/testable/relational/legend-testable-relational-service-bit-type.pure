@@ -1,0 +1,53 @@
+###Service
+Service service::RelationalServiceWithBitType
+{
+  pattern: '/testBitType';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Feature.all()->project(~[name: x|$x.name, isActive: x|$x.isActive]);
+    mapping: execution::FeatureMapping;
+    runtime: execution::FeatureRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          model::FeatureConnection:
+            Relational
+            #{
+              default.FeatureTable:
+                'id,name,is_active\n' +
+                '1,FeatureA,true\n' +
+                '2,FeatureB,false\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"FeatureA","isActive":true},{"name":"FeatureB","isActive":false}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

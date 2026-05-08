@@ -34,9 +34,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSupport;
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
-import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
-import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
+import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
 
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -107,7 +105,7 @@ public class ElasticsearchPureSpecificationGenerator
         ClassLoader classLoader = ElasticsearchPureSpecificationGenerator.class.getClassLoader();
         return new CompiledExecutionSupport(
                 new JavaCompilerState(null, classLoader),
-                new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, codeRepositories.collect(CodeRepository::getName)), Sets.mutable.empty()),
+                new CompiledProcessorSupport(classLoader, MetadataPelt.fromClassLoader(classLoader, codeRepositories.collect(CodeRepository::getName)), Sets.mutable.empty()),
                 null,
                 new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                         CodeRepositoryProviderHelper.findPlatformCodeRepository()
@@ -115,8 +113,6 @@ public class ElasticsearchPureSpecificationGenerator
                 null,
                 null,
                 new ConsoleCompiled(),
-                new FunctionCache(),
-                new ClassCache(classLoader),
                 null,
                 Sets.mutable.empty(),
                 CompiledExtensionLoader.extensions()

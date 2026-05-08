@@ -23,6 +23,7 @@ import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::tests::*;
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldContainCatalogName():Boolean[1]
 {
@@ -34,4 +35,70 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
 {
    let s = toSQLString(|Person.all(), meta::relational::tests::simpleRelationalMappingPersonForDatabricks, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.LASTNAME as `lastName`, `root`.AGE as `age` from schema.personTable as `root`', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateViewForDatabricks(): Boolean[*]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);
+   let extensions = meta::relational::extension::relationalExtensions();
+
+   // Test basic create or replace view (no copyGrants, no secure)
+   let basicView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = false);
+   let basicResult = meta::relational::functions::sqlQueryToString::databricks::createView($basicView, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE VIEW `personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $basicResult);
+
+   // Test create view with schema name
+   let schemaView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = false);
+   let schemaResult = meta::relational::functions::sqlQueryToString::databricks::createView($schemaView, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $schemaResult);
+
+   // Test create view with copyGrants generates two SQL statements
+   let copyGrantsView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', schemaName = 'hr', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = false, copyGrants = true);
+   let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createView($copyGrantsView, $dbConfig, $extensions);
+   assertEquals('CREATE VIEW IF NOT EXISTS `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`; \nALTER VIEW `hr`.`personView` as select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`;', $copyGrantsResult);
+
+   let secureView = ^meta::relational::metamodel::CreateViewSQL(name = 'personView', generatedSQL = 'select `FIRSTNAME`, `LASTNAME`, `AGE` from `personTable`', secure = true, copyGrants = false);
+   assertError({|meta::relational::functions::sqlQueryToString::databricks::createView($secureView, $dbConfig, $extensions)}, 'For Databricks we dont support SECURE views yet.');
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateTableForDatabricks(): Boolean[*]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);
+
+   // Test create table with all supported datatypes
+   let columns = [
+      ^meta::relational::metamodel::Column(name='col_boolean', type=^meta::relational::metamodel::datatype::Boolean()),
+      ^meta::relational::metamodel::Column(name='col_integer', type=^meta::relational::metamodel::datatype::Integer()),
+      ^meta::relational::metamodel::Column(name='col_float', type=^meta::relational::metamodel::datatype::Float()),
+      ^meta::relational::metamodel::Column(name='col_varchar', type=^meta::relational::metamodel::datatype::Varchar(size=256)),
+      ^meta::relational::metamodel::Column(name='col_char', type=^meta::relational::metamodel::datatype::Char(size=10)),
+      ^meta::relational::metamodel::Column(name='col_decimal', type=^meta::relational::metamodel::datatype::Decimal(precision=18, scale=6)),
+      ^meta::relational::metamodel::Column(name='col_timestamp', type=^meta::relational::metamodel::datatype::Timestamp()),
+      ^meta::relational::metamodel::Column(name='col_date', type=^meta::relational::metamodel::datatype::Date()),
+      ^meta::relational::metamodel::Column(name='col_bigint', type=^meta::relational::metamodel::datatype::BigInt()),
+      ^meta::relational::metamodel::Column(name='col_smallint', type=^meta::relational::metamodel::datatype::SmallInt()),
+      ^meta::relational::metamodel::Column(name='col_tinyint', type=^meta::relational::metamodel::datatype::TinyInt()),
+      ^meta::relational::metamodel::Column(name='col_double', type=^meta::relational::metamodel::datatype::Double()),
+      ^meta::relational::metamodel::Column(name='col_numeric', type=^meta::relational::metamodel::datatype::Numeric(precision=12, scale=4)),
+      ^meta::relational::metamodel::Column(name='col_binary', type=^meta::relational::metamodel::datatype::Binary(size=512)),
+      ^meta::relational::metamodel::Column(name='col_variant', type=^meta::relational::metamodel::datatype::SemiStructured())
+   ];
+   let table = ^meta::relational::metamodel::relation::Table(
+      name = 'allTypesTable',
+      schema = ^meta::relational::metamodel::Schema(name = 'hr', database = ^meta::relational::metamodel::Database(name='testDb')),
+      columns = $columns
+   );
+   let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
+   let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
+   assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $result->toOne());
+
+   // Test create table with default schema
+   let defaultTable = ^meta::relational::metamodel::relation::Table(
+      name = 'allTypesTable',
+      schema = ^meta::relational::metamodel::Schema(name = 'default', database = ^meta::relational::metamodel::Database(name='testDb')),
+      columns = $columns
+   );
+   let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
+   let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
+   assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
 }

@@ -1,0 +1,181 @@
+###Pure
+Class test::semiStructuredUnionFlatten::Order
+{
+  orderId: String[1];
+  orderStatus: String[0..1];
+}
+
+Class test::semiStructuredUnionFlatten::OrderFulfillment
+{
+  orderVersion: Integer[1];
+  fulfillmentVersion: Integer[1];
+  details: test::semiStructuredUnionFlatten::FulfillmentDetails[1];
+  itemCategories() {$this.details.lineItems.category}: String[*];
+}
+
+Class test::semiStructuredUnionFlatten::FulfillmentDetails
+{
+  lineItems: test::semiStructuredUnionFlatten::LineItem[*];
+}
+
+Class test::semiStructuredUnionFlatten::LineItem
+{
+  category: String[1];
+}
+
+Association test::semiStructuredUnionFlatten::OrderFulfillmentAssociation
+{
+  order: test::semiStructuredUnionFlatten::Order[1];
+  fulfillment: test::semiStructuredUnionFlatten::OrderFulfillment[1];
+}
+
+function test::semiStructuredUnionFlatten::testQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  test::semiStructuredUnionFlatten::Order.all()->filter(
+    x|$x.orderId != ''
+  )->project(
+    [
+      x|$x.orderId,
+      x|$x.orderStatus,
+      x|$x.fulfillment.orderVersion,
+      x|$x.fulfillment.fulfillmentVersion,
+      x|$x.fulfillment.itemCategories
+    ],
+    [
+      'Order Id',
+      'Order Status',
+      'Order Version',
+      'Fulfillment Version',
+      'Item Categories'
+    ]
+  )
+}
+
+
+###Relational
+Database test::semiStructuredUnionFlatten::DB
+(
+  Schema ORDER_SCHEMA
+  (
+    Table ORDER_TABLE_A
+    (
+      ORDER_ID VARCHAR(100) PRIMARY KEY,
+      ORDER_VERSION INTEGER PRIMARY KEY,
+      ORDER_STATUS VARCHAR(50)
+    )
+    Table ORDER_TABLE_B
+    (
+      ORDER_ID VARCHAR(100) PRIMARY KEY,
+      ORDER_VERSION INTEGER PRIMARY KEY,
+      ORDER_STATUS VARCHAR(50)
+    )
+  )
+  Schema FULFILLMENT_SCHEMA
+  (
+    Table FULFILLMENT_TABLE_A
+    (
+      FULFILLMENT_ID VARCHAR(100) PRIMARY KEY,
+      FULFILLMENT_VERSION INTEGER PRIMARY KEY,
+      ORDER_ID VARCHAR(100),
+      ORDER_VERSION INTEGER,
+      DETAILS SEMISTRUCTURED
+    )
+    Table FULFILLMENT_TABLE_B
+    (
+      FULFILLMENT_ID VARCHAR(100) PRIMARY KEY,
+      FULFILLMENT_VERSION INTEGER PRIMARY KEY,
+      ORDER_ID VARCHAR(100),
+      ORDER_VERSION INTEGER,
+      DETAILS SEMISTRUCTURED
+    )
+  )
+
+  Join order_fulfillment_a(ORDER_SCHEMA.ORDER_TABLE_A.ORDER_ID = FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.ORDER_ID and ORDER_SCHEMA.ORDER_TABLE_A.ORDER_VERSION = FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.ORDER_VERSION)
+  Join order_fulfillment_b(ORDER_SCHEMA.ORDER_TABLE_B.ORDER_ID = FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.ORDER_ID and ORDER_SCHEMA.ORDER_TABLE_B.ORDER_VERSION = FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.ORDER_VERSION)
+)
+
+
+###ExternalFormat
+Binding test::semiStructuredUnionFlatten::FulfillmentBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::semiStructuredUnionFlatten::FulfillmentDetails,
+    test::semiStructuredUnionFlatten::LineItem
+  ];
+}
+
+
+###Mapping
+Mapping test::semiStructuredUnionFlatten::TestMapping
+(
+  *test::semiStructuredUnionFlatten::Order: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(orderA, orderB)
+  }
+
+  *test::semiStructuredUnionFlatten::OrderFulfillment: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(fulfillmentA, fulfillmentB)
+  }
+
+  test::semiStructuredUnionFlatten::Order[orderA]: Relational
+  {
+    ~primaryKey
+    (
+      [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_A.ORDER_ID,
+      [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_A.ORDER_VERSION
+    )
+    ~mainTable [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_A
+    orderId: [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_A.ORDER_ID,
+    orderStatus: [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_A.ORDER_STATUS
+  }
+
+  test::semiStructuredUnionFlatten::Order[orderB]: Relational
+  {
+    ~primaryKey
+    (
+      [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_B.ORDER_ID,
+      [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_B.ORDER_VERSION
+    )
+    ~mainTable [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_B
+    orderId: [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_B.ORDER_ID,
+    orderStatus: [test::semiStructuredUnionFlatten::DB]ORDER_SCHEMA.ORDER_TABLE_B.ORDER_STATUS
+  }
+
+  test::semiStructuredUnionFlatten::OrderFulfillment[fulfillmentA]: Relational
+  {
+    ~primaryKey
+    (
+      [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.FULFILLMENT_ID,
+      [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.FULFILLMENT_VERSION
+    )
+    ~mainTable [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A
+    orderVersion: [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.ORDER_VERSION,
+    fulfillmentVersion: [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.FULFILLMENT_VERSION,
+    details: Binding test::semiStructuredUnionFlatten::FulfillmentBinding : [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_A.DETAILS
+  }
+
+  test::semiStructuredUnionFlatten::OrderFulfillment[fulfillmentB]: Relational
+  {
+    ~primaryKey
+    (
+      [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.FULFILLMENT_ID,
+      [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.FULFILLMENT_VERSION
+    )
+    ~mainTable [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B
+    orderVersion: [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.ORDER_VERSION,
+    fulfillmentVersion: [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.FULFILLMENT_VERSION,
+    details: Binding test::semiStructuredUnionFlatten::FulfillmentBinding : [test::semiStructuredUnionFlatten::DB]FULFILLMENT_SCHEMA.FULFILLMENT_TABLE_B.DETAILS
+  }
+
+  test::semiStructuredUnionFlatten::OrderFulfillmentAssociation: Relational
+  {
+    AssociationMapping
+    (
+      fulfillment[orderA,fulfillmentA]: [test::semiStructuredUnionFlatten::DB] (INNER) @order_fulfillment_a,
+      fulfillment[orderB,fulfillmentB]: [test::semiStructuredUnionFlatten::DB] (INNER) @order_fulfillment_b
+    )
+  }
+)
+

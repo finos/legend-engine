@@ -1,0 +1,29 @@
+name: m2m-with-dep
+title: "M2M Mapping with Out-of-Scope Dependency Tests"
+description: |
+  Primary model contains a Mapping with one passing test. The dependency
+  contains a different Mapping whose embedded test would fail if executed.
+  Used to verify that EMIT TEST_EXECUTION respects primary scope and does
+  not run tests from elements loaded via dependencies.
+
+modelSources:
+  model:
+    root: m2m-with-dep
+    files:
+      - model/primarySource.pure
+      - model/primaryTarget.pure
+      - mapping/primaryMapping.pure
+  dependencies:
+    - root: m2m-dep-source
+      files:
+        - model/depModel.pure
+        - mapping/depMapping.pure
+
+features:
+  - class
+  - m2m-mapping
+  - mapping
+complexity: basic
+tags:
+  - dependency
+  - primary-scope

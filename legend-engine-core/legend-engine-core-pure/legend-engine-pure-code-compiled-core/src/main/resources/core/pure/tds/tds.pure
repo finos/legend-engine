@@ -325,7 +325,7 @@ function
                columns = $simpleCols->map(cs|let offset = $columnSpecifications->indexOf($cs);
                                                        ^TDSColumn(offset = $offset,
                                                                   name = $cs.name,
-                                                                  type = $cs.func->functionReturnType().rawType->toOne()->cast(@DataType),
+                                                                  type = $cs.func->functionReturnType().rawType->toOne(),
                                                                   documentation = $cs.documentation);
                                                 ));
 
@@ -555,7 +555,7 @@ function
    let newTds = ^TabularDataSet(
       columns=$tds.columns->concatenate($newColumnFunctions->size()->range()->map(index |
                                                 let col = $newColumnFunctions->at($index);
-                                                ^TDSColumn(offset=$tds.columns->size() + $index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne()->cast(@DataType));
+                                                ^TDSColumn(offset=$tds.columns->size() + $index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne());
                                                 )));
 
    //todo: remove this by making parent an association
@@ -581,7 +581,7 @@ function
    let newTds = ^TabularDataSet(
       columns=$newColumnFunctions->size()->range()->map(index |
                                                 let col = $newColumnFunctions->at($index);
-                                                ^TDSColumn(offset=$index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne()->cast(@DataType));
+                                                ^TDSColumn(offset=$index, name=$col.name, type=$col.func->functionReturnType().rawType->toOne());
                                                 ));
 
    //todo: remove this by making parent an association
@@ -641,7 +641,7 @@ function
                                     );
    let aggOutputCols = range($aggValues->size())->map(index|
          let name = $aggValues->at($index).name;
-         let colType = $aggValues->at($index).aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType);
+         let colType = $aggValues->at($index).aggregateFn->functionReturnType().rawType->toOne();
 
          ^TDSColumn(offset = $index + $columns->size(),
                      type = $colType,
@@ -850,7 +850,7 @@ function meta::pure::tds::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamod
    let columns = $columnInfo->map(info | ^TDSColumn(
       name = $info.first,
       offset = $columnInfo->indexOf($info),
-      type = $info.second->functionReturnType().rawType->toOne()->cast(@DataType)));
+      type = $info.second->functionReturnType().rawType->toOne()));
 
    let tds = ^TabularDataSet(columns=$columns);
 
