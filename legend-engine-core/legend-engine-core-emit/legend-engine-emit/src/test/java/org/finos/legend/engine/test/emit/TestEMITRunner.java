@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.test.emit;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.test.emit.EMITPhaseResult.Status;
+import org.finos.legend.engine.test.emit.error.EMITAssertionError;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -71,14 +74,29 @@ public class TestEMITRunner
 
         EMITResult result = new EMITRunner().runFromYaml(emitYaml);
 
+        // result as a whole is not a success
         Assertions.assertFalse(result.isSuccess(), "Expected EMIT run to fail at COMPILE");
+
+        // init and parse phases should succeed
         Assertions.assertEquals(Status.SUCCESS, result.getPhase(EMITPhase.INITIALIZATION).getStatus());
         Assertions.assertEquals(Status.SUCCESS, result.getPhase(EMITPhase.PARSE).getStatus());
-        Assertions.assertEquals(Status.FAILURE, result.getPhase(EMITPhase.COMPILE).getStatus());
+
+        // compile phase should fail
+        String expectedMessage = "FAILURE [Compilation]: COMPILATION error at model.pure[20:12-29]: Can't find type 'demo::DoesNotExist'";
+        EMITPhaseResult compileResult = result.getPhase(EMITPhase.COMPILE);
+        Assertions.assertEquals(Status.FAILURE, compileResult.getStatus());
+        Assertions.assertEquals(expectedMessage, compileResult.getMessage());
+        Assertions.assertInstanceOf(EMITAssertionError.class, compileResult.getThrowable(), "Expected an assertion error from the failing test");
+        Assertions.assertEquals(expectedMessage, compileResult.getThrowable().getMessage());
+        Assertions.assertInstanceOf(EngineException.class, compileResult.getThrowable().getCause());
+        Assertions.assertSame(EngineErrorType.COMPILATION, ((EngineException) compileResult.getThrowable().getCause()).getErrorType());
+
+        // remaining phases are skipped
         Assertions.assertEquals(Status.NOT_RUN, result.getPhase(EMITPhase.MODEL_GENERATION).getStatus());
         Assertions.assertEquals(Status.NOT_RUN, result.getPhase(EMITPhase.FILE_GENERATION).getStatus());
         Assertions.assertEquals(Status.NOT_RUN, result.getPhase(EMITPhase.TEST_EXECUTION).getStatus());
         Assertions.assertEquals(Status.NOT_RUN, result.getPhase(EMITPhase.PLAN_GENERATION).getStatus());
+
     }
 
     @Test
@@ -101,10 +119,9 @@ public class TestEMITRunner
         Assertions.assertEquals(2, runTests.results.size(), "Expected exactly 2 mapping tests to be executed");
         runTests.results.forEach(r ->
         {
-            Assertions.assertTrue(r instanceof TestExecuted, () -> "Expected TestExecuted, got " + r.getClass().getSimpleName());
+            Assertions.assertInstanceOf(TestExecuted.class, r, () -> "Expected TestExecuted, got " + r.getClass().getSimpleName());
             Assertions.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) r).testExecutionStatus,
-                    () -> "Expected test " + r.atomicTestId + " to PASS but got "
-                            + ((TestExecuted) r).testExecutionStatus + "; assertions=" + ((TestExecuted) r).assertStatuses);
+                    () -> "Expected test " + r.atomicTestId + " to PASS but got " + ((TestExecuted) r).testExecutionStatus + "; assertions=" + ((TestExecuted) r).assertStatuses);
         });
 
         Assertions.assertTrue(result.isSuccess(), () -> "Expected EMIT run to succeed but got:\n" + result.getSummary());

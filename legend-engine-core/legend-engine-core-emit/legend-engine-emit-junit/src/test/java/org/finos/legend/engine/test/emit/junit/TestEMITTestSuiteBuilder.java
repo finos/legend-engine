@@ -17,6 +17,9 @@ package org.finos.legend.engine.test.emit.junit;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.test.emit.error.EMITAssertionError;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -91,9 +94,11 @@ public class TestEMITTestSuiteBuilder
         DynamicTest only = tasks.get(0);
         Assertions.assertEquals("[compile-failure] Initialization (Init, Parse & Compile)", only.getDisplayName());
 
-        Throwable thrown = Assertions.assertThrows(Throwable.class, () -> only.getExecutable().execute(),
+        EMITAssertionError thrown = Assertions.assertThrows(EMITAssertionError.class, () -> only.getExecutable().execute(),
                 "Expected the init task to throw because the model fails to compile");
-        Assertions.assertNotNull(thrown);
+        Assertions.assertEquals("FAILURE [Compilation]: COMPILATION error at model.pure[20:12-29]: Can't find type 'demo::DoesNotExist'", thrown.getMessage());
+        Assertions.assertInstanceOf(EngineException.class, thrown.getCause());
+        Assertions.assertSame(EngineErrorType.COMPILATION, ((EngineException) thrown.getCause()).getErrorType());
     }
 
     @Test

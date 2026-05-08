@@ -42,6 +42,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -123,14 +124,18 @@ public final class EMITTasks
                     primarySourceIds.add(file.getVirtualPath());
                 }
             });
-            return new ParseResult(builder.distinct().build(), primarySourceIds, totalElements[0]);
+            return new ParseResult(builder.withSectionIndexesMerged().build(), primarySourceIds, totalElements[0]);
+        }
+        catch (EngineException e)
+        {
+            if (e.getErrorType() == EngineErrorType.PARSER)
+            {
+                throw new EMITAssertionError(EMITPhase.PARSE, buildEngineExceptionMessage(e), e);
+            }
+            throw new EMITException(EMITPhase.PARSE, buildEngineExceptionMessage(e), e);
         }
         catch (Exception e)
         {
-            if ((e instanceof EngineException) && (((EngineException) e).getErrorType() == EngineErrorType.PARSER))
-            {
-                throw new EMITAssertionError(EMITPhase.PARSE, "Error parsing source set", e);
-            }
             throw new EMITException(EMITPhase.PARSE, "Error parsing source set", e);
         }
     }
@@ -143,12 +148,16 @@ public final class EMITTasks
         {
             return new PureModel(pmcd, null, DeploymentMode.PROD);
         }
+        catch (EngineException e)
+        {
+            if (e.getErrorType() == EngineErrorType.COMPILATION)
+            {
+                throw new EMITAssertionError(EMITPhase.COMPILE, buildEngineExceptionMessage(e), e);
+            }
+            throw new EMITException(EMITPhase.COMPILE, buildEngineExceptionMessage(e), e);
+        }
         catch (Exception e)
         {
-            if ((e instanceof EngineException) && (((EngineException) e).getErrorType() == EngineErrorType.COMPILATION))
-            {
-                throw new EMITAssertionError(EMITPhase.PARSE, "Compilation failed", e);
-            }
             throw new EMITException(EMITPhase.COMPILE, "Error during compilation", e);
         }
     }
@@ -550,6 +559,53 @@ public final class EMITTasks
         {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static String buildEngineExceptionMessage(EngineException e)
+    {
+        return appendEngineExceptionMessage(new StringBuilder(), e).toString();
+    }
+
+    private static StringBuilder appendEngineExceptionMessage(StringBuilder builder, EngineException e)
+    {
+        EngineErrorType errorType = e.getErrorType();
+        if (errorType != null)
+        {
+            builder.append(errorType).append(" error");
+        }
+
+        SourceInformation sourceInfo = e.getSourceInformation();
+        if ((sourceInfo != null) && (sourceInfo != SourceInformation.getUnknownSourceInformation()))
+        {
+            builder.append(" at ").append(sourceInfo.sourceId);
+            builder.append('[');
+            if (sourceInfo.startLine == sourceInfo.endLine)
+            {
+                builder.append(sourceInfo.startLine).append(':');
+                if (sourceInfo.startColumn == sourceInfo.endColumn)
+                {
+                    builder.append(sourceInfo.startColumn);
+                }
+                else
+                {
+                    builder.append(sourceInfo.startColumn).append('-').append(sourceInfo.endColumn);
+                }
+                builder.append(']');
+            }
+            else
+            {
+                builder.append(sourceInfo.startLine).append(':').append(sourceInfo.startColumn)
+                        .append('-')
+                        .append(sourceInfo.endLine).append(':').append(sourceInfo.endColumn).append(']');
+            }
+        }
+
+        String message = e.getMessage();
+        if (message != null)
+        {
+            builder.append(": ").append(message);
+        }
+        return builder;
     }
 
     // ----- Result records -----
