@@ -348,16 +348,22 @@ public final class EMITTasks
      */
     public static void assertTestPassed(TestResult result)
     {
+        StringBuilder builder = new StringBuilder(result.testable);
+        if (result.testSuiteId != null)
+        {
+            builder.append(" / ").append(result.testSuiteId);
+        }
+        builder.append(" / ").append(result.atomicTestId);
         if (result instanceof TestError)
         {
-            throw new EMITException(EMITPhase.TEST_EXECUTION, ((TestError) result).error);
+            throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("; ").append(((TestError) result).error).toString());
         }
         if (result instanceof TestExecuted)
         {
             TestExecuted executed = (TestExecuted) result;
             if (executed.testExecutionStatus != TestExecutionStatus.PASS)
             {
-                StringBuilder builder = new StringBuilder("Test did not pass; status=").append(executed.testExecutionStatus).append("; assertions=[");
+                builder.append(" did not pass; status=").append(executed.testExecutionStatus).append("; assertions=[");
                 executed.assertStatuses.forEach(s -> printAssertStatus(builder, s).append(", "));
                 builder.setLength(builder.length() - 2);
                 builder.append(']');
@@ -365,7 +371,7 @@ public final class EMITTasks
             }
             return;
         }
-        throw new EMITException(EMITPhase.TEST_EXECUTION, "Unexpected test result type: " + result.getClass().getSimpleName());
+        throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("Unexpected test result type: ").append(result.getClass().getSimpleName()).toString());
     }
 
     private static StringBuilder printAssertStatus(StringBuilder builder, AssertionStatus status)
