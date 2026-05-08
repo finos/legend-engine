@@ -135,6 +135,12 @@ public class EMITModelLoader
             Path referencedYaml = baseDir.resolve(dep.getSource()).normalize();
             EMITSourceSet referenced = load(referencedYaml);
             ListIterable<PathMatcher> excludeMatchers = compileGlobs(dep.getExcludes());
+            if (excludeMatchers.isEmpty())
+            {
+                return Lists.mutable.<EMITSourceFile>ofInitialCapacity(referenced.getTotalFileCount())
+                        .withAll(referenced.getModelFiles())
+                        .withAll(referenced.getDependencyFiles());
+            }
 
             MutableList<EMITSourceFile> result = Lists.mutable.empty();
             referenced.forEachFile(f ->
