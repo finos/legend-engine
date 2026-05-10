@@ -1,0 +1,21 @@
+name: artifact-generation
+title: "Element-driven artifact generation"
+description: |
+  Exercises Phase 4b (FILE_GENERATION via ArtifactGenerationExtension) by
+  declaring classes whose paths are picked up by EmitDemoArtifactGenerationExtension
+  (a test-only ArtifactGenerationExtension SPI registered under
+  src/test/resources/META-INF/services). The fake extension produces one
+  deterministic Artifact per class so the test can assert exact content.
+
+modelSources:
+  model:
+    root: artifact-generation
+    files:
+      - model.pure
+
+features:
+  - class
+  - file-generation
+complexity: basic
+tags:
+  - artifact-generation
