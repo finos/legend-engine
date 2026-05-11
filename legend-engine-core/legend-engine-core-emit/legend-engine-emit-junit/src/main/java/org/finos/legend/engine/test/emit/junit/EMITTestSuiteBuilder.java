@@ -34,9 +34,16 @@ import java.util.stream.Stream;
 
 /**
  * JUnit 5 integration for EMIT. Discovers {@code *.emit.yaml} files on the
- * classpath under a given root, eagerly initialises (load + parse + compile)
- * each model, then yields one {@link DynamicTest} per granular operation
- * (file generation, artifact generation, individual test, service plan).
+ * classpath under a given root, eagerly runs load + parse + compile + model
+ * generation on each model, then yields one {@link DynamicTest} per granular
+ * operation: an Initialization task, a Parsing task, a Compilation task, and
+ * a Model Generation task that report the outcome of the eager phases,
+ * followed by one task per file-generation spec, artifact-generation
+ * candidate, individual test, and service. If an eager phase fails, its task
+ * is failing and no subsequent tasks are emitted for that model. Discovery
+ * operates on the model-generation-enriched PMCD, so any element produced by
+ * a {@code GenerationSpecification} is eligible for the downstream tasks
+ * just like a hand-authored element.
  *
  * <p>Each dynamic test calls into {@link EMITTasks} for its body, so that
  * the standalone {@code EMITRunner} and this JUnit integration share a single
@@ -57,8 +64,6 @@ import java.util.stream.Stream;
  */
 public final class EMITTestSuiteBuilder
 {
-    private static final String INIT_TASK_NAME = "Initialization (Init, Parse & Compile)";
-
     private EMITTestSuiteBuilder()
     {
     }
@@ -88,6 +93,8 @@ public final class EMITTestSuiteBuilder
     {
         String fallbackLabel = stripExtension(yaml.getFileName().toString());
 
+        MutableList<DynamicTest> tasks = Lists.mutable.empty();
+
         EMITSourceSet sourceSet;
         try
         {
@@ -95,34 +102,46 @@ public final class EMITTestSuiteBuilder
         }
         catch (Exception e)
         {
-            return Lists.mutable.with(failingTask(fallbackLabel, INIT_TASK_NAME, e));
+            return tasks.with(failingTask(fallbackLabel, "Initialization", e));
         }
         String label = (sourceSet.getDescriptor() != null && sourceSet.getDescriptor().getName() != null) ? sourceSet.getDescriptor().getName() : fallbackLabel;
+        tasks.add(passingTask(label, "Initialization"));
 
-        ParseResult parsed;
+        ParseResult parseResult;
         try
         {
-            parsed = EMITTasks.parse(sourceSet);
+            parseResult = EMITTasks.parse(sourceSet);
+            tasks.add(passingTask(label, "Parsing"));
         }
         catch (EMITAssertionError | Exception e)
         {
-            return Lists.mutable.with(failingTask(label, INIT_TASK_NAME, e));
+            return tasks.with(failingTask(label, "Parsing", e));
         }
 
         PureModel pureModel;
         try
         {
-            pureModel = EMITTasks.compile(parsed.getPmcd());
+            pureModel = EMITTasks.compile(parseResult.getPmcd());
+            tasks.add(passingTask(label, "Compilation"));
         }
         catch (EMITAssertionError | Exception e)
         {
-            return Lists.mutable.with(failingTask(label, INIT_TASK_NAME, e));
+            return tasks.with(failingTask(label, "Compilation", e));
         }
 
-        EMITModel model = new EMITModel(sourceSet, parsed.getPmcd(), pureModel, parsed.getPrimarySourceIds());
-
-        MutableList<DynamicTest> tasks = Lists.mutable.empty();
-        tasks.add(passingTask(label, INIT_TASK_NAME));
+        EMITModel coreModel = new EMITModel(sourceSet, parseResult.getPmcd(), pureModel, parseResult.getPrimarySourceIds());
+        EMITTasks.ModelGenResult modelGenResult;
+        try
+        {
+            modelGenResult = EMITTasks.runModelGeneration(coreModel);
+            tasks.add(passingTask(label, "Model Generation"));
+        }
+        catch (EMITAssertionError | Exception e)
+        {
+            modelGenResult = null;
+            tasks.add(failingTask(label, "Model Generation", e));
+        }
+        EMITModel model = ((modelGenResult == null) || (modelGenResult.getNewModel() == null)) ? coreModel : modelGenResult.getNewModel();
 
         ListIterate.collect(EMITTasks.findFileGenerationSpecs(model), spec ->
         {
