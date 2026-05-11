@@ -231,6 +231,17 @@ public class TestFunctionTestSuite
     }
 
     @Test
+    public void testRelationFunctionTestWithRelationAccessorAndRelationAssertion()
+    {
+        List<TestResult> relationFunctionTestResults = executeFunctionTest("legend-testable-function-test-relation-relationDatabaseAccessor-relationAssertion.pure", "model::RelationQuery__Relation_1_");
+        Assert.assertEquals(1, relationFunctionTestResults.size());
+
+        Assert.assertTrue(relationFunctionTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) relationFunctionTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
     public void testModelRelationFunctionTestWithRelationAccessor()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-relation-model-relationDatabaseAccessor.pure", "model::PersonQuery__TabularDataSet_1_");

@@ -23,7 +23,7 @@ TABLE_START: (COLON WHITESPACE*) -> pushMode(TABLE_MODE);
 
 mode TABLE_MODE;
 
-    QUOTED_ROW_VALUE: [ \t]* '"' (~["\r\n] | '\\"')* '"' [ \t]*;
+    QUOTED_ROW_VALUE: [ \t]* '"' ('""' | ~["\r\n])* '"' [ \t]*;
     ROW_VALUE: ~[",\r\n;]+;
     ROW_COMMA: ',';
     NEWLINE: '\r'?'\n' [ \t]*;

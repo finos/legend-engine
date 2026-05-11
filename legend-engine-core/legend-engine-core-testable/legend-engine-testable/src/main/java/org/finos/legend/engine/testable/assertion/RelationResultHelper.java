@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
+import org.finos.legend.pure.runtime.java.extension.functions.shared.string.CsvParseHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,27 +33,40 @@ import java.util.List;
  */
 public class RelationResultHelper
 {
-    /**
-     * Convert a RelationElement to a JSON array-of-objects string.
-     * Handles type coercion: values that parse as integers become JSON integers,
-     * values that parse as doubles become JSON doubles, "null" or empty becomes JSON null,
-     * and everything else stays a JSON string.
-     */
-    public static String relationElementToJson(RelationElement element) throws IOException
+    private static List<List<String>> parseRelationElementAsCsv(RelationElement element)
     {
-        ObjectMapper mapper = new ObjectMapper();
-        ArrayNode arrayNode = mapper.createArrayNode();
-
         List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
         List<RelationRowTestData> rows = element.rows != null ? element.rows : Collections.emptyList();
 
+        StringBuilder csv = new StringBuilder();
+        csv.append(String.join(",", columns));
         for (RelationRowTestData row : rows)
         {
+            csv.append("\n").append(String.join(",", row.values));
+        }
+        return CsvParseHelper.parseCSV(csv.toString());
+    }
+
+    public static String relationElementToJson(RelationElement element) throws IOException
+    {
+        List<List<String>> parsed = parseRelationElementAsCsv(element);
+        if (parsed.isEmpty())
+        {
+            return "[]";
+        }
+
+        List<String> columns = parsed.get(0);
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode arrayNode = mapper.createArrayNode();
+
+        for (int r = 1; r < parsed.size(); r++)
+        {
+            List<String> rowValues = parsed.get(r);
             ObjectNode objectNode = mapper.createObjectNode();
             for (int i = 0; i < columns.size(); i++)
             {
-                String colName = columns.get(i).trim();
-                String value = (i < row.values.size()) ? row.values.get(i).trim() : "";
+                String colName = columns.get(i);
+                String value = (i < rowValues.size()) ? rowValues.get(i) : "";
 
                 if (value.isEmpty() || "null".equalsIgnoreCase(value))
                 {
@@ -99,33 +113,14 @@ public class RelationResultHelper
         return mapper.writeValueAsString(arrayNode);
     }
 
-    /**
-     * Format a RelationElement as a human-readable TDS table string.
-     * Example:
-     * <pre>
-     * id | firstName | lastName
-     * 1  | John      | Smith
-     * 2  | Jane      | Doe
-     * </pre>
-     */
     public static String relationElementToTdsString(RelationElement element)
     {
-        List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
-        List<RelationRowTestData> rows = element.rows != null ? element.rows : Collections.emptyList();
-
-        List<List<String>> allRows = new ArrayList<>();
-        allRows.add(columns);
-        for (RelationRowTestData row : rows)
+        List<List<String>> parsed = parseRelationElementAsCsv(element);
+        if (parsed.isEmpty())
         {
-            List<String> values = new ArrayList<>();
-            for (int i = 0; i < columns.size(); i++)
-            {
-                values.add(i < row.values.size() ? row.values.get(i).trim() : "");
-            }
-            allRows.add(values);
+            return "";
         }
-
-        return formatTable(allRows, columns.size());
+        return formatTable(parsed, parsed.get(0).size());
     }
 
     /**

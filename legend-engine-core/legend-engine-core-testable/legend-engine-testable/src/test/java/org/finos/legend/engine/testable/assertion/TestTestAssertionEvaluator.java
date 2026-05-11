@@ -334,6 +334,42 @@ public class TestTestAssertionEvaluator
         Assert.assertTrue(status instanceof AssertPass);
     }
 
+    @Test
+    public void testEqualToRelationAssertionWithQuotedValues()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"id\":1,\"firstName\":\"I'm John\",\"lastName\":\"Doe, Jr\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("id", "firstName", "lastName");
+        element.rows = Collections.singletonList(makeRow("1", "I'm John", "\"Doe, Jr\""));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
+    public void testEqualToRelationAssertionWithEscapedQuotes()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"name\":\"say \\\"hello\\\"\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("name");
+        element.rows = Collections.singletonList(makeRow("\"say \"\"hello\"\"\""));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
     private static RelationRowTestData makeRow(String... values)
     {
         RelationRowTestData row = new RelationRowTestData();
