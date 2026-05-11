@@ -1,0 +1,87 @@
+###Relational
+Database store::TestDB
+(
+  Table OrderTable
+  (
+    id INTEGER PRIMARY KEY,
+    product VARCHAR(200),
+    category VARCHAR(200),
+    quantity FLOAT,
+    price FLOAT,
+    order_date DATE
+  )
+)
+
+
+###Pure
+function model::getOrders(target_date: Date[1]): meta::pure::metamodel::relation::Relation<(product:Varchar(200), category:Varchar(200), quantity:Float, price:Float, order_date:StrictDate)>[1]
+{
+  #>{store::TestDB.OrderTable}#->filter(
+    x|$x.order_date == $target_date
+  )->select(
+    ~[
+       product,
+       category,
+       quantity,
+       price,
+       order_date
+     ]
+  )->from(
+    execution::Runtime
+  )
+}
+{
+  testSuite_happyPath
+  (
+    store::TestDB:
+      Relation
+      #{
+        default.OrderTable:
+          id,product,category,quantity,price,order_date
+          1,Widget,Electronics,5.0,25.50,2025-10-15
+          2,Gadget,Electronics,3.0,75.00,2025-10-15
+          3,Gizmo,Hardware,12.0,4.50,2025-10-15;
+      }#;
+    test_happyPath | getOrders(%2025-10-15) => (JSON) '[{"product":"Widget","category":"Electronics","quantity":5.0,"price":25.5,"order_date":"2025-10-15"},{"product":"Gadget","category":"Electronics","quantity":3.0,"price":75.0,"order_date":"2025-10-15"},{"product":"Gizmo","category":"Hardware","quantity":12.0,"price":4.5,"order_date":"2025-10-15"}]';
+  )
+
+  testSuite_noMatchingDate
+  (
+    store::TestDB:
+      Relation
+      #{
+        default.OrderTable:
+          id,product,category,quantity,price,order_date
+          1,Widget,Electronics,5.0,25.50,2024-01-10
+          2,Gadget,Electronics,3.0,75.00,2024-01-11;
+      }#;
+    test_noMatchingDate | getOrders(%2025-10-15) => (JSON) '[]';
+  )
+}
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings: [];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

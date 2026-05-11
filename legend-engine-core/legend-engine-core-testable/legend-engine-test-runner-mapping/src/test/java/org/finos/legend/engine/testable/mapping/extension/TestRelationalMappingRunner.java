@@ -396,4 +396,109 @@ public class TestRelationalMappingRunner
 
     }
 
+    String bitTypeModel = "###Data\n" +
+            "Data data::FeatureData\n" +
+            "{\n" +
+            "  Relational\n" +
+            "  #{\n" +
+            "    default.FeatureTable:\n" +
+            "              'id,name,is_active\\n' +\n" +
+            "              '1,FeatureA,true\\n' +\n" +
+            "              '2,FeatureB,false\\n';\n" +
+            "  }#\n" +
+            "}\n" +
+            "\n" +
+            "###Relational\n" +
+            "Database store::FeatureDB\n" +
+            "(\n" +
+            "  Table FeatureTable\n" +
+            "  (\n" +
+            "    id INTEGER PRIMARY KEY,\n" +
+            "    name VARCHAR(200),\n" +
+            "    is_active BIT\n" +
+            "  )\n" +
+            ")\n" +
+            "\n" +
+            "###Pure\n" +
+            "Class model::Feature\n" +
+            "{\n" +
+            "  name: String[1];\n" +
+            "  isActive: Boolean[1];\n" +
+            "}\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping execution::FeatureMapping\n" +
+            "(\n" +
+            "  *model::Feature: Relational\n" +
+            "  {\n" +
+            "    ~primaryKey\n" +
+            "    (\n" +
+            "      [store::FeatureDB]FeatureTable.id\n" +
+            "    )\n" +
+            "    ~mainTable [store::FeatureDB]FeatureTable\n" +
+            "    name: [store::FeatureDB]FeatureTable.name,\n" +
+            "    isActive: [store::FeatureDB]FeatureTable.is_active\n" +
+            "  }\n" +
+            "  testSuites:\n" +
+            "    [\n" +
+            "      testSuite1:\n" +
+            "      {\n" +
+            "        function: |model::Feature.all()->project(~[name: x|$x.name, isActive: x|$x.isActive]);\n" +
+            "        tests:\n" +
+            "        [\n" +
+            "          test1:\n" +
+            "          {\n" +
+            "            data:\n" +
+            "            [\n" +
+            "              store::FeatureDB:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  data::FeatureData\n" +
+            "                }#\n" +
+            "            ];\n" +
+            "            asserts:\n" +
+            "            [\n" +
+            "              shouldPass:\n" +
+            "                EqualToJson\n" +
+            "                #{\n" +
+            "                  expected :\n" +
+            "                    ExternalFormat\n" +
+            "                    #{\n" +
+            "                      contentType: 'application/json';\n" +
+            "                      data: '[{\"name\":\"FeatureA\",\"isActive\":true},{\"name\":\"FeatureB\",\"isActive\":false}]';\n" +
+            "                    }#;\n" +
+            "                }#\n" +
+            "            ];\n" +
+            "          }\n" +
+            "        ];\n" +
+            "      }\n" +
+            "    ]\n" +
+            ")\n";
+
+    @Test
+    public void testRelationalMappingWithBitTypeAndRelationReturnType()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(bitTypeModel);
+        PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        Mapping mappingToTest = (Mapping) pureModel.getPackageableElement("execution::FeatureMapping");
+        List<TestResult> results = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModel, modelData);
+
+        Assert.assertEquals(1, results.size());
+        Assert.assertTrue(results.get(0) instanceof TestExecuted);
+        if (((TestExecuted) results.get(0)).testExecutionStatus == TestExecutionStatus.FAIL)
+        {
+            AssertionStatus status = ((TestExecuted) results.get(0)).assertStatuses.get(0);
+            if (status instanceof EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) results.get(0)).testExecutionStatus);
+        Assert.assertEquals("execution::FeatureMapping", results.get(0).testable);
+        Assert.assertEquals("testSuite1", results.get(0).testSuiteId);
+        Assert.assertEquals("test1", results.get(0).atomicTestId);
+    }
 }

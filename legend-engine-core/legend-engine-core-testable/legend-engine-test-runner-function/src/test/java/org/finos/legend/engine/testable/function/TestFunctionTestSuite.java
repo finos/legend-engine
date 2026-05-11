@@ -261,6 +261,34 @@ public class TestFunctionTestSuite
         testFailingTest(findTestById(testResults, "testFail"), expected, actual);
     }
 
+    @Test
+    public void testRelationFunctionWithDateFilterParameter()
+    {
+        List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-relation-date-filter.pure", "model::getOrders_Date_1__Relation_1_");
+        Assert.assertEquals(2, testResults.size());
+        TestResult happyPath = findTestById(testResults, "test_happyPath");
+        if (happyPath instanceof TestExecuted)
+        {
+            TestExecuted te = (TestExecuted) happyPath;
+            if (te.testExecutionStatus == TestExecutionStatus.FAIL)
+            {
+                AssertionStatus status = te.assertStatuses.get(0);
+                if (status instanceof EqualToJsonAssertFail)
+                {
+                    EqualToJsonAssertFail fail = (EqualToJsonAssertFail) status;
+                    Assert.fail("Happy path failed.\nExpected: " + fail.expected + "\nActual: " + fail.actual);
+                }
+            }
+        }
+        else
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError te = (org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError) happyPath;
+            Assert.fail("Happy path errored: " + te.error);
+        }
+        Assert.assertTrue(hasTestPassed(happyPath));
+        Assert.assertTrue(hasTestPassed(findTestById(testResults, "test_noMatchingDate")));
+    }
+
     private List<TestResult> executeFunctionTest(String grammar, String fullPath)
     {
         FunctionTestableRunnerExtension functionTestableRunnerExtension = new FunctionTestableRunnerExtension();
