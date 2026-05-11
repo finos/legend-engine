@@ -1,0 +1,20 @@
+name: artifact-generation
+title: "Element-driven artifact generation"
+description: |
+  Exercises the JUnit integration's "Artifact Generation: <element> (<key>)"
+  tasks by declaring classes whose paths are picked up by
+  EmitDemoArtifactGenerationExtension (a test-only ArtifactGenerationExtension
+  SPI registered under src/test/resources/META-INF/services).
+
+modelSources:
+  model:
+    root: artifact-generation
+    files:
+      - model.pure
+
+features:
+  - class
+  - file-generation
+complexity: basic
+tags:
+  - artifact-generation
