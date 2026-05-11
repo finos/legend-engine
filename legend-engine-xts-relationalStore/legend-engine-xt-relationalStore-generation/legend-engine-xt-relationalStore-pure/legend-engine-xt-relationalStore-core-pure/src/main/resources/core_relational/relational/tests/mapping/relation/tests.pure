@@ -262,34 +262,20 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 }
 
 // -------------------------------------------------------------------------
-// Primary-key support for Relation Function class mappings (PK only)
+// Primary-key auto-inference for Relation Function class mappings (PK only)
 // -------------------------------------------------------------------------
-// 1. Explicit `~primaryKey: [...]` on the mapping is accepted by the grammar
-//    /parser/compiler and behaves identically at runtime to the same mapping
-//    without an explicit PK (the PK is metadata; query results are unchanged).
-// 2. `resolveRelationFunctionPrimaryKeyColumnNames` auto-infers the PK by
-//    walking the relation function body for a RelationStoreAccessor
-//    (`#>{db.tbl}#`), optionally chained through `->filter(...)`/`->select(...)`,
-//    and reads the underlying Table's primary-key column names. Shapes that
-//    cannot be reliably inferred (group-by, join, ...) return empty.
-
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingWithExplicitPK():Boolean[1]
-{
-  testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SimpleMappingWithExplicitPK,
-          meta::relational::tests::mapping::relation::testDB,
-          ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
-        );
-}
-
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingWithExplicitPKAndAssociation():Boolean[1]
-{
-  testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SimpleMappingWithExplicitPK,
-          meta::relational::tests::mapping::relation::testDB,
-          ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
-        );
-}
+// `resolveRelationFunctionPrimaryKeyColumnNames` walks the relation function
+// body for a RelationStoreAccessor (`#>{db.tbl}#`), optionally chained
+// through `->filter(...)`/`->select(...)`, and reads the underlying Table's
+// primary-key column names. Shapes that cannot be reliably inferred
+// (group-by, join, ...) return empty.
+//
+// NOTE: explicit `~primaryKey: [...]` syntax is part of the engine grammar
+// only — the upstream legend-pure parser used to compile this `.pure` file
+// into a PAR does not recognise that token, so the explicit-PK acceptance
+// path is covered by Java grammar/compiler tests instead
+// (TestMappingGrammarParser, TestMappingGrammarRoundtrip,
+//  TestMappingCompilationFromGrammar).
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromSimpleTableAccessor():Boolean[1]
 {

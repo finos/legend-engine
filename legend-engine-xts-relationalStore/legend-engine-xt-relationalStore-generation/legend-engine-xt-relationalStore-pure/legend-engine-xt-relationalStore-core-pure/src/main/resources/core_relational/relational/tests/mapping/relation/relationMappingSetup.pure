@@ -294,35 +294,6 @@ Mapping meta::relational::tests::mapping::relation::SimpleMapping
   }
 )
 
-// Same as SimpleMapping but with an explicit ~primaryKey on each Relation class
-// mapping. Exercises the PK grammar/parser/compiler path end-to-end and verifies
-// that runtime behaviour is unchanged when an explicit PK is declared.
-Mapping meta::relational::tests::mapping::relation::SimpleMappingWithExplicitPK
-(
-  *Person[person]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personFunction__Relation_1_
-    ~primaryKey: [ID]
-    firstName: 'FIRST NAME',
-    age: AGE,
-    +id: Integer[1]: ID,
-    +firmId: Integer[1]: FIRMID
-  }
-
-  *Firm[firm]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
-    ~primaryKey: [ID]
-    legalName: legalName,
-    +id: Integer[1]: ID
-  }
-
-  Person_Firm: XStore
-  {
-    employees[firm, person]: $this.id == $that.firmId,
-    firm[person, firm]: $this.firmId == $that.id
-  }
-)
 
 Mapping meta::relational::tests::mapping::relation::MixedMapping
 (
