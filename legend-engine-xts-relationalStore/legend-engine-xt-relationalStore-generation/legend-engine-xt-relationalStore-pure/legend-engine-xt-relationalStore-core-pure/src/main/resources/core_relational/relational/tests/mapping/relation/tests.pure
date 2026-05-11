@@ -260,3 +260,40 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
           ['Firm X | Peter']
         );
 }
+
+// -------------------------------------------------------------------------
+// Union over RelationFunctionInstanceSetImplementations
+// -------------------------------------------------------------------------
+// Verifies that an OperationSetImplementation (union) whose operands are
+// relation-function class mappings is routed and SQL-generated correctly.
+// Primary key for each operand is auto-inferred from the underlying
+// RelationStoreAccessor (personTable.ID).
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMapping():Boolean[1]
+{
+  testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
+          meta::relational::tests::mapping::relation::testDB,
+          ['Anthony | 19', 'David | 52', 'Fabrice | 45', 'Jane | 23', 'John | 30', 'Oliver | 26', 'Peter | 23']
+        );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMappingWithFilter():Boolean[1]
+{
+  testTds(|Person.all()->filter(p|$p.age > 25)->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
+          meta::relational::tests::mapping::relation::testDB,
+          ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
+        );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMappingWithGroupBy():Boolean[1]
+{
+  testTds(|Person.all()->groupBy([p|$p.firstName->substring(0, 1)], [agg(p|$p.age, y | $y->max())], ['initial', 'maxAge'])
+                      ->project([col(r:TDSRow[1]|$r.getString('initial'), 'initial'), col(r:TDSRow[1]|$r.getString('maxAge'), 'maxAge')]),
+          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
+          meta::relational::tests::mapping::relation::testDB,
+          ['A | 19', 'D | 52', 'F | 45', 'J | 30', 'O | 26', 'P | 23']
+        );
+}
+
