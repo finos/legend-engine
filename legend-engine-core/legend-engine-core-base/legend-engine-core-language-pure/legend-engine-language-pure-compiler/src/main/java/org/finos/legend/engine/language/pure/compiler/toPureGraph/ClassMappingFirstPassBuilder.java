@@ -187,7 +187,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
         // NOTE: explicit PKs cannot yet be persisted on the Pure metamodel because
         // RelationFunctionInstanceSetImplementation lives in upstream legend-pure (no `primaryKey` field
         // there as of legend-pure 5.84.0). The Pure runtime currently relies on auto-inference
-        // (see meta::relational::mapping::resolveRelationFunctionPrimaryKey). Once the upstream metamodel
+        // (see meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames). Once the upstream metamodel
         // gains a `primaryKey` field, plumb it here via setImpl._primaryKey(...).
         if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
         {

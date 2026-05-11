@@ -555,43 +555,7 @@ function <<access.private>> meta::relational::mapping::extractRelationStoreAcces
 // RelationFunction-typed table source. Required to plug relation-function
 // class mappings into union machinery that is shape-coupled to
 // RootRelationalInstanceSetImplementation.
-function meta::relational::mapping::asRootRelationalInstanceSetImplementation(r:RelationFunctionInstanceSetImplementation[1]):RootRelationalInstanceSetImplementation[1]
-{
-  let mainTableAlias = ^TableAlias(name = $r.id, relationalElement = ^RelationFunction(owner = $r));
-  let pkNames = $r->resolveRelationFunctionPrimaryKeyColumnNames();
-  let relationalPropertyMappings = $r.propertyMappings->cast(@RelationFunctionPropertyMapping)->transformRelationPropertyMappingsToRelational($r);
-  let pkColumns = $pkNames->map(n |
-                              let pmCol = $relationalPropertyMappings
-                                              ->filter(pm | $pm.relationalOperationElement->instanceOf(TableAliasColumn)
-                                                       && $pm.relationalOperationElement->cast(@TableAliasColumn).column.name == $n)
-                                              ->first()
-                                              .relationalOperationElement->cast(@TableAliasColumn).column;
-                              $pmCol;);
-  ^RootRelationalInstanceSetImplementation
-  (
-    id = $r.id,
-    root = $r.root,
-    class = $r.class,
-    parent = $r.parent,
-    superSetImplementationId = $r.superSetImplementationId,
-    userDefinedPrimaryKey = !$pkColumns->isEmpty(),
-    mainTableAlias = $mainTableAlias,
-    primaryKey = $pkColumns,
-    propertyMappings = $relationalPropertyMappings
-  );
-}
-
-// Convenience: convert an InstanceSetImplementation to a
-// RootRelationalInstanceSetImplementation, normalising relation-function
-// class mappings on the fly. Other shapes are returned as-is (cast).
-function meta::relational::mapping::asRootRelationalInstanceSetImplementationOrSelf(s:InstanceSetImplementation[1]):RootRelationalInstanceSetImplementation[1]
-{
-  $s->match([
-    rf: RelationFunctionInstanceSetImplementation[1] | $rf->asRootRelationalInstanceSetImplementation(),
-    rr: RootRelationalInstanceSetImplementation[1] | $rr,
-    other: InstanceSetImplementation[1] |
-      fail('Cannot normalise set implementation \'' + $other.id + '\' (type ' + $other->type().name->orElse('?') + ') to RootRelationalInstanceSetImplementation');
-      $other->cast(@RootRelationalInstanceSetImplementation);
-  ]);
-}
+// NOTE: implementation deferred — union support for relation-function class
+// mappings is tracked separately. See `resolveRelationFunctionPrimaryKeyColumnNames`
+// above for the auto-inference building block this would consume.
 

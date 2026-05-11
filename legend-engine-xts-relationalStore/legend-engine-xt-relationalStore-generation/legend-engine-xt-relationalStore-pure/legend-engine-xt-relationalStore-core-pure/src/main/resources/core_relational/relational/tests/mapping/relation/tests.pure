@@ -262,38 +262,65 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 }
 
 // -------------------------------------------------------------------------
-// Union over RelationFunctionInstanceSetImplementations
+// Primary-key support for Relation Function class mappings (PK only)
 // -------------------------------------------------------------------------
-// Verifies that an OperationSetImplementation (union) whose operands are
-// relation-function class mappings is routed and SQL-generated correctly.
-// Primary key for each operand is auto-inferred from the underlying
-// RelationStoreAccessor (personTable.ID).
+// 1. Explicit `~primaryKey: [...]` on the mapping is accepted by the grammar
+//    /parser/compiler and behaves identically at runtime to the same mapping
+//    without an explicit PK (the PK is metadata; query results are unchanged).
+// 2. `resolveRelationFunctionPrimaryKeyColumnNames` auto-infers the PK by
+//    walking the relation function body for a RelationStoreAccessor
+//    (`#>{db.tbl}#`), optionally chained through `->filter(...)`/`->select(...)`,
+//    and reads the underlying Table's primary-key column names. Shapes that
+//    cannot be reliably inferred (group-by, join, ...) return empty.
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingWithExplicitPK():Boolean[1]
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
-          meta::relational::tests::mapping::relation::testDB,
-          ['Anthony | 19', 'David | 52', 'Fabrice | 45', 'Jane | 23', 'John | 30', 'Oliver | 26', 'Peter | 23']
-        );
-}
-
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMappingWithFilter():Boolean[1]
-{
-  testTds(|Person.all()->filter(p|$p.age > 25)->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
+          meta::relational::tests::mapping::relation::SimpleMappingWithExplicitPK,
           meta::relational::tests::mapping::relation::testDB,
           ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
         );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testRelationFunctionUnionMappingWithGroupBy():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingWithExplicitPKAndAssociation():Boolean[1]
 {
-  testTds(|Person.all()->groupBy([p|$p.firstName->substring(0, 1)], [agg(p|$p.age, y | $y->max())], ['initial', 'maxAge'])
-                      ->project([col(r:TDSRow[1]|$r.getString('initial'), 'initial'), col(r:TDSRow[1]|$r.getString('maxAge'), 'maxAge')]),
-          meta::relational::tests::mapping::relation::RelationFunctionUnionMapping,
+  testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet),
+          meta::relational::tests::mapping::relation::SimpleMappingWithExplicitPK,
           meta::relational::tests::mapping::relation::testDB,
-          ['A | 19', 'D | 52', 'F | 45', 'J | 30', 'O | 26', 'P | 23']
+          ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromSimpleTableAccessor():Boolean[1]
+{
+  let setImpl = meta::relational::tests::mapping::relation::SimpleMapping
+                  ->classMappingById('person')
+                  ->toOne()
+                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
+  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
+  assertEquals(['ID'], $pkNames);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromGroupByReturnsEmpty():Boolean[1]
+{
+  let setImpl = meta::relational::tests::mapping::relation::GroupByMapping
+                  ->classMappingById('meta_relational_tests_mapping_relation_GroupByClass')
+                  ->toOne()
+                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
+  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
+  assertEquals(0, $pkNames->size());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromJoinReturnsEmpty():Boolean[1]
+{
+  let setImpl = meta::relational::tests::mapping::relation::WindowColumnMapping
+                  ->classMappingById('person')
+                  ->toOne()
+                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
+  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
+  // ->join(...)->extend(over(...)) is not a whitelisted shape; auto-inference
+  // must NOT incorrectly return personTable.ID since the row type is no longer
+  // 1:1 with personTable rows after the join.
+  assertEquals(0, $pkNames->size());
 }
 

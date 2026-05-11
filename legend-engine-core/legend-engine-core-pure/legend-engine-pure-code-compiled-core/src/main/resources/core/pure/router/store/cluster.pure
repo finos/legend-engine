@@ -535,12 +535,8 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          pair($storeContract, $mapping->resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations();
-         // Mixed relation-function / relational class mappings are not supported (different routing models);
-         // a homogeneous set of either is fine.
-         let relFuncRoots = $roots->filter(r|$r->instanceOf(RelationFunctionInstanceSetImplementation));
-         let nonRelFuncRoots = $roots->filter(r|!$r->instanceOf(RelationFunctionInstanceSetImplementation));
-         assert($relFuncRoots->isEmpty() || $nonRelFuncRoots->isEmpty(),
-                'Operation (e.g. union) class mappings cannot mix RelationFunctionInstanceSetImplementation with other instance set implementations - found ' + $relFuncRoots->size()->toString() + ' relation-function and ' + $nonRelFuncRoots->size()->toString() + ' other set(s) under \'' + $o.id + '\' in mapping \'' + $mapping->elementToPath() + '\'');
+         assert($roots->forAll(r|!$r->instanceOf(RelationFunctionInstanceSetImplementation)),
+                'Operation (e.g. union) class mappings on RelationFunctionInstanceSetImplementations are not yet supported (set \'' + $o.id + '\' in mapping \'' + $mapping->elementToPath() + '\')');
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicatesBy(x|$x.id)->toOne();
          let store = $roots->map(r|$mapping->resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicatesBy(x|$x->elementToPath())->toOne();
          pair($storeContract, $mapping->resolveStore($store));

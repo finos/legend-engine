@@ -5014,13 +5014,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                                                                                            let treeNode = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable));
                                                                                            ^SelectWithCursor(select = ^SelectSQLQuery(data = $treeNode), currentTreeNode = $treeNode);,
                               o:OperationSetImplementation[1]|let resolved = $o->resolveOperation($state.mapping->toOne());
-                                                              // Generic union support: relation-function class mappings can participate in
-                                                              // union (operation) class mappings. We normalise each operand into a
-                                                              // RootRelationalInstanceSetImplementation backed by a RelationFunction-typed
-                                                              // table source, with primary key columns auto-inferred when possible. This
-                                                              // decouples the union code from the explicit RootRelationalInstanceSetImplementation
-                                                              // cast it previously required.
-                                                              let setImpls = $resolved->cast(@InstanceSetImplementation)->map(s | $s->asRootRelationalInstanceSetImplementationOrSelf());
+                                                              let setImpls = $resolved->cast(@RootRelationalInstanceSetImplementation);
                                                               if($setImpls->size()==1,| $processRootSetImpl->eval($setImpls->at(0))
                                                                                      ,| let milestoningContext = getMilestoningContextForAll($expression,$o, $parameters, $state, $vars, $context, $extensions);
                                                                                         let union = buildUnion($setImpls, [], $joinType, false, $state.inProject, $milestoningContext, $nodeId, $state, $context, $extensions);
