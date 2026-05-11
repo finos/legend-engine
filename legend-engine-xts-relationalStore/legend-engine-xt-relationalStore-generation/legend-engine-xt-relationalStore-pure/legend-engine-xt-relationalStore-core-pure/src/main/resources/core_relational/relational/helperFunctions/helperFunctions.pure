@@ -508,11 +508,14 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 // upstream legend-pure metamodel for RelationFunctionInstanceSetImplementation
 // does not yet carry an explicit `primaryKey` field, so we auto-infer:
 //   - If the relation function's body is (effectively) a #>{db.tbl}# accessor,
-//     i.e. a RelationStoreAccessor optionally chained through `->filter(...)`,
-//     we take the underlying Table's primary-key column names and project them
-//     onto the function's row type (matching by name).
-//   - Otherwise the inference returns empty; the caller decides whether to
-//     fail (e.g. union mapping) or proceed (e.g. simple getAll).
+//     i.e. a RelationStoreAccessor optionally chained through row-identity-
+//     preserving operators (`->filter(...)`, `->limit(...)`, `->slice(...)`,
+//     `->sort(...)`/`->sortBy(...)`/`->drop(...)`/`->take(...)`), we take the
+//     underlying Table's primary-key column names and project them onto the
+//     function's row type (matching by name).
+//   - Otherwise (e.g. `->groupBy`, `->join`, `->extend(over...)`, `->project`,
+//     `->select`, `->pivot`, ...) the inference returns empty; the caller
+//     decides whether to fail (e.g. union mapping) or proceed (e.g. simple getAll).
 // When the upstream metamodel gains an explicit primaryKey field, prefer that
 // over the auto-inference (the Java compiler validates user-declared PKs).
 // ---------------------------------------------------------------------------
@@ -524,6 +527,21 @@ function meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames
     | [],
     | $exprs->at(0)->extractRelationStoreAccessorTablePrimaryKeyNames()
   );
+}
+
+// Functions that produce a Relation whose rows are 1:1 with their input
+// Relation's rows (no row creation, no row collapsing, no row multiplication).
+// For these we can safely follow the receiver chain to find an underlying
+// RelationStoreAccessor and read its Table's primary key.
+function <<access.private>> meta::relational::mapping::isRowIdentityPreservingRelationFunction(name:String[1]):Boolean[1]
+{
+  $name == 'filter'
+    || $name == 'limit'
+    || $name == 'slice'
+    || $name == 'drop'
+    || $name == 'take'
+    || $name == 'sort'
+    || $name == 'sortBy';
 }
 
 function <<access.private>> meta::relational::mapping::extractRelationStoreAccessorTablePrimaryKeyNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
@@ -539,11 +557,15 @@ function <<access.private>> meta::relational::mapping::extractRelationStoreAcces
           a: Any[*] | []
         ]))->cast(@String),
     fe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
-        // Walk through ->filter(...) (and similarly innocuous wrappers); peel one parameter at a time.
-        if($fe.parametersValues->isEmpty(),
+        // Only recurse through row-identity-preserving operators. Anything else
+        // (groupBy, join, extend, project, select, pivot, distinct, ...) breaks
+        // the 1:1 correspondence with the underlying table's rows, so we cannot
+        // safely reuse the table's primary key.
+        let fnName = $fe.func.functionName;
+        if($fnName->isEmpty() || !$fnName->toOne()->isRowIdentityPreservingRelationFunction() || $fe.parametersValues->isEmpty(),
           | [],
           | $fe.parametersValues->at(0)->extractRelationStoreAccessorTablePrimaryKeyNames()
-        ),
+        );,
     cvs: meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] |
         $cvs.val->extractRelationStoreAccessorTablePrimaryKeyNames(),
     a: Any[*] | []
