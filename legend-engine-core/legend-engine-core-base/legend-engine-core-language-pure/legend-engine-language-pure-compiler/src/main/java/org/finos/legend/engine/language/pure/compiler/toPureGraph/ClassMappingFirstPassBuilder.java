@@ -44,6 +44,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MergeOperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -209,17 +210,25 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                 }
             }
         }
-        // Resolve the typed PK columns via the Pure resolver and persist on the set impl.
-        // Explicit names from the protocol win when non-empty; otherwise the resolver falls back
-        // to auto-inference. Each name is mapped to its Column<Nil,Any|*> reference held by the
-        // matching property mapping. See helperFunctions.pure for the full algorithm.
+        // Resolve the typed PK columns and persist on the set impl.
+        // Only the explicit-PK case is handled at compile time. The richer auto-inference
+        // (per-operator rules over the function body) lives in Pure
+        // (meta::relational::mapping::resolveRelationFunctionPrimaryKey, in
+        //  legend-engine-xt-relationalStore-core-pure) so the algorithm stays next to the
+        // operators it describes. Core can't reach into an xts module from Java, so the
+        // compile-time path here is intentionally limited to the explicit list; runtime
+        // consumers (router, future union, lineage) call the Pure resolver directly.
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> resolvedPK =
-                org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions
-                        .Root_meta_relational_mapping_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
-                                setImpl,
-                                Lists.mutable.withAll(
-                                        classMapping.primaryKey == null ? java.util.Collections.<String>emptyList() : classMapping.primaryKey),
-                                context.pureModel.getExecutionSupport());
+                (classMapping.primaryKey == null || classMapping.primaryKey.isEmpty())
+                        ? Lists.mutable.empty()
+                        : Lists.mutable.<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>>empty()
+                                .withAll(ListIterate.collect(classMapping.primaryKey, pkName ->
+                                        setImpl._propertyMappings()
+                                                .select(pm -> pm instanceof RelationFunctionPropertyMapping
+                                                        && ((RelationFunctionPropertyMapping) pm)._column() != null
+                                                        && pkName.equals(((RelationFunctionPropertyMapping) pm)._column()._name()))
+                                                .collect(pm -> ((RelationFunctionPropertyMapping) pm)._column())
+                                                .getFirst()));
         setImpl._primaryKey(resolvedPK);
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
         return Tuples.pair(setImpl, Lists.immutable.empty());
