@@ -265,10 +265,16 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 // Primary-key auto-inference for Relation Function class mappings (PK only)
 // -------------------------------------------------------------------------
 // `resolveRelationFunctionPrimaryKeyColumnNames` walks the relation function
-// body for a RelationStoreAccessor (`#>{db.tbl}#`), optionally chained
-// through `->filter(...)`/`->select(...)`, and reads the underlying Table's
-// primary-key column names. Shapes that cannot be reliably inferred
-// (group-by, join, ...) return empty.
+// body and applies the per-operator PK rule (see helperFunctions.pure):
+//
+//   filter / limit / drop / take / slice / sort / sortBy ... preserve PK
+//   rename(rel, ~old, ~new)            ..................... swap old → new
+//   select(rel) / select(rel, cols)    ..................... preserve iff PK ⊆ cols
+//   extend(rel, ...)                   ..................... preserve PK
+//   distinct(rel) / distinct(rel, cols) .................... cols (or input PK)
+//   groupBy(rel, cols, agg)            ..................... PK = cols
+//   join / asOfJoin                    ..................... PK = leftPK ∪ rightPK
+//   aggregate / pivot / lateral / concatenate / flatten .... empty
 //
 // NOTE: explicit `~primaryKey: [...]` syntax is part of the engine grammar
 // only — the upstream legend-pure parser used to compile this `.pure` file
@@ -277,36 +283,48 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 // (TestMappingGrammarParser, TestMappingGrammarRoundtrip,
 //  TestMappingCompilationFromGrammar).
 
+function <<access.private>> meta::relational::tests::mapping::relation::pkOf(mapping:meta::pure::mapping::Mapping[1], id:String[1]):String[*]
+{
+  let setImpl = $mapping->classMappingById($id)
+                  ->toOne()
+                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
+  meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
+}
+
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromSimpleTableAccessor():Boolean[1]
 {
-  let setImpl = meta::relational::tests::mapping::relation::SimpleMapping
-                  ->classMappingById('person')
-                  ->toOne()
-                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
-  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
-  assertEquals(['ID'], $pkNames);
+  // personFunction body: #>{personTable}#->filter(x|$x.AGE > 25)->limit(5)
+  // filter & limit preserve PK → personTable.PK = [ID].
+  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::SimpleMapping, 'person'));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromGroupByReturnsEmpty():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromGroupBy():Boolean[1]
 {
-  let setImpl = meta::relational::tests::mapping::relation::GroupByMapping
-                  ->classMappingById('meta_relational_tests_mapping_relation_GroupByClass')
-                  ->toOne()
-                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
-  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
-  assertEquals(0, $pkNames->size());
+  // personFunctionWithGroupBy body: #>{personTable}#->groupBy(~FIRMID, ~SUM:...)
+  // groupBy → PK = group-by columns = [FIRMID].
+  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::GroupByMapping,
+    'meta_relational_tests_mapping_relation_GroupByClass'));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromJoinReturnsEmpty():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromInnerJoinWithExtend():Boolean[1]
 {
-  let setImpl = meta::relational::tests::mapping::relation::WindowColumnMapping
-                  ->classMappingById('person')
-                  ->toOne()
-                  ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
-  let pkNames = meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames($setImpl);
-  // ->join(...)->extend(over(...)) is not a whitelisted shape; auto-inference
-  // must NOT incorrectly return personTable.ID since the row type is no longer
-  // 1:1 with personTable rows after the join.
-  assertEquals(0, $pkNames->size());
+  // personFunctionWithJoinAndWindowColumn body:
+  //   #>{personTable}#->join(#>{groupMembershipTable}#, INNER, ...)
+  //                   ->extend(over(...), ~[RANK:...])
+  // join → leftPK ∪ rightPK = [ID] ∪ [GROUPID]
+  // extend → preserve PK
+  assertSameElements(['ID', 'GROUPID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::WindowColumnMapping, 'person'));
 }
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSelectKeepingPK():Boolean[1]
+{
+  // firmFunction body: #>{firmTable}#->limit(10)->select(~[ID, legalName])
+  // limit preserves PK; select preserves PK because firmTable.PK=[ID] ⊆ cols.
+  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::SimpleMapping, 'firm'));
+}
+
 

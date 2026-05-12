@@ -184,11 +184,10 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                 ._parent(parentMapping)
                 ._propertyMappings(ListIterate.collect(classMapping.propertyMappings, p -> p.accept(new PropertyMappingBuilder(this.context, baseSetImpl, Lists.mutable.empty()))));
         // Validate explicit primary key column names (if any) against the declared property mappings.
-        // NOTE: explicit PKs cannot yet be persisted on the Pure metamodel because
-        // RelationFunctionInstanceSetImplementation lives in upstream legend-pure (no `primaryKey` field
-        // there as of legend-pure 5.84.0). The Pure runtime currently relies on auto-inference
-        // (see meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames). Once the upstream metamodel
-        // gains a `primaryKey` field, plumb it here via setImpl._primaryKey(...).
+        // The PK *resolution* algorithm lives in Pure
+        // (meta::relational::mapping::resolveRelationFunctionPrimaryKey) so per-operator rules stay
+        // co-located with the operators they describe. Java's job here is just (a) validate the
+        // user input and (b) call the Pure resolver, then persist its result on the set impl.
         if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
         {
             java.util.Set<String> declaredColumns = new java.util.HashSet<>();
@@ -210,6 +209,18 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                 }
             }
         }
+        // Resolve the typed PK columns via the Pure resolver and persist on the set impl.
+        // Explicit names from the protocol win when non-empty; otherwise the resolver falls back
+        // to auto-inference. Each name is mapped to its Column<Nil,Any|*> reference held by the
+        // matching property mapping. See helperFunctions.pure for the full algorithm.
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> resolvedPK =
+                org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions
+                        .Root_meta_relational_mapping_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
+                                setImpl,
+                                Lists.mutable.withAll(
+                                        classMapping.primaryKey == null ? java.util.Collections.<String>emptyList() : classMapping.primaryKey),
+                                context.pureModel.getExecutionSupport());
+        setImpl._primaryKey(resolvedPK);
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
         return Tuples.pair(setImpl, Lists.immutable.empty());
     }
