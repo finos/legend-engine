@@ -608,13 +608,13 @@ function <<access.private>> meta::relational::mapping::inferPrimaryKeyColumnName
       if ($name->in(['filter', 'limit', 'drop', 'take', 'slice', 'sort', 'sortBy', 'extend']),
         | $leftPK,
       | if ($name == 'select',
-        | if ($args->size() == 1, | $leftPK, | meta::relational::mapping::applySelectToPK($leftPK, $args->at(1))),
+        | if ($args->size() == 1, | $leftPK, | meta::relational::mapping::applySelectToPK($leftPK, $fe)),
       | if ($name == 'rename' && ($args->size() >= 3),
-        | meta::relational::mapping::applyRenameToPK($leftPK, $args->at(1), $args->at(2)),
+        | meta::relational::mapping::applyRenameToPK($leftPK, $fe),
       | if ($name == 'distinct',
-        | if ($args->size() >= 2, | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(), | $leftPK),
+        | if ($args->size() >= 2, | $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1), | $leftPK),
       | if ($name == 'groupBy' && ($args->size() >= 2),
-        | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(),
+        | $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1),
       | if ($name == 'aggregate',
         | [],
       | if ($name->in(['join', 'asOfJoin']) && ($args->size() >= 2),
@@ -625,17 +625,17 @@ function <<access.private>> meta::relational::mapping::inferPrimaryKeyColumnName
 }
 
 // select(rel, cols): keep the input PK iff every PK column survives the projection.
-function <<access.private>> meta::relational::mapping::applySelectToPK(leftPK:String[*], colsArg:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+function <<access.private>> meta::relational::mapping::applySelectToPK(leftPK:String[*], fe:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1]):String[*]
 {
-  let projected = $colsArg->meta::relational::mapping::extractColumnNamesFromColSpec();
+  let projected = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1);
   if ($leftPK->forAll(p | $p->in($projected)), | $leftPK, | []);
 }
 
 // rename(rel, ~old, ~new): preserve PK with old swapped for new.
-function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:String[*], oldArg:meta::pure::metamodel::valuespecification::ValueSpecification[1], newArg:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:String[*], fe:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1]):String[*]
 {
-  let oldNames = $oldArg->meta::relational::mapping::extractColumnNamesFromColSpec();
-  let newNames = $newArg->meta::relational::mapping::extractColumnNamesFromColSpec();
+  let oldNames = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1);
+  let newNames = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(2);
   if (($oldNames->size() == 1) && ($newNames->size() == 1),
     | let o = $oldNames->toOne();
       let n = $newNames->toOne();
@@ -644,22 +644,21 @@ function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:St
   );
 }
 
-// Pull column names out of a ColSpec / ColSpecArray argument. These are the
-// canonical "column-list" argument shapes used by select / rename / distinct /
-// groupBy / pivot. Returns empty for anything else.
-function <<access.private>> meta::relational::mapping::extractColumnNamesFromColSpec(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+// Pull column names out of a ColSpec / ColSpecArray argument at the given
+// parameter index of a FunctionExpression. These are the canonical
+// "column-list" argument shapes used by select / rename / distinct /
+// groupBy / pivot. Uses `instanceValuesAtParameter` to transparently unwrap
+// router/clustering wrappers and InstanceValue containers — i.e. exactly the
+// same proven path that `pureToSQLQuery.pure` uses for its ColSpec args.
+// Returns empty for anything that is not a ColSpec/ColSpecArray.
+function <<access.private>> meta::relational::mapping::extractColumnNamesFromColSpec(fe:meta::pure::metamodel::valuespecification::FunctionExpression[1], index:Integer[1]):String[*]
 {
-  $vs->match([
-    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] |
-        $iv.values->map(v | $v->match([
-          cs: meta::pure::metamodel::relation::ColSpec<Any>[1] | $cs.name,
-          csa: meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
-          a: Any[*] | []
-        ]))->cast(@String),
-    cvs: meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] |
-        $cvs.val->meta::relational::mapping::extractColumnNamesFromColSpec(),
-    a: Any[*] | []
-  ])->cast(@String);
+  $fe->meta::pure::functions::meta::instanceValuesAtParameter($index, [])
+     ->map(v | $v->match([
+        cs:  meta::pure::metamodel::relation::ColSpec<Any>[1]      | $cs.name,
+        csa: meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
+        a:   Any[*]                                                | []
+     ]))->cast(@String);
 }
 
 
