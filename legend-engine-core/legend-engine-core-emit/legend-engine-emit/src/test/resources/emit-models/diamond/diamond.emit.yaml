@@ -1,0 +1,18 @@
+name: diamond
+title: "Diamond dependency graph"
+description: |
+  Top-level model that depends on left-dep and right-dep. Both intermediates
+  pull in the same shared-dep, so the shared file is reachable via two
+  distinct dependency paths. The loader must recognise this and load the
+  shared file only once.
+
+modelSources:
+  model:
+    root: diamond
+    files:
+      - model/main.pure
+  dependencies:
+    - source: left-dep.emit.yaml
+    - source: right-dep.emit.yaml
+
+complexity: basic

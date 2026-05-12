@@ -1,0 +1,16 @@
+name: class-simple
+title: "Simple Class"
+description: |
+  A bootstrap EMIT test exercising parse and compile of a single class.
+
+modelSources:
+  model:
+    root: class-simple
+    files:
+      - model.pure
+
+features:
+  - class
+complexity: basic
+tags:
+  - getting-started

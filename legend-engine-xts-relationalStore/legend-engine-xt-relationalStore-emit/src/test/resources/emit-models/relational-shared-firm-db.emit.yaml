@@ -1,0 +1,25 @@
+name: relational-shared-firm-db
+title: "Shared Firm Database (PersonTable + FirmTable + Join)"
+description: |
+  A reusable relational store consumed by the joined-domain EMIT examples.
+  Defines `demo::store::FirmDB` with a PersonTable, a FirmTable, and a
+  PersonFirm join on PersonTable.firmId = FirmTable.id. Contains no Pure
+  types or mappings; pair with `relational-shared-domain` for the matching
+  Person / Firm / Employment classes. Its own EMIT run only exercises
+  parse + compile.
+
+modelSources:
+  model:
+    root: relational-shared-firm-db
+    files:
+      - store/firmDb.pure
+
+features:
+  - relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - shared-store
+  - h2
+  - join

@@ -1,0 +1,14 @@
+name: diamond-shared-dep
+title: "Shared leaf dependency for the diamond test"
+description: |
+  Single Pure file referenced via two intermediate dependencies in the diamond
+  test. Used to verify that the loader does not load the same file twice when
+  reached via multiple dependency paths.
+
+modelSources:
+  model:
+    root: shared-dep
+    files:
+      - model/shared.pure
+
+complexity: basic

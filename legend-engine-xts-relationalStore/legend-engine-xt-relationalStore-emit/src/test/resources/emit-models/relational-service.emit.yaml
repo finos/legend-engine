@@ -1,0 +1,38 @@
+name: relational-service
+title: "Relational-backed Service with Test Suite and Plan Generation"
+description: |
+  A Service whose execution targets a relational mapping (over the Person
+  class from `relational-shared-domain`) on an in-memory H2 database.
+  Demonstrates the full plumbing — RelationalDatabaseConnection, Runtime
+  referencing the connection, Service with PureSingleExecution, and a Service
+  test suite that primes test data per Connection. Exercises EMIT Phase 5
+  (Testable test execution) and Phase 6 (plan generation).
+
+modelSources:
+  model:
+    root: relational-service
+    files:
+      - store/db.pure
+      - mapping/personMapping.pure
+      - connection/h2Connection.pure
+      - runtime/personRuntime.pure
+      - service/personService.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - class
+  - relational-store
+  - relational-mapping
+  - relational-connection
+  - runtime
+  - service
+  - service-test
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - service-test
+  - plan-generation
+  - shared-domain

@@ -1,0 +1,22 @@
+name: model-generation
+title: "Model generation via GenerationSpecification"
+description: |
+  Exercises Phase 3 (MODEL_GENERATION) with a GenerationSpecification whose
+  generationNodes reference a class in the demo::modelgen:: namespace.
+  EmitDemoModelGenerationCompilerExtension resolves the referenced element and
+  EmitDemoModelGenerationExtension produces a sibling generated class which
+  must be merged into the model and survive recompilation.
+
+modelSources:
+  model:
+    root: model-generation
+    files:
+      - model.pure
+
+features:
+  - class
+  - model-generation
+  - generation-specification
+complexity: basic
+tags:
+  - model-generation
