@@ -603,36 +603,44 @@ function <<access.private>> meta::relational::mapping::inferPrimaryKeyColumnName
       let args = $fe.parametersValues;
       let leftPK = $args->at(0)->meta::relational::mapping::inferPrimaryKeyColumnNames();
       // Order of branches mirrors the table in the header comment.
-      if ($name->in(['filter', 'limit', 'drop', 'take', 'slice', 'sort', 'sortBy']),
-        | $leftPK,
-      | if ($name == 'extend',
+      // `extend` is grouped with the row-identity-preserving operators because
+      // it only adds columns and keeps one output row per input row.
+      if ($name->in(['filter', 'limit', 'drop', 'take', 'slice', 'sort', 'sortBy', 'extend']),
         | $leftPK,
       | if ($name == 'select',
-        | if ($args->size() == 1,
-            | $leftPK,
-            | let projected = $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec();
-              if ($leftPK->forAll(p | $p->in($projected)), | $leftPK, | [])),
+        | if ($args->size() == 1, | $leftPK, | meta::relational::mapping::applySelectToPK($leftPK, $args->at(1))),
       | if ($name == 'rename' && $args->size() >= 3,
-        | let oldNames = $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec();
-          let newNames = $args->at(2)->meta::relational::mapping::extractColumnNamesFromColSpec();
-          if ($oldNames->size() == 1 && $newNames->size() == 1,
-            | let o = $oldNames->toOne();
-              let n = $newNames->toOne();
-              $leftPK->map(p | if ($p == $o, | $n, | $p)),
-            | $leftPK),
+        | meta::relational::mapping::applyRenameToPK($leftPK, $args->at(1), $args->at(2)),
       | if ($name == 'distinct',
-        | if ($args->size() >= 2,
-            | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(),
-            | $leftPK),
+        | if ($args->size() >= 2, | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(), | $leftPK),
       | if ($name == 'groupBy' && $args->size() >= 2,
         | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(),
       | if ($name == 'aggregate',
         | [],
       | if ($name->in(['join', 'asOfJoin']) && $args->size() >= 2,
-        | let rightPK = $args->at(1)->meta::relational::mapping::inferPrimaryKeyColumnNames();
-          $leftPK->concatenate($rightPK)->removeDuplicates(),
+        | $leftPK->concatenate($args->at(1)->meta::relational::mapping::inferPrimaryKeyColumnNames())->removeDuplicates(),
       // pivot, lateral, concatenate, flatten, map and anything else: empty.
-      | []))))))));
+      | [])))))));
+  );
+}
+
+// select(rel, cols): keep the input PK iff every PK column survives the projection.
+function <<access.private>> meta::relational::mapping::applySelectToPK(leftPK:String[*], colsArg:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+{
+  let projected = $colsArg->meta::relational::mapping::extractColumnNamesFromColSpec();
+  if ($leftPK->forAll(p | $p->in($projected)), | $leftPK, | []);
+}
+
+// rename(rel, ~old, ~new): preserve PK with old swapped for new.
+function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:String[*], oldArg:meta::pure::metamodel::valuespecification::ValueSpecification[1], newArg:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+{
+  let oldNames = $oldArg->meta::relational::mapping::extractColumnNamesFromColSpec();
+  let newNames = $newArg->meta::relational::mapping::extractColumnNamesFromColSpec();
+  if ($oldNames->size() == 1 && $newNames->size() == 1,
+    | let o = $oldNames->toOne();
+      let n = $newNames->toOne();
+      $leftPK->map(p | if ($p == $o, | $n, | $p));,
+    | $leftPK
   );
 }
 
