@@ -645,20 +645,43 @@ function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:St
 }
 
 // Pull column names out of a ColSpec / ColSpecArray argument at the given
-// parameter index of a FunctionExpression. These are the canonical
-// "column-list" argument shapes used by select / rename / distinct /
-// groupBy / pivot. Uses `instanceValuesAtParameter` to transparently unwrap
-// router/clustering wrappers and InstanceValue containers — i.e. exactly the
-// same proven path that `pureToSQLQuery.pure` uses for its ColSpec args.
-// Returns empty for anything that is not a ColSpec/ColSpecArray.
+// parameter index of a FunctionExpression. Canonical "column-list" arg
+// shapes used by select / rename / distinct / groupBy / pivot.
+//
+// At the point this runs (mapping compile / pre-router) the `~FIRMID` and
+// `~[ID, legalName]` literals have NOT yet been evaluated to bare
+// `ColSpec` / `ColSpecArray` instances — they are still
+// `SimpleFunctionExpression`s calling `colSpec(name, relType)` /
+// `colSpecArray(names, relType)`. So we have to recognise both shapes:
+//
+//   1. Already-evaluated `ColSpec` / `ColSpecArray` instance values.
+//   2. Unevaluated `colSpec(...)` / `colSpecArray(...)` SFEs — pull the name
+//      string(s) out of their first parameter.
+//
+// Anything else is conservatively returned as empty.
 function <<access.private>> meta::relational::mapping::extractColumnNamesFromColSpec(fe:meta::pure::metamodel::valuespecification::FunctionExpression[1], index:Integer[1]):String[*]
 {
-  $fe->meta::pure::functions::meta::instanceValuesAtParameter($index, [])
-     ->map(v | $v->match([
-        cs:  meta::pure::metamodel::relation::ColSpec<Any>[1]      | $cs.name,
-        csa: meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
-        a:   Any[*]                                                | []
-     ]))->cast(@String);
+  let param = $fe.parametersValues->at($index)->evaluateAndDeactivate();
+  let inner = $param->match([
+    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] | $iv.values,
+    a:  Any[*]                                                      | $a
+  ]);
+  $inner->map(v | $v->match([
+    cs:  meta::pure::metamodel::relation::ColSpec<Any>[1]      | $cs.name,
+    csa: meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
+    sfe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
+        // colSpec<T>(s:String[1], cl:T[1]):ColSpec<T>[1]
+        // colSpecArray<T>(s:String[*], cl:T[1]):ColSpecArray<T>[1]
+        if ($sfe.func.functionName->in(['colSpec', 'colSpecArray']),
+          | $sfe.parametersValues->at(0)->evaluateAndDeactivate()->match([
+              iv2: meta::pure::metamodel::valuespecification::InstanceValue[1] |
+                  $iv2.values->filter(x | $x->instanceOf(String))->cast(@String),
+              a2:  Any[*] | []
+            ]),
+          | []
+        ),
+    a:   Any[*] | []
+  ]))->cast(@String);
 }
 
 
