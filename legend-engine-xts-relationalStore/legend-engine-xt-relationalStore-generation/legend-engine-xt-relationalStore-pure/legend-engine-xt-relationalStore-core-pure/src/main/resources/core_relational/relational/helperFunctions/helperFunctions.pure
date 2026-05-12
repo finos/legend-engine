@@ -609,15 +609,15 @@ function <<access.private>> meta::relational::mapping::inferPrimaryKeyColumnName
         | $leftPK,
       | if ($name == 'select',
         | if ($args->size() == 1, | $leftPK, | meta::relational::mapping::applySelectToPK($leftPK, $args->at(1))),
-      | if ($name == 'rename' && $args->size() >= 3,
+      | if ($name == 'rename' && ($args->size() >= 3),
         | meta::relational::mapping::applyRenameToPK($leftPK, $args->at(1), $args->at(2)),
       | if ($name == 'distinct',
         | if ($args->size() >= 2, | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(), | $leftPK),
-      | if ($name == 'groupBy' && $args->size() >= 2,
+      | if ($name == 'groupBy' && ($args->size() >= 2),
         | $args->at(1)->meta::relational::mapping::extractColumnNamesFromColSpec(),
       | if ($name == 'aggregate',
         | [],
-      | if ($name->in(['join', 'asOfJoin']) && $args->size() >= 2,
+      | if ($name->in(['join', 'asOfJoin']) && ($args->size() >= 2),
         | $leftPK->concatenate($args->at(1)->meta::relational::mapping::inferPrimaryKeyColumnNames())->removeDuplicates(),
       // pivot, lateral, concatenate, flatten, map and anything else: empty.
       | [])))))));
@@ -636,7 +636,7 @@ function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:St
 {
   let oldNames = $oldArg->meta::relational::mapping::extractColumnNamesFromColSpec();
   let newNames = $newArg->meta::relational::mapping::extractColumnNamesFromColSpec();
-  if ($oldNames->size() == 1 && $newNames->size() == 1,
+  if (($oldNames->size() == 1) && ($newNames->size() == 1),
     | let o = $oldNames->toOne();
       let n = $newNames->toOne();
       $leftPK->map(p | if ($p == $o, | $n, | $p));,
