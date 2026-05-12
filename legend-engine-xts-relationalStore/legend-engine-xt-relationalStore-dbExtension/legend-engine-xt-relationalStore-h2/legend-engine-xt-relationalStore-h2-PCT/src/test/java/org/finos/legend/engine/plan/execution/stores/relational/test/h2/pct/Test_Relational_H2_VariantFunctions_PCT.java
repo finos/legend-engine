@@ -72,6 +72,7 @@ public class Test_Relational_H2_VariantFunctions_PCT extends PCTReportConfigurat
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""),
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""),
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Couldn't find DynaFunction to Postgres model translation for variantTo().\"\nwhere the expected message was:\"Month is not managed yet!\"\""),
 
             one("meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_", "Couldn't find DynaFunction to Postgres model translation for toJson()."),
 
