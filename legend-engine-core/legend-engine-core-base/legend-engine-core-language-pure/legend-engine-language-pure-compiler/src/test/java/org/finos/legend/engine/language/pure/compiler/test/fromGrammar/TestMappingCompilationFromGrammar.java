@@ -3225,6 +3225,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  my::Person: Relation \n" +
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
@@ -3240,6 +3241,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  my::Person: Relation \n" +
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE,\n" +
                 "    +firmId: Integer[1]: FIRMID\n" +
@@ -3262,6 +3264,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personFunctionWithQuotedCol():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
                 "    firstName: FIRSTNAME," +
                 "    firmId: 'FIRM ID'" +
                 "  }\n" +
@@ -3420,7 +3423,44 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' does not match any of its relation property mappings (FIRSTNAME, AGE)");
+                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' is not part of the columns returned by the relation function 'my::personFunction__Relation_1_' (FIRSTNAME, AGE, FIRMID, CITY). Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingNoPKFailsWhenNotInferable()
+    {
+        // Function body is 1->cast(...) — not a RelationStoreAccessor and not a
+        // whitelisted relation operator, so auto-inference returns empty. With no
+        // explicit ~primaryKey declared, the compiler should fail with a helpful error.
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person[person]: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [34:3-39:3]: Unable to determine primary key for relation function class mapping 'person'. No `~primaryKey` was declared and the primary key could not be inferred from the body of relation function 'my::personFunction__Relation_1_'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).");
+    }
+
+    @Test
+    public void testRelationFunctionMappingPKWithUnmappedColumn()
+    {
+        // FIRMID exists in the function's output RelationType but is NOT mapped to
+        // any property. Per Rohit's review this should be valid — PK columns don't
+        // need to be mapped, they just need to exist in the function's output.
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRMID]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
     }
 
 }

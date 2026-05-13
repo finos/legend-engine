@@ -41,7 +41,7 @@ import meta::pure::functions::relation::*;
 //
 // Per-operator PK rule (output PK as a function of input PK(s) and args):
 //
-//   filter, limit, drop, take, slice, sort, sortBy ........... preserve PK
+//   filter, limit, drop, slice, sort ...................... preserve PK
 //   rename(rel, ~old, ~new) ................................. preserve PK,
 //                                                              swap old → new
 //   select(rel)             ................................. preserve PK
