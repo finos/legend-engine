@@ -210,7 +210,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                     throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(
                             "Primary key column '" + pkColumn + "' declared in class mapping '" + id
                                     + "' is not part of the columns returned by the relation function '"
-                                    + getElementFullPath(setImpl._relationFunction(), this.context.pureModel.getExecutionSupport()) + "' ("
+                                    + getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction(), this.context.pureModel.getExecutionSupport()) + "' ("
                                     + String.join(", ", availableColumnNames) + ")."
                                     + " Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
                             classMapping.sourceInformation,
@@ -235,7 +235,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(
                     "Unable to determine primary key for relation function class mapping '" + id
                             + "'. No `~primaryKey` was declared and the primary key could not be inferred from the body of relation function '"
-                            + getElementFullPath(setImpl._relationFunction(), this.context.pureModel.getExecutionSupport())
+                            + getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction(), this.context.pureModel.getExecutionSupport())
                             + "'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).",
                     classMapping.sourceInformation,
                     org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType.COMPILATION);
