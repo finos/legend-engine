@@ -215,7 +215,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateCreateTableStatementForSnowflake(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
 {
-   if($c.isTempTable->isTrue(),| 'CREATE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextSnowflake($c.type),
+   if($c.isTempTable->isTrue(),| 'CREATE OR REPLACE TEMPORARY TABLE ' + $c.table->tableToString($dbConfig) + '('+ $c.table.columns->map(r|$r->match([c:Column[1]| $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextSnowflake($c.type),
                                                                                                                                           r:RelationalOperationElement[1]| fail('Only \'Column\' types are supported when creating temporary tables, found: '+$r->type()->toOne()->elementToPath());'';]))->joinStrings(',') + ');'
                               ,| $c->meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault($dbConfig))
 
