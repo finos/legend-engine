@@ -982,8 +982,10 @@ function meta::relational::tests::mapping::relation::pkTestDistinctWithCols(): m
 
 function meta::relational::tests::mapping::relation::pkTestJoin(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
+  // firmTable.ID is renamed to FIRM_ID first so the joined row type doesn't
+  // have two columns called ID (Relation forbids duplicate column names).
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
-    ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#, JoinKind.INNER, {x, y | $x.FIRMID == $y.ID})
+    ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
 }
 
 // --- B. Unsupported / negative scenarios ---------------------------------
@@ -1042,8 +1044,9 @@ function meta::relational::tests::mapping::relation::pkTestGroupByThenRename(): 
 
 function meta::relational::tests::mapping::relation::pkTestJoinThenFilterSort(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
+  // firmTable.ID is renamed to FIRM_ID first to avoid duplicate column names.
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
-    ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#, JoinKind.INNER, {x, y | $x.FIRMID == $y.ID})
+    ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
     ->filter(x | $x.AGE > 25)
     ->sort(~AGE->ascending())
 }

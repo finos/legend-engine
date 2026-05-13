@@ -390,10 +390,10 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromJoin():Boolean[1]
 {
-  // join(personTable, firmTable, INNER, ...): leftPK=[ID] ∪ rightPK=[ID]
-  // → deduplicated to [ID]. (Both tables have a primary key column literally
-  // called ID; removeDuplicates collapses them.)
-  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+  // join(personTable, firmTable->rename(~ID, ~FIRM_ID), INNER, ...):
+  // leftPK=[ID] ∪ rightPK=[FIRM_ID] (firmTable's PK is renamed before the
+  // join so the row type doesn't have duplicate column names).
+  assertSameElements(['ID', 'FIRM_ID'], meta::relational::tests::mapping::relation::pkOf(
     meta::relational::tests::mapping::relation::PkTestJoinMapping, 'pk'));
 }
 
@@ -497,9 +497,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughJoinThenFilterSort():Boolean[1]
 {
-  // join(personTable, firmTable, INNER, ...): leftPK=[ID] ∪ rightPK=[ID]
-  // → [ID] (deduped); filter + sort preserve.
-  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+  // join(personTable, firmTable->rename(~ID, ~FIRM_ID), INNER, ...):
+  // leftPK=[ID] ∪ rightPK=[FIRM_ID]; filter + sort preserve.
+  assertSameElements(['ID', 'FIRM_ID'], meta::relational::tests::mapping::relation::pkOf(
     meta::relational::tests::mapping::relation::PkTestJoinThenFilterSortMapping, 'pk'));
 }
 
