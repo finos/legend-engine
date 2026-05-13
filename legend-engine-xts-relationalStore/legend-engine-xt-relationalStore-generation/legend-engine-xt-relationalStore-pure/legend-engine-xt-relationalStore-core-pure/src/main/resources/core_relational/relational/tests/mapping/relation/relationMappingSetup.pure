@@ -496,7 +496,6 @@ Mapping meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapp
   }
 )
 
-
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;

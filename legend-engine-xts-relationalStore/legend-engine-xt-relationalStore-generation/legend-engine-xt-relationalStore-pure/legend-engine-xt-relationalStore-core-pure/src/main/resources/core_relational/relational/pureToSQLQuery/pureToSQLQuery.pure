@@ -5014,8 +5014,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                               r:meta::pure::router::clustering::CrossSetImplementation[1]| let newTable = ^VarCrossSetPlaceHolder(varName=$r.varName, name=$r.varName, schema=^Schema(name='default', database=^Database()), crossSetImplementation = $r);
                                                                                            let treeNode = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable));
                                                                                            ^SelectWithCursor(select = ^SelectSQLQuery(data = $treeNode), currentTreeNode = $treeNode);,
-                              o:OperationSetImplementation[1]|let resolved = $o->resolveOperation($state.mapping->toOne());
-                                                              let setImpls = $resolved->cast(@RootRelationalInstanceSetImplementation);
+                              o:OperationSetImplementation[1]|let setImpls = $o->resolveOperation($state.mapping->toOne())->cast(@RootRelationalInstanceSetImplementation);
                                                               if($setImpls->size()==1,| $processRootSetImpl->eval($setImpls->at(0))
                                                                                      ,| let milestoningContext = getMilestoningContextForAll($expression,$o, $parameters, $state, $vars, $context, $extensions);
                                                                                         let union = buildUnion($setImpls, [], $joinType, false, $state.inProject, $milestoningContext, $nodeId, $state, $context, $extensions);

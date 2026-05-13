@@ -26,13 +26,6 @@ public class RelationFunctionClassMapping extends ClassMapping
 {
     public PackageableElementPointer relationFunction;
     public List<PropertyMapping> propertyMappings;
-    /**
-     * Optional, user-declared primary key columns (names must match property-mapping columns of this set).
-     * Required for unioning multiple class mappings whose target class has a relation-function class mapping.
-     * If empty, the engine will attempt to auto-infer the PK from the relation function body
-     * (currently supported when the body is a {@code #&gt;{db.tbl}#} {@code RelationStoreAccessor},
-     * optionally chained through {@code ->filter(...)}).
-     */
     public List<String> primaryKey = Collections.emptyList();
     
     @Override

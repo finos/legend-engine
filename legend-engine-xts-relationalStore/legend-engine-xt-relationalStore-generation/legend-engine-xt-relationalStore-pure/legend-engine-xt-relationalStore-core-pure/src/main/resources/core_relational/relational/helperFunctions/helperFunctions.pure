@@ -503,185 +503,58 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 // ---------------------------------------------------------------------------
 // Primary-key support for RelationFunctionInstanceSetImplementation
 // ---------------------------------------------------------------------------
-// Two layers, one Pure home for both:
+// The generic algorithm (per-operator PK rules over Relation operators,
+// ColSpec/ColSpecArray name extraction, join FULL handling, etc.) lives in
+// the CORE Pure module:
 //
-//   1. resolveRelationFunctionPrimaryKeyColumnNames(setImpl) -> String[*]
-//      Pure-only auto-inference. Walks the relation function body and
-//      applies the per-operator PK rules (see table below). This is the
-//      algorithm that ends up driving everything else.
+//   meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames
+//   meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey
+//   meta::pure::mapping::relation::inferPrimaryKeyColumnNames
 //
-//   2. resolveRelationFunctionPrimaryKey(setImpl, explicitNames) -> Column[*]
-//      The function the Java compiler invokes via the generated stub
-//      Root_meta_relational_mapping_resolveRelationFunctionPrimaryKey_...
-//      Picks the user's explicit list when non-empty, else falls back to
-//      the auto-inferred names, then resolves each name to the typed
-//      Column<Nil,Any|*> reference held on the matching property mapping
-//      so the result can be persisted via setImpl._primaryKey(...) on the
-//      compiled metamodel.
+// (file: legend-engine-pure-code-compiled-core/.../core/pure/mapping/
+//        relationFunctionMapping.pure)
 //
-// Per-operator PK rule (output PK as a function of input PK(s) and args):
+// That module is store-agnostic: it knows how to walk a relation function
+// body but does NOT know how to extract a primary key from a leaf
+// `RelationStoreAccessor` over a particular store's source element.
 //
-//   filter, limit, drop, take, slice, sort, sortBy ........... preserve PK
-//   rename(rel, ~old, ~new) ................................. preserve PK,
-//                                                              swap old → new
-//   select(rel)             ................................. preserve PK
-//   select(rel, cols)       ................................. preserve PK
-//                                                              iff PK ⊆ cols
-//   extend(rel, ...)        ................................. preserve PK
-//                                                              (only adds cols)
-//   distinct(rel)           ................................. preserve PK
-//   distinct(rel, cols)     ................................. PK = cols
-//   groupBy(rel, cols, agg) ................................. PK = cols
-//   join(rel1, rel2, kind, f) / asOfJoin(...) ............... PK = leftPK ∪ rightPK
-//   aggregate(rel, agg)     ................................. empty (single row)
-//   pivot, lateral, concatenate, flatten, map ............... empty (conservative)
-//
-// Limitation of layer (2): an inferred PK column that is not mapped to a
-// property has no Column reference to return and is therefore dropped from
-// the typed result. Layer (1) still reports it, so callers that only need
-// names (e.g. validators, debugging) are not affected.
+// Below we (a) provide the relational-specific leaf handler that pulls the
+// PK column NAMES off `meta::relational::metamodel::relation::Table.primaryKey`
+// and (b) keep the historical `meta::relational::mapping::*` entry-point
+// names as thin facades that call into the core API while injecting the
+// Table-aware leaf — so existing relational callers and tests continue to
+// see leaf-table inference.
 // ---------------------------------------------------------------------------
+
+function <<access.private>> meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
+{
+  $src->match([
+    t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
+    a: Any[*] | []
+  ]);
+}
 
 function meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
-  let exprs = $r.relationFunction.expressionSequence->evaluateAndDeactivate();
-  if($exprs->size() != 1,
-    | [],
-    | $exprs->at(0)->meta::relational::mapping::inferPrimaryKeyColumnNames()
-  );
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
+       src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+     );
 }
 
-// Public entry point for the Java compiler. Takes the user's explicit PK
-// column names (empty if none declared) so the rule "explicit wins, else
-// auto-infer" lives in one place — here, in Pure.
 function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
 {
-  let pkNames = if($explicitColumnNames->isEmpty(),
-    | $r->meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames(),
-    | $explicitColumnNames
-  );
-  let rfpms = $r.propertyMappings
-                ->filter(pm | $pm->instanceOf(RelationFunctionPropertyMapping))
-                ->cast(@RelationFunctionPropertyMapping);
-  $pkNames->map(name | $rfpms->filter(pm | $pm.column.name == $name)->first().column);
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+       $explicitColumnNames,
+       src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+     );
 }
 
-// Generic PK inference over any value spec whose static type is a Relation<...>.
-// Recognises three node shapes:
-//   - InstanceValue wrapping a RelationStoreAccessor over a Table => table PK.
-//   - SimpleFunctionExpression invoking a known relation operator => apply rule.
-//   - ClusteredValueSpecification (post-router wrapper)           => recurse.
-// Anything else is conservatively treated as having no inferable PK (empty).
 function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
 {
-  $vs->match([
-    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] |
-        $iv.values->map(v | $v->match([
-          rsa: meta::pure::store::RelationStoreAccessor<Any>[1] |
-              $rsa.sourceElement->match([
-                t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
-                a: Any[*] | []
-              ]),
-          a: Any[*] | []
-        ]))->cast(@String),
-    cvs: meta::pure::router::metamodel::clustering::ClusteredValueSpecification[1] |
-        $cvs.val->meta::relational::mapping::inferPrimaryKeyColumnNames(),
-    fe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
-        $fe->meta::relational::mapping::inferPrimaryKeyColumnNamesFromFunctionExpression(),
-    a: Any[*] | []
-  ])->cast(@String);
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(
+        src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+      );
 }
 
-// Per-operator PK rule. `parametersValues->at(0)` is always the receiver of
-// `x->fn(...)` syntax and therefore the input Relation.
-function <<access.private>> meta::relational::mapping::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1]):String[*]
-{
-  let fnName = $fe.func.functionName;
-  if($fnName->isEmpty() || $fe.parametersValues->isEmpty(),
-    | [],
-    | let name = $fnName->toOne();
-      let args = $fe.parametersValues;
-      let leftPK = $args->at(0)->meta::relational::mapping::inferPrimaryKeyColumnNames();
-      // Order of branches mirrors the table in the header comment.
-      // `extend` is grouped with the row-identity-preserving operators because
-      // it only adds columns and keeps one output row per input row.
-      if ($name->in(['filter', 'limit', 'drop', 'take', 'slice', 'sort', 'sortBy', 'extend']),
-        | $leftPK,
-      | if ($name == 'select',
-        | if ($args->size() == 1, | $leftPK, | meta::relational::mapping::applySelectToPK($leftPK, $fe)),
-      | if ($name == 'rename' && ($args->size() >= 3),
-        | meta::relational::mapping::applyRenameToPK($leftPK, $fe),
-      | if ($name == 'distinct',
-        | if ($args->size() >= 2, | $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1), | $leftPK),
-      | if ($name == 'groupBy' && ($args->size() >= 2),
-        | $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1),
-      | if ($name == 'aggregate',
-        | [],
-      | if ($name->in(['join', 'asOfJoin']) && ($args->size() >= 2),
-        | $leftPK->concatenate($args->at(1)->meta::relational::mapping::inferPrimaryKeyColumnNames())->removeDuplicates(),
-      // pivot, lateral, concatenate, flatten, map and anything else: empty.
-      | [])))))));
-  );
-}
-
-// select(rel, cols): keep the input PK iff every PK column survives the projection.
-function <<access.private>> meta::relational::mapping::applySelectToPK(leftPK:String[*], fe:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1]):String[*]
-{
-  let projected = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1);
-  if ($leftPK->forAll(p | $p->in($projected)), | $leftPK, | []);
-}
-
-// rename(rel, ~old, ~new): preserve PK with old swapped for new.
-function <<access.private>> meta::relational::mapping::applyRenameToPK(leftPK:String[*], fe:meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1]):String[*]
-{
-  let oldNames = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(1);
-  let newNames = $fe->meta::relational::mapping::extractColumnNamesFromColSpec(2);
-  if (($oldNames->size() == 1) && ($newNames->size() == 1),
-    | let o = $oldNames->toOne();
-      let n = $newNames->toOne();
-      $leftPK->map(p | if ($p == $o, | $n, | $p));,
-    | $leftPK
-  );
-}
-
-// Pull column names out of a ColSpec / ColSpecArray argument at the given
-// parameter index of a FunctionExpression. Canonical "column-list" arg
-// shapes used by select / rename / distinct / groupBy / pivot.
-//
-// At the point this runs (mapping compile / pre-router) the `~FIRMID` and
-// `~[ID, legalName]` literals have NOT yet been evaluated to bare
-// `ColSpec` / `ColSpecArray` instances — they are still
-// `SimpleFunctionExpression`s calling `colSpec(name, relType)` /
-// `colSpecArray(names, relType)`. So we have to recognise both shapes:
-//
-//   1. Already-evaluated `ColSpec` / `ColSpecArray` instance values.
-//   2. Unevaluated `colSpec(...)` / `colSpecArray(...)` SFEs — pull the name
-//      string(s) out of their first parameter.
-//
-// Anything else is conservatively returned as empty.
-function <<access.private>> meta::relational::mapping::extractColumnNamesFromColSpec(fe:meta::pure::metamodel::valuespecification::FunctionExpression[1], index:Integer[1]):String[*]
-{
-  let param = $fe.parametersValues->at($index)->evaluateAndDeactivate();
-  let inner = $param->match([
-    iv: meta::pure::metamodel::valuespecification::InstanceValue[1] | $iv.values,
-    a:  Any[*]                                                      | $a
-  ]);
-  $inner->map(v | $v->match([
-    cs:  meta::pure::metamodel::relation::ColSpec<Any>[1]      | $cs.name,
-    csa: meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
-    sfe: meta::pure::metamodel::valuespecification::SimpleFunctionExpression[1] |
-        // colSpec<T>(s:String[1], cl:T[1]):ColSpec<T>[1]
-        // colSpecArray<T>(s:String[*], cl:T[1]):ColSpecArray<T>[1]
-        if ($sfe.func.functionName->in(['colSpec', 'colSpecArray']),
-          | $sfe.parametersValues->at(0)->evaluateAndDeactivate()->match([
-              iv2: meta::pure::metamodel::valuespecification::InstanceValue[1] |
-                  $iv2.values->filter(x | $x->instanceOf(String))->cast(@String),
-              a2:  Any[*] | []
-            ]),
-          | []
-        ),
-    a:   Any[*] | []
-  ]))->cast(@String);
-}
 
 
