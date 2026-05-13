@@ -950,7 +950,7 @@ function meta::relational::tests::mapping::relation::pkTestSort(): meta::pure::m
 
 function meta::relational::tests::mapping::relation::pkTestExtend(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->extend(~DOUBLE_AGE:x | $x.AGE * 2)
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->extend(~DOUBLE_AGE:x | $x.AGE->toOne() * 2)
 }
 
 function meta::relational::tests::mapping::relation::pkTestRename(): meta::pure::metamodel::relation::Relation<Any>[1]
@@ -1073,8 +1073,7 @@ function meta::relational::tests::mapping::relation::pkTestJoinExtendFilterSelec
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {x, y | $x.ID == $y.PERSONID})
-    ->extend(~DOUBLE_AGE:x | $x.AGE * 2)
-    ->filter(x | $x.AGE > 20)
+    ->extend(~DOUBLE_AGE:x | $x.AGE->toOne() * 2)    ->filter(x | $x.AGE > 20)
     ->select(~[ID, GROUPID, AGE])
 }
 
