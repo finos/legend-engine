@@ -59,6 +59,7 @@ public class ApplicationQuery
         return profile != null ? profile.getId() : null;
     }
 
+    @Deprecated
     @POST
     @Path("search")
     @ApiOperation(value = "Search queries")

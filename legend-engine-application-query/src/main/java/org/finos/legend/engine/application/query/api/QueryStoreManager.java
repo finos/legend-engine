@@ -306,6 +306,10 @@ public class QueryStoreManager
         {
             builder.sortDesc(getSortByField(searchSpecification.sortByOption));
         }
+        else
+        {
+            builder.sortDesc(getSortByField(QuerySearchSortBy.SORT_BY_VIEW));
+        }
         builder.withExcludeFields(EXCLUDED_PROJECTION_FIELDS);
 
         // Check if pagination is requested (spec is a PaginatedQuerySearchSpecification with pageSize specified)
