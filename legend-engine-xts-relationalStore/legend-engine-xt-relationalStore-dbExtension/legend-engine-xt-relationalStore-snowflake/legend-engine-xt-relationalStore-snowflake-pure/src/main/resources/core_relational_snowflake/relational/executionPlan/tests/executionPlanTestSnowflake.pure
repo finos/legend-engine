@@ -240,7 +240,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName2 = $rootNode2.processedTempTableName;
   assertEquals('temp_db1.temp_schema1.temp_table_node_0', $processedTempTableName2);
   let tempTableStrategy = $rootNode2.tempTableStrategy;
-  assertEquals('CREATE TEMPORARY TABLE temp_db1.temp_schema1.temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE OR REPLACE TEMPORARY TABLE temp_db1.temp_schema1.temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO temp_db1.temp_schema1.temp_table_node_0 VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists temp_db1.temp_schema1.temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
@@ -267,7 +267,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('"LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE TEMPORARY TABLE "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE OR REPLACE TEMPORARY TABLE "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
@@ -294,7 +294,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('"temp_db1"."temp_schema1"."temp_table_node_0"', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE TEMPORARY TABLE "temp_db1"."temp_schema1"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE OR REPLACE TEMPORARY TABLE "temp_db1"."temp_schema1"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO "temp_db1"."temp_schema1"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "temp_db1"."temp_schema1"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
