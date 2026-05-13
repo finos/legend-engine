@@ -419,8 +419,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 }
 
 // =========================================================================
-// C. Complex nested chains — multi-operator pipelines (the most important
-//    coverage per Rohit's review). Each test exercises propagation through
+// C. Complex nested chains — multi-operator pipelines
+//    Each test exercises propagation through
 //    several layers so regressions in any single rule surface here.
 // =========================================================================
 
@@ -534,4 +534,93 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
     'meta_relational_tests_mapping_relation_PkTestSum'));
 }
 
+// =========================================================================
+// D. Additional composite chains
+// =========================================================================
 
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughExtendThenSelectDroppingPK():Boolean[1]
+{
+  // extend adds DOUBLE_AGE (PK still [ID]); select(~[AGE, FIRMID, DOUBLE_AGE])
+  // drops ID → PK = [].
+  assertEquals([], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestExtendThenSelectDroppingPKMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterThenRename():Boolean[1]
+{
+  // filter preserves PK=[ID]; rename(ID→PID) swaps → PK=[PID].
+  assertEquals(['PID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestFilterThenRenameMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughRenameThenGroupBy():Boolean[1]
+{
+  // rename(ID→PID) sets PK=[PID]; groupBy(~FIRMID, ...) overrides → PK=[FIRMID].
+  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestRenameThenGroupByMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughJoinThenGroupBy():Boolean[1]
+{
+  // join(personTable, groupMembershipTable, INNER, ...): leftPK=[ID] ∪ rightPK=[GROUPID]
+  // → [ID, GROUPID]; groupBy(~GROUPID, ...) overrides → PK=[GROUPID].
+  assertEquals(['GROUPID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestJoinThenGroupByMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterExtendDistinct():Boolean[1]
+{
+  // filter → extend → distinct(): all three preserve PK=[ID].
+  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestFilterExtendDistinctMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughGroupByExtendFilterSelect():Boolean[1]
+{
+  // groupBy(~FIRMID, ...) → PK=[FIRMID]; extend → filter → select(~[FIRMID, SUM, DOUBLE_SUM])
+  // keeps FIRMID so PK=[FIRMID] survives.
+  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestGroupByExtendFilterSelectMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSortLimitFilterRename():Boolean[1]
+{
+  // sort → limit → filter all preserve PK=[ID]; rename(ID→PERSON_ID) swaps → PK=[PERSON_ID].
+  assertEquals(['PERSON_ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestSortLimitFilterRenameMapping, 'pk'));
+}
+
+// =========================================================================
+// E. Function composition — the zero-arg user-function inlining path
+//    The dispatcher's `ConcreteFunctionDefinition`
+//    branch inlines the helper's body and recurses, so PK inference
+//    "sees through" composed function calls.
+// =========================================================================
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedFilter():Boolean[1]
+{
+  // pkTestComposedFilter body = pkHelperFilteredPersons()
+  // pkHelperFilteredPersons body = #>{personTable}#->filter(...)
+  // Inlined: filter preserves table PK → PK=[ID].
+  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestComposedFilterMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedJoin():Boolean[1]
+{
+  // pkTestComposedJoin body = pkHelperFilteredPersons()->join(pkHelperFirms()->rename(~ID, ~FIRM_ID), INNER, ...)
+  // Left: inlines pkHelperFilteredPersons → filter(#>{personTable}#) → leftPK=[ID]
+  // Right: inlines pkHelperFirms → select(#>{firmTable}#,~[ID,legalName]) → then rename(ID→FIRM_ID) → rightPK=[FIRM_ID]
+  // join INNER: leftPK ∪ rightPK = [ID, FIRM_ID].
+  assertSameElements(['ID', 'FIRM_ID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestComposedJoinMapping, 'pk'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedGroupBy():Boolean[1]
+{
+  // pkTestComposedGroupBy body = pkHelperFilteredPersons()->groupBy(~FIRMID, ...)
+  // Inlined: pkHelperFilteredPersons → filter(#>{personTable}#) → PK=[ID]
+  // groupBy overrides → PK=[FIRMID].
+  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOf(
+    meta::relational::tests::mapping::relation::PkTestComposedGroupByMapping, 'pk'));
+}

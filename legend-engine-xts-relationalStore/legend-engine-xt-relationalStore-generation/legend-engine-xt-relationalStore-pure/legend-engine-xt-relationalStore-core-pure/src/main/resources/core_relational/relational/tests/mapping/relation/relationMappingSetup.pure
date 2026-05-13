@@ -800,6 +800,116 @@ Mapping meta::relational::tests::mapping::relation::PkTestGroupByThenSelectDropp
   }
 )
 
+// --- D. Additional composite chain mappings ------------------------------
+
+// extend → select(~[AGE, FIRMID, DOUBLE_AGE]) — ID is dropped.
+Mapping meta::relational::tests::mapping::relation::PkTestExtendThenSelectDroppingPKMapping
+(
+  *PkTestAgeFirm[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestExtendThenSelectDroppingPK__Relation_1_
+    age: AGE,
+    firmId: FIRMID
+  }
+)
+
+// filter → rename(ID→PID) — output has PID, not ID.
+Mapping meta::relational::tests::mapping::relation::PkTestFilterThenRenameMapping
+(
+  *Person[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestFilterThenRename__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE
+  }
+)
+
+// rename → groupBy(~FIRMID, ...) — output: FIRMID, SUM.
+Mapping meta::relational::tests::mapping::relation::PkTestRenameThenGroupByMapping
+(
+  *PkTestFirmSum[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy__Relation_1_
+    firm: FIRMID,
+    sum: SUM
+  }
+)
+
+// join → groupBy(~GROUPID, ...) — output: GROUPID, CNT.
+Mapping meta::relational::tests::mapping::relation::PkTestJoinThenGroupByMapping
+(
+  *PkTestAge[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy__Relation_1_
+    age: CNT
+  }
+)
+
+// filter → extend → distinct() — all preserve PK.
+Mapping meta::relational::tests::mapping::relation::PkTestFilterExtendDistinctMapping
+(
+  *Person[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE
+  }
+)
+
+// groupBy → extend → filter → select — PK=FIRMID survives.
+Mapping meta::relational::tests::mapping::relation::PkTestGroupByExtendFilterSelectMapping
+(
+  *PkTestFirmSum[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSelect__Relation_1_
+    firm: FIRMID,
+    sum: SUM
+  }
+)
+
+// sort → limit → filter → rename(ID→PERSON_ID).
+Mapping meta::relational::tests::mapping::relation::PkTestSortLimitFilterRenameMapping
+(
+  *Person[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE
+  }
+)
+
+// --- E. Function composition mappings ------------------------------------
+
+Mapping meta::relational::tests::mapping::relation::PkTestComposedFilterMapping
+(
+  *Person[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestComposedFilter__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::PkTestComposedJoinMapping
+(
+  *Person[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestComposedJoin__Relation_1_
+    firstName: 'FIRST NAME',
+    age: AGE
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::PkTestComposedGroupByMapping
+(
+  *PkTestFirmSum[pk]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::pkTestComposedGroupBy__Relation_1_
+    firm: FIRMID,
+    sum: SUM
+  }
+)
+
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -1083,6 +1193,103 @@ function meta::relational::tests::mapping::relation::pkTestGroupByThenSelectDrop
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->groupBy(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
     ->select(~[SUM])
+}
+
+// --- D. Additional composite chains ----------
+
+// extend adds DOUBLE_AGE, then select drops original PK column ID.
+function meta::relational::tests::mapping::relation::pkTestExtendThenSelectDroppingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->extend(~DOUBLE_AGE:x | $x.AGE->toOne() * 2)
+    ->select(~[AGE, FIRMID, DOUBLE_AGE])
+}
+
+// filter preserves PK=[ID], then rename swaps ID→PID.
+function meta::relational::tests::mapping::relation::pkTestFilterThenRename(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->filter(x | $x.AGE > 25)
+    ->rename(~ID, ~PID)
+}
+
+// rename ID→PID, then groupBy on a different column (FIRMID).
+// groupBy overrides PK regardless of upstream → PK=[FIRMID].
+function meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->rename(~ID, ~PID)
+    ->groupBy(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
+}
+
+// join sets PK=[ID, GROUPID], then groupBy overrides PK to [GROUPID].
+function meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {x, y | $x.ID == $y.PERSONID})
+    ->groupBy(~GROUPID, ~CNT:x | $x.AGE:y | $y->count())
+}
+
+// filter → extend → distinct(no-args): all preserve PK=[ID].
+function meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->filter(x | $x.AGE > 20)
+    ->extend(~DOUBLE_AGE:x | $x.AGE->toOne() * 2)
+    ->distinct()
+}
+
+// groupBy → extend → filter → select keeping PK.
+function meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSelect(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->groupBy(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
+    ->extend(~DOUBLE_SUM:x | $x.SUM->toOne() * 2)
+    ->filter(x | $x.SUM > 10)
+    ->select(~[FIRMID, SUM, DOUBLE_SUM])
+}
+
+// Long identity-preserving chain ending with rename.
+function meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->sort(~AGE->ascending())
+    ->limit(100)
+    ->filter(x | $x.AGE > 20)
+    ->rename(~ID, ~PERSON_ID)
+}
+
+// --- E. Function composition tests -------------------
+
+// Zero-arg helper functions — these are the "composed" building blocks.
+function meta::relational::tests::mapping::relation::pkHelperFilteredPersons(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->filter(x | $x.AGE > 25)
+}
+
+function meta::relational::tests::mapping::relation::pkHelperFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->select(~[ID, legalName])
+}
+
+// Composed: calls a zero-arg helper that returns a filtered table.
+function meta::relational::tests::mapping::relation::pkTestComposedFilter(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  meta::relational::tests::mapping::relation::pkHelperFilteredPersons()
+}
+
+// Composed: calls two zero-arg helpers, joins them.
+function meta::relational::tests::mapping::relation::pkTestComposedJoin(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  meta::relational::tests::mapping::relation::pkHelperFilteredPersons()
+    ->join(meta::relational::tests::mapping::relation::pkHelperFirms()->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
+}
+
+// Composed: calls a zero-arg helper, then groupBy.
+function meta::relational::tests::mapping::relation::pkTestComposedGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  meta::relational::tests::mapping::relation::pkHelperFilteredPersons()
+    ->groupBy(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
 }
 
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
