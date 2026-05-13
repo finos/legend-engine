@@ -1273,9 +1273,13 @@ function meta::relational::tests::mapping::relation::pkHelperFirms(): meta::pure
 }
 
 // Composed: calls a zero-arg helper that returns a filtered table.
+// The trailing ->filter(x|true) is a no-op that ensures the compiler
+// resolves the concrete RelationType from the helper's return type —
+// a bare function call returns Relation<Any> without a typed row shape,
+// which the mapping compiler can't extract columns from.
 function meta::relational::tests::mapping::relation::pkTestComposedFilter(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  meta::relational::tests::mapping::relation::pkHelperFilteredPersons()
+  meta::relational::tests::mapping::relation::pkHelperFilteredPersons()->filter(x | true)
 }
 
 // Composed: calls two zero-arg helpers, joins them.
