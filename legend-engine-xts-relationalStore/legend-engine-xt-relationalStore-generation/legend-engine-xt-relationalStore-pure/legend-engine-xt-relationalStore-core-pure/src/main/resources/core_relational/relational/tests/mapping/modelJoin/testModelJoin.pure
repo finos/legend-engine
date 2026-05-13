@@ -830,7 +830,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoi
 //   Alice → ContractA (2023-01-01 <= 2024-01-01 < 2025-01-01)
 //   Bob → ContractC (2023-06-01 <= 2024-01-01 < 2024-06-01)
 // =============================================================================
-function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinMilestoning():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinMilestoning():Boolean[1]
 {
   let personCsv =
     'default\n' +
@@ -940,7 +940,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoi
 //   Google(London) employees matched: Bob(London,UK)
 //     filtered by employeesInCity('NYC'): none → null
 // =============================================================================
-function <<test.ToFix>> meta::relational::tests::mapping::relation::testModelJoinQualifiedPropertyInQuery():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::relation::testModelJoinQualifiedPropertyInQuery():Boolean[1]
 {
   let firmCsv =
     'default\n' +
@@ -2035,12 +2035,13 @@ function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJ
 
   executeLegendFunction(
     '/core_relational/relational/tests/mapping/modelJoin/modelJoinAdvanced.legend',
-    'showcase::modelJoinTests::advanced::query::firmWithEmployees__Relation_1_',
+    'showcase::modelJoinTests::advanced::query::personWithFirm__Relation_1_',
     'showcase::modelJoinTests::advanced::mapping::relational::UnionSourceMapping',
     'showcase::modelJoinTests::advanced::store::Database',
     'showcase::modelJoinTests::advanced::connection::H2Connection',
     [$fullTimeCsv, $contractCsv, $firmCsv],
-    $expected
+    $expected,
+    true
   );
 }
 
@@ -2058,7 +2059,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJ
 //
 // Expected: Apple has Alice+Bob; Meta has Charlie
 // =============================================================================
-function <<test.ToFix>> meta::relational::tests::mapping::relational::testModelJoinRelationalUnionBothSides():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::relational::testModelJoinRelationalUnionBothSides():Boolean[1]
 {
   let fullTimeCsv =
     'default\n' +
