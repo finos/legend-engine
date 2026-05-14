@@ -206,36 +206,20 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 }
             }
         }
-        // Resolve the typed PK columns: try registered extension resolvers first (e.g.
-        // the relational extension supplies a leaf handler that reads Table.primaryKey),
-        // then fall back to the core Pure resolver.
+        // Resolve the typed PK columns using the extension-aware Pure function.
+        // Extensions register RelationStoreAccessorExtension (ModuleExtension) to
+        // provide store-specific leaf handlers (e.g. relational Table.primaryKey).
         org.eclipse.collections.api.list.MutableList<String> explicitNames =
                 (classMapping.primaryKey == null)
                         ? Lists.mutable.empty()
                         : Lists.mutable.withAll(classMapping.primaryKey);
+        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> pureExtensions =
+                this.context.getCompilerExtensions().getExtraPureExtensions(
+                        (org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport) this.context.pureModel.getExecutionSupport());
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
-                org.eclipse.collections.impl.factory.Lists.mutable.empty();
-        for (org.eclipse.collections.api.block.function.Function3<
-                org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
-                org.eclipse.collections.api.list.MutableList<String>,
-                CompileContext,
-                org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>> resolver
-                : this.context.getCompilerExtensions().getExtraRelationFunctionPrimaryKeyResolvers())
-        {
-            resolvedPK = resolver.value(setImpl, explicitNames, this.context);
-            if (resolvedPK != null && resolvedPK.notEmpty())
-            {
-                break;
-            }
-        }
-        // Fallback to core Pure resolver (no leaf handler — works for explicit PKs
-        // or function bodies that don't depend on store-specific leaf resolution).
-        if (resolvedPK == null || resolvedPK.isEmpty())
-        {
-            resolvedPK = org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
-                    .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
-                            setImpl, explicitNames, this.context.pureModel.getExecutionSupport());
-        }
+                org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
+                        .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Extension_MANY__Column_MANY_(
+                                setImpl, explicitNames, pureExtensions, this.context.pureModel.getExecutionSupport());
         if (resolvedPK == null || resolvedPK.isEmpty())
         {
             throw new EngineException(

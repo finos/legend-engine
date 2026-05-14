@@ -1199,18 +1199,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public java.util.List<org.eclipse.collections.api.block.function.Function3<
-            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
-            org.eclipse.collections.api.list.MutableList<String>,
-            CompileContext,
-            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends java.lang.Object, ? extends java.lang.Object>>>>
-    getExtraRelationFunctionPrimaryKeyResolvers()
+    public org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
     {
-        return java.util.Collections.singletonList(
-            (setImpl, explicitNames, context) ->
-                org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions
-                    .Root_meta_relational_mapping_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
-                        setImpl, explicitNames, context.pureModel.getExecutionSupport())
-        );
+        return org.finos.legend.pure.generated.core_relational_relational_extensions_extension
+                .Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport);
     }
 }

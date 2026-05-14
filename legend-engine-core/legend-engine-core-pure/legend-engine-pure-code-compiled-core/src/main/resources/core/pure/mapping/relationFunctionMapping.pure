@@ -20,6 +20,34 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::store::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::functions::relation::*;
+import meta::pure::extension::*;
+
+// ---------------------------------------------------------------------------
+// RelationStoreAccessorExtension — ModuleExtension for store-specific PK leaf
+// ---------------------------------------------------------------------------
+// Stores register a `RelationStoreAccessorExtension` in their Extension's
+// `moduleExtensions` to teach the PK inference algorithm how to extract
+// primary key column names from their specific source elements (e.g. the
+// relational store reads `Table.primaryKey`).
+//
+// Usage (in a store extension):
+//   ^RelationStoreAccessorExtension(
+//      module = relationStoreAccessorModuleExtensionName(),
+//      leafPrimaryKeyColumns = src:Any[1] | ... extract PK names from $src ...
+//   )
+// ---------------------------------------------------------------------------
+Class meta::pure::mapping::relation::RelationStoreAccessorExtension extends ModuleExtension
+[
+   $this.module == meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName()
+]
+{
+   leafPrimaryKeyColumns : Function<{Any[1]->String[*]}>[1];
+}
+
+function meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName():String[1]
+{
+   'RelationStoreAccessor'
+}
 
 // ---------------------------------------------------------------------------
 // Primary-key support for RelationFunctionInstanceSetImplementation (CORE)
@@ -60,18 +88,42 @@ import meta::pure::functions::relation::*;
 // Leaf rule (RelationStoreAccessor): in CORE we do NOT know how to extract
 // a primary key from arbitrary store source elements (e.g. relational
 // `Table.primaryKey` lives in xts-relationalStore and is not visible here).
-// The leaf is therefore parameterised: callers pass a `leafHandler` lambda
-// that maps a `RelationStoreAccessor.sourceElement` to its PK column names.
-// The default entry point uses an empty-leaf handler — meaning function
-// bodies whose PK depends solely on a leaf table accessor will yield no
-// auto-inferred PK and the user must declare it explicitly via
-// `~primaryKey: [col1, col2, ...]`. Store extensions (e.g. relational) can
-// expose their own entry points that supply a Table-aware leaf handler.
+// The leaf is therefore parameterised via RelationStoreAccessorExtension:
+// each store registers a `leafPrimaryKeyColumns` lambda through the Extension
+// mechanism. The default entry point uses an empty-leaf handler — meaning
+// function bodies whose PK depends solely on a leaf table accessor will yield
+// no auto-inferred PK and the user must declare it explicitly via
+// `~primaryKey: [col1, col2, ...]`.
 // ---------------------------------------------------------------------------
+
+// Builds a combined leaf handler from all registered RelationStoreAccessorExtension
+// instances. Each leaf handler is tried in turn; the first non-empty result wins.
+function <<access.private>> meta::pure::mapping::relation::buildCombinedLeafHandler(extensions:Extension[*]):Function<{Any[1]->String[*]}>[1]
+{
+   let accessorExtensions = $extensions.moduleExtensions
+      ->filter(m | $m->instanceOf(RelationStoreAccessorExtension))
+      ->cast(@RelationStoreAccessorExtension);
+   if ($accessorExtensions->isEmpty(),
+      | {src:Any[1] | []->cast(@String)},
+      | {src:Any[1] |
+           let results = $accessorExtensions->map(ext | $ext.leafPrimaryKeyColumns->eval($src));
+           $results->cast(@String);
+        }
+   );
+}
 
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(src:Any[1] | []);
+}
+
+// Variant taking extensions — gathers leaf handlers from registered
+// RelationStoreAccessorExtension instances.
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], extensions:Extension[*]):String[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
+     $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler()
+  );
 }
 
 // Variant taking a leaf handler. Store extensions call this to inject their
@@ -104,12 +156,21 @@ function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFu
   );
 }
 
-// Public entry point for the Java compiler. Takes the user's explicit PK
-// column names (empty if none declared) so the rule "explicit wins, else
-// auto-infer" lives in one place — here, in Pure.
+// Public entry point (no leaf handler — no store-specific inference).
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):Column<Nil, Any|*>[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey($explicitColumnNames, src:Any[1] | []);
+}
+
+// Extension-aware entry point — the Java compiler should call this overload.
+// Gathers leaf handlers from all registered RelationStoreAccessorExtension
+// instances in the provided extensions.
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:Extension[*]):Column<Nil, Any|*>[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+     $explicitColumnNames,
+     $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler()
+  );
 }
 
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], leafHandler:Function<{Any[1]->String[*]}>[1]):Column<Nil, Any|*>[*]

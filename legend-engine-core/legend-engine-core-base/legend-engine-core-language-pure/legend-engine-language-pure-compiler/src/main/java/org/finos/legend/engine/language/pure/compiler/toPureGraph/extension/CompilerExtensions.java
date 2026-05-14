@@ -133,7 +133,6 @@ public class CompilerExtensions
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
-    private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation, org.eclipse.collections.api.list.MutableList<String>, CompileContext, org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>> extraRelationFunctionPrimaryKeyResolvers;
     private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, CompileContext, Root_meta_core_runtime_EngineRuntime>> extraRuntimeValueProcessors;
     private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime, Root_meta_core_runtime_EngineRuntime, CompileContext>> extraRuntimeSecondPassProcessors;
 
@@ -187,7 +186,6 @@ public class CompilerExtensions
         this.extraRuntimeCompilerHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraRuntimeCompilerHandlers.putAll(e.getExtraRuntimeCompilerHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
-        this.extraRelationFunctionPrimaryKeyResolvers = this.extensions.flatCollect(CompilerExtension::getExtraRelationFunctionPrimaryKeyResolvers);
         this.extraRuntimeValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeValueProcessors);
         this.extraRuntimeSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRuntimeThirdPassProcessors);
         this.extraSubTypesForFunctionMatching = Maps.mutable.empty();
@@ -594,8 +592,8 @@ public class CompilerExtensions
         return this.extraRelationStoreAccessorProcessors;
     }
 
-    public ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation, org.eclipse.collections.api.list.MutableList<String>, CompileContext, org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>> getExtraRelationFunctionPrimaryKeyResolvers()
+    public org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
     {
-        return this.extraRelationFunctionPrimaryKeyResolvers;
+        return this.extensions.flatCollect(e -> e.getExtraPureExtensions(executionSupport));
     }
 }

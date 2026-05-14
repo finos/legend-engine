@@ -63,7 +63,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -186,20 +185,15 @@ public interface CompilerExtension extends LegendLanguageExtension
     }
 
     /**
-     * Extension point for resolving primary key columns of a
-     * {@link RelationFunctionInstanceSetImplementation}. Store-specific
-     * extensions (e.g. relational) override this to supply a leaf handler
-     * that can extract PK column names from store-specific source elements
-     * (e.g. {@code Table.primaryKey}).
-     *
-     * <p>Each function takes a {@code (setImpl, explicitPKNames, context)}
-     * and returns the resolved {@code Column} instances, or an empty
-     * iterable if this extension doesn't handle the given set
-     * implementation.</p>
+     * Extension point for providing Pure {@code meta::pure::extension::Extension}
+     * instances used during compilation (e.g. for PK resolution of
+     * RelationFunctionInstanceSetImplementation). Store extensions override
+     * this to register their module extensions (e.g.
+     * {@code RelationStoreAccessorExtension}).
      */
-    default List<Function3<RelationFunctionInstanceSetImplementation, org.eclipse.collections.api.list.MutableList<String>, CompileContext, org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>> getExtraRelationFunctionPrimaryKeyResolvers()
+    default org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
     {
-        return Collections.emptyList();
+        return org.eclipse.collections.impl.factory.Lists.immutable.empty();
     }
 
     default MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
