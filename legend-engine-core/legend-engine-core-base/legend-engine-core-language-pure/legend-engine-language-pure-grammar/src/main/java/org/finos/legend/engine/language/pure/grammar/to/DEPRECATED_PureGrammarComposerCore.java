@@ -113,6 +113,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderFunctionTestSuites;
@@ -150,6 +151,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
     private final boolean isPropertyBracketExpressionModeEnabled;
 
+    private boolean isIngestGrammar = false;
+
+    private Set<String> ingestReservedKeywords = Collections.emptySet();
+
     private int baseTabLevel = 1;
 
     private DEPRECATED_PureGrammarComposerCore(DEPRECATED_PureGrammarComposerCore.Builder builder)
@@ -160,6 +165,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
         this.isPureGrammar = builder.isPureGrammar;
+        this.isIngestGrammar = builder.isIngestGrammar;
+        this.ingestReservedKeywords = builder.ingestReservedKeywords;
     }
 
     public int getBaseTabLevel()
@@ -175,6 +182,16 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String getIndentationString()
     {
         return indentationString;
+    }
+
+    public Set<String> getIngestReservedKeywords()
+    {
+        return ingestReservedKeywords;
+    }
+
+    public boolean isIngestGrammar()
+    {
+        return isIngestGrammar;
     }
 
     public boolean isValueSpecificationExternalParameter()
@@ -210,6 +227,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
         private boolean isPureGrammar = false;
+        private boolean isIngestGrammar = false;
+        private Set<String> ingestReservedKeywords = Sets.mutable.empty();
 
         private Builder()
         {
@@ -225,6 +244,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
             builder.isPureGrammar = grammarTransformer.isPureGrammar;
+            builder.isIngestGrammar = grammarTransformer.isIngestGrammar;
+            builder.ingestReservedKeywords = grammarTransformer.ingestReservedKeywords;
             return builder;
         }
 
@@ -272,6 +293,13 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         public Builder withPropertyBracketExpressionModeEnabled()
         {
             this.isPropertyBracketExpressionModeEnabled = true;
+            return this;
+        }
+
+        public Builder withIngestGrammar(Set<String> reservedKeywords)
+        {
+            this.isIngestGrammar = true;
+            this.ingestReservedKeywords = reservedKeywords;
             return this;
         }
 
