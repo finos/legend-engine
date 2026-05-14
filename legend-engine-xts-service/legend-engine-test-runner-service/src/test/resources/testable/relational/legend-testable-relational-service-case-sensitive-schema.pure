@@ -1,0 +1,53 @@
+###Service
+Service service::CaseSensitiveSchemaService
+{
+  pattern: '/testCaseSensitiveSchema';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::Product.all()->project([x|$x.name, x|$x.type], ['Name', 'Type']);
+    mapping: execution::ProductMapping;
+    runtime: execution::ProductRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          model::CaseSensitiveConnection:
+            Relational
+            #{
+              Schema1.product_table:
+                'id,name,type\n' +
+                '1,Widget,TypeA\n' +
+                '2,Gadget,TypeB\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Widget","Type":"TypeA"},{"Name":"Gadget","Type":"TypeB"}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
