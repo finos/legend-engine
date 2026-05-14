@@ -526,7 +526,7 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 // see leaf-table inference.
 // ---------------------------------------------------------------------------
 
-function <<access.private>> meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
+function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
 {
   $src->match([
     rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->match([
