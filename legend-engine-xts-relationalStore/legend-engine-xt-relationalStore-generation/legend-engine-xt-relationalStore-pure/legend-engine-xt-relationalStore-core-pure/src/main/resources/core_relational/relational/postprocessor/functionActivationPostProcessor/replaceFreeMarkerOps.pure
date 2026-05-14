@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::pureToSqlQuery::*;
@@ -26,39 +27,29 @@ import meta::relational::mapping::*;
 
 function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
 {
-  let transformFunc = {r: RelationalOperationElement[1] |
-                        $r->match([
-                          l: Literal[1] | $l->replaceLiteral(),
-                          v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
-                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
-                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
-                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
-                          r: RelationalOperationElement[1] | $r;
-                        ]);
-                      };
-
-  let transformedQuery = $query->transform($transformFunc, ^Map<RelationalOperationElement, RelationalOperationElement>()).first;
-
+  let transformedQuery = $query->transform(transformRelationalElement_RelationalOperationElement_1__RelationalOperationElement_1_, ^Map<RelationalOperationElement, RelationalOperationElement>()).first;
   ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery));
+}
+
+function <<access.private>> meta::relational::postProcessor::transformRelationalElement(r: RelationalOperationElement[1]): RelationalOperationElement[1]
+{
+  $r->match([
+    l: Literal[1] | $l->replaceLiteral(),
+    v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
+    d: DynaFunction[1] | $d->rewriteDynaFunctionForArrayParams();,
+    v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
+    v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
+    f: FreeMarkerOperationHolder[1] | $f->rewriteFreeMarkerOperationHolder();,
+    r: RelationalOperationElement[1] | $r;
+  ]);
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]
 {
   let clause = meta::relational::postProcessor::prefixForWrapperAllocationNodeName();
   if($v.name->startsWith($clause),
-    | let paramName = $v.name->substring($clause->length(),$v.name->length());
-      let flatten = ^SemiStructuredArrayFlattenRelation(navigation=^ColumnName(name = $paramName));
-
-      let tableAlias=^TableAlias(name='root',relationalElement=^DynaFunction(name='equal',parameters=[^Literal(value=1),^Literal(value='1')]));
-      let columnSelected=^TableAliasColumn(column=^Column(type=^meta::relational::metamodel::datatype::Varchar(size=200),name='value'),alias=$tableAlias);
-
-      let res=^TableAlias(relationalElement=$flatten,name='root');
-    
-      let req = ^RootJoinTreeNode(alias=$res);
-
-      let s=^SelectSQLQuery(data=$req, columns=$columnSelected);,
-    |
-      ^TableFunctionParamPlaceHolder(var=$v);  
+    | buildFlattenQuery(^ColumnName(name=$v.name->substring($clause->length(),$v.name->length()))),
+    | ^TableFunctionParamPlaceHolder(var=$v);  
   );  
 }
 
@@ -66,12 +57,122 @@ function <<access.private>> meta::relational::postProcessor::replaceLiteral(l: L
 {  
   if(!$l.value->instanceOf(RelationalOperationElement), 
     | $l, 
-    | $l.value->match([
-                          v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
-                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
-                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
-                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
-                          r: RelationalOperationElement[1] | $r;
-                     ]);
+    | $l.value->cast(@RelationalOperationElement)->transformRelationalElement()
     );
 }
+
+function <<access.private>> meta::relational::postProcessor::rewriteDynaFunctionForArrayParams(d: DynaFunction[1]): RelationalOperationElement[1]
+{
+  let functionMap = arrayParamsDynaFunctionMap();
+  let hasCollPlaceHolders = $d->hasCollectionPlaceHolders();
+  let newFunc = $functionMap->get($d.name).second;
+  if ($hasCollPlaceHolders && $newFunc->isNotEmpty(),
+    | let newDynaFunc = $newFunc->toOne()->eval($d);
+      ^$newDynaFunc(parameters = $newDynaFunc.parameters->map(p|$p->transformRelationalElement()));,
+    | // Handle when plan is generated with 'toVariantList', which generates array_construct()
+      if ($d.name == 'toVariantList' && $hasCollPlaceHolders,
+        | $d.parameters->at(0)->transformRelationalElement(),
+        | ^$d(parameters = $d.parameters->map(p|$p->transformRelationalElement()))
+      );
+  );
+}
+
+function <<access.private>> meta::relational::postProcessor::arrayParamsDynaFunctionMap(): Map<String, Pair<String, Function<{DynaFunction[1]->DynaFunction[1]}>>>[1]
+{
+  meta::relational::postProcessor::multiplicityPreservingDynaFunctionList()->concatenate(meta::relational::postProcessor::multiplicityReducingDynaFunctionList())
+  ->newMap();
+}
+
+function <<access.private>> meta::relational::postProcessor::multiplicityPreservingDynaFunctionList(): Pair<String, Pair<String, Function<{DynaFunction[1]->DynaFunction[1]}>>>[*]
+{
+  // pair(original dyna func name, pair(new dyna func name, transformation function)). New dyna func name kept for isCollectionReturningFunction
+  [
+    pair('add',     pair('array_append',  {d: DynaFunction[1] | ^$d(name='array_append')})),
+    pair('cast',    pair('cast',          {d: DynaFunction[1] | $d})),
+    pair('drop',    pair('array_drop',    {d: DynaFunction[1] | ^$d(name='array_drop')})),
+    pair('init',    pair('array_init',    {d: DynaFunction[1] | ^$d(name='array_init')})),
+    pair('reverse', pair('array_reverse', {d: DynaFunction[1] | ^$d(name='array_reverse')})),
+    pair('slice',   pair('array_slice',   {d: DynaFunction[1] | ^$d(name='array_slice')})),
+    pair('sort',    pair('array_sort',    {d: DynaFunction[1] | ^$d(name='array_sort')})),
+    pair('tail',    pair('array_tail',    {d: DynaFunction[1] | ^$d(name='array_tail')})),
+    pair('array_construct',    pair('array_construct',    {d: DynaFunction[1] | $d})),
+    pair('take',    pair('array_take',    {d: DynaFunction[1] | ^$d(name='array_take')}))
+  ]
+}
+
+function <<access.private>> meta::relational::postProcessor::multiplicityReducingDynaFunctionList(): Pair<String, Pair<String, Function<{DynaFunction[1]->DynaFunction[1]}>>>[*]
+{
+  // pair(original dyna func name, pair(new dyna func name, transformation function)). New dyna func name kept for consistency with multiplicityPreservingDynaFunctionList
+  [
+    pair('contains', pair('in',        {d: DynaFunction[1] | $d->processContains()})),
+    pair('greatest', pair('array_max', {d: DynaFunction[1] | ^$d(name='array_max')})),
+    pair('least',    pair('array_min', {d: DynaFunction[1] | ^$d(name='array_min')}))
+  ]
+}
+
+function <<access.private>> meta::relational::postProcessor::processContains(d: DynaFunction[1]): DynaFunction[1]
+{
+  // Note: This rewrites only contains() on collection param, not on string param. This case is distinguished by the call to hasCollectionPlaceHolders in rewriteDynaFunctionForArrayParams
+  let firstParam = $d.parameters->at(0);
+  let navigation = $firstParam->match([
+    l: Literal[1] | $l.value->match([
+      v: VarPlaceHolder[1] | ^ColumnName(name = $v.name),
+      a: Any[1] | fail('Expected VarPlaceHolder inside Literal for contains() collection rewrite, got: ' + $a->type()->toString()); ^ColumnName(name='');
+    ]),
+    t:      TableFunctionParamPlaceHolder[1] | ^ColumnName(name = $t.var.name),
+    nested: DynaFunction[1] | $nested->transformRelationalElement(),
+    r:      RelationalOperationElement[1] | fail('Unexpected first parameter type for contains() collection rewrite: ' + $r->type()->toString()); ^ColumnName(name='');
+  ]);
+  let flattenQuery = $navigation->buildFlattenQuery();
+  ^DynaFunction(name = 'in', parameters = [$d.parameters->at(1), $flattenQuery]);
+}
+
+function <<access.private>> meta::relational::postProcessor::rewriteFreeMarkerOperationHolder(f: FreeMarkerOperationHolder[1]): RelationalOperationElement[1]
+{
+  if($f.name == 'variableCollectionSize',
+    | let params = $f.parameters->map(p | $p->match([
+        l: Literal[1] | $l.value->match([
+          v: VarPlaceHolder[1] | ^TableFunctionParamPlaceHolder(var = $v);,
+          r: RelationalOperationElement[1] | $r;,
+          a: Any[1] | $l; // Only plain scalar values like String and Integer will go through here
+        ]),
+        r: RelationalOperationElement[1] | $r;
+      ]));
+      ^DynaFunction(name = 'array_size', parameters = $params);,
+    | fail('replacement of FreeMarkerOperationHolder \'' + $f.name + '\' with Parameter not supported yet'); $f;
+  );
+}
+
+function <<access.private>> meta::relational::postProcessor::hasCollectionPlaceHolders(d: DynaFunction[1]): Boolean[1]
+{
+  $d.parameters->exists(p | $p->isOrContainsCollectionPlaceHolder());
+}
+
+function <<access.private>> meta::relational::postProcessor::isOrContainsCollectionPlaceHolder(r: RelationalOperationElement[1]): Boolean[1]
+{
+  $r->match([
+    l: Literal[1] | $l.value->instanceOf(VarPlaceHolder) && $l.value->cast(@VarPlaceHolder)->meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(),
+    t: TableFunctionParamPlaceHolder[1] | $t.var->meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(),
+    d: DynaFunction[1] | $d->isCollectionReturningFunction(),
+    r: RelationalOperationElement[1] | false
+  ]);
+}
+
+function <<access.private>> meta::relational::postProcessor::isCollectionReturningFunction(d: DynaFunction[1]): Boolean[1]
+{
+  let collectionFunctionRewrites = multiplicityPreservingDynaFunctionList();
+  let collectionFunctionNames = $collectionFunctionRewrites->map(r | [$r.first, $r.second.first]);
+  $d.name->in($collectionFunctionNames);
+}
+
+
+function <<access.private>> meta::relational::postProcessor::buildFlattenQuery(navigation: RelationalOperationElement[1]): SelectSQLQuery[1]
+{
+  let flatten = ^SemiStructuredArrayFlattenRelation(navigation=$navigation);
+  let tableAlias=^TableAlias(name='root',relationalElement=^DynaFunction(name='equal',parameters=[^Literal(value=1),^Literal(value='1')]));
+  let columnSelected=^TableAliasColumn(column=^Column(type=^meta::relational::metamodel::datatype::Varchar(size=200),name='value'),alias=$tableAlias);
+  let res=^TableAlias(relationalElement=$flatten,name='root');
+  let req = ^RootJoinTreeNode(alias=$res);
+  ^SelectSQLQuery(data=$req, columns=$columnSelected);
+}
+
