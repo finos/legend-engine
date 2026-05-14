@@ -237,22 +237,28 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                         : Lists.mutable.withAll(classMapping.primaryKey);
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
                 org.eclipse.collections.impl.factory.Lists.mutable.empty();
-        for (org.eclipse.collections.api.block.function.Function3<
-                org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
-                org.eclipse.collections.api.list.MutableList<String>,
-                CompileContext,
-                org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>> resolver
-                : this.context.getCompilerExtensions().getExtraRelationFunctionPrimaryKeyResolvers())
+        if (setImpl._relationFunction() != null)
         {
-            resolvedPK = resolver.value(setImpl, explicitNames, this.context);
-            if (resolvedPK != null && resolvedPK.notEmpty())
+            for (org.eclipse.collections.api.block.function.Function3<
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
+                    org.eclipse.collections.api.list.MutableList<String>,
+                    CompileContext,
+                    org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>> resolver
+                    : this.context.getCompilerExtensions().getExtraRelationFunctionPrimaryKeyResolvers())
             {
-                break;
+                resolvedPK = resolver.value(setImpl, explicitNames, this.context);
+                if (resolvedPK != null && resolvedPK.notEmpty())
+                {
+                    break;
+                }
             }
         }
         // Fallback to core resolver (no leaf handler — will only work for explicit PKs
         // or function bodies that don't depend on store-specific leaf resolution).
-        if (resolvedPK == null || resolvedPK.isEmpty())
+        // Guard: the core Pure resolver accesses $r.relationFunction.expressionSequence
+        // which will NPE if _relationFunction has not been set yet (it is populated in
+        // the second compilation pass, but this code can run during the first pass).
+        if ((resolvedPK == null || resolvedPK.isEmpty()) && setImpl._relationFunction() != null)
         {
             resolvedPK = org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
                     .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
@@ -260,15 +266,24 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
         }
         if (resolvedPK == null || resolvedPK.isEmpty())
         {
-            throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(
-                    "Unable to determine primary key for relation function class mapping '" + id
-                            + "'. No `~primaryKey` was declared and the primary key could not be inferred from the body of relation function '"
-                            + getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction(), this.context.pureModel.getExecutionSupport())
-                            + "'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).",
-                    classMapping.sourceInformation,
-                    org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType.COMPILATION);
+            if (setImpl._relationFunction() != null)
+            {
+                // Only error if the relation function is available — if it's null the
+                // function hasn't been wired yet (happens in second pass) and PK
+                // resolution will be retried when the mapping is fully compiled.
+                throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(
+                        "Unable to determine primary key for relation function class mapping '" + id
+                                + "'. No `~primaryKey` was declared and the primary key could not be inferred from the body of the relation function '"
+                                + getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction(), this.context.pureModel.getExecutionSupport())
+                                + "'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).",
+                        classMapping.sourceInformation,
+                        org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType.COMPILATION);
+            }
         }
-        setImpl._primaryKey(resolvedPK);
+        if (resolvedPK != null && resolvedPK.notEmpty())
+        {
+            setImpl._primaryKey(resolvedPK);
+        }
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
         return Tuples.pair(setImpl, Lists.immutable.empty());
     }
