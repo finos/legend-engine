@@ -529,7 +529,7 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 function <<access.private>> meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
 {
   $src->match([
-    rsa: RelationStoreAccessor<Any>[1] | $rsa.sourceElement->match([
+    rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->match([
       t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
       a: Any[*] | []
     ]),
