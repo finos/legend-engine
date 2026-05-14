@@ -143,15 +143,7 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnN
 // since some columns may be unmapped but still referred to by an explicit PK.
 function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
-  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
-  if($lastExpr->isEmpty(),
-    | [],
-    | let rt = $lastExpr->toOne().genericType.typeArguments->at(0).rawType;
-      if($rt->isEmpty() || !$rt->toOne()->instanceOf(RelationType),
-        | [],
-        | $rt->toOne()->cast(@RelationType<Any>).columns->map(c | $c.name->toOne())
-      );
-  );
+  $r->meta::pure::mapping::relation::extractRelationColumns()->map(c | $c.name->toOne());
 }
 
 // Public entry point (no leaf handler — no store-specific inference).
@@ -177,19 +169,29 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:Rela
     | $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames($leafHandler),
     | $explicitColumnNames
   );
-  // Resolve from the Relation function's declared columns (return-type
-  // columns), not from property mappings — a PK column may be unmapped
-  // but still present in the relation.
-  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
-  let cols = if($lastExpr->isEmpty(),
-                | [],
-                | let rt = $lastExpr->toOne().genericType.typeArguments->at(0).rawType;
-                  if($rt->isEmpty() || !$rt->toOne()->instanceOf(RelationType),
-                    | [],
-                    | $rt->toOne()->cast(@RelationType<Any>).columns
-                  );
-              );
+  let cols = $r->meta::pure::mapping::relation::extractRelationColumns();
   $pkNames->map(name | $cols->filter(c | $c.name == $name)->first());
+}
+
+// Extracts the Column list from a relation function's body by scanning ALL
+// expressions in the expressionSequence for one whose static type carries a
+// concrete RelationType (not just `Any`). This is necessary because:
+//  - The function may declare `Relation<Any>` as its return type.
+//  - The compiler may add coercion/cast nodes that strip the concrete type.
+//  - The concrete type is on the expression that holds the actual body logic.
+function meta::pure::mapping::relation::extractRelationColumns(r:RelationFunctionInstanceSetImplementation[1]):Column<Nil, Any|*>[*]
+{
+  let allExprs = $r.relationFunction.expressionSequence->evaluateAndDeactivate();
+  let found = $allExprs->filter(expr |
+    !$expr.genericType->isEmpty() &&
+    $expr.genericType.typeArguments->isNotEmpty() &&
+    $expr.genericType.typeArguments->at(0).rawType->isNotEmpty() &&
+    $expr.genericType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType)
+  )->first();
+  if ($found->isEmpty(),
+    | [],
+    | $found->toOne().genericType.typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns
+  );
 }
 
 // Generic PK inference over any value spec whose static type is a Relation<...>.

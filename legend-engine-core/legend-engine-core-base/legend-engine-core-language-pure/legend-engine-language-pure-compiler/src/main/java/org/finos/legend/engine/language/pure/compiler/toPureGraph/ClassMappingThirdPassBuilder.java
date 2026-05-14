@@ -249,24 +249,28 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         {
             return Lists.immutable.empty();
         }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification last =
-                fn._expressionSequence().toList().getLast();
-        if (last == null || last._genericType() == null)
+        // Scan ALL expressions for one with a concrete RelationType — not just
+        // the last one. When a function declares Relation<Any> as its return
+        // type, the compiler may add a coercion node whose type is Relation<Any>
+        // (not a concrete RelationType). The actual body expression retains
+        // the concrete column info.
+        for (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expr : fn._expressionSequence())
         {
-            return Lists.immutable.empty();
+            if (expr._genericType() != null)
+            {
+                org.eclipse.collections.api.list.MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType> typeArgs =
+                        expr._genericType()._typeArguments().toList();
+                if (!typeArgs.isEmpty())
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type rawType = typeArgs.get(0)._rawType();
+                    if (rawType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType)
+                    {
+                        return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) rawType)._columns();
+                    }
+                }
+            }
         }
-        org.eclipse.collections.api.list.MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType> typeArgs =
-                last._genericType()._typeArguments().toList();
-        if (typeArgs.isEmpty())
-        {
-            return Lists.immutable.empty();
-        }
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type rawType = typeArgs.get(0)._rawType();
-        if (!(rawType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType))
-        {
-            return Lists.immutable.empty();
-        }
-        return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) rawType)._columns();
+        return Lists.immutable.empty();
     }
 
 
