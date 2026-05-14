@@ -63,6 +63,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -180,6 +181,23 @@ public interface CompilerExtension extends LegendLanguageExtension
     }
 
     default List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraRelationStoreAccessorProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Extension point for resolving primary key columns of a
+     * {@link RelationFunctionInstanceSetImplementation}. Store-specific
+     * extensions (e.g. relational) override this to supply a leaf handler
+     * that can extract PK column names from store-specific source elements
+     * (e.g. {@code Table.primaryKey}).
+     *
+     * <p>Each function takes a {@code (setImpl, explicitPKNames, context)}
+     * and returns the resolved {@code Column} instances, or an empty
+     * iterable if this extension doesn't handle the given set
+     * implementation.</p>
+     */
+    default List<Function3<RelationFunctionInstanceSetImplementation, org.eclipse.collections.api.list.MutableList<String>, CompileContext, org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>> getExtraRelationFunctionPrimaryKeyResolvers()
     {
         return Collections.emptyList();
     }

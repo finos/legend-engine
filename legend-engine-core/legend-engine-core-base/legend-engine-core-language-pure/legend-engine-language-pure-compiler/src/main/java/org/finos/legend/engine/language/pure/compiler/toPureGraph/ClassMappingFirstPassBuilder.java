@@ -228,18 +228,36 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                     "Primary key columns declared but cannot be validated — "
                     + "relation function does not expose a concrete RelationType")));
         }
-        // Resolve the typed PK columns by calling the core Pure resolver. Picks the user's
-        // explicit list when non-empty, otherwise auto-infers by walking the relation
-        // function body. If neither yields a PK, fail with a clear, syntax-aware error so
-        // the user knows exactly how to recover.
+        // Resolve the typed PK columns by calling registered extensions first (e.g. the
+        // relational extension supplies a leaf handler that can read Table.primaryKey).
+        // Falls back to the core Pure resolver (no leaf handler) if no extension handles it.
         org.eclipse.collections.api.list.MutableList<String> explicitNames =
                 (classMapping.primaryKey == null)
                         ? Lists.mutable.empty()
                         : Lists.mutable.withAll(classMapping.primaryKey);
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
-                org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
-                        .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
-                                setImpl, explicitNames, this.context.pureModel.getExecutionSupport());
+                org.eclipse.collections.impl.factory.Lists.mutable.empty();
+        for (org.eclipse.collections.api.block.function.Function3<
+                org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
+                org.eclipse.collections.api.list.MutableList<String>,
+                CompileContext,
+                org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>> resolver
+                : this.context.getCompilerExtensions().getExtraRelationFunctionPrimaryKeyResolvers())
+        {
+            resolvedPK = resolver.value(setImpl, explicitNames, this.context);
+            if (resolvedPK != null && resolvedPK.notEmpty())
+            {
+                break;
+            }
+        }
+        // Fallback to core resolver (no leaf handler — will only work for explicit PKs
+        // or function bodies that don't depend on store-specific leaf resolution).
+        if (resolvedPK == null || resolvedPK.isEmpty())
+        {
+            resolvedPK = org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
+                    .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
+                            setImpl, explicitNames, this.context.pureModel.getExecutionSupport());
+        }
         if (resolvedPK == null || resolvedPK.isEmpty())
         {
             throw new org.finos.legend.engine.shared.core.operational.errorManagement.EngineException(

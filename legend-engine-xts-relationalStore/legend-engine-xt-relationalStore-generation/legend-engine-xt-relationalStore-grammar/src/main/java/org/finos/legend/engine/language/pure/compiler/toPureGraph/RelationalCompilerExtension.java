@@ -1197,4 +1197,20 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     {
         return Maps.mutable.with("cov_tds_TabularDataSet", Sets.mutable.with("TableTDS"));
     }
+
+    @Override
+    public java.util.List<org.eclipse.collections.api.block.function.Function3<
+            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
+            org.eclipse.collections.api.list.MutableList<String>,
+            CompileContext,
+            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>>
+    getExtraRelationFunctionPrimaryKeyResolvers()
+    {
+        return java.util.Collections.singletonList(
+            (setImpl, explicitNames, context) ->
+                org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions
+                    .Root_meta_relational_mapping_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
+                        setImpl, explicitNames, context.pureModel.getExecutionSupport())
+        );
+    }
 }

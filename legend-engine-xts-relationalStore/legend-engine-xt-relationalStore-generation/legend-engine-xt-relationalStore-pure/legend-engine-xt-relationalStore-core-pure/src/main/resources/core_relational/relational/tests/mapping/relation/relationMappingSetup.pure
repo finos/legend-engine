@@ -218,37 +218,6 @@ Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::
   sum: Integer[1];
 }
 
-// ---------------------------------------------------------------------------
-// Minimal helper classes used exclusively by PK-auto-inference tests
-// (resolveRelationFunctionPrimaryKeyColumnNames). Kept tiny so each mapping
-// only references columns that survive the corresponding relation pipeline.
-// ---------------------------------------------------------------------------
-Class meta::relational::tests::mapping::relation::PkTestAge
-{
-  age: Integer[1];
-}
-
-Class meta::relational::tests::mapping::relation::PkTestAgeFirm
-{
-  age: Integer[1];
-  firmId: Integer[1];
-}
-
-Class meta::relational::tests::mapping::relation::PkTestSum
-{
-  sum: Integer[1];
-}
-
-Class meta::relational::tests::mapping::relation::PkTestFirmSum
-{
-  firm: Integer[1];
-  sum: Integer[1];
-}
-
-Class meta::relational::tests::mapping::relation::PkTestPersonGroup
-{
-  age: Integer[1];
-}
 
 Class meta::relational::tests::mapping::relation::Firm
 {
@@ -528,362 +497,6 @@ Mapping meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapp
   }
 )
 
-// ---------------------------------------------------------------------------
-// Mappings used exclusively by PK-auto-inference tests (testAutoInferPK*).
-// Each one binds a class to a pkTest* relation function. Property mappings
-// are intentionally minimal and only reference columns that survive the
-// corresponding relation pipeline (e.g. for select(~[AGE, FIRMID]) we only
-// map age + firmId because ID, FIRST NAME and SALARY are projected away).
-// id 'pk' is reused everywhere because pkOf() looks the set impl up by id.
-// ---------------------------------------------------------------------------
-
-// --- A. Single-operator scenarios ----------------------------------------
-Mapping meta::relational::tests::mapping::relation::PkTestBareMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestBare__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestFilterMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestFilter__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestLimitMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestLimit__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestDropMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestDrop__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestSliceMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSlice__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestSortMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSort__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestExtendMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestExtend__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// rename(~ID, ~PERSON_ID) — original ID column is gone, but we don't map it
-// either, so the mapping still compiles cleanly.
-Mapping meta::relational::tests::mapping::relation::PkTestRenameMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestRename__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// select(~[ID, AGE]) — only ID and AGE are exposed.
-Mapping meta::relational::tests::mapping::relation::PkTestSelectKeepingPKMapping
-(
-  *PkTestAge[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSelectKeepingPK__Relation_1_
-    age: AGE
-  }
-)
-
-// select(~[AGE, FIRMID]) — only AGE and FIRMID are exposed.
-Mapping meta::relational::tests::mapping::relation::PkTestSelectDroppingPKMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSelectDroppingPK__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestDistinctNoArgsMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestDistinctNoArgs__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestDistinctWithColsMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestDistinctWithCols__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-// join(personTable, firmTable) — columns from both. Map a subset.
-Mapping meta::relational::tests::mapping::relation::PkTestJoinMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestJoin__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// --- B. Unsupported / negative scenarios ---------------------------------
-Mapping meta::relational::tests::mapping::relation::PkTestConcatenateMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestConcatenate__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// --- C. Complex nested chains --------------------------------------------
-Mapping meta::relational::tests::mapping::relation::PkTestFilterSortLimitMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestFilterSortLimit__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// rename(ID→PID) → select(~[PID, AGE]) — only PID and AGE are exposed.
-Mapping meta::relational::tests::mapping::relation::PkTestRenameThenSelectKeepingPKMapping
-(
-  *PkTestAge[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestRenameThenSelectKeepingPK__Relation_1_
-    age: AGE
-  }
-)
-
-// rename(ID→PID) → select(~[AGE, FIRMID]) — only AGE and FIRMID exposed.
-Mapping meta::relational::tests::mapping::relation::PkTestRenameThenSelectDroppingPKMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestRenameThenSelectDroppingPK__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-// rename(ID→X) → rename(X→Y) — ID/X gone, replaced by Y. Don't map them.
-Mapping meta::relational::tests::mapping::relation::PkTestDoubleRenameMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestDoubleRename__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// groupBy(FIRMID, SUM:...) → filter(...) — output cols: FIRMID, SUM.
-Mapping meta::relational::tests::mapping::relation::PkTestGroupByThenFilterMapping
-(
-  *GroupByClass: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestGroupByThenFilter__Relation_1_
-    firmId: FIRMID,
-    sum: SUM
-  }
-)
-
-// groupBy(FIRMID, SUM:...) → rename(FIRMID→FIRM) — output cols: FIRM, SUM.
-Mapping meta::relational::tests::mapping::relation::PkTestGroupByThenRenameMapping
-(
-  *PkTestFirmSum: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestGroupByThenRename__Relation_1_
-    firm: FIRM,
-    sum: SUM
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestJoinThenFilterSortMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestJoinThenFilterSort__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// distinct(~[AGE, FIRMID]) → filter(...) — output cols: AGE, FIRMID.
-Mapping meta::relational::tests::mapping::relation::PkTestDistinctThenFilterMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestDistinctThenFilter__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-// select(~[ID, AGE, FIRMID]) → rename(ID→PID) → filter — output: PID, AGE, FIRMID.
-Mapping meta::relational::tests::mapping::relation::PkTestSelectThenRenameThenFilterMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSelectThenRenameThenFilter__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-// join → extend → filter → select(~[ID, GROUPID, AGE]) — output cols: ID, GROUPID, AGE.
-Mapping meta::relational::tests::mapping::relation::PkTestJoinExtendFilterSelectMapping
-(
-  *PkTestAge[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestJoinExtendFilterSelect__Relation_1_
-    age: AGE
-  }
-)
-
-// groupBy → select(~[SUM]) — output cols: SUM only.
-Mapping meta::relational::tests::mapping::relation::PkTestGroupByThenSelectDroppingPKMapping
-(
-  *PkTestSum: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestGroupByThenSelectDroppingPK__Relation_1_
-    sum: SUM
-  }
-)
-
-// --- D. Additional composite chain mappings ------------------------------
-
-// extend → select(~[AGE, FIRMID, DOUBLE_AGE]) — ID is dropped.
-Mapping meta::relational::tests::mapping::relation::PkTestExtendThenSelectDroppingPKMapping
-(
-  *PkTestAgeFirm[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestExtendThenSelectDroppingPK__Relation_1_
-    age: AGE,
-    firmId: FIRMID
-  }
-)
-
-// filter → rename(ID→PID) — output has PID, not ID.
-Mapping meta::relational::tests::mapping::relation::PkTestFilterThenRenameMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestFilterThenRename__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// rename → groupBy(~FIRMID, ...) — output: FIRMID, SUM.
-Mapping meta::relational::tests::mapping::relation::PkTestRenameThenGroupByMapping
-(
-  *PkTestFirmSum[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy__Relation_1_
-    firm: FIRMID,
-    sum: SUM
-  }
-)
-
-// join → groupBy(~GROUPID, ...) — output: GROUPID, CNT.
-Mapping meta::relational::tests::mapping::relation::PkTestJoinThenGroupByMapping
-(
-  *PkTestAge[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy__Relation_1_
-    age: CNT
-  }
-)
-
-// filter → extend → distinct() — all preserve PK.
-Mapping meta::relational::tests::mapping::relation::PkTestFilterExtendDistinctMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// groupBy → extend → filter → select — PK=FIRMID survives.
-Mapping meta::relational::tests::mapping::relation::PkTestGroupByExtendFilterSelectMapping
-(
-  *PkTestFirmSum[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSelect__Relation_1_
-    firm: FIRMID,
-    sum: SUM
-  }
-)
-
-// sort → limit → filter → rename(ID→PERSON_ID).
-Mapping meta::relational::tests::mapping::relation::PkTestSortLimitFilterRenameMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-// --- E. Function composition mappings ------------------------------------
-// NOTE: No mappings are needed for the function-composition tests. The
-// composed functions return Relation<Any> (not a concrete RelationType),
-// which the Pure PAR compiler cannot process into a mapping. The composition
-// tests call meta::relational::mapping::inferPrimaryKeyColumnNames directly
-// on the function's expression tree, bypassing the mapping compiler.
 
 ###Pure
 import meta::relational::metamodel::execute::*;
@@ -1055,6 +668,12 @@ function meta::relational::tests::mapping::relation::pkTestSelectDroppingPK(): m
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[AGE, FIRMID])
 }
 
+// select() with no column arg — identity projection, preserves all columns + PK.
+function meta::relational::tests::mapping::relation::pkTestSelectNoArgs(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select()
+}
+
 function meta::relational::tests::mapping::relation::pkTestDistinctNoArgs(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->distinct()
@@ -1078,6 +697,18 @@ function meta::relational::tests::mapping::relation::pkTestConcatenate(): meta::
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->concatenate(#>{meta::relational::tests::mapping::relation::testDB.personTable}#)
+}
+
+function meta::relational::tests::mapping::relation::pkTestAggregate(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->aggregate(~SUM:x | $x.AGE:y | $y->sum())
+}
+
+function meta::relational::tests::mapping::relation::pkTestPivot(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+    ->pivot(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
 }
 
 // --- C. Complex nested chains --------------------------------------------

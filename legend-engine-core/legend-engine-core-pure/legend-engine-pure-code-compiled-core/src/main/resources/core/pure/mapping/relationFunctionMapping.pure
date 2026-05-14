@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -135,13 +135,14 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:Rela
 
 // Generic PK inference over any value spec whose static type is a Relation<...>.
 // Recognises four node shapes:
-//   - InstanceValue wrapping a RelationStoreAccessor over some sourceElement
-//     => delegate to leafHandler.
-//   - InstanceValue wrapping anything else (including SQLExpression / `#SQL{}#`,
-//     reviewer 873d750c) => empty PK; user must declare it explicitly.
+//   - InstanceValue wrapping any value => delegate to leafHandler. The
+//     leafHandler is store-specific: the relational extension handles
+//     RelationStoreAccessor → Table → Table.primaryKey; other stores or
+//     SQL expressions can provide their own handlers via the Extension
+//     mechanism. The default (no-op) leafHandler returns [].
 //   - SimpleFunctionExpression invoking a known relation operator => apply rule.
-//     Also handles zero-arg user-function calls (function composition,
-//     reviewer 4cd58121, partial — see inferPrimaryKeyColumnNamesFromFunctionExpression).
+//     Also handles user-function calls (function composition — see
+//     inferPrimaryKeyColumnNamesFromFunctionExpression).
 //   - ClusteredValueSpecification (post-router wrapper)           => recurse.
 // Anything else is conservatively treated as having no inferable PK (empty).
 function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1]):String[*]
@@ -153,14 +154,7 @@ function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpeci
 {
   $vs->match([
     iv: InstanceValue[1] |
-        $iv.values->map(v | $v->match([
-          rsa: RelationStoreAccessor<Any>[1] | $leafHandler->eval($rsa.sourceElement),
-          // Anything else inside an InstanceValue (e.g. a #SQL{}# SQLExpression
-          // value, which lives in the xt-sql-expression module and isn't
-          // reachable from core; reviewer 873d750c) yields no PK — the user
-          // must declare ~primaryKey explicitly for those cases.
-          a: Any[*] | []
-        ]))->cast(@String),
+        $iv.values->map(v | $leafHandler->eval($v))->cast(@String),
     cvs: ClusteredValueSpecification[1] |
         $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler),
     fe: SimpleFunctionExpression[1] |
@@ -170,28 +164,29 @@ function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpeci
 }
 
 // Per-operator PK rule. Dispatches via direct function-pointer identity
-// against the canonical `meta::pure::functions::relation::*` overloads
-// (reviewer 515c8b11). This is stricter and faster than the previous
-// `functionName` string match — it cannot collide with same-named user
-// functions and naturally distinguishes overloads (select 1- vs 2-arg,
-// distinct 1- vs 2-arg, etc.).
+// against the canonical `meta::pure::functions::relation::*` overloads.
+// This is stricter and faster than a `functionName` string match — it
+// cannot collide with same-named user functions and naturally distinguishes
+// overloads (select 1- vs 2-arg, distinct 1- vs 2-arg, etc.).
 //
-// Function composition (reviewer 4cd58121): if the invoked function is a
-// user-defined `ConcreteFunctionDefinition` with a single-expression body
-// AND the call has no arguments, we inline the body and recurse. This
-// covers the common helper pattern:
+// Function composition: if the invoked function is a user-defined
+// `ConcreteFunctionDefinition` whose package does NOT start with `meta::`
+// (i.e. it's not a platform function), we inline the body and recurse.
+// This covers the common helper pattern:
 //
 //     function my::tableHelper(): Relation<Any>[1]
 //     { #>{my::db.personTable}#->filter(x | $x.AGE > 25) }
 //
-// Multi-arg / parameterised composition is deferred — would require
-// substituting argument values for parameter references in the body.
+// We use the package prefix check rather than `$args->isEmpty()` so that:
+//   - Platform zero-arg functions like `now()` are NOT stepped into.
+//   - Future user functions with args can be supported (arg substitution
+//     is deferred but the gate is open).
 function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
 {
   let fn   = $fe.func;
   let args = $fe.parametersValues;
-  // 1) Function-composition for zero-arg user-defined functions.
-  if ($fn->instanceOf(ConcreteFunctionDefinition) && $args->isEmpty(),
+  // 1) Function-composition for user-defined functions (non-platform).
+  if ($fn->instanceOf(ConcreteFunctionDefinition) && !$fn->elementToPath()->startsWith('meta::'),
     | let body = $fn->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
       if ($body->size() == 1,
         | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler),
