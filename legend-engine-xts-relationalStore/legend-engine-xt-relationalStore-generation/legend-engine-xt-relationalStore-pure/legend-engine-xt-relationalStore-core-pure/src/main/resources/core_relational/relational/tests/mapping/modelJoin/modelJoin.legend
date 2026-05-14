@@ -469,12 +469,11 @@ Mapping showcase::modelJoinTests::mapping::DoubleNestedModelJoinMapping
 )
 
 // =========================================================================
-// Mapping 7: Column collision in target subselect
-//   Target side traverses dept→project, both have ID and NAME columns.
-//   The subselect collapse must disambiguate these.
-//   Condition: departments.projects.city == firm_dept.legalName (contrived to force target nesting)
+// Mapping 7: Chained two-hop model joins — Firm→Department→Project
+//   Two consecutive model joins: Firm→Department (firm.id == dept.firmId)
+//   then Department→Project (dept.id == project.deptId).
 // =========================================================================
-Mapping showcase::modelJoinTests::mapping::ColumnCollisionMapping
+Mapping showcase::modelJoinTests::mapping::ChainedTwoHopsMapping
 (
   *showcase::modelJoinTests::domain::Firm[firm]: Relation
   {

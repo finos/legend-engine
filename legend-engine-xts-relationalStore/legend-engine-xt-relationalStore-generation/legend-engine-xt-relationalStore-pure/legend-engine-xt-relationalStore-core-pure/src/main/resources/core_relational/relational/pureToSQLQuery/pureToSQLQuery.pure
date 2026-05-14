@@ -2386,8 +2386,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
     r:RelationFunctionInstanceSetImplementation[1] |
       processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions)
   ]);
-  $targetSWC.select->println();
-  $targetSWC.select->printDebugQuery('', $extensions)->println();fail();
   let tgtAlias = $targetSWC.select.data->toOne().alias;
 
   let placeholder = ^Join(
@@ -2448,7 +2446,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
     r:RootRelationalInstanceSetImplementation[1] |
       processRelationalMappingSpecification($r, $r.class, $joinType, $nodeId, false, -1, true, $milestoningContext, $state, $context, $extensions)->cast(@SelectWithCursor).select,
     r:RelationFunctionInstanceSetImplementation[1] |
-      $tgtAlias.relationalElement->cast(@SelectSQLQuery)
+      ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $tgtAlias));
   ]);
 
   // Merge processGetAll columns with ON-clause columns (ON-clause columns take precedence / are added if missing)
@@ -7022,7 +7020,7 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
                                                           f:LambdaFunction<Any>[1]|$f.expressionSequence->toOne()->cast(@ValueSpecification)->processAggFn($params, $state),
                                                           e:Enum[1] | ^Literal(value=$e),
                                                           e:Enumeration<Enum>[1] | ^Literal(value = $v),
-                                                          a:Any[1] | println($a);fail('Unsupported aggregation operation'); [];
+                                                          a:Any[1] | fail('Unsupported aggregation operation of type - ' + $a->type().name->toOne()); [];
                                               ]));
                                 );
       ]

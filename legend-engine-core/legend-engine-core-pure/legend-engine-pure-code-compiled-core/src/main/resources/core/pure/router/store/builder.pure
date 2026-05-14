@@ -328,7 +328,7 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
         // Find PermutationSets from existing strategy that exactly match source/target SetImplementations.
         // Traverse in reverse id order (highest first) to pick innermost context match.
         let routingStrategy = $propertyRoutedVS.routingStrategy->cast(@StoreMappingRoutingStrategy);
-        let sortedSets = $routingStrategy.sets->sort({a,b| $b.id - $a.id});
+        let sortedSets = $routingStrategy.sets->sort();
         let srcPermSet = $sortedSets->filter(ps| $ps.sets.id->sort() == $sourcedRoutedVS.sets.id->sort())->first()->toOne();
         let tgtPermSet = $sortedSets->filter(ps| $ps.sets.id->sort() == $propertyRoutedVS.sets.id->sort())->first()->toOne();
 
