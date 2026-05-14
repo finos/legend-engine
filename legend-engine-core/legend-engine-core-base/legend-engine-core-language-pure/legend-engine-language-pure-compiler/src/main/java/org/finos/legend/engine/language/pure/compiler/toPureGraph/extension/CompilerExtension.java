@@ -191,7 +191,7 @@ public interface CompilerExtension extends LegendLanguageExtension
      * this to register their module extensions (e.g.
      * {@code RelationStoreAccessorExtension}).
      */
-    default org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
+    default org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
     {
         return org.eclipse.collections.impl.factory.Lists.immutable.empty();
     }

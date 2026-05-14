@@ -213,7 +213,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 (classMapping.primaryKey == null)
                         ? Lists.mutable.empty()
                         : Lists.mutable.withAll(classMapping.primaryKey);
-        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> pureExtensions =
+        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> pureExtensions =
                 this.context.getCompilerExtensions().getExtraPureExtensions(
                         (org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport) this.context.pureModel.getExecutionSupport());
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
