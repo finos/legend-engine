@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -149,9 +150,9 @@ public class PureGrammarComposerUtility
         return convertIdentifier(val, false);
     }
 
-    public static String convertIdentifier(String val, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String convertIdentifier(String val, Function<String, String> identifierConverter)
     {
-        return transformer.isIngestGrammar() ? convertIdentifier(val, transformer.getIngestReservedKeywords()) : convertIdentifier(val);
+        return identifierConverter.apply(val);
     }
 
     public static String convertIdentifier(String val, boolean doubleQuotes)

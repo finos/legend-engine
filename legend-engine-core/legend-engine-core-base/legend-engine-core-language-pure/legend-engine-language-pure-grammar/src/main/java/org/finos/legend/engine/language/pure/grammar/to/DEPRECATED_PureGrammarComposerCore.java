@@ -151,9 +151,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
     private final boolean isPropertyBracketExpressionModeEnabled;
 
-    private boolean isIngestGrammar = false;
+    private boolean shouldQuoteReservedKeywords = false;
 
-    private Set<String> ingestReservedKeywords = Collections.emptySet();
+    private Set<String> reservedKeywords = Collections.emptySet();
 
     private int baseTabLevel = 1;
 
@@ -165,8 +165,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
         this.isPureGrammar = builder.isPureGrammar;
-        this.isIngestGrammar = builder.isIngestGrammar;
-        this.ingestReservedKeywords = builder.ingestReservedKeywords;
+        this.shouldQuoteReservedKeywords = builder.shouldQuoteReservedKeywords;
+        this.reservedKeywords = builder.reservedKeywords;
     }
 
     public int getBaseTabLevel()
@@ -184,14 +184,14 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         return indentationString;
     }
 
-    public Set<String> getIngestReservedKeywords()
+    public Set<String> getReservedKeywords()
     {
-        return ingestReservedKeywords;
+        return reservedKeywords;
     }
 
-    public boolean isIngestGrammar()
+    public boolean shouldQuoteReservedKeywords()
     {
-        return isIngestGrammar;
+        return shouldQuoteReservedKeywords;
     }
 
     public boolean isValueSpecificationExternalParameter()
@@ -218,6 +218,13 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return isPropertyBracketExpressionModeEnabled;
     }
+    
+    public java.util.function.Function<String, String> identifierConverter()
+    {
+        return shouldQuoteReservedKeywords
+                ? val -> PureGrammarComposerUtility.convertIdentifier(val, reservedKeywords)
+                : PureGrammarComposerUtility::convertIdentifier;
+    }
 
     public static class Builder
     {
@@ -227,8 +234,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
         private boolean isPureGrammar = false;
-        private boolean isIngestGrammar = false;
-        private Set<String> ingestReservedKeywords = Sets.mutable.empty();
+        private boolean shouldQuoteReservedKeywords = false;
+        private Set<String> reservedKeywords = Sets.mutable.empty();
 
         private Builder()
         {
@@ -244,8 +251,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
             builder.isPureGrammar = grammarTransformer.isPureGrammar;
-            builder.isIngestGrammar = grammarTransformer.isIngestGrammar;
-            builder.ingestReservedKeywords = grammarTransformer.ingestReservedKeywords;
+            builder.shouldQuoteReservedKeywords = grammarTransformer.shouldQuoteReservedKeywords;
+            builder.reservedKeywords = grammarTransformer.reservedKeywords;
             return builder;
         }
 
@@ -296,10 +303,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             return this;
         }
 
-        public Builder withIngestGrammar(Set<String> reservedKeywords)
+        public Builder withReservedKeywords(Set<String> reservedKeywords)
         {
-            this.isIngestGrammar = true;
-            this.ingestReservedKeywords = reservedKeywords;
+            this.shouldQuoteReservedKeywords = true;
+            this.reservedKeywords = reservedKeywords;
             return this;
         }
 
@@ -575,7 +582,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         String lambdaString = purePropertyMapping.transform.accept(this).replaceFirst("\\|", "");
         return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(purePropertyMapping) +
                 (purePropertyMapping.explodeProperty != null && purePropertyMapping.explodeProperty ? "*" : "") +
-                (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target, this) + "]") +
+                (purePropertyMapping.target == null || purePropertyMapping.target.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(purePropertyMapping.target, identifierConverter()) + "]") +
                 (purePropertyMapping.enumMappingId == null ? "" : ": EnumerationMapping " + purePropertyMapping.enumMappingId) +
                 ": " + lambdaString;
     }
@@ -626,7 +633,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) 
                 + (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
-                ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, this);
+                ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, identifierConverter());
     }
 
     // ----------------------------------------------- CONNECTION -----------------------------------------------
@@ -739,7 +746,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(EnumValue enumValue)
     {
-        return HelperValueSpecificationGrammarComposer.printFullPath(enumValue.fullPath, this) + "." + PureGrammarComposerUtility.convertIdentifier(enumValue.value, this);
+        return HelperValueSpecificationGrammarComposer.printFullPath(enumValue.fullPath, this) + "." + PureGrammarComposerUtility.convertIdentifier(enumValue.value, identifierConverter());
     }
 
     @Override
@@ -747,7 +754,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return (this.isRenderingHTML() ? "<span class='pureGrammar-var'>" : "") +
                 (this.isVariableInFunctionSignature ? "" : "$") +
-                PureGrammarComposerUtility.convertIdentifier(variable.name, this) +
+                PureGrammarComposerUtility.convertIdentifier(variable.name, identifierConverter()) +
                 (this.isRenderingHTML() ? "</span>" : "") +
                 (variable.genericType != null ? ": " + HelperValueSpecificationGrammarComposer.printGenericType(variable.genericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(variable.multiplicity) + "]" : "");
     }
@@ -846,7 +853,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("letFunction".equals(function))
         {
-            return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value, this) + " = " + parameters.get(1).accept(this);
+            return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value, identifierConverter()) + " = " + parameters.get(1).accept(this);
         }
         else if (Sets.immutable.of("cast", "to", "toMany").contains(function))
         {
@@ -938,7 +945,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         else
         {
             stringBuilder.append(".");
-            stringBuilder.append(this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "").append(PureGrammarComposerUtility.convertIdentifier(appliedProperty.property, this)).append(this.isRenderingHTML() ? "</span>" : "");
+            stringBuilder.append(this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "").append(PureGrammarComposerUtility.convertIdentifier(appliedProperty.property, identifierConverter())).append(this.isRenderingHTML() ? "</span>" : "");
             if (appliedProperty.parameters.size() > 1)
             {
                 stringBuilder.append(appliedProperty.parameters.subList(1, appliedProperty.parameters.size()).stream().map(l -> l.accept(this)).collect(Collectors.joining(", ", "(", ")")));
@@ -1121,7 +1128,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return appliedQualifiedProperty.parameters.get(0).accept(this)
                 + "."
-                + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty, this) + (this.isRenderingHTML() ? "</span>" : "")
+                + (this.isRenderingHTML() ? "<span class=pureGrammar-property>" : "") + PureGrammarComposerUtility.convertIdentifier(appliedQualifiedProperty.qualifiedProperty, identifierConverter()) + (this.isRenderingHTML() ? "</span>" : "")
                 + (appliedQualifiedProperty.parameters.size() > 1 ? "(" + LazyIterate.collect(appliedQualifiedProperty.parameters.subList(1, appliedQualifiedProperty.parameters.size()), l -> l.accept(this)).makeString(", ") + ")" : "");
     }
 
