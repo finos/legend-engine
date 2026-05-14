@@ -193,9 +193,10 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
         //  relationFunctionMapping.pure) so per-operator rules stay co-located with the
         // operators they describe and are reachable from this core Java module.
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> relationColumns = getRelationFunctionColumns(setImpl);
-        if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
+        if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty() && relationColumns.notEmpty())
         {
             java.util.Set<String> availableColumnNames = new java.util.LinkedHashSet<>();
+
             relationColumns.forEach(c ->
             {
                 if (c._name() != null)
@@ -217,6 +218,15 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                             org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType.COMPILATION);
                 }
             }
+        }
+        else if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
+        {
+            // User declared ~primaryKey but we can't resolve the function's RelationType
+            // to validate/persist it — log so it's not silently swallowed.
+            context.pureModel.addWarnings(Lists.mutable.with(
+                new Warning(classMapping.sourceInformation,
+                    "Primary key columns declared but cannot be validated — "
+                    + "relation function does not expose a concrete RelationType")));
         }
         // Resolve the typed PK columns by calling the core Pure resolver. Picks the user's
         // explicit list when non-empty, otherwise auto-infers by walking the relation

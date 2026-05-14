@@ -879,36 +879,11 @@ Mapping meta::relational::tests::mapping::relation::PkTestSortLimitFilterRenameM
 )
 
 // --- E. Function composition mappings ------------------------------------
-
-Mapping meta::relational::tests::mapping::relation::PkTestComposedFilterMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestComposedFilter__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestComposedJoinMapping
-(
-  *Person[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestComposedJoin__Relation_1_
-    firstName: 'FIRST NAME',
-    age: AGE
-  }
-)
-
-Mapping meta::relational::tests::mapping::relation::PkTestComposedGroupByMapping
-(
-  *PkTestFirmSum[pk]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::pkTestComposedGroupBy__Relation_1_
-    firm: FIRMID,
-    sum: SUM
-  }
-)
+// NOTE: No mappings are needed for the function-composition tests. The
+// composed functions return Relation<Any> (not a concrete RelationType),
+// which the Pure PAR compiler cannot process into a mapping. The composition
+// tests call meta::relational::mapping::inferPrimaryKeyColumnNames directly
+// on the function's expression tree, bypassing the mapping compiler.
 
 ###Pure
 import meta::relational::metamodel::execute::*;

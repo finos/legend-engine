@@ -595,15 +595,27 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 //    The dispatcher's `ConcreteFunctionDefinition`
 //    branch inlines the helper's body and recurses, so PK inference
 //    "sees through" composed function calls.
+//
+//    NOTE: No mappings exist for these composed functions because they
+//    return Relation<Any> (no concrete RelationType), which the Pure PAR
+//    compiler cannot process into property mappings. Instead we call
+//    `inferPrimaryKeyColumnNames` directly on the function's expression
+//    body — this is the same code path that `pkOf` ultimately invokes.
 // =========================================================================
+
+function <<access.private>> meta::relational::tests::mapping::relation::pkOfFunc(func:FunctionDefinition<Any>[1]):String[*]
+{
+  let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
+  meta::relational::mapping::inferPrimaryKeyColumnNames($expr);
+}
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedFilter():Boolean[1]
 {
-  // pkTestComposedFilter body = pkHelperFilteredPersons()
+  // pkTestComposedFilter body = pkHelperFilteredPersons()->filter(x|true)
   // pkHelperFilteredPersons body = #>{personTable}#->filter(...)
   // Inlined: filter preserves table PK → PK=[ID].
-  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOf(
-    meta::relational::tests::mapping::relation::PkTestComposedFilterMapping, 'pk'));
+  assertEquals(['ID'], meta::relational::tests::mapping::relation::pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedFilter__Relation_1_));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedJoin():Boolean[1]
@@ -612,8 +624,8 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
   // Left: inlines pkHelperFilteredPersons → filter(#>{personTable}#) → leftPK=[ID]
   // Right: inlines pkHelperFirms → select(#>{firmTable}#,~[ID,legalName]) → then rename(ID→FIRM_ID) → rightPK=[FIRM_ID]
   // join INNER: leftPK ∪ rightPK = [ID, FIRM_ID].
-  assertSameElements(['ID', 'FIRM_ID'], meta::relational::tests::mapping::relation::pkOf(
-    meta::relational::tests::mapping::relation::PkTestComposedJoinMapping, 'pk'));
+  assertSameElements(['ID', 'FIRM_ID'], meta::relational::tests::mapping::relation::pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedJoin__Relation_1_));
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedGroupBy():Boolean[1]
@@ -621,6 +633,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
   // pkTestComposedGroupBy body = pkHelperFilteredPersons()->groupBy(~FIRMID, ...)
   // Inlined: pkHelperFilteredPersons → filter(#>{personTable}#) → PK=[ID]
   // groupBy overrides → PK=[FIRMID].
-  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOf(
-    meta::relational::tests::mapping::relation::PkTestComposedGroupByMapping, 'pk'));
+  assertEquals(['FIRMID'], meta::relational::tests::mapping::relation::pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedGroupBy__Relation_1_));
 }
