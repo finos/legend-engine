@@ -25,6 +25,8 @@
     <artifactId>legend-engine-core-emit</artifactId>
     <packaging>pom</packaging>
 
+    <name>Legend Engine - Core - Emit</name>
+
     <modules>
         <module>legend-engine-emit</module>
         <module>legend-engine-emit-junit</module>
