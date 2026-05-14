@@ -1199,7 +1199,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.extension.Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
+    public org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
     {
         return org.finos.legend.pure.generated.core_relational_relational_extensions_extension
                 .Root_meta_relational_extension_relationalExtensions__Extension_MANY_(executionSupport);
