@@ -130,12 +130,10 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnN
 // own per-source-element PK extraction (e.g. relational Table.primaryKey).
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
 {
-  let exprs = $r.relationFunction.expressionSequence->evaluateAndDeactivate();
-  if($exprs->size() != 1,
-    | fail('Cannot infer primary key for relation function with multiple expression lines. ' +
-           'Please specify primary key explicitly using ~primaryKey ~[col1, col2]');
-      [];,
-    | $exprs->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler)
+  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
+  if($lastExpr->isEmpty(),
+    | [],
+    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler)
   );
 }
 
