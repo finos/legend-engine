@@ -1237,21 +1237,20 @@ function meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename
 // --- E. Function composition tests -------------------
 
 // Zero-arg helper functions — these are the "composed" building blocks.
-function meta::relational::tests::mapping::relation::pkHelperFilteredPersons(): meta::pure::metamodel::relation::Relation<Any>[1]
+// Concrete RelationType return types are required so the Pure compiler can
+// type-check column access (e.g. $x.FIRMID) when these helpers are called
+// inside composed functions like pkTestComposedJoin.
+function meta::relational::tests::mapping::relation::pkHelperFilteredPersons(): meta::pure::metamodel::relation::Relation<(ID:Integer, 'FIRST NAME':String, AGE:Integer, FIRMID:Integer, SALARY:Float)>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->filter(x | $x.AGE > 25)
 }
 
-function meta::relational::tests::mapping::relation::pkHelperFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
+function meta::relational::tests::mapping::relation::pkHelperFirms(): meta::pure::metamodel::relation::Relation<(ID:Integer, legalName:String)>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->select(~[ID, legalName])
 }
 
-// Composed: calls a zero-arg helper that returns a filtered table.
-// The trailing ->filter(x|true) is a no-op that ensures the compiler
-// resolves the concrete RelationType from the helper's return type —
-// a bare function call returns Relation<Any> without a typed row shape,
-// which the mapping compiler can't extract columns from.
+// Composed: calls a zero-arg helper, then applies filter.
 function meta::relational::tests::mapping::relation::pkTestComposedFilter(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   meta::relational::tests::mapping::relation::pkHelperFilteredPersons()->filter(x | true)

@@ -601,6 +601,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 //    compiler cannot process into property mappings. Instead we call
 //    `inferPrimaryKeyColumnNames` directly on the function's expression
 //    body — this is the same code path that `pkOf` ultimately invokes.
+//    The helper functions (pkHelperFilteredPersons, pkHelperFirms) use
+//    concrete RelationType return types so the Pure compiler can
+//    type-check column access in the composed functions.
 // =========================================================================
 
 function <<access.private>> meta::relational::tests::mapping::relation::pkOfFunc(func:FunctionDefinition<Any>[1]):String[*]
