@@ -1203,7 +1203,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation,
             org.eclipse.collections.api.list.MutableList<String>,
             CompileContext,
-            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>>>>
+            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends java.lang.Object, ? extends java.lang.Object>>>>
     getExtraRelationFunctionPrimaryKeyResolvers()
     {
         return java.util.Collections.singletonList(
