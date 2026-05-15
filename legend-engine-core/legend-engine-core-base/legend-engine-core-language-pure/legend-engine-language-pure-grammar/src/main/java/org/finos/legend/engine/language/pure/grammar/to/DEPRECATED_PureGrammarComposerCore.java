@@ -235,7 +235,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isPropertyBracketExpressionModeEnabled = false;
         private boolean isPureGrammar = false;
         private boolean shouldQuoteReservedKeywords = false;
-        private Set<String> reservedKeywords = Sets.mutable.empty();
+        private Set<String> reservedKeywords = Collections.emptySet();
 
         private Builder()
         {
