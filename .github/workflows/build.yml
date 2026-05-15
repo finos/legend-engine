@@ -29,6 +29,18 @@ on:
       - master
       - 'legend-release-*'
       - 'release-legend-release-*'
+  workflow_dispatch:
+    inputs:
+      pure_ref:
+        description: "legend-pure branch or PR ref (e.g. 'my-branch' or 'refs/pull/123/merge'). Leave empty for normal build."
+        required: false
+        default: ""
+        type: string
+      pure_repo:
+        description: "legend-pure repository (owner/repo)"
+        required: false
+        default: "finos/legend-pure"
+        type: string
 
 # Cancel running jobs from previous pipelines of the same workflow on PR to save resource when commits are pushed quickly
 # NOTE: we don't want this behavior on default branch
@@ -38,15 +50,72 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build-pure:
+    name: Build legend-pure snapshot
+    if: inputs.pure_ref != ''
+    runs-on: ubuntu-latest
+    outputs:
+      pure_version: ${{ steps.extract-version.outputs.version }}
+
+    steps:
+      - name: Checkout legend-pure
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.pure_repo }}
+          ref: ${{ inputs.pure_ref }}
+          path: legend-pure
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: 11
+          distribution: 'zulu'
+
+      - name: Cache Maven dependencies (pure)
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-mvn-deps-pure
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-pure-${{ env.cache-name }}-${{ hashFiles('legend-pure/**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-pure-${{ env.cache-name }}-
+            ${{ runner.os }}-pure-
+
+      - name: Extract legend-pure version
+        id: extract-version
+        working-directory: legend-pure
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Legend-pure version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and install legend-pure
+        working-directory: legend-pure
+        env:
+          MAVEN_OPTS: "-Xmx4g"
+        run: mvn -B -e clean install -DskipTests
+
+      - name: Upload local Maven repo (legend-pure artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pure-m2-snapshot
+          path: ~/.m2/repository/org/finos/legend/pure/
+          retention-days: 1
+          if-no-files-found: error
+
   build:
     name: Build
     # NOTE: Only run this when not in fork as those likely do not have access to larger runners and will fail on normal runner due to resource limitation
     # Also, skip this build for release commits
-    if: "!contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'"
+    if: always() && needs.build-pure.result != 'failure' && !contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
+    needs:
+      - build-pure
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
       profiles: ${{ steps.requiredSecrets.outputs.PROFILES }}
+      pureVersionArg: ${{ steps.pureVersion.outputs.arg }}
 
     steps:
       - name: Checkout repo
@@ -86,6 +155,22 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
+      - name: Restore legend-pure snapshot
+        if: inputs.pure_ref != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: pure-m2-snapshot
+          path: ~/.m2/repository/org/finos/legend/pure/
+
+      - name: Set pure version override
+        id: pureVersion
+        run: |
+          if [ -n "${{ needs.build-pure.outputs.pure_version }}" ]; then
+            echo "arg=-Dlegend.pure.version=${{ needs.build-pure.outputs.pure_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "arg=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Collect Workflow Telemetry
         uses: runforesight/workflow-telemetry-action@v1
         with:
@@ -93,7 +178,7 @@ jobs:
 
       - name: Set profiles that required github secrets
         id: requiredSecrets
-        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push'
+        if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
       - name: Build (PR)
@@ -101,7 +186,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true install ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -109,7 +194,7 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: "-Xmx8g"
-        run: mvn -B -e -DskipTests=true install -P docker-snapshot,pct-cloud-test
+        run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
         uses: actions/upload-artifact@v4
@@ -149,6 +234,13 @@ jobs:
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
+      - name: Restore legend-pure snapshot
+        if: inputs.pure_ref != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: pure-m2-snapshot
+          path: ~/.m2/repository/org/finos/legend/pure/
+
       - name: Excluded Modules
         id: modulesToExclude
         run: echo EXCLUSION_MODULES=`jq -c '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
@@ -159,7 +251,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
@@ -184,6 +276,13 @@ jobs:
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
+      - name: Restore legend-pure snapshot
+        if: inputs.pure_ref != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: pure-m2-snapshot
+          path: ~/.m2/repository/org/finos/legend/pure/
+
       - name: Included Modules
         id: modulesToInclude
         env:
@@ -197,7 +296,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
