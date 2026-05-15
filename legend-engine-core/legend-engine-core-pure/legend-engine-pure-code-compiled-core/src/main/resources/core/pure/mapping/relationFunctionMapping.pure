@@ -114,7 +114,9 @@ function <<access.private>> meta::pure::mapping::relation::buildCombinedLeafHand
 
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(src:Any[1] | []);
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
+     meta::pure::extension::runtime::getExtensions()
+  );
 }
 
 // Variant taking extensions — gathers leaf handlers from registered
@@ -146,10 +148,13 @@ function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFu
   $r->meta::pure::mapping::relation::extractRelationColumns()->map(c | $c.name->toOne());
 }
 
-// Public entry point (no leaf handler — no store-specific inference).
+// Default entry point — resolves extensions via getExtensions()
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):Column<Nil, Any|*>[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey($explicitColumnNames, src:Any[1] | []);
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+     $explicitColumnNames,
+     meta::pure::extension::runtime::getExtensions()
+  );
 }
 
 // Extension-aware entry point — the Java compiler should call this overload.

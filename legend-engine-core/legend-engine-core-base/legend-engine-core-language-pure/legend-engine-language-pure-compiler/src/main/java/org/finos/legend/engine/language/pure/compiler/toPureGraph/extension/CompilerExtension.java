@@ -184,17 +184,6 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-    /**
-     * Extension point for providing Pure {@code meta::pure::extension::Extension}
-     * instances used during compilation (e.g. for PK resolution of
-     * RelationFunctionInstanceSetImplementation). Store extensions override
-     * this to register their module extensions (e.g.
-     * {@code RelationStoreAccessorExtension}).
-     */
-    default org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> getExtraPureExtensions(org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport executionSupport)
-    {
-        return org.eclipse.collections.impl.factory.Lists.immutable.empty();
-    }
 
     default MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
     {

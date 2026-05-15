@@ -206,20 +206,16 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 }
             }
         }
-        // Resolve the typed PK columns using the extension-aware Pure function.
-        // Extensions register RelationStoreAccessorExtension (ModuleExtension) to
-        // provide store-specific leaf handlers (e.g. relational Table.primaryKey).
+        // Resolve the typed PK columns using the Pure function that internally
+        // calls getExtensions() to discover store-specific leaf handlers.
         org.eclipse.collections.api.list.MutableList<String> explicitNames =
                 (classMapping.primaryKey == null)
                         ? Lists.mutable.empty()
                         : Lists.mutable.withAll(classMapping.primaryKey);
-        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.generated.Root_meta_pure_extension_Extension> pureExtensions =
-                this.context.getCompilerExtensions().getExtraPureExtensions(
-                        (org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport) this.context.pureModel.getExecutionSupport());
         org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
                 org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
-                        .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Extension_MANY__Column_MANY_(
-                                setImpl, explicitNames, pureExtensions, this.context.pureModel.getExecutionSupport());
+                        .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
+                                setImpl, explicitNames, this.context.pureModel.getExecutionSupport());
         if (resolvedPK == null || resolvedPK.isEmpty())
         {
             throw new EngineException(
