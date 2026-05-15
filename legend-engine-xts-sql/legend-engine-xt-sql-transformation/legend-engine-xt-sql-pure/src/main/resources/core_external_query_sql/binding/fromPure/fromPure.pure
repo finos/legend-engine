@@ -2414,13 +2414,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType->toOne();
 
-  [
-    pair(String, | processCastAsParse(^$c(type = ^ColumnType(name = 'DOUBLE PRECISION')), $v, $expContext, $context)),
-    pair(Float, | $v),
-    pair(Decimal, | sfe(toFloat_Number_1__Float_1_, $v)),
-    pair(Integer, | sfe(toFloat_Number_1__Float_1_, $v)),
-    pair(Number, | sfe(toFloat_Number_1__Float_1_, $v))
-  ]->getValue($type)->eval();
+  if ([
+    pair(|$type->subTypeOfExNil(String), | processCastAsParse(^$c(type = ^ColumnType(name = 'DOUBLE PRECISION')), $v, $expContext, $context)),
+    pair(|$type->subTypeOfExNil(Float), | $v),
+    pair(|$type->subTypeOfExNil(Number), | sfe(toFloat_Number_1__Float_1_, $v))
+  ],
+  | fail('no double precision conversion for type "' + $type.name ->toOne() + '"'); iv(1););
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processVarcharCast(c:Cast[1], v:ValueSpecification[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
