@@ -1698,7 +1698,8 @@ function meta::external::query::sql::transformation::queryToPure::convertValueSp
 {
   $type->match([
     e:Enumeration<Enum>[1] | processExtractEnumValue($e, $v)->evaluateAndDeactivate();,
-    t:Type[0..1] | if ($type->in([Date, StrictDate, DateTime]), | possiblyProcessParseDate($v), | $v);
+    t:Type[1] | if ($t->subTypeOfExNil(Date), | possiblyProcessParseDate($v), | $v),
+    t:Type[0..1] | $v
   ]);
 }
 
@@ -2413,13 +2414,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType->toOne();
 
-  [
-    pair(String, | processCastAsParse(^$c(type = ^ColumnType(name = 'DOUBLE PRECISION')), $v, $expContext, $context)),
-    pair(Float, | $v),
-    pair(Decimal, | sfe(toFloat_Number_1__Float_1_, $v)),
-    pair(Integer, | sfe(toFloat_Number_1__Float_1_, $v)),
-    pair(Number, | sfe(toFloat_Number_1__Float_1_, $v))
-  ]->getValue($type)->eval();
+  if ([
+    pair(|$type->subTypeOfExNil(String), | processCastAsParse(^$c(type = ^ColumnType(name = 'DOUBLE PRECISION')), $v, $expContext, $context)),
+    pair(|$type->subTypeOfExNil(Float), | $v),
+    pair(|$type->subTypeOfExNil(Number), | sfe(toFloat_Number_1__Float_1_, $v))
+  ],
+  | fail('no double precision conversion for type "' + $type.name ->toOne() + '"'); iv(1););
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processVarcharCast(c:Cast[1], v:ValueSpecification[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -2492,7 +2492,7 @@ function meta::external::query::sql::transformation::queryToPure::processParseDa
     | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
 
       if ([
-        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'), | pair(iv($string->replace(' ', 'T')->parseDate()), DateTime)),
+        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}([ T]{1}[0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'), | pair(iv($string->replace(' ', 'T')->parseDate()), DateTime)),
         pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'), | pair(iv($string->parseDate()), StrictDate))
       ], | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));,
     | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));
