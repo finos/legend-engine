@@ -1728,10 +1728,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 integerStringChars : x|$x.Integer->toString()->substring(1, 2),
                 floatNumeric : x|$x.Float->toDecimal(),
                 decimalNumeric : x|$x.Decimal,
-                numberNumeric : x|1 + 1.1->toDecimal(),
+                numberNumeric : x|toDecimal(1 + 1.1),
                 decimalDoublePrecision : x|$x.Decimal->toFloat(), 
                 floatDoublePrecision : x|$x.Float, 
-                numberDoublePrecision : x|1 + 1.1->toFloat(), 
+                numberDoublePrecision : x|toFloat(1 + 1.1), 
                 numericParams : x|$x.String->parseDecimal()
           ->round(2)]
      )}
