@@ -224,6 +224,7 @@ jobs:
   test:
     name: Run Unit Tests
     runs-on: ubuntu-latest
+    if: "!cancelled() && needs.build.result == 'success'"
     needs:
       - build
 
@@ -262,6 +263,7 @@ jobs:
   test-modules:
     name: Test Module - ${{ matrix.name }}
     runs-on: ubuntu-latest
+    if: "!cancelled() && needs.build.result == 'success'"
     needs:
       - build
 
@@ -307,7 +309,7 @@ jobs:
   pct-report:
     name: PCT Report
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: "!cancelled() && needs.build.result == 'success' && needs.test.result == 'success' && needs.test-modules.result == 'success' && github.ref == 'refs/heads/master'"
     needs:
       - build
       - test
