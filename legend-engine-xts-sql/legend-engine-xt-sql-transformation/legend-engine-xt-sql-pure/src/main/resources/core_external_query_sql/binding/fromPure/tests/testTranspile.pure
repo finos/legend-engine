@@ -871,27 +871,55 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsDate():Boolean[1]
 {
   test(
-    'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-02\' ' +
-    'OR StrictDate <= CURRENT_DATE OR StrictDate > \'2023-01-03\' OR StrictDate > date_trunc(\'month\', StrictDate)',
+    'SELECT * FROM service."/service/service1" WHERE ' +
+      'StrictDate > \'2023-01-01\' OR ' +
+      'StrictDate < CURRENT_DATE OR ' + 
+      'StrictDate >= \'2023-01-02\' OR ' + 
+      'StrictDate <= CURRENT_DATE OR ' + 
+      'StrictDate > \'2023-01-03\' OR ' + 
+      'StrictDate > date_trunc(\'month\', StrictDate) OR ' +
+      'DateTime > \'2023-01-01 00:00:00\' OR ' +
+      'DateTime < CURRENT_TIMESTAMP OR ' + 
+      'DateTime >= \'2023-01-02 00:00:00\' OR ' + 
+      'DateTime <= CURRENT_TIMESTAMP OR ' + 
+      'DateTime > \'2023-01-03 00:00:00\' OR ' + 
+      'DateTime > date_trunc(\'month\', DateTime)',      
 
     [
       c({| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        ->filter(row | ($row.getStrictDate('StrictDate') > %2023-01-01) || ($row.getStrictDate('StrictDate') < today())
-              || ($row.getStrictDate('StrictDate') >= %2023-01-02) || ($row.getStrictDate('StrictDate') <= today())
+          ->filter(row | 
+              ($row.getStrictDate('StrictDate') > %2023-01-01) 
+              || ($row.getStrictDate('StrictDate') < today())
+              || ($row.getStrictDate('StrictDate') >= %2023-01-02) 
+              || ($row.getStrictDate('StrictDate') <= today())
               || ($row.getStrictDate('StrictDate') > %2023-01-03)
-              || ($row.getStrictDate('StrictDate') > firstDayOfMonth($row.getStrictDate('StrictDate'))))
-        }, true, false)
+              || ($row.getStrictDate('StrictDate') > firstDayOfMonth($row.getStrictDate('StrictDate')))
+              || ($row.getDateTime('DateTime') > %2023-01-01T00:00:00) 
+              || ($row.getDateTime('DateTime') < now())
+              || ($row.getDateTime('DateTime') >= %2023-01-02T00:00:00) 
+              || ($row.getDateTime('DateTime') <= now())
+              || ($row.getDateTime('DateTime') > %2023-01-03T00:00:00)
+              || ($row.getDateTime('DateTime') > firstDayOfMonth($row.getDateTime('DateTime')))
+          )
+        }, true, false),
 
-      //TODO - relation multiplicity compile issue
-      // c({| FlatInput.all()->project(
-      //         ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-      //   ->filter(x | ($x.StrictDate > %2023-01-01') || ($x.StrictDate < today())
-      //         || ($x.StrictDate >= %2023-01-02') || ($x.StrictDate <= today())
-      //         || ($x.StrictDate > %2023-01-03')
-      //         || ($x.StrictDate > firstDayOfMonth($x.StrictDate)))
-      //   }, true, false)
+      c({| FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->filter(x | 
+                 ($x.StrictDate > %2023-01-01) 
+                 || ($x.StrictDate < today())
+                 || ($x.StrictDate >= %2023-01-02) || ($x.StrictDate <= today())
+                 || ($x.StrictDate > %2023-01-03)
+                 || ($x.StrictDate > firstDayOfMonth($x.StrictDate))
+                 || ($x.DateTime > %2023-01-01T00:00:00) 
+                 || ($x.DateTime < now())
+                 || ($x.DateTime >= %2023-01-02T00:00:00) || ($x.DateTime <= now())
+                 || ($x.DateTime > %2023-01-03T00:00:00)
+                 || ($x.DateTime > firstDayOfMonth($x.DateTime))
+          )
+        }, true, false)
     ]
   )
 }
@@ -1167,40 +1195,39 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('everyExp', row | $row.getInteger('Integer') > 1, y | $y->and())
         ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString',
                       'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2', 'boolAnd', 'boolAndExp', 'every', 'everyExp'])
-      }, true, false)
+      }, true, false),
 
-      //TODO - relation multiplicity compile issue toString
-      // c({| FlatInput.all()
-      //       ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
-      //       ->groupBy(
-      //         ~[String],
-      //         ~[
-      //           count : x|$x.Integer : y|$y->count(),
-      //           distinctCount : x|$x.Integer : y|$y->distinct()->count(),
-      //           sum : x|$x.Integer : y|$y->sum(),
-      //           avg : x|$x.Integer : y|$y->average(),
-      //           stdDevPop : x|$x.Integer : y|$y->stdDevPopulation(),
-      //           stdDevSamp : x|$x.Integer : y|$y->stdDevSample(),
-      //           stdDev : x|$x.Integer : y|$y->stdDevSample(),
-      //           variancePop : x|$x.Integer : y|$y->variancePopulation(),
-      //           varianceSamp : x|$x.Integer : y|$y->varianceSample(),
-      //           variance : x|$x.Integer : y|$y->varianceSample(),
-      //           minInt : x|$x.Integer : y|$y->min(),
-      //           minDate : x|$x.StrictDate : y|$y->min(),
-      //           minString : x|$x.String : y|$y->min(),
-      //           maxInt : x|$x.Integer : y|$y->max(),
-      //           maxDate : x|$x.StrictDate : y|$y->max(),
-      //           maxString : x|$x.String : y|$y->max(),
-      //           stringAgg : x|$x.String : y|$y->joinStrings(),
-      //           stringAgg2 : x|$x.Integer->toString() : y|$y->joinStrings(' '),
-      //           boolAnd : x|$x.Boolean : y|$y->and(),
-      //           boolAndExp : x|$x.Integer > 1 : y|$y->and(),
-      //           every : x|$x.Boolean : y|$y->and(),
-      //           everyExp : x|$x.Integer > 1 : y|$y->and()
-      //         ]
-      //       )
-      //       ->select(~[count, distinctCount, sum, avg, stdDevPop, stdDevSamp, stdDev, variancePop, varianceSamp, variance, minInt, minDate, minString,
-      //                 maxInt, maxDate, maxString, stringAgg, stringAgg2, boolAnd, boolAndExp, every, everyExp])}, true, false)
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[
+                count : x|$x.Integer : y|$y->count(),
+                distinctCount : x|$x.Integer : y|$y->distinct()->count(),
+                sum : x|$x.Integer : y|$y->sum(),
+                avg : x|$x.Integer : y|$y->average(),
+                stdDevPop : x|$x.Integer : y|$y->stdDevPopulation(),
+                stdDevSamp : x|$x.Integer : y|$y->stdDevSample(),
+                stdDev : x|$x.Integer : y|$y->stdDevSample(),
+                variancePop : x|$x.Integer : y|$y->variancePopulation(),
+                varianceSamp : x|$x.Integer : y|$y->varianceSample(),
+                variance : x|$x.Integer : y|$y->varianceSample(),
+                minInt : x|$x.Integer : y|$y->min(),
+                minDate : x|$x.StrictDate : y|$y->min(),
+                minString : x|$x.String : y|$y->min(),
+                maxInt : x|$x.Integer : y|$y->max(),
+                maxDate : x|$x.StrictDate : y|$y->max(),
+                maxString : x|$x.String : y|$y->max(),
+                stringAgg : x|$x.String : y|$y->joinStrings(),
+                stringAgg2 : x|$x.Integer->toString() : y|$y->joinStrings(' '),
+                boolAnd : x|$x.Boolean : y|$y->and(),
+                boolAndExp : x|$x.Integer > 1 : y|$y->and(),
+                every : x|$x.Boolean : y|$y->and(),
+                everyExp : x|$x.Integer > 1 : y|$y->and()
+              ]
+            )
+            ->select(~[count, distinctCount, sum, avg, stdDevPop, stdDevSamp, stdDev, variancePop, varianceSamp, variance, minInt, minDate, minString,
+                      maxInt, maxDate, maxString, stringAgg, stringAgg2, boolAnd, boolAndExp, every, everyExp])}, true, false)
     ]
   )
 }
@@ -1227,21 +1254,20 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum()),
           agg('aggFunctionCall', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->year()),
           agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))])
-      }, true, false)
+      }, true, false),
 
-      //TODO - relation multiplicity compile issue toString
-      // c({|FlatInput.all()
-      //     ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
-      //     ->groupBy(
-      //         ~[Integer],
-      //         ~[
-      //           sum : x|1 : y|$y->sum(),
-      //           count : x|$x : y|$y->count(),
-      //           exp : x|$x.Integer + $x.Float : y|$y->sum(),
-      //           aggFunctionCall : x|$x.StrictDate : y|$y->max()->toOne()->year(),
-      //           dateAggMath : x|$x.StrictDate : y|$y->max()->toOne()->adjust(1, DurationUnit.WEEKS)
-      //         ])
-      //   }, true, false)
+      c({|FlatInput.all()
+          ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+          ->groupBy(
+              ~[Integer],
+              ~[
+                sum : x|1 : y|$y->sum(),
+                count : x|$x : y|$y->count(),
+                exp : x|$x.Integer + $x.Float : y|$y->sum(),
+                aggFunctionCall : x|$x.StrictDate : y|$y->max()->toOne()->year(),
+                dateAggMath : x|$x.StrictDate : y|$y->max()->toOne()->adjust(1, DurationUnit.WEEKS)
+              ])
+        }, true, false)
     ]
   )
 }
@@ -1678,37 +1704,37 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | toFloat(1 + 1.1), 'numberDoublePrecision'),
           col(row:TDSRow[1] | round(parseDecimal($row.getString('String')), 2), 'numericParams')
         ])
-      }
+      },
 
-    //   {|FlatInput.all()
-    //       ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-    //       ->project(
-    //           ~[
-    //             constant : x|%2023-01-01,
-    //             string : x|$x.String,
-    //             text : x|$x.String,
-    //             date : x|$x.String->parseDate(),
-    //             integer : x|$x.String->parseInteger(),
-    //             bigint : x|$x.String->parseInteger(),
-    //             smallint : x|$x.String->parseInteger(),
-    //             boolean : x|$x.String->parseBoolean(),
-    //             double : x|$x.String->parseFloat(),
-    //             numeric : x|$x.String->parseDecimal(),
-    //             timestamp : x|$x.String->parseDate(),
-    //             integerText : x|$x.Integer->toString(),
-    //             integerString : x|$x.Integer->toString(),
-    //             expression : x|$x.Integer,
-    //             stringChars : x|$x.String->substring(1, 2),
-    //             integerStringChars : x|$x.Integer->toString()->substring(1, 2),
-    //             floatNumeric : x|$x.Float->toDecimal(),
-    //             decimalNumeric : x|$x.Decimal,
-    //             numberNumeric : x|1 + 1.1->toDecimal(),
-    //             decimalDoublePrecision : x|$x.Decimal->toFloat(), 
-    //             floatDoublePrecision : x|$x.Float, 
-    //             numberDoublePrecision : x|1 + 1.1->toFloat(), 
-    //             numericParams : x|$x.String->parseDecimal()
-    //       ->round(2)]
-    //  )}
+      {|FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->project(
+              ~[
+                constant : x|%2023-01-01,
+                string : x|$x.String,
+                text : x|$x.String,
+                date : x|$x.String->parseDate(),
+                integer : x|$x.String->parseInteger(),
+                bigint : x|$x.String->parseInteger(),
+                smallint : x|$x.String->parseInteger(),
+                boolean : x|$x.String->parseBoolean(),
+                double : x|$x.String->parseFloat(),
+                numeric : x|$x.String->parseDecimal(),
+                timestamp : x|$x.String->parseDate(),
+                integerText : x|$x.Integer->toString(),
+                integerString : x|$x.Integer->toString(),
+                expression : x|$x.Integer,
+                stringChars : x|$x.String->substring(1, 2),
+                integerStringChars : x|$x.Integer->toString()->substring(1, 2),
+                floatNumeric : x|$x.Float->toDecimal(),
+                decimalNumeric : x|$x.Decimal,
+                numberNumeric : x|toDecimal(1 + 1.1),
+                decimalDoublePrecision : x|$x.Decimal->toFloat(), 
+                floatDoublePrecision : x|$x.Float, 
+                numberDoublePrecision : x|toFloat(1 + 1.1), 
+                numericParams : x|$x.String->parseDecimal()
+          ->round(2)]
+     )}
     ]
   )
 }
@@ -1718,7 +1744,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   test(
     'SELECT CAST(\'2023-01-01\' AS DATE) AS "constantDate", CAST(String AS DATE) AS "date", CAST(\'2023-01-01 10:01:01\' AS TIMESTAMP) AS "constantTimestamp", ' +
-    'CAST(\'2023-01-01 10:01:01.12\' AS TIMESTAMP) AS "constantTimestampMillis", CAST(String AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"',
+    'CAST(\'2023-01-01 10:01:01.12\' AS TIMESTAMP) AS "constantTimestampMillis", CAST(\'2023-01-01T10:01:01\' AS TIMESTAMP) AS "constantTimestampT", ' + 
+    'CAST(String AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"',
 
     [
       {| FlatInput.all()->project(
@@ -1729,6 +1756,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             col(row:TDSRow[1] | parseDate($row.getString('String')), 'date'),
             col(row:TDSRow[1] | %2023-01-01T10:01:01, 'constantTimestamp'),
             col(row:TDSRow[1] | %2023-01-01T10:01:01.12, 'constantTimestampMillis'),
+            col(row:TDSRow[1] | %2023-01-01T10:01:01, 'constantTimestampT'),
             col(row:TDSRow[1] | parseDate($row.getString('String')), 'timestamp')
           ])
       },
@@ -1739,6 +1767,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                             date : x|$x.String->parseDate(),
                             constantTimestamp : x|%2023-01-01T10:01:01,
                             constantTimestampMillis : x|%2023-01-01T10:01:01.12,
+                            constantTimestampT : x|%2023-01-01T10:01:01,
                             timestamp : x|$x.String->parseDate()])
       }
     ]
