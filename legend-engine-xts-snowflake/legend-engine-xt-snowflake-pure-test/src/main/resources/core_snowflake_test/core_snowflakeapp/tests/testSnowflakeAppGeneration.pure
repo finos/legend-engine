@@ -138,6 +138,244 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingContainsInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("names" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"NEWCOL" BOOLEAN) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".FIRSTNAME in (select "root".value from Table(Flatten(input => names)) as "root") as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContainsInExtend(String[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingGreatest():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(ages) is not null) and "root".AGE > array_max(ages)) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingGreatest(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingLeast():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_min(ages) is not null) and "root".AGE > array_min(ages)) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingLeast(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingIsNotEmpty():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where "root".ACTIVEEMPLOYMENT = (ifnull(array_size(myValues), 0) <> 0 OR ifnull(array_size(myValues), 0) is null) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingIsNotEmpty(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingIsEmpty():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where "root".ACTIVEEMPLOYMENT = ifnull(array_size(myValues), 0) = 0 $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingIsEmpty(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingSortInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(array_sort(cast(ages as ARRAY(BIGINT)))) is not null) and "root".AGE > array_max(array_sort(cast(ages as ARRAY(BIGINT))))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSortInFilter(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingTailInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT))))) is not null) and "root".AGE > array_max(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT)))))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTailInFilter(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingInitInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(array_slice(cast(ages as ARRAY(BIGINT)), 0, array_size(cast(ages as ARRAY(BIGINT))) - 1)) is not null) and "root".AGE > array_max(array_slice(cast(ages as ARRAY(BIGINT)), 0, array_size(cast(ages as ARRAY(BIGINT))) - 1))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInitInFilter(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingReverseInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(array_reverse(cast(ages as ARRAY(BIGINT)))) is not null) and "root".AGE > array_max(array_reverse(cast(ages as ARRAY(BIGINT))))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingReverseInFilter(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where (("root".AGE is not null and array_max(array_slice(array_reverse(array_sort(array_append(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT)))), 100))), 0, array_size(array_reverse(array_sort(array_append(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT)))), 100)))) - 1)) is not null) and "root".AGE > array_max(array_slice(array_reverse(array_sort(array_append(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT)))), 100))), 0, array_size(array_reverse(array_sort(array_append(array_slice(cast(ages as ARRAY(BIGINT)), 1, array_size(cast(ages as ARRAY(BIGINT)))), 100)))) - 1))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInFilter(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingSortInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_sort(ages)) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSortInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingTailInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(ages, 1, array_size(ages))) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTailInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingInitInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(ages, 0, array_size(ages) - 1)) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInitInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingReverseInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_reverse(ages)) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingReverseInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingSliceInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(ages, greatest(1, 0), greatest(3, 0))) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSliceInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingTakeInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(ages, 0, greatest(2, 0))) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTakeInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingDropInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(ages, greatest(2, 0), array_size(ages))) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingDropInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingAddInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_min(array_append(myValues, "root".AGE)) as "newCol" from personTable as "root" $$;';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingAddInExtend(Integer[*]):TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingInInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" BOOLEAN) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", "root".AGE in (select "root".value from Table(Flatten(input => ages)) as "root") as "newCol" from personTable as "root" $$;';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInInExtend(Integer[*]):TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingGreatestInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(ages) as "newCol" from personTable as "root" $$;';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingGreatestInExtend(Integer[*]):TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingLeastInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_min(ages) as "newCol" from personTable as "root" $$;';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingLeastInExtend(Integer[*]):TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsUsingAddInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where ("root".AGE is not null and "root".AGE > array_min(array_append(cast(ages as ARRAY(BIGINT)), "root".AGE))) $$;';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingAddInFilter(Integer[*]):TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_max(array_slice(array_reverse(array_sort(array_append(array_slice(ages, 1, array_size(ages)), 100))), 0, array_size(array_reverse(array_sort(array_append(array_slice(ages, 1, array_size(ages)), 100)))) - 1)) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInExtend(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithMultipleCollectionParamsInFilter():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY,"myValues2" ARRAY,"ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where (("root".FIRSTNAME in (select "root".value from Table(Flatten(input => myValues)) as "root") and "root".LASTNAME in (select "root".value from Table(Flatten(input => myValues2)) as "root")) and (("root".AGE is not null and array_max(array_slice(array_sort(cast(ages as ARRAY(BIGINT))), 0, array_size(array_sort(cast(ages as ARRAY(BIGINT)))) - 1)) is not null) and "root".AGE > array_max(array_slice(array_sort(cast(ages as ARRAY(BIGINT))), 0, array_size(array_sort(cast(ages as ARRAY(BIGINT)))) - 1)))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMultipleCollectionParamsInFilter(String[*], String[*], Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithMultipleCollectionParamsInExtend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY,"myValues2" ARRAY,"ages" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", case when (("root".FIRSTNAME in (select "root".value from Table(Flatten(input => myValues)) as "root") and "root".LASTNAME in (select "root".value from Table(Flatten(input => myValues2)) as "root")) and (array_max(array_slice(array_sort(ages), 0, array_size(array_sort(ages)) - 1)) is not null and "root".AGE > array_max(array_slice(array_sort(ages), 0, array_size(array_sort(ages)) - 1)))) then 1 else 2 end as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMultipleCollectionParamsInExtend(String[*], String[*], Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> {doc.doc = 'Test that with nested dyna functions, the rewrite for array params only occurs for functions that act on an array. For example, \'string\'->contains([\'a\', \'b\', \'c\']->greatest()) should see a dyna function rewrite for greatest() but not for contains().'} meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParamsMixedDynaFunctionReturnTypes():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY,"myValues2" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where ("root".FIRSTNAME in (select "root".value from Table(Flatten(input => myValues)) as "root") and contains("root".LASTNAME,array_max(myValues2))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsMixedDynaFunctionReturnTypes(String[*], String[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> {doc.doc = 'Test for the case with nested functions where the nested function has collection parameters but does not return a collection'} meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithCollectionParams_NestedFunctionWithCollectionParams():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root" where "root".AGE > array_min(array_sort(cast(myValues as ARRAY(BIGINT)))) $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_NestedFunctionWithCollectionParams(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+
+
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
   let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
@@ -210,6 +448,15 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> {doc.doc = 'Test combination of nested array functions and passing literal values into array functions without array placeholder'} meta::external::function::activator::snowflakeApp::tests::testCollectionParamsCombineCollectionAndLiterals():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("ages1" ARRAY,"ages2" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where ("root".AGE is not null and "root".AGE > array_min(array_sort(cast(array_construct(array_min(array_sort(cast(ages1 as ARRAY(BIGINT)))),array_min(array_sort(cast(ages2 as ARRAY(BIGINT)))),least(2, 3, 4)) as ARRAY(BIGINT))))) $$;';
+
+  let function = 'function : meta::external::function::activator::snowflakeApp::tests::collectionParamsCombineCollectionAndLiterals(Integer[*], Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
 //function <<test.ToFix>> meta::external::function::activator::snowflakeApp::tests::testUdtfOnUdtf():Any[*]
 //{
 // let result  = meta::legend::compileLegendGrammar(readFile('/core_relational_snowflake/relational/tests/tabularFunctionModel.txt')->toOne());
@@ -263,7 +510,178 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContains(ages: Integer[*]):TabularDataSet[1]
 {
-    PersonX.all()->filter(p| $ages->contains($p.age->toOne()) )->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    PersonX.all()->filter(p| $ages->contains($p.age->toOne()))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingContainsInExtend(names: String[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->extend(col(x:TDSRow[1] | $names->contains($x.getString('firstName')), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingGreatest(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingLeast(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->least())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingIsNotEmpty(myValues: Integer[*]):TabularDataSet[1]
+{
+  PersonX.all()->filter(p|$p.activeEmployment == $myValues->isNotEmpty())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingIsEmpty(myValues: Integer[*]):TabularDataSet[1]
+{
+  PersonX.all()->filter(p|$p.activeEmployment == ($myValues->isEmpty()))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSortInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->sort()->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTailInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->tail()->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInitInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->init()->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingReverseInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->reverse()->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->tail()->add(100)->sort()->reverse()->init()->greatest())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSortInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->sort()->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTailInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->tail()->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInitInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->init()->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingReverseInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->reverse()->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingSliceInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->slice(1, 3)->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingTakeInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->take(2)->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingDropInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->drop(2)->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingAddInExtend(myValues: Integer[*]):TabularDataSet[1]
+{
+  PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+  ->extend(col(x:TDSRow[1] | $myValues->add($x.getInteger('age')->toOne())->least(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingAddInFilter(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > $ages->add($p.age->toOne())->least())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingInInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $x.getInteger('age') ->in($ages), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingGreatestInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingLeastInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])->extend(col(x:TDSRow[1] | $ages->least(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsWithNestedCollectionOperationsInExtend(ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->extend(col(x:TDSRow[1] | $ages->tail()->add(100)->sort()->reverse()->init()->greatest(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMultipleCollectionParamsInFilter(myValues: String[*], myValues2: String[*], ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p|($p.firstName->in($myValues)) && ($myValues2->contains($p.lastName)) && ($p.age > $ages->sort()->init()->greatest()))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMultipleCollectionParamsInExtend(myValues: String[*], myValues2: String[*], ages: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->extend(col(x:TDSRow[1] | if (($x.getString('firstName')->in($myValues)) && ($myValues2->contains($x.getString('lastName'))) && ($x.getInteger('age') > $ages->sort()->init()->greatest()), |1, |2), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsMixedDynaFunctionReturnTypes(myValues: String[*], myValues2: String[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $myValues->contains($p.firstName) && $p.lastName->contains($myValues2->greatest()->toOne()))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_NestedFunctionWithCollectionParams(myValues: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age->toOne() > least(sort($myValues))->toOne())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::collectionParamsCombineCollectionAndLiterals(ages1: Integer[*], ages2: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->filter(p| $p.age > least(sort([least($ages1->sort())->toOne(), least(sort($ages2))->toOne(), least([2, 3, 4])->toOne()])))->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 
