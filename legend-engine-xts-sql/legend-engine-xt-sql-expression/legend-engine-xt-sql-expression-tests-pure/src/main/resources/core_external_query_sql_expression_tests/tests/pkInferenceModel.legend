@@ -1,0 +1,18 @@
+###Relational
+Database meta::external::query::sql::expression::tests::pk::db
+(
+   Table personTable (ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)
+   Table firmTable (ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100))
+)
+
+###Pure
+function meta::external::query::sql::expression::tests::pk::simpleSqlSelect(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select ID, FIRSTNAME, AGE from tb('meta::external::query::sql::expression::tests::pk::db.personTable')}#
+}
+
+function meta::external::query::sql::expression::tests::pk::sqlWithJoin(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select person.AGE AS AGE, person.FIRMID AS FIRMID, firm.LEGALNAME AS LEGALNAME from tb('meta::external::query::sql::expression::tests::pk::db.personTable') person inner join tb('meta::external::query::sql::expression::tests::pk::db.firmTable') firm on person.FIRMID = firm.ID}#
+}
+
