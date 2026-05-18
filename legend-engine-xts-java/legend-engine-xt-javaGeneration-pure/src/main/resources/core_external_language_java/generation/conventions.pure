@@ -874,7 +874,17 @@ Class meta::external::language::java::transform::FuncCoderContext
 
    returnType()
    {
-      $this.conventions->pureTypeToJavaType(if($this.fe.genericType.rawType->isEmpty(),|Any,|$this.fe.genericType.rawType->toOne()), $this.fe.multiplicity);
+      let g = $this.fe.genericType;
+      let rawType = if($g.rawType->isEmpty(), |Any, |$g.rawType->toOne());
+      let typeArgs = if($rawType == meta::pure::functions::collection::Pair && $g.typeArguments->isNotEmpty(),
+                       {|
+                          let multArgs = if($g.multiplicityArguments->isEmpty(),
+                                           |ZeroOne->repeat($g.typeArguments->size()),
+                                           |$g.multiplicityArguments);
+                          zip($g.typeArguments, $multArgs)->map(p | $this.conventions->pureTypeToJavaType($p.first, $p.second));
+                       },
+                       | []);
+      $this.conventions->pureTypeToJavaType($rawType, $typeArgs, $this.fe.multiplicity);
    }:meta::external::language::java::metamodel::Type[1];
 }
 
