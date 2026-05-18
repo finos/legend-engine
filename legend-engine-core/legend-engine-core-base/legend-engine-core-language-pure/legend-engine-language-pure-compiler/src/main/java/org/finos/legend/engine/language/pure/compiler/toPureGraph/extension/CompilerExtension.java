@@ -184,7 +184,6 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
-
     default MutableMap<String, MutableSet<String>> getExtraSubtypesForFunctionMatching()
     {
         return Maps.mutable.empty();
