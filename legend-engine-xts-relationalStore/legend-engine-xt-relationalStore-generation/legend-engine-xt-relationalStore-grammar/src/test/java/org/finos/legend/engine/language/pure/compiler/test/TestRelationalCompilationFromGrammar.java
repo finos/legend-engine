@@ -3789,8 +3789,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkExplicitWithTableAccessor()
     {
-        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time against
-        // the function's RelationType columns.
+        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time.
+        // Function declares Relation<Any> so a warning is emitted (can't validate
+        // PK against concrete columns), but placeholder Columns are still created.
         Pair<PureModelContextData, PureModel> result = test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
@@ -3809,7 +3810,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n");
+                ")\n",
+                null,
+                Lists.mutable.with("COMPILATION warning at [20:3-26:3]: Primary key columns declared but cannot be validated — relation function does not expose a concrete RelationType"));
         PureModel pureModel = result.getTwo();
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("my::testMapping");
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl =
@@ -3823,14 +3826,15 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkAutoInferThroughJoin()
     {
-        // join(personTable, personTable->rename(~ID, ~ID2), INNER, ...) → PK=[ID, ID2]
+        // join(personTable, personTable->rename(~ID, ~ID2)->select(~[ID2]), INNER, ...)
+        // No explicit ~primaryKey — auto-inference deferred to runtime.
         test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
                 "###Pure\n" +
                 "function my::joinFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  #>{my::db.personTable}#->join(#>{my::db.personTable}#->rename(~ID, ~ID2), meta::pure::functions::relation::JoinKind.INNER, {x, y | $x.ID == $y.ID2})\n" +
+                "  #>{my::db.personTable}#->join(#>{my::db.personTable}#->rename(~ID, ~ID2)->select(~[ID2]), meta::pure::functions::relation::JoinKind.INNER, {x, y | $x.ID == $y.ID2})\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
