@@ -42,6 +42,11 @@ Class meta::pure::mapping::relation::RelationStoreAccessorExtension extends Modu
 ]
 {
    leafPrimaryKeyColumns : Function<{Any[1]->String[*]}>[1];
+   // NEW: given a value from an InstanceValue, return the ValueSpecification
+   // whose PK should be inferred by recursion. Returns [] if not handled.
+   // This is for complex expression types (like SQLExpression) that aren't
+   // leaf accessors but wrap a Pure function body that can be walked.
+   relationValueInferenceDelegate : Function<{Any[1]->ValueSpecification[0..1]}>[0..1];
 }
 
 function meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName():String[1]
@@ -98,7 +103,7 @@ function meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName
 
 // Builds a combined leaf handler from all registered RelationStoreAccessorExtension
 // instances. Each leaf handler is tried in turn; the first non-empty result wins.
-function <<access.private>> meta::pure::mapping::relation::buildCombinedLeafHandler(extensions:Extension[*]):Function<{Any[1]->String[*]}>[1]
+function meta::pure::mapping::relation::buildCombinedLeafHandler(extensions:Extension[*]):Function<{Any[1]->String[*]}>[1]
 {
    let accessorExtensions = $extensions.moduleExtensions
       ->filter(m | $m->instanceOf(RelationStoreAccessorExtension))
@@ -123,8 +128,13 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnN
 // RelationStoreAccessorExtension instances.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], extensions:Extension[*]):String[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
-     $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler()
+  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
+  if($lastExpr->isEmpty(),
+    | [],
+    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(
+         $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler(),
+         $extensions
+      )
   );
 }
 
@@ -164,10 +174,12 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:Rela
 // instances in the provided extensions.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:Extension[*]):Column<Nil, Any|*>[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
-     $explicitColumnNames,
-     $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler()
+  let pkNames = if($explicitColumnNames->isEmpty(),
+    | $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames($extensions),
+    | $explicitColumnNames
   );
+  let cols = $r->meta::pure::mapping::relation::extractRelationColumns();
+  $pkNames->map(name | $cols->filter(c | $c.name == $name)->first());
 }
 
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], leafHandler:Function<{Any[1]->String[*]}>[1]):Column<Nil, Any|*>[*]
@@ -215,18 +227,37 @@ function meta::pure::mapping::relation::extractRelationColumns(r:RelationFunctio
 // Anything else is conservatively treated as having no inferable PK (empty).
 function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1]):String[*]
 {
-  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(src:Any[1] | []);
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames({src:Any[1] | []->cast(@String)});
 }
 
 function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
 {
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, []);
+}
+
+// Extension-aware overload — checks delegates before falling back to leafHandler.
+function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+{
   $vs->match([
     iv: InstanceValue[1] |
-        $iv.values->map(v | $leafHandler->eval($v))->cast(@String),
+        // Try delegates first — they return a ValueSpecification to recurse into
+        let accessorExtensions = $extensions.moduleExtensions
+            ->filter(m | $m->instanceOf(RelationStoreAccessorExtension))
+            ->cast(@RelationStoreAccessorExtension)
+            ->filter(ext | $ext.relationValueInferenceDelegate->isNotEmpty());
+        let target = $iv.values->map(v |
+            $accessorExtensions->map(ext |
+                $ext.relationValueInferenceDelegate->toOne()->eval($v)
+            )
+        )->filter(x | $x->isNotEmpty())->first();
+        if($target->isNotEmpty(),
+            | $target->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
+            | $iv.values->map(v | $leafHandler->eval($v))->cast(@String)
+        );,
     cvs: ClusteredValueSpecification[1] |
-        $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler),
+        $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
     fe: SimpleFunctionExpression[1] |
-        $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($leafHandler),
+        $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($leafHandler, $extensions),
     a: Any[*] | []
   ])->cast(@String);
 }
@@ -251,18 +282,23 @@ function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpeci
 // inlined correctly.
 function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
 {
+  $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($leafHandler, []);
+}
+
+function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+{
   let fn   = $fe.func;
   let args = $fe.parametersValues;
   // 1) Function-composition for user-defined functions (non-platform-relation-operator).
   if ($fn->instanceOf(ConcreteFunctionDefinition) && !$fn->elementToPath()->startsWith('meta::pure::functions::relation::'),
     | let body = $fn->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
       if ($body->size() == 1,
-        | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler),
+        | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
         | []
       );,
     | if ($args->isEmpty(),
         | [],
-        | let leftPK = $args->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler);
+        | let leftPK = $args->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
           // 2) Row-identity-preserving operators — propagate input PK unchanged.
           //    select_Relation_1__Relation_1_ (no-cols) and distinct_Relation_1__Relation_1_
           //    are also identity-on-PK.
@@ -312,15 +348,13 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
             | [],
           // 8) join / asOfJoin: see applyJoinToPK (handles FULL/RIGHT → []).
           | if ($fn == join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,
-            | meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $leafHandler),
+            | meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $leafHandler, $extensions),
           | if ($fn->in([
                   asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_,
                   asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_
                 ]),
-            | $leftPK->concatenate($args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler))->removeDuplicates(),
-          // 9) Anything else (pivot_*, lateral, concatenate, variant::flatten,
-          //    project, map, …) is conservatively treated as no PK so the user
-          //    is forced to declare it explicitly.
+            | $leftPK->concatenate($args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions))->removeDuplicates(),
+          // 9) Anything else — conservative empty.
           | []))))))));
       )
   );
@@ -337,8 +371,13 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
 // conservatively keep the union — same fallback as before.
 function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
 {
+  meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $leafHandler, []);
+}
+
+function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+{
   let args = $fe.parametersValues;
-  let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler);
+  let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
   let kind = if($args->size() >= 3,
     | $args->at(2)->evaluateAndDeactivate()->match([
         iv: InstanceValue[1] |

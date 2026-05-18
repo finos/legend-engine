@@ -1,0 +1,72 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::external::query::sql::expression::tests::pk::db
+(
+   Table personTable (ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)
+   Table firmTable (ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100))
+)
+
+###Pure
+import meta::external::query::sql::expression::tests::pk::*;
+import meta::pure::mapping::relation::*;
+import meta::pure::extension::*;
+
+// -------------------------------------------------------------------------
+// Test functions using #SQL{...}# expressions
+// -------------------------------------------------------------------------
+
+function meta::external::query::sql::expression::tests::pk::simpleSqlSelect(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select ID, FIRSTNAME, AGE from tb('meta::external::query::sql::expression::tests::pk::db.personTable')}#
+}
+
+function meta::external::query::sql::expression::tests::pk::sqlWithJoin(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select person.AGE AS AGE, person.FIRMID AS FIRMID, firm.LEGALNAME AS LEGALNAME from tb('meta::external::query::sql::expression::tests::pk::db.personTable') person inner join tb('meta::external::query::sql::expression::tests::pk::db.firmTable') firm on person.FIRMID = firm.ID}#
+}
+
+// Helper: extracts PK column names from a function's expression body
+// using all registered extensions (relational leaf handler + SQL delegate).
+function <<access.private>> meta::external::query::sql::expression::tests::pk::pkOfSqlFunc(func:FunctionDefinition<Any>[1]):String[*]
+{
+   let extensions = meta::pure::extension::runtime::getExtensions();
+   let leafHandler = meta::pure::mapping::relation::buildCombinedLeafHandler($extensions);
+   let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
+   $expr->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
+}
+
+// -------------------------------------------------------------------------
+// Tests
+// -------------------------------------------------------------------------
+
+// Simple SQL select from a single table — delegate recurses into
+// pureFunction body, which contains a RelationStoreAccessor pointing to
+// personTable. The relational leaf handler extracts PK = [ID].
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceSimpleSelect():Boolean[1]
+{
+   let pk = pkOfSqlFunc(meta::external::query::sql::expression::tests::pk::simpleSqlSelect__Relation_1_);
+   assertEquals(['ID'], $pk);
+}
+
+// SQL with join — the pureFunction body represents a join of two tables.
+// PK inference for joins = leftPK ∪ rightPK = [ID, ID] → deduplicated = [ID].
+// (Both tables have ID as PK; after dedup the result is ['ID'].)
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceJoin():Boolean[1]
+{
+   let pk = pkOfSqlFunc(meta::external::query::sql::expression::tests::pk::sqlWithJoin__Relation_1_);
+   // Join of personTable(PK=ID) and firmTable(PK=ID) → ['ID'] after dedup
+   assertEquals(['ID'], $pk);
+}

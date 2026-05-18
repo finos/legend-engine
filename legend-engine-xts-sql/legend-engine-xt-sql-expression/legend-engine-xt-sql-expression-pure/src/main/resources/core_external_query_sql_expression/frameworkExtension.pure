@@ -6,6 +6,8 @@ import meta::external::query::sql::metamodel::*;
 import meta::pure::store::*;
 import meta::pure::router::routing::*;
 import meta::pure::extension::*;
+import meta::pure::mapping::relation::*;
+import meta::pure::metamodel::valuespecification::*;
 
 function meta::external::query::sql::expression::sqlExpressionFeatureExtension() : Extension[1]
 {
@@ -25,7 +27,23 @@ function meta::external::query::sql::expression::sqlExpressionFeatureExtension()
                                             extraInstanceValueHandlers = [
                                                             x:SQLExpression<Any>[1]| '#SQL{'+$x.sqlString+'}#'
                                                         ]
-                                    )
+                                    ),
+      moduleExtensions = [
+         ^RelationStoreAccessorExtension
+         (
+            module = relationStoreAccessorModuleExtensionName(),
+            leafPrimaryKeyColumns = {src:Any[1] | []->cast(@String)},
+            relationValueInferenceDelegate = {src:Any[1] |
+               $src->match([
+                  sqlExpr: SQLExpression<Any>[1] |
+                     let body = $sqlExpr.pureFunction->cast(@FunctionDefinition<Any>)
+                         .expressionSequence->evaluateAndDeactivate();
+                     if($body->isNotEmpty(), | $body->last()->toOne(), | []);,
+                  a: Any[*] | []
+               ])
+            }
+         )
+      ]
 
    )
 }
