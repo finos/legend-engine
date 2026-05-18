@@ -4813,7 +4813,6 @@ function meta::relational::functions::pureToSqlQuery::processVariantPropertyNavi
 
 function meta::relational::functions::pureToSqlQuery::processVariantFilter(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  fail('Process Semistructured filter');
   let params = $f.parametersValues->evaluateAndDeactivate();
 
   let filterFunctionType = $params->at(1).genericType.typeArguments.rawType->toOne()->cast(@FunctionType);
