@@ -176,65 +176,105 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         {
             return null;
         }
-        // Validate explicit primary key column names against the relation function's
-        // return type columns (not property mappings — a PK column may be unmapped).
-        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> relationColumns =
-                getRelationFunctionColumns(setImpl);
-        if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty() && relationColumns.notEmpty())
+
+        // If explicit ~primaryKey is declared, validate names against the function's
+        // return RelationType and resolve to Column instances at compile time.
+        // Auto-inference (no explicit PK) is deferred to runtime where store-specific
+        // extensions (RelationStoreAccessorExtension) are available.
+        if (classMapping.primaryKey != null && !classMapping.primaryKey.isEmpty())
         {
-            java.util.Set<String> availableColumnNames = new java.util.LinkedHashSet<>();
-            relationColumns.forEach(c ->
+            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> relationColumns =
+                    getRelationFunctionColumns(setImpl);
+            if (relationColumns.notEmpty())
             {
-                if (c._name() != null)
+                // Validate each declared PK name exists in the function's output columns
+                java.util.Set<String> availableColumnNames = new java.util.LinkedHashSet<>();
+                relationColumns.forEach(c ->
                 {
-                    availableColumnNames.add(c._name());
+                    if (c._name() != null)
+                    {
+                        availableColumnNames.add(c._name());
+                    }
+                });
+                for (String pkColumn : classMapping.primaryKey)
+                {
+                    if (!availableColumnNames.contains(pkColumn))
+                    {
+                        throw new EngineException(
+                                "Primary key column '" + pkColumn + "' declared in class mapping '" + id
+                                        + "' is not part of the columns returned by the relation function '"
+                                        + PackageableElement.getUserPathForPackageableElement(
+                                                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction()) + "' ("
+                                        + String.join(", ", availableColumnNames) + ")."
+                                        + " Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
+                                classMapping.sourceInformation,
+                                EngineErrorType.COMPILATION);
+                    }
                 }
-            });
-            for (String pkColumn : classMapping.primaryKey)
-            {
-                if (!availableColumnNames.contains(pkColumn))
+                // Resolve explicit PK names to typed Column instances
+                org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> resolvedPK =
+                        Lists.mutable.empty();
+                for (String pkName : classMapping.primaryKey)
                 {
-                    throw new EngineException(
-                            "Primary key column '" + pkColumn + "' declared in class mapping '" + id
-                                    + "' is not part of the columns returned by the relation function '"
-                                    + PackageableElement.getUserPathForPackageableElement(
-                                            (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction()) + "' ("
-                                    + String.join(", ", availableColumnNames) + ")."
-                                    + " Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
-                            classMapping.sourceInformation,
-                            EngineErrorType.COMPILATION);
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> col =
+                            (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>)
+                                    relationColumns.detect(c -> pkName.equals(c._name()));
+                    if (col != null)
+                    {
+                        resolvedPK.add(col);
+                    }
+                }
+                if (resolvedPK.notEmpty())
+                {
+                    setImpl._primaryKey(resolvedPK);
                 }
             }
+            else
+            {
+                // Function doesn't expose a concrete RelationType — can't validate
+                // at compile time. Create placeholder Column instances with just the
+                // names so they survive to runtime (preventing auto-inference from
+                // overriding the user's explicit declaration).
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity oneMul =
+                        context.pureModel.getMultiplicity("one");
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType stringType =
+                        context.pureModel.getGenericType("String");
+                org.finos.legend.pure.m3.navigation.ProcessorSupport processorSupport =
+                        context.pureModel.getExecutionSupport().getProcessorSupport();
+                org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> resolvedPK =
+                        Lists.mutable.empty();
+                for (String pkName : classMapping.primaryKey)
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> col =
+                            org.finos.legend.pure.m3.navigation.relation._Column.getColumnInstance(
+                                    pkName,
+                                    false,
+                                    stringType,
+                                    oneMul,
+                                    null,
+                                    processorSupport
+                            );
+                    resolvedPK.add(col);
+                }
+                if (resolvedPK.notEmpty())
+                {
+                    setImpl._primaryKey(resolvedPK);
+                }
+                context.pureModel.addWarnings(Lists.mutable.with(
+                        new Warning(
+                                classMapping.sourceInformation,
+                                "Primary key columns declared but cannot be validated — "
+                                        + "relation function does not expose a concrete RelationType")));
+            }
         }
-        // Resolve the typed PK columns using the Pure function that internally
-        // calls getExtensions() to discover store-specific leaf handlers.
-        org.eclipse.collections.api.list.MutableList<String> explicitNames =
-                (classMapping.primaryKey == null)
-                        ? Lists.mutable.empty()
-                        : Lists.mutable.withAll(classMapping.primaryKey);
-        org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<? extends Object, ? extends Object>> resolvedPK =
-                org.finos.legend.pure.generated.core_pure_mapping_relationFunctionMapping
-                        .Root_meta_pure_mapping_relation_resolveRelationFunctionPrimaryKey_RelationFunctionInstanceSetImplementation_1__String_MANY__Column_MANY_(
-                                setImpl, explicitNames, this.context.pureModel.getExecutionSupport());
-        if (resolvedPK == null || resolvedPK.isEmpty())
-        {
-            throw new EngineException(
-                    "Unable to determine primary key for relation function class mapping '" + id
-                            + "'. No `~primaryKey` was declared and the primary key could not be inferred from the body of the relation function '"
-                            + PackageableElement.getUserPathForPackageableElement(
-                                    (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction())
-                            + "'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).",
-                    classMapping.sourceInformation,
-                    EngineErrorType.COMPILATION);
-        }
-        setImpl._primaryKey(resolvedPK);
+        // If no explicit ~primaryKey: leave _primaryKey empty. Runtime (processRelationFunctionClassMapping)
+        // will auto-infer using the Extension mechanism (RelationStoreAccessorExtension).
         return null;
     }
 
     /**
      * Returns the columns of a RelationFunctionInstanceSetImplementation's relation function
-     * by walking to the last expression of its body and reading the RelationType column list
-     * off its return type.
+     * by scanning its expression sequence for a concrete RelationType.
      */
     private static org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> getRelationFunctionColumns(
             org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl)
@@ -245,11 +285,6 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         {
             return Lists.immutable.empty();
         }
-        // Scan ALL expressions for one with a concrete RelationType — not just
-        // the last one. When a function declares Relation<Any> as its return
-        // type, the compiler may add a coercion node whose type is Relation<Any>
-        // (not a concrete RelationType). The actual body expression retains
-        // the concrete column info.
         for (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expr : fn._expressionSequence())
         {
             if (expr._genericType() != null)

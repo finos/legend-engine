@@ -115,7 +115,7 @@ function <<access.private>> meta::pure::mapping::relation::buildCombinedLeafHand
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
-     meta::pure::extension::runtime::getExtensions()
+     {src:Any[1] | []->cast(@String)}
   );
 }
 
@@ -148,12 +148,14 @@ function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFu
   $r->meta::pure::mapping::relation::extractRelationColumns()->map(c | $c.name->toOne());
 }
 
-// Default entry point — resolves extensions via getExtensions()
+// Default entry point — uses empty leaf handler (no store-specific PK inference).
+// Store-specific code (e.g. relational) should call the overload that takes
+// extensions or a leafHandler directly.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):Column<Nil, Any|*>[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
      $explicitColumnNames,
-     meta::pure::extension::runtime::getExtensions()
+     {src:Any[1] | []->cast(@String)}
   );
 }
 

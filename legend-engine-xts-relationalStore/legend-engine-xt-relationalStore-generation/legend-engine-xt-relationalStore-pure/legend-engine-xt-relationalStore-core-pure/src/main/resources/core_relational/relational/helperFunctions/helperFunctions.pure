@@ -553,6 +553,16 @@ function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:Relation
      );
 }
 
+// Extension-aware overload — used by processRelationFunctionClassMapping at runtime.
+// Builds the combined leaf handler from registered RelationStoreAccessorExtension instances.
+function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+       $explicitColumnNames,
+       $extensions
+     );
+}
+
 function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
 {
   $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(

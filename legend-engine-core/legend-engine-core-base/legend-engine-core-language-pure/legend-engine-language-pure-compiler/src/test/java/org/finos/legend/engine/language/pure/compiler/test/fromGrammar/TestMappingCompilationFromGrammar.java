@@ -3429,9 +3429,8 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testRelationFunctionMappingNoPKFailsWhenNotInferable()
     {
-        // Function body is 1->cast(...) — not a RelationStoreAccessor and not a
-        // whitelisted relation operator, so auto-inference returns empty. With no
-        // explicit ~primaryKey declared, the compiler should fail with a helpful error.
+        // No explicit ~primaryKey and function body is 1->cast(...). Auto-inference
+        // is deferred to runtime — at compile time this is valid (no error).
         testRelationMapping("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +
@@ -3441,7 +3440,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [34:3-39:3]: Unable to determine primary key for relation function class mapping 'person'. No `~primaryKey` was declared and the primary key could not be inferred from the body of relation function 'my::personFunction__Relation_1_'. Please specify it explicitly using `~primaryKey: [col1, col2, ...]` (referencing one or more columns of the relation function's output).");
+                ")\n");
     }
 
     @Test

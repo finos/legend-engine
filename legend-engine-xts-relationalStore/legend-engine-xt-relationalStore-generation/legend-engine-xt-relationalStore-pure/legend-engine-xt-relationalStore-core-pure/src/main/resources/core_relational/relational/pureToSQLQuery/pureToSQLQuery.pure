@@ -5033,7 +5033,13 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
 
 function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMapping(r:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], milestoningContext:TemporalMilestoningContext[0..1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  let routedRelationFunction = $r->potentiallyRouteRelationFunctionSet($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
+  // Lazily resolve PKs at runtime if not already set (PK resolution moved from compile time to runtime)
+  let resolved = if($r.primaryKey->isEmpty(),
+    | let pkCols = $r->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
+      ^$r(primaryKey = $pkCols);,
+    | $r
+  );
+  let routedRelationFunction = $resolved->potentiallyRouteRelationFunctionSet($state.mapping->toOne(), $extensions)->cast(@RelationFunctionInstanceSetImplementation).relationFunction;
   let relationExpression = $routedRelationFunction.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@ClusteredValueSpecification).val;
   let newCursor = ^SelectWithCursor(select=^SelectSQLQuery(), milestoningContext=$milestoningContext);
   let newState = defaultState($state.mapping, $state.inScopeVars, $state.idToClassMapping);

@@ -3763,8 +3763,10 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkAutoInferFromTableAccessor()
     {
-        // #>{db.personTable}#->filter(...) — PK auto-inferred from Table.primaryKey = [ID]
-        Pair<PureModelContextData, PureModel> result = test(
+        // #>{db.personTable}#->filter(...) — PK auto-inferred at runtime from Table.primaryKey = [ID]
+        // At compile time, _primaryKey is empty; resolution happens lazily in
+        // processRelationFunctionClassMapping at execution time.
+        test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
                 "###Pure\n" +
@@ -3782,20 +3784,13 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: AGE\n" +
                 "  }\n" +
                 ")\n");
-        PureModel pureModel = result.getTwo();
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("my::testMapping");
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl =
-                (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation)
-                        mapping._classMappings().detect(cm -> cm._id().equals("person"));
-        Assert.assertNotNull("SetImpl should exist", setImpl);
-        Assert.assertFalse("PK should be resolved", setImpl._primaryKey().isEmpty());
-        Assert.assertEquals("ID", setImpl._primaryKey().getFirst()._name());
     }
 
     @Test
     public void testRelationFunctionMappingPkExplicitWithTableAccessor()
     {
-        // Explicit ~primaryKey: [FIRSTNAME] overrides auto-inferred [ID]
+        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time against
+        // the function's RelationType columns.
         Pair<PureModelContextData, PureModel> result = test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
