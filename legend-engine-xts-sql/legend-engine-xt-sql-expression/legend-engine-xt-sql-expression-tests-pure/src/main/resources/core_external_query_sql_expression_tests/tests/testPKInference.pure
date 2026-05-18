@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::query::sql::expression::tests::pk::*;
 import meta::pure::mapping::relation::*;
 import meta::pure::extension::*;
 
-// Helper: extracts PK column names from a function's expression body
-// using all registered extensions (relational leaf handler + SQL delegate).
-function <<access.private>> meta::external::query::sql::expression::tests::pk::pkOfSqlFunc(func:FunctionDefinition<Any>[1]):String[*]
+// Helper: compiles the .legend model, extracts the named function, and
+// runs PK inference on its expression body with all registered extensions.
+function <<access.private>> meta::external::query::sql::expression::tests::pk::pkOfSqlFunc(funcName:String[1]):String[*]
 {
+   let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
+   let func = $compiled->filter(p | $p.name == $funcName)->toOne()->cast(@FunctionDefinition<Any>);
    let extensions = meta::pure::extension::runtime::getExtensions();
    let leafHandler = meta::pure::mapping::relation::buildCombinedLeafHandler($extensions);
    let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
@@ -31,7 +32,7 @@ function <<access.private>> meta::external::query::sql::expression::tests::pk::p
 // personTable. The relational leaf handler extracts PK = [ID].
 function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceSimpleSelect():Boolean[1]
 {
-   let pk = pkOfSqlFunc(meta::external::query::sql::expression::tests::pk::simpleSqlSelect__Relation_1_);
+   let pk = meta::external::query::sql::expression::tests::pk::pkOfSqlFunc('simpleSqlSelect__Relation_1_');
    assertEquals(['ID'], $pk);
 }
 
@@ -39,7 +40,7 @@ function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQ
 // PK inference for joins = leftPK ∪ rightPK = [ID, ID] → deduplicated = [ID].
 function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceJoin():Boolean[1]
 {
-   let pk = pkOfSqlFunc(meta::external::query::sql::expression::tests::pk::sqlWithJoin__Relation_1_);
+   let pk = meta::external::query::sql::expression::tests::pk::pkOfSqlFunc('sqlWithJoin__Relation_1_');
    // Join of personTable(PK=ID) and firmTable(PK=ID) → ['ID'] after dedup
    assertEquals(['ID'], $pk);
 }
