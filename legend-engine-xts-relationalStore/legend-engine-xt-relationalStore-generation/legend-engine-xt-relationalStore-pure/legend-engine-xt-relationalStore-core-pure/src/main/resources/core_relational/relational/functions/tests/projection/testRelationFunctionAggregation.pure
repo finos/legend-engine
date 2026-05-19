@@ -15,6 +15,7 @@
 ###Pure
 import meta::pure::metamodel::tds::*;
 import meta::pure::mapping::*;
+import meta::pure::router::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::relation::*;
 import meta::relational::metamodel::execute::*;
@@ -44,7 +45,7 @@ import meta::relational::metamodel::execute::*;
 
 function <<access.private>> meta::relational::tests::projection::aggregation::runFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1]):TabularDataSet[1]
 {
-   meta::relational::metamodel::execute::execute(
+   execute(
       $query,
       meta::relational::tests::mapping::relation::SimpleMapping,
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
