@@ -40,6 +40,7 @@
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-pureExtensions-pure</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
@@ -161,6 +162,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-store-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
