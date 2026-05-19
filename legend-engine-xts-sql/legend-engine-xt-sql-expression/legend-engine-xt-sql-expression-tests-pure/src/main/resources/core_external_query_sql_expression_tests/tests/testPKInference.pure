@@ -12,11 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::mapping::relation::*;
 import meta::pure::extension::*;
 
-// Helper: compiles the .legend model, extracts the named function, and
-// runs PK inference on its expression body with all registered extensions.
+// -------------------------------------------------------------------------
+// Helper
+// -------------------------------------------------------------------------
+
+// Compiles the .legend model, extracts the named function, and runs
+// PK inference on its expression body with all registered extensions.
 function <<access.private>> meta::external::query::sql::expression::tests::pk::pkOfSqlFunc(funcName:String[1]):String[*]
 {
    let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
@@ -27,6 +32,19 @@ function <<access.private>> meta::external::query::sql::expression::tests::pk::p
    $expr->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
 }
 
+// Compiles the .legend model and returns the mapping with the given name.
+function <<access.private>> meta::external::query::sql::expression::tests::pk::getCompiledMapping(mappingName:String[1]):Mapping[1]
+{
+   let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
+   $compiled->filter(e | $e->instanceOf(Mapping))
+            ->cast(@Mapping)
+            ->filter(m | $m.name == $mappingName)->toOne();
+}
+
+// -------------------------------------------------------------------------
+// A. PK inference from function expression body (runtime path)
+// -------------------------------------------------------------------------
+
 // Simple SQL select from a single table — delegate recurses into
 // pureFunction body, which contains a RelationStoreAccessor pointing to
 // personTable. The relational leaf handler extracts PK = [ID].
@@ -36,11 +54,56 @@ function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQ
    assertEquals(['ID'], $pk);
 }
 
-// SQL with join — the pureFunction body uses internal SQL AST operations
-// that the PK inference doesn't recognize as standard relation operators.
-// Complex SQL with joins is opaque → returns [] (user must declare ~primaryKey).
+// SQL with join — the pureFunction body uses internal SQL-to-Pure
+// transformations (TDS mode, preval, wrapping) that the PK inference
+// doesn't recognize as standard relation operators → returns [].
+// User must declare ~primaryKey explicitly for complex SQL.
 function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceJoin():Boolean[1]
 {
    let pk = meta::external::query::sql::expression::tests::pk::pkOfSqlFunc('sqlWithJoin__Relation_1_');
    assertEquals([]->cast(@String), $pk);
 }
+
+// -------------------------------------------------------------------------
+// B. Explicit ~primaryKey via grammar (compile-time path)
+// -------------------------------------------------------------------------
+
+// Explicit ~primaryKey: [FIRSTNAME] on a SQL expression function.
+// The grammar parser populates primaryKey on the protocol model;
+// the compiler third pass creates placeholder Columns (since the function
+// returns Relation<Any> with no concrete RelationType).
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionExplicitPK():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('explicitPKMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(1, $setImpl.primaryKey->size());
+   assertEquals('FIRSTNAME', $setImpl.primaryKey->at(0).name);
+}
+
+// No explicit ~primaryKey on a complex SQL join function.
+// PK is empty at compile time — deferred to runtime auto-inference.
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionNoPKDeferred():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('noPKMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(0, $setImpl.primaryKey->size());
+}
+
+// Explicit ~primaryKey: [AGE, FIRMID] on a complex SQL join function.
+// Auto-inference returns [] for this SQL, so the user declares PK explicitly.
+// The compiler creates placeholder Columns (Relation<Any> → no concrete type).
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionExplicitPKForJoin():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('explicitPKJoinMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(2, $setImpl.primaryKey->size());
+   assertEquals('AGE', $setImpl.primaryKey->at(0).name);
+   assertEquals('FIRMID', $setImpl.primaryKey->at(1).name);
+}
+
