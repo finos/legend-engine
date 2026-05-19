@@ -475,6 +475,20 @@ function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(cla
   );
 }
 
+// Returns the given RelationFunctionInstanceSetImplementation with primaryKey populated.
+// If primaryKey is already set, returns the input unchanged. Otherwise lazily resolves
+// it via the extension-aware leaf handler (mirrors processRelationFunctionClassMapping).
+// Centralised here so sub-aggregation (addPkForAggregation) and self-join (addSelfJoin)
+// share a single source of truth for lazy PK resolution.
+function meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved(rf:RelationFunctionInstanceSetImplementation[1], extensions:meta::pure::extension::Extension[*]):RelationFunctionInstanceSetImplementation[1]
+{
+  if($rf.primaryKey->isEmpty(),
+    | let pkCols = $rf->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
+      ^$rf(primaryKey = $pkCols);,
+    | $rf
+  );
+}
+
 function meta::relational::mapping::transformRelationFunctionSemiStructuredPropertyMapping(propertyMappings:PropertyMapping[*], classMapping:SetImplementation[1]):PropertyMapping[*]
 {
   $propertyMappings->match([
@@ -597,6 +611,8 @@ function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::me
         src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
       );
 }
+
+
 
 
 
