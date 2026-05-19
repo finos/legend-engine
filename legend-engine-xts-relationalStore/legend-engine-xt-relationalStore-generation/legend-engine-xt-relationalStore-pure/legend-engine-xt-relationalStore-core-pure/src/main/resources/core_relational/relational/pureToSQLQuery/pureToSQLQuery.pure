@@ -3947,6 +3947,20 @@ function meta::relational::functions::pureToSqlQuery::getPksFromAlias(r:Relation
    ^List<Column>(values=$r->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);));
 }
 
+// Walks down through nested SelectSQLQuery wrappings to find the underlying
+// "leaf" relational element (Table, RelationFunction, Union, etc.). Used by
+// addSelfJoin where the alias's relationalElement may have been wrapped one
+// or more times by moveSelectQueryToSubSelect (e.g. for relation function
+// mappings, where processRelationFunctionClassMapping wraps once and
+// addPkForAggregation may wrap again).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapNestedSelect(elem:RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+   $elem->match([
+      s:SelectSQLQuery[1] | if($s.data->isEmpty(), | $elem, | $s.data->toOne().alias.relationalElement->toOne()->meta::relational::functions::pureToSqlQuery::unwrapNestedSelect()),
+      a:Any[1] | $elem
+   ]);
+}
+
 function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQuery[1], j:RelationalTreeNode[1], newJoinName:String[1], extensions:Extension[*]):Pair<SelectSQLQuery, List<Pair<JoinTreeNode, JoinTreeNode>>>[1]
 {
    let rootJtn = $j;
@@ -3958,8 +3972,12 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
                                                                     t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
                                                                     u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
                                                                                 pair($mt.schema.database->at(0), getPksFromAlias($u.queries.columns, $mt));,
-                                                                    select:SelectSQLQuery[1]| let inner = $select.data.alias.relationalElement->toOne();
-                                                                                              assert($inner->instanceOf(Table) || $inner->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction), 'Add self Join is supported with SelectSQLQuery only when main relationalElement is Table or RelationFunction');
+                                                                    select:SelectSQLQuery[1]| // The alias's relationalElement may be a nested SelectSQLQuery (possibly multiple
+                                                                                              // layers deep) produced by moveSelectQueryToSubSelect — e.g. a relation
+                                                                                              // function class mapping is wrapped once by processRelationFunctionClassMapping
+                                                                                              // and may be re-wrapped again by addPkForAggregation. Walk down to find the leaf.
+                                                                                              let inner = $select.data.alias.relationalElement->toOne()->meta::relational::functions::pureToSqlQuery::unwrapNestedSelect();
+                                                                                              assert($inner->instanceOf(Table) || $inner->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction), 'Add self Join is supported with SelectSQLQuery only when main relationalElement (after unwrapping nested sub-selects) is Table or RelationFunction');
                                                                                               if($inner->instanceOf(Table),
                                                                                                  | let mt = $inner->cast(@Table);
                                                                                                    pair($mt.schema.database->at(0), getPksFromAlias($select.columns, $mt));,
