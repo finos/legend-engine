@@ -3888,7 +3888,7 @@ function meta::relational::functions::pureToSqlQuery::processAggregation(f:Funct
                                              u:Union[1]| assert(false,'Union query not supported'); $u.queries->first()->cast(@SelectSQLQuery).data.alias.relation->cast(@Table).primaryKey;,
                                              r:RelationFunction[1]| $r.owner.primaryKey->map(c |
                                                 let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
-                                                ^Column(name = $c.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($colType)->toOne())
+                                                ^Column(name = $c.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($colType)->toOne());
                                              )
                                           ]);
                                  ^ColumnGroup(columns = $keys->map(k|^TableAliasColumn(column  =$k ,alias = findOneNode($swc.select.data->toOne(), $swc.currentTreeNode->toOne(), $mergedSQL.data->toOne()).alias)));
