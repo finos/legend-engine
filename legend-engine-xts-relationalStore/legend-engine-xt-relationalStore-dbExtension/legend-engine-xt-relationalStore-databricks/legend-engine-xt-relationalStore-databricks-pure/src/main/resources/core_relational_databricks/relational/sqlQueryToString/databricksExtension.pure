@@ -370,6 +370,7 @@ function meta::relational::functions::sqlQueryToString::databricks::getDDLComman
         createSchema = translateCreateSchemaStatementForDatabricks_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
         dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
         createTable = translateCreateTableStatementForDatabricks_CreateTableSQL_1__DbConfig_1__String_1_,
+        createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
         dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
         loadTable =  loadValuesToDbTableForDatabricks_LoadTableSQL_1__DbConfig_1__String_MANY_
     );
