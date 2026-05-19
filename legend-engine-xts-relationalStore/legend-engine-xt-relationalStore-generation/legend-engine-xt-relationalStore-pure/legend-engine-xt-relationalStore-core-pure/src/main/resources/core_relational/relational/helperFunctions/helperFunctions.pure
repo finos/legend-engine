@@ -395,6 +395,14 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
    ])
 }
 
+// Overload for relation-function mappings. RelationFunctionInstanceSetImplementation
+// is a sibling of RelationalInstanceSetImplementation (both extend InstanceSetImplementation),
+// so it cannot be dispatched through the match above — callers must invoke this overload directly.
+function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+   $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
+}
+
 function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
 {
    $rsi->match([
@@ -444,6 +452,26 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
   ^TableAliasColumn(
     alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping)),
     column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($relationColumnType)->toOne())
+  );
+}
+
+// Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
+// into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction
+// wrapper. Used by sub-aggregation (addPkForAggregation) and any other code path that needs
+// to reference relation-function PKs as relational operation elements.
+function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+  let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
+  $classMapping.primaryKey->map(c |
+    let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
+    ^TableAliasColumn(
+      alias = $alias,
+      column = ^RelationFunctionColumn(
+        column = $c,
+        name = $c.name->toOne(),
+        type = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+      )
+    );
   );
 }
 
