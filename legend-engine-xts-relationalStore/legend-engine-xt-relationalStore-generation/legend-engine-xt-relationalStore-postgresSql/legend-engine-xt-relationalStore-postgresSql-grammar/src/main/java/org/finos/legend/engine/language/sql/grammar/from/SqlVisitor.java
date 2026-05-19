@@ -1311,14 +1311,10 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitConcatenation(SqlBaseParser.ConcatenationContext context)
     {
-        FunctionCall concat = new FunctionCall();
-        concat.name = qualifiedName("concat");
-        concat.arguments = FastList.newListWith(
-                (Expression) visit(context.left),
-                (Expression) visit(context.right)
-        );
+        StringConcatenate concatenate = new StringConcatenate();
+        concatenate.values = visitCollection(context.valueExpression(), Expression.class);
 
-        return concat;
+        return concatenate;
     }
 
     @Override

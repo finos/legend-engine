@@ -322,6 +322,11 @@ Class meta::external::query::sql::metamodel::Trim extends meta::external::query:
   <<equality.Key>> mode: meta::external::query::sql::metamodel::TrimMode[1];
 }
 
+Class meta::external::query::sql::metamodel::StringConcatenate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> values: meta::external::query::sql::metamodel::Expression[*];
+}
+
 Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
 {
   <<equality.Key>> type: meta::external::query::sql::metamodel::JoinType[1];

@@ -81,7 +81,7 @@ Class meta::external::query::sql::transformation::queryToPure::PlanGenerationRes
   arguments: PlanParameter[*];
   mapping: Mapping[0..1];
   runtime: Runtime[0..1];
-  lambda: String[0..1];
+  lambda: LambdaFunction<Any>[0..1];
   schema: meta::external::query::sql::schema::metamodel::Schema[0..1];
 }
 
@@ -266,7 +266,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlanResult(
 
 
   let plan = if ($context.relation->isTrue(), | [], | getPlan($context, $sources, $extensions));
-  let lambda = if ($context.relation->isTrue(), | $context.protocol($context.scopeWithFrom->isTrue())->meta::alloy::metadataServer::alloyToJSON(), | []);
+  let lambda = if ($context.relation->isTrue(), | $context.lambda($context.scopeWithFrom->isTrue()), | []);
   let mapping = if ($context.relation->isTrue(), | getMapping($sources), | []);
   let runtime = if ($context.relation->isTrue(), | getRuntime($sources, $extensions), | []);
 
@@ -414,7 +414,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
     let variables = $processed.lambda(false)->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
-  }, 'converting query');
+  }, 'converting query', | newMap(pair('relation', $_context.relation->isTrue()->toString())));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -2017,6 +2017,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
       let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
       let default = if ($s.defaultValue->isEmpty(), | '', | ' ELSE ' + $s.defaultValue->toOne()->extractNameFromExpression($context));
       'CASE ' + $when + $default + ' END';,
+    s:StringConcatenate[1] | $s.values->map(v | $v->extractNameFromExpression($context))->joinStrings(' || '),
     s:SubscriptExpression[1] |
       let value = $s.value->extractNameFromExpression($context);
       let index = $s.index->extractNameFromExpression($context);
@@ -2111,11 +2112,37 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     q:QualifiedNameReference[1] | processQualifiedNameReference($q, $expContext, $context),
     s:SimpleCaseExpression[1] | processSimpleCaseExpression($s, $expContext, $context),
     s:SearchedCaseExpression[1] | processSearchedCaseExpression($s, $expContext, $context),
+    s:StringConcatenate[1] | processStringConcatenate($s, $expContext, $context),
     s:SubscriptExpression[1] | processSubscriptExpression($s, $expContext, $context),
     s:SubqueryExpression[1] | processSubqueryExpression($s.query, $context),
     t:Trim[1] | processTrim($t, $expContext, $context),
     e:meta::external::query::sql::metamodel::Expression[*] | fail('Expression type not yet supported'); iv(1);
   ])->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(s:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  processStringConcatenate($s.values->map(v | $v->processExpression($expContext, $context)), [], false, $expContext);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
+{
+  let func = if ($separator->isEmpty(), | plus_String_MANY__String_1_, | joinStrings_String_MANY__String_1__String_1_);
+
+  //TODO handle ignoreNulls in non relation flow, requires regression testing as breaking change.
+  let filteredArgs = if ([
+    pair(| $expContext.relation->isTrue() && $ignoreNulls, | getNonNullArguments($args)),
+    pair(| $expContext.relation->isTrue() && !$ignoreNulls && $args->exists(a | $a->isZeroOne()), | fail('string concat not ignoring nullable values not currently supported, if you want to ignore nulls use function concat instead of ||'); iv([]);),
+    pair(| $expContext.relation->isTrue() && !$ignoreNulls && $args->exists(a | $a->isNull()), | iv([]))
+  ], | $args);
+
+      //TODO handle in non relation flow, requires regression testing as breaking change.
+  let multiplicityForcedArgs = if ($expContext.relation->isTrue(), | toOneifyCollectionArg($filteredArgs), | $filteredArgs);
+
+
+  if ($multiplicityForcedArgs->size() == 1 && $multiplicityForcedArgs->at(0)->isNull(),
+      | createNormalizedCast(iv([]), String)->evaluateAndDeactivate(),
+      | nullOrSfe($func, iv($multiplicityForcedArgs)->concatenate($separator)));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBitwiseBinaryExpression(b:BitwiseBinaryExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3143,6 +3170,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     p:PositionalParameterExpression[1] | $context.positional($p, [], false)->evaluateAndDeactivate().genericType.rawType->toOne(),
     q:QualifiedNameReference[1] | $context.columnByNameParts($q.name.parts, true).type->toOne(),
     s:SearchedCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
+    s:StringConcatenate[1] | String,
     s:SimpleCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
     s:SubscriptExpression[1] | $s.value->getExpressionType($context),
     t:Trim[1] | String,
@@ -3778,6 +3806,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       defaultValue = $s.defaultValue->walk($extras),
       whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $wc.operand->walk($extras)->toOne(), result = $wc.result->walk($extras)->toOne()))
     ),
+    s:StringConcatenate[1] | ^$s(values = $s.values->map(v | walk($v, $extras))),
     s:SubscriptExpression[1] | ^$s(value = $s.value->walk($extras)->toOne(), index = $s.index->walk($extras)->toOne()),
     t:Trim[1] | ^$t(
       value = $t.value->walk($extras)->toOne(),
@@ -4047,10 +4076,6 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       | $descoped);
 
   }: LambdaFunction<Any>[1];
-
-  protocol(wrapWithFromIfRequired:Boolean[1]) {
-    ^$this(relation = false).lambda($wrapWithFromIfRequired)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($this.extensions)
-  }:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 
   source(type:String[1], arguments:SQLSourceArgument[*]){
     $this.sources->filter(s | $s.matches($type, $arguments))->first();
