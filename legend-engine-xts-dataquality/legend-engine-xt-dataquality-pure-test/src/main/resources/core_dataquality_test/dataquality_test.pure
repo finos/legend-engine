@@ -355,8 +355,8 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     '      }',
     [],
     {|eval(|let sourceQuery = #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->extend(~fullname:x|[$x.FIRSTNAME->meta::pure::functions::multiplicity::toOne(), $x.LASTNAME->meta::pure::functions::multiplicity::toOne()]->joinStrings());
-      $sourceQuery->filter(row2|$row2.LASTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())->concatenate(
-      $sourceQuery->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not()));)
+      $sourceQuery->filter(row2|$row2.LASTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())->select(~[FIRSTNAME,LASTNAME,fullname])->concatenate(
+      $sourceQuery->filter(row2|$row2.FIRSTNAME->meta::pure::functions::collection::isNotEmpty()->meta::pure::functions::boolean::not())->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME,fullname]));)
     },
     'meta::external::dataquality::tests::domain::DataQualityRuntime'
     )
@@ -456,7 +456,9 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())
                     ->extend(~DEFECT_COUNT : x | 1 : y | $y->size())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->limit(100)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)->limit(100)
+                ->select(~[DEFECT_COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->filter(row|$row.FIRSTNAME == 'invalid')
                     ->select(~[FIRSTNAME])
@@ -464,7 +466,10 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())
                     ->extend(~DEFECT_COUNT : x | 1 : y | $y->size())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->limit(100));},
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->limit(100)
+                ->extend(~[LASTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[DEFECT_COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME]));},
           100,
           'meta::external::dataquality::tests::domain::DataQualityRuntime'        
     )
@@ -704,13 +709,18 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
                     ->extend(~DQ_RULE_NAME: row | 'notEmpty')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery));)},
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[FIRSTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME]));)},
           'meta::external::dataquality::tests::domain::DataQualityRuntime'        
     )
 }
@@ -749,21 +759,31 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_RULE_NAME: row | 'invalidLastName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->filter(row|$row.FIRSTNAME == 'invalid')
                     ->select(~[FIRSTNAME])
                     ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
                     ->extend(~DQ_RULE_NAME: row | 'notEmpty')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)));)},
-          'meta::external::dataquality::tests::domain::DataQualityRuntime'        
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[FIRSTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME]))
+                ->extend(~[LASTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME]));)},
+          'meta::external::dataquality::tests::domain::DataQualityRuntime'            
     )
 }
 
@@ -801,20 +821,30 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_RULE_NAME: row | 'invalidLastName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT: row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->filter(row|$row.FIRSTNAME == 'invalid')
                     ->select(~[FIRSTNAME])
                     ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
                     ->extend(~DQ_RULE_NAME: row | 'notEmpty')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)));},
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[FIRSTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME]))
+                ->extend(~[LASTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME]));},
           'meta::external::dataquality::tests::domain::DataQualityRuntime', false, true      
     )
 }
@@ -852,20 +882,30 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_RULE_NAME: row | 'invalidLastName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->filter(row|$row.FIRSTNAME == 'invalid')
                     ->select(~[FIRSTNAME])
                     ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
                     ->extend(~DQ_RULE_NAME: row | 'notEmpty')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)));)},
+                ->meta::pure::functions::lang::eval($sourceQuery)->meta::pure::functions::relation::limit(100)
+                ->extend(~[FIRSTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME]))
+                ->extend(~[LASTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME]));)},
           100,
           'meta::external::dataquality::tests::domain::DataQualityRuntime'        
     )
@@ -929,20 +969,30 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     ->extend(~DQ_RULE_NAME: row | 'invalidLastName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.LASTNAME->isEmpty(), | '', |$row.LASTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->filter(row|$row.FIRSTNAME == 'invalid')
                     ->select(~[FIRSTNAME])
                     ->extend(~DQ_RULE_NAME: row | 'invalidFirstName')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.FIRSTNAME->isEmpty(), | '', |$row.FIRSTNAME->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)->concatenate(
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[COUNT:row | []->cast(@Integer)])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME])
+                ->concatenate(
             {rel: meta::pure::metamodel::relation::Relation<(FIRSTNAME:meta::pure::precisePrimitives::Varchar(200),LASTNAME:meta::pure::precisePrimitives::Varchar(200))>[1] |
                 $rel->aggregate(~COUNT : x | 1 : y | $y->count())->filter(row|$row.COUNT == 0)
                     ->extend(~DQ_RULE_NAME: row | 'notEmpty')
                     ->extend(~DQ_LOGICAL_DEFECT_ID: row | meta::pure::functions::hash::hash(if($row.COUNT->isEmpty(), | '', |$row.COUNT->toOne()->toString()) + if($row.DQ_RULE_NAME->isEmpty(), | '', |$row.DQ_RULE_NAME->toOne()->toString()), meta::pure::functions::hash::HashType.MD5))
                     ->extend(~DQ_DEFECT_ID: row | generateGuid())}
-                ->meta::pure::functions::lang::eval($sourceQuery)));},
+                ->meta::pure::functions::lang::eval($sourceQuery)
+                ->extend(~[FIRSTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME]))
+                ->extend(~[LASTNAME:row | []->cast(@Varchar(200))])
+                ->select(~[COUNT,DQ_DEFECT_ID,DQ_LOGICAL_DEFECT_ID,DQ_RULE_NAME,FIRSTNAME,LASTNAME]));},
           ''        
     )
 }
