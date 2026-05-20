@@ -31,10 +31,11 @@ public class DataQualitySampleValuesLambdaGenerator
     public static LambdaFunction<?> generateLambda(
             PureModel pureModel,
             org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction query,
-            Integer maxNumberOfSampleValues)
+            Integer maxNumberOfSampleValues,
+            boolean excludePlatformColumns)
     {
         LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(query, pureModel.getContext());
-        return invokePure(pureModel, pureLambda, maxNumberOfSampleValues);
+        return invokePure(pureModel, pureLambda, maxNumberOfSampleValues, excludePlatformColumns);
     }
 
     /**
@@ -47,7 +48,8 @@ public class DataQualitySampleValuesLambdaGenerator
     public static LambdaFunction<?> generateLambda(
             PureModel pureModel,
             String functionPath,
-            Integer maxNumberOfSampleValues)
+            Integer maxNumberOfSampleValues,
+            boolean excludePlatformColumns)
     {
         PackageableElement element = pureModel.getPackageableElement(functionPath);
         if (!(element instanceof ConcreteFunctionDefinition))
@@ -63,24 +65,25 @@ public class DataQualitySampleValuesLambdaGenerator
         LambdaFunction<?> pureLambda = core_dataquality_generation_samplevalues
                 .Root_meta_external_dataquality_samplevalues_wrapFunctionDefinitionAsLambda_FunctionDefinition_1__LambdaFunction_1_(funcDef, pureModel.getExecutionSupport());
 
-        return invokePure(pureModel, pureLambda, maxNumberOfSampleValues);
+        return invokePure(pureModel, pureLambda, maxNumberOfSampleValues, excludePlatformColumns);
     }
 
     private static LambdaFunction<?> invokePure(
             PureModel pureModel,
             LambdaFunction<?> pureLambda,
-            Integer maxNumberOfSampleValues)
+            Integer maxNumberOfSampleValues,
+            boolean excludePlatformColumns)
     {
         if (maxNumberOfSampleValues != null)
         {
             return core_dataquality_generation_samplevalues
-                            .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Integer_1__Boolean_1__LambdaFunction_1_(
-                                    pureLambda, (long) maxNumberOfSampleValues, true, pureModel.getExecutionSupport());
+                            .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Integer_1__Boolean_1__Boolean_1__LambdaFunction_1_(
+                                    pureLambda, (long) maxNumberOfSampleValues, true, excludePlatformColumns, pureModel.getExecutionSupport());
         }
 
         // maxNumberOfSampleValues omitted — sensible default from within the PURE layer applies
         return core_dataquality_generation_samplevalues
-                        .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Boolean_1__LambdaFunction_1_(
-                                pureLambda, true, pureModel.getExecutionSupport());
+                        .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Boolean_1__Boolean_1__LambdaFunction_1_(
+                                pureLambda, true, excludePlatformColumns, pureModel.getExecutionSupport());
     }
 }
