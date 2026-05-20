@@ -23,35 +23,49 @@ import meta::pure::functions::relation::*;
 import meta::pure::extension::*;
 
 // ---------------------------------------------------------------------------
-// RelationStoreAccessorExtension — ModuleExtension for store-specific PK leaf
+// RelationElementAccessorExtension — ModuleExtension for store-/format-specific
+// PK extraction from the leaf accessor inside an InstanceValue
 // ---------------------------------------------------------------------------
-// Stores register a `RelationStoreAccessorExtension` in their Extension's
-// `moduleExtensions` to teach the PK inference algorithm how to extract
-// primary key column names from their specific source elements (e.g. the
-// relational store reads `Table.primaryKey`).
+// Stores / formats register a `RelationElementAccessorExtension` in their
+// Extension's `moduleExtensions` to teach the PK inference algorithm how to
+// derive primary key column names from the values held inside an
+// `InstanceValue` encountered at the leaf of a relation function body.
 //
-// Usage (in a store extension):
-//   ^RelationStoreAccessorExtension(
-//      module = relationStoreAccessorModuleExtensionName(),
-//      leafPrimaryKeyColumns = src:Any[1] | ... extract PK names from $src ...
+// The single `instancePrimaryKeyResolver` lambda receives the full
+// `InstanceValue` (so the extension can match on its wrapped values — e.g.
+// `RelationStoreAccessor` for the relational store, `SQLExpression` for the
+// SQL-expression extension) and the active `Extension[*]` list (so a
+// resolver can recurse back into the core inference algorithm for wrapped
+// Pure function bodies). It returns the PK column names, or `[]` if it
+// does not handle this kind of value.
+//
+// Note: the name `RelationElementAccessor` (rather than the older
+// `RelationStoreAccessor`) is intentional — Lakehouse Ingest / Access Point
+// accessors are RelationElementAccessors that are not backed by stores.
+//
+// Usage (in a store / format extension):
+//   ^RelationElementAccessorExtension(
+//      module = relationElementAccessorModuleExtensionName(),
+//      instancePrimaryKeyResolver = {iv:InstanceValue[1], ext:Extension[*] |
+//         ... extract PK names from $iv.values ...
+//      }
 //   )
 // ---------------------------------------------------------------------------
-Class meta::pure::mapping::relation::RelationStoreAccessorExtension extends ModuleExtension
+Class meta::pure::mapping::relation::RelationElementAccessorExtension extends ModuleExtension
 [
-   $this.module == meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName()
+   $this.module == meta::pure::mapping::relation::relationElementAccessorModuleExtensionName()
 ]
 {
-   leafPrimaryKeyColumns : Function<{Any[1]->String[*]}>[1];
-   // NEW: given a value from an InstanceValue, return the ValueSpecification
-   // whose PK should be inferred by recursion. Returns [] if not handled.
-   // This is for complex expression types (like SQLExpression) that aren't
-   // leaf accessors but wrap a Pure function body that can be walked.
-   relationValueInferenceDelegate : Function<{Any[1]->ValueSpecification[0..1]}>[0..1];
+   // Given an InstanceValue and the active extensions list, returns the PK
+   // column names (or [] if this extension does not handle the value).
+   // Receiving the Extension[*] enables resolvers that wrap a Pure function
+   // body (e.g. SQLExpression) to recurse back into the core inference.
+   instancePrimaryKeyResolver : Function<{InstanceValue[1], Extension[*]->String[*]}>[1];
 }
 
-function meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName():String[1]
+function meta::pure::mapping::relation::relationElementAccessorModuleExtensionName():String[1]
 {
-   'RelationStoreAccessor'
+   'RelationElementAccessor'
 }
 
 // ---------------------------------------------------------------------------
@@ -85,67 +99,35 @@ function meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName
 //   distinct(rel)           ................................. preserve PK
 //   distinct(rel, cols)     ................................. PK = cols
 //   groupBy(rel, cols, agg) ................................. PK = cols
-//   join(rel1, rel2, kind, f) / asOfJoin(...) ............... PK = leftPK ∪ rightPK
-//                                                              (FULL → empty)
+//   join(rel1, rel2, kind, f) ............................... INNER/LEFT → leftPK ∪ rightPK
+//                                                              RIGHT/FULL/unknown-kind → empty
+//   asOfJoin(...)         ................................... PK = leftPK ∪ rightPK
 //   aggregate(rel, agg)     ................................. empty (single row)
 //   pivot, lateral, concatenate, flatten, map ............... empty (conservative)
 //
-// Leaf rule (RelationStoreAccessor): in CORE we do NOT know how to extract
-// a primary key from arbitrary store source elements (e.g. relational
+// Leaf rule (InstanceValue): in CORE we do NOT know how to extract a
+// primary key from arbitrary store source elements (e.g. relational
 // `Table.primaryKey` lives in xts-relationalStore and is not visible here).
-// The leaf is therefore parameterised via RelationStoreAccessorExtension:
-// each store registers a `leafPrimaryKeyColumns` lambda through the Extension
-// mechanism. The default entry point uses an empty-leaf handler — meaning
-// function bodies whose PK depends solely on a leaf table accessor will yield
-// no auto-inferred PK and the user must declare it explicitly via
-// `~primaryKey: [col1, col2, ...]`.
+// The leaf is therefore parameterised via RelationElementAccessorExtension:
+// each store / format extension registers an `instancePrimaryKeyResolver`
+// lambda through the Extension mechanism. The default entry point (no
+// extensions supplied) yields no auto-inferred PK and the user must declare
+// it explicitly via `~primaryKey: [col1, col2, ...]`.
 // ---------------------------------------------------------------------------
-
-// Builds a combined leaf handler from all registered RelationStoreAccessorExtension
-// instances. Each leaf handler is tried in turn; the first non-empty result wins.
-function meta::pure::mapping::relation::buildCombinedLeafHandler(extensions:Extension[*]):Function<{Any[1]->String[*]}>[1]
-{
-   let accessorExtensions = $extensions.moduleExtensions
-      ->filter(m | $m->instanceOf(RelationStoreAccessorExtension))
-      ->cast(@RelationStoreAccessorExtension);
-   if ($accessorExtensions->isEmpty(),
-      | {src:Any[1] | []->cast(@String)},
-      | {src:Any[1] |
-           let results = $accessorExtensions->map(ext | $ext.leafPrimaryKeyColumns->eval($src));
-           $results->cast(@String);
-        }
-   );
-}
 
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
-     {src:Any[1] | []->cast(@String)}
-  );
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames([]->cast(@Extension));
 }
 
-// Variant taking extensions — gathers leaf handlers from registered
-// RelationStoreAccessorExtension instances.
+// Variant taking extensions — dispatches InstanceValue leaves to registered
+// RelationElementAccessorExtension instances.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], extensions:Extension[*]):String[*]
 {
   let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
   if($lastExpr->isEmpty(),
     | [],
-    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(
-         $extensions->meta::pure::mapping::relation::buildCombinedLeafHandler(),
-         $extensions
-      )
-  );
-}
-
-// Variant taking a leaf handler. Store extensions call this to inject their
-// own per-source-element PK extraction (e.g. relational Table.primaryKey).
-function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
-{
-  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
-  if($lastExpr->isEmpty(),
-    | [],
-    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler)
+    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions)
   );
 }
 
@@ -158,20 +140,18 @@ function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFu
   $r->meta::pure::mapping::relation::extractRelationColumns()->map(c | $c.name->toOne());
 }
 
-// Default entry point — uses empty leaf handler (no store-specific PK inference).
-// Store-specific code (e.g. relational) should call the overload that takes
-// extensions or a leafHandler directly.
+// Default entry point — no extensions, so no auto-inference from leaf
+// accessors. The user must declare PK explicitly via
+// `~primaryKey: [col1, col2, ...]`, or the caller must pass extensions.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):Column<Nil, Any|*>[*]
 {
-  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
-     $explicitColumnNames,
-     {src:Any[1] | []->cast(@String)}
-  );
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey($explicitColumnNames, []->cast(@Extension));
 }
 
-// Extension-aware entry point — the Java compiler should call this overload.
-// Gathers leaf handlers from all registered RelationStoreAccessorExtension
-// instances in the provided extensions.
+// Extension-aware entry point — the Java compiler / runtime should call this
+// overload. Gathers RelationElementAccessorExtension instances from the
+// provided extensions and dispatches InstanceValue leaves to their
+// `instancePrimaryKeyResolver` lambdas.
 function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:Extension[*]):Column<Nil, Any|*>[*]
 {
   let pkNames = if($explicitColumnNames->isEmpty(),
@@ -182,82 +162,78 @@ function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:Rela
   $pkNames->map(name | $cols->filter(c | $c.name == $name)->first());
 }
 
-function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], leafHandler:Function<{Any[1]->String[*]}>[1]):Column<Nil, Any|*>[*]
-{
-  let pkNames = if($explicitColumnNames->isEmpty(),
-    | $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames($leafHandler),
-    | $explicitColumnNames
-  );
-  let cols = $r->meta::pure::mapping::relation::extractRelationColumns();
-  $pkNames->map(name | $cols->filter(c | $c.name == $name)->first());
-}
-
-// Extracts the Column list from a relation function's body by scanning ALL
-// expressions in the expressionSequence for one whose static type carries a
-// concrete RelationType (not just `Any`). This is necessary because:
-//  - The function may declare `Relation<Any>` as its return type.
-//  - The compiler may add coercion/cast nodes that strip the concrete type.
-//  - The concrete type is on the expression that holds the actual body logic.
+// Extracts the Column list from a relation function's body by reading the
+// LAST expression's concrete RelationType. By the time this runs
+// (post-validation, after the Function-Compiler third pass), the relation
+// function body is fully compiled and the last expression's static type
+// carries the concrete return type (the standard relation operators —
+// filter / select / rename / groupBy / join / ... — propagate the concrete
+// RelationType from their input). If the body is genuinely `Relation<Any>`
+// (e.g. wrapping a helper with a `Relation<Any>` return type), this
+// returns `[]` and the caller will fall back to the explicit PK column
+// names (which the post-pass validator will have already resolved against
+// the function's surface form).
 function meta::pure::mapping::relation::extractRelationColumns(r:RelationFunctionInstanceSetImplementation[1]):Column<Nil, Any|*>[*]
 {
-  let allExprs = $r.relationFunction.expressionSequence->evaluateAndDeactivate();
-  let found = $allExprs->filter(expr |
-    !$expr.genericType->isEmpty() &&
-    $expr.genericType.typeArguments->isNotEmpty() &&
-    $expr.genericType.typeArguments->at(0).rawType->isNotEmpty() &&
-    $expr.genericType.typeArguments->at(0).rawType->toOne()->instanceOf(RelationType)
-  )->first();
-  if ($found->isEmpty(),
-    | [],
-    | $found->toOne().genericType.typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns
+  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
+  if($lastExpr->isNotEmpty() && $lastExpr->toOne().genericType.rawType->isNotEmpty() && $lastExpr->toOne().genericType.typeArguments->isNotEmpty(),
+    | let rawType = $lastExpr->toOne().genericType.typeArguments->at(0).rawType;
+      if($rawType->isNotEmpty() && $rawType->toOne()->instanceOf(RelationType),
+        | $rawType->toOne()->cast(@RelationType<Any>).columns,
+        | []
+      );,
+    | []
   );
 }
 
 // Generic PK inference over any value spec whose static type is a Relation<...>.
-// Recognises four node shapes:
-//   - InstanceValue wrapping any value => delegate to leafHandler. The
-//     leafHandler is store-specific: the relational extension handles
-//     RelationStoreAccessor → Table → Table.primaryKey; other stores or
-//     SQL expressions can provide their own handlers via the Extension
-//     mechanism. The default (no-op) leafHandler returns [].
-//   - SimpleFunctionExpression invoking a known relation operator => apply rule.
-//     Also handles user-function calls (function composition — see
-//     inferPrimaryKeyColumnNamesFromFunctionExpression).
-//   - ClusteredValueSpecification (post-router wrapper)           => recurse.
+// Recognises three node shapes:
+//   - InstanceValue                          => dispatch to every registered
+//                                               RelationElementAccessorExtension
+//                                               and flatten the results.
+//                                               Extensions are mutually
+//                                               exclusive (non-handling
+//                                               extensions return []), so the
+//                                               flattened list preserves
+//                                               composite (multi-column) PKs.
+//                                               Store/format extensions
+//                                               unpack the wrapped value
+//                                               (RelationStoreAccessor / Table /
+//                                                SQLExpression / ...) and may
+//                                               recurse back into this function.
+//   - SimpleFunctionExpression               => apply per-operator rule.
+//                                               Also handles user-function
+//                                               composition.
+//   - ClusteredValueSpecification            => unwrap and recurse.
 // Anything else is conservatively treated as having no inferable PK (empty).
 function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1]):String[*]
 {
-  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames({src:Any[1] | []->cast(@String)});
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames([]->cast(@Extension));
 }
 
-function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
-{
-  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, []);
-}
-
-// Extension-aware overload — checks delegates before falling back to leafHandler.
-function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], extensions:Extension[*]):String[*]
 {
   $vs->match([
     iv: InstanceValue[1] |
-        // Try delegates first — they return a ValueSpecification to recurse into
         let accessorExtensions = $extensions.moduleExtensions
-            ->filter(m | $m->instanceOf(RelationStoreAccessorExtension))
-            ->cast(@RelationStoreAccessorExtension)
-            ->filter(ext | $ext.relationValueInferenceDelegate->isNotEmpty());
-        let target = $iv.values->map(v |
-            $accessorExtensions->map(ext |
-                $ext.relationValueInferenceDelegate->toOne()->eval($v)
-            )
-        )->filter(x | $x->isNotEmpty())->first();
-        if($target->isNotEmpty(),
-            | $target->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
-            | $iv.values->map(v | $leafHandler->eval($v))->cast(@String)
-        );,
+            ->filter(m | $m->instanceOf(RelationElementAccessorExtension))
+            ->cast(@RelationElementAccessorExtension);
+        // Call every registered resolver with the full InstanceValue and
+        // the active extensions, then flatten. Extensions are mutually
+        // exclusive — only one will return non-empty for any given
+        // InstanceValue (non-handling extensions return []) — so the
+        // flattened result is the full PK column-name list, preserving
+        // composite (multi-column) primary keys. NOTE: do NOT collapse
+        // this with `->first()`; Pure's `map` flattens String[*] across
+        // resolver calls, so `->first()` would silently drop all but the
+        // first column of a composite PK.
+        $accessorExtensions
+            ->map(ext | $ext.instancePrimaryKeyResolver->eval($iv, $extensions))
+            ->cast(@String);,
     cvs: ClusteredValueSpecification[1] |
-        $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
+        $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions),
     fe: SimpleFunctionExpression[1] |
-        $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($leafHandler, $extensions),
+        $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($extensions),
     a: Any[*] | []
   ])->cast(@String);
 }
@@ -280,12 +256,12 @@ function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpeci
 // `meta::` prefix so that user-defined helpers that happen to live under
 // `meta::` sub-packages (e.g. `meta::relational::tests::...`) are still
 // inlined correctly.
-function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
+function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1]):String[*]
 {
-  $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($leafHandler, []);
+  $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression([]->cast(@Extension));
 }
 
-function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
 {
   let fn   = $fe.func;
   let args = $fe.parametersValues;
@@ -293,12 +269,12 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
   if ($fn->instanceOf(ConcreteFunctionDefinition) && !$fn->elementToPath()->startsWith('meta::pure::functions::relation::'),
     | let body = $fn->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
       if ($body->size() == 1,
-        | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions),
+        | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions),
         | []
       );,
     | if ($args->isEmpty(),
         | [],
-        | let leftPK = $args->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
+        | let leftPK = $args->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
           // 2) Row-identity-preserving operators — propagate input PK unchanged.
           //    select_Relation_1__Relation_1_ (no-cols) and distinct_Relation_1__Relation_1_
           //    are also identity-on-PK.
@@ -348,12 +324,12 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
             | [],
           // 8) join / asOfJoin: see applyJoinToPK (handles FULL/RIGHT → []).
           | if ($fn == join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,
-            | meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $leafHandler, $extensions),
+            | meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $extensions),
           | if ($fn->in([
                   asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_,
                   asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_
                 ]),
-            | $leftPK->concatenate($args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions))->removeDuplicates(),
+            | $leftPK->concatenate($args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions))->removeDuplicates(),
           // 9) Anything else — conservative empty.
           | []))))))));
       )
@@ -361,23 +337,20 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
 }
 
 // join(left, right, kind, predicate) PK rule (reviewer 25166c6b):
-//   - INNER, LEFT (OUTER): conservatively keep `leftPK ∪ rightPK`
-//     (preserves uniqueness when join is many-to-1 / 1-to-1).
-//   - RIGHT (OUTER): unmatched right rows make leftPK NULL → not unique.
-//                    Return [] (force user to declare).
-//   - FULL (OUTER):  unmatched rows on either side make the opposite
-//                    side's PK NULL → return [].
-// If the join kind is not a literal we recognise (e.g. a variable) we
-// conservatively keep the union — same fallback as before.
-function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1]):String[*]
-{
-  meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $leafHandler, []);
-}
-
-function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], leafHandler:Function<{Any[1]->String[*]}>[1], extensions:Extension[*]):String[*]
+//   - INNER, LEFT: conservatively keep `leftPK ∪ rightPK`
+//                  (preserves uniqueness when join is many-to-1 / 1-to-1).
+//   - RIGHT:       unmatched right rows make leftPK NULL → not unique.
+//                  Return [] (force user to declare).
+//   - FULL:        unmatched rows on either side make the opposite
+//                  side's PK NULL → return [].
+//   - UNKNOWN (kind not a literal we recognise — e.g. a variable):
+//                  we cannot safely assume INNER/LEFT semantics, so
+//                  return [] and force the user to declare `~primaryKey`
+//                  rather than emit a potentially-wrong inferred PK.
+function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
 {
   let args = $fe.parametersValues;
-  let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
+  let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
   let kind = if($args->size() >= 3,
     | $args->at(2)->evaluateAndDeactivate()->match([
         iv: InstanceValue[1] |
@@ -387,9 +360,12 @@ function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:
       ]),
     | []
   );
-  if($kind->isNotEmpty() && ($kind->toOne() == JoinKind.FULL || $kind->toOne() == JoinKind.RIGHT),
-    | [],
-    | $leftPK->concatenate($rightPK)->removeDuplicates()
+  // Only INNER and LEFT (OUTER) preserve `leftPK ∪ rightPK`. Anything
+  // else — including an unknown / non-literal join kind — must conservatively
+  // yield no inferred PK.
+  if($kind->isNotEmpty() && ($kind->toOne() == JoinKind.INNER || $kind->toOne() == JoinKind.LEFT),
+    | $leftPK->concatenate($rightPK)->removeDuplicates(),
+    | []
   );
 }
 

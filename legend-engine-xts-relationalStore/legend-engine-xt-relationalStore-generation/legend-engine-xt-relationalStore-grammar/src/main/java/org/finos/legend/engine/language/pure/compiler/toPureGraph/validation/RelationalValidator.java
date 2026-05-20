@@ -86,6 +86,15 @@ public class RelationalValidator
                         ((RootRelationalInstanceSetImplementation) cm)._propertyMappings().select(p -> p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping && !(p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.SemiStructuredRelationalPropertyMapping)).forEach(pm -> validateRelationalPropertyMapping((RootRelationalInstanceSetImplementation) cm, pureModel, (org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping) pm, s, mappingValidatorContext));
                     });
 
+                    // Explicit ~primaryKey validation for RelationFunction class mappings.
+                    // Deferred to post-validation because the Function-Compiler third
+                    // pass (which types the function body) runs AFTER the Class-Mapping
+                    // third pass. By the time we reach post-validation the body is
+                    // fully compiled, so we can read the concrete RelationType columns
+                    // from the last expression and resolve declared PK names against
+                    // them.
+                    validateRelationFunctionMapping(pureModel, mapping, s, mappingValidatorContext);
+
                     RichIterable<? extends AssociationImplementation> associationMappings = mapping._associationMappings().select(a -> a instanceof RelationalAssociationImplementation);
                     MapIterable<String, SetImplementation> classMappingIndex = associationMappings.isEmpty() ? Maps.immutable.empty() : getClassMappingsByIdIncludeEmbedded(pureModel, mapping, mappingValidatorContext);
                     associationMappings.forEach(relAssoc ->
@@ -95,6 +104,189 @@ public class RelationalValidator
                 }
         );
         //TODO: Inline , embedded binding
+    }
+
+    /**
+     * Explicit primary-key validation for {@code RelationFunctionInstanceSetImplementation}s.
+     *
+     * <p>Runs as part of mapping post-validation, after the Function Compiler third pass has
+     * typed the relation function body. For each set-impl that originates from a
+     * {@code RelationFunctionClassMapping} carrying a non-empty {@code ~primaryKey: [...]},
+     * we:</p>
+     * <ol>
+     *     <li>Read the function body's last expression and pull its concrete
+     *         {@code RelationType} columns.</li>
+     *     <li>Verify each declared PK name appears among those columns. If not,
+     *         throw an {@code EngineException} pointing at the class mapping's source.</li>
+     *     <li>Resolve the declared names to typed {@code Column<?, ?>} instances and
+     *         set them on {@code setImpl._primaryKey(...)}.</li>
+     * </ol>
+     *
+     * <p>If the function's body returns the unparameterised {@code Relation<Any>} after
+     * compilation (i.e. no concrete {@code RelationType} is available — rare in practice),
+     * we emit a warning rather than failing: the runtime auto-inference path will still be
+     * able to use the declared PK names.</p>
+     */
+    private static void validateRelationFunctionMapping(PureModel pureModel, Mapping mapping, String mappingId, MappingValidatorContext mappingValidatorContext)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping protocolMapping = mappingValidatorContext.getProtocolMappingsByNameWithID(mappingId);
+        if (protocolMapping == null || protocolMapping.classMappings == null)
+        {
+            return;
+        }
+
+        // Index the protocol RelationFunctionClassMappings by id so we can recover
+        // the declared `primaryKey: List<String>` for each set-impl.
+        java.util.Map<String, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping> protocolByClassMappingId =
+                new java.util.LinkedHashMap<>();
+        for (ClassMapping cm : protocolMapping.classMappings)
+        {
+            if (cm instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping)
+            {
+                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping rfcm =
+                        (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping) cm;
+                String id = (rfcm.id != null && !rfcm.id.isEmpty()) ? rfcm.id : (rfcm._class == null ? null : rfcm._class.replace("::", "_"));
+                if (id != null)
+                {
+                    protocolByClassMappingId.put(id, rfcm);
+                }
+            }
+        }
+        if (protocolByClassMappingId.isEmpty())
+        {
+            return;
+        }
+
+        mapping._classMappings().select(cm -> cm instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation).forEach(cm ->
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl =
+                    (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation) cm;
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping protocolCM =
+                    protocolByClassMappingId.get(setImpl._id());
+            if (protocolCM == null || protocolCM.primaryKey == null || protocolCM.primaryKey.isEmpty())
+            {
+                // No explicit PK declared → leave _primaryKey empty so runtime auto-inference applies.
+                return;
+            }
+            if (setImpl._relationFunction() == null)
+            {
+                return;
+            }
+
+            org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> relationColumns =
+                    getCompiledRelationFunctionColumns(setImpl);
+
+            String functionPath = PackageableElement.getUserPathForPackageableElement(
+                    (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) setImpl._relationFunction());
+
+            if (relationColumns.isEmpty())
+            {
+                // Function body returns Relation<Any> even after compilation — we
+                // cannot match the declared names against concrete columns. Emit
+                // a warning and fall back to placeholder Column instances so the
+                // explicit PK declaration is preserved on _primaryKey (the
+                // runtime path still honours the declared names).
+                pureModel.addWarnings(Lists.mutable.with(new Warning(
+                        protocolCM.sourceInformation,
+                        "Primary key columns " + protocolCM.primaryKey
+                                + " declared on class mapping '" + setImpl._id() + "' (mapping '" + mappingId + "')"
+                                + " but cannot be validated — relation function '" + functionPath + "' does not expose a concrete RelationType.")));
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity oneMul =
+                        pureModel.getMultiplicity("one");
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType stringType =
+                        pureModel.getGenericType("String");
+                org.finos.legend.pure.m3.navigation.ProcessorSupport processorSupport =
+                        pureModel.getExecutionSupport().getProcessorSupport();
+                org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> placeholderPK =
+                        Lists.mutable.empty();
+                for (String pkName : protocolCM.primaryKey)
+                {
+                    placeholderPK.add(org.finos.legend.pure.m3.navigation.relation._Column.getColumnInstance(
+                            pkName, false, stringType, oneMul, null, processorSupport));
+                }
+                if (placeholderPK.notEmpty())
+                {
+                    setImpl._primaryKey(placeholderPK);
+                }
+                return;
+            }
+
+            // Validate each declared PK name exists in the function's output columns.
+            java.util.Set<String> availableColumnNames = new java.util.LinkedHashSet<>();
+            relationColumns.forEach(c ->
+            {
+                if (c._name() != null)
+                {
+                    availableColumnNames.add(c._name());
+                }
+            });
+            for (String pkColumn : protocolCM.primaryKey)
+            {
+                if (!availableColumnNames.contains(pkColumn))
+                {
+                    throw new EngineException(
+                            "Primary key column '" + pkColumn + "' declared in class mapping '" + setImpl._id()
+                                    + "' (mapping '" + mappingId + "') is not part of the columns returned by the relation function '"
+                                    + functionPath + "' (" + String.join(", ", availableColumnNames) + ")."
+                                    + " Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
+                            protocolCM.sourceInformation,
+                            EngineErrorType.COMPILATION);
+                }
+            }
+
+            // Resolve declared PK names to typed Column instances and set on the set-impl.
+            org.eclipse.collections.api.list.MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> resolvedPK =
+                    Lists.mutable.empty();
+            for (String pkName : protocolCM.primaryKey)
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?> col =
+                        (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>)
+                                relationColumns.detect(c -> pkName.equals(c._name()));
+                if (col != null)
+                {
+                    resolvedPK.add(col);
+                }
+            }
+            if (resolvedPK.notEmpty())
+            {
+                setImpl._primaryKey(resolvedPK);
+            }
+        });
+    }
+
+    /**
+     * Reads the columns from the LAST expression of a (now fully compiled)
+     * relation function's body. Returns an empty list if the last expression
+     * does not carry a concrete {@code RelationType} (i.e. the function returns
+     * the unparameterised {@code Relation<Any>}).
+     */
+    private static org.eclipse.collections.api.RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>> getCompiledRelationFunctionColumns(
+            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> fn =
+                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?>) setImpl._relationFunction();
+        if (fn == null)
+        {
+            return Lists.immutable.empty();
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification lastExpr =
+                fn._expressionSequence().toList().getLast();
+        if (lastExpr == null || lastExpr._genericType() == null)
+        {
+            return Lists.immutable.empty();
+        }
+        java.util.List<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType> typeArgs =
+                lastExpr._genericType()._typeArguments().toList();
+        if (typeArgs.isEmpty())
+        {
+            return Lists.immutable.empty();
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type rawType = typeArgs.get(0)._rawType();
+        if (!(rawType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType))
+        {
+            return Lists.immutable.empty();
+        }
+        return ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?>) rawType)._columns();
     }
 
     private static void relationalException(PureModel pureModel, String message, SourceInformation sourceInformation, Boolean useWarning)

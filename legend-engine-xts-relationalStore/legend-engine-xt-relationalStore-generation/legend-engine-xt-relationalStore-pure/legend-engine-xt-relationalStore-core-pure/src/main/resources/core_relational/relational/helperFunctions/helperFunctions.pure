@@ -395,6 +395,14 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
    ])
 }
 
+// Overload for relation-function mappings. RelationFunctionInstanceSetImplementation
+// is a sibling of RelationalInstanceSetImplementation (both extend InstanceSetImplementation),
+// so it cannot be dispatched through the match above — callers must invoke this overload directly.
+function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+   $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
+}
+
 function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
 {
    $rsi->match([
@@ -444,6 +452,40 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
   ^TableAliasColumn(
     alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping)),
     column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($relationColumnType)->toOne())
+  );
+}
+
+// Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
+// into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction
+// wrapper. Used by sub-aggregation (addPkForAggregation) and any other code path that needs
+// to reference relation-function PKs as relational operation elements.
+function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+  let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
+  $classMapping.primaryKey->map(c |
+    let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
+    ^TableAliasColumn(
+      alias = $alias,
+      column = ^RelationFunctionColumn(
+        column = $c,
+        name = $c.name->toOne(),
+        type = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+      )
+    );
+  );
+}
+
+// Returns the given RelationFunctionInstanceSetImplementation with primaryKey populated.
+// If primaryKey is already set, returns the input unchanged. Otherwise lazily resolves
+// it via the extension-aware leaf handler (mirrors processRelationFunctionClassMapping).
+// Centralised here so all call sites needing a resolved PK share a single source of truth
+// for lazy PK resolution.
+function meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved(rf:RelationFunctionInstanceSetImplementation[1], extensions:meta::pure::extension::Extension[*]):RelationFunctionInstanceSetImplementation[1]
+{
+  if($rf.primaryKey->isEmpty(),
+    | let pkCols = $rf->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
+      ^$rf(primaryKey = $pkCols);,
+    | $rf
   );
 }
 
@@ -515,33 +557,54 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
 //        relationFunctionMapping.pure)
 //
 // That module is store-agnostic: it knows how to walk a relation function
-// body but does NOT know how to extract a primary key from a leaf
-// `RelationStoreAccessor` over a particular store's source element.
+// body but dispatches the leaf-accessor → PK extraction to whichever
+// `RelationElementAccessorExtension` instances are registered in the
+// active Extension[*].
 //
-// Below we (a) provide the relational-specific leaf handler that pulls the
-// PK column NAMES off `meta::relational::metamodel::relation::Table.primaryKey`
-// and (b) keep the historical `meta::relational::mapping::*` entry-point
-// names as thin facades that call into the core API while injecting the
-// Table-aware leaf — so existing relational callers and tests continue to
-// see leaf-table inference.
+// Below we (a) provide the relational-specific leaf handler that pulls
+// the PK column NAMES off `Table.primaryKey` / `View.primaryKey`, and
+// (b) keep the historical `meta::relational::mapping::*` entry-point
+// names as thin facades that wrap the leaf handler into a synthetic
+// `Extension` and call into the core extension-aware API — so existing
+// relational callers and tests continue to see leaf-table inference
+// without having to thread a full `Extension[*]` through.
 // ---------------------------------------------------------------------------
 
 function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
 {
   $src->match([
-    rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->match([
-      t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
-      a: Any[*] | []
-    ]),
-    t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name->map(n | $n->toOne()),
+    t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name,
+    v: meta::relational::metamodel::relation::View[1]  | $v.primaryKey.name,
     a: Any[*] | []
-  ]);
+  ])->map(n | $n->toOne());
+}
+
+// Synthetic Extension carrying just the relational RelationElementAccessorExtension,
+// used by the facades below so existing callers don't need to pass the full
+// Extension[*] (and so we avoid pulling in the full `relationalExtension()`
+// initialisation graph for what is really a thin convenience wrapper).
+function <<access.private>> meta::relational::mapping::syntheticRelationalAccessorExtension():meta::pure::extension::Extension[1]
+{
+  ^meta::pure::extension::Extension(
+    type = 'relationalAccessorOnly',
+    moduleExtensions = [
+      ^meta::pure::mapping::relation::RelationElementAccessorExtension(
+        module = meta::pure::mapping::relation::relationElementAccessorModuleExtensionName(),
+        instancePrimaryKeyResolver = {iv:meta::pure::metamodel::valuespecification::InstanceValue[1], ext:meta::pure::extension::Extension[*] |
+          $iv.values->map(v | $v->match([
+            rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->meta::relational::mapping::tablePrimaryKeyLeaf(),
+            a:   Any[*] | []
+          ]))->cast(@String)
+        }
+      )
+    ]
+  );
 }
 
 function meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
-       src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+       meta::relational::mapping::syntheticRelationalAccessorExtension()
      );
 }
 
@@ -549,12 +612,12 @@ function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:Relation
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
        $explicitColumnNames,
-       src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+       meta::relational::mapping::syntheticRelationalAccessorExtension()
      );
 }
 
 // Extension-aware overload — used by processRelationFunctionClassMapping at runtime.
-// Builds the combined leaf handler from registered RelationStoreAccessorExtension instances.
+// Passes the caller-supplied extensions through to the core resolver.
 function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
@@ -566,9 +629,11 @@ function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:Relation
 function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
 {
   $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(
-        src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+        meta::relational::mapping::syntheticRelationalAccessorExtension()
       );
 }
+
+
 
 
 

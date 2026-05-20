@@ -29,18 +29,20 @@ function meta::external::query::sql::expression::sqlExpressionFeatureExtension()
                                                         ]
                                     ),
       moduleExtensions = [
-         ^RelationStoreAccessorExtension
+         ^RelationElementAccessorExtension
          (
-            module = relationStoreAccessorModuleExtensionName(),
-            leafPrimaryKeyColumns = {src:Any[1] | []->cast(@String)},
-            relationValueInferenceDelegate = {src:Any[1] |
-               $src->match([
+            module = relationElementAccessorModuleExtensionName(),
+            instancePrimaryKeyResolver = {iv:InstanceValue[1], ext:meta::pure::extension::Extension[*] |
+               $iv.values->map(v | $v->match([
                   sqlExpr: SQLExpression<Any>[1] |
                      let body = $sqlExpr.pureFunction->cast(@FunctionDefinition<Any>)
                          .expressionSequence->evaluateAndDeactivate();
-                     if($body->isNotEmpty(), | $body->last()->toOne(), | []);,
+                     if($body->isNotEmpty(),
+                        | $body->last()->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($ext),
+                        | []
+                     );,
                   a: Any[*] | []
-               ])
+               ]))->cast(@String)
             }
          )
       ]

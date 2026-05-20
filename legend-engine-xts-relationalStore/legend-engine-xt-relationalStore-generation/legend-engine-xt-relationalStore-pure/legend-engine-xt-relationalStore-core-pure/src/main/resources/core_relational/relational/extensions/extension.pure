@@ -233,10 +233,15 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
       validTestPackages = 'meta::relational::tests',
       availableFeatures = meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension().availableFeatures,
       moduleExtensions = [
-         ^meta::pure::mapping::relation::RelationStoreAccessorExtension
+         ^meta::pure::mapping::relation::RelationElementAccessorExtension
          (
-            module = meta::pure::mapping::relation::relationStoreAccessorModuleExtensionName(),
-            leafPrimaryKeyColumns = src:Any[1] | $src->meta::relational::mapping::tablePrimaryKeyLeaf()
+            module = meta::pure::mapping::relation::relationElementAccessorModuleExtensionName(),
+            instancePrimaryKeyResolver = {iv:meta::pure::metamodel::valuespecification::InstanceValue[1], ext:meta::pure::extension::Extension[*] |
+               $iv.values->map(v | $v->match([
+                  rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->meta::relational::mapping::tablePrimaryKeyLeaf(),
+                  a:   Any[*] | []
+               ]))->cast(@String)
+            }
          )
       ]
    )
