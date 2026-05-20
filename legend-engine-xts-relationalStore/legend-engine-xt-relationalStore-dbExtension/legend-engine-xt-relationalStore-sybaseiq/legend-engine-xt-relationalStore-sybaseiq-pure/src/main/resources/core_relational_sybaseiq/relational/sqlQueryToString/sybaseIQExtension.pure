@@ -69,18 +69,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsForSybaseIQ()})),
-    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='case when char_length(%s) >= %s then substring(%s, 1, %s) else substring(repeat(%s, %s) + %s, char_length(repeat(%s, %s) + %s) - %s + 1, %s) end',
-                                                                        transform={p:String[2..*] |
-                                                                           let s = $p->at(0);
-                                                                           let n = $p->at(1);
-                                                                           let pad = if($p->size() == 2, | '\' \'', | $p->at(2));
-                                                                           [$s, $n, $s, $n, $pad, $n, $s, $pad, $n, $s, $n, $n];
-                                                                        })),
-    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='substring(%s + repeat(%s, %s), 1, %s)',
-                                                                        transform={p:String[2..*] |
-                                                                           let pad = if($p->size() == 2, | '\' \'', | $p->at(2));
-                                                                           [$p->at(0), $pad, $p->at(1), $p->at(1)];
-                                                                        })),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()}))
   ]->concatenate(getDynaFunctionToSqlCommonToBothSybases());
 }

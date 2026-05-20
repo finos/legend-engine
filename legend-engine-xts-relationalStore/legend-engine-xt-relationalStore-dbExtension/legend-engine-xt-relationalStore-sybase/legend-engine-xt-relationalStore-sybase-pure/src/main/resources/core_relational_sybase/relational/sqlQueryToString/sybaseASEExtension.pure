@@ -50,18 +50,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSybase(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
-    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='case when char_length(%s) >= %s then substring(%s, 1, %s) else substring(replicate(%s, %s) + %s, char_length(replicate(%s, %s) + %s) - %s + 1, %s) end',
-                                                                        transform={p:String[2..*] |
-                                                                           let s = $p->at(0);
-                                                                           let n = $p->at(1);
-                                                                           let pad = if($p->size() == 2, | '\' \'', | $p->at(2));
-                                                                           [$s, $n, $s, $n, $pad, $n, $s, $pad, $n, $s, $n, $n];
-                                                                        })),
-    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='substring(%s + replicate(%s, %s), 1, %s)',
-                                                                        transform={p:String[2..*] |
-                                                                           let pad = if($p->size() == 2, | '\' \'', | $p->at(2));
-                                                                           [$p->at(0), $pad, $p->at(1), $p->at(1)];
-                                                                        })),
     dynaFnToSql('trim',                   $allStates,            ^ToSql(format='rtrim(ltrim(%s))'))
   ]->concatenate(getDynaFunctionToSqlCommonToBothSybases());
 }
@@ -138,6 +126,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('least',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | convertGreatestLeastToCaseStatement('<=', $p)})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')),
+    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='hash(%s, \'MD5\')')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='datepart(MI, %s)')),
@@ -158,6 +147,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('rem',                    $allStates,            ^ToSql(format='%s %% %s')),
     dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='replicate(%s, %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='datepart(SS, %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='hash(%s, \'SHA1\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='hash(%s, \'SHA256\')')),
