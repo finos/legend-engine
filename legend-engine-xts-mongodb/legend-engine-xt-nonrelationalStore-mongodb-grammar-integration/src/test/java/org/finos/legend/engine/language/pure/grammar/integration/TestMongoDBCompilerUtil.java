@@ -110,6 +110,7 @@ public class TestMongoDBCompilerUtil
                     "    lastName   : String[1];\n" +
                     "    middleName : String[0..1];\n" +
                     "    firm       : Firm[0..1];\n" +
+                    "    _id        : String[0..1];\n" +
                     "}\n" +
                     "\n" +
                     "Class meta::external::store::mongodb::showcase::domain::Firm\n" +
@@ -147,6 +148,9 @@ public class TestMongoDBCompilerUtil
                     "      \"bsonType\": \"object\",\n" +
                     "      \"title\": \"Person\",\n" +
                     "      \"properties\": {\n" +
+                    "        \"_id\": {\n" +
+                    "          \"bsonType\": \"objectId\"\n" +
+                    "        },\n" +
                     "        \"firstName\": {\n" +
                     "          \"bsonType\": \"string\"\n" +
                     "        },\n" +

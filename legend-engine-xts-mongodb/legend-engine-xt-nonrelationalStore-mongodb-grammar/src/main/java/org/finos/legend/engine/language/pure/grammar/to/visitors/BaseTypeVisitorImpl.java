@@ -330,7 +330,20 @@ public class BaseTypeVisitorImpl implements BaseTypeVisitor<String>
     @Override
     public String visit(ObjectIdType val)
     {
-        return null;
+        StringBuilder builder = new StringBuilder();
+        builder.append("{\n");
+        int valuesIndentLevel = indentLevel + 1;
+
+        ComposerUtility.appendTabString(builder, valuesIndentLevel);
+        ComposerUtility.appendJsonKey(builder, "bsonType");
+        ComposerUtility.appendStringWithQuotes(builder, "objectId");
+
+        builder.append("\n");
+
+        ComposerUtility.appendTabString(builder, indentLevel);
+        builder.append("}");
+
+        return builder.toString();
     }
 
     @Override

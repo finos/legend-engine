@@ -47,6 +47,7 @@ public class TestSchemaParser
         return Arrays.asList(new Object[][]{
                 {"json/schema/schema_def_1.json"},
                 {"json/schema/schema_def_2.json"},
+                {"json/schema/schema_def_with_objectId.json"},
         });
     }
 

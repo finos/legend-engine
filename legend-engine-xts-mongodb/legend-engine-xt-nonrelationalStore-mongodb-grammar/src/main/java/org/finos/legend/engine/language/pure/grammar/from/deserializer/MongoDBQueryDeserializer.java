@@ -436,7 +436,7 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         FieldPathExpression fieldPathExpr = new FieldPathExpression();
         fieldPathExpr.fieldPath = entry.getKey();
         qryExprKeyValue.key = fieldPathExpr;
-        if (entry.getValue().isValueNode())
+        if (entry.getValue().isValueNode() || entry.getValue().isObject())
         {
             // We are looking at something like { "name" : 1 } or {"name" : true }
             // TODO : Add support for computed values
