@@ -3789,9 +3789,11 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkExplicitWithTableAccessor()
     {
-        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time.
-        // Function declares Relation<Any> so a warning is emitted (can't validate
-        // PK against concrete columns), but placeholder Columns are still created.
+        // Explicit ~primaryKey: [FIRSTNAME] — resolved at post-validation.
+        // The function declares Relation<Any> but the body's last expression
+        // carries a concrete RelationType after compilation, so the declared
+        // PK name is validated against the function's exposed columns and
+        // resolved to a typed Column instance on _primaryKey. No warning.
         Pair<PureModelContextData, PureModel> result = test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
@@ -3810,9 +3812,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n",
-                null,
-                Lists.mutable.with("COMPILATION warning at [20:3-26:3]: Primary key columns declared but cannot be validated — relation function does not expose a concrete RelationType"));
+                ")\n");
         PureModel pureModel = result.getTwo();
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("my::testMapping");
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl =

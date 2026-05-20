@@ -27,9 +27,8 @@ function <<access.private>> meta::external::query::sql::expression::tests::pk::p
    let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
    let func = $compiled->filter(p | $p.name == $funcName)->toOne()->cast(@FunctionDefinition<Any>);
    let extensions = meta::pure::extension::runtime::getExtensions();
-   let leafHandler = meta::pure::mapping::relation::buildCombinedLeafHandler($extensions);
    let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
-   $expr->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($leafHandler, $extensions);
+   $expr->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
 }
 
 // Compiles the .legend model and returns the mapping with the given name.
