@@ -308,6 +308,7 @@ Class meta::legend::test::handlers::model::TestString
    joinStringsSep() {$this.strings->joinStrings($this.string)}:String[1];
 
    lasIndexOf() {$this.string->lastIndexOf($this.string)}:Integer[1];
+   lasIndexOfFromIndex() {$this.string->lastIndexOf($this.string, 10)}:Integer[1];
 
    makeCamelCaseParam() {$this.string->makeCamelCase(true)}:String[1];
    makeCamelCase() {$this.string->makeCamelCase()}:String[1];

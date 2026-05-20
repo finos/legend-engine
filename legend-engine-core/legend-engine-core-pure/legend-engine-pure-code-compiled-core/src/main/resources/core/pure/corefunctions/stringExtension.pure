@@ -41,21 +41,6 @@ function {doc.doc = 'Lower cases the first character of the provided strings'} m
       $values->map({s|$s->toLowerFirstCharacter()})
 }
 
-function meta::pure::functions::string::lastIndexOf(str:String[1], value : String[1]):Integer[1] {
-   let i = $str->indexOf($value);
-   if ($i < 0, 
-      | $i, 
-      {| 
-         let remainder = $str->substring($i + $value->length());
-         let subIndex = $remainder->lastIndexOf($value);
-
-         if ($subIndex < 0, 
-            | $i, 
-            | $i +  $value->length() + $subIndex
-            );
-      });
-}
-
 function {doc.doc = 'Returns true if the string is upper case'}
 meta::pure::functions::string::isUpperCase(source:String[1]):Boolean[1]
 {
