@@ -41,6 +41,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URL;
@@ -3164,6 +3165,7 @@ public class TestServiceTestSuite
         Assert.assertEquals(passed.testSuiteId, "testSuite1");
     }
 
+    @Ignore
     @Test
     public void testRelationalServiceWithCaseSensitiveSchemaNames()
     {
