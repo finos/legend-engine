@@ -16,6 +16,8 @@ package org.finos.legend.pure.code.core.relational;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -28,7 +30,7 @@ public class Test_Pure_Relational
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
         //NOTE- we are not collecting parameterized test collection in meta::relational here
-        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::relational", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport()) && !isPlatformStoreRelationalDbTest(ci)), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::alloy::objectReference", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::alloy::service::execution", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::lineage", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
@@ -42,5 +44,20 @@ public class Test_Pure_Relational
         suite.addTest(PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::protocols::pure", executionSupport.getProcessorSupport(), ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
         return suite;
+    }
+
+    // Pure-native tests under platform_store_relational/tests/ call executeInDb and need
+    // H2/DuckDB JDBC drivers at runtime. legend-pure's own runner has those drivers;
+    // engine test runners that collect under meta::relational do not. The tests are
+    // exercised by legend-pure-side TestPureDBFunction instead.
+    private static boolean isPlatformStoreRelationalDbTest(CoreInstance ci)
+    {
+        SourceInformation sourceInformation = ci.getSourceInformation();
+        if (sourceInformation == null)
+        {
+            return false;
+        }
+        String sourceId = sourceInformation.getSourceId();
+        return sourceId != null && sourceId.startsWith("/platform_store_relational/tests/");
     }
 }
