@@ -1,0 +1,67 @@
+import meta::json::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::mapping::modelToModel::test::simple::mapFunction::*;
+
+
+Class meta::pure::mapping::modelToModel::test::simple::mapFunction::Source
+{
+    i : Integer[*];
+    s : String[*];
+    inputs : Integer[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::simple::mapFunction::Target
+{
+    resolved : String[*];
+}
+
+function meta::pure::mapping::modelToModel::test::simple::mapFunction::resolve(i:Integer[*], s:String[*], input:Integer[*]):String[*]
+{
+    let m = zip($i, $s)->newMap();
+    $input->map(iv | if(get($m,$iv)->isEmpty(), | [], | get($m, $iv)));
+}
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Simple example of map to process data and provide quick lookup during M2M transform'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::mapFunction::simpleM2MUsingMap() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::simple::mapFunction::Target { resolved } }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::simple::mapFunction::Target.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::simple::mapFunction::M2MUseMap,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::simple::mapFunction::Source,
+                                url='data:application/json,{"i":[0,1,2,3,4], "s":["a","b","c","d","e"], "inputs":[0,2,4]}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   println($result.values);
+
+   assert(jsonEquivalent('{"resolved":["a","c","e"]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::simple::mapFunction::M2MUseMap
+(
+    *meta::pure::mapping::modelToModel::test::simple::mapFunction::Target:Pure
+    {
+        ~src meta::pure::mapping::modelToModel::test::simple::mapFunction::Source
+        resolved : meta::pure::mapping::modelToModel::test::simple::mapFunction::resolve($src.i, $src.s, $src.inputs)
+    }
+)
