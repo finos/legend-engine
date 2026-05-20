@@ -6,7 +6,7 @@ Service service::CaseSensitiveSchemaService
   autoActivateUpdates: true;
   execution: Single
   {
-    query: |model::Product.all()->project([x|$x.name, x|$x.type], ['Name', 'Type']);
+    query: |model::Product.all()->project(~[Name : x|$x.name, Type : x|$x.type]);
     mapping: execution::ProductMapping;
     runtime: execution::ProductRuntime;
   }

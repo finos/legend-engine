@@ -3165,7 +3165,6 @@ public class TestServiceTestSuite
         Assert.assertEquals(passed.testSuiteId, "testSuite1");
     }
 
-    @Ignore
     @Test
     public void testRelationalServiceWithCaseSensitiveSchemaNames()
     {
