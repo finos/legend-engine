@@ -1,28 +1,19 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 import meta::json::*;
-import meta::external::store::model::*;
-import meta::core::runtime::*;
-import meta::pure::graphFetch::execution::*;
 import meta::pure::executionPlan::profiles::*;
-import meta::pure::mapping::modelToModel::test::simple::mapFunction::*;
-
-
-Class meta::pure::mapping::modelToModel::test::simple::mapFunction::Source
-{
-    i : Integer[*];
-    s : String[*];
-    inputs : Integer[*];
-}
-
-Class meta::pure::mapping::modelToModel::test::simple::mapFunction::Target
-{
-    resolved : String[*];
-}
-
-function meta::pure::mapping::modelToModel::test::simple::mapFunction::resolve(i:Integer[*], s:String[*], input:Integer[*]):String[*]
-{
-    let m = zip($i, $s)->newMap();
-    $input->map(iv | if(get($m,$iv)->isEmpty(), | [], | get($m, $iv)));
-}
 
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
@@ -31,37 +22,79 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 }
 meta::pure::mapping::modelToModel::test::alloy::simple::mapFunction::simpleM2MUsingMap() : Boolean[1]
 {
-   let tree = #{meta::pure::mapping::modelToModel::test::simple::mapFunction::Target { resolved } }#;
+  let grammar = '###Pure\n'+
+    'Class test::model::Source\n'+
+    '{\n'+
+    '  i: Integer[*];\n'+
+    '  s: String[*];\n'+
+    '  inputs: Integer[*];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  resolved: String[*];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::resolve(i: Integer[*], s: String[*], input: Integer[*]): String[*]\n'+
+    '{\n'+
+    '  let m = zip($i, $s)->newMap();\n'+
+    '  $input->map(iv | if(get($m, $iv)->isEmpty(), | [], | get($m, $iv)));\n'+
+    '}\n'+
+    '\n'+
+    'function test::query::getResolved(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        resolved\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        resolved\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MUseMap, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MUseMap\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Source\n'+
+    '    resolved: test::model::resolve($src.i, $src.s, $src.inputs)\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Source;\n'+
+    '  url: \'data:application/json,{"i":[0,1,2,3,4], "s":["a","b","c","d","e"], "inputs":[0,2,4]}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MUseMap\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
 
-   let result = execute(
-      |meta::pure::mapping::modelToModel::test::simple::mapFunction::Target.all()->graphFetch($tree)->serialize($tree),
-      meta::pure::mapping::modelToModel::test::simple::mapFunction::M2MUseMap,
-      ^Runtime(
-        connectionStores = [
-          ^ConnectionStore(
-            element=^ModelStore(),
-            connection= ^JsonModelConnection(
-                                class=meta::pure::mapping::modelToModel::test::simple::mapFunction::Source,
-                                url='data:application/json,{"i":[0,1,2,3,4], "s":["a","b","c","d","e"], "inputs":[0,2,4]}'
-                             )
-          )]
-      ),
-      meta::pure::extension::defaultExtensions()
-   );
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getResolved__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
 
-   println($result.values);
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
 
-   assert(jsonEquivalent('{"resolved":["a","c","e"]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"resolved":["a","c","e"]}}'->parseJSON(), $result->toOne()->parseJSON()));
 }
-
-
-
-###Mapping
-Mapping meta::pure::mapping::modelToModel::test::simple::mapFunction::M2MUseMap
-(
-    *meta::pure::mapping::modelToModel::test::simple::mapFunction::Target:Pure
-    {
-        ~src meta::pure::mapping::modelToModel::test::simple::mapFunction::Source
-        resolved : meta::pure::mapping::modelToModel::test::simple::mapFunction::resolve($src.i, $src.s, $src.inputs)
-    }
-)
