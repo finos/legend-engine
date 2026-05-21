@@ -984,7 +984,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testRelationFunctionMappingWithPrimaryKey()
     {
-        // Single-column primary key — emitted without brackets.
+        // Single PK — no brackets.
         test("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +
@@ -997,7 +997,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
 
-        // Multi-column primary key — bracketed.
+        // Multi PK — bracketed.
         test("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +
@@ -1011,8 +1011,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
 
-        // Legacy form: single PK wrapped in brackets is still accepted and normalised to bracket-less.
-        // testFormat(formattedCode, unformattedCode) — first arg is the expected canonical output.
+        // Legacy `[col]` for single PK is accepted and normalised to bracket-less.
         testFormat("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +

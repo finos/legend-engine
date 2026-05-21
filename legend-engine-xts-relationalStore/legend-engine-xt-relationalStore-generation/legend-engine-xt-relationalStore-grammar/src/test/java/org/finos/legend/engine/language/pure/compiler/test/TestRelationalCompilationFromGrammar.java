@@ -3741,9 +3741,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ));
     }
 
-    // =========================================================================
-    // Relation Function Mapping — PK resolution with real table accessors
-    // =========================================================================
+    // Relation Function Mapping — PK resolution with real table accessors.
 
     private static final String RELATION_PK_DB =
             "###Relational\n" +
@@ -3763,9 +3761,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkAutoInferFromTableAccessor()
     {
-        // #>{db.personTable}#->filter(...) — PK auto-inferred at runtime from Table.primaryKey = [ID]
-        // At compile time, _primaryKey is empty; resolution happens lazily in
-        // processRelationFunctionClassMapping at execution time.
+        // No explicit ~primaryKey: PK auto-inferred at runtime from Table.primaryKey.
         test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
@@ -3789,11 +3785,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkExplicitWithTableAccessor()
     {
-        // Explicit ~primaryKey: [FIRSTNAME] — resolved at post-validation.
-        // The function declares Relation<Any> but the body's last expression
-        // carries a concrete RelationType after compilation, so the declared
-        // PK name is validated against the function's exposed columns and
-        // resolved to a typed Column instance on _primaryKey. No warning.
+        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time against the concrete RelationType.
         Pair<PureModelContextData, PureModel> result = test(
                 RELATION_PK_DB +
                 RELATION_PK_CLASS +
@@ -3826,7 +3818,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationFunctionMappingPkAutoInferThroughJoin()
     {
-        // join(personTable, personTable->rename(~ID, ~ID2)->select(~[ID2]), INNER, ...)
         // No explicit ~primaryKey — auto-inference deferred to runtime.
         test(
                 RELATION_PK_DB +

@@ -184,25 +184,20 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
             return null;
         }
 
-        // No explicit ~primaryKey → leave _primaryKey empty so the relational
-        // runtime (processRelationFunctionClassMapping) auto-infers via the
-        // RelationElementAccessorExtension mechanism (tablePrimaryKeyLeaf, ...).
+        // No explicit ~primaryKey → leave empty; runtime auto-infers via RelationElementAccessorExtension.
         if (classMapping.primaryKey == null || classMapping.primaryKey.isEmpty())
         {
             return setImpl;
         }
 
-        // Explicit PK declared. The function is now a prerequisite of this mapping
-        // (see ClassMappingPrerequisiteElementsPassBuilder#visit(RelationFunctionClassMapping)),
-        // so its expressionSequence is fully typed by the time we get here.
+        // Function is a prerequisite (see ClassMappingPrerequisiteElementsPassBuilder),
+        // so expressionSequence is fully typed here.
         RichIterable<? extends Column<?, ?>> relationColumns = getRelationFunctionColumns(setImpl);
 
         MutableList<Column<?, ?>> resolvedPK = Lists.mutable.empty();
         if (relationColumns.isEmpty())
         {
-            // Function genuinely returns Relation<Any> (no concrete RelationType in
-            // the last expression). Honour the declared PK names by creating
-            // placeholder Column instances — the runtime path still uses these.
+            // Opaque Relation<Any> — keep declared names via placeholder Columns.
             ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
             Multiplicity oneMul = this.context.pureModel.getMultiplicity("one");
             GenericType stringType = this.context.pureModel.getGenericType("String");
@@ -235,12 +230,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         return setImpl;
     }
 
-    /**
-     * Reads the {@code Column}s from the last expression of a (now fully-compiled)
-     * relation function body. Returns an empty list if the last expression does not
-     * carry a concrete {@code RelationType} (i.e. the function returns the
-     * unparameterised {@code Relation<Any>}).
-     */
+    // Columns of the relation function's last-expression RelationType, or [] if Relation<Any>.
     private static RichIterable<? extends Column<?, ?>> getRelationFunctionColumns(RelationFunctionInstanceSetImplementation setImpl)
     {
         if (setImpl._relationFunction() == null)

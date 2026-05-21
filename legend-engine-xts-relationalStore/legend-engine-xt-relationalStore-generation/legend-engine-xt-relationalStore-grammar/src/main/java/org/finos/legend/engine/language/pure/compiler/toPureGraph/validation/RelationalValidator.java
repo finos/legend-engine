@@ -86,7 +86,6 @@ public class RelationalValidator
                         ((RootRelationalInstanceSetImplementation) cm)._propertyMappings().select(p -> p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping && !(p instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.SemiStructuredRelationalPropertyMapping)).forEach(pm -> validateRelationalPropertyMapping((RootRelationalInstanceSetImplementation) cm, pureModel, (org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping) pm, s, mappingValidatorContext));
                     });
 
-
                     RichIterable<? extends AssociationImplementation> associationMappings = mapping._associationMappings().select(a -> a instanceof RelationalAssociationImplementation);
                     MapIterable<String, SetImplementation> classMappingIndex = associationMappings.isEmpty() ? Maps.immutable.empty() : getClassMappingsByIdIncludeEmbedded(pureModel, mapping, mappingValidatorContext);
                     associationMappings.forEach(relAssoc ->
@@ -97,7 +96,6 @@ public class RelationalValidator
         );
         //TODO: Inline , embedded binding
     }
-
 
     private static void relationalException(PureModel pureModel, String message, SourceInformation sourceInformation, Boolean useWarning)
     {

@@ -3429,8 +3429,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testRelationFunctionMappingNoPK()
     {
-        // No explicit ~primaryKey and function body is 1->cast(...). Auto-inference
-        // is deferred to runtime — at compile time this is valid (no error).
+        // No explicit ~primaryKey — auto-inference deferred to runtime.
         testRelationMapping("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +
@@ -3446,9 +3445,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testRelationFunctionMappingPKWithUnmappedColumn()
     {
-        // FIRMID exists in the function's output RelationType but is NOT mapped to
-        // any property. Per Rohit's review this should be valid — PK columns don't
-        // need to be mapped, they just need to exist in the function's output.
+        // PK columns must exist in the function output but need not be mapped to a property.
         testRelationMapping("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +

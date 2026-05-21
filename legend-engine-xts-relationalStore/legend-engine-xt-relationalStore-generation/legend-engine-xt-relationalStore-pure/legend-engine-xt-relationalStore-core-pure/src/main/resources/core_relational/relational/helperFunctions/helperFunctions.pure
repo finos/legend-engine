@@ -395,9 +395,8 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
    ])
 }
 
-// Overload for relation-function mappings. RelationFunctionInstanceSetImplementation
-// is a sibling of RelationalInstanceSetImplementation (both extend InstanceSetImplementation),
-// so it cannot be dispatched through the match above — callers must invoke this overload directly.
+// RelationFunctionInstanceSetImplementation is a sibling of RelationalInstanceSetImplementation
+// (neither extends the other) so it cannot be dispatched through the match above.
 function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
    $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
@@ -456,9 +455,7 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
 }
 
 // Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
-// into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction
-// wrapper. Used by any code path that needs to reference relation-function PKs as relational
-// operation elements.
+// into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction.
 function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
   let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
@@ -529,34 +526,8 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
   );
 }
 
-// ---------------------------------------------------------------------------
-// Primary-key support for RelationFunctionInstanceSetImplementation
-// ---------------------------------------------------------------------------
-// The generic algorithm (per-operator PK rules over Relation operators,
-// ColSpec/ColSpecArray name extraction, join FULL handling, etc.) lives in
-// the CORE Pure module:
-//
-//   meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames
-//   meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey
-//   meta::pure::mapping::relation::inferPrimaryKeyColumnNames
-//
-// (file: legend-engine-pure-code-compiled-core/.../core/pure/mapping/
-//        relationFunctionMapping.pure)
-//
-// That module is store-agnostic: it knows how to walk a relation function
-// body but dispatches the leaf-accessor → PK extraction to whichever
-// `RelationElementAccessorExtension` instances are registered in the
-// active Extension[*].
-//
-// Below we (a) provide the relational-specific leaf handler that pulls
-// the PK column NAMES off `Table.primaryKey` / `View.primaryKey`, and
-// (b) keep the historical `meta::relational::mapping::*` entry-point
-// names as thin facades that wrap the leaf handler into a synthetic
-// `Extension` and call into the core extension-aware API — so existing
-// relational callers and tests continue to see leaf-table inference
-// without having to thread a full `Extension[*]` through.
-// ---------------------------------------------------------------------------
-
+// Relational leaf handler for the core PK inference algorithm — pulls
+// PK column names off Table / View
 function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
 {
   $src->match([
@@ -566,10 +537,8 @@ function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
   ])->map(n | $n->toOne());
 }
 
-// Synthetic Extension carrying just the relational RelationElementAccessorExtension,
-// used by the facades below so existing callers don't need to pass the full
-// Extension[*] (and so we avoid pulling in the full `relationalExtension()`
-// initialisation graph for what is really a thin convenience wrapper).
+// Synthetic Extension carrying just the relational accessor — used by the
+// facades below so existing callers don't have to thread a full Extension[*].
 function <<access.private>> meta::relational::mapping::syntheticRelationalAccessorExtension():meta::pure::extension::Extension[1]
 {
   ^meta::pure::extension::Extension(
@@ -603,8 +572,6 @@ function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:Relation
      );
 }
 
-// Extension-aware overload — used by processRelationFunctionClassMapping at runtime.
-// Passes the caller-supplied extensions through to the core resolver.
 function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
 {
   $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(

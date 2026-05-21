@@ -5033,7 +5033,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
 
 function meta::relational::functions::pureToSqlQuery::processRelationFunctionClassMapping(r:RelationFunctionInstanceSetImplementation[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], milestoningContext:TemporalMilestoningContext[0..1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-  // Lazily resolve PKs at runtime if not already set (PK resolution moved from compile time to runtime)
+  // Auto-infer PK iff explicit ~primaryKey wasn't set at compile time.
   let resolved = if($r.primaryKey->isEmpty(),
     | let pkCols = $r->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
       ^$r(primaryKey = $pkCols);,
