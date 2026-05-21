@@ -347,15 +347,37 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
 //                  we cannot safely assume INNER/LEFT semantics, so
 //                  return [] and force the user to declare `~primaryKey`
 //                  rather than emit a potentially-wrong inferred PK.
+//
+// JoinKind literal shapes we recognise (in compiled AST):
+//   - InstanceValue holding the JoinKind enum value directly
+//     (legend-engine grammar path: `joinKind` parameter materialised
+//     to a runtime enum).
+//   - SimpleFunctionExpression `extractEnumValue(JoinKind, 'INNER')`
+//     (legend-pure PAR compiler path: how `JoinKind.INNER` literals
+//     appear in `.pure` source after compilation).
 function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
 {
   let args = $fe.parametersValues;
   let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
-  let kind = if($args->size() >= 3,
+  let kindName = if($args->size() >= 3,
     | $args->at(2)->evaluateAndDeactivate()->match([
         iv: InstanceValue[1] |
-            $iv.values->filter(v | $v->instanceOf(JoinKind))
-                      ->cast(@JoinKind)->first(),
+            // Shape A: InstanceValue carrying the JoinKind enum value directly.
+            let direct = $iv.values->filter(v | $v->instanceOf(JoinKind))
+                                  ->cast(@JoinKind)->first();
+            if($direct->isNotEmpty(),
+              | $direct->toOne().name,
+              | []
+            );,
+        sfe: SimpleFunctionExpression[1] |
+            // Shape B: SFE `extractEnumValue(JoinKind, 'INNER')`.
+            if($sfe.func.functionName == 'extractEnumValue',
+              | $sfe.parametersValues->at(1)->evaluateAndDeactivate()->match([
+                  iv2: InstanceValue[1] | $iv2.values->filter(x | $x->instanceOf(String))->cast(@String)->first(),
+                  a:   Any[*]           | []
+                ]),
+              | []
+            );,
         a: Any[*] | []
       ]),
     | []
@@ -363,7 +385,7 @@ function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:
   // Only INNER and LEFT (OUTER) preserve `leftPK ∪ rightPK`. Anything
   // else — including an unknown / non-literal join kind — must conservatively
   // yield no inferred PK.
-  if($kind->isNotEmpty() && ($kind->toOne() == JoinKind.INNER || $kind->toOne() == JoinKind.LEFT),
+  if($kindName->isNotEmpty() && ($kindName->toOne() == 'INNER' || $kindName->toOne() == 'LEFT'),
     | $leftPK->concatenate($rightPK)->removeDuplicates(),
     | []
   );

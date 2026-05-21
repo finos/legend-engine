@@ -1012,13 +1012,14 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 ")\n");
 
         // Legacy form: single PK wrapped in brackets is still accepted and normalised to bracket-less.
+        // testFormat(formattedCode, unformattedCode) — first arg is the expected canonical output.
         testFormat("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::testFunc():Any[1]\n" +
-                "    ~primaryKey: [firstName]\n" +
+                "    ~primaryKey: firstName\n" +
                 "    firstName: firstName,\n" +
                 "    firm: jsonColumn\n" +
                 "  }\n" +
@@ -1029,7 +1030,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::testFunc():Any[1]\n" +
-                "    ~primaryKey: firstName\n" +
+                "    ~primaryKey: [firstName]\n" +
                 "    firstName: firstName,\n" +
                 "    firm: jsonColumn\n" +
                 "  }\n" +
