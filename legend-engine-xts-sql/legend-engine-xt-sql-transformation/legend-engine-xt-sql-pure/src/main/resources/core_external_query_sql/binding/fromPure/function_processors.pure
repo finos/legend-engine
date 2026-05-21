@@ -181,9 +181,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('btrim', String, {args, fc, expCtx, ctx | processTrim(trim_String_1__String_1_, $args)}),
       string('char_length', length_String_1__Integer_1_),
       string('chr', char_Integer_1__String_1_),
-      string('concat', String, {args, fc, expCtx, ctx |
-        sfe(plus_String_MANY__String_1_, iv($args))
-      }),
+      string('concat', String, {args, fc, expCtx, ctx | processStringConcatenate($args, [], true, $expCtx)}),
+      string('concat_ws', String, {args, fc, expCtx, ctx | processStringConcatenate($args->tail(), $args->at(0), true, $expCtx)}),
       string('decode', String, {args, fc, expCtx, ctx |
         assert($args->size() == 2, | 'incorrect number of args to decode');
 

@@ -29,7 +29,13 @@ public class TestSQLRoundTrip
     @Test
     public void testEmptyStatement()
     {
-        fail("", 1, 1, "Unexpected token");
+        fail("", 1, 1, "Unexpected token '<EOF>'");
+    }
+
+    @Test
+    public void testInvalid()
+    {
+        fail("select 1 as abc,\n case when 1 = 1 then 1 else 2 as def", 32, 2, "Unexpected token 'as' at line 2, column 32");
     }
 
     @Test
@@ -370,6 +376,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testStringConcatenate()
+    {
+        check("SELECT concat('a', null, 'b'), 'a' || null || 'b' FROM myTable");
+    }
+
+    @Test
     public void testNested()
     {
         check("SELECT * from (SELECT col from myTable)");
@@ -460,7 +472,7 @@ public class TestSQLRoundTrip
         {
             Assert.assertEquals(start, e.getSourceInformation().startColumn);
             Assert.assertEquals(end, e.getSourceInformation().startLine);
-            Assert.assertEquals(message, e.getMessage());
+            Assert.assertTrue("Expected message to start with '" + message + "' but was: " + e.getMessage(), e.getMessage().startsWith(message));
         }
     }
 

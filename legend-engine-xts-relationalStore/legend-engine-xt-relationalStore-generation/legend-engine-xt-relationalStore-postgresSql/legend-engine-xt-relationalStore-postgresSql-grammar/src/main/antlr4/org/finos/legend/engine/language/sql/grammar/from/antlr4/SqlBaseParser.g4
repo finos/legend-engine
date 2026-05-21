@@ -330,7 +330,7 @@ valueExpression
     | value=valueExpression operator=(LLT | BITWISE_SHIFT_RIGHT)
         shift=valueExpression                                                        #bitwiseShift
     | left=valueExpression jsonOperator right=valueExpression                        #jsonBinary
-    | left=valueExpression CONCAT right=valueExpression                              #concatenation
+    | valueExpression (CONCAT valueExpression)+                                      #concatenation
     | dataType stringLiteral                                                         #fromStringLiteralCast
     ;
 

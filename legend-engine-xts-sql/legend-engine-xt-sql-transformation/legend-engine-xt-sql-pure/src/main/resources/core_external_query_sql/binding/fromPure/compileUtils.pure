@@ -92,8 +92,8 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
   let parameters = $zipped->map(p |
 
     [
-      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate())),
-      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | sfe(toOneMany_T_MANY__T_$1_MANY$_, $p.second->evaluateAndDeactivate().genericType, [], OneMany, $p.second->evaluateAndDeactivate()))
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | createToOne($p.second)),
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | createToOneMany($p.second))
     ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();
   );
 
@@ -105,6 +105,21 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
     multiplicity = $multiplicity,
     parametersValues = $parameters
   )->evaluateAndDeactivate();
+}
+
+function meta::external::query::sql::transformation::compile::utils::toOneifyCollectionArg(args:ValueSpecification[*]):ValueSpecification[*]
+{
+  $args->map(a | if ($a->isZeroOne(), | createToOne($a), | $a));
+}
+
+function meta::external::query::sql::transformation::compile::utils::createToOne(v:ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+  sfe(toOne_T_MANY__T_1_, $v->evaluateAndDeactivate().genericType, [], PureOne, $v->evaluateAndDeactivate())
+}
+
+function meta::external::query::sql::transformation::compile::utils::createToOneMany(v:ValueSpecification[1]):SimpleFunctionExpression[1]
+{
+  sfe(toOneMany_T_MANY__T_$1_MANY$_, $v->evaluateAndDeactivate().genericType, [], OneMany, $v->evaluateAndDeactivate())
 }
 
 function meta::external::query::sql::transformation::compile::utils::var(name:String[1]):VariableExpression[1]
