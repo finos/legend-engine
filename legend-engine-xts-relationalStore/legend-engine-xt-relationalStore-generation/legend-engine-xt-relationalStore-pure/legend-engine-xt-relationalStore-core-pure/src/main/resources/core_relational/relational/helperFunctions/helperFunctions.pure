@@ -457,8 +457,8 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
 
 // Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
 // into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction
-// wrapper. Used by sub-aggregation (addPkForAggregation) and any other code path that needs
-// to reference relation-function PKs as relational operation elements.
+// wrapper. Used by any code path that needs to reference relation-function PKs as relational
+// operation elements.
 function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
   let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
@@ -475,19 +475,6 @@ function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(cla
   );
 }
 
-// Returns the given RelationFunctionInstanceSetImplementation with primaryKey populated.
-// If primaryKey is already set, returns the input unchanged. Otherwise lazily resolves
-// it via the extension-aware leaf handler (mirrors processRelationFunctionClassMapping).
-// Centralised here so all call sites needing a resolved PK share a single source of truth
-// for lazy PK resolution.
-function meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved(rf:RelationFunctionInstanceSetImplementation[1], extensions:meta::pure::extension::Extension[*]):RelationFunctionInstanceSetImplementation[1]
-{
-  if($rf.primaryKey->isEmpty(),
-    | let pkCols = $rf->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
-      ^$rf(primaryKey = $pkCols);,
-    | $rf
-  );
-}
 
 function meta::relational::mapping::transformRelationFunctionSemiStructuredPropertyMapping(propertyMappings:PropertyMapping[*], classMapping:SetImplementation[1]):PropertyMapping[*]
 {

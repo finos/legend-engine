@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.primitive.ObjectIntProcedure;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -37,10 +38,16 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.relation._Column;
 
 import java.util.Collections;
 import java.util.List;
@@ -168,18 +175,101 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
     @Override
     public SetImplementation visit(RelationFunctionClassMapping classMapping)
     {
-        // The relation function's expressionSequence is compiled in the
-        // Function Compiler third pass, which runs AFTER the Class Mapping
-        // third pass — so we cannot validate or resolve explicit primary
-        // keys here. Both tasks have moved to the post-validation phase
-        // (see RelationalValidator#validateRelationFunctionMapping), where
-        // the function body is fully compiled and the concrete RelationType
-        // columns are available.
-        //
-        // If no explicit ~primaryKey is declared, leave _primaryKey empty
-        // — runtime processing (processRelationFunctionClassMapping) will
-        // auto-infer via the RelationElementAccessorExtension mechanism.
-        return null;
+        String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
+        RelationFunctionInstanceSetImplementation setImpl =
+                (RelationFunctionInstanceSetImplementation) this.parentMapping._classMappings()
+                        .detect(c -> c._id().equals(id));
+        if (setImpl == null)
+        {
+            return null;
+        }
+
+        // No explicit ~primaryKey → leave _primaryKey empty so the relational
+        // runtime (processRelationFunctionClassMapping) auto-infers via the
+        // RelationElementAccessorExtension mechanism (tablePrimaryKeyLeaf, ...).
+        if (classMapping.primaryKey == null || classMapping.primaryKey.isEmpty())
+        {
+            return setImpl;
+        }
+
+        // Explicit PK declared. The function is now a prerequisite of this mapping
+        // (see ClassMappingPrerequisiteElementsPassBuilder#visit(RelationFunctionClassMapping)),
+        // so its expressionSequence is fully typed by the time we get here.
+        RichIterable<? extends Column<?, ?>> relationColumns = getRelationFunctionColumns(setImpl);
+
+        MutableList<Column<?, ?>> resolvedPK = Lists.mutable.empty();
+        if (relationColumns.isEmpty())
+        {
+            // Function genuinely returns Relation<Any> (no concrete RelationType in
+            // the last expression). Honour the declared PK names by creating
+            // placeholder Column instances — the runtime path still uses these.
+            ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
+            Multiplicity oneMul = this.context.pureModel.getMultiplicity("one");
+            GenericType stringType = this.context.pureModel.getGenericType("String");
+            for (String pkName : classMapping.primaryKey)
+            {
+                resolvedPK.add((Column<?, ?>) _Column.getColumnInstance(pkName, false, stringType, oneMul, null, processorSupport));
+            }
+        }
+        else
+        {
+            for (String pkName : classMapping.primaryKey)
+            {
+                Column<?, ?> col = (Column<?, ?>) relationColumns.detect(c -> pkName.equals(c._name()));
+                if (col == null)
+                {
+                    String available = relationColumns.collect(Column::_name).makeString(", ");
+                    String mappingPath = HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport());
+                    throw new EngineException(
+                            "Primary key column '" + pkName + "' declared in class mapping '" + id
+                                    + "' (mapping '" + mappingPath + "') is not part of the columns returned by the relation function."
+                                    + " Available columns: [" + available + "]."
+                                    + " Use `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
+                            classMapping.sourceInformation,
+                            EngineErrorType.COMPILATION);
+                }
+                resolvedPK.add(col);
+            }
+        }
+        setImpl._primaryKey(resolvedPK);
+        return setImpl;
+    }
+
+    /**
+     * Reads the {@code Column}s from the last expression of a (now fully-compiled)
+     * relation function body. Returns an empty list if the last expression does not
+     * carry a concrete {@code RelationType} (i.e. the function returns the
+     * unparameterised {@code Relation<Any>}).
+     */
+    private static RichIterable<? extends Column<?, ?>> getRelationFunctionColumns(RelationFunctionInstanceSetImplementation setImpl)
+    {
+        if (setImpl._relationFunction() == null)
+        {
+            return Lists.immutable.empty();
+        }
+        RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> expressions =
+                setImpl._relationFunction()._expressionSequence();
+        if (expressions.isEmpty())
+        {
+            return Lists.immutable.empty();
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification lastExpr =
+                expressions.toList().getLast();
+        if (lastExpr == null || lastExpr._genericType() == null)
+        {
+            return Lists.immutable.empty();
+        }
+        RichIterable<? extends GenericType> typeArgs = lastExpr._genericType()._typeArguments();
+        if (typeArgs.isEmpty())
+        {
+            return Lists.immutable.empty();
+        }
+        Type rawType = typeArgs.toList().getFirst()._rawType();
+        if (!(rawType instanceof RelationType))
+        {
+            return Lists.immutable.empty();
+        }
+        return ((RelationType<?>) rawType)._columns();
     }
 
 

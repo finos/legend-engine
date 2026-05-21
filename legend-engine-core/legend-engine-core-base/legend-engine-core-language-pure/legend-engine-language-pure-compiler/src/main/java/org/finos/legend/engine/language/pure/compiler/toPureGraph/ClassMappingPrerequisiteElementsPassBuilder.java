@@ -102,6 +102,16 @@ public class ClassMappingPrerequisiteElementsPassBuilder implements ClassMapping
     public Set<PackageableElementPointer> visit(RelationFunctionClassMapping classMapping)
     {
         this.prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
+        // Declare the relation function as a prerequisite so the function's third pass
+        // (which types its expressionSequence) runs BEFORE this mapping's third pass.
+        // Without this, the function body is empty at PK-resolution time.
+        if (classMapping.relationFunction != null)
+        {
+            this.prerequisiteElements.add(new PackageableElementPointer(
+                    PackageableElementType.FUNCTION,
+                    classMapping.relationFunction.path,
+                    classMapping.relationFunction.sourceInformation));
+        }
         PropertyMappingPrerequisiteElementsBuilder propertyMappingPrerequisiteElementsBuilder = new PropertyMappingPrerequisiteElementsBuilder(this.context, this.prerequisiteElements);
         ListIterate.forEach(classMapping.propertyMappings, pm -> pm.accept(propertyMappingPrerequisiteElementsBuilder));
         return this.prerequisiteElements;
