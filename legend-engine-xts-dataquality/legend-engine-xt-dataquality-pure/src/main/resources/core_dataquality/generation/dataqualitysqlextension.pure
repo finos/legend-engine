@@ -42,7 +42,7 @@ function <<sql.Extension>> meta::external::dataquality::dataProfileCoreExtension
             v:ValueSpecification[1] | fail('invalid parameter to data_profile'); {|1};
           ]);
 
-          let profilingLambda = iv(getProfilingLambda($relationLambda, [], [], false));
+          let profilingLambda = iv(getProfilingLambda($relationLambda, [], [], false, true));
 
           sfe(eval_Function_1__V_m_, $profilingLambda);
           }

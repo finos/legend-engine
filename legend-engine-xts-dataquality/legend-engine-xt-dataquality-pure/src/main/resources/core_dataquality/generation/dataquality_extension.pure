@@ -16,7 +16,7 @@ import meta::external::dataquality::*;
 
 Class meta::external::dataquality::DQExtension
 {
-   excludedColumns:String[*];
+   platformColumns:String[*];
 }
 
 Profile meta::external::dataquality::dq
