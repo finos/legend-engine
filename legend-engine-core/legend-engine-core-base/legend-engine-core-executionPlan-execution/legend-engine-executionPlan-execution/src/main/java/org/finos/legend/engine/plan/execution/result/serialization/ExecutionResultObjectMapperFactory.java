@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ public class ExecutionResultObjectMapperFactory
         objectMapper.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(PureDate.class, new ExecutionResultObjectMapperFactory.PureDateSerializer());
+        simpleModule.addSerializer((Class) Pair.class, new ExecutionResultObjectMapperFactory.EclipsePairSerializer());
         objectMapper.registerModule(simpleModule);
         return objectMapper;
     }
@@ -45,6 +47,18 @@ public class ExecutionResultObjectMapperFactory
         public void serialize(PureDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException
         {
             gen.writeString(value.toString());
+        }
+    }
+
+    public static class EclipsePairSerializer extends JsonSerializer<Pair<?, ?>>
+    {
+        @Override
+        public void serialize(Pair<?, ?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException
+        {
+            gen.writeStartObject();
+            gen.writeObjectField("first", value.getOne());
+            gen.writeObjectField("second", value.getTwo());
+            gen.writeEndObject();
         }
     }
 
