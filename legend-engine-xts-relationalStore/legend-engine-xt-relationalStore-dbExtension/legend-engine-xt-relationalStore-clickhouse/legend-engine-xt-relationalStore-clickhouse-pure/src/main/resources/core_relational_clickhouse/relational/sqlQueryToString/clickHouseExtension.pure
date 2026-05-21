@@ -141,6 +141,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varSamp', $p)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='toISOWeek(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
+    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
   ];
 }
@@ -149,10 +150,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', '\'%Y-%m-%dT%H:%i:%S.%f\'')
+    pair('ISO8601', formatDateTime(\'%F\',%s)),
+    pair('ISO8601_NanoSecondPrecision', concat(formatDateTime(\'%Y-%m-%dT%H:%i:%S.%f\',%s), \'000\'))
   ];
-  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
-  format('concat(formatDateTime(%s,%s), \'000\')', [$params->at(0), $sqlFmt]);
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+  format('%s', [$sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]

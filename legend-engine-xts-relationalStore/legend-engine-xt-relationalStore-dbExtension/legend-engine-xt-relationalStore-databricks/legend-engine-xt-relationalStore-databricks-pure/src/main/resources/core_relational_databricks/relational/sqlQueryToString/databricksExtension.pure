@@ -145,6 +145,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()}))
   ];
 }
@@ -153,9 +154,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', '\'yyyy-MM-dd\'\'T\'\'HH:mm:ss.SSSSSSSSS\'')
+    pair('ISO8601', '\'yyyy-MM-dd\''),
+    pair('ISO8601_NanoSecondPrecision', '\'yyyy-MM-dd\'\'T\'\'HH:mm:ss.SSSSSSSSS\'')
   ];
-  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateTimeFormat: ' + $enumValue);
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 

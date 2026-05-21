@@ -15,7 +15,7 @@
 import meta::pure::test::pct::*;
 import meta::pure::functions::date::*;
 
-Enum meta::pure::functions::date::DateTimeFormat
+Enum meta::pure::functions::date::DateFormat
 {
    ISO8601
 }
@@ -23,24 +23,21 @@ Enum meta::pure::functions::date::DateTimeFormat
 function
    <<PCT.function>>
    {
-      doc.doc = 'Formats a DateTime to a string using the specified DateTimeFormat'
+      doc.doc = 'Formats a Date to a string using the specified DateFormat'
    }
-meta::pure::functions::date::formatDate(dateTime:DateTime[1], dateTimeFormat:DateTimeFormat[1]):String[1]
+meta::pure::functions::date::formatDate(date:Date[1], dateFormat:DateFormat[1]):String[1]
 {
-   if($dateTimeFormat == DateTimeFormat.ISO8601,
-      | formatDateISO8601($dateTime),
-      | assert(false, |'Unsupported DateTimeFormat: ' + $dateTimeFormat->toString()); '';);
+   if($dateFormat == DateFormat.ISO8601,
+      | formatDateISO8601($date),
+      | assert(false, |'Unsupported DateFormat: ' + $dateFormat->toString()); '';);
 }
 
-function <<access.private>> meta::pure::functions::date::formatDateISO8601(dateTime:DateTime[1]):String[1]
+function <<access.private>> meta::pure::functions::date::formatDateISO8601(date:Date[1]):String[1]
 {
-   let base = format('%t{yyyy-MM-dd"T"HH:mm:ss}', $dateTime);
-   if($dateTime->hasSubsecond(),
-      | $base + '.' + format('%t{SSSSSSSSS}', $dateTime),
-      | $base + '.000000000');
+   format('%t{yyyy-MM-dd}', $date);
 }
 
 function <<PCT.test>> meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-   assertEquals('2024-08-15T15:33:42.000000000', $f->eval(|formatDate(%2024-08-15T15:33:42, DateTimeFormat.ISO8601)));
+   assertEquals('2024-08-15', $f->eval(|formatDate(%2024-08-15, DateFormat.ISO8601)));
 }
