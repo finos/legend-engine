@@ -78,20 +78,20 @@ public class SqlServerManager extends DatabaseManager
     }
 
     @Override
-    public Properties getObjectDataSourceProperties(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, Identity identity)
+    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
     {
         Properties properties = new Properties();
-         if (identity.getCredential(LegendConstrainedKerberosCredential.class).isPresent() && authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
-         {
-             LegendConstrainedKerberosCredential credential = identity.getCredential(LegendConstrainedKerberosCredential.class).get();
-             Set<GSSCredential> publicCredentials = credential.getSubject().getPublicCredentials(GSSCredential.class);
-             if (!publicCredentials.isEmpty())
-             {
+        if (identity.getCredential(LegendConstrainedKerberosCredential.class).isPresent() && authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
+        {
+            LegendConstrainedKerberosCredential credential = identity.getCredential(LegendConstrainedKerberosCredential.class).get();
+            Set<GSSCredential> publicCredentials = credential.getSubject().getPublicCredentials(GSSCredential.class);
+            if (!publicCredentials.isEmpty())
+            {
 
-                 properties.put("gsscredential", publicCredentials.iterator().next());
-                 return properties;
-             }
-         }
+                properties.put("gsscredential", publicCredentials.iterator().next());
+                return properties;
+            }
+        }
         return properties;
     }
 }

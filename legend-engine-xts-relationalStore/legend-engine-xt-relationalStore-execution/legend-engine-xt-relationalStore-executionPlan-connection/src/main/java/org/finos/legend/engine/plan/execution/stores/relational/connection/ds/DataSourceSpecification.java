@@ -150,15 +150,16 @@ public abstract class DataSourceSpecification
         Optional<LegendKerberosCredential> kerberosCredentialHolder = identity.getCredential(LegendKerberosCredential.class);
         Optional<LegendConstrainedKerberosCredential> constrainedKerberosCredentialHolder = identity.getCredential(LegendConstrainedKerberosCredential.class);
         Supplier<DataSource> dataSourceBuilder;
+        IdentityState identityState = new IdentityState(identity, databaseCredentialSupplierHolder);
         if (kerberosCredentialHolder.isPresent() || constrainedKerberosCredentialHolder.isPresent())
         {
-            dataSourceBuilder = () -> KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identity));
+            dataSourceBuilder = () -> KerberosUtils.doAs(identity, (PrivilegedAction<DataSource>) () -> this.buildDataSource(identityState));
         }
         else
         {
-            dataSourceBuilder = () -> this.buildDataSource(identity);
+            dataSourceBuilder = () -> this.buildDataSource(identityState);
         }
-        return getConnection(new IdentityState(identity, databaseCredentialSupplierHolder), dataSourceBuilder);
+        return getConnection(identityState, dataSourceBuilder);
     }
 
     public Connection getConnectionForTests(IdentityState identityState, Supplier<DataSource> dataSourcePoolBuilder)
@@ -201,31 +202,33 @@ public abstract class DataSourceSpecification
         return this.connectionStateManager.poolNameFor(identity, getConnectionKey());
     }
 
-    private DataSource buildDataSource(Identity identity)
+    private DataSource buildDataSource(IdentityState identityState)
     {
-        return this.buildDataSource(null, -1, null, identity);
+        return this.buildDataSource(null, -1, null, identityState);
     }
 
-    private HikariDataSource buildDataSource(String host, int port, String databaseName, Identity identity)
+    private HikariDataSource buildDataSource(String host, int port, String databaseName, IdentityState identityState)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Create Pool").startActive(true))
         {
-            Properties properties = new Properties();
-            Properties typePreservingProperties = new Properties();
+            Identity identity = identityState.getIdentity();
             String poolName = poolNameFor(identity);
-            typePreservingProperties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
-            properties.putAll(this.extraDatasourceProperties);
 
+            Properties properties = new Properties();
+
+            properties.putAll(this.extraDatasourceProperties);
             properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
             properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
-            properties.putAll(authenticationStrategy.getAuthenticationPropertiesForConnection());
+
+            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
+            identityState.getCredentialSupplier().ifPresent(cs -> properties.putAll(cs.getCredentialDataSourceProperties(poolName, identity)));
+            
             LOGGER.info("Building pool [{}] for [{}] ", poolName, identity.getName());
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setDriverClassName(databaseManager.getDriver());
             jdbcConfig.setPoolName(poolName);
             jdbcConfig.setMaximumPoolSize(maxPoolSize);
             jdbcConfig.setMinimumIdle(minPoolSize);
-            jdbcConfig.setDataSourceProperties(this.databaseManager.getObjectDataSourceProperties(this.datasourceKey, this.authenticationStrategy, identity));
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
             jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", "false");
@@ -238,13 +241,7 @@ public abstract class DataSourceSpecification
                 jdbcConfig.setMetricRegistry(METRIC_REGISTRY);
             }
 
-            // Properties management --------------
-            //ToString on value is used for backwards compatability with Hikari versions from before  https://github.com/brettwooldridge/HikariCP/pull/2305
-            MapAdapter.adapt(properties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo().toString()));
-            MapAdapter.adapt(typePreservingProperties).keyValuesView().forEach((Procedure<Pair>) p -> jdbcConfig.addDataSourceProperty(p.getOne().toString(), p.getTwo()));
-            //-------------------------------------
-
-
+            jdbcConfig.setDataSourceProperties(properties);
 
             HikariDataSource ds = new HikariDataSource(jdbcConfig);
             scope.span().setTag("Pool", ds.getPoolName());
