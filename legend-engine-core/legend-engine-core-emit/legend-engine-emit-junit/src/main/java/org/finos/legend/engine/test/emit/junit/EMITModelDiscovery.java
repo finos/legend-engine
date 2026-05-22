@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.test.emit.junit;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
@@ -24,7 +21,9 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -34,32 +33,59 @@ final class EMITModelDiscovery
     {
     }
 
-    static MutableList<Path> findEmitYamls(String classpathRoot)
+    static Path findEmitYaml(String classpathRoot, String name)
     {
-        if (classpathRoot == null || classpathRoot.isEmpty())
+        String normalizedRoot = normalizeRoot(classpathRoot);
+        ClassLoader classLoader = getClassLoader();
+        URL url = classLoader.getResource(normalizedRoot + "/" + name + ".emit.yaml");
+        if (url == null)
         {
-            throw new IllegalArgumentException("classpathRoot must be non-empty");
-        }
-        String normalised = classpathRoot.endsWith("/") ? classpathRoot.substring(0, classpathRoot.length() - 1) : classpathRoot;
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        if (classLoader == null)
-        {
-            classLoader = EMITModelDiscovery.class.getClassLoader();
+            return null;
         }
         try
         {
-            MutableList<Path> result = Lists.mutable.empty();
-            Enumeration<URL> urls = classLoader.getResources(normalised);
+            return Paths.get(url.toURI());
+        }
+        catch (URISyntaxException e)
+        {
+            throw new IllegalStateException("Invalid classpath URL: " + url, e);
+        }
+    }
+
+    static List<Path> findEmitYamls(String classpathRoot)
+    {
+        String normalizedRoot = normalizeRoot(classpathRoot);
+        ClassLoader classLoader = getClassLoader();
+        try
+        {
+            List<Path> result = new ArrayList<>();
+            Enumeration<URL> urls = classLoader.getResources(normalizedRoot);
             while (urls.hasMoreElements())
             {
                 walkRoot(urls.nextElement(), result::add);
             }
-            return result.sortThis();
+            result.sort(null);
+            return result;
         }
         catch (IOException e)
         {
             throw new UncheckedIOException("Failed to enumerate classpath resources under '" + classpathRoot + "'", e);
         }
+    }
+
+    private static String normalizeRoot(String classpathRoot)
+    {
+        if (classpathRoot == null || classpathRoot.isEmpty())
+        {
+            throw new IllegalArgumentException("classpathRoot must be non-empty");
+        }
+        return classpathRoot.endsWith("/") ? classpathRoot.substring(0, classpathRoot.length() - 1) : classpathRoot;
+    }
+
+    private static ClassLoader getClassLoader()
+    {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        return (classLoader == null) ? EMITModelDiscovery.class.getClassLoader() : classLoader;
     }
 
     private static void walkRoot(URL url, Consumer<? super Path> consumer)
