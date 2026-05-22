@@ -1036,7 +1036,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
 
    let plan = executionPlan($query, meta::relational::extension::relationalExtensions());
 
-  assertEquals(7, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@meta::external::store::relational::runtime::RelationalDatabaseConnection)
+  assertEquals(5, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@meta::external::store::relational::runtime::RelationalDatabaseConnection)
   .datasourceSpecification->cast(@LocalH2DatasourceSpecification).testDataSetupSqls->size());
   let result = meta::legend::executeLegendQuery($query,[], meta::relational::extension::relationalExtensions());
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"tradeId":1,"product":{"productId":"productID 2","productName":"productName 84","description":"description 67"}},{"tradeId":2,"product":null},{"tradeId":3,"product":null},{"tradeId":4,"product":null}]}',$result);

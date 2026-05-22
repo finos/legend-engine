@@ -22,13 +22,13 @@ function meta::relational::tests::semistructured::flattening::arrayScalarExecute
         'PERSON_SCHEMA\n' +
         'PERSON_TABLE\n' +
         'ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID\n' +
-        '1,Peter,Smith,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A1""}, {""name"": ""A11""}]}",2\n' +
-        '2,John,Johnson,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A2""}, {""name"": ""A22""}]}",4\n' +
-        '3,John,Hill,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A3""}, {""name"": ""A32""}]}",2\n' +
-        '4,Anthony,Allen,"{""legalName"": ""Firm X"", ""otherNames"": [""O1"", ""O2""], ""addresses"": [{""name"": ""A4""}]}",\n' +
-        '5,Fabrice,Roberts,"{""legalName"": ""Firm A"", ""otherNames"": [""O3"", ""O4""], ""addresses"": [{""name"": ""A5""}, {""name"": ""A52""}]}",\n' +
-        '6,Oliver,Hill,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A6""}]}",7\n' +
-        '7,David,Harris,"{""legalName"": ""Firm B"", ""otherNames"": [""O5"", ""O6""], ""addresses"": [{""name"": ""A7""}]}",\n'
+        '1,Peter,Smith,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A1\\", \\"addressType\\": \\"Primary\\"}, {\\"name\\": \\"A11\\", \\"addressType\\": \\"Secondary\\"}]}",2\n' +
+        '2,John,Johnson,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A2\\", \\"addressType\\": \\"Primary\\"}, {\\"name\\": \\"A22\\", \\"addressType\\": \\"Secondary\\"}]}",4\n' +
+        '3,John,Hill,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A3\\", \\"addressType\\": \\"Primary\\"}, {\\"name\\": \\"A32\\", \\"addressType\\": \\"Secondary\\"}]}",2\n' +
+        '4,Anthony,Allen,"{\\"legalName\\": \\"Firm X\\", \\"otherNames\\": [\\"O1\\", \\"O2\\"], \\"addresses\\": [{\\"name\\": \\"A4\\", \\"addressType\\": \\"Primary\\"}]}",\n' +
+        '5,Fabrice,Roberts,"{\\"legalName\\": \\"Firm A\\", \\"otherNames\\": [\\"O3\\", \\"O4\\"], \\"addresses\\": [{\\"name\\": \\"A5\\", \\"addressType\\": \\"Primary\\"}, {\\"name\\": \\"A52\\", \\"addressType\\": \\"Secondary\\"}]}",\n' +
+        '6,Oliver,Hill,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A6\\", \\"addressType\\": \\"Primary\\"}]}",7\n' +
+        '7,David,Harris,"{\\"legalName\\": \\"Firm B\\", \\"otherNames\\": [\\"O5\\", \\"O6\\"], \\"addresses\\": [{\\"name\\": \\"A7\\", \\"addressType\\": \\"Primary\\"}]}",\n'
         ;
 
   let model = '/core_relational/relational/tests/semistructured/model/semiStructuredArrayScalarOperations.legend';
@@ -219,7 +219,7 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
     'flatten::semiStructuredArrayFilterFirstInIfElse__TabularDataSet_1_',
@@ -231,6 +231,23 @@ function meta::relational::tests::semistructured::flattening::testSemiStructured
     'John,Firm X,Firm X\n' +
     'John,Firm X,Firm X\n' +
     'Oliver,Firm B,Firm B\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstWithEnumComparison(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterFirstWithEnumComparison__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Primary Address Name\n' +
+    'Anthony,Firm X,A4\n' +
+    'David,Firm B,A7\n' +
+    'Fabrice,Firm A,A5\n' +
+    'John,Firm X,A2\n' +
+    'John,Firm X,A3\n' +
+    'Oliver,Firm B,A6\n' +
     'Peter,Firm X,A1\n'
   );
 }

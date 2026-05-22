@@ -108,7 +108,9 @@ public class ModelManager
     public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
         PureModelContextData data = this.loadData(context, clientVersion, identity);
-        return Tuples.pair(data, loadModel(data, clientVersion, identity, packageOffset));
+        PureModelProcessParameter modelProcessParameter = PureModelProcessParameter.newBuilder().withPackagePrefix(packageOffset).withForkJoinPool(this.forkJoinPool).build();
+        PureModel model = loadModelOrData(context, clientVersion, identity, pureModelCache, p -> Compiler.compile(p, this.deploymentMode, identity.getName(), null, modelProcessParameter), data);
+        return Tuples.pair(data, model);
     }
 
     // Remove clientVersion
@@ -120,6 +122,11 @@ public class ModelManager
 
 
     private <T> T loadModelOrData(PureModelContext context, String clientVersion, Identity identity, Cache<PureModelContext, T> pointerCache, Function<PureModelContextData, T> mayCompileFunction)
+    {
+        return loadModelOrData(context, clientVersion, identity, pointerCache, mayCompileFunction, null);
+    }
+
+    private <T> T loadModelOrData(PureModelContext context, String clientVersion, Identity identity, Cache<PureModelContext, T> pointerCache, Function<PureModelContextData, T> mayCompileFunction, PureModelContextData preResolvedData)
     {
         if (context instanceof PureModelContextCombination)
         {
@@ -149,7 +156,7 @@ public class ModelManager
         }
         else
         {
-            return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
+            return resolvePointerAndCache(context, identity, pointerCache, cacheKey -> mayCompileFunction.apply(preResolvedData != null ? preResolvedData : this.loadModelDataFromStorage(cacheKey, clientVersion, identity)));
         }
     }
 

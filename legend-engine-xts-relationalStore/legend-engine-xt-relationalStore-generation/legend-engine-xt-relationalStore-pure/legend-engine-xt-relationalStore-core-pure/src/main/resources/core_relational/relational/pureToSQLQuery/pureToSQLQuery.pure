@@ -3773,7 +3773,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 
 function meta::relational::functions::pureToSqlQuery::processSemiStructuredArrayFirst(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  fail('Processing semiStructuredArrayFirst');
   let firstParam = $f.parametersValues->evaluateAndDeactivate()->at(0);
 
   // Resolve property mapping by walking through the chain to find the base semi-structured property
@@ -8400,9 +8399,12 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
 {
     let enum = $enumWrapper->cast(@Literal).value;
     let expr = $enumPropWrapper->byPassRouterInfo()->cast(@SimpleFunctionExpression);
-    let enumPropMapping = $currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping);
+    let enumPropMapping = if($currentPropertyMapping->isNotEmpty(),
+                            |$currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping),
+                            |[]
+                          );
 
-    if ($expr.func.name == 'getEnum',
+    if ($enumPropMapping->isEmpty() || $expr.func.name == 'getEnum',
           | [],
           | $expr.func->match([
                               p:Property<Nil,Any|*>[1]|assertEquals($enumPropMapping.property, $p, 'The mapping must be for the enum property'),
@@ -8415,8 +8417,10 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
                             ]);
     );
 
-    let sourceVal = if ($enumPropMapping->instanceOf(SemiStructuredRelationalPropertyMapping),
-                        | $enum->id(),
+    let sourceVal = if ([
+                          pair(|$enumPropMapping->isEmpty(), |$enum->id()->toString()),
+                          pair(|$enumPropMapping->toOne()->instanceOf(SemiStructuredRelationalPropertyMapping), |$enum->id())
+                        ],
                         | assert($enumPropMapping.transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
                           $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
                     );
@@ -8458,11 +8462,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::extract
     print(if(!$context.debug, |'',
             | $context.space+ '  Extract Enum Value ('+$enumeration->cast(@Enumeration<Any>)->elementToPath()+'.'+$enumAsString->toString()+')\n'));
 
-
     let enum = extractEnumValue($enumeration->cast(@Enumeration<Any>), $enumAsString->cast(@String))->cast(@Enum);
 
-   mapEnumValue($enum, $currentPropertyMapping, $context);
-
+    mapEnumValue($enum, $currentPropertyMapping, $context);
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::mapEnumValue(
@@ -9769,6 +9771,7 @@ function meta::relational::functions::pureToSqlQuery::genericTypeToDataType(gene
             pair(|$path == 'Map' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Pair' && $genericType.typeArguments->at(0).rawType == String, |^meta::relational::metamodel::datatype::Object(keyType = $genericType.typeArguments->at(0)->genericTypeToDataType(ZeroOne), valueType = $genericType.typeArguments->at(1)->genericTypeToDataType(ZeroOne))),
             pair(|$path == 'Variant' || ($path->in(['Map', 'Pair', 'List', 'Any'])->not() && $genericType.rawType->toOne()->instanceOf(Class)), |^meta::relational::metamodel::datatype::SemiStructured()),
+            pair(|$genericType.rawType->toOne()->instanceOf(Enumeration), |^meta::relational::metamodel::datatype::Varchar(size=1024)),
 
             pair(|$path == 'BigInt', |^meta::relational::metamodel::datatype::BigInt()),
             pair(|$path == 'StrictDate', |^meta::relational::metamodel::datatype::Date()),

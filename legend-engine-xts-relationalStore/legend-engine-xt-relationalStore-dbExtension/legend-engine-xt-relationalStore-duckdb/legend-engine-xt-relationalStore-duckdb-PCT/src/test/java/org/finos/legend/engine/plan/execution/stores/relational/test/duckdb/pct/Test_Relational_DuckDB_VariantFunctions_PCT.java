@@ -47,6 +47,7 @@ public class Test_Relational_DuckDB_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"List<Variant> is not managed yet!\"\""),
             one("meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_", "Integer is not managed yet!"),
             one("meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_", "\"\nexpected: %2020-01-01T01:01:00.000+0000\nactual:   %2020-01-01T01:01:00.000000000+0000\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Month is not managed yet!\"\""),
 
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_", "\"\nexpected: '[[[1]]]'\nactual:   '[1]'\""),
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "Unimplemented type for cast (MAP(VARCHAR, BIGINT) -> MAP(VARCHAR, BIGINT)[])\n\nLINE 1: select ifnull(to_json(cast(MAP {'hello': cast(MAP {'world': 2} as MAP(VARCHAR..."),

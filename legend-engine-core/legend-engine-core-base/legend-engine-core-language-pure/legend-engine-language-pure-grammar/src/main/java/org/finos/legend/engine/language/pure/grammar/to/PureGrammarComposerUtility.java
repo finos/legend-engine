@@ -20,6 +20,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -148,9 +150,23 @@ public class PureGrammarComposerUtility
         return convertIdentifier(val, false);
     }
 
+    public static String convertIdentifier(String val, Function<String, String> identifierConverter)
+    {
+        return identifierConverter.apply(val);
+    }
+
     public static String convertIdentifier(String val, boolean doubleQuotes)
     {
         return convertIdentifier(val, doubleQuotes, false);
+    }
+
+    public static String convertIdentifier(String val, Set<String> reservedKeywords)
+    {
+        if (val == null || val.isEmpty())
+        {
+            return "";
+        }
+        return UNQUOTED_IDENTIFIER_PATTERN.matcher(val).matches() && !reservedKeywords.contains(val) ? val : convertString(val, true, false);
     }
 
     public static String convertIdentifier(String val, boolean doubleQuotes, boolean isPureGrammar)

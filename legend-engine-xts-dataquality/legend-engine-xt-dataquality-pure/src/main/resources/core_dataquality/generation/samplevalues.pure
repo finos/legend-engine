@@ -54,106 +54,108 @@ function meta::external::dataquality::samplevalues::getSampleValuesLambda(l: Lam
   let relationType = $l.expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>);
 
   let cte = var('cte', PureOne, $l->genericType());
+  let colsToExclude = meta::external::dataquality::dataprofile::getExcludedColumns();
 
-  let queries = $relationType.columns->map(c |
-    // Group By on the column value with count aggregate
-    let columnName = $c.name->toOne();
-    let colType = $c.classifierGenericType.typeArguments->last()->toOne();
-    let colMultiplicity = $c.classifierGenericType.multiplicityArguments->first()->toOne();
-    let relTypeGT = $c.classifierGenericType.typeArguments->at(0);
+  let queries = $relationType.columns->filter(c | !$colsToExclude->contains($c.name->toOne()))
+    ->map(c |
+      // Group By on the column value with count aggregate
+      let columnName = $c.name->toOne();
+      let colType = $c.classifierGenericType.typeArguments->last()->toOne();
+      let colMultiplicity = $c.classifierGenericType.multiplicityArguments->first()->toOne();
+      let relTypeGT = $c.classifierGenericType.typeArguments->at(0);
 
-    let groupByExpr = sfe(
-      groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_,
-      [
-        $cte,
-        ^ColSpecArray<Any>(names = [$columnName])->iv(),
-        ^AggColSpec<Any, Any, Any>(
-          name = name(SampleValuesColumn.COUNT),
-          map = lambda(functionType('row', $relTypeGT, PureOne, $colType, $colMultiplicity), col($c, var('row'))),
-          reduce = lambda(functionType('y', $colType, ZeroMany, gt(Integer), PureOne), sfe(count_Any_MANY__Integer_1_, var('y')))
-        )->iv()
-      ]
-    );
+      let groupByExpr = sfe(
+        groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_,
+        [
+          $cte,
+          ^ColSpecArray<Any>(names = [$columnName])->iv(),
+          ^AggColSpec<Any, Any, Any>(
+            name = name(SampleValuesColumn.COUNT),
+            map = lambda(functionType('row', $relTypeGT, PureOne, $colType, $colMultiplicity), col($c, var('row'))),
+            reduce = lambda(functionType('y', $colType, ZeroMany, gt(Integer), PureOne), sfe(count_Any_MANY__Integer_1_, var('y')))
+          )->iv()
+        ]
+      );
 
-    // Sort descending by count
-    let sortExpr = sfe(
-      sort_Relation_1__SortInfo_MANY__Relation_1_,
-      [$groupByExpr, sfe(descending_ColSpec_1__SortInfo_1_, ^ColSpec<Any>(name = name(SampleValuesColumn.COUNT))->iv())]
-    );
+      // Sort descending by count
+      let sortExpr = sfe(
+        sort_Relation_1__SortInfo_MANY__Relation_1_,
+        [$groupByExpr, sfe(descending_ColSpec_1__SortInfo_1_, ^ColSpec<Any>(name = name(SampleValuesColumn.COUNT))->iv())]
+      );
 
-    // Limit to maxNumberOfSampleValues
-    let limitExpr = sfe(
-      limit_Relation_1__Integer_1__Relation_1_,
-      [$sortExpr, iv($maxNumberOfSampleValues)]
-    );
+      // Limit to maxNumberOfSampleValues
+      let limitExpr = sfe(
+        limit_Relation_1__Integer_1__Relation_1_,
+        [$sortExpr, iv($maxNumberOfSampleValues)]
+      );
 
-    // Extend with constant and type-switched columns
-    let columnTypeName = getColumnTypeName($c);
+      // Extend with constant and type-switched columns
+      let columnTypeName = getColumnTypeName($c);
 
-    let funcColSpecs = [
-      // column_name: constant string with the column name
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.COLUMN_NAME),
-        function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnName))
-      ),
-      // column_data_type: constant string with the column type name
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.COLUMN_DATA_TYPE),
-        function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnTypeName))
-      ),
-      // string_value: cast value to String if column is String type, else null
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.STRING_VALUE),
-        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(String), parameters = var('row')),
-          if(isStringColumn($c), | createCast(col($c, var('row')), String), | createCast(iv([]), String))->evaluateAndDeactivate())
-      ),
-      // int_value: cast value to Integer if column is Integer type, else null
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.INT_VALUE),
-        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Integer), parameters = var('row')),
-          if(isIntegerColumn($c), | createCast(col($c, var('row')), Integer), | createCast(iv([]), Integer))->evaluateAndDeactivate())
-      ),
-      // float_value: cast value to Float if column is Float type, else null
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.FLOAT_VALUE),
-        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Float), parameters = var('row')),
-          if(isFloatColumn($c), | createCast(col($c, var('row')), Float), | createCast(iv([]), Float))->evaluateAndDeactivate())
-      ),
-      // date_value: cast value to StrictDate if column is Date type, else null
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.DATE_VALUE),
-        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(StrictDate), parameters = var('row')),
-          if(isDateColumn($c), | createCast(col($c, var('row')), StrictDate), | createCast(iv([]), StrictDate))->evaluateAndDeactivate())
-      ),
-      // boolean_value: cast value to Boolean if column is Boolean type, else null
-      ^FuncColSpec<Any, Any>(
-        name = name(SampleValuesColumn.BOOLEAN_VALUE),
-        function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Boolean), parameters = var('row')),
-          if(isBooleanColumn($c), | createCast(col($c, var('row')), Boolean), | createCast(iv([]), Boolean))->evaluateAndDeactivate())
-      )
-    ];
+      let funcColSpecs = [
+        // column_name: constant string with the column name
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.COLUMN_NAME),
+          function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnName))
+        ),
+        // column_data_type: constant string with the column type name
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.COLUMN_DATA_TYPE),
+          function = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = gt(String), parameters = var('row')), iv($columnTypeName))
+        ),
+        // string_value: cast value to String if column is String type, else null
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.STRING_VALUE),
+          function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(String), parameters = var('row')),
+            if(isStringColumn($c), | createCast(col($c, var('row')), String), | createCast(iv([]), String))->evaluateAndDeactivate())
+        ),
+        // int_value: cast value to Integer if column is Integer type, else null
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.INT_VALUE),
+          function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Integer), parameters = var('row')),
+            if(isIntegerColumn($c), | createCast(col($c, var('row')), Integer), | createCast(iv([]), Integer))->evaluateAndDeactivate())
+        ),
+        // float_value: cast value to Float if column is Float type, else null
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.FLOAT_VALUE),
+          function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Float), parameters = var('row')),
+            if(isFloatColumn($c), | createCast(col($c, var('row')), Float), | createCast(iv([]), Float))->evaluateAndDeactivate())
+        ),
+        // date_value: cast value to StrictDate if column is Date type, else null
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.DATE_VALUE),
+          function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(StrictDate), parameters = var('row')),
+            if(isDateColumn($c), | createCast(col($c, var('row')), StrictDate), | createCast(iv([]), StrictDate))->evaluateAndDeactivate())
+        ),
+        // boolean_value: cast value to Boolean if column is Boolean type, else null
+        ^FuncColSpec<Any, Any>(
+          name = name(SampleValuesColumn.BOOLEAN_VALUE),
+          function = lambda(^FunctionType(returnMultiplicity = ZeroOne, returnType = gt(Boolean), parameters = var('row')),
+            if(isBooleanColumn($c), | createCast(col($c, var('row')), Boolean), | createCast(iv([]), Boolean))->evaluateAndDeactivate())
+        )
+      ];
 
-    let extendExpr = sfe(
-      extend_Relation_1__FuncColSpecArray_1__Relation_1_,
-      [$limitExpr, ^FuncColSpecArray<Any, Any>(funcSpecs = $funcColSpecs)->iv()]
-    );
+      let extendExpr = sfe(
+        extend_Relation_1__FuncColSpecArray_1__Relation_1_,
+        [$limitExpr, ^FuncColSpecArray<Any, Any>(funcSpecs = $funcColSpecs)->iv()]
+      );
 
-    // Select all output columns (drops the original groupBy key column)
-    let outputColumns = [
-      name(SampleValuesColumn.COLUMN_NAME),
-      name(SampleValuesColumn.COLUMN_DATA_TYPE),
-      name(SampleValuesColumn.COUNT),
-      name(SampleValuesColumn.STRING_VALUE),
-      name(SampleValuesColumn.INT_VALUE),
-      name(SampleValuesColumn.FLOAT_VALUE),
-      name(SampleValuesColumn.DATE_VALUE),
-      name(SampleValuesColumn.BOOLEAN_VALUE)
-    ];
+      // Select all output columns (drops the original groupBy key column)
+      let outputColumns = [
+        name(SampleValuesColumn.COLUMN_NAME),
+        name(SampleValuesColumn.COLUMN_DATA_TYPE),
+        name(SampleValuesColumn.COUNT),
+        name(SampleValuesColumn.STRING_VALUE),
+        name(SampleValuesColumn.INT_VALUE),
+        name(SampleValuesColumn.FLOAT_VALUE),
+        name(SampleValuesColumn.DATE_VALUE),
+        name(SampleValuesColumn.BOOLEAN_VALUE)
+      ];
 
-    sfe(
-      select_Relation_1__ColSpecArray_1__Relation_1_,
-      [$extendExpr, ^ColSpecArray<Any>(names = $outputColumns)->iv()]
-    );
+      sfe(
+        select_Relation_1__ColSpecArray_1__Relation_1_,
+        [$extendExpr, ^ColSpecArray<Any>(names = $outputColumns)->iv()]
+      );
   );
 
   // UNION ALL per-column sub-queries using concatenate

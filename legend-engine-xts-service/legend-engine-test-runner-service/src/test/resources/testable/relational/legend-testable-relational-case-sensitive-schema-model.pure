@@ -1,0 +1,74 @@
+###Pure
+Class model::Product
+{
+  name: String[1];
+  type: String[1];
+}
+
+
+###Relational
+Database store::CaseSensitiveDB
+(
+  Schema Schema1
+  (
+    Table product_table
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200),
+      type VARCHAR(100)
+    )
+  )
+  Schema schema1
+  (
+    Table product_table
+    (
+      id INTEGER PRIMARY KEY,
+      category_id INTEGER
+    )
+  )
+)
+
+
+###Mapping
+Mapping execution::ProductMapping
+(
+  *model::Product: Relational
+  {
+    ~primaryKey
+    (
+      [store::CaseSensitiveDB]Schema1.product_table.id
+    )
+    ~mainTable [store::CaseSensitiveDB]Schema1.product_table
+    name: [store::CaseSensitiveDB]Schema1.product_table.name,
+    type: [store::CaseSensitiveDB]Schema1.product_table.type
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::CaseSensitiveConnection
+{
+  store: store::CaseSensitiveDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::ProductRuntime
+{
+  mappings:
+  [
+    execution::ProductMapping
+  ];
+  connectionStores:
+  [
+    model::CaseSensitiveConnection:
+    [
+      store::CaseSensitiveDB
+    ]
+  ];
+}

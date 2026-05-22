@@ -684,18 +684,111 @@ function meta::external::dataquality::buildUnionExpression(param1: FunctionExpre
   let inputRelType1 = $param1.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
   let inputRelType2 = $param2.genericType.typeArguments.rawType->toOne()->cast(@meta::pure::metamodel::relation::RelationType<Any>);
   let newRelTypeWithAllCols = getCombinedRelType($inputRelType1, $inputRelType2);
+  let orderedColNames = $newRelTypeWithAllCols.columns->map(c | $c.name->toOne())->sort();
+  let concatenateRelType = getConcatenateRelType($inputRelType1, $inputRelType2, $orderedColNames);
 
-  let concatFunction = ^SimpleFunctionExpression
+  //concatenate requires both relations to have the same RelationType (same columns and order).
+  //For each side add any missing columns as []->cast(@TargetType) then select the columns in a sorted order
+  let concatenateParam1 = prepareRelationForUnion($param1, $inputRelType1, $concatenateRelType, $orderedColNames);
+  let concatenateParam2 = prepareRelationForUnion($param2, $inputRelType2, $concatenateRelType, $orderedColNames);
+  
+
+  ^SimpleFunctionExpression
   (
       func = concatenate_Relation_1__Relation_1__Relation_1_,
       multiplicity = PureOne,
-      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$newRelTypeWithAllCols)),
+      genericType  = ^GenericType(rawType=Relation, typeArguments = ^GenericType(rawType=$concatenateRelType)),
       importGroup  = system::imports::coreImport,
       parametersValues = [
-        $param1,
-        $param2
+        $concatenateParam1,
+        $concatenateParam2
       ]
   )->evaluateAndDeactivate();
+}
+
+// Prepares the given relation expression to the target (union-aligned) relation type:
+//  1) Extends with any missing columns each populated via []->cast(@T) so it becomes a typed null.
+//  2) Selects the columns in the given sorted order
+function meta::external::dataquality::prepareRelationForUnion(rel: FunctionExpression[1], currentRelType: meta::pure::metamodel::relation::RelationType<Any>[1], targetRelType: meta::pure::metamodel::relation::RelationType<Any>[1], orderedColNames: String[*]): FunctionExpression[1]
+{
+  let currentNames = $currentRelType.columns->map(c | $c.name->toOne());
+  let missingCols = $targetRelType.columns->filter(c | !$currentNames->contains($c.name->toOne()));
+  let extended = if($missingCols->isEmpty(),
+    | $rel,
+    | $rel->buildExtendWithEmptyColumns($currentRelType, $missingCols)
+  );
+  $extended->buildOrderedSelectExpression($orderedColNames, $targetRelType);
+}
+
+function meta::external::dataquality::buildExtendWithEmptyColumns(rel: FunctionExpression[1], currentRelType: meta::pure::metamodel::relation::RelationType<Any>[1], missingCols: meta::pure::metamodel::relation::Column<Nil,Any|*>[*]): FunctionExpression[1]
+{
+  let relParamName = 'row';
+  let relParamGT = ^GenericType(rawType = $currentRelType);
+  let postExtendRelType = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $currentRelType.columns->concatenate($missingCols));
+
+  let funcColSpecs = $missingCols->map(col |
+    let colName = $col.name->toOne();
+    let colTypeGT = $col.classifierGenericType.typeArguments->at(1)->toOne();
+    let emptyInstance = ^InstanceValue(values=[], multiplicity=PureZero, genericType = $colTypeGT)->evaluateAndDeactivate();
+    let castExpr = buildCast($emptyInstance, $colTypeGT);
+    let ft = ^FunctionType(returnMultiplicity = ZeroOne, returnType = $colTypeGT, parameters = ^VariableExpression(name=$relParamName, genericType=$relParamGT, multiplicity=PureOne));
+
+    ^meta::pure::metamodel::relation::FuncColSpec<Any, Any>(
+      name = $colName,
+      function = lambda($ft, $castExpr)
+    );
+  );
+
+  let funcColSpecArrayIV = ^meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>(funcSpecs = $funcColSpecs)->iv();
+
+  ^SimpleFunctionExpression(
+    func = extend_Relation_1__FuncColSpecArray_1__Relation_1_,
+    multiplicity = PureOne,
+    genericType = ^GenericType(rawType=Relation, typeArguments=^GenericType(rawType=$postExtendRelType)),
+    importGroup = system::imports::coreImport,
+    parametersValues = [
+      $rel,
+      $funcColSpecArrayIV
+    ]
+  )->evaluateAndDeactivate();
+}
+
+// Used when concatenating two relations with different schemas so that a column that is missing on one side can be filled with []->cast(@T) on that side.
+function meta::external::dataquality::widenColumnToZeroOne(col: meta::pure::metamodel::relation::Column<Nil,Any|*>[1]): meta::pure::metamodel::relation::Column<Nil,Any|*>[1]
+{
+  let colTypeArg = $col.classifierGenericType.typeArguments->at(1)->toOne();
+  let newClassifier = ^GenericType(
+    rawType = meta::pure::metamodel::relation::Column,
+    typeArguments = [^GenericType(rawType=Nil), $colTypeArg],
+    multiplicityArguments = ZeroOne
+  );
+  ^$col(classifierGenericType = $newClassifier);
+}
+
+function meta::external::dataquality::buildOrderedSelectExpression(inputRel: ValueSpecification[1], orderedColNames: String[*], targetRelType: meta::pure::metamodel::relation::RelationType<Any>[1]): FunctionExpression[1]
+{
+  let selectedCols = ^InstanceValue(
+    genericType = ^GenericType(rawType=meta::pure::metamodel::relation::ColSpecArray, typeArguments=^GenericType(rawType=$targetRelType)),
+    multiplicity = PureOne,
+    values = ^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $orderedColNames)
+  )->evaluateAndDeactivate();
+  buildSelectExpression($inputRel, $selectedCols);
+}
+
+function meta::external::dataquality::getConcatenateRelType(relType1: meta::pure::metamodel::relation::RelationType<Any>[1], relType2: meta::pure::metamodel::relation::RelationType<Any>[1], colNames: String[*]): meta::pure::metamodel::relation::RelationType<Any>[1]
+{
+  let names1 = $relType1.columns->map(c | $c.name->toOne());
+  let names2 = $relType2.columns->map(c | $c.name->toOne());
+
+  let cols1 = $relType1.columns->map(col |
+    if($names2->contains($col.name->toOne()), | $col, | $col->widenColumnToZeroOne())
+  );
+  let extraCols2 = $relType2.columns
+    ->filter(c | !$names1->contains($c.name->toOne()))
+    ->map(col | $col->widenColumnToZeroOne());
+  let allCols = $cols1->concatenate($extraCols2);
+
+  ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $colNames->map(colName | $allCols->filter(col | $col.name->toOne() == $colName)->toOne()));
 }
 
 function meta::external::dataquality::getCombinedRelType(relType1: meta::pure::metamodel::relation::RelationType<Any>[1], relType2: meta::pure::metamodel::relation::RelationType<Any>[1]): meta::pure::metamodel::relation::RelationType<Any>[1]
@@ -775,7 +868,8 @@ function meta::external::dataquality::buildSelectExpression(inputRel: ValueSpeci
     csa:meta::pure::metamodel::relation::ColSpecArray<Any>[1] | $csa.names,
     cs:meta::pure::metamodel::relation::ColSpec<Any>[1] | [$cs.name]
   ]);
-  let newRelType = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $currentRelType.columns->filter(col | $projectedColumnNames->contains($col.name->toOne())));
+  let existingCols = $currentRelType.columns;
+  let newRelType = ^meta::pure::metamodel::relation::RelationType<Nil>(columns = $projectedColumnNames->map(colName | $existingCols->filter(col | $col.name->toOne() == $colName)->toOne()));
   let selectFunction = ^SimpleFunctionExpression
   (
       func = select_Relation_1__ColSpecArray_1__Relation_1_,

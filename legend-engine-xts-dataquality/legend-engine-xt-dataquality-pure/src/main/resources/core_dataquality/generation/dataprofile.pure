@@ -45,26 +45,28 @@ function meta::external::dataquality::dataprofile::getProfilingLambda(l:LambdaFu
   let relationType = $l.expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>);
 
   let cte = var('cte', PureOne, $l->genericType());
+  let colsToExclude = getExcludedColumns();
 
-  let queries = $relationType.columns->map(c |
-    let aggregate = sfe(
-        aggregate_Relation_1__AggColSpecArray_1__Relation_1_,
-        [
-          $cte,
-          ^AggColSpecArray<Any, Any, Any>(aggSpecs = [
-            agg(ProfileColumn.COLUMN_NAME, iv($c.name->toOne()), iv($c.name->toOne()), $c.classifierGenericType.typeArguments->at(0), gt(String), PureOne, gt(String), PureOne),
-            agg(ProfileColumn.COUNT, count_Any_MANY__Integer_1_, $c),
-            agg(ProfileColumn.COUNT_DISTINCT, mapFn(Any, $c), createDistinctCount('y'), $c.classifierGenericType.typeArguments->at(0), gt(Any), PureOne, gt(Integer), PureOne),
-            agg(ProfileColumn.COUNT_NULL, createNullCase($c, 'x'), count_Any_MANY__Integer_1_, $c),
-            agg(ProfileColumn.NUMBER_MAX, max_Number_MANY__Number_$0_1$_, $c),
-            agg(ProfileColumn.NUMBER_MIN, min_Number_MANY__Number_$0_1$_, $c),
-            agg(ProfileColumn.DATE_MAX, max_Date_MANY__Date_$0_1$_, $c),
-            agg(ProfileColumn.DATE_MIN, min_Date_MANY__Date_$0_1$_, $c),
-            agg(ProfileColumn.STRING_MAX_LENGTH, createLength($c, 'x'), max_Integer_MANY__Integer_$0_1$_, $c),
-            agg(ProfileColumn.STRING_MIN_LENGTH, createLength($c, 'x'), min_Integer_MANY__Integer_$0_1$_, $c)
-          ])->iv()
-        ]
-      );
+  let queries = $relationType.columns->filter(c | !$colsToExclude->contains($c.name->toOne()))
+    ->map(c |
+      let aggregate = sfe(
+          aggregate_Relation_1__AggColSpecArray_1__Relation_1_,
+          [
+            $cte,
+            ^AggColSpecArray<Any, Any, Any>(aggSpecs = [
+              agg(ProfileColumn.COLUMN_NAME, iv($c.name->toOne()), iv($c.name->toOne()), $c.classifierGenericType.typeArguments->at(0), gt(String), PureOne, gt(String), PureOne),
+              agg(ProfileColumn.COUNT, count_Any_MANY__Integer_1_, $c),
+              agg(ProfileColumn.COUNT_DISTINCT, mapFn(Any, $c), createDistinctCount('y'), $c.classifierGenericType.typeArguments->at(0), gt(Any), PureOne, gt(Integer), PureOne),
+              agg(ProfileColumn.COUNT_NULL, createNullCase($c, 'x'), count_Any_MANY__Integer_1_, $c),
+              agg(ProfileColumn.NUMBER_MAX, max_Number_MANY__Number_$0_1$_, $c),
+              agg(ProfileColumn.NUMBER_MIN, min_Number_MANY__Number_$0_1$_, $c),
+              agg(ProfileColumn.DATE_MAX, max_Date_MANY__Date_$0_1$_, $c),
+              agg(ProfileColumn.DATE_MIN, min_Date_MANY__Date_$0_1$_, $c),
+              agg(ProfileColumn.STRING_MAX_LENGTH, createLength($c, 'x'), max_Integer_MANY__Integer_$0_1$_, $c),
+              agg(ProfileColumn.STRING_MIN_LENGTH, createLength($c, 'x'), min_Integer_MANY__Integer_$0_1$_, $c)
+            ])->iv()
+          ]
+        );
   );
 
   let func = $queries->tail()->fold({val, acc | 
@@ -190,4 +192,9 @@ Enum meta::external::dataquality::dataprofile::ProfileColumn
 function meta::external::dataquality::dataprofile::name(col:ProfileColumn[1]):String[1]
 {
   $col->value4Tag('doc', meta::pure::profiles::doc).value->toOne();
+}
+
+function meta::external::dataquality::dataprofile::getExcludedColumns(): String[*]
+{
+  getDQExtensions().excludedColumns->distinct();
 }

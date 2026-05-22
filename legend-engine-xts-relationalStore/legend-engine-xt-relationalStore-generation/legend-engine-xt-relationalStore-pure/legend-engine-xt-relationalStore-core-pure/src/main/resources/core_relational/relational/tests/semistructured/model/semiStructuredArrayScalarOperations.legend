@@ -39,6 +39,14 @@ Class flatten::model::Firm
 Class flatten::model::Address
 {
   name: String[1];
+  addressType: flatten::model::AddressType[1];
+}
+
+Enum flatten::model::AddressType
+{
+  Primary,
+  Secondary,
+  Other
 }
 
 ###Relational
@@ -65,7 +73,8 @@ Binding flatten::store::FirmBinding
   contentType: 'application/json';
   modelIncludes: [
     flatten::model::Firm,
-    flatten::model::Address
+    flatten::model::Address,
+    flatten::model::AddressType
   ];
 }
 
@@ -214,6 +223,23 @@ function flatten::semiStructuredArrayFilterFirstInIfElse(): TabularDataSet[1]
         col(x | $x.firstName, 'First Name'),
         col(x | $x.firm.legalName, 'Firm Name'),
         col(x | $x.conditionalAddressName, 'Conditional Address Name')
+    ])
+}
+
+function flatten::getPrimaryAddressName(person: flatten::model::Person[1]): String[0..1]
+{
+  $person.firm.addresses->filter(
+    a | $a.addressType == flatten::model::AddressType.Primary
+  )->first().name
+}
+
+function flatten::semiStructuredArrayFilterFirstWithEnumComparison(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x->flatten::getPrimaryAddressName(), 'Primary Address Name')
     ])
 }
 
