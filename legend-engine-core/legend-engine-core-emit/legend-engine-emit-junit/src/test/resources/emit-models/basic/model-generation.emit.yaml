@@ -1,0 +1,22 @@
+name: model-generation
+title: "Model generation via GenerationSpecification"
+description: |
+  A model with a GenerationSpecification whose generationNodes reference a
+  class in the demo::modelgen:: namespace. The JUnit integration does not
+  itself run model generation (that is the EMITRunner's job), so the only
+  task emitted here is Initialization — the fixture exists to assert the
+  builder is well-behaved on models that declare a GenerationSpecification.
+
+modelSources:
+  model:
+    root: model-generation
+    files:
+      - model.pure
+
+features:
+  - class
+  - model-generation
+  - generation-specification
+complexity: basic
+tags:
+  - model-generation

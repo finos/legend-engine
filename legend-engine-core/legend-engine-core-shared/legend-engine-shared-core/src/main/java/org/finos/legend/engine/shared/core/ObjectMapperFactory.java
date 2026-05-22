@@ -16,10 +16,15 @@ package org.finos.legend.engine.shared.core;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.io.IOException;
 import java.util.TimeZone;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 
 public class ObjectMapperFactory
@@ -33,7 +38,24 @@ public class ObjectMapperFactory
                 .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
         objectMapper.setTimeZone(TimeZone.getDefault());
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        SimpleModule pairModule = new SimpleModule();
+        pairModule.addSerializer((Class) Pair.class, new EclipsePairSerializer());
+        objectMapper.registerModule(pairModule);
+
         return objectMapper;
+    }
+
+    public static class EclipsePairSerializer extends JsonSerializer<Pair<?, ?>>
+    {
+        @Override
+        public void serialize(Pair<?, ?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException
+        {
+            gen.writeStartObject();
+            gen.writeObjectField("first", value.getOne());
+            gen.writeObjectField("second", value.getTwo());
+            gen.writeEndObject();
+        }
     }
 
     public static ObjectMapper getNewStandardObjectMapper()

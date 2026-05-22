@@ -67,6 +67,7 @@ public class Test_Relational_Spanner_VariantFunctions_PCT extends PCTReportConfi
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
 
             pack("meta::pure::functions::variant::convert::tests::toMany", "[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet"),
 

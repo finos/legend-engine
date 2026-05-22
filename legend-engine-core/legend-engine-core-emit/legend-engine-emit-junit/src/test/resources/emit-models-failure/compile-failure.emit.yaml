@@ -2,8 +2,8 @@ name: compile-failure
 title: "Class Referencing an Undefined Type"
 description: |
   A Class whose property type does not exist. PARSE succeeds but COMPILE fails.
-  Used to verify that a compile failure surfaces as a single failing
-  Initialization (Init, Parse & Compile) DynamicTest.
+  Used to verify that a compile failure surfaces as a failing Compilation
+  DynamicTest (with Initialization and Parsing tasks passing before it).
 
 modelSources:
   model:

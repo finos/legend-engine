@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function <<test.Test>> meta::pure::functions::string::tests::lastIndexOf::lastIndexOfTest():Boolean[1] {
-   assertEquals(-1, 'abc'->lastIndexOf('d'));
-   assertEquals(1, 'abc'->lastIndexOf('b'));
-   assertEquals(3, 'abcbc'->lastIndexOf('b'));
-   assertEquals(0, 'abcdef'->lastIndexOf('ab'));
-   assertEquals(6, 'abcdefabcdef'->lastIndexOf('ab'));
-   assertEquals(12, 'abcdefabcdefabcdef'->lastIndexOf('ab'));
+###Pure
+Class demo::clash::FromB
+{
+  id: String[1];
 }

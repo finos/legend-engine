@@ -41,6 +41,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URL;
@@ -3162,6 +3163,24 @@ public class TestServiceTestSuite
         TestExecuted passed = (TestExecuted) testResult;
         Assert.assertEquals(passed.atomicTestId, "test1");
         Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
+    public void testRelationalServiceWithCaseSensitiveSchemaNames()
+    {
+        List<TestResult> results = executeServiceTest("testable/relational/", "legend-testable-relational-case-sensitive-schema-model.pure", "legend-testable-relational-service-case-sensitive-schema.pure", "service::CaseSensitiveSchemaService");
+        Assert.assertEquals(1, results.size());
+        Assert.assertTrue(results.get(0) instanceof TestExecuted);
+        if (((TestExecuted) results.get(0)).testExecutionStatus == TestExecutionStatus.FAIL)
+        {
+            AssertionStatus status = ((TestExecuted) results.get(0)).assertStatuses.get(0);
+            if (status instanceof EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) results.get(0)).testExecutionStatus);
     }
 
     @Test

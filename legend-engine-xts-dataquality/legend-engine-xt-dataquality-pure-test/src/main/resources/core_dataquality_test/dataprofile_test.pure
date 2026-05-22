@@ -98,7 +98,7 @@ function meta::external::dataquality::tests::doTest(dq:String[1], expected:Funct
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->getProfilingLambda($wrapWithFrom);
+  let actual = $dataqualityRelationValidation->getProfilingLambda($wrapWithFrom, true);
 
   let expectedPrevaled = if ($wrapWithFrom, | $expected->preval([]), | $expected);
   let actualPrevaled = if ($wrapWithFrom, | $actual->preval([]), | $actual);

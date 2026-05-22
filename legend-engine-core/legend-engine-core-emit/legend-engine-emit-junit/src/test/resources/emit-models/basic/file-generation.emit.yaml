@@ -1,0 +1,20 @@
+name: file-generation
+title: "FileGenerationSpecification with custom GenerationExtension"
+description: |
+  Exercises the JUnit integration's "File Generation: <spec>" task by declaring
+  a FileGenerationSpecification whose type is handled by
+  EmitDemoFileGenerationExtension (a test-only GenerationExtension SPI
+  registered under src/test/resources/META-INF/services).
+
+modelSources:
+  model:
+    root: file-generation
+    files:
+      - model.pure
+
+features:
+  - class
+  - file-generation
+complexity: basic
+tags:
+  - file-generation

@@ -166,9 +166,17 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
    let cls = $args->at(0).genericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    assert($conventions.newFunctionProhibitedList->filter(c|$c == $cls)->size()==0, 'Cannot create new instance for class used in mapping: ' + $cls->elementToPath());
-   
+
    let kv = $args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
 
+   if($cls == meta::pure::functions::collection::Pair,
+      {|
+         let firstVal = $kv->filter(k | $k.key.values->toOne() == 'first')->toOne().expression->generateJava($conventions, $debug);
+         let secondVal = $kv->filter(k | $k.key.values->toOne() == 'second')->toOne().expression->generateJava($conventions, $debug);
+         javaClass('org.eclipse.collections.impl.tuple.Tuples')
+            ->j_invoke('pair', [$firstVal, $secondVal], javaPair($firstVal.type->toBoxed(), $secondVal.type->toBoxed()));
+      },
+      {|
    let processedKV = $kv->map(k|let s = $k.key.values->toOne();
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
@@ -242,6 +250,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
     }, $invoke);
 
    $newInvoke->dependsOn($dep);
+      }
+   );
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]

@@ -73,6 +73,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.SimpleCaseExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
 import org.finos.legend.engine.protocol.sql.metamodel.SortItem;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
+import org.finos.legend.engine.protocol.sql.metamodel.StringConcatenate;
 import org.finos.legend.engine.protocol.sql.metamodel.StringLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.SubqueryExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
@@ -513,6 +514,14 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     @Override
     public Node visit(Statement val)
     {
+        return val;
+    }
+
+    @Override
+    public Node visit(StringConcatenate val)
+    {
+        val.values = _visit(val.values);
+
         return val;
     }
 

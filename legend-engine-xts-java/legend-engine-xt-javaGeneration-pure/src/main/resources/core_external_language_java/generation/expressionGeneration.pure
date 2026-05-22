@@ -140,7 +140,16 @@ function <<access.private>> meta::external::language::java::transform::processVa
 {
    print(if($debug.debug,|$debug.space+'processVariableExpressionAsParameter: \''+($v.name)+'\'\n',|''));
    let c        = $v.genericType.rawType->toOne();
-   let javaType = $conventions->pureTypeToJavaType($c, $v.multiplicity)->toBoxed();
+   let typeArgs = if($c == meta::pure::functions::collection::Pair && $v.genericType.typeArguments->isNotEmpty(),
+                    {|
+                       let multArgs = if($v.genericType.multiplicityArguments->isEmpty(),
+                                        |ZeroOne->repeat($v.genericType.typeArguments->size()),
+                                        |$v.genericType.multiplicityArguments);
+                       zip($v.genericType.typeArguments, $multArgs)->map(p | $conventions->pureTypeToJavaType($p.first, $p.second));
+                    },
+                    | []
+                 );
+   let javaType = $conventions->pureTypeToJavaType($c, $typeArgs, $v.multiplicity)->toBoxed();
    let varName  = if($v.name == 'this', |$v.name, |$conventions->identifier($v.name));
    j_parameter($javaType, $varName);
 }
@@ -232,9 +241,13 @@ function <<access.private>> meta::external::language::java::transform::processFu
       {p:Property<Nil,Any|*>[1] |
          print(if($debug.debug,|$debug.space+'Property: \''+($fe.func.name->toOne())+'\'\n',|''));
          let src  = $params->at(0)->generateJava($conventions, $debug->indent());
-         if ($conventions.useGetterForPropertyAccess,
-            | $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p)),
-            | $src->j_field($p.name->toOne(), $conventions->pureTypeToJavaType($p))
+         if ($p.owner == meta::pure::functions::collection::Pair,
+            | let methodName = if($p.name->toOne() == 'first', |'getOne', |'getTwo');
+              $src->j_invoke($methodName, [], $conventions->pureTypeToJavaType($p));,
+            | if ($conventions.useGetterForPropertyAccess,
+                 | $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p)),
+                 | $src->j_field($p.name->toOne(), $conventions->pureTypeToJavaType($p))
+              );
          );
       },
       {q:QualifiedProperty<Any>[1] |

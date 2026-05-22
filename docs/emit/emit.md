@@ -470,11 +470,14 @@ public class MyModuleEMITTestSuite
 `EMITTestSuiteBuilder` also exposes `taskList(String)` for callers that prefer
 a `List<DynamicTest>` (e.g., for fan-out into nested containers).
 
-When JUnit invokes the factory method, `EMITTestSuiteBuilder` scans for `*.emit.yaml` files. For each model, it performs Phase 0 (Initialization), Phase 1 (Parse), and Phase 2 (Compile). By inspecting the compiled model, it identifies every file-generation specification, every artifact-generation candidate, every test (modern Testable plus legacy Mapping/Service tests), and every service.
+When JUnit invokes the factory method, `EMITTestSuiteBuilder` scans for `*.emit.yaml` files. For each model, it eagerly performs Phase 0 (Initialization), Phase 1 (Parse), Phase 2 (Compile), and Phase 3 (Model Generation), each reported as its own DynamicTest. If an eager phase fails, its task is failing and no subsequent tasks are emitted for that model. Discovery operates on the model-generation-enriched PMCD, so any element produced by a `GenerationSpecification` is eligible for downstream tasks. By inspecting that enriched model it identifies every file-generation specification, every artifact-generation candidate, every test (modern Testable plus legacy Mapping/Service tests), and every service.
 
 It then yields one `DynamicTest` per granular operation, with descriptive names:
 
-- `[service-simple] Initialization (Init, Parse & Compile)`
+- `[service-simple] Initialization`
+- `[service-simple] Parsing`
+- `[service-simple] Compilation`
+- `[service-simple] Model Generation`
 - `[service-simple] File Generation: demo::MyAvroGenerationSpec`
 - `[service-simple] Artifact Generation: demo::PersonService (ServiceArtifactExtension)`
 - `[service-simple] Test: demo::PersonService / testSuite_1 / test_1`
@@ -482,9 +485,6 @@ It then yields one `DynamicTest` per granular operation, with descriptive names:
 - `[service-simple] Plan: demo::PersonService`
 - `[service-simple] Legacy Mapping Test: demo::PersonMapping / legacyTest_1`
 - `[service-simple] Legacy Service Test: demo::PersonService`
-
-Phase 3 (Model Generation) is currently exposed only through the standalone
-`EMITRunner`; the JUnit builder does not yield a per-spec dynamic test for it.
 
 Because each `DynamicTest` is a distinct JUnit test, IDEs and build servers (like Maven Surefire) report granular pass/fail statuses, durations, and diffs natively.
 

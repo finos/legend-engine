@@ -64,13 +64,41 @@ public class EMITModelLoader
         Path baseDir = descriptor.getSource().getParent();
         MutableList<EMITSourceFile> modelFiles = resolveSource(baseDir, descriptor.getModelSources().getModel(), true);
 
+        MutableMap<String, Path> seen = Maps.mutable.empty();
+        MutableSet<String> clashes = modelFiles.collectIf(
+                f ->
+                {
+                    Path prior = seen.put(f.getVirtualPath(), f.getAbsolutePath());
+                    return (prior != null) && !prior.equals(f.getAbsolutePath());
+                },
+                EMITSourceFile::getVirtualPath,
+                Sets.mutable.empty());
+
         MutableList<EMITSourceFile> dependencyFiles = Lists.mutable.empty();
         for (EMITModelDescriptor.Dependency dep : descriptor.getModelSources().getDependencies())
         {
-            dependencyFiles.addAll(resolveDependency(baseDir, dep));
+            resolveDependency(baseDir, dep).forEach(f ->
+            {
+                Path prior = seen.get(f.getVirtualPath());
+                if (prior == null)
+                {
+                    seen.put(f.getVirtualPath(), f.getAbsolutePath());
+                    dependencyFiles.add(f);
+                }
+                else if (!prior.equals(f.getAbsolutePath()))
+                {
+                    clashes.add(f.getVirtualPath());
+                }
+                // else: same virtual path resolving to the same absolute path; the file has already
+                // been loaded via another dependency path. Drop it so the same file is not loaded
+                // (and parsed) twice when a dependency graph forms a diamond.
+            });
         }
 
-        validateNoClashes(modelFiles, dependencyFiles);
+        if (clashes.notEmpty())
+        {
+            throw new IllegalStateException(clashes.toSortedList().makeString("Source file virtual-path clashes: ", ", ", ""));
+        }
 
         return EMITSourceSet.newSourceSet(descriptor, modelFiles, dependencyFiles);
     }
@@ -107,6 +135,12 @@ public class EMITModelLoader
             Path referencedYaml = baseDir.resolve(dep.getSource()).normalize();
             EMITSourceSet referenced = load(referencedYaml);
             ListIterable<PathMatcher> excludeMatchers = compileGlobs(dep.getExcludes());
+            if (excludeMatchers.isEmpty())
+            {
+                return Lists.mutable.<EMITSourceFile>ofInitialCapacity(referenced.getTotalFileCount())
+                        .withAll(referenced.getModelFiles())
+                        .withAll(referenced.getDependencyFiles());
+            }
 
             MutableList<EMITSourceFile> result = Lists.mutable.empty();
             referenced.forEachFile(f ->
@@ -155,20 +189,6 @@ public class EMITModelLoader
         catch (IllegalArgumentException ignore)
         {
             return null;
-        }
-    }
-
-    private void validateNoClashes(ListIterable<EMITSourceFile> modelFiles, ListIterable<EMITSourceFile> dependencyFiles)
-    {
-        MutableMap<String, Path> seen = Maps.mutable.empty();
-        MutableSet<String> clashes = modelFiles.asLazy().concatenate(dependencyFiles).collectIf(f ->
-        {
-            Path prior = seen.put(f.getVirtualPath(), f.getAbsolutePath());
-            return (prior != null) && !prior.equals(f.getAbsolutePath());
-        }, EMITSourceFile::getVirtualPath, Sets.mutable.empty());
-        if (clashes.notEmpty())
-        {
-            throw new IllegalStateException(clashes.toSortedList().makeString("Source file virtual-path clashes: ", ", ", ""));
         }
     }
 }

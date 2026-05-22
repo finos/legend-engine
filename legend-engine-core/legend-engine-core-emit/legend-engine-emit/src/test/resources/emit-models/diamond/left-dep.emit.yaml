@@ -1,0 +1,15 @@
+name: diamond-left-dep
+title: "Left arm of the diamond"
+description: |
+  Intermediate dependency that pulls in the shared-dep. Combined with right-dep
+  in the top-level diamond test to form a diamond dependency graph.
+
+modelSources:
+  model:
+    root: left-dep
+    files:
+      - model/left.pure
+  dependencies:
+    - source: shared-dep.emit.yaml
+
+complexity: basic

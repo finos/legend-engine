@@ -63,6 +63,7 @@ public class Test_Relational_Oracle_VariantFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"\nexpected: 'Hello'\nactual:   '\"Hello\"'\""),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Month is not managed yet!\"\""),
 
             one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet\""),
             one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person\""),

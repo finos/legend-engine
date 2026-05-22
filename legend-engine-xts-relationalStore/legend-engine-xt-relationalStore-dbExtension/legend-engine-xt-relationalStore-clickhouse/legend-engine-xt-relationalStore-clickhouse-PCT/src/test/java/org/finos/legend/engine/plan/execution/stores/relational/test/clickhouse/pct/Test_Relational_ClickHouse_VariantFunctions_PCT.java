@@ -74,6 +74,7 @@ public class Test_Relational_ClickHouse_VariantFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_", "\"[unsupported-api] The function 'parseJson' (state: [Select, false]) is not supported yet\""),

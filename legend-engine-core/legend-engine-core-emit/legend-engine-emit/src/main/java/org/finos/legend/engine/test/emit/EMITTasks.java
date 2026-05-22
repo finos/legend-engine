@@ -42,6 +42,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -123,14 +124,18 @@ public final class EMITTasks
                     primarySourceIds.add(file.getVirtualPath());
                 }
             });
-            return new ParseResult(builder.build(), primarySourceIds, totalElements[0]);
+            return new ParseResult(builder.withSectionIndexesMerged().build(), primarySourceIds, totalElements[0]);
+        }
+        catch (EngineException e)
+        {
+            if (e.getErrorType() == EngineErrorType.PARSER)
+            {
+                throw new EMITAssertionError(EMITPhase.PARSE, buildEngineExceptionMessage(e), e);
+            }
+            throw new EMITException(EMITPhase.PARSE, buildEngineExceptionMessage(e), e);
         }
         catch (Exception e)
         {
-            if ((e instanceof EngineException) && (((EngineException) e).getErrorType() == EngineErrorType.PARSER))
-            {
-                throw new EMITAssertionError(EMITPhase.PARSE, "Error parsing source set", e);
-            }
             throw new EMITException(EMITPhase.PARSE, "Error parsing source set", e);
         }
     }
@@ -143,12 +148,16 @@ public final class EMITTasks
         {
             return new PureModel(pmcd, null, DeploymentMode.PROD);
         }
+        catch (EngineException e)
+        {
+            if (e.getErrorType() == EngineErrorType.COMPILATION)
+            {
+                throw new EMITAssertionError(EMITPhase.COMPILE, buildEngineExceptionMessage(e), e);
+            }
+            throw new EMITException(EMITPhase.COMPILE, buildEngineExceptionMessage(e), e);
+        }
         catch (Exception e)
         {
-            if ((e instanceof EngineException) && (((EngineException) e).getErrorType() == EngineErrorType.COMPILATION))
-            {
-                throw new EMITAssertionError(EMITPhase.PARSE, "Compilation failed", e);
-            }
             throw new EMITException(EMITPhase.COMPILE, "Error during compilation", e);
         }
     }
@@ -339,16 +348,22 @@ public final class EMITTasks
      */
     public static void assertTestPassed(TestResult result)
     {
+        StringBuilder builder = new StringBuilder(result.testable);
+        if (result.testSuiteId != null)
+        {
+            builder.append(" / ").append(result.testSuiteId);
+        }
+        builder.append(" / ").append(result.atomicTestId);
         if (result instanceof TestError)
         {
-            throw new EMITException(EMITPhase.TEST_EXECUTION, ((TestError) result).error);
+            throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("; ").append(((TestError) result).error).toString());
         }
         if (result instanceof TestExecuted)
         {
             TestExecuted executed = (TestExecuted) result;
             if (executed.testExecutionStatus != TestExecutionStatus.PASS)
             {
-                StringBuilder builder = new StringBuilder("Test did not pass; status=").append(executed.testExecutionStatus).append("; assertions=[");
+                builder.append(" did not pass; status=").append(executed.testExecutionStatus).append("; assertions=[");
                 executed.assertStatuses.forEach(s -> printAssertStatus(builder, s).append(", "));
                 builder.setLength(builder.length() - 2);
                 builder.append(']');
@@ -356,7 +371,7 @@ public final class EMITTasks
             }
             return;
         }
-        throw new EMITException(EMITPhase.TEST_EXECUTION, "Unexpected test result type: " + result.getClass().getSimpleName());
+        throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("Unexpected test result type: ").append(result.getClass().getSimpleName()).toString());
     }
 
     private static StringBuilder printAssertStatus(StringBuilder builder, AssertionStatus status)
@@ -550,6 +565,53 @@ public final class EMITTasks
         {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static String buildEngineExceptionMessage(EngineException e)
+    {
+        return appendEngineExceptionMessage(new StringBuilder(), e).toString();
+    }
+
+    private static StringBuilder appendEngineExceptionMessage(StringBuilder builder, EngineException e)
+    {
+        EngineErrorType errorType = e.getErrorType();
+        if (errorType != null)
+        {
+            builder.append(errorType).append(" error");
+        }
+
+        SourceInformation sourceInfo = e.getSourceInformation();
+        if ((sourceInfo != null) && (sourceInfo != SourceInformation.getUnknownSourceInformation()))
+        {
+            builder.append(" at ").append(sourceInfo.sourceId);
+            builder.append('[');
+            if (sourceInfo.startLine == sourceInfo.endLine)
+            {
+                builder.append(sourceInfo.startLine).append(':');
+                if (sourceInfo.startColumn == sourceInfo.endColumn)
+                {
+                    builder.append(sourceInfo.startColumn);
+                }
+                else
+                {
+                    builder.append(sourceInfo.startColumn).append('-').append(sourceInfo.endColumn);
+                }
+                builder.append(']');
+            }
+            else
+            {
+                builder.append(sourceInfo.startLine).append(':').append(sourceInfo.startColumn)
+                        .append('-')
+                        .append(sourceInfo.endLine).append(':').append(sourceInfo.endColumn).append(']');
+            }
+        }
+
+        String message = e.getMessage();
+        if (message != null)
+        {
+            builder.append(": ").append(message);
+        }
+        return builder;
     }
 
     // ----- Result records -----

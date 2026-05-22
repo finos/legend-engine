@@ -226,7 +226,7 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesDefau
   };
 
   // Use the 5-arg overload with no mapping/runtime to verify default limit of 20
-  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], 20, false);
+  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], 20, false, true);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
 }
@@ -349,6 +349,6 @@ function <<test.Test>> meta::external::dataquality::tests::testSampleValuesColum
 // ─── Test helper ──
 function meta::external::dataquality::tests::doSampleValuesTest(query: FunctionDefinition<Any>[1], expected: FunctionDefinition<Any>[1], maxNumberOfSampleValues: Integer[1]):Boolean[1]
 {
-  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], $maxNumberOfSampleValues, false);
+  let actual = getSampleValuesLambda($query->cast(@LambdaFunction<Any>), [], [], $maxNumberOfSampleValues, false, true);
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), false);
 }

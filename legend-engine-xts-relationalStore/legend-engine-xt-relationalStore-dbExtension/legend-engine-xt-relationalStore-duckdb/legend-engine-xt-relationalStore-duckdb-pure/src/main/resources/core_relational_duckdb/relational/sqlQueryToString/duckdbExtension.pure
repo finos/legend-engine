@@ -110,9 +110,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
 
    newMap([
-      pair(StrictDate,     ^LiteralProcessor(format = '%s', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = '%s', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = '%s', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(StrictDate,     ^LiteralProcessor(format = 'DATE \'%s\'', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'TIMESTAMP \'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'TIMESTAMP \'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringDuckDB($dbTimeZone)})),
       pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ]);
 }
@@ -123,14 +123,11 @@ function meta::relational::functions::sqlQueryToString::duckDB::convertDateToSql
    let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
    if($date->hasSecond(),
       | if ($date->hasSubsecond(),
-            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);
-              format('TIMESTAMP \'%s\'',$d);,
-            | let d= format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date);
-              format('TIMESTAMP_S \'%s\'',$d);
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date);,
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date);
            ),
       | if ($date->hasMonth() || $date->hasDay(),
-            | let d = format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date);
-              format('DATE \'%s\'',$d);,
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date);,
             | fail('DuckDB doesn\'t support YEAR and YEAR-MONTH'); '';
           )
     );

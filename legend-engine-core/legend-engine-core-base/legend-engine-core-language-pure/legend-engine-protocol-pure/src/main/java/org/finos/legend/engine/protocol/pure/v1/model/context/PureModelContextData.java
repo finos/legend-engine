@@ -314,46 +314,7 @@ public class PureModelContextData extends PureModelContextConcrete
             return this;
         }
 
-        public boolean removeDuplicates()
-        {
-            if (this.elements.size() <= 1)
-            {
-                return false;
-            }
-
-            boolean mergedAny = mergeSectionIndexes();
-            MutableSet<PackageableElement> set = UnifiedSetWithHashingStrategy.newSet(ELEMENT_PATH_HASH, this.elements.size());
-            boolean removedAny = this.elements.removeIf(e -> !set.add(e));
-            return mergedAny || removedAny;
-        }
-
-        public Builder distinct()
-        {
-            removeDuplicates();
-            return this;
-        }
-
-        public void sort()
-        {
-            if (this.elements.size() > 1)
-            {
-                this.elements.sort(PureModelContextData::compareByPackageAndName);
-            }
-        }
-
-        public Builder sorted()
-        {
-            sort();
-            return this;
-        }
-
-        public PureModelContextData build()
-        {
-            mergeSectionIndexes();
-            return new PureModelContextData(this.serializer, this.origin, this.elements.toList());
-        }
-
-        private boolean mergeSectionIndexes()
+        public boolean mergeSectionIndexes()
         {
             if (this.elements.size() <= 1)
             {
@@ -384,6 +345,48 @@ public class PureModelContextData extends PureModelContextConcrete
                 });
             }
             return removed;
+        }
+
+        public Builder withSectionIndexesMerged()
+        {
+            mergeSectionIndexes();
+            return this;
+        }
+
+        public boolean removeDuplicates()
+        {
+            if (this.elements.size() <= 1)
+            {
+                return false;
+            }
+
+            MutableSet<PackageableElement> set = UnifiedSetWithHashingStrategy.newSet(ELEMENT_PATH_HASH, this.elements.size());
+            return this.elements.removeIf(e -> !set.add(e));
+        }
+
+        public Builder distinct()
+        {
+            removeDuplicates();
+            return this;
+        }
+
+        public void sort()
+        {
+            if (this.elements.size() > 1)
+            {
+                this.elements.sort(PureModelContextData::compareByPackageAndName);
+            }
+        }
+
+        public Builder sorted()
+        {
+            sort();
+            return this;
+        }
+
+        public PureModelContextData build()
+        {
+            return new PureModelContextData(this.serializer, this.origin, this.elements.toList());
         }
     }
 }

@@ -55,11 +55,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             pack("meta::pure::functions::collection::tests::find", "Can't find variable class for variable '"),
             one("meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_", "Error in 'test::testFunction': Function does not exist 'find(CO_Person[3],LambdaFunction<{CO_Person[1]->Boolean[1]}>[1])'"),
 
-            one("meta::pure::functions::collection::tests::get::testGet_Function_1__Boolean_1_", "\"get_Map_1__U_1__V_$0_1$_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_", "\"keys_Map_1__U_MANY_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::put::testPut_addsEntry_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::put::testPut_emptyMap_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::put::testPut_overridesEntry_Function_1__Boolean_1_", "\"put_Map_1__U_1__V_1__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::putAll::testPutAll_emptyInputMap_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::putAll::testPutAll_emptyPutEntries_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::collection::tests::putAll::testPutAll_overridesExistingAndAddNew_Function_1__Boolean_1_", "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\"", AdapterQualifier.unsupportedFeature),
@@ -87,8 +83,13 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_", "Failed in node: root"),
             one("meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_", "Failed in node: root"),
 
-            // Zip
-            pack("meta::pure::functions::collection::tests::zip", "\"meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
+            // Zip - nested-pair cases fail during plan-input code generation because
+            // processInstanceValue has no case for Pair literals carried in from outer lets.
+            // Follow-up would need a Pair case that correctly propagates generic type info
+            // through recursion (plus addresses Eclipse Pair's toString/variance behaviour).
+            one("meta::pure::functions::collection::tests::zip::testZipBothListsAreOfPairs_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
+            one("meta::pure::functions::collection::tests::zip::testZipFirstListsIsOfPairs_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
+            one("meta::pure::functions::collection::tests::zip::testZipSecondListsIsOfPairs_Function_1__Boolean_1_", "\"Unhandled value type: meta::pure::functions::collection::Pair\""),
 
             // Format
             one("meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
