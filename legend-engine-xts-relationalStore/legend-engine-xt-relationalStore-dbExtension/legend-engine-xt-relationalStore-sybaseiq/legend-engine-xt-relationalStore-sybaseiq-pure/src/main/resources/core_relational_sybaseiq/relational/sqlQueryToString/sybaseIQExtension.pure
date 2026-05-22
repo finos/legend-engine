@@ -148,8 +148,21 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()})),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformFormatDateSybaseIQ(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('ISO8601', 'CONVERT(VARCHAR(10), %s, 23)'),
+    pair('ISO8601_NanoSecondPrecision', 'REPLACE(CONVERT(VARCHAR(19), %s, 120), \' \', \'T\') || \'.000000000\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+  format($sqlFmt, [$params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::convertToDateIQ(params:String[*]):String[1]
