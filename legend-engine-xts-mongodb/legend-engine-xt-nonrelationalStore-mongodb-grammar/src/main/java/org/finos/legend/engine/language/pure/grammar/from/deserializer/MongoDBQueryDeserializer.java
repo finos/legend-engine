@@ -436,17 +436,20 @@ public class MongoDBQueryDeserializer extends StdDeserializer<DatabaseCommand>
         FieldPathExpression fieldPathExpr = new FieldPathExpression();
         fieldPathExpr.fieldPath = entry.getKey();
         qryExprKeyValue.key = fieldPathExpr;
-        if (entry.getValue().isValueNode() || entry.getValue().isObject())
+        JsonNode value = entry.getValue();
+        if (!value.isValueNode() && !value.isObject())
         {
-            // We are looking at something like { "name" : 1 } or {"name" : true }
-            // TODO : Add support for computed values
-            LiteralValue literalValue = getLiteralValueFromEntry(entry);
-            qryExprKeyValue.value = literalValue;
+            throw new IllegalStateException("Project syntax supports only field: 1 / bool or {$toString : $_id}");
         }
-        else
+        if (value.isObject() && value.isEmpty())
         {
-            throw new IllegalStateException("Project syntax supports only field: 1 / bool");
+            throw new IllegalStateException("An empty sub-projection is not a valid value. Found empty object at path: " + entry.getKey());
         }
+
+        // We are looking at something like { "name" : 1 } or {"name" : true } or {$toString : $_id}
+        // TODO : Add support for computed values
+        LiteralValue literalValue = getLiteralValueFromEntry(entry);
+        qryExprKeyValue.value = literalValue;
         return qryExprKeyValue;
     }
 
