@@ -206,7 +206,7 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::tests::date::testDayOfWeek_Function_1__Boolean_1_", "[ERROR] column \"%A\" does not exist - Statement: 'select format_datetime(\"%A\", DATETIME(Date'1985-01-12'))'"),
             one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""),
 
-            //formatDate
+            //formatDateTime
             one("meta::pure::functions::date::tests::formatDateTime::testFormatDateTime_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_", "[ERROR] function format_timestamp(unknown, timestamp with time zone) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select FORMAT_TIMESTAMP('%Y-%m-%dT%H:%M:%E9S',CAST(Timestamp'2024-08-15 15:33:42' AS TIMESTAMPTZ))'"),
 
             //zscore
