@@ -710,11 +710,17 @@ function <<access.private>> meta::pure::graphFetch::addPassThroughSubTreesAtPath
 function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]) : PropertyPathTree[*]
 {
    $pTree.value->match([
-      node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass) || $t->get($node.class)->isNotEmpty(),
+      node:PropertyPathNode[1] | if($ownerClass == $node.class
+                                       || $node.class->isStrictSubType($ownerClass)
+                                       || $ownerClass->isStrictSubType($node.class)
+                                       || $t->get($node.class)->isNotEmpty(),
                                     | $pTree;,
                                     | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 ),
-      clz : Class<Any>[1]      | if($clz == $ownerClass || $clz->isStrictSubType($ownerClass) || $t->get($clz)->isNotEmpty(),
+      clz : Class<Any>[1]      | if($clz == $ownerClass
+                                       || $clz->isStrictSubType($ownerClass)
+                                       || $ownerClass->isStrictSubType($clz)
+                                       || $t->get($clz)->isNotEmpty(),
                                     | $pTree;,
                                     | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 );,
