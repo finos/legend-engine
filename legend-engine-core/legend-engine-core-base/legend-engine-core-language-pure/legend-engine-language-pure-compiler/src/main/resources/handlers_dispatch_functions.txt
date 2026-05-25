@@ -578,6 +578,7 @@ meta::pure::functions::string::joinStrings_String_MANY__String_1_
 meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_
 meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_
 meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_
+meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1__Integer_1_
 meta::pure::functions::string::left_String_1__Integer_1__String_1_
 meta::pure::functions::string::length_String_1__Integer_1_
 meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_

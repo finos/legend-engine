@@ -612,6 +612,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(StringConcatenate val)
+            {
+                return visit(val.values, " || ");
+            }
+
+            @Override
             public String visit(StringLiteral val)
             {
                 return "'" + val.value + "'";

@@ -23,8 +23,10 @@ import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.misc.IntervalSet;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -99,7 +101,16 @@ public class SQLGrammarParser
         {
             if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
             {
-                msg = "Unexpected token";
+                String tokenText = truncateTokenText(e.getOffendingToken().getText());
+                msg = "Unexpected token '" + tokenText + "'";
+                IntervalSet expected = e.getExpectedTokens();
+                if (expected != null && recognizer instanceof Parser)
+                {
+                    Vocabulary vocabulary = recognizer.getVocabulary();
+                    String expectedStr = expected.toString(vocabulary);
+                    msg = msg + ". Expected one of: " + expectedStr;
+                }
+                msg = msg + " at line " + line + ", column " + (charPositionInLine + 1);
             }
             else if (e == null || e.getOffendingToken() == null)
             {
@@ -119,7 +130,8 @@ public class SQLGrammarParser
                             charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
                     // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
                     sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
-                    msg = "Unexpected token";
+                    String tokenText = truncateTokenText(((Token) offendingSymbol).getText());
+                    msg = "Unexpected token '" + tokenText + "' at line " + line + ", column " + (charPositionInLine + 1);
                     throw new SQLParserException(msg, sourceInformation);
                 }
                 SourceInformation sourceInformation = new SourceInformation(
@@ -138,6 +150,15 @@ public class SQLGrammarParser
                     offendingToken.getLine(),
                     charPositionInLine + offendingToken.getText().length());
             throw new SQLParserException(msg, sourceInformation);
+        }
+
+        private static String truncateTokenText(String text)
+        {
+            if (text != null && text.length() > 50)
+            {
+                return text.substring(0, 50) + "...";
+            }
+            return text;
         }
 
         @Override

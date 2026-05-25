@@ -24,10 +24,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 public class DataQualityProfilingLambdaGenerator
 {
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, String qualifiedPath, boolean excludePlatformColumns)
     {
         Root_meta_external_dataquality_DataQualityRelationValidation validation = getDataQualityRelationValidation(pureModel, qualifiedPath);
-        return generateDataProfileLambda(pureModel, validation);
+        return generateDataProfileLambda(pureModel, validation, excludePlatformColumns);
     }
 
     public static Root_meta_external_dataquality_DataQualityRelationValidation getDataQualityRelationValidation(PureModel pureModel, String qualifiedPath)
@@ -40,8 +40,8 @@ public class DataQualityProfilingLambdaGenerator
         throw new EngineException("The element at path '" + qualifiedPath + "' is not a DataQualityRelationValidation!", ExceptionCategory.USER_EXECUTION_ERROR);
     }
 
-    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateDataProfileLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement)
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateDataProfileLambda(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationValidation packageableElement, boolean excludePlatformColumns)
     {
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataprofile.Root_meta_external_dataquality_dataprofile_getProfilingLambda_DataQualityRelationValidation_1__Boolean_1__LambdaFunction_1_(packageableElement, true,  pureModel.getExecutionSupport());
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_dataprofile.Root_meta_external_dataquality_dataprofile_getProfilingLambda_DataQualityRelationValidation_1__Boolean_1__Boolean_1__LambdaFunction_1_(packageableElement, true, excludePlatformColumns, pureModel.getExecutionSupport());
     }
 }

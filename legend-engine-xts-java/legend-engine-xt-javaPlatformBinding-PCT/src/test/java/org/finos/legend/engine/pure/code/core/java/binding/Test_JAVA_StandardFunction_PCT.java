@@ -139,11 +139,8 @@ public class Test_JAVA_StandardFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::math::tests::variance::testSimpleWindowVarianceSample_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
 
             // Covariance/Correlation
-            one("meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_", "\"meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_", "\"meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::covarPopulation::testSimpleWindowCovarPopulation_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_", "\"meta::pure::functions::collection::zip_T_MANY__U_MANY__Pair_MANY_ is not supported yet!\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_", "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\"", AdapterQualifier.unsupportedFeature),
 
             // Sum

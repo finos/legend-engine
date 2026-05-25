@@ -99,7 +99,7 @@ public class TestCompilerFromGrammar
                 "{\n" +
                 "   #SQL{select a frm abc}#;" +
                 "   true;" +
-                "}","PARSER error at [1:1-3:36]: Error in 'pack::f__Boolean_1_': Unexpected token");
+                "}","PARSER error at [1:1-3:36]: Error in 'pack::f__Boolean_1_': Unexpected token 'abc' at line 1, column 14");
     }
 
     @Test

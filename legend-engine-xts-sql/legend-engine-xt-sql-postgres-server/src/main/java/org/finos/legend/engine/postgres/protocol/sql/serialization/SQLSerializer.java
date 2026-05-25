@@ -946,7 +946,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitConcatenation(SqlBaseParser.ConcatenationContext ctx)
     {
-        return ctx.left.accept(this) + " " + ctx.CONCAT().getText() + " " + ctx.right.accept(this);
+        return ListIterate.collect(ctx.valueExpression(), x -> x.accept(this)).makeString(" || ");
     }
 
     @Override

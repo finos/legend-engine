@@ -52,7 +52,7 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
                  revsForTest(
                       'meta::pure::functions::relation::tests::project::testSimpleRelationProject_Function_1__Boolean_1_',
                       [
-                        revError('|#TDS{\n'+
+                        rev('|#TDS{\n'+
                             'val:Integer[0..1],str:String[0..1]\n'+
                             '1,a\n'+
                             '3,ewe\n'+
@@ -60,9 +60,7 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
                             '5,wwe\n'+
                             '6,weq\n'+
                             '}#->meta::pure::functions::relation::project(~[name:c: (val:Integer[0..1], str:String[0..1])[1]|$c.str->meta::pure::functions::multiplicity::toOne() + $c.val->meta::pure::functions::multiplicity::toOne()->meta::pure::functions::string::toString()])',
-                            'select concat(Text\'\', "table0_0".str, cast("table0_0".val as varchar), Text\'\') as "name" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"',
-                            'Collection element must have a multiplicity [1] - Context:[Function \'test::container__Any_MANY_\' Third Pass, new lambda, Applying meta::pure::functions::relation::project, new lambda, Applying plus], multiplicity:[0..1]',
-                            ''
+                            'select concat(Text\'\', "table0_0".str, cast("table0_0".val as varchar), Text\'\') as "name" from csv(\'val,str\n1,a\n3,ewe\n4,qw\n5,wwe\n6,weq\') as "table0_0"'
                         )
                       ]
                  )
@@ -70,10 +68,10 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
   )
 }
 
-//function meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::exec():Boolean[1]
-//{
+function meta::external::query::sql::reversePCT::tests::relation::relation::functions::graph::project::exec():Boolean[1]
+{
    //meta::pure::functions::relation::tests::project::testSimpleProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    //meta::pure::functions::relation::tests::project::testSimpleProjectList(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    //meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::relation::tests::project::testSimpleRelationProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-//}
+   meta::pure::functions::relation::tests::project::testSimpleRelationProject(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

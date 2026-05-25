@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
+import org.finos.legend.engine.protocol.sql.metamodel.StringConcatenate;
 import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Values;
 import org.finos.legend.engine.protocol.sql.metamodel.ValuesList;
@@ -482,6 +483,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(Statement val)
     {
         return collect(val);
+    }
+
+    @Override
+    public T visit(StringConcatenate val)
+    {
+        return collect(val.values);
     }
 
     @Override
