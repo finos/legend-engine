@@ -528,10 +528,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          // Here we try and find the parts of the tree that could be child trees of the owner and then construct a property tree starting at the owner.
         let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
                                   |   let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
-                                      let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne())
-                                                                                ->keyValues()
-                                                                                ->map(kv | pair($kv.first, list($kv.second.values)))
-                                                                                ->newMap();
+                                      let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
                                       let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
                                       let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
                                       let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner));
