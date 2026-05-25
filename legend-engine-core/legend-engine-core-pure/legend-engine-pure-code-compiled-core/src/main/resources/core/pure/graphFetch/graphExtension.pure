@@ -526,16 +526,29 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
     
          // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
          // Here we try and find the parts of the tree that could be child trees of the owner and then construct a property tree starting at the owner.
-        let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
-                                  |   let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
-                                      let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
-                                      let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
-                                      let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
-                                      let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner));
-                                      $newInlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();,
-                                  | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
-
-                                );
+         let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
+            |  let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()
+                                            ->filter(p | let pt = $p->functionReturnType();
+                                                         $pt.rawType->isNotEmpty()
+                                                         && $pt.rawType->toOne()->instanceOf(Class););
+               let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
+               let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
+               if($propertyTreesBelongingToOwner->isEmpty(),
+                  | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties(),
+                  | let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner, $childPropertiesMap));
+                    let newInlinedPropertyTree = ^PropertyPathTree(
+                                                    display  = 'root',
+                                                    value    = 'root',
+                                                    children = ^PropertyPathTree(
+                                                                  display  = $owner.name->toOne(),
+                                                                  value    = $owner,
+                                                                  children = $propertyTreesUptoOwner
+                                                               )
+                                                 );
+                    $newInlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties();
+               );,
+            | $inlinedPropertyTree->propertyTreeToGraphFetchTree($owner)->removeDummyProperties()
+         );
 
          // copy common properties from base type tree to subtype trees at property level
          // TODO - remove when propertySubTypes are embedded in propertyTrees
