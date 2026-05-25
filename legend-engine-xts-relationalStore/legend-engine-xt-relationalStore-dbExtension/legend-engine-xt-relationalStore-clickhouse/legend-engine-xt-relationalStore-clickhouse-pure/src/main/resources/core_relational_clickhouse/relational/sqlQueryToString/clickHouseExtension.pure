@@ -150,11 +150,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', 'formatDateTime(%s,\'%Y-%m-%d\')'),
-    pair('ISO8601_NanoSecondPrecision', 'concat(formatDateTime(%s,\'%Y-%m-%dT%H:%i:%S.%f\'), \'000\')')
+    pair('ISO8601', '\'%Y-%m-%d\''),
+    pair('ISO8601_NanoSecondPrecision', '\'%Y-%m-%dT%H:%i:%S.%f\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
-  format($sqlFmt, [$params->at(0)]);
+  if ($enumValue == 'ISO8601_NanoSecondPrecision',
+    | format('concat(formatDateTime(%s,%s), \'000\')', [$params->at(0), $sqlFmt]),
+    | format('formatDateTime(%s,%s)', [$params->at(0), $sqlFmt])
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]

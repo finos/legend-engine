@@ -209,6 +209,9 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
             //formatDateTime
             one("meta::pure::functions::date::tests::formatDateTime::testFormatDateTime_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_", "[ERROR] function format_timestamp(unknown, timestamp with time zone) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select FORMAT_TIMESTAMP('%Y-%m-%dT%H:%M:%E9S',CAST(Timestamp'2024-08-15 15:33:42' AS TIMESTAMPTZ))'"),
 
+            //formatDate
+            one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_Function_1__Boolean_1_", "[ERROR] function format_date(unknown, date) does not exist\nHint: No function matches the given name and argument types. You might need to add explicit type casts. - Statement: 'select FORMAT_DATE('%Y-%m-%d',Date'2024-08-15')'"),
+
             //zscore
             one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
             one("meta::pure::functions::math::tests::zScore::testZScore_FloatValues_Function_1__Boolean_1_", "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""),
