@@ -2809,7 +2809,7 @@ function <<test.Test, test.ToFix>> meta::pure::graphFetch::enrichSourceTeeNode::
 
    assertEquals($expected->sort(), $visitedFunctions->sort());
 }
-=======
+
 ###Pure 
 import meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::*;
 import meta::pure::graphFetch::*;
