@@ -3074,3 +3074,104 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderCollideMapp
     amount        : $src.amount
   }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::supertype::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Animal
+{
+  species : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Dog extends meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Animal
+{
+  breed : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogTarget
+{
+  species : String[1];
+  breed   : String[1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::supertype::testSourceAccessViaSupertypeProperty():Boolean[1]
+{
+  let tree = #{DogTarget {species, breed}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Dog { breed, species } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Dog
+    species : $src.species,
+    breed   : $src.breed
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal
+{
+  species : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog extends meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal
+{
+  breed : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelTarget
+{
+  species : String[1];
+  breed   : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate
+{
+  animal : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal[1];
+  dog    : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::wrap(d:meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog[1]) : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate[*]
+{
+  ^meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate(animal = $d, dog = $d)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::testIntermediateOverSubtype():Boolean[1]
+{
+  let tree = #{KennelTarget {species, breed}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Dog { breed, species } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog
+    species : $src->meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::wrap().animal.species->toOne(),
+    breed   : $src.breed
+  }
+)
