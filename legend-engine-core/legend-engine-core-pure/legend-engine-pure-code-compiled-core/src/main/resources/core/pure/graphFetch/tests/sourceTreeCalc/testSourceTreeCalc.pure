@@ -2921,3 +2921,88 @@ function <<test.Test>>
                          ->sort();
   assertEquals(['a', 'b', 'label', 'name'], $propNames);
 }
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Company
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Address
+{
+  street : String[1];
+  zip    : String[1];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person_Address
+{
+  resident : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person[1];
+  address  : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Address[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployee
+{
+  company : Company[1];
+  employee : Person[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeIntermediate
+{
+  ce : CompanyEmployee[1];
+  person : Person[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeTarget
+{
+  companyName : String[1];
+  employeeStreet : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::wrap(ce:CompanyEmployee[1]) : CompanyEmployeeIntermediate[*]
+{
+  ^CompanyEmployeeIntermediate(ce = $ce, person = $ce.employee)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::testIntermediateOverAssociation():Boolean[1]
+{
+  let tree = #{CompanyEmployeeTarget {companyName, employeeStreet}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAssocMapping,
+                      meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+    CompanyEmployee
+    {
+      company { name },
+      employee
+      {
+        address { street }
+      }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAssocMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployee
+    companyName    : $src.company.name,
+    employeeStreet : $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::wrap().person.address.street->toOne()
+  }
+)
