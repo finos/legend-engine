@@ -194,37 +194,34 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         // so expressionSequence is fully typed here.
         RichIterable<? extends Column<?, ?>> relationColumns = getRelationFunctionColumns(setImpl);
 
-        MutableList<Column<?, ?>> resolvedPK = Lists.mutable.empty();
         if (relationColumns.isEmpty())
         {
-            // Opaque Relation<Any> — keep declared names via placeholder Columns.
-            ProcessorSupport processorSupport = this.context.pureModel.getExecutionSupport().getProcessorSupport();
-            Multiplicity oneMul = this.context.pureModel.getMultiplicity("one");
-            GenericType stringType = this.context.pureModel.getGenericType("String");
-            for (String pkName : classMapping.primaryKey)
-            {
-                resolvedPK.add((Column<?, ?>) _Column.getColumnInstance(pkName, false, stringType, oneMul, null, processorSupport));
-            }
+            throw new EngineException(
+                    "Cannot resolve primary key columns: relation function '"
+                            + setImpl._relationFunction()._functionName()
+                            + "' does not return a concrete RelationType. "
+                            + "Ensure the function body produces a typed relation (e.g., #>{db.table}#).",
+                    classMapping.sourceInformation,
+                    EngineErrorType.COMPILATION);
         }
-        else
+
+        MutableList<Column<?, ?>> resolvedPK = Lists.mutable.empty();
+        for (String pkName : classMapping.primaryKey)
         {
-            for (String pkName : classMapping.primaryKey)
+            Column<?, ?> col = (Column<?, ?>) relationColumns.detect(c -> pkName.equals(c._name()));
+            if (col == null)
             {
-                Column<?, ?> col = (Column<?, ?>) relationColumns.detect(c -> pkName.equals(c._name()));
-                if (col == null)
-                {
-                    String available = relationColumns.collect(Column::_name).makeString(", ");
-                    String mappingPath = HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport());
-                    throw new EngineException(
-                            "Primary key column '" + pkName + "' declared in class mapping '" + id
-                                    + "' (mapping '" + mappingPath + "') is not part of the columns returned by the relation function."
-                                    + " Available columns: [" + available + "]."
-                                    + " Use `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
-                            classMapping.sourceInformation,
-                            EngineErrorType.COMPILATION);
-                }
-                resolvedPK.add(col);
+                String available = relationColumns.collect(Column::_name).makeString(", ");
+                String mappingPath = HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport());
+                throw new EngineException(
+                        "Primary key column '" + pkName + "' declared in class mapping '" + id
+                                + "' (mapping '" + mappingPath + "') is not part of the columns returned by the relation function."
+                                + " Available columns: [" + available + "]."
+                                + " Use `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.",
+                        classMapping.sourceInformation,
+                        EngineErrorType.COMPILATION);
             }
+            resolvedPK.add(col);
         }
         setImpl._primaryKey(resolvedPK);
         return setImpl;
