@@ -3152,7 +3152,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::wrap(d:meta:
   ^meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate(animal = $d, dog = $d)
 }
 
-function <<test.Test>>
+function <<test.Test, test.ToFix>>
   meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::testIntermediateOverSubtype():Boolean[1]
 {
   let tree = #{KennelTarget {species, breed}}#;
