@@ -3006,3 +3006,71 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAsso
     employeeStreet : $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::wrap().person.address.street->toOne()
   }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::collide::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::Customer
+{
+  name : String[1];
+  vip  : Boolean[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::Order
+{
+  primaryCustomer   : Customer[1];
+  secondaryCustomer : Customer[0..1];
+  amount            : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderTarget
+{
+  primaryName   : String[1];
+  secondaryName : String[0..1];
+  amount        : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderIntermediate
+{
+  order  : Order[1];
+  pickedCustomer : Customer[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::collide::wrapPrimary(o:Order[1]) : OrderIntermediate[*]
+{
+  ^OrderIntermediate(order = $o, pickedCustomer = $o.primaryCustomer)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::collide::testCollidingReturnTypes():Boolean[1]
+{
+  let tree = #{OrderTarget {primaryName, secondaryName, amount}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderCollideMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{
+    Order
+    {
+      amount,
+      primaryCustomer { name },
+      secondaryCustomer { name }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderCollideMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::collide::Order
+    primaryName   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::collide::wrapPrimary().pickedCustomer.name->toOne(),
+    secondaryName : $src.secondaryCustomer.name,
+    amount        : $src.amount
+  }
+)
