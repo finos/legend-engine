@@ -734,29 +734,45 @@ function meta::pure::graphFetch::isTreeRootOwner(pTree:PropertyPathTree[1], owne
 
 function meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1]): PropertyPathTree[1]
 {
-  $pTree.value->match(
-    [
-      p:PropertyPathNode[1] | let prop = $p.property;
-                              let propOwner = $prop->meta::pure::functions::meta::ownerClass();//$prop.owner;
-                              
+   meta::pure::graphFetch::buildPropertyPathUptoOwner($pTree, $owner, $t, 0)
+}
 
-                              if($propOwner == $owner || $propOwner->isStrictSubType($owner), 
-                                | $pTree,
-                                | let findProp = $t->get($prop.owner)->toOne();
-                                  let newclz = $findProp->toOne()->functionReturnType();
-                                  let newptree = ^PropertyPathTree(display = $findProp.name->toOne(), value = ^PropertyPathNode(class = $findProp->meta::pure::functions::meta::ownerClass(), property=$findProp), children = $pTree);
-                                  buildPropertyPathUptoOwner($newptree, $owner, $t);
-
-                              );,
-      clz : Class<Any>[1] |  if($clz == $owner || $clz->isStrictSubType($owner), 
-                                | $pTree,
-                                | let findProp = $t->get($clz)->toOne();
-                                  let newclz = $findProp->toOne()->functionReturnType();
-                                  let newptree = ^PropertyPathTree(display = $findProp.name->toOne(), value = ^PropertyPathNode(class = $findProp->meta::pure::functions::meta::ownerClass(), property=$findProp), children = $pTree.children);
-                                  buildPropertyPathUptoOwner($newptree, $owner, $t);
+function <<access.private>>
+   meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1], depth:Integer[1]): PropertyPathTree[1]
+{
+   assert($depth <= 64, | 'buildPropertyPathUptoOwner recursion exceeded 64 levels - owner ' + $owner->elementToPath() + ' is not reachable from the intermediate property tree.');
+   $pTree.value->match(
+      [
+         p:PropertyPathNode[1] | let prop     = $p.property;
+                                 let propOwner = $prop->meta::pure::functions::meta::ownerClass();
+                                 if($propOwner == $owner || $propOwner->isStrictSubType($owner),
+                                    | $pTree,
+                                    | let findProp = $t->get($propOwner);
+                                      assert($findProp->isNotEmpty(),
+                                             | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $propOwner->elementToPath() + ' - cannot build path back to owner.');
+                                      let findPropOne = $findProp->toOne();
+                                      let newptree = ^PropertyPathTree(
+                                                        display  = $findPropOne.name->toOne(),
+                                                        value    = ^PropertyPathNode(class = $findPropOne->meta::pure::functions::meta::ownerClass(), property = $findPropOne),
+                                                        children = $pTree
+                                                     );
+                                      meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
+                                 );,
+         clz : Class<Any>[1] | if($clz == $owner || $clz->isStrictSubType($owner),
+                                  | $pTree,
+                                  | let findProp = $t->get($clz);
+                                    assert($findProp->isNotEmpty(),
+                                           | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $clz->elementToPath() + ' - cannot build path back to owner.');
+                                    let findPropOne = $findProp->toOne();
+                                    let newptree = ^PropertyPathTree(
+                                                      display  = $findPropOne.name->toOne(),
+                                                      value    = ^PropertyPathNode(class = $findPropOne->meta::pure::functions::meta::ownerClass(), property = $findPropOne),
+                                                      children = $pTree.children
+                                                   );
+                                    meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
                               );
-    ]
-  );
+      ]
+   );
 }
 
 function meta::pure::graphFetch::propertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): RootGraphFetchTree<Any>[1]
