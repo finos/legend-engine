@@ -528,7 +528,10 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          // Here we try and find the parts of the tree that could be child trees of the owner and then construct a property tree starting at the owner.
         let inlinedGraphTree = if(!isTreeRootOwner($inlinedPropertyTree, $owner),
                                   |   let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()->filter(p | let pt = $p->functionReturnType(); $pt.rawType->isNotEmpty() && $pt.rawType->toOne()->instanceOf(Class););
-                                      let childPropertiesMap = $childProperties->map(p | $p.genericType.rawType)->zip($childProperties)->newMap();
+                                      let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne())
+                                                                                ->keyValues()
+                                                                                ->map(kv | pair($kv.first, list($kv.second.values)))
+                                                                                ->newMap();
                                       let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
                                       let propertyTreesUptoOwner = $propertyTreesBelongingToOwner->map(t | $t->buildPropertyPathUptoOwner($owner,$childPropertiesMap));
                                       let newInlinedPropertyTree = ^PropertyPathTree(display='root', value='root', children = ^PropertyPathTree(display = $owner.name->toOne(), value = $owner, children = $propertyTreesUptoOwner));
@@ -707,19 +710,19 @@ function <<access.private>> meta::pure::graphFetch::addPassThroughSubTreesAtPath
    );
 }
 
-function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1]) : PropertyPathTree[*]
+function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]) : PropertyPathTree[*]
 {
-  $pTree.value->match([
-    node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass) || $t->get($node.class)->isNotEmpty(), 
-                                  | $pTree;,
-                                  | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
+   $pTree.value->match([
+      node:PropertyPathNode[1] | if($ownerClass == $node.class || $node.class->isStrictSubType($ownerClass) || $t->get($node.class)->isNotEmpty(),
+                                    | $pTree;,
+                                    | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 ),
-    clz : Class<Any>[1] | if($clz == $ownerClass || $clz->isStrictSubType($ownerClass) || $t->get($clz)->isNotEmpty(),
-                            | $pTree;,
-                            | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass,  $t))
-                          ),
-    any : Any[1] | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
-  ]);
+      clz : Class<Any>[1]      | if($clz == $ownerClass || $clz->isStrictSubType($ownerClass) || $t->get($clz)->isNotEmpty(),
+                                    | $pTree;,
+                                    | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
+                                );,
+      any : Any[1]             | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
+   ]);
 }
 
 function meta::pure::graphFetch::isTreeRootOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1]):Boolean[1]
@@ -732,13 +735,13 @@ function meta::pure::graphFetch::isTreeRootOwner(pTree:PropertyPathTree[1], owne
 }
 
 
-function meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1]): PropertyPathTree[1]
+function meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]): PropertyPathTree[1]
 {
    meta::pure::graphFetch::buildPropertyPathUptoOwner($pTree, $owner, $t, 0)
 }
 
 function <<access.private>>
-   meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, AbstractProperty<Any>>[1], depth:Integer[1]): PropertyPathTree[1]
+   meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1], depth:Integer[1]): PropertyPathTree[1]
 {
    assert($depth <= 64, | 'buildPropertyPathUptoOwner recursion exceeded 64 levels - owner ' + $owner->elementToPath() + ' is not reachable from the intermediate property tree.');
    $pTree.value->match(
@@ -747,32 +750,40 @@ function <<access.private>>
                                  let propOwner = $prop->meta::pure::functions::meta::ownerClass();
                                  if($propOwner == $owner || $propOwner->isStrictSubType($owner),
                                     | $pTree,
-                                    | let findProp = $t->get($propOwner);
-                                      assert($findProp->isNotEmpty(),
+                                    | let candidates = $t->get($propOwner)->orElse(list([])).values;
+                                      assert($candidates->isNotEmpty(),
                                              | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $propOwner->elementToPath() + ' - cannot build path back to owner.');
-                                      let findPropOne = $findProp->toOne();
+                                      let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $propOwner);
                                       let newptree = ^PropertyPathTree(
-                                                        display  = $findPropOne.name->toOne(),
-                                                        value    = ^PropertyPathNode(class = $findPropOne->meta::pure::functions::meta::ownerClass(), property = $findPropOne),
+                                                        display  = $picked.name->toOne(),
+                                                        value    = ^PropertyPathNode(class = $picked->meta::pure::functions::meta::ownerClass(), property = $picked),
                                                         children = $pTree
                                                      );
                                       meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
                                  );,
          clz : Class<Any>[1] | if($clz == $owner || $clz->isStrictSubType($owner),
                                   | $pTree,
-                                  | let findProp = $t->get($clz);
-                                    assert($findProp->isNotEmpty(),
+                                  | let candidates = $t->get($clz)->orElse(list([])).values;
+                                    assert($candidates->isNotEmpty(),
                                            | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $clz->elementToPath() + ' - cannot build path back to owner.');
-                                    let findPropOne = $findProp->toOne();
+                                    let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $clz);
                                     let newptree = ^PropertyPathTree(
-                                                      display  = $findPropOne.name->toOne(),
-                                                      value    = ^PropertyPathNode(class = $findPropOne->meta::pure::functions::meta::ownerClass(), property = $findPropOne),
+                                                      display  = $picked.name->toOne(),
+                                                      value    = ^PropertyPathNode(class = $picked->meta::pure::functions::meta::ownerClass(), property = $picked),
                                                       children = $pTree.children
                                                    );
                                     meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
-                              );
+                              )
       ]
    );
+}
+
+function <<access.private>>
+   meta::pure::graphFetch::pickIntermediateProperty(candidates:AbstractProperty<Any>[*], target:Class<Any>[1]):AbstractProperty<Any>[1]
+{
+   let exact = $candidates->filter(p | $p.genericType.rawType->toOne() == $target);
+   let pool  = if($exact->isNotEmpty(), | $exact, | $candidates);
+   $pool->sortBy(p | $p.name->toOne())->at(0);
 }
 
 function meta::pure::graphFetch::propertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): RootGraphFetchTree<Any>[1]
