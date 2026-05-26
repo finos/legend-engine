@@ -23,6 +23,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.Properties;
+
 /*
     A "flow" produces a credential that can be used to acquire a database connection.
 
@@ -97,5 +99,10 @@ public interface DatabaseAuthenticationFlow<D extends DatasourceSpecification, A
         Class<? extends DatasourceSpecification> datasourceClass = flow.getDatasourceClass();
         Class<? extends AuthenticationStrategy> authenticationClass = flow.getAuthenticationStrategyClass();
         return DatabaseAuthenticationFlowKey.newKey(databaseType, datasourceClass, authenticationClass);
+    }
+
+    default Properties getDataSourceProperties(String dataSourceName, Identity identity, D datasourceSpecification, A authenticationStrategy, RuntimeContext runtimeContext)
+    {
+        return new Properties();
     }
 }

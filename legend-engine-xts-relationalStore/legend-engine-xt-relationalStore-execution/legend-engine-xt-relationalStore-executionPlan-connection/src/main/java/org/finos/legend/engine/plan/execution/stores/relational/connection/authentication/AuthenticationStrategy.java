@@ -120,10 +120,4 @@ public abstract class AuthenticationStrategy
             throw new RuntimeException(e);
         }
     }
-
-    public Properties getAuthenticationPropertiesForConnection()
-    {
-        return new Properties();
-    }
-
 }

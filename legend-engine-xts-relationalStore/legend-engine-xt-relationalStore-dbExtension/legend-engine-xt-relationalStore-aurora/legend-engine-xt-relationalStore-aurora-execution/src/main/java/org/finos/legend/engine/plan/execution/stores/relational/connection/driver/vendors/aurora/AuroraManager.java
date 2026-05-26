@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.aurora;
 
+import java.util.Objects;
 import java.util.Properties;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -21,9 +22,6 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.AuroraDatasourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.GlobalAuroraDatasourceSpecificationKey;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class AuroraManager extends DatabaseManager
@@ -44,6 +42,18 @@ public class AuroraManager extends DatabaseManager
     }
 
     @Override
+    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    {
+        Properties properties = new Properties();
+        properties.put("ssl", "true");
+        properties.put("sslMode", "verify-ca");
+        properties.put("sslrootcert",
+                Objects.requireNonNull(System.getProperty("legend.engine.aurora.sslrootcert", System.getenv("LEGEND_ENGINE_AURORA_SSLROOCERT")), "Missing value for system property legend.engine.aurora.sslrootcert or env LEGEND_ENGINE_AURORA_SSLROOCERT")
+        );
+        return properties;
+    }
+
+    @Override
     public String getDriver()
     {
         return "org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.aurora.AuroraDriver";
@@ -53,33 +63,5 @@ public class AuroraManager extends DatabaseManager
     public RelationalDatabaseCommands relationalDatabaseSupport()
     {
         return new PostgresCommands();
-    }
-
-    @Override
-    public Properties getObjectDataSourceProperties(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, Identity identity)
-    {
-        Properties properties = new Properties();
-        properties.put("clusterId", key.shortId());
-
-        if (key instanceof AuroraDatasourceSpecificationKey)
-        {
-            AuroraDatasourceSpecificationKey auroraKey = (AuroraDatasourceSpecificationKey) key;
-            if (auroraKey.getClusterInstanceHostPattern() != null)
-            {
-                properties.put("clusterInstanceHostPattern", auroraKey.getClusterInstanceHostPattern());
-            }
-            properties.put("wrapperPlugins", "initialConnection,failover2,efm2");
-            properties.put("wrapperDialect", "aurora-pg");
-        }
-        else if (key instanceof GlobalAuroraDatasourceSpecificationKey)
-        {
-            GlobalAuroraDatasourceSpecificationKey globalKey = (GlobalAuroraDatasourceSpecificationKey) key;
-            properties.put("failoverHomeRegion", globalKey.getRegion());
-            properties.put("globalClusterInstanceHostPatterns", String.join(",", globalKey.getGlobalClusterInstanceHostPatterns()));
-            properties.put("wrapperPlugins", "initialConnection,gdbFailover,efm2");
-            properties.put("wrapperDialect", "global-aurora-pg");
-        }
-
-        return properties;
     }
 }

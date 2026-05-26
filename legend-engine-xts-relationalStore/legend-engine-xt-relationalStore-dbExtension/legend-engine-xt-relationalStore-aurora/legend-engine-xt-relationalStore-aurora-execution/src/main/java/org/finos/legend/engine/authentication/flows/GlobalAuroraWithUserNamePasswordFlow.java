@@ -23,7 +23,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-public class GlobalAuroraWithUserNamePasswordFlow implements DatabaseAuthenticationFlow<GlobalAuroraDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
+public class GlobalAuroraWithUserNamePasswordFlow extends AbstractGlobalAuroraFlow<UserNamePasswordAuthenticationStrategy>
 {
     @Override
     public Class<GlobalAuroraDatasourceSpecification> getDatasourceClass()

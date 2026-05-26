@@ -20,6 +20,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.Properties;
+
 public class CredentialSupplier
 {
     private final DatabaseAuthenticationFlow databaseAuthenticationFlow;
@@ -43,5 +45,10 @@ public class CredentialSupplier
     public Credential getCredential(Identity identity) throws Exception
     {
         return this.databaseAuthenticationFlow.makeCredential(identity, this.datasourceSpecification, this.authenticationStrategy, this.runtimeContext);
+    }
+
+    public Properties getCredentialDataSourceProperties(String dataSourceName, Identity identity)
+    {
+        return this.databaseAuthenticationFlow.getDataSourceProperties(dataSourceName, identity, this.datasourceSpecification, this.authenticationStrategy, this.runtimeContext);
     }
 }
