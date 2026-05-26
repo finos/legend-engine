@@ -20,28 +20,9 @@ import meta::relational::mapping::*;
 import meta::relational::tests::mapping::relation::*;
 import meta::relational::metamodel::execute::*;
 
-// -------------------------------------------------------------------------
 // Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
-//
 // Analogous to meta::relational::tests::projection::aggregation::testSubAggregation
-// (in testAggregation.pure) but where the root class mapping is a relation
-// (~func) mapping rather than a standard relational (~mainTable) one.
-//
-// These exercise the PK-injection branch in addPkForAggregation that handles
-// RelationFunctionInstanceSetImplementation: without it, the correlated
-// sub-select would lack the GROUP BY needed to tie the aggregate back to
-// the outer firm rows. The result-value assertions below are sufficient
-// proof of SQL correctness: a missing or wrong GROUP BY would collapse
-// rows or yield mismatched aggregates.
-//
-// Data (from SimpleMapping over meta::relational::tests::mapping::relation::testDB,
-// with personFunction filter AGE > 25 and firmFunction limit 10):
-//   Firm A : (no employees)
-//   Firm B : (no employees)
-//   Firm C : Fabrice(45), Oliver(26)
-//   Firm D : David(52)
-//   Firm X : John(30)
-// -------------------------------------------------------------------------
+// but with a relation (~func) class mapping as the root.
 
 function <<access.private>> meta::relational::tests::projection::aggregation::runFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1]):TabularDataSet[1]
 {
@@ -63,8 +44,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    assertSameElements(['30.0', '35.5', '52.0', 'TDSNull', 'TDSNull'], $result.rows->map(r|$r.values->at(0)->toString()));
 }
 
-// (2) Average + simple property — exercises the path where the outer SELECT
-// carries additional non-aggregate columns alongside the sub-aggregated value.
+// Average + simple property.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
 {
    let result = meta::relational::tests::projection::aggregation::runFirmAgg(
@@ -76,10 +56,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    );
 }
 
-// (3) Two distinct sub-aggregations on the same root — different aggregation
-// functions (count + average). Validates that multiple correlated subselects
-// are built and joined back correctly. If the GROUP BY were missing from
-// either subquery, the row counts and averages would be wildly off.
+// Two sub-aggregations on the same root (count + average).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::projection::aggregation::runFirmAgg(
@@ -94,9 +71,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    );
 }
 
-// (4) Sum — different aggregation function path.
-// SUM over zero matching rows after a LEFT OUTER JOIN returns NULL (TDSNull)
-// in standard SQL, not 0 — matching average's null behaviour for empty groups.
+// Sum (NULL for empty groups via LEFT OUTER JOIN).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::projection::aggregation::runFirmAgg(
@@ -108,7 +83,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    );
 }
 
-// (5) Max — another aggregation function.
+// Max.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::projection::aggregation::runFirmAgg(
@@ -120,12 +95,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    );
 }
 
-// (6) Sub-aggregation with a filter inside the collection navigation. The
-// filter must end up inside the correlated subquery WITHOUT breaking the
-// GROUP-BY / LEFT-OUTER-JOIN correlation set up by addPkForAggregation.
-// Firm C: only Fabrice(45) passes age>30 → 45.0
-// Firm D: David(52) → 52.0
-// Firm X: John(30) excluded → null
+// Sub-aggregation with a filter inside the collection navigation.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::projection::aggregation::runFirmAgg(
