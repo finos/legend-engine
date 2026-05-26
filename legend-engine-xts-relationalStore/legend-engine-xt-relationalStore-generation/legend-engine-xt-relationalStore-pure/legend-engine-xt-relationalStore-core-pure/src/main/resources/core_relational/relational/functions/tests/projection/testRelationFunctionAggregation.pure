@@ -106,3 +106,61 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
       $result.rows->map(r|$r.values->makeString(' | '))
    );
 }
+
+// Min.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->min()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 26', 'Firm D | 52', 'Firm X | 30'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Count only — single aggregation column with no extra projected properties.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet)
+   );
+   assertSize($result.rows, 5);
+   assertSameElements(['0', '0', '1', '1', '2'], $result.rows->map(r|$r.values->at(0)->toString()));
+}
+
+// Top-level if wrapping a sub-aggregation (exercises CASE/WHEN wrapping path).
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, a:f|if($f.legalName == 'Firm X', |1.0, |$f.employees.age->average())])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 1.0'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// map + arithmetic then sum (validates expression wrapping inside aggregate).
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 142', 'Firm D | 104', 'Firm X | 60'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// joinStrings (listagg SQL path). sortBy makes the per-group order deterministic.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, e:f|$f.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | ', 'Firm B | ', 'Firm C | Fabrice^Oliver', 'Firm D | David', 'Firm X | John'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
