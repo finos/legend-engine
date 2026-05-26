@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalI
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
@@ -36,11 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
-import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
 import org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper;
@@ -158,11 +158,7 @@ public class PersistenceTestRunner implements TestRunner
         }
         catch (Exception exception)
         {
-            TestError testError = new TestError();
-            testError.atomicTestId = atomicTest._id();
-            testError.testSuiteId = "";
-            testError.error = exception.getMessage();
-            result = testError;
+            result = TestResultHelper.newTestError(null, "", atomicTest._id(), exception);
         }
         finally
         {
