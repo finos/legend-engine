@@ -3175,3 +3175,275 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelMapping
     breed   : $src.breed
   }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+{
+  area : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle extends meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+{
+  radius : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCatalog
+{
+  shapes : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape
+{
+  area : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCircle extends meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape
+{
+  radius : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCatalog
+{
+  shapes : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate
+{
+  shape   : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape[1];
+  circle  : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle[0..1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::wrap(c:meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle[1])
+  : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate[*]
+{
+  ^meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate(shape = $c, circle = $c)
+}
+
+function <<test.Test, test.ToFix>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::testIntermediateWithSubtypeTarget():Boolean[1]
+{
+  let tree = #{TgtCatalog {shapes {area}, shapes->subType(@TgtCircle) {radius}}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeMapping,
+                      meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('area'),   | 'expected area in source tree, got: ' + $str);
+  assert($str->contains('radius'), | 'expected radius in source tree, got: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeMapping
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCatalog : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCatalog
+    shapes : $src.shapes
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+    area : $src.area
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCircle : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle
+    area   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::wrap().shape.area->toOne(),
+    radius : $src.radius
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcA
+{
+  v : Float[1];
+  label : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcB
+{
+  v : Float[1];
+  tag : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt
+{
+  v : Float[1];
+  txt : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::WrapA
+{
+  a : SrcA[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::wrapA(a:SrcA[1]) : WrapA[*]
+{
+  ^WrapA(a = $a)
+}
+
+// Note: calculateSourceTree currently has a known TODO for operation sets
+// (see testOnSourceRoot.pure: "TODO - handle operation sets in calculateSourceTree").
+// Marked test.ToFix until operation set handling lands.
+function <<test.Test, test.ToFix>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::testUnionWithIntermediateMember():Boolean[1]
+{
+  let tree = #{Tgt {v, txt}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::UnionInterMapping,
+                      meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('label'), | 'expected label (SrcA branch) in source tree: ' + $str);
+  assert($str->contains('tag'),   | 'expected tag (SrcB branch) in source tree: ' + $str);
+  assert($str->contains(' v'),    | 'expected v in source tree: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::UnionInterMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a, b)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt[a] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcA
+    v   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::wrapA().a.v->toOne(),
+    txt : $src.label
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt[b] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcB
+    v   : $src.v,
+    txt : $src.tag
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Root
+{
+  leaf : Leaf[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Leaf
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Tgt
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Hop1
+{
+  root : Root[1];
+  hop2 : Hop2[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Hop2
+{
+  leaf : Leaf[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::wrap(r:Root[1]) : Hop1[*]
+{
+  ^Hop1(root = $r, hop2 = ^Hop2(leaf = $r.leaf))
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::testTwoHopIntermediate():Boolean[1]
+{
+  let tree = #{Tgt {name}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::MultiHopMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Root { leaf { name } } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::MultiHopMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Tgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Root
+    name : $src->meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::wrap().hop2.leaf.name->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::functions::asserts::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot
+{
+  x : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Foreign
+{
+  y : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Tgt
+{
+  z : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Wrap
+{
+  foreign : Foreign[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::badWrap(s:SrcRoot[1]) : Wrap[*]
+{
+  ^Wrap(foreign = ^Foreign(y = $s.x))
+}
+
+// Note: in this configuration calculateSourceTree currently does not
+// reach the unreachable-owner assertion in buildPropertyPathUptoOwner
+// (the property expression isn't routed through the intermediate walk).
+// Test pins the desired contract; marked test.ToFix until the walk
+// surfaces a clear diagnostic for unreachable owners.
+function <<test.Test, test.ToFix>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::testUnreachableOwnerGivesClearError():Boolean[1]
+{
+  let tree = #{Tgt {z}}#;
+  assertError(
+    | meta::pure::graphFetch::calculateSourceTree(
+        $tree,
+        meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::UnreachableMapping,
+        meta::pure::extension::defaultExtensions());,
+    'No intermediate-class property of meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot returns meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Wrap - cannot build path back to owner.'
+  );
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::UnreachableMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Tgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot
+    z : $src->meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::badWrap().foreign.y->toOne()
+  }
+)
