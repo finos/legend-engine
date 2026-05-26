@@ -192,6 +192,10 @@ Class meta::external::store::mongodb::metamodel::Collection
   {
     $this.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression->cast(@Schema).properties->filter(c | $c.key == $fieldName)->first();
   }: meta::external::store::mongodb::metamodel::PropertyType[0..1];
+  objectId()
+  {
+    $this.validator.validatorExpression->cast(@JsonSchemaExpression).schemaExpression->cast(@Schema).properties->filter(c | $c.value->instanceOf(ObjectIdType))->first();
+  }: meta::external::store::mongodb::metamodel::PropertyType[0..1];
 }
 
 

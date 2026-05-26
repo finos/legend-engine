@@ -58,7 +58,8 @@ public class TestValidExprQueryParser
                 {"json/exprquery/match_and_multioperator_query.json"},
                 {"json/exprquery/match_dates.json"},
                 {"json/exprquery/project_multi_field.json"},
-                {"json/exprquery/project_single_field.json"}
+                {"json/exprquery/project_single_field.json"},
+                {"json/exprquery/project_with_objectId.json"}
         });
     }
 

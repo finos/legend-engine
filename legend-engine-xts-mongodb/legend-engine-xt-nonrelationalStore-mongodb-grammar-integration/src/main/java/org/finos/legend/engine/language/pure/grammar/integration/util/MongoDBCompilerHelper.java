@@ -76,6 +76,7 @@ import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamode
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_LongType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_NullType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_NullType_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ObjectIdType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ObjectType;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_ObjectType_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_mongodb_metamodel_PropertyType;
@@ -507,7 +508,7 @@ public class MongoDBCompilerHelper
         @Override
         public Root_meta_external_store_mongodb_metamodel_BaseType visit(ObjectIdType val)
         {
-            return null;
+            return new Root_meta_external_store_mongodb_metamodel_ObjectIdType_Impl(pureObjType.getName() + "_" + this.propName + "_ObjectIdType", null, context.pureModel.getClass("meta::external::store::mongodb::metamodel::ObjectIdType"));
         }
 
         @Override
