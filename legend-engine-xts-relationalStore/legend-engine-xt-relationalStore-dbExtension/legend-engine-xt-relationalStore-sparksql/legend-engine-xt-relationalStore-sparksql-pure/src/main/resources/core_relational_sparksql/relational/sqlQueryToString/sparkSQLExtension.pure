@@ -142,7 +142,6 @@ function meta::relational::functions::sqlQueryToString::sparkSQL::getDynaFunctio
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSparkSQL()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSparkSQL()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSparkSQL()}))
   ];
 }

@@ -381,7 +381,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)})),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSnowflake()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSnowflake()}))
   ];
 }

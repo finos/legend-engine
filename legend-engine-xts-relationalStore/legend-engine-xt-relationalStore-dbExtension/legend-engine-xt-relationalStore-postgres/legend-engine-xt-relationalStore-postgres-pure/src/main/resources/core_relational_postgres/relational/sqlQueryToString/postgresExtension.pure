@@ -246,7 +246,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePostgres()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePostgres()}))
   ];
 }

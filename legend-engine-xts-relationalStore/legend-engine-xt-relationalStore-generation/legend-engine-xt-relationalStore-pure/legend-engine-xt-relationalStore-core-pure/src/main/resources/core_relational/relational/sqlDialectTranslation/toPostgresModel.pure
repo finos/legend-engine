@@ -385,7 +385,6 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('dayOfWeek',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', $p->concatenate(literal('Day')))}),
     pair('parseDate',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),
     pair('adjust',                    {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('dateadd', [$p->at(0), $p->at(1), $p->at(2)->cast(@StringLiteral)->convertDurationUnit()])}),
-    pair('formatDateTime',            {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', [$p->at(0), $p->at(1)->cast(@StringLiteral)->convertDateFormat()])}),
     pair('formatDate',                {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', [$p->at(0), $p->at(1)->cast(@StringLiteral)->convertDateFormat()])}),
     pair('toLower',                   functionCall('lower')),
     pair('toUpper',                   functionCall('upper')),

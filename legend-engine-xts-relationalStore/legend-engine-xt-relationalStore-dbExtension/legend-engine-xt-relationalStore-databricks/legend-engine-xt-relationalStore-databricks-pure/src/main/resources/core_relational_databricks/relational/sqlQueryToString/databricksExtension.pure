@@ -145,7 +145,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()}))
   ];
 }

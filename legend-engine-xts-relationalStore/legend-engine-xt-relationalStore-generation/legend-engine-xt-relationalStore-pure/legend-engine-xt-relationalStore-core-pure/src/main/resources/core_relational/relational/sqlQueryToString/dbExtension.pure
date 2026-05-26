@@ -1131,7 +1131,6 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   convertDateTime,
   convertVarchar128,
   convertTimeZone,
-  formatDateTime,
   formatDate,
   corr,
   cos,

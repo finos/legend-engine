@@ -259,7 +259,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->toTimestampOracle()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateOracle()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateOracle()}))
   ];
 }

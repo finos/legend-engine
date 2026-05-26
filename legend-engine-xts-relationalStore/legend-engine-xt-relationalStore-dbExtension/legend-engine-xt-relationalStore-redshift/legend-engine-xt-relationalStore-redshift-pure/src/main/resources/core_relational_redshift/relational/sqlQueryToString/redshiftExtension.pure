@@ -97,7 +97,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateRedshift()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateRedshift()}))
   ];
 }

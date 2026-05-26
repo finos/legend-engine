@@ -149,7 +149,6 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()}))
   ];
 }

@@ -158,7 +158,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()})),
-    dynaFnToSql('formatDateTime',         $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()})),
     dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()}))
   ];
 }

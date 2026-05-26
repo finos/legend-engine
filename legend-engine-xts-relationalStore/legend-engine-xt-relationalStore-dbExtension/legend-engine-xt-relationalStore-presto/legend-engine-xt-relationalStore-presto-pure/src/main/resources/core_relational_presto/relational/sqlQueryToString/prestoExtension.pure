@@ -104,7 +104,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampPresto()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePresto()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePresto()}))
   ];
 }

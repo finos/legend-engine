@@ -116,7 +116,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampTrino()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateTrino()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateTrino()}))
   ];
 }

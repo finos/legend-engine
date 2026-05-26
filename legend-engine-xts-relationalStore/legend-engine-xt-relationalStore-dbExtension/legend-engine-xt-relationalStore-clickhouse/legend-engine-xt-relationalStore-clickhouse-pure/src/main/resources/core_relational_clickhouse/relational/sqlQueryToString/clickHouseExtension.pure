@@ -141,7 +141,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varSamp', $p)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='toISOWeek(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
-    dynaFnToSql('formatDateTime',         $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()})),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
   ];
 }
