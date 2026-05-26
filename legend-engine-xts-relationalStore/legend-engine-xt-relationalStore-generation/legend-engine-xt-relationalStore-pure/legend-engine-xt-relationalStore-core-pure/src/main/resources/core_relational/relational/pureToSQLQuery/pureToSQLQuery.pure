@@ -3491,7 +3491,12 @@ function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:Func
                   let pk = $rs->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
                   let valid = if ($pk->isEmpty(), | fail('There is no primary key defined on the relation function mapping for class ' + $rs.class.name->toOne() + '. A primary key must be defined (via ~primaryKey on the relation class mapping, or inferable from the relation function body) to use sub-aggregation.'); false; ,| true);
                   let existingSelect = $existingQuery.select;
-                  let all = $pk->map(p|$p->processColumnsInRelationalOperationElements(^$state(inFilter=false), ^$existingQuery(select=^$existingSelect(leftSideOfFilter=[]), positionBeforeLastApplyJoinTreeNode=[]), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions));
+                  // processRelationFunctionClassMapping returns SelectWithCursor with currentTreeNode=[];
+                  // processColumnsInRelationalOperationElements requires it to be the root join tree node.
+                  let queryWithTreeNode = if($existingQuery.currentTreeNode->isEmpty(),
+                                              | ^$existingQuery(currentTreeNode = $existingQuery.select.data),
+                                              | $existingQuery);
+                  let all = $pk->map(p|$p->processColumnsInRelationalOperationElements(^$state(inFilter=false), ^$queryWithTreeNode(select=^$existingSelect(leftSideOfFilter=[]), positionBeforeLastApplyJoinTreeNode=[]), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions));
                   let sel = $all->map(c|$c.select)->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
                   let mergedWithCollapsedFilteringOperation = ^$sel(filteringOperation = $sel.filteringOperation->tail()->fold({f,a|[$a->toOne(),$f]->andFilters($extensions)}, $sel.filteringOperation->head()));
                   let res = $all->first()->toOne();
@@ -3999,6 +4004,7 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
                                                                   ]);
 
    let rootJtnAliasTablePks = $rootJtnAliasTable.second.values;
+   assert($rootJtnAliasTablePks->isNotEmpty(), | 'Cannot add self-join for alias \'' + $rootJtnAlias.name + '\': no primary key is defined on the underlying ' + $rootJtnAlias.relationalElement->type()->elementToPath() + '. Define a primary key (e.g. ~primaryKey on the table/view, or on the relation function mapping) so a self-join can be generated.');
    let database = $rootJtnAliasTable.first;
 
    let genAliasSuffix = $rootJtn->match([
@@ -4023,9 +4029,7 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
    let nonIsoJoinName = $joinTreeNodeName + $newJoinName;
 
    let rootToGenJoinOperation = $rootJtnAlias.relationalElement->match([t:Table[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
-                                                                        u:Union[1]| meta::relational::functions::pureToSqlQuery::orFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
-                                                                        select:SelectSQLQuery[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
-                                                                        rf:meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_]);
+                                                                        u:Union[1]| meta::relational::functions::pureToSqlQuery::orFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_]);
 
 
    let rootJtnToGenJtnSelfJoinOp = $rootToGenJoinOperation->eval($rootJtnAliasTablePks->map(c|^DynaFunction(name = 'equal', parameters=[^TableAliasColumn(alias=$rootJtnAlias, column=$c), ^TableAliasColumn(alias=$genJtnAlias, column=$c)])), $extensions);
