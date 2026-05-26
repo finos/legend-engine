@@ -41,7 +41,7 @@ public class PersistenceTestH2Connection
         // Close connection to close any leftover open connections
         closeConnection();
         Properties properties = new Properties();
-        properties.put("DATABASE_TO_UPPER", false);
+        properties.put("DATABASE_TO_UPPER", "false");
         LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
             Lists.mutable.empty(),
             new H2Manager(),
