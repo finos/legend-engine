@@ -144,8 +144,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', format('FORMAT(CAST(\'%s\' AS DATE),%s)', [$params->at(0), 'yyyy-MM-dd'])),
-    pair('ISO8601_NanoSecondPrecision', format('FORMAT(CAST(%s AS DATETIME2),%s)', [$params->at(0), 'yyyy-MM-ddTHH:mm:ss.fffffff00']))
+    pair('ISO8601', format('FORMAT(CAST(%s AS DATE),\'%s\')', [$params->at(0), 'yyyy-MM-dd'])),
+    pair('ISO8601_NanoSecondPrecision', format('FORMAT(CAST(%s AS DATETIME2),\'%s\')', [$params->at(0), 'yyyy-MM-ddTHH:mm:ss.fffffff00']))
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('FORMAT(CAST(%s AS DATE),%s)', [$params->at(0), $sqlFmt]);

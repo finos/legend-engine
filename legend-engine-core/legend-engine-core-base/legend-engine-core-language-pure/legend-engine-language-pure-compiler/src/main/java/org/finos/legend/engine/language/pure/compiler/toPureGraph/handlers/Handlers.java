@@ -2323,8 +2323,8 @@ public class Handlers
         register("meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_", "convertTimeZone", false, ps -> res("String", "one"));
 
         register(m(
-                m(h("meta::pure::functions::date::formatDate_DateTime_1__DateTimeFormat_1__String_1_", "formatDate", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_", "formatDate", false, ps -> res("String", "one"), ps -> ps.size() == 2))
+                h("meta::pure::functions::date::formatDate_DateTime_1__DateTimeFormat_1__String_1_", "formatDate", false, ps -> res("String", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_DateTime"))),
+                h("meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_", "formatDate", false, ps -> res("String", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_StrictDate")))
         ));
 
         register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", "timeBucket", true, ps -> res("DateTime", "one"));
