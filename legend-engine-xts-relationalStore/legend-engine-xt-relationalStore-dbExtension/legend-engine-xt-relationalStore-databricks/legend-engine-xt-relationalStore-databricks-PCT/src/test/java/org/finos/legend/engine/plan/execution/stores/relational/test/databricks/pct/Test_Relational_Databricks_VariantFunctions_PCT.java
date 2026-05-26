@@ -47,6 +47,7 @@ public class Test_Relational_Databricks_VariantFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\""),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"),
             one("meta::pure::functions::variant::convert::tests::to::testToMapWithIntegerValue_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"),
+            one("meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_", "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Month is not managed yet!\"\""),
 
             pack("meta::pure::functions::variant::convert::tests::toVariant", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"),

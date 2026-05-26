@@ -218,7 +218,6 @@ Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::
   sum: Integer[1];
 }
 
-
 Class meta::relational::tests::mapping::relation::Firm
 {
   legalName: String[1];
@@ -294,7 +293,6 @@ Mapping meta::relational::tests::mapping::relation::SimpleMapping
     firm[person, firm]: $this.firmId == $that.id
   }
 )
-
 
 Mapping meta::relational::tests::mapping::relation::MixedMapping
 (
@@ -497,7 +495,6 @@ Mapping meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapp
   }
 )
 
-
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -546,7 +543,6 @@ function meta::relational::tests::mapping::relation::personFunctionWithGroupBy()
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->groupBy(~FIRMID, ~SUM:x|$x.AGE:y|$y->sum())
 }
-
 
 function meta::relational::tests::mapping::relation::personFunctionWithProcessingSnapshotMilestoning():meta::pure::metamodel::relation::Relation<Any>[1]
 {
@@ -606,11 +602,6 @@ function meta::relational::tests::mapping::relation::personFunctionWithMultipleM
     {x,y| $x.FIRMID == $y.ID}
   );
 }
-
-// PK-auto-inference helper functions (pkTest*, pkHelper*) used by
-// `testAutoInferPK*` live in `pkInferenceHelpers.pure` next to
-// `pkInferenceTests.pure` — keeping the PK fixture focused and this
-// main relational setup uncluttered by single-purpose helpers.
 
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
 {

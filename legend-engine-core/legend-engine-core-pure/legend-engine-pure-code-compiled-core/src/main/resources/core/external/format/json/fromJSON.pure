@@ -295,8 +295,13 @@ function <<access.private>> meta::json::findClass(json:JSONObject[1], class:Clas
 {
    let foundClass = $json->findClasses($class, $generics, $config, $ignorable);
    assert($foundClass->size() != 0, | $class->elementToPath() + ' class not found or not compatible with ' + $json->toPrettyJSONString());
-   assert($foundClass->size() == 1, | 'multiple class matches [' + $foundClass.name->makeString(',') + '] for ' + $json->toPrettyJSONString());
-   $foundClass->at(0);
+   let directMatch = $foundClass->filter(c | $c == $class);
+   if ($directMatch->size() == 1,
+      | $directMatch->at(0),
+      {|
+         assert($foundClass->size() == 1, | 'multiple class matches [' + $foundClass.name->makeString(',') + '] for ' + $json->toPrettyJSONString());
+         $foundClass->at(0);
+      });
 }
 
 function <<access.private>> meta::json::getPropertyType(property:Property<Nil, Any|*>[1], generics:Pair<String, Type>[*]):Type[1]
@@ -304,7 +309,8 @@ function <<access.private>> meta::json::getPropertyType(property:Property<Nil, A
    let classPropertyRawType = $property.genericType.rawType;
    if ($classPropertyRawType->isEmpty(),
          | let propertyGenericName = $property.genericType.typeParameter.name;
-           $generics->filter(g | $g.first == $propertyGenericName)->toOne().second;,
+           let matching = $generics->filter(g | $g.first == $propertyGenericName);
+           if ($matching->isEmpty(), | Any, | $matching->toOne().second);,
          | $classPropertyRawType->toOne());
 }
 

@@ -984,20 +984,20 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     @Test
     public void testRelationFunctionMappingWithPrimaryKey()
     {
-        // Single-column primary key
+        // Single PK — no brackets.
         test("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::testFunc():Any[1]\n" +
-                "    ~primaryKey: [firstName]\n" +
+                "    ~primaryKey: firstName\n" +
                 "    firstName: firstName,\n" +
                 "    firm: jsonColumn\n" +
                 "  }\n" +
                 ")\n");
 
-        // Multi-column primary key
+        // Multi PK — bracketed.
         test("###Mapping\n" +
                 "Mapping mappingPackage::myMapping\n" +
                 "(\n" +
@@ -1007,6 +1007,30 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    ~primaryKey: [firstName, lastName]\n" +
                 "    firstName: firstName,\n" +
                 "    lastName: lastName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+
+        // Legacy `[col]` for single PK is accepted and normalised to bracket-less.
+        testFormat("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    ~primaryKey: firstName\n" +
+                "    firstName: firstName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n",
+                "###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    ~primaryKey: [firstName]\n" +
+                "    firstName: firstName,\n" +
                 "    firm: jsonColumn\n" +
                 "  }\n" +
                 ")\n");

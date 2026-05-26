@@ -3423,14 +3423,13 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' is not part of the columns returned by the relation function 'my::personFunction__Relation_1_' (FIRSTNAME, AGE, FIRMID, CITY). Use syntax `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.");
+                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' (mapping 'my::testMapping') is not part of the columns returned by the relation function. Available columns: [FIRSTNAME, AGE, FIRMID, CITY]. Use `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.");
     }
 
     @Test
-    public void testRelationFunctionMappingNoPKFailsWhenNotInferable()
+    public void testRelationFunctionMappingNoPK()
     {
-        // No explicit ~primaryKey and function body is 1->cast(...). Auto-inference
-        // is deferred to runtime — at compile time this is valid (no error).
+        // No explicit ~primaryKey — auto-inference deferred to runtime.
         testRelationMapping("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +
@@ -3446,9 +3445,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testRelationFunctionMappingPKWithUnmappedColumn()
     {
-        // FIRMID exists in the function's output RelationType but is NOT mapped to
-        // any property. Per Rohit's review this should be valid — PK columns don't
-        // need to be mapped, they just need to exist in the function's output.
+        // PK columns must exist in the function output but need not be mapped to a property.
         testRelationMapping("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +

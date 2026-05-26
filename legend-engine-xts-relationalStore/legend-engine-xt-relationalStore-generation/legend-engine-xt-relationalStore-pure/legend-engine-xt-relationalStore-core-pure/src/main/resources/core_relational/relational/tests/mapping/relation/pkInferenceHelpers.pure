@@ -16,17 +16,8 @@
 import meta::pure::metamodel::relation::*;
 import meta::relational::tests::mapping::relation::*;
 
-// ---------------------------------------------------------------------------
-// Relation functions used exclusively by PK-auto-inference tests
-// (`testAutoInferPK*` in pkInferenceTests.pure). These bodies are never
-// executed — `pkOfFunc()` only walks their expression tree to derive the
-// primary-key column names. Each function exercises one operator (or one
-// combination) so the per-operator dispatcher can be covered in isolation.
-//
-// Kept in a dedicated file (separate from `relationMappingSetup.pure`) so
-// the PK-inference fixture stays focused and the main relational test
-// setup is not cluttered with single-purpose helpers.
-// ---------------------------------------------------------------------------
+// Relation functions for PK auto-inference tests (pkInferenceTests.pure).
+// Bodies are never executed; `pkOfFunc()` only walks their expression tree.
 
 // --- A. Single-operator scenarios ----------------------------------------
 function meta::relational::tests::mapping::relation::pkTestBare(): meta::pure::metamodel::relation::Relation<Any>[1]
@@ -69,19 +60,16 @@ function meta::relational::tests::mapping::relation::pkTestRename(): meta::pure:
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->rename(~ID, ~PERSON_ID)
 }
 
-// select(~[ID, AGE]) — PK column ID is in the projected set so it survives.
 function meta::relational::tests::mapping::relation::pkTestSelectKeepingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[ID, AGE])
 }
 
-// select(~[AGE, FIRMID]) — PK column ID is NOT in the projected set → PK = [].
 function meta::relational::tests::mapping::relation::pkTestSelectDroppingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select(~[AGE, FIRMID])
 }
 
-// select() with no column arg — identity projection, preserves all columns + PK.
 function meta::relational::tests::mapping::relation::pkTestSelectNoArgs(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->select()
@@ -99,8 +87,7 @@ function meta::relational::tests::mapping::relation::pkTestDistinctWithCols(): m
 
 function meta::relational::tests::mapping::relation::pkTestJoin(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  // firmTable.ID is renamed to FIRM_ID first so the joined row type doesn't
-  // have two columns called ID (Relation forbids duplicate column names).
+  // Rename firmTable.ID to avoid duplicate column names in the joined row.
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
 }
@@ -133,7 +120,6 @@ function meta::relational::tests::mapping::relation::pkTestFilterSortLimit(): me
     ->limit(5)
 }
 
-// rename(ID→PID) → select(~[PID, AGE]) keeps PID.
 function meta::relational::tests::mapping::relation::pkTestRenameThenSelectKeepingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -141,7 +127,6 @@ function meta::relational::tests::mapping::relation::pkTestRenameThenSelectKeepi
     ->select(~[PID, AGE])
 }
 
-// rename(ID→PID) → select(~[AGE, FIRMID]) drops PID.
 function meta::relational::tests::mapping::relation::pkTestRenameThenSelectDroppingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -149,7 +134,6 @@ function meta::relational::tests::mapping::relation::pkTestRenameThenSelectDropp
     ->select(~[AGE, FIRMID])
 }
 
-// rename(ID→X) → rename(X→Y).
 function meta::relational::tests::mapping::relation::pkTestDoubleRename(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -173,7 +157,6 @@ function meta::relational::tests::mapping::relation::pkTestGroupByThenRename(): 
 
 function meta::relational::tests::mapping::relation::pkTestJoinThenFilterSort(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  // firmTable.ID is renamed to FIRM_ID first to avoid duplicate column names.
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
     ->join(#>{meta::relational::tests::mapping::relation::testDB.firmTable}#->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
     ->filter(x | $x.AGE > 25)
@@ -187,7 +170,6 @@ function meta::relational::tests::mapping::relation::pkTestDistinctThenFilter():
     ->filter(x | $x.AGE > 25)
 }
 
-// select(~[ID, AGE, FIRMID]) keeps ID; rename(ID→PID); filter preserves.
 function meta::relational::tests::mapping::relation::pkTestSelectThenRenameThenFilter(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -196,8 +178,6 @@ function meta::relational::tests::mapping::relation::pkTestSelectThenRenameThenF
     ->filter(x | $x.AGE > 20)
 }
 
-// join(personTable, groupMembershipTable) → extend → filter → select(~[ID, GROUPID, AGE]).
-// Both PKs (ID, GROUPID) survive the projection.
 function meta::relational::tests::mapping::relation::pkTestJoinExtendFilterSelect(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -206,7 +186,6 @@ function meta::relational::tests::mapping::relation::pkTestJoinExtendFilterSelec
     ->select(~[ID, GROUPID, AGE])
 }
 
-// groupBy sets PK=FIRMID, then select(~[SUM]) drops it → PK = [].
 function meta::relational::tests::mapping::relation::pkTestGroupByThenSelectDroppingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -214,9 +193,6 @@ function meta::relational::tests::mapping::relation::pkTestGroupByThenSelectDrop
     ->select(~[SUM])
 }
 
-// --- D. Additional composite chains ----------
-
-// extend adds DOUBLE_AGE, then select drops original PK column ID.
 function meta::relational::tests::mapping::relation::pkTestExtendThenSelectDroppingPK(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -224,7 +200,6 @@ function meta::relational::tests::mapping::relation::pkTestExtendThenSelectDropp
     ->select(~[AGE, FIRMID, DOUBLE_AGE])
 }
 
-// filter preserves PK=[ID], then rename swaps ID→PID.
 function meta::relational::tests::mapping::relation::pkTestFilterThenRename(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -232,8 +207,6 @@ function meta::relational::tests::mapping::relation::pkTestFilterThenRename(): m
     ->rename(~ID, ~PID)
 }
 
-// rename ID→PID, then groupBy on a different column (FIRMID).
-// groupBy overrides PK regardless of upstream → PK=[FIRMID].
 function meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -241,7 +214,6 @@ function meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy(): 
     ->groupBy(~FIRMID, ~SUM:x | $x.AGE:y | $y->sum())
 }
 
-// join sets PK=[ID, GROUPID], then groupBy overrides PK to [GROUPID].
 function meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -249,7 +221,6 @@ function meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy(): me
     ->groupBy(~GROUPID, ~CNT:x | $x.AGE:y | $y->count())
 }
 
-// filter → extend → distinct(no-args): all preserve PK=[ID].
 function meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -258,7 +229,6 @@ function meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct(
     ->distinct()
 }
 
-// groupBy → extend → filter → select keeping PK.
 function meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSelect(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -268,7 +238,6 @@ function meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSe
     ->select(~[FIRMID, SUM, DOUBLE_SUM])
 }
 
-// Long identity-preserving chain ending with rename.
 function meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
@@ -278,12 +247,7 @@ function meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename
     ->rename(~ID, ~PERSON_ID)
 }
 
-// --- E. Function composition tests -------------------
-
-// Zero-arg helper functions — these are the "composed" building blocks.
-// Concrete RelationType return types are required so the Pure compiler can
-// type-check column access (e.g. $x.FIRMID) when these helpers are called
-// inside composed functions like pkTestComposedJoin.
+// Helpers with concrete RelationType return so callers can type-check column access.
 function meta::relational::tests::mapping::relation::pkHelperFilteredPersons(): meta::pure::metamodel::relation::Relation<(ID:Integer, 'FIRST NAME':String, AGE:Integer, FIRMID:Integer, SALARY:Float)>[1]
 {
   #>{meta::relational::tests::mapping::relation::testDB.personTable}#->filter(x | $x.AGE > 25)
@@ -294,20 +258,17 @@ function meta::relational::tests::mapping::relation::pkHelperFirms(): meta::pure
   #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->select(~[ID, legalName])
 }
 
-// Composed: calls a zero-arg helper, then applies filter.
 function meta::relational::tests::mapping::relation::pkTestComposedFilter(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   meta::relational::tests::mapping::relation::pkHelperFilteredPersons()->filter(x | true)
 }
 
-// Composed: calls two zero-arg helpers, joins them.
 function meta::relational::tests::mapping::relation::pkTestComposedJoin(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   meta::relational::tests::mapping::relation::pkHelperFilteredPersons()
     ->join(meta::relational::tests::mapping::relation::pkHelperFirms()->rename(~ID, ~FIRM_ID), JoinKind.INNER, {x, y | $x.FIRMID == $y.FIRM_ID})
 }
 
-// Composed: calls a zero-arg helper, then groupBy.
 function meta::relational::tests::mapping::relation::pkTestComposedGroupBy(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   meta::relational::tests::mapping::relation::pkHelperFilteredPersons()

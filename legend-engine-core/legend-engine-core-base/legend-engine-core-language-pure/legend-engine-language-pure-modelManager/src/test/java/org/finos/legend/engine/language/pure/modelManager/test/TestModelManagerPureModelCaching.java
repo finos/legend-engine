@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.Protocol;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
@@ -39,6 +40,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.eclipse.collections.api.tuple.Pair;
 
 public class TestModelManagerPureModelCaching
 {
@@ -168,6 +171,194 @@ public class TestModelManagerPureModelCaching
         Assert.assertNotNull(pureModel.getClass("x::A"));
         Assert.assertNotNull(pureModel.getClass("x::C"));
         Assert.assertNotNull(pureModel.getClass("x::D"));
+    }
+
+    @Test
+    public void testLoadModelCachesCompiledModel()
+    {
+        PureModelContextData blockA = PureGrammarParser.newInstance().parseModel(
+                "Class x::A\n{\n   name : String[1];\n}");
+
+        PureModelContextPointer pointer = makePointer("com.test", "artifact1", "1.0.0");
+
+        AtomicInteger loadCount = new AtomicInteger(0);
+        CountingMockModelLoader loader = new CountingMockModelLoader(Maps.mutable.with(pointer, blockA), loadCount);
+        ModelManager manager = new ModelManager(DeploymentMode.TEST, loader);
+        Identity identity = new Identity("X");
+
+        PureModel model1 = manager.loadModel(pointer, null, identity, null);
+        Assert.assertNotNull(model1);
+        Assert.assertNotNull(model1.getClass("x::A"));
+        Assert.assertEquals(1, manager.pureModelCache.size());
+        Assert.assertEquals(1, loadCount.get());
+
+        // Second call should hit cache — loader not called again
+        PureModel model2 = manager.loadModel(pointer, null, identity, null);
+        Assert.assertSame(model1, model2);
+        Assert.assertEquals(1, loadCount.get());
+    }
+
+    @Test
+    public void testLoadDataCachesResolvedData()
+    {
+        PureModelContextData blockA = PureGrammarParser.newInstance().parseModel(
+                "Class x::A\n{\n   name : String[1];\n}");
+
+        PureModelContextPointer pointer = makePointer("com.test", "artifact2", "1.0.0");
+
+        AtomicInteger loadCount = new AtomicInteger(0);
+        CountingMockModelLoader loader = new CountingMockModelLoader(Maps.mutable.with(pointer, blockA), loadCount);
+        ModelManager manager = new ModelManager(DeploymentMode.TEST, loader);
+        Identity identity = new Identity("X");
+
+        PureModelContextData data1 = manager.loadData(pointer, null, identity);
+        Assert.assertNotNull(data1);
+        Assert.assertEquals(1, manager.pureModelContextCache.size());
+        Assert.assertEquals(1, loadCount.get());
+
+        // Second call should hit cache — loader not called again
+        PureModelContextData data2 = manager.loadData(pointer, null, identity);
+        Assert.assertSame(data1, data2);
+        Assert.assertEquals(1, loadCount.get());
+    }
+
+    @Test
+    public void testLoadModelAndDataCachesBothAndLoadsOnlyOnce()
+    {
+        PureModelContextData blockA = PureGrammarParser.newInstance().parseModel(
+                "Class x::A\n{\n   name : String[1];\n}");
+
+        PureModelContextPointer pointer = makePointer("com.test", "artifact3", "1.0.0");
+
+        AtomicInteger loadCount = new AtomicInteger(0);
+        CountingMockModelLoader loader = new CountingMockModelLoader(Maps.mutable.with(pointer, blockA), loadCount);
+        ModelManager manager = new ModelManager(DeploymentMode.TEST, loader);
+        Identity identity = new Identity("X");
+
+        Pair<PureModelContextData, PureModel> result = manager.loadModelAndData(pointer, null, identity, null);
+
+        // Verify output
+        PureModelContextData data = result.getOne();
+        PureModel model = result.getTwo();
+        Assert.assertNotNull(data);
+        Assert.assertNotNull(model);
+        Assert.assertNotNull(model.getClass("x::A"));
+
+        // Both caches populated
+        Assert.assertEquals(1, manager.pureModelContextCache.size());
+        Assert.assertEquals(1, manager.pureModelCache.size());
+
+        // Loader called only once (preResolvedData used for model compilation)
+        Assert.assertEquals(1, loadCount.get());
+    }
+
+    @Test
+    public void testLoadModelAndDataSubsequentCallsHitCache()
+    {
+        PureModelContextData blockA = PureGrammarParser.newInstance().parseModel(
+                "Class x::A\n{\n   name : String[1];\n}");
+
+        PureModelContextPointer pointer = makePointer("com.test", "artifact4", "1.0.0");
+
+        AtomicInteger loadCount = new AtomicInteger(0);
+        CountingMockModelLoader loader = new CountingMockModelLoader(Maps.mutable.with(pointer, blockA), loadCount);
+        ModelManager manager = new ModelManager(DeploymentMode.TEST, loader);
+        Identity identity = new Identity("X");
+
+        Pair<PureModelContextData, PureModel> result1 = manager.loadModelAndData(pointer, null, identity, null);
+        Assert.assertEquals(1, loadCount.get());
+
+        // Second call — everything from cache
+        Pair<PureModelContextData, PureModel> result2 = manager.loadModelAndData(pointer, null, identity, null);
+        Assert.assertSame(result1.getOne(), result2.getOne());
+        Assert.assertSame(result1.getTwo(), result2.getTwo());
+        Assert.assertEquals(1, loadCount.get());
+    }
+
+    @Test
+    public void testLoadModelAndDataThenIndividualCallsHitCache()
+    {
+        PureModelContextData blockA = PureGrammarParser.newInstance().parseModel(
+                "Class x::A\n{\n   name : String[1];\n}");
+
+        PureModelContextPointer pointer = makePointer("com.test", "artifact5", "1.0.0");
+
+        AtomicInteger loadCount = new AtomicInteger(0);
+        CountingMockModelLoader loader = new CountingMockModelLoader(Maps.mutable.with(pointer, blockA), loadCount);
+        ModelManager manager = new ModelManager(DeploymentMode.TEST, loader);
+        Identity identity = new Identity("X");
+
+        Pair<PureModelContextData, PureModel> result = manager.loadModelAndData(pointer, null, identity, null);
+        Assert.assertEquals(1, loadCount.get());
+
+        // Subsequent individual calls use the caches populated by loadModelAndData
+        PureModelContextData data = manager.loadData(pointer, null, identity);
+        Assert.assertSame(result.getOne(), data);
+
+        PureModel model = manager.loadModel(pointer, null, identity, null);
+        Assert.assertSame(result.getTwo(), model);
+
+        Assert.assertEquals(1, loadCount.get());
+    }
+
+    private static PureModelContextPointer makePointer(String groupId, String artifactId, String version)
+    {
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.serializer = new Protocol("pure", "v1_17_0");
+        AlloySDLC sdlc = new AlloySDLC();
+        sdlc.groupId = groupId;
+        sdlc.artifactId = artifactId;
+        sdlc.version = version;
+        sdlc.packageableElementPointers = new ArrayList<>();
+        pointer.sdlcInfo = sdlc;
+
+        // Use a simple approach: set fields that affect equality
+        pointer.sdlcInfo.packageableElementPointers = new ArrayList<>();
+        return pointer;
+    }
+
+    private static class CountingMockModelLoader implements ModelLoader
+    {
+        private final MutableMap<PureModelContextPointer, PureModelContextData> contexts;
+        private final AtomicInteger loadCount;
+
+        public CountingMockModelLoader(MutableMap<PureModelContextPointer, PureModelContextData> vals, AtomicInteger loadCount)
+        {
+            this.contexts = vals;
+            this.loadCount = loadCount;
+        }
+
+        @Override
+        public boolean supports(PureModelContext context)
+        {
+            return true;
+        }
+
+        @Override
+        public void setModelManager(ModelManager modelManager)
+        {
+        }
+
+        @Override
+        public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
+        {
+            loadCount.incrementAndGet();
+            PureModelContextPointer pointer = (PureModelContextPointer) context;
+            PureModelContextData res = contexts.get(context);
+            return res != null ? res : PureModelContextData.newPureModelContextData(pointer.serializer, pointer, Lists.mutable.empty());
+        }
+
+        @Override
+        public PureModelContext cacheKey(PureModelContext context, Identity identity)
+        {
+            return context;
+        }
+
+        @Override
+        public boolean shouldCache(PureModelContext context)
+        {
+            return true;
+        }
     }
 
     private static class MockModelLoader implements ModelLoader

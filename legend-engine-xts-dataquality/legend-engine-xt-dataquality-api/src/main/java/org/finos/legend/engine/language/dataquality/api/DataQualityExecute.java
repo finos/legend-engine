@@ -260,7 +260,7 @@ public class DataQualityExecute
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
     //@Prometheus(name = "data profile")
-    public Response profile(@Context HttpServletRequest request, DataQualityProfileInput dataQualityProfilingInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    public Response profile(@Context HttpServletRequest request, DataQualityProfileInput dataQualityProfilingInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @DefaultValue("true") @QueryParam("excludePlatformColumns") boolean excludePlatformColumns, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -268,7 +268,7 @@ public class DataQualityExecute
         try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - profiling: planGeneration").startActive(true))
         {
             PureModel pureModel = this.modelManager.loadModel(dataQualityProfilingInput.model, dataQualityProfilingInput.clientVersion, identity, null);
-            Result result = getDataProfile(request, pureModel, dataQualityProfilingInput, start, identity);
+            Result result = getDataProfile(request, pureModel, dataQualityProfilingInput, start, identity, excludePlatformColumns);
             return wrapInResponse(identity, format, start, result);
         }
         catch (Exception ex)
@@ -278,11 +278,11 @@ public class DataQualityExecute
         }
     }
 
-    private Result getDataProfile(HttpServletRequest request, PureModel pureModel, DataQualityProfileInput dataQualityProfilingInput, long start, Identity identity)
+    private Result getDataProfile(HttpServletRequest request, PureModel pureModel, DataQualityProfileInput dataQualityProfilingInput, long start, Identity identity, boolean excludePlatformColumns)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_PROFILE_START).toString());
         // 2. call DQ PURE func to generate lambda
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction =  DataQualityProfilingLambdaGenerator.generateLambda(pureModel, dataQualityProfilingInput.packagePath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction =  DataQualityProfilingLambdaGenerator.generateLambda(pureModel, dataQualityProfilingInput.packagePath, excludePlatformColumns);
         // 3. Generate Plan from the lambda generated in the previous step
         SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, dataQualityProfilingInput.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         // 4. Execute plan
@@ -296,7 +296,7 @@ public class DataQualityExecute
     @Path("ruleSuggestions")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
-    public List<RelationValidation> ruleSuggestions(@Context HttpServletRequest request, DataQualityProfileInput dataQualityProfilingInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    public List<RelationValidation> ruleSuggestions(@Context HttpServletRequest request, DataQualityProfileInput dataQualityProfilingInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @DefaultValue("true") @QueryParam("excludePlatformColumns") boolean excludePlatformColumns, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -306,7 +306,7 @@ public class DataQualityExecute
         PureModel pureModel = this.modelManager.loadModel(dataQualityProfilingInput.model, dataQualityProfilingInput.clientVersion, identity, null);
         Root_meta_external_dataquality_DataQualityRelationValidation validation = DataQualityProfilingLambdaGenerator.getDataQualityRelationValidation(pureModel, dataQualityProfilingInput.packagePath);
 
-        Result result = getDataProfile(request, pureModel, dataQualityProfilingInput, start, identity);
+        Result result = getDataProfile(request, pureModel, dataQualityProfilingInput, start, identity, excludePlatformColumns);
 
         RealizedRelationalResult realized = (RealizedRelationalResult) result.realizeInMemory();
 
@@ -637,6 +637,7 @@ public class DataQualityExecute
             DataQualitySampleValuesInput input,
             @DefaultValue(SerializationFormat.defaultFormatString)
             @QueryParam("serializationFormat") SerializationFormat format,
+            @DefaultValue("true") @QueryParam("excludePlatformColumns") boolean excludePlatformColumns,
             @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm,
             @Context UriInfo uriInfo)
     {
@@ -647,7 +648,7 @@ public class DataQualityExecute
         try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - sampleValues: execute").startActive(true))
         {
             PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion, identity, null);
-            SingleExecutionPlan plan = generateSampleValuesPlan(pureModel, input);
+            SingleExecutionPlan plan = generateSampleValuesPlan(pureModel, input, excludePlatformColumns);
             Map<String, Object> params = buildParamMap(input.lambdaParameterValues);
             Response response = executePlan(request, identity, format, start, plan, params);
             if (response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL))
@@ -664,7 +665,7 @@ public class DataQualityExecute
         }
     }
 
-    private SingleExecutionPlan generateSampleValuesPlan(PureModel pureModel, DataQualitySampleValuesInput input)
+    private SingleExecutionPlan generateSampleValuesPlan(PureModel pureModel, DataQualitySampleValuesInput input, boolean excludePlatformColumns)
     {
         if (input.query == null && input.functionPath == null)
         {
@@ -678,8 +679,8 @@ public class DataQualityExecute
         }
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda =
                 input.query != null
-                        ? DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.query, input.maxNumberOfSampleValues)
-                        : DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.functionPath, input.maxNumberOfSampleValues);
+                        ? DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.query, input.maxNumberOfSampleValues, excludePlatformColumns)
+                        : DataQualitySampleValuesLambdaGenerator.generateLambda(pureModel, input.functionPath, input.maxNumberOfSampleValues, excludePlatformColumns);
         return PlanGenerator.generateExecutionPlan(
                 lambda, null, null, null, pureModel,
                 input.clientVersion, PlanPlatform.JAVA, null,

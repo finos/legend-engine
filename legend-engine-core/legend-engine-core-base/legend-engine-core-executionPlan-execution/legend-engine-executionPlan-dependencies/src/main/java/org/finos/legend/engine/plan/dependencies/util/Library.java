@@ -19,7 +19,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -40,6 +43,7 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -999,6 +1003,60 @@ public class Library
     public static <T> T uniqueValueOnly(T col, T defaultValue)
     {
         return col != null ? col : defaultValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> Map<K, V> newMap(Object pairs)
+    {
+        org.eclipse.collections.api.map.MutableMap<K, V> map = Maps.mutable.empty();
+        if (pairs == null)
+        {
+            return map;
+        }
+        if (pairs instanceof Pair)
+        {
+            Pair<?, ?> p = (Pair<?, ?>) pairs;
+            map.put((K) p.getOne(), (V) p.getTwo());
+            return map;
+        }
+        if (pairs instanceof Iterable)
+        {
+            for (Object obj : (Iterable<?>) pairs)
+            {
+                if (obj instanceof Pair)
+                {
+                    Pair<?, ?> p = (Pair<?, ?>) obj;
+                    map.put((K) p.getOne(), (V) p.getTwo());
+                }
+            }
+            return map;
+        }
+        throw new IllegalArgumentException("Cannot build Map from " + pairs.getClass().getName());
+    }
+
+    public static <K, V> Map<K, V> put(Map<K, V> map, K key, V value)
+    {
+        org.eclipse.collections.api.map.MutableMap<K, V> copy = Maps.mutable.withMap(map);
+        copy.put(key, value);
+        return copy;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <K, V> List<Pair<K, V>> zip(Object a, Object b)
+    {
+        List<Pair<K, V>> result = new ArrayList<>();
+        if (a == null || b == null)
+        {
+            return result;
+        }
+        List<?> aList = a instanceof List ? (List<?>) a : Collections.singletonList(a);
+        List<?> bList = b instanceof List ? (List<?>) b : Collections.singletonList(b);
+        int n = Math.min(aList.size(), bList.size());
+        for (int i = 0; i < n; i++)
+        {
+            result.add(Tuples.pair((K) aList.get(i), (V) bList.get(i)));
+        }
+        return result;
     }
 
     public static <T> List<T> dropAt(List<T> col, long index, long count)

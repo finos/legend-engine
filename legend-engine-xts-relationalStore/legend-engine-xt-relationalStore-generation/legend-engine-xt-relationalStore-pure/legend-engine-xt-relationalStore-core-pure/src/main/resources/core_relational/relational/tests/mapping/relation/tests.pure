@@ -260,4 +260,3 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
           ['Firm X | Peter']
         );
 }
-

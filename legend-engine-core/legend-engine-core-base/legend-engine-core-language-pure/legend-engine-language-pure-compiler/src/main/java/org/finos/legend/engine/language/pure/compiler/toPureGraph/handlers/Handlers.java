@@ -1570,6 +1570,8 @@ public class Handlers
                         h("meta::pure::functions::collection::indexOf_T_MANY__T_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), p -> true))));
 
+        register("meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_", "lastIndexOf", false, ps -> res("Integer", "one"));
+        register("meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1__Integer_1_", "lastIndexOf", true, ps -> res("Integer", "one"));
 
         register(grp(RemoveDuplicatesInference,
                 h("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", "removeDuplicates", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 1),
@@ -2373,7 +2375,6 @@ public class Handlers
         register(m(m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4)),
                 m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> true))));
-        register("meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_", "lastIndexOf", false, ps -> res("Integer", "one"));
         register(m(m(h("meta::pure::functions::string::makeCamelCase_String_1__Boolean_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::makeCamelCase_String_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> true))));
         register(m(m(h("meta::pure::functions::string::isDigit_String_1__Integer_1__Integer_1__Boolean_1_", "isDigit", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),

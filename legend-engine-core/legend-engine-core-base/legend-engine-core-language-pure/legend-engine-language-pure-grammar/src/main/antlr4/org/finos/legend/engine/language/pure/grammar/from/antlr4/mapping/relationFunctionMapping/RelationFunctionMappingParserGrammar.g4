@@ -21,7 +21,7 @@ relationFunctionMapping:                    RELATION_FUNC functionIdentifier
                                             EOF
 ;
 
-primaryKey:                                 RELATION_PRIMARY_KEY COLON BRACKET_OPEN identifier (COMMA identifier)* BRACKET_CLOSE
+primaryKey:                                 RELATION_PRIMARY_KEY COLON (identifier | BRACKET_OPEN identifier (COMMA identifier)* BRACKET_CLOSE)
 ;
 
 singlePropertyMapping:                      singleLocalPropertyMapping | singleNonLocalPropertyMapping
