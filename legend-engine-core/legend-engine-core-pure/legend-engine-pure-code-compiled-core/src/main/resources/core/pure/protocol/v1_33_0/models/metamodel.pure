@@ -749,6 +749,7 @@ Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunc
 {
   relationFunction: meta::protocols::pure::v1_33_0::metamodel::PackageableElementPointer[1];
   propertyMappings : meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[*];
+  primaryKey : String[*];
 }
 
 Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping

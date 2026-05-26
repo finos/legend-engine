@@ -1,0 +1,79 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
+import meta::pure::extension::*;
+
+function <<access.private>> meta::external::query::sql::expression::tests::pk::pkOfSqlFunc(funcName:String[1]):String[*]
+{
+   let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
+   let func = $compiled->filter(p | $p.name == $funcName)->toOne()->cast(@FunctionDefinition<Any>);
+   let extensions = meta::pure::extension::runtime::getExtensions();
+   let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
+   $expr->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
+}
+
+function <<access.private>> meta::external::query::sql::expression::tests::pk::getCompiledMapping(mappingName:String[1]):Mapping[1]
+{
+   let compiled = meta::legend::compile(readFile('/core_external_query_sql_expression_tests/tests/pkInferenceModel.legend')->toOne());
+   $compiled->filter(e | $e->instanceOf(Mapping))
+            ->cast(@Mapping)
+            ->filter(m | $m.name == $mappingName)->toOne();
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceSimpleSelect():Boolean[1]
+{
+   let pk = meta::external::query::sql::expression::tests::pk::pkOfSqlFunc('simpleSqlSelect__Relation_1_');
+   assertEquals(['ID'], $pk);
+}
+
+// Complex SQL (joins, TDS-mode internals) is opaque to the operator dispatcher
+// — auto-inference returns []; user must declare ~primaryKey explicitly.
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionPKInferenceJoin():Boolean[1]
+{
+   let pk = meta::external::query::sql::expression::tests::pk::pkOfSqlFunc('sqlWithJoin__Relation_1_');
+   assertEquals([]->cast(@String), $pk);
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionExplicitPK():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('explicitPKMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(1, $setImpl.primaryKey->size());
+   assertEquals('FIRSTNAME', $setImpl.primaryKey->at(0).name);
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionNoPKDeferred():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('noPKMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(0, $setImpl.primaryKey->size());
+}
+
+function <<test.Test>> meta::external::query::sql::expression::tests::pk::testSQLExpressionExplicitPKForJoin():Boolean[1]
+{
+   let mapping = meta::external::query::sql::expression::tests::pk::getCompiledMapping('explicitPKJoinMapping');
+   let setImpl = $mapping.classMappings
+                   ->filter(cm | $cm.id == 'person')->toOne()
+                   ->cast(@RelationFunctionInstanceSetImplementation);
+   assertEquals(2, $setImpl.primaryKey->size());
+   assertEquals('AGE', $setImpl.primaryKey->at(0).name);
+   assertEquals('FIRMID', $setImpl.primaryKey->at(1).name);
+}
+
