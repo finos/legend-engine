@@ -586,10 +586,24 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    $class->addMethod(javaMethod('private', javaObject(), 'readMethodInvoke', [$methodName, $jsonNode],
       'Method m = classMethodsCache.get(name);\n' +
-      'try{\n' +
+      'try\n' +
+      '{\n' +
       '   return m.invoke(this, node);\n' +
       '}\n' +
-      'catch (IllegalAccessException e){throw new RuntimeException(e.getMessage());}catch (InvocationTargetException e){throw new RuntimeException(e.getMessage());}'
+      'catch (IllegalAccessException e)\n' +
+      '{\n' +
+      '    throw new RuntimeException("Error invoking method " + name + " on class " + getClass().getName(), e);\n' +
+      '}\n' +
+      'catch (InvocationTargetException e)\n' +
+      '{\n' +
+      '    StringBuilder sb = new StringBuilder("Error executing method ").append(name).append("(").append(JsonNode.class.getName()).append(") on class ").append(getClass().getName());\n' +
+      '    String message;\n' +
+      '    if ((e.getCause() != null) && ((message = e.getCause().getMessage()) != null))\n' +
+      '    {\n' +
+      '        sb.append(": ").append(message);\n' +
+      '    }\n' +
+      '    throw new RuntimeException(sb.toString(), e);\n' +
+      '}'
    ));
 }
 
