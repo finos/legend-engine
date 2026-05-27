@@ -405,6 +405,30 @@ function meta::pure::graphFetch::calculateSourceTree(tree:RootGraphFetchTree<Any
          let srcClass     = $pisi.srcClass->toOne()->cast(@Class<Any>);
          let root         = ^RootGraphFetchTree<Any>(class=$srcClass);
          let withChildren = $root->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions, ^Map<String,ScanPropertiesState>()).first->mergeSubTrees()->sortTree()->cast(@RootGraphFetchTree<Any>);
+      },
+      // Root-level OperationSetImplementation (e.g. *Tgt: Operation { union(a, b) }).
+      // Each constituent PureInstanceSetImplementation contributes its own source-class tree;
+      // we use the first branch as the base and attach the others as subTypeTrees so the
+      // combined output carries contributions from every branch.
+      {op: OperationSetImplementation[1] |
+         let resolved  = $op->meta::pure::router::clustering::resolveInstanceSetImplementations();
+         let pureImpls = $resolved->filter(i | $i->instanceOf(PureInstanceSetImplementation))->cast(@PureInstanceSetImplementation);
+         assert($pureImpls->isNotEmpty(), |'OperationSetImplementation ' + $op.id + ' did not resolve to any PureInstanceSetImplementations');
+
+         let perBranchTrees = $pureImpls->map(pisi |
+            assert($pisi.srcClass->isNotEmpty() && $pisi.srcClass->toOne()->instanceOf(Class), |'Pure mapping does not have a class as ~src for branch of operation set: ' + $pisi.id);
+            let branchSrc  = $pisi.srcClass->toOne()->cast(@Class<Any>);
+            let branchRoot = ^RootGraphFetchTree<Any>(class=$branchSrc);
+            $branchRoot->enrichSourceTreeNode($mapping, $pisi, $replaced, $extensions, ^Map<String,ScanPropertiesState>()).first->mergeSubTrees()->cast(@RootGraphFetchTree<Any>);
+         );
+
+         if($perBranchTrees->size() == 1,
+            | $perBranchTrees->at(0)->sortTree()->cast(@RootGraphFetchTree<Any>),
+            | let first           = $perBranchTrees->at(0);
+              let rest            = $perBranchTrees->tail();
+              let subTypeWrappers = $rest->map(t | ^SubTypeGraphFetchTree(subTypeClass=$t.class->toOne(), subTrees=$t.subTrees));
+              ^$first(subTypeTrees=$first.subTypeTrees->concatenate($subTypeWrappers))->sortTree()->cast(@RootGraphFetchTree<Any>);
+         );
       }
    ])->toOneMany());
 }

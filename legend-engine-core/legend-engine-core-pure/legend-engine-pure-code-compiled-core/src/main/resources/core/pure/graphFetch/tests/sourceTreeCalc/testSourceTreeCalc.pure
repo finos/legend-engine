@@ -3293,8 +3293,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::wrapA(a:SrcA
 
 // Note: calculateSourceTree currently has a known TODO for operation sets
 // (see testOnSourceRoot.pure: "TODO - handle operation sets in calculateSourceTree").
-// Marked test.ToFix until operation set handling lands.
-function <<test.Test, test.ToFix>>
+function <<test.Test>>
   meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::testUnionWithIntermediateMember():Boolean[1]
 {
   let tree = #{Tgt {v, txt}}#;
