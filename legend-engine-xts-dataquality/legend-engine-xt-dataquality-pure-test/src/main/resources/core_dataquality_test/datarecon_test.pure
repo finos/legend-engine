@@ -23,6 +23,7 @@ import meta::external::dataquality::*;
 import meta::pure::precisePrimitives::*;
 import meta::external::dataquality::tests::domain::*;
 import meta::pure::metamodel::relation::*;
+import meta::external::query::sql::transformation::compile::utils::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_dynamicHash():Boolean[1]
 {
@@ -490,7 +491,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true));
+  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -513,6 +514,6 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]):Boolean[1]
 {
-  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false));
+  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual, false);
 }

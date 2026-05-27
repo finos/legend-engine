@@ -23,6 +23,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
+import static org.finos.legend.engine.generation.dataquality.DataQualityProfilingLambdaGenerator.getLambdaCompiler;
+
 public class DataQualitySampleValuesLambdaGenerator
 {
     /**
@@ -77,13 +79,13 @@ public class DataQualitySampleValuesLambdaGenerator
         if (maxNumberOfSampleValues != null)
         {
             return core_dataquality_generation_samplevalues
-                            .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Integer_1__Boolean_1__Boolean_1__LambdaFunction_1_(
-                                    pureLambda, (long) maxNumberOfSampleValues, true, excludePlatformColumns, pureModel.getExecutionSupport());
+                            .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Integer_1__Boolean_1__Boolean_1__Function_1__LambdaFunction_1_(
+                                    pureLambda, (long) maxNumberOfSampleValues, true, excludePlatformColumns, getLambdaCompiler(pureModel), pureModel.getExecutionSupport());
         }
 
         // maxNumberOfSampleValues omitted — sensible default from within the PURE layer applies
         return core_dataquality_generation_samplevalues
-                        .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Boolean_1__Boolean_1__LambdaFunction_1_(
-                                pureLambda, true, excludePlatformColumns, pureModel.getExecutionSupport());
+                        .Root_meta_external_dataquality_samplevalues_getSampleValuesLambda_LambdaFunction_1__Boolean_1__Boolean_1__Function_1__LambdaFunction_1_(
+                                pureLambda, true, excludePlatformColumns, getLambdaCompiler(pureModel), pureModel.getExecutionSupport());
     }
 }
