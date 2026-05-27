@@ -835,7 +835,10 @@ function <<access.private>>
       [
          p:PropertyPathNode[1] | let prop     = $p.property;
                                  let propOwner = $prop->meta::pure::functions::meta::ownerClass();
-                                 if($propOwner == $owner || $propOwner->isStrictSubType($owner),
+                                 if($propOwner == $owner || $propOwner->isStrictSubType($owner) || $owner->isStrictSubType($propOwner),
+                                    // owner reaches the property directly when propOwner is the owner, a subtype of owner,
+                                    // or a supertype of owner (inheritance). The supertype-of-owner case relies on
+                                    // addPropertyGraphFetchTrees accepting the property under owner via inheritance.
                                     | $pTree,
                                     | let candidates = $t->get($propOwner)->orElse(list([])).values;
                                       assert($candidates->isNotEmpty(),
@@ -889,7 +892,11 @@ function meta::pure::graphFetch::propertyGraphFetchTreeToRootGraphFetchTree(pTre
 function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(onto:GraphFetchTree[1], pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): GraphFetchTree[1]
 {
    $pTree.value->match([
-      node: PropertyPathNode[1] | if($ownerClass == $node.class  || $node.class->isStrictSubType($ownerClass),
+      // Accept the property when its owning class is the owner, a subtype of owner, or
+      // a supertype of owner (inheritance case — owner instances inherit the property).
+      // The Class-node arm below already handles bidirectional subtype navigation; this
+      // mirrors it for PropertyPathNode so inherited leaves aren't silently dropped.
+      node: PropertyPathNode[1] | if($ownerClass == $node.class  || $node.class->isStrictSubType($ownerClass) || $ownerClass->isStrictSubType($node.class),
                                      | $onto->addPropertyGraphFetchTrees($pTree, $ownerClass, $node),
                                      | $onto
                                   ),
