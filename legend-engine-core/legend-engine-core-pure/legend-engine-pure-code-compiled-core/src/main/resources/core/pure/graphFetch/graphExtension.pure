@@ -475,12 +475,24 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
    let isPropertyTemporalMilestoned = $tgtPgft.property->hasGeneratedMilestoningPropertyStereotype();
 
    let requiredProperty = if($isPropertyTemporalMilestoned, |$setImplementation.class->propertyByName($tgtPgft.property->edgePointPropertyName()->toOne()), |$tgtPgft.property);
-   let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty && if($tgtPgft.subType->isNotEmpty() && $mapping->classMappingById($pm.targetSetImplementationId)->isNotEmpty(), | $mapping->classMappingById($pm.targetSetImplementationId)->toOne().class->_subTypeOf($tgtPgft.subType->toOne()), | true))->cast(@PurePropertyMapping);
+   // When the target tree carries an explicit subType (e.g. shapes->subType(@TgtCircle)),
+   // accept property mappings whose target is either a subtype of the requested subType
+   // (the original direction — covers per-subset mappings like b[b1] -> B1) or a
+   // supertype of it (covers single-default mappings like `shapes : $src.shapes` that
+   // target the base class TgtShape but should still apply to the TgtCircle subtree).
+   let propertyMappings = $setImplementation.propertyMappings->filter(pm|$pm.property == $requiredProperty && if($tgtPgft.subType->isNotEmpty() && $mapping->classMappingById($pm.targetSetImplementationId)->isNotEmpty(),
+                                                                                                                  | let pmTargetClass = $mapping->classMappingById($pm.targetSetImplementationId)->toOne().class;
+                                                                                                                    let requestedSubType = $tgtPgft.subType->toOne();
+                                                                                                                    $pmTargetClass->_subTypeOf($requestedSubType) || $requestedSubType->_subTypeOf($pmTargetClass);,
+                                                                                                                  | true))->cast(@PurePropertyMapping);
 
    if($srcNodeOwner->instanceOf(Class) && ($propertyMappings->isNotEmpty() || ($requiredProperty->isNotEmpty() && ($requiredProperty->toOne()->isPropertyAutoMapped($setImplementation) || $setImplementation->isNoMappingDefaultToEmpty($requiredProperty->toOne()) || $setImplementation->isPartOfMerge()))),
       {|
          let owner = $srcNodeOwner->cast(@Class<Any>);
-         let returnType   = $tgtPgft.property->functionReturnType().rawType->toOne();
+         // For explicit subType subtrees use the subType class for child-mapping lookup so
+         // childSIs resolves to the subtype's set implementation (e.g. *TgtCircle), not
+         // the property's natural return type's set impl (e.g. *TgtShape).
+         let returnType   = if($tgtPgft.subType->isNotEmpty(), |$tgtPgft.subType->toOne(), |$tgtPgft.property->functionReturnType().rawType->toOne());
 
          let childSetImpls = $returnType->match([
             {c:Class<Any>[1]|
