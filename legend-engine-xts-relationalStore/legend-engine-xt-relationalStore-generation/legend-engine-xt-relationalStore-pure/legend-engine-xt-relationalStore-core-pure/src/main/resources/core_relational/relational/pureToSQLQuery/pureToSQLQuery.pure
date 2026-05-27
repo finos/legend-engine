@@ -3965,6 +3965,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapN
    ]);
 }
 
+// Strips a single pair of surrounding double quotes from a column/alias name so that
+// quoted (e.g. "ID") and unquoted (e.g. ID) forms compare equal when matching primary
+// keys against sub-select exposed columns.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::unquoteName(name:String[1]):String[1]
+{
+   if($name->startsWith('"') && $name->endsWith('"') && $name->length() >= 2,
+      | $name->substring(1, $name->length() - 1),
+      | $name);
+}
+
 function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQuery[1], j:RelationalTreeNode[1], newJoinName:String[1], extensions:Extension[*]):Pair<SelectSQLQuery, List<Pair<JoinTreeNode, JoinTreeNode>>>[1]
 {
    let rootJtn = $j;
@@ -3997,13 +4007,13 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
                                                                                                  | let rf = $inner->cast(@meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction);
                                                                                                    let resolvedOwner = $rf.owner->meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved($extensions);
                                                                                                    assert($resolvedOwner.primaryKey->isNotEmpty(), 'There is no primary key defined on the relation function mapping; a primary key (~primaryKey or inferable from the relation function body) is required to add a self-join.');
-                                                                                                   let pkNames = $resolvedOwner.primaryKey.name->map(n|$n->toOne());
+                                                                                                    let pkNames = $resolvedOwner.primaryKey.name->map(n|$n->toOne()->meta::relational::functions::pureToSqlQuery::unquoteName());
                                                                                                    // Match by inner column name OR by the outer subselect's alias name —
                                                                                                    // moveSelectQueryToSubSelect can rename the outer alias so the PK column
                                                                                                    // is exposed under a different name than the underlying column.
                                                                                                    let pkCols = $select.columns->cast(@Alias)
                                                                                                                   ->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) &&
-                                                                                                                             ($pkNames->contains($a.relationalElement->cast(@TableAliasColumn).column.name->toOne()) || $pkNames->contains($a.name)))
+                                                                                                                             ($pkNames->contains($a.relationalElement->cast(@TableAliasColumn).column.name->toOne()->meta::relational::functions::pureToSqlQuery::unquoteName()) || $pkNames->contains($a.name->meta::relational::functions::pureToSqlQuery::unquoteName())))
                                                                                                                   ->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name = $a.name););
                                                                                                    assert($pkCols->isNotEmpty(), | 'Unable to find primary key columns in the subselect for self-join; expected one of [' + $pkNames->joinStrings(', ') + '] but the subselect exposes columns: [' + $select.columns->cast(@Alias)->map(a | $a.name + '(' + if($a.relationalElement->instanceOf(TableAliasColumn), |$a.relationalElement->cast(@TableAliasColumn).column.name->toOne(), |'non-TAC') + ')')->joinStrings(', ') + '].');
                                                                                                    pair(^Database(), ^List<Column>(values = $pkCols));
