@@ -3984,7 +3984,16 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
                                                                                               assert($inner->instanceOf(Table) || $inner->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction), 'Add self Join is supported with SelectSQLQuery only when main relationalElement (after unwrapping nested sub-selects) is Table or RelationFunction');
                                                                                               if($inner->instanceOf(Table),
                                                                                                  | let mt = $inner->cast(@Table);
-                                                                                                   pair($mt.schema.database->at(0), getPksFromAlias($select.columns, $mt));,
+                                                                                                   // Name-based PK matching - moveSelectQueryToSubSelect creates new Column instances
+                                                                                                   // in the wrapped sub-select, so an identity compare against $mt.primaryKey is empty.
+                                                                                                   // Match by inner column name OR outer alias name (alias-rename safe).
+                                                                                                   let pkNames = $mt.primaryKey.name;
+                                                                                                   let pkCols = $select.columns->cast(@Alias)
+                                                                                                                  ->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) &&
+                                                                                                                             ($pkNames->contains($a.relationalElement->cast(@TableAliasColumn).column.name) || $pkNames->contains($a.name)))
+                                                                                                                  ->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name = $a.name););
+                                                                                                   assert($pkCols->isNotEmpty(), | 'Unable to find primary key columns in the subselect for self-join on Table ' + $mt.name + '; expected PKs [' + $pkNames->joinStrings(', ') + '] but the subselect exposes columns: [' + $select.columns->cast(@Alias)->map(a | $a.name + '(' + if($a.relationalElement->instanceOf(TableAliasColumn), |$a.relationalElement->cast(@TableAliasColumn).column.name->toOne(), |'non-TAC') + ')')->joinStrings(', ') + '].');
+                                                                                                   pair($mt.schema.database->at(0), ^List<Column>(values = $pkCols));,
                                                                                                  | let rf = $inner->cast(@meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction);
                                                                                                    let resolvedOwner = $rf.owner->meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved($extensions);
                                                                                                    assert($resolvedOwner.primaryKey->isNotEmpty(), 'There is no primary key defined on the relation function mapping; a primary key (~primaryKey or inferable from the relation function body) is required to add a self-join.');
@@ -4033,6 +4042,7 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
 
    let rootToGenJoinOperation = $rootJtnAlias.relationalElement->match([t:Table[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
                                                                         rf:meta::relational::functions::pureToSqlQuery::metamodel::RelationFunction[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
+                                                                        select:SelectSQLQuery[1]| meta::relational::functions::pureToSqlQuery::andFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_,
                                                                         u:Union[1]| meta::relational::functions::pureToSqlQuery::orFilters_RelationalOperationElement_MANY__Extension_MANY__RelationalOperationElement_$0_1$_]);
 
 
