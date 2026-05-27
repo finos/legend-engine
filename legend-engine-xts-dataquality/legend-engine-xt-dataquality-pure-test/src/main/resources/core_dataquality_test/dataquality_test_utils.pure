@@ -107,7 +107,26 @@ function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:S
   let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
-}                             
+}
+
+function meta::external::dataquality::tests::doRelationTestExpectingEvalWrapper(dq:String[1], validationNames:String[*], innerExpected:FunctionDefinition<Any>[1], packageableRuntimeAsString: String[1]):Boolean[1]
+{
+  doRelationTestExpectingEvalWrapper($dq, $validationNames, $innerExpected, [], $packageableRuntimeAsString, true, false);
+}
+
+function meta::external::dataquality::tests::doRelationTestExpectingEvalWrapper(dq:String[1], validationNames:String[*], innerExpected:FunctionDefinition<Any>[1], defectsLimit:Integer[0..1], packageableRuntimeAsString: String[1], enrichDQColumns:Boolean[1], castDQColumnsToPrimitive:Boolean[1]):Boolean[1]
+{
+  let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
+  let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationNames, $defectsLimit, $enrichDQColumns, $castDQColumnsToPrimitive, false);
+  let config = grammarConfig();
+  let ctx = ^meta::pure::metamodel::serialization::grammar::GContext(space='');
+  let innerStr = $innerExpected->printFunctionDefinition($config, $ctx);
+  let paramEndIdx = $innerStr->indexOf('|');
+  let paramSection = $innerStr->substring(0, $paramEndIdx + 1);
+  let needsClosingBrace = $innerStr->startsWith('{');
+  let expectedStr = $paramSection + 'meta::pure::functions::lang::eval(' + $innerStr + ')' + if($needsClosingBrace, |'}', |'');
+  assertLambdaEquals($expectedStr, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString, true);
+}
 
 function meta::external::dataquality::tests::doRelationTestWithTotalDefectCountAndLimit(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {

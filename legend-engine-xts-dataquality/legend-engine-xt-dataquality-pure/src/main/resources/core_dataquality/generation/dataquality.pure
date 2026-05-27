@@ -506,7 +506,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   );
   let containsFrom = $dqRelationValidation.query->isEndingWithFromFunction();
   let multipleValidations = $selectedValidations->size() > 1;
-  let lambda = if (($removeFrom || $multipleValidations) && $containsFrom, //if we are running multiple validations we will wrap the expression in an eval on the from function at the end to ensure correct sql generated
+  let lambda = if (($removeFrom || $containsFrom),
     | $dqRelationValidation.query->popTerminalFunctionExpression(), 
     | $dqRelationValidation.query
   );
@@ -526,7 +526,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
         | [buildLetExpression('sourceQuery', $query), $validationsUnion],
         | $validationsUnion
       );
-      if (!$removeFrom && $multipleValidations && $containsFrom, 
+      if (!$removeFrom && $containsFrom, 
         | let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
           ^$lambda(expressionSequence = $expressionSequence)->wrapWithEvalOnFrom($from);, //need to wrap in eval on from so that let expression works correctly (correct sql can be generated)
         | ^$lambda(expressionSequence = $expressionSequence)

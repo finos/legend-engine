@@ -2415,7 +2415,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
    // Fix columns ----------------
    let columns = $processed.element->cast(@SelectWithCursor).select.columns;
-   let transformed = if (!$columns->isEmpty() && $columns->at(0)->instanceOf(Alias),
+   let transformed = if (!$columns->isEmpty() && ($columns->at(0)->instanceOf(Alias) || $columns->at(0)->instanceOf(TableAliasColumn)),
                            | $processed->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
                                                let select = $selectWithCursor.select->alignJoinAndPkColumnsForUnion($columns);
                                                let element = $elements->at($processed->indexOf($p));
@@ -2594,10 +2594,10 @@ function meta::relational::functions::pureToSqlQuery::buildConcatenateSubSelect(
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::alignJoinAndPkColumnsForUnion(select: SelectSQLQuery[1], allColumns:RelationalOperationElement[*]):SelectSQLQuery[1]
 {
-   let allCols = $allColumns->map(c | $c->cast(@Alias).name)->removeDuplicates();
+   let allCols = $allColumns->map(c | $c->extractColumnName())->removeDuplicates();
 
    let sqlNull = ^Literal(value=^SQLNull());
-   let newCols = $allCols->map(a| let col = $select.columns->filter(c|$c->cast(@Alias).name == $a);
+   let newCols = $allCols->map(a| let col = $select.columns->filter(c|$c->extractColumnName() == $a);
                                   if ($col->isEmpty(),
                                       |^Alias(name=$a, relationalElement=$sqlNull),
                                       |$col->at(0)

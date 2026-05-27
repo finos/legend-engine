@@ -2007,3 +2007,43 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testS
    );
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let expr = {|
+      let source = #TDS
+                      id, firstName, firmId
+                      1, Peter, 10
+                      2, John, 10
+                      3, Alice, 20
+                      4, Bob, 20
+                      5, Eve, 30
+                   #;
+      let firms = #TDS
+                     fId, legalName
+                     10, FirmA
+                     20, FirmB
+                     30, FirmC
+                  #;
+      // Left arm: join produces Alias columns (wrapping CTE's TableAliasColumn)
+      $source->filter(x | $x.id <= 4)
+         ->join($firms, JoinKind.LEFT, {a, b | $a.firmId == $b.fId})
+         ->select(~[id, firstName])
+      ->concatenate(
+         // Right arm: simple filter+select keeps TableAliasColumn from CTE reference
+         $source->filter(x | $x.id > 4)
+            ->select(~[id, firstName])
+      );
+   };
+
+   let res = $f->eval($expr);
+
+   assertEquals( '#TDS\n'+
+                 '   id,firstName\n'+
+                 '   1,Peter\n'+
+                 '   2,John\n'+
+                 '   3,Alice\n'+
+                 '   4,Bob\n'+
+                 '   5,Eve\n'+
+                 '#', $res->sort(~id->ascending())->toString());
+}
+
