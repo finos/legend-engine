@@ -3223,7 +3223,7 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::wrap(c:met
   ^meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate(shape = $c, circle = $c)
 }
 
-function <<test.Test, test.ToFix>>
+function <<test.Test>>
   meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::testIntermediateWithSubtypeTarget():Boolean[1]
 {
   let tree = #{TgtCatalog {shapes {area}, shapes->subType(@TgtCircle) {radius}}}#;
