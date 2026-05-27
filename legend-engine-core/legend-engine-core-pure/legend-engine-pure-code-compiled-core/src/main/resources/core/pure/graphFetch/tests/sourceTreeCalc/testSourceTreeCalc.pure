@@ -3419,12 +3419,11 @@ function meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::badWrap(s:S
   ^Wrap(foreign = ^Foreign(y = $s.x))
 }
 
-// Note: in this configuration calculateSourceTree currently does not
-// reach the unreachable-owner assertion in buildPropertyPathUptoOwner
-// (the property expression isn't routed through the intermediate walk).
-// Test pins the desired contract; marked test.ToFix until the walk
-// surfaces a clear diagnostic for unreachable owners.
-function <<test.Test, test.ToFix>>
+// Note: in this configuration calculateSourceTree previously took the legacy
+// fallback (isTreeRootOwner returns true on empty treeOwner) and silently
+// dropped the unreachable property. The intermediate-handling branch now
+// surfaces a clear diagnostic up-front.
+function <<test.Test>>
   meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::testUnreachableOwnerGivesClearError():Boolean[1]
 {
   let tree = #{Tgt {z}}#;
