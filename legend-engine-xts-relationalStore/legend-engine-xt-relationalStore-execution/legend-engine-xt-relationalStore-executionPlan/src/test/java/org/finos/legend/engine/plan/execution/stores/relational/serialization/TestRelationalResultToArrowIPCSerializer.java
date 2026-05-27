@@ -1,5 +1,6 @@
 // Copyright 2021 Goldman Sachs
 // Licensed under the Apache License, Version 2.0
+
 package org.finos.legend.engine.plan.execution.stores.relational.serialization;
 
 import com.github.luben.zstd.ZstdInputStream;
