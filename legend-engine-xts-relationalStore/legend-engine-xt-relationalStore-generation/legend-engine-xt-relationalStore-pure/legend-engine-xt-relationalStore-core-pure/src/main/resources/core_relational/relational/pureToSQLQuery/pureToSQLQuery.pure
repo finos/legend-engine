@@ -1253,7 +1253,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                      let remap = $filtersPartition.first->extractTableAliasColumns()->concatenate($child->children()->extractTableAliasColumns())
                                                                                         ->filter(e|$e.alias.name == $targetAlias.name)//extra cols are added to SelectSqlQuery, relationalElements are not reprocessed
                                                                                         ->distinct()
-                                                                                        ->map(c|pair($c, $nestedSelect.columns->cast(@Alias)->filter(a|$a.name == $c.column.name)->toOne().relationalElement->cast(@TableAliasColumn)));
+                                                                                         ->map(c|pair($c, $nestedSelect.columns->cast(@Alias)->filter(a|$a.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes() == $c.column.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes())->toOne().relationalElement->cast(@TableAliasColumn)));
 
                                                      let data = $nestedSelect.data->toOne();
                                                      let newData=$child->children()->fold({c,root|let join = $c.join;
