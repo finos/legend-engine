@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * and yields one dynamic test per granular operation (init/parse/compile,
  * file generation, individual mapping tests, service plans).
  */
-public class RelationalEMITTestSuite
+public class RelationalEMITTests
 {
     @TestFactory
     Stream<DynamicContainer> emit()
