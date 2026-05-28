@@ -1013,6 +1013,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::date::convertTimeZone_DateTime_1__String_1__String_1__String_1_,
     meta::pure::functions::date::formatDate_DateTime_1__DateTimeFormat_1__String_1_,
     meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_,
+    meta::pure::functions::math::formatNumber_Float_1__FloatFormat_1__String_1,
+    meta::pure::functions::math::formatNumber_Decimal_1__DecimalFormat_1__String_1,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_1__T_1_,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_1__T_1_,
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_1__T_1_,

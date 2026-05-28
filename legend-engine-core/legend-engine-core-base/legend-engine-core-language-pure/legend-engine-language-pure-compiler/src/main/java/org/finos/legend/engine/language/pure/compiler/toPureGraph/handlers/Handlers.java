@@ -2327,6 +2327,11 @@ public class Handlers
                 h("meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_", "formatDate", false, ps -> res("String", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_StrictDate")))
         ));
 
+        register(m(
+                h("meta::pure::functions::math::formatNumber_Float_1__FloatFormat_1__String_1_", "formatNumber", false, ps -> res("String", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float")),
+                h("meta::pure::functions::math::formatNumber_Decimal_1__DecimalFormat_1__String_1_", "formatNumber", false, ps -> res("String", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal"))
+        ));
+
         register("meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_", "timeBucket", true, ps -> res("DateTime", "one"));
         register("meta::pure::functions::date::timeBucket_DateTime_$0_1$__Integer_1__DurationUnit_1__DateTime_$0_1$_", "timeBucket", false, ps -> res("DateTime", "zeroOne"));
         register("meta::pure::functions::date::timeBucket_StrictDate_1__Integer_1__DurationUnit_1__StrictDate_1_", "timeBucket", true, ps -> res("StrictDate", "one"));
