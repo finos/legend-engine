@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
@@ -498,7 +499,7 @@ class RelationalGraphFetchUtils
             {
                 Object thisVal = sqlResult.getTransformedValue(index);
                 Object thatVal = getters.get(i).invoke(resolveValueIfIChecked(object));
-                if (!Objects.equals(thisVal, thatVal))
+                if (!crossKeyValuesEqual(thisVal, thatVal))
                 {
                     return false;
                 }
@@ -510,6 +511,27 @@ class RelationalGraphFetchUtils
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean crossKeyValuesEqual(Object a, Object b)
+    {
+        if (Objects.equals(a, b))
+        {
+            return true;
+        }
+        // Handle PureDate precision mismatch caused by temp table round-trip:
+        // A StrictDate (hour=-1) inserted into a TIMESTAMP column comes back as a DateTime at midnight (hour=0).
+        if (a instanceof PureDate && b instanceof PureDate)
+        {
+            PureDate dateA = (PureDate) a;
+            PureDate dateB = (PureDate) b;
+            return dateA.getYear() == dateB.getYear()
+                    && dateA.getMonth() == dateB.getMonth()
+                    && dateA.getDay() == dateB.getDay()
+                    && (!dateA.hasHour() || (dateA.getHour() == 0 && dateA.getMinute() == 0 && dateA.getSecond() == 0))
+                    && (!dateB.hasHour() || (dateB.getHour() == 0 && dateB.getMinute() == 0 && dateB.getSecond() == 0));
+        }
+        return false;
     }
 
     static boolean subTreeValidForCaching(GraphFetchTree graphFetchTree)
