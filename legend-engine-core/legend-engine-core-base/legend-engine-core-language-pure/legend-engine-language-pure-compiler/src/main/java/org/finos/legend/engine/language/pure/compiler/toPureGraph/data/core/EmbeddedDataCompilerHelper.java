@@ -16,6 +16,10 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
@@ -23,22 +27,40 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformat
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationPrerequisiteElementsPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelEmbeddedTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelEmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelEmbeddedData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelInstanceData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelInstanceData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationRow_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -60,15 +82,14 @@ public interface EmbeddedDataCompilerHelper
         else if (embeddedData instanceof RelationElementsData)
         {
             RelationElementsData relationElementsData = (RelationElementsData) embeddedData;
-            HashSet<String> relationElementsPaths = new HashSet<>();
+            MutableSet<String> relationElementsPaths = Sets.mutable.empty();
             relationElementsData.relationElements.forEach(relationElement ->
             {
                 String paths = String.join(".", relationElement.paths);
-                if (relationElementsPaths.contains(paths))
+                if (!relationElementsPaths.add(paths))
                 {
                     throw new EngineException("Duplicated relation element path: '" + paths + "'", relationElement.sourceInformation, EngineErrorType.COMPILATION);
                 }
-                relationElementsPaths.add(paths);
             });
             return new Root_meta_pure_data_RelationElementsData_Impl("", m3SourceInformation, context.pureModel.getClass("meta::pure::data::RelationElementsData"))
                     ._relationElements(ListIterate.collect(relationElementsData.relationElements, relationElement ->
@@ -82,7 +103,7 @@ public interface EmbeddedDataCompilerHelper
         {
             ModelStoreData modelStoreData = (ModelStoreData) embeddedData;
             ValueSpecificationBuilder builder = new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext);
-            Root_meta_pure_data_ModelStoreData metamodelModelStoreData =  new Root_meta_pure_data_ModelStoreData_Impl("", m3SourceInformation, context.pureModel.getClass("meta::pure::data::ModelStoreData"));
+            Root_meta_pure_data_ModelStoreData metamodelModelStoreData = new Root_meta_pure_data_ModelStoreData_Impl("", m3SourceInformation, context.pureModel.getClass("meta::pure::data::ModelStoreData"));
             if (modelStoreData.modelData == null || modelStoreData.modelData.isEmpty())
             {
                 throw new EngineException("No data provided for Model Store", modelStoreData.sourceInformation, EngineErrorType.COMPILATION);
@@ -96,8 +117,8 @@ public interface EmbeddedDataCompilerHelper
                     Root_meta_pure_data_ModelEmbeddedData mmModelData = new Root_meta_pure_data_ModelEmbeddedData_Impl("", modelTestDataSourceInformation, context.pureModel.getClass("meta::pure::data::ModelEmbeddedData"));
                     mmModelData._model(context.resolveClass(modelTestData.model, modelTestData.sourceInformation));
                     mmModelData._data(
-                        context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(((ModelEmbeddedTestData) modelTestData).data, context, processingContext)).filter(Objects::nonNull)
-                            .findFirst().orElseThrow(() -> new EngineException("Unsupported Embedded Data for Model Store", modelTestData.sourceInformation, EngineErrorType.COMPILATION)));
+                            context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(((ModelEmbeddedTestData) modelTestData).data, context, processingContext)).filter(Objects::nonNull)
+                                    .findFirst().orElseThrow(() -> new EngineException("Unsupported Embedded Data for Model Store", modelTestData.sourceInformation, EngineErrorType.COMPILATION)));
                     metamodelModelStoreData._modelTestDataAdd(mmModelData);
                 }
                 else if (modelTestData instanceof ModelInstanceTestData)
@@ -107,8 +128,8 @@ public interface EmbeddedDataCompilerHelper
                     Class<?> c = context.resolveClass(modelInstanceData.model, modelInstanceData.sourceInformation);
                     InstanceValue collection = (InstanceValue) modelInstanceData.instances.accept(builder);
 
-                    if (!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c) || (modelInstanceData.instances instanceof PackageableElementPtr
-                        && validatePairForModelStoreData((PackageableElementPtr) modelInstanceData.instances, context))))
+                    if (!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c) ||
+                            (modelInstanceData.instances instanceof PackageableElementPtr && validatePairForModelStoreData((PackageableElementPtr) modelInstanceData.instances, context))))
                     {
                         throw new EngineException("Instance types does not align with associated type '" + modelInstanceData.model + "'", modelInstanceData.instances.sourceInformation, EngineErrorType.COMPILATION);
                     }
@@ -118,12 +139,10 @@ public interface EmbeddedDataCompilerHelper
             }
             return metamodelModelStoreData;
         }
-        else if (embeddedData instanceof DataElementReference
-                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA)
-        )
+        else if ((embeddedData instanceof DataElementReference) && (PackageableElementType.DATA == ((DataElementReference) embeddedData).dataElement.type))
         {
             DataElementReference dataElementReference = (DataElementReference) embeddedData;
-            PackageableElement element = context.pureModel.getPackageableElement(dataElementReference.dataElement.path, dataElementReference.sourceInformation);
+            PackageableElement element = context.resolvePackageableElement(dataElementReference.dataElement.path, dataElementReference.sourceInformation);
             if (!(element instanceof Root_meta_pure_data_DataElement))
             {
                 throw new EngineException("Can only reference a Data element", dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
@@ -158,9 +177,7 @@ public interface EmbeddedDataCompilerHelper
                 }
             }
         }
-        else if (embeddedData instanceof DataElementReference
-                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA)
-        )
+        else if ((embeddedData instanceof DataElementReference) && (PackageableElementType.DATA == ((DataElementReference) embeddedData).dataElement.type))
         {
             DataElementReference dataElementReference = (DataElementReference) embeddedData;
             prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.DATAELEMENT, dataElementReference.dataElement.path, dataElementReference.sourceInformation));
@@ -169,34 +186,37 @@ public interface EmbeddedDataCompilerHelper
 
     static boolean validatePairForModelStoreData(PackageableElementPtr value, CompileContext context)
     {
-        return (context.pureModel.getPackageableElement(value.fullPath) instanceof Root_meta_pure_data_DataElement &&
-                ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(value.fullPath))._data() instanceof Root_meta_external_format_shared_metamodel_data_ExternalFormatData
-        );
+        PackageableElement found = context.resolvePackageableElement(value.fullPath, value.sourceInformation);
+        return (found instanceof Root_meta_pure_data_DataElement &&
+                ((Root_meta_pure_data_DataElement) found)._data() instanceof Root_meta_external_format_shared_metamodel_data_ExternalFormatData);
     }
-    
+
     default Iterable<? extends Function2<DataElementReference, PureModelContextData, List<EmbeddedData>>> getExtraDataElementReferencePMCDTraversers()
     {
         return Collections.emptyList();
     }
-    
+
     static EmbeddedData getEmbeddedDataFromDataElement(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
     {
-        List<EmbeddedData> dataList = ListIterate
+        MutableList<EmbeddedData> dataList = LazyIterate
                 .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), EmbeddedDataCompilerHelper.class)
                 .flatCollect(EmbeddedDataCompilerHelper::getExtraDataElementReferencePMCDTraversers)
                 .flatCollect(f -> f.apply(dataElementReference, pureModelContextData))
-                .select(Objects::nonNull);
-        if (dataList.size() > 1)
+                .select(Objects::nonNull, Lists.mutable.empty());
+        switch (dataList.size())
         {
-            throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        else if (dataList.isEmpty())
-        {
-            throw new EngineException("No data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        else
-        {
-            return dataList.get(0);
+            case 0:
+            {
+                throw new EngineException("No data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            case 1:
+            {
+                return dataList.get(0);
+            }
+            default:
+            {
+                throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
+            }
         }
     }
 }
