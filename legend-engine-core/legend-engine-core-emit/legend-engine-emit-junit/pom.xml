@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-emit</artifactId>
-        <version>4.129.9</version>
+        <version>4.129.10-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-emit-junit</artifactId>
