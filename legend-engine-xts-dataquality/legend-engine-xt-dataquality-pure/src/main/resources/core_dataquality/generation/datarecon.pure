@@ -24,6 +24,11 @@ import meta::external::dataquality::dataprofile::*;
 import meta::relational::metamodel::datatype::*;
 import meta::pure::tds::schema::*;
 
+function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1]): LambdaFunction<Any>[1]
+{  
+  getDataReconLambda($reconInput, {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+}
+
 /*
   This method will:
     1) select only columns required for hash + keys
