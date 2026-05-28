@@ -240,7 +240,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName2 = $rootNode2.processedTempTableName;
   assertEquals('temp_db1.temp_schema1.temp_table_node_0', $processedTempTableName2);
   let tempTableStrategy = $rootNode2.tempTableStrategy;
-  assertEquals('CREATE OR REPLACE TEMPORARY TABLE temp_db1.temp_schema1.temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE TEMPORARY TABLE temp_db1.temp_schema1.temp_table_node_0(pk_0 INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO temp_db1.temp_schema1.temp_table_node_0 VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists temp_db1.temp_schema1.temp_table_node_0;', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
@@ -267,7 +267,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('"LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE OR REPLACE TEMPORARY TABLE "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE TEMPORARY TABLE "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "LEGEND_TEMP_DB"."LEGEND_TEMP_SCHEMA"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
@@ -294,7 +294,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testGraphFet
   let processedTempTableName = $rootNode.processedTempTableName;
   assertEquals('"temp_db1"."temp_schema1"."temp_table_node_0"', $processedTempTableName);
   let tempTableStrategy = $rootNode.tempTableStrategy;
-  assertEquals('CREATE OR REPLACE TEMPORARY TABLE "temp_db1"."temp_schema1"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('CREATE TEMPORARY TABLE "temp_db1"."temp_schema1"."temp_table_node_0"("pk_0" INT);', $tempTableStrategy.createTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('INSERT INTO "temp_db1"."temp_schema1"."temp_table_node_0" VALUES ${temp_table_rows_from_result_set}', $tempTableStrategy.loadTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
   assertEquals('Drop table if exists "temp_db1"."temp_schema1"."temp_table_node_0";', $tempTableStrategy.dropTempTableNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 }
@@ -372,10 +372,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossSto
    );
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeParentTempTableUsesCreateOrReplace():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeParentTempTableStrategy():Boolean[1]
 {
-   // Verifies that the cross-store parent temp table CREATE statement uses CREATE OR REPLACE
-   // to prevent temp table accumulation across batch iterations (ENGINE-5830 follow-up fix).
+   // Verifies that the cross-store parent temp table has a proper temp table strategy
+   // with CREATE, LOAD and DROP nodes for Snowflake.
    let tree = #{
       meta::pure::executionPlan::tests::snowflake::model::ParentRecord {
          zFieldAccount,
@@ -406,13 +406,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossSto
    // Verify parentTempTableStrategy is present (Snowflake uses temp table strategy)
    assert($crossChild.parentTempTableStrategy->isNotEmpty(), 'parentTempTableStrategy should be present for Snowflake cross-store graph fetch');
 
-   // Verify the CREATE statement uses OR REPLACE to ensure idempotent temp table creation
+   // Verify the CREATE statement
    let parentTempTableStrategy = $crossChild.parentTempTableStrategy->toOne();
    let createSql = $parentTempTableStrategy.createTempTableNode->toOne().executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
-   assert($createSql->startsWith('CREATE OR REPLACE TEMPORARY TABLE'),
-      'Cross-store parent temp table CREATE must use OR REPLACE to prevent accumulation across batch iterations. Got: ' + $createSql
+   assert($createSql->startsWith('CREATE TEMPORARY TABLE'),
+      'Cross-store parent temp table CREATE must use CREATE TEMPORARY TABLE. Got: ' + $createSql
    );
-   assertEquals('CREATE OR REPLACE TEMPORARY TABLE temp_db2.temp_schema2.cross_temp_table_node_0(zFieldAccount VARCHAR(4000),bFieldId VARCHAR(4000),mFieldType VARCHAR(4000),aFieldDate TIMESTAMP);', $createSql);
+   assertEquals('CREATE TEMPORARY TABLE temp_db2.temp_schema2.cross_temp_table_node_0(zFieldAccount VARCHAR(4000),bFieldId VARCHAR(4000),mFieldType VARCHAR(4000),aFieldDate TIMESTAMP);', $createSql);
 
    // Verify DROP statement is also present (used as best-effort cleanup)
    let dropSql = $parentTempTableStrategy.dropTempTableNode->toOne().executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
