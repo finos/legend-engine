@@ -1,0 +1,298 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+// PK auto-inference tests for Relation Function class mappings.
+// Each test runs `inferPrimaryKeyColumnNames` against a function body —
+// the same path the Java compiler hits for ~primaryKey resolution.
+// Explicit ~primaryKey is tested in Java (TestMappingCompilationFromGrammar,
+// TestRelationalCompilationFromGrammar).
+
+function <<access.private>> meta::relational::tests::mapping::relation::pkOfFunc(func:FunctionDefinition<Any>[1]):String[*]
+{
+  let expr = $func.expressionSequence->evaluateAndDeactivate()->at(0);
+  meta::relational::mapping::inferPrimaryKeyColumnNames($expr);
+}
+
+// A. Single-operator coverage — one operator after a bare table accessor.
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromBareAccessor():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestBare__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilter():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestFilter__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughLimit():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestLimit__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughDrop():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestDrop__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSlice():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSlice__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSort():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSort__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughExtend():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestExtend__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughRename():Boolean[1]
+{
+  assertEquals(['PERSON_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestRename__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSelectWithCols():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSelectKeepingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSelectDroppingPK():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSelectDroppingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSelectNoArgs():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSelectNoArgs__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughDistinctNoArgs():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestDistinctNoArgs__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughDistinctWithCols():Boolean[1]
+{
+  assertSameElements(['AGE', 'FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestDistinctWithCols__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromGroupBy():Boolean[1]
+{
+  assertEquals(['FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromJoin():Boolean[1]
+{
+  assertSameElements(['ID', 'FIRM_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestJoin__Relation_1_));
+}
+
+// B. Unsupported / negative — operators we conservatively treat as empty.
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKEmptyForAggregate():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestAggregate__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKEmptyForConcatenate():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestConcatenate__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKEmptyForPivot():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestPivot__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKEmptyForNonAccessorLeaf():Boolean[1]
+{
+  // Class.all() leaf — not a RelationStoreAccessor, so leaf handler yields [].
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::personFunctionWithProject__Relation_1_));
+}
+
+// C. Multi-operator chains — propagation through several layers so
+//    regressions in any single rule surface here.
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterThenLimit():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::personFunction__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughLimitThenSelectKeepingPK():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::firmFunction__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKFromInnerJoinWithExtend():Boolean[1]
+{
+  assertSameElements(['ID', 'GROUPID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::personFunctionWithJoinAndWindowColumn__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterSortLimit():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestFilterSortLimit__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughRenameThenSelectKeepingPK():Boolean[1]
+{
+  assertEquals(['PID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestRenameThenSelectKeepingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughRenameThenSelectDroppingPK():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestRenameThenSelectDroppingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughDoubleRename():Boolean[1]
+{
+  assertEquals(['Y'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestDoubleRename__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughGroupByThenFilter():Boolean[1]
+{
+  assertEquals(['FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestGroupByThenFilter__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughGroupByThenRename():Boolean[1]
+{
+  assertEquals(['FIRM'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestGroupByThenRename__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughJoinThenFilterSort():Boolean[1]
+{
+  assertSameElements(['ID', 'FIRM_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestJoinThenFilterSort__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughDistinctThenFilter():Boolean[1]
+{
+  assertSameElements(['AGE', 'FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestDistinctThenFilter__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSelectThenRenameThenFilter():Boolean[1]
+{
+  assertEquals(['PID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSelectThenRenameThenFilter__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughJoinExtendFilterSelect():Boolean[1]
+{
+  assertSameElements(['ID', 'GROUPID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestJoinExtendFilterSelect__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughGroupByThenSelectDroppingPK():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestGroupByThenSelectDroppingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughExtendThenSelectDroppingPK():Boolean[1]
+{
+  assertEquals([], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestExtendThenSelectDroppingPK__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterThenRename():Boolean[1]
+{
+  assertEquals(['PID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestFilterThenRename__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughRenameThenGroupBy():Boolean[1]
+{
+  assertEquals(['FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestRenameThenGroupBy__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughJoinThenGroupBy():Boolean[1]
+{
+  assertEquals(['GROUPID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestJoinThenGroupBy__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughFilterExtendDistinct():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestFilterExtendDistinct__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughGroupByExtendFilterSelect():Boolean[1]
+{
+  assertEquals(['FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestGroupByExtendFilterSelect__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughSortLimitFilterRename():Boolean[1]
+{
+  assertEquals(['PERSON_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestSortLimitFilterRename__Relation_1_));
+}
+
+// User-function inlining path: helper bodies use concrete RelationType return
+// types so the Pure compiler can type-check column access in composed funcs.
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedFilter():Boolean[1]
+{
+  assertEquals(['ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedFilter__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedJoin():Boolean[1]
+{
+  assertSameElements(['ID', 'FIRM_ID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedJoin__Relation_1_));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testAutoInferPKThroughComposedGroupBy():Boolean[1]
+{
+  assertEquals(['FIRMID'], pkOfFunc(
+    meta::relational::tests::mapping::relation::pkTestComposedGroupBy__Relation_1_));
+}

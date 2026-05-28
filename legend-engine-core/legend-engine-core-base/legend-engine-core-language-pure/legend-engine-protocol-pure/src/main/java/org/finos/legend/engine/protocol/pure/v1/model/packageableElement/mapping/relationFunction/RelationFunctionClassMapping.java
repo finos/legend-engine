@@ -19,12 +19,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 
+import java.util.Collections;
 import java.util.List;
 
 public class RelationFunctionClassMapping extends ClassMapping
 {
     public PackageableElementPointer relationFunction;
     public List<PropertyMapping> propertyMappings;
+    public List<String> primaryKey = Collections.emptyList();
     
     @Override
     public <T> T accept(ClassMappingVisitor<T> visitor)

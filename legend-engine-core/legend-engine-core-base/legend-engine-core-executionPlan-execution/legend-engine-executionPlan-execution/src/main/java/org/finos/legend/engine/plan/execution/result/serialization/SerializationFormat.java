@@ -21,7 +21,9 @@ public enum SerializationFormat
     CSV_TRANSFORMED,
     PURE_TDSOBJECT,
     PURE,
-    RAW;
+    RAW,
+    ARROW_IPC;
+
 
     public static final String defaultFormatString = "DEFAULT";
     public static final SerializationFormat defaultFormat = SerializationFormat.valueOf(SerializationFormat.defaultFormatString);

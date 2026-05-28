@@ -1,0 +1,56 @@
+###Relational
+Database meta::external::query::sql::expression::tests::pk::db
+(
+   Table personTable (ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)
+   Table firmTable (ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100))
+)
+
+###Pure
+Class meta::external::query::sql::expression::tests::pk::Person
+{
+   firstName: String[1];
+   age: Integer[1];
+}
+
+function meta::external::query::sql::expression::tests::pk::simpleSqlSelect(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select ID, FIRSTNAME, AGE from tb('meta::external::query::sql::expression::tests::pk::db.personTable')}#
+}
+
+function meta::external::query::sql::expression::tests::pk::sqlWithJoin(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+   #SQL{select person.AGE AS AGE, person.FIRMID AS FIRMID, firm.LEGALNAME AS LEGALNAME from tb('meta::external::query::sql::expression::tests::pk::db.personTable') person inner join tb('meta::external::query::sql::expression::tests::pk::db.firmTable') firm on person.FIRMID = firm.ID}#
+}
+
+###Mapping
+Mapping meta::external::query::sql::expression::tests::pk::explicitPKMapping
+(
+   *meta::external::query::sql::expression::tests::pk::Person[person]: Relation
+   {
+      ~func meta::external::query::sql::expression::tests::pk::simpleSqlSelect():Relation<Any>[1]
+      ~primaryKey: [FIRSTNAME]
+      firstName: FIRSTNAME,
+      age: AGE
+   }
+)
+
+Mapping meta::external::query::sql::expression::tests::pk::noPKMapping
+(
+   *meta::external::query::sql::expression::tests::pk::Person[person]: Relation
+   {
+      ~func meta::external::query::sql::expression::tests::pk::sqlWithJoin():Relation<Any>[1]
+      firstName: LEGALNAME,
+      age: AGE
+   }
+)
+
+Mapping meta::external::query::sql::expression::tests::pk::explicitPKJoinMapping
+(
+   *meta::external::query::sql::expression::tests::pk::Person[person]: Relation
+   {
+      ~func meta::external::query::sql::expression::tests::pk::sqlWithJoin():Relation<Any>[1]
+      ~primaryKey: [AGE, FIRMID]
+      firstName: LEGALNAME,
+      age: AGE
+   }
+)

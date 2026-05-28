@@ -231,7 +231,19 @@ function meta::relational::extension::relationalExtension() : meta::pure::extens
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
       validTestPackages = 'meta::relational::tests',
-      availableFeatures = meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension().availableFeatures
+      availableFeatures = meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension().availableFeatures,
+      moduleExtensions = [
+         ^meta::pure::mapping::relation::RelationElementAccessorExtension
+         (
+            module = meta::pure::mapping::relation::relationElementAccessorModuleExtensionName(),
+            instancePrimaryKeyResolver = {iv:meta::pure::metamodel::valuespecification::InstanceValue[1], ext:meta::pure::extension::Extension[*] |
+               $iv.values->map(v | $v->match([
+                  rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->meta::relational::mapping::tablePrimaryKeyLeaf(),
+                  a:   Any[*] | []
+               ]))->cast(@String)
+            }
+         )
+      ]
    )
 }
 

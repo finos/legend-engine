@@ -126,10 +126,6 @@ public class SQLSourceTranslator
 
     private Root_meta_pure_runtime_ExecutionContext process(ExecutionContext executionContext, CompileContext context)
     {
-        return context.getCompilerExtensions().getExtraExecutionContextProcessors().stream()
-                .map(processor -> processor.value(executionContext, context))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution option type '" + executionContext.getClass() + "'"));
+        return HelperValueSpecificationBuilder.processExecutionContext(executionContext, context);
     }
 }

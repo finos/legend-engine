@@ -18,11 +18,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_datarecon_DataQualityReconInput;
 import org.finos.legend.pure.generated.core_dataquality_generation_datarecon;
 
+import static org.finos.legend.engine.generation.dataquality.DataQualityProfilingLambdaGenerator.getLambdaCompiler;
+
 public class DataQualityReconLambdaGenerator
 {
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object> generateLambda(PureModel pureModel, Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput)
     {
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_getDataReconLambda_DataQualityReconInput_1__LambdaFunction_1_(reconInput, pureModel.getExecutionSupport());
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<Object>) core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_getDataReconLambda_DataQualityReconInput_1__Function_1__LambdaFunction_1_(reconInput, getLambdaCompiler(pureModel), pureModel.getExecutionSupport());
     }
 }
