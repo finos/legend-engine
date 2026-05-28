@@ -23,6 +23,7 @@ import meta::external::dataquality::*;
 import meta::pure::precisePrimitives::*;
 import meta::external::dataquality::tests::domain::*;
 import meta::pure::metamodel::relation::*;
+import meta::external::query::sql::transformation::compile::utils::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_dynamicHash():Boolean[1]
 {
@@ -43,7 +44,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -65,7 +66,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,HASH_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
@@ -95,7 +96,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[FIRMID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.FIRMID_SOURCE == $y.FIRMID_TARGET}
+        {x,y| ($x.FIRMID_SOURCE->isEmpty() && $y.FIRMID_TARGET->isEmpty()) || ($x.FIRMID_SOURCE == $y.FIRMID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -117,7 +118,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET,CREATED_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| ($x.CREATED_SOURCE == $y.CREATED_TARGET) && (($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET) && (($x.CODE_SOURCE == $y.CODE_TARGET) && ($x.DOB_SOURCE == $y.DOB_TARGET)))}
+        {x,y| (($x.CREATED_SOURCE->isEmpty() && $y.CREATED_TARGET->isEmpty()) || ($x.CREATED_SOURCE == $y.CREATED_TARGET)) && ((($x.COUPOUN_SOURCE->isEmpty() && $y.COUPOUN_TARGET->isEmpty()) || ($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET)) && ((($x.CODE_SOURCE->isEmpty() && $y.CODE_TARGET->isEmpty()) || ($x.CODE_SOURCE == $y.CODE_TARGET)) && (($x.DOB_SOURCE->isEmpty() && $y.DOB_TARGET->isEmpty()) || ($x.DOB_SOURCE == $y.DOB_TARGET))))}
     )->filter(row | not($row.DOB_SOURCE == $row.DOB_TARGET))
   };
 
@@ -144,7 +145,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -170,7 +171,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.DIGEST_SOURCE == $y.DIGEST_TARGET}
+        {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.DIGEST_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.DIGEST_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -194,7 +195,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[HASH_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.DIGEST_SOURCE == $y.HASH_TARGET}
+        {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.HASH_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.HASH_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
   };
 
@@ -228,7 +229,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.DIGEST_SOURCE == $y.DIGEST_TARGET}
+        {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.DIGEST_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.DIGEST_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -251,7 +252,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET,HASH_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
   };
 
@@ -277,7 +278,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
     ->limit(100)
   };
@@ -308,7 +309,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -337,7 +338,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -367,7 +368,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,DIGEST_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
   };
 
@@ -386,7 +387,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
           ->select(~[ID_TARGET,HASH_TARGET]),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
@@ -407,7 +408,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
           ->select(~[ID_TARGET,HASH_TARGET]),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
@@ -433,7 +434,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,HASH_TARGET])
           ->from($mapping, $runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
@@ -457,7 +458,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH])
           ->select(~[ID_TARGET,HASH_TARGET]),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
   };
 
@@ -482,7 +483,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
           ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET,HASH_TARGET])
           ->from($runtime),
         JoinKind.FULL,
-        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+        {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
     ->extend(~DQ_RULE_NAME: row | 'DQ_RECONCILIATION')
     ->extend(~DQ_LOGICAL_DEFECT_ID: row | hash(if($row.DIGEST_SOURCE->isEmpty(), | '', |$row.DIGEST_SOURCE->toOne()->toString()) + if($row.HASH_TARGET->isEmpty(), | '', |$row.HASH_TARGET->toOne()->toString()), HashType.MD5))
@@ -490,7 +491,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
   let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
-  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true));
+  let actual = getDataReconLambda(^DataQualityReconInput(source = $source, target = $target, keys = 'ID', colsForHash = ['FIRSTNAME', 'LASTNAME'], targetHashCol = 'HASH', includeColumnValues = true, enrichDQColumns = true), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual, false);
 }
 
@@ -513,6 +514,6 @@ function meta::external::dataquality::tests::testRecon(expected:FunctionDefiniti
 
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1]):Boolean[1]
 {
-  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false));
+  let actual = getDataReconLambda(createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
   assertLambdaEquals($expected, $actual, false);
 }

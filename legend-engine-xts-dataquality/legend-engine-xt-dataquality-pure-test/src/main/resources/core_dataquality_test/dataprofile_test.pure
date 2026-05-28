@@ -19,6 +19,7 @@ import meta::external::dataquality::dataprofile::*;
 import meta::external::dataquality::tests::*;
 import meta::external::dataquality::dataprofile::tests::*;
 import meta::pure::router::preeval::*;
+import meta::external::query::sql::transformation::compile::utils::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testDataProfileLambdaGeneration():Boolean[1]
 {
@@ -98,7 +99,7 @@ function meta::external::dataquality::tests::doTest(dq:String[1], expected:Funct
 {
   let dataqualityRelationValidation = $dq->loadDataQualityRelationValidation();
 
-  let actual = $dataqualityRelationValidation->getProfilingLambda($wrapWithFrom, true);
+  let actual = $dataqualityRelationValidation->getProfilingLambda($wrapWithFrom, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
 
   let expectedPrevaled = if ($wrapWithFrom, | $expected->preval([]), | $expected);
   let actualPrevaled = if ($wrapWithFrom, | $actual->preval([]), | $actual);

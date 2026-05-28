@@ -980,4 +980,59 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 ")\n");
     }
+
+    @Test
+    public void testRelationFunctionMappingWithPrimaryKey()
+    {
+        // Single PK — no brackets.
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    ~primaryKey: firstName\n" +
+                "    firstName: firstName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+
+        // Multi PK — bracketed.
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Relation<Any>[1]\n" +
+                "    ~primaryKey: [firstName, lastName]\n" +
+                "    firstName: firstName,\n" +
+                "    lastName: lastName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+
+        // Legacy `[col]` for single PK is accepted and normalised to bracket-less.
+        testFormat("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    ~primaryKey: firstName\n" +
+                "    firstName: firstName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n",
+                "###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    ~primaryKey: [firstName]\n" +
+                "    firstName: firstName,\n" +
+                "    firm: jsonColumn\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

@@ -1,0 +1,263 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::mapping::relation::*;
+import meta::pure::metamodel::function::*;
+import meta::pure::metamodel::valuespecification::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::store::*;
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::functions::relation::*;
+import meta::pure::extension::*;
+
+// Store-/format-specific PK extraction from the leaf InstanceValue of a relation
+// function body. Stores register one of these in their Extension's moduleExtensions.
+Class meta::pure::mapping::relation::RelationElementAccessorExtension extends ModuleExtension
+[
+   $this.module == meta::pure::mapping::relation::relationElementAccessorModuleExtensionName()
+]
+{
+   instancePrimaryKeyResolver : Function<{InstanceValue[1], Extension[*]->String[*]}>[1];
+}
+
+function meta::pure::mapping::relation::relationElementAccessorModuleExtensionName():String[1]
+{
+   'RelationElementAccessor'
+}
+
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames([]->cast(@Extension));
+}
+
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1], extensions:Extension[*]):String[*]
+{
+  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
+  if($lastExpr->isEmpty(),
+    | [],
+    | $lastExpr->toOne()->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions)
+  );
+}
+
+function meta::pure::mapping::relation::relationFunctionColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
+{
+  $r->meta::pure::mapping::relation::extractRelationColumns()->map(c | $c.name->toOne());
+}
+
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):Column<Nil, Any|*>[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey($explicitColumnNames, []->cast(@Extension));
+}
+
+function meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:Extension[*]):Column<Nil, Any|*>[*]
+{
+  let pkNames = if($explicitColumnNames->isEmpty(),
+    | $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames($extensions),
+    | $explicitColumnNames
+  );
+  let cols = $r->meta::pure::mapping::relation::extractRelationColumns();
+  $pkNames->map(name | $cols->filter(c | $c.name == $name)->first());
+}
+
+// Reads the Column list from the function's last-expression RelationType.
+// Returns [] when the body is opaque Relation<Any>.
+function meta::pure::mapping::relation::extractRelationColumns(r:RelationFunctionInstanceSetImplementation[1]):Column<Nil, Any|*>[*]
+{
+  let lastExpr = $r.relationFunction.expressionSequence->evaluateAndDeactivate()->last();
+  if($lastExpr->isNotEmpty() && $lastExpr->toOne().genericType.rawType->isNotEmpty() && $lastExpr->toOne().genericType.typeArguments->isNotEmpty(),
+    | let rawType = $lastExpr->toOne().genericType.typeArguments->at(0).rawType;
+      if($rawType->isNotEmpty() && $rawType->toOne()->instanceOf(RelationType),
+        | $rawType->toOne()->cast(@RelationType<Any>).columns,
+        | []
+      );,
+    | []
+  );
+}
+
+function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1]):String[*]
+{
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames([]->cast(@Extension));
+}
+
+function meta::pure::mapping::relation::inferPrimaryKeyColumnNames(vs:ValueSpecification[1], extensions:Extension[*]):String[*]
+{
+  $vs->match([
+    iv: InstanceValue[1] |
+        let accessorExtensions = $extensions.moduleExtensions
+            ->filter(m | $m->instanceOf(RelationElementAccessorExtension))
+            ->cast(@RelationElementAccessorExtension);
+        // Flatten across all resolvers — non-handling ones return [], so
+        // composite PKs survive. Do NOT collapse with ->first().
+        $accessorExtensions
+            ->map(ext | $ext.instancePrimaryKeyResolver->eval($iv, $extensions))
+            ->cast(@String);,
+    cvs: ClusteredValueSpecification[1] |
+        $cvs.val->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions),
+    fe: SimpleFunctionExpression[1] |
+        $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression($extensions),
+    a: Any[*] | []
+  ])->cast(@String);
+}
+
+// User-defined helpers (non-platform relation operators) are inlined and recursed into.
+function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1]):String[*]
+{
+  $fe->meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression([]->cast(@Extension));
+}
+
+function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumnNamesFromFunctionExpression(fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
+{
+  let fn   = $fe.func;
+  let args = $fe.parametersValues;
+  if ($fn->instanceOf(ConcreteFunctionDefinition) && !$fn->elementToPath()->startsWith('meta::pure::functions::relation::'),
+    | let body = $fn->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
+      if ($body->size() == 1,
+        | $body->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions),
+        | []
+      );,
+    | if ($args->isEmpty(),
+        | [],
+        | let leftPK = $args->at(0)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
+          if ($fn->in([
+                filter_Relation_1__Function_1__Relation_1_,
+                limit_Relation_1__Integer_1__Relation_1_,
+                drop_Relation_1__Integer_1__Relation_1_,
+                slice_Relation_1__Integer_1__Integer_1__Relation_1_,
+                sort_Relation_1__SortInfo_MANY__Relation_1_,
+                extend_Relation_1__AggColSpecArray_1__Relation_1_,
+                extend_Relation_1__AggColSpec_1__Relation_1_,
+                extend_Relation_1__FuncColSpecArray_1__Relation_1_,
+                extend_Relation_1__FuncColSpec_1__Relation_1_,
+                extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_,
+                extend_Relation_1___Window_1__AggColSpec_1__Relation_1_,
+                extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_,
+                extend_Relation_1___Window_1__FuncColSpec_1__Relation_1_,
+                select_Relation_1__Relation_1_,
+                distinct_Relation_1__Relation_1_
+              ]),
+            | $leftPK,
+          | if ($fn->in([
+                  select_Relation_1__ColSpec_1__Relation_1_,
+                  select_Relation_1__ColSpecArray_1__Relation_1_
+                ]),
+            | meta::pure::mapping::relation::applySelectToPK($leftPK, $fe),
+          | if ($fn == rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_,
+            | meta::pure::mapping::relation::applyRenameToPK($leftPK, $fe),
+          | if ($fn == distinct_Relation_1__ColSpecArray_1__Relation_1_,
+            | $fe->meta::pure::mapping::relation::extractColumnNamesFromColSpec(1),
+          | if ($fn->in([
+                  groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_,
+                  groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_,
+                  groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_,
+                  groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_
+                ]),
+            | $fe->meta::pure::mapping::relation::extractColumnNamesFromColSpec(1),
+          | if ($fn->in([
+                  aggregate_Relation_1__AggColSpec_1__Relation_1_,
+                  aggregate_Relation_1__AggColSpecArray_1__Relation_1_
+                ]),
+            | [],
+          | if ($fn == join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,
+            | meta::pure::mapping::relation::applyJoinToPK($leftPK, $fe, $extensions),
+          | if ($fn->in([
+                  asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_,
+                  asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_
+                ]),
+            | $leftPK->concatenate($args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions))->removeDuplicates(),
+          | []))))))));
+      )
+  );
+}
+
+// join: INNER/LEFT preserve leftPK ∪ rightPK; RIGHT/FULL/unknown → [].
+// JoinKind literal appears either as InstanceValue (grammar path) or as
+// extractEnumValue SFE (legend-pure PAR path); both are resolved to a JoinKind.
+function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
+{
+  let args = $fe.parametersValues;
+  let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
+  let kind = if($args->size() >= 3,
+    | $args->at(2)->evaluateAndDeactivate()->match([
+        iv: InstanceValue[1] |
+            $iv.values->filter(v | $v->instanceOf(JoinKind))->cast(@JoinKind)->first(),
+        sfe: SimpleFunctionExpression[1] |
+            if($sfe.func == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_,
+              | $sfe.parametersValues->at(1)->evaluateAndDeactivate()->match([
+                  iv2: InstanceValue[1] |
+                      let name = $iv2.values->filter(x | $x->instanceOf(String))->cast(@String)->first();
+                      if($name->isNotEmpty(),
+                        | extractEnumValue(JoinKind, $name->toOne()),
+                        | []
+                      );,
+                  a:   Any[*] | []
+                ]),
+              | []
+            );,
+        a: Any[*] | []
+      ]),
+    | []
+  );
+  if($kind->isNotEmpty() && ($kind->toOne() == JoinKind.INNER || $kind->toOne() == JoinKind.LEFT),
+    | $leftPK->concatenate($rightPK)->removeDuplicates(),
+    | []
+  );
+}
+
+function <<access.private>> meta::pure::mapping::relation::applySelectToPK(leftPK:String[*], fe:SimpleFunctionExpression[1]):String[*]
+{
+  let projected = $fe->meta::pure::mapping::relation::extractColumnNamesFromColSpec(1);
+  if ($leftPK->forAll(p | $p->in($projected)), | $leftPK, | []);
+}
+
+function <<access.private>> meta::pure::mapping::relation::applyRenameToPK(leftPK:String[*], fe:SimpleFunctionExpression[1]):String[*]
+{
+  let oldNames = $fe->meta::pure::mapping::relation::extractColumnNamesFromColSpec(1);
+  let newNames = $fe->meta::pure::mapping::relation::extractColumnNamesFromColSpec(2);
+  if (($oldNames->size() == 1) && ($newNames->size() == 1),
+    | let o = $oldNames->toOne();
+      let n = $newNames->toOne();
+      $leftPK->map(p | if ($p == $o, | $n, | $p));,
+    | $leftPK
+  );
+}
+
+// At mapping-compile / pre-router time `~col` / `~[a,b]` are still
+// colSpec / colSpecArray SFEs — we recognise both shapes.
+function <<access.private>> meta::pure::mapping::relation::extractColumnNamesFromColSpec(fe:FunctionExpression[1], index:Integer[1]):String[*]
+{
+  let param = $fe.parametersValues->at($index)->evaluateAndDeactivate();
+  let inner = $param->match([
+    iv: InstanceValue[1] | $iv.values,
+    a:  Any[*]           | $a
+  ]);
+  $inner->map(v | $v->match([
+    cs:  ColSpec<Any>[1]      | $cs.name,
+    csa: ColSpecArray<Any>[1] | $csa.names,
+    sfe: SimpleFunctionExpression[1] |
+        if ($sfe.func->in([
+              meta::pure::functions::relation::colSpec_String_1__T_1__ColSpec_1_,
+              meta::pure::functions::relation::colSpecArray_String_MANY__T_1__ColSpecArray_1_
+            ]),
+          | $sfe.parametersValues->at(0)->evaluateAndDeactivate()->match([
+              iv2: InstanceValue[1] |
+                  $iv2.values->filter(x | $x->instanceOf(String))->cast(@String),
+              a2:  Any[*] | []
+            ]),
+          | []
+        ),
+    a:   Any[*] | []
+  ]))->cast(@String);
+}
+

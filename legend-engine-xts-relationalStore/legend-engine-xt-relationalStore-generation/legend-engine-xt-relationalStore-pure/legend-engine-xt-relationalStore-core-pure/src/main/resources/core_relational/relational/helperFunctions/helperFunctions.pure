@@ -395,6 +395,13 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
    ])
 }
 
+// RelationFunctionInstanceSetImplementation is a sibling of RelationalInstanceSetImplementation
+// (neither extends the other) so it cannot be dispatched through the match above.
+function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+   $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
+}
+
 function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
 {
    $rsi->match([
@@ -446,6 +453,25 @@ function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMap
     column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne(), type = meta::relational::mapping::pureTypeToDataType($relationColumnType)->toOne())
   );
 }
+
+// Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
+// into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction.
+function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
+{
+  let alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping));
+  $classMapping.primaryKey->map(c |
+    let colType = $c.classifierGenericType.typeArguments->at(1).rawType->toOne();
+    ^TableAliasColumn(
+      alias = $alias,
+      column = ^RelationFunctionColumn(
+        column = $c,
+        name = $c.name->toOne(),
+        type = meta::relational::mapping::pureTypeToDataType($colType)->toOne()
+      )
+    );
+  );
+}
+
 
 function meta::relational::mapping::transformRelationFunctionSemiStructuredPropertyMapping(propertyMappings:PropertyMapping[*], classMapping:SetImplementation[1]):PropertyMapping[*]
 {
@@ -499,3 +525,69 @@ function meta::relational::mapping::transformRelationPropertyMappingsToRelationa
     );
   );
 }
+
+// Relational leaf handler for the core PK inference algorithm — pulls
+// PK column names off Table / View
+function meta::relational::mapping::tablePrimaryKeyLeaf(src:Any[1]):String[*]
+{
+  $src->match([
+    t: meta::relational::metamodel::relation::Table[1] | $t.primaryKey.name,
+    v: meta::relational::metamodel::relation::View[1]  | $v.primaryKey.name,
+    a: Any[*] | []
+  ])->map(n | $n->toOne());
+}
+
+// Synthetic Extension carrying just the relational accessor — used by the
+// facades below so existing callers don't have to thread a full Extension[*].
+function <<access.private>> meta::relational::mapping::syntheticRelationalAccessorExtension():meta::pure::extension::Extension[1]
+{
+  ^meta::pure::extension::Extension(
+    type = 'relationalAccessorOnly',
+    moduleExtensions = [
+      ^meta::pure::mapping::relation::RelationElementAccessorExtension(
+        module = meta::pure::mapping::relation::relationElementAccessorModuleExtensionName(),
+        instancePrimaryKeyResolver = {iv:meta::pure::metamodel::valuespecification::InstanceValue[1], ext:meta::pure::extension::Extension[*] |
+          $iv.values->map(v | $v->match([
+            rsa: meta::pure::store::RelationStoreAccessor<Any>[1] | $rsa.sourceElement->meta::relational::mapping::tablePrimaryKeyLeaf(),
+            a:   Any[*] | []
+          ]))->cast(@String)
+        }
+      )
+    ]
+  );
+}
+
+function meta::relational::mapping::resolveRelationFunctionPrimaryKeyColumnNames(r:RelationFunctionInstanceSetImplementation[1]):String[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKeyColumnNames(
+       meta::relational::mapping::syntheticRelationalAccessorExtension()
+     );
+}
+
+function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+       $explicitColumnNames,
+       meta::relational::mapping::syntheticRelationalAccessorExtension()
+     );
+}
+
+function meta::relational::mapping::resolveRelationFunctionPrimaryKey(r:RelationFunctionInstanceSetImplementation[1], explicitColumnNames:String[*], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::Column<Nil, Any|*>[*]
+{
+  $r->meta::pure::mapping::relation::resolveRelationFunctionPrimaryKey(
+       $explicitColumnNames,
+       $extensions
+     );
+}
+
+function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::metamodel::valuespecification::ValueSpecification[1]):String[*]
+{
+  $vs->meta::pure::mapping::relation::inferPrimaryKeyColumnNames(
+        meta::relational::mapping::syntheticRelationalAccessorExtension()
+      );
+}
+
+
+
+
+

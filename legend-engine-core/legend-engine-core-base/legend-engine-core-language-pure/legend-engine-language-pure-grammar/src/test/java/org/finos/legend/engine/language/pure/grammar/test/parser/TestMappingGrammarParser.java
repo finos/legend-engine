@@ -1070,4 +1070,40 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         org.junit.Assert.assertEquals(10, propertyMapping4.sourceInformation.endLine);
         org.junit.Assert.assertEquals(39, propertyMapping4.sourceInformation.endColumn);
     }
+
+    @Test
+    public void testRelationFunctionMappingPrimaryKeyParsing()
+    {
+        // ~primaryKey populates the protocol field; PK names are referenced by column name
+        PureModelContextData data = test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Relation<Any>[1]\n" +
+                "        ~primaryKey: [firstName, lastName]\n" +
+                "        firstName : firstName,\n" +
+                "        lastName : lastName,\n" +
+                "        firm : jsonColumn\n" +
+                "    }\n" +
+                ")\n");
+        Mapping mapping = (Mapping) ListIterate.select(data.getElements(), e -> e.name.equals("testMapping")).get(0);
+        RelationFunctionClassMapping cm = (RelationFunctionClassMapping) mapping.classMappings.get(0);
+        org.junit.Assert.assertEquals(java.util.Arrays.asList("firstName", "lastName"), cm.primaryKey);
+
+        // omitted ~primaryKey -> empty list
+        PureModelContextData data2 = test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Relation<Any>[1]\n" +
+                "        firstName : firstName\n" +
+                "    }\n" +
+                ")\n");
+        Mapping mapping2 = (Mapping) ListIterate.select(data2.getElements(), e -> e.name.equals("testMapping")).get(0);
+        RelationFunctionClassMapping cm2 = (RelationFunctionClassMapping) mapping2.classMappings.get(0);
+        org.junit.Assert.assertNotNull(cm2.primaryKey);
+        org.junit.Assert.assertTrue(cm2.primaryKey.isEmpty());
+    }
 }

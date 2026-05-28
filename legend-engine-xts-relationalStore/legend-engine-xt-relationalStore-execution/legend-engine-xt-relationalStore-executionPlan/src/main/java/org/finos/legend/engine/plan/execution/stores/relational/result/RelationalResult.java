@@ -72,6 +72,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Relatio
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.result.builder.relation.RelationBuilder;
+import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToArrowIPCSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializerWithTransformersApplied;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
@@ -670,6 +671,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 return new RelationalResultToCSVSerializer(this, true);
             case CSV_TRANSFORMED:
                 return new RelationalResultToCSVSerializerWithTransformersApplied(this, true);
+            case ARROW_IPC:
+                return new RelationalResultToArrowIPCSerializer(this);
             case DEFAULT:
                 return new RelationalResultToJsonDefaultSerializer(this);
             default:

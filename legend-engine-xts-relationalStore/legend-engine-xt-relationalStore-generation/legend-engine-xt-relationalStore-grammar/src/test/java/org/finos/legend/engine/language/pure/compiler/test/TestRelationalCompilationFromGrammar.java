@@ -3740,4 +3740,102 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 Arrays.asList("COMPILATION warning at [26:102-110]: Invalid use of sqlNull() in join condition. Use 'column is NULL' instead of 'column = sqlNull()' in join condition."
                 ));
     }
+
+    // Relation Function Mapping — PK resolution with real table accessors.
+
+    private static final String RELATION_PK_DB =
+            "###Relational\n" +
+            "Database my::db\n" +
+            "(\n" +
+            "  Table personTable(ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)\n" +
+            ")\n";
+
+    private static final String RELATION_PK_CLASS =
+            "###Pure\n" +
+            "Class my::Person\n" +
+            "{\n" +
+            "  firstName: String[1];\n" +
+            "  age: Integer[1];\n" +
+            "}\n";
+
+    @Test
+    public void testRelationFunctionMappingPkAutoInferFromTableAccessor()
+    {
+        // No explicit ~primaryKey: PK auto-inferred at runtime from Table.primaryKey.
+        test(
+                RELATION_PK_DB +
+                RELATION_PK_CLASS +
+                "###Pure\n" +
+                "function my::personFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::db.personTable}#->filter(x | $x.AGE > 25)\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingPkExplicitWithTableAccessor()
+    {
+        // Explicit ~primaryKey: [FIRSTNAME] — resolved at compile time against the concrete RelationType.
+        Pair<PureModelContextData, PureModel> result = test(
+                RELATION_PK_DB +
+                RELATION_PK_CLASS +
+                "###Pure\n" +
+                "function my::personFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::db.personTable}#->filter(x | $x.AGE > 25)\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+        PureModel pureModel = result.getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("my::testMapping");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation setImpl =
+                (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation)
+                        mapping._classMappings().detect(cm -> cm._id().equals("person"));
+        Assert.assertNotNull("SetImpl should exist", setImpl);
+        Assert.assertEquals(1, setImpl._primaryKey().size());
+        Assert.assertEquals("FIRSTNAME", setImpl._primaryKey().getFirst()._name());
+    }
+
+    @Test
+    public void testRelationFunctionMappingPkAutoInferThroughJoin()
+    {
+        // No explicit ~primaryKey — auto-inference deferred to runtime.
+        test(
+                RELATION_PK_DB +
+                RELATION_PK_CLASS +
+                "###Pure\n" +
+                "function my::joinFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::db.personTable}#->join(#>{my::db.personTable}#->rename(~ID, ~ID2)->select(~[ID2]), meta::pure::functions::relation::JoinKind.INNER, {x, y | $x.ID == $y.ID2})\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::joinFunc():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
 }

@@ -16,6 +16,11 @@ package org.finos.legend.engine.plan.dependencies.store.inMemory;
 
 public class DataParsingException extends RuntimeException
 {
+    public DataParsingException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+
     public DataParsingException(String message)
     {
         super(message);

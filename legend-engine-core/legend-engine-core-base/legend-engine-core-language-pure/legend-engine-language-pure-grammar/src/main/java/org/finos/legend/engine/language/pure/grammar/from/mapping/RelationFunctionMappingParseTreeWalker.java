@@ -47,6 +47,17 @@ public class RelationFunctionMappingParseTreeWalker
     public void visitRelationFunctionClassMapping(RelationFunctionMappingParserGrammar.RelationFunctionMappingContext ctx, RelationFunctionClassMapping relationFunctionClassMapping)
     {
         relationFunctionClassMapping.relationFunction = new PackageableElementPointer(PackageableElementType.FUNCTION, ctx.functionIdentifier().getText(), walkerSourceInformation.getSourceInformation(ctx.functionIdentifier()));
+        if (ctx.primaryKey() != null)
+        {
+            relationFunctionClassMapping.primaryKey = ctx.primaryKey().identifier()
+                    .stream()
+                    .map(PureGrammarParserUtility::fromIdentifier)
+                    .collect(Collectors.toList());
+        }
+        else
+        {
+            relationFunctionClassMapping.primaryKey = Collections.emptyList();
+        }
         relationFunctionClassMapping.propertyMappings = ctx.singlePropertyMapping()
                 .stream()
                 .map(c -> this.visitPropertyMapping(c, relationFunctionClassMapping))
