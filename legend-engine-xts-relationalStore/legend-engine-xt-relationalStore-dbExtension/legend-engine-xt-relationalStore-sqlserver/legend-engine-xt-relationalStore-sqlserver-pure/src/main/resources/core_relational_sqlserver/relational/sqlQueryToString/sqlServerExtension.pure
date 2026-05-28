@@ -136,7 +136,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSqlServer()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSqlServer()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberSqlServer()}))
   ];
 }
 
@@ -149,6 +150,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('FORMAT(CAST(%s AS DATE),%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::transformFormatNumberSqlServer(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('FORMAT(CAST(%s AS float),\'%s\')', [$params->at(0), '0.000000000000000E+00']))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processJoinStringsOperationForSqlServer(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]

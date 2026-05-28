@@ -246,7 +246,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePostgres()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDatePostgres()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberPostgres()}))
   ];
 }
 
@@ -259,6 +260,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformFormatNumberPostgres(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('UPPER(TRIM(TO_CHAR(%s,\'%s\')))', [$params->at(0), '9.999999999999999EEEE']))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processExtractFromSemiStructuredParamsForPostgres(params:String[3]):String[1]

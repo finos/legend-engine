@@ -267,7 +267,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()})),
-    dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()}))
+    dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()})),
+    dynaFnToSql('formatNumber',           $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumber()}))
   ];
 }
 
@@ -281,6 +282,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::transformFormatNumber(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('legend_h2_extension_format_number_scientific(CAST(%s AS DOUBLE))', [$params->at(0)]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::transformConvertTimeZone(params:String[3]):String[1]

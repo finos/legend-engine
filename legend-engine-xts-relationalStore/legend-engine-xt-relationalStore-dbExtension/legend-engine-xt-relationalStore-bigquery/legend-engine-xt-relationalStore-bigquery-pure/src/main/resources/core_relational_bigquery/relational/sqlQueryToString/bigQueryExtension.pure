@@ -98,7 +98,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateBigQuery()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateBigQuery()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberBigQuery()}))
   ];
 }
 
@@ -110,6 +111,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     pair('ISO8601_NanoSecondPrecision', format('FORMAT_TIMESTAMP(\'%s\',%s)', ['%Y-%m-%dT%H:%M:%E9S', $params->at(0)]))
   ];
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::transformFormatNumberBigQuery(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('FORMAT(\'%s\',CAST(%s AS FLOAT64))', ['%.15E', $params->at(0)]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]

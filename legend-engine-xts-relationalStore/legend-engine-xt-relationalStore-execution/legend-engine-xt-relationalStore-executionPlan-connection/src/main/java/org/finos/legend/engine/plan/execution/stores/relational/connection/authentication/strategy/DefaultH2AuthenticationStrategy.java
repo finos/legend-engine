@@ -116,7 +116,8 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_convertTimeZone FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_convertTimeZone\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_hash_sha256 FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_hash_sha256\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_lpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_lpad\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_rpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_rpad\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_rpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_rpad\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_format_number_scientific FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions.legend_h2_extension_format_number_scientific\";"
         );
     }
 
@@ -137,7 +138,8 @@ public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_convertTimeZone FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_convertTimeZone\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_hash_sha256 FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_hash_sha256\";",
                 "CREATE ALIAS IF NOT EXISTS legend_h2_extension_lpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_lpad\";",
-                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_rpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_rpad\";"
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_rpad FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_rpad\";",
+                "CREATE ALIAS IF NOT EXISTS legend_h2_extension_format_number_scientific FOR \"org.finos.legend.engine.plan.execution.stores.relational.LegendH2Extensions_1_4_200.legend_h2_extension_format_number_scientific\";"
         );
     }
 }

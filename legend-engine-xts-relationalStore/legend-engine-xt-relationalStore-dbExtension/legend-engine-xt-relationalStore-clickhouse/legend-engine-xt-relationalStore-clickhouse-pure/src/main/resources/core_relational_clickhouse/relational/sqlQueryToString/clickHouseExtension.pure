@@ -141,7 +141,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('varSamp', $p)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='toISOWeek(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberClickHouse()}))
   ];
 }
 
@@ -157,6 +158,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     | format('concat(formatDateTime(%s,%s), \'000\')', [$params->at(0), $sqlFmt]),
     | format('formatDateTime(%s,%s)', [$params->at(0), $sqlFmt])
   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformFormatNumberClickHouse(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let v = $params->at(0);
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('multiIf(%s = 0, \'0.000000000000000E+00\', concat(toString(toDecimal128(%s / pow(10, floor(log10(abs(%s)))), 15)), \'E\', if(floor(log10(abs(%s))) >= 0, \'+\', \'-\'), leftPad(toString(toInt64(abs(floor(log10(abs(%s)))))), 2, \'0\')))', [$v, $v, $v, $v, $v]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformWithArrayReduceForClickHouse(funcName: String[1], params:String[*]):String[1]

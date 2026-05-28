@@ -149,7 +149,8 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseIQ()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberSybaseIQ()}))
   ];
 }
 
@@ -162,6 +163,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format($sqlFmt, [$params->at(0)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformFormatNumberSybaseIQ(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let v = $params->at(0);
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('CASE WHEN %s = 0 THEN \'0.000000000000000E+00\' ELSE CAST(CAST(%s / POWER(10, FLOOR(LOG10(ABS(%s)))) AS DECIMAL(38,15)) AS VARCHAR(40)) || \'E\' || (CASE WHEN FLOOR(LOG10(ABS(%s))) >= 0 THEN \'+\' ELSE \'-\' END) || (CASE WHEN ABS(FLOOR(LOG10(ABS(%s)))) < 10 THEN \'0\' || CAST(ABS(FLOOR(LOG10(ABS(%s)))) AS VARCHAR(10)) ELSE CAST(ABS(FLOOR(LOG10(ABS(%s)))) AS VARCHAR(10)) END) END', [$v, $v, $v, $v, $v, $v, $v]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::convertToDateIQ(params:String[*]):String[1]

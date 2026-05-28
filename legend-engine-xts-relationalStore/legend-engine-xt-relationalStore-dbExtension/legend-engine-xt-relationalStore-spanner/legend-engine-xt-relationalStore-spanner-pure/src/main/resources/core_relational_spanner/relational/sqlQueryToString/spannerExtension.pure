@@ -145,7 +145,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
     // dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSpanner()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSpanner()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberSpanner()}))
   ];
 }
 
@@ -157,6 +158,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     pair('ISO8601_NanoSecondPrecision', format('FORMAT_TIMESTAMP(\'%s\',CAST(%s AS TIMESTAMPTZ))', ['%Y-%m-%dT%H:%M:%E9S', $params->at(0)]))
   ];
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformFormatNumberSpanner(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('FORMAT(\'%s\',CAST(%s AS FLOAT64))', ['%.15E', $params->at(0)]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::generateDateDiffExpressionForSpanner(params:String[*]):String[1]

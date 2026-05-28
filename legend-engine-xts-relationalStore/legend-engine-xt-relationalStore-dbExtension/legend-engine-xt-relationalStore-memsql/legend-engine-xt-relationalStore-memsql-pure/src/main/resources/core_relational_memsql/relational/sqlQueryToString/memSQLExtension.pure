@@ -147,7 +147,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('year',                      $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('weekOfYear',                $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('convertTimeZone',           $allStates,           ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)})),
-    dynaFnToSql('formatDate',                $allStates,           ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateMemSQL()}))
+    dynaFnToSql('formatDate',                $allStates,           ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateMemSQL()})),
+    dynaFnToSql('formatNumber',              $allStates,           ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberMemSQL()}))
   ];
 }
 
@@ -160,6 +161,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('DATE_FORMAT(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformFormatNumberMemSQL(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let v = $params->at(0);
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('CASE WHEN %s = 0 THEN \'0.000000000000000E+00\' ELSE CONCAT(FORMAT(%s / POWER(10, FLOOR(LOG10(ABS(%s)))), 15), \'E\', IF(FLOOR(LOG10(ABS(%s))) >= 0, \'+\', \'-\'), LPAD(ABS(FLOOR(LOG10(ABS(%s)))), 2, \'0\')) END', [$v, $v, $v, $v, $v]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processExtractFromSemiStructuredParamsForMemSQL(params:String[3]):String[1]

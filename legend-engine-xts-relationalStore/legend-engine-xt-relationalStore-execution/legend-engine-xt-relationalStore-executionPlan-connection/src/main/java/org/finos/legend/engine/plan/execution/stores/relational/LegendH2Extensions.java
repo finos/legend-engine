@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
@@ -170,6 +171,11 @@ public class LegendH2Extensions
             return str.substring(0, i);
         }
         return StringUtils.rightPad(str, i, padStr);
+    }
+
+    public static String legend_h2_extension_format_number_scientific(Double value)
+    {
+        return value == null ? null : String.format(Locale.US, "%.15E", value);
     }
 
     public static String legend_h2_extension_base64_encode(String string)

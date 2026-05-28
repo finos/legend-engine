@@ -97,7 +97,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateRedshift()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateRedshift()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberRedshift()}))
   ];
 }
 
@@ -110,6 +111,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::transformFormatNumberRedshift(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let v = $params->at(0);
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('CASE WHEN %s = 0 THEN \'0.000000000000000E+00\' ELSE TO_CHAR(%s / POWER(10, FLOOR(LOG(ABS(%s)))), \'FM9.000000000000000\') || \'E\' || CASE WHEN FLOOR(LOG(ABS(%s))) >= 0 THEN \'+\' ELSE \'-\' END || LPAD(CAST(ABS(FLOOR(LOG(ABS(%s)))) AS VARCHAR), 2, \'0\') END', [$v, $v, $v, $v, $v]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::processDateDiffDurationUnitForRedshift(durationUnit:String[1]):String[1]

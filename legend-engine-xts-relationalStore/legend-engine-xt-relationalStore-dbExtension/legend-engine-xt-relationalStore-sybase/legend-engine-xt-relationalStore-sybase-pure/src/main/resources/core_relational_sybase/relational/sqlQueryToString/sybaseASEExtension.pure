@@ -161,7 +161,8 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseASE()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSybaseASE()})),
+    dynaFnToSql('formatNumber',           $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatNumberSybaseASE()}))
   ];
 }
 
@@ -174,6 +175,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format($sqlFmt, [$params->at(0)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::transformFormatNumberSybaseASE(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let v = $params->at(0);
+  let formatPairs = [
+    pair('IEEE754ScientificNotation', format('CASE WHEN %s = 0 THEN \'0.000000000000000E+00\' ELSE LTRIM(STR(%s / POWER(CONVERT(FLOAT,10), FLOOR(LOG10(ABS(%s)))), 18, 15)) + \'E\' + CASE WHEN FLOOR(LOG10(ABS(%s))) >= 0 THEN \'+\' ELSE \'-\' END + CASE WHEN ABS(FLOOR(LOG10(ABS(%s)))) < 10 THEN \'0\' + LTRIM(STR(ABS(FLOOR(LOG10(ABS(%s)))), 10)) ELSE LTRIM(STR(ABS(FLOOR(LOG10(ABS(%s)))), 10)) END END', [$v, $v, $v, $v, $v, $v, $v]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseASE::convertToDateIQ(params:String[*]):String[1]

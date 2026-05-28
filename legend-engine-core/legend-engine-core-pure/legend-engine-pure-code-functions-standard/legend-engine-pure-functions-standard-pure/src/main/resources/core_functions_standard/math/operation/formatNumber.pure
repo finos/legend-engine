@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::functions::math::*;
+
+Enum meta::pure::functions::math::FloatFormat
+{
+   IEEE754ScientificNotation
+}
+
+Enum meta::pure::functions::math::DecimalFormat
+{
+   IEEE754ScientificNotation
+}
+
+function
+   <<PCT.function>>
+   {
+      doc.doc = 'Formats a Float to a string using the specified FloatFormat'
+   }
+meta::pure::functions::math::formatNumber(value:Float[1], floatFormat:FloatFormat[1]):String[1]
+{
+   if($floatFormat == FloatFormat.IEEE754ScientificNotation,
+      | formatNumberIEEE754ScientificNotation($value),
+      | assert(false, |'Unsupported FloatFormat: ' + $floatFormat->toString()); '';);
+}
+
+function
+   <<PCT.function>>
+   {
+      doc.doc = 'Formats a Decimal to a string using the specified DecimalFormat'
+   }
+meta::pure::functions::math::formatNumber(value:Decimal[1], decimalFormat:DecimalFormat[1]):String[1]
+{
+   if($decimalFormat == DecimalFormat.IEEE754ScientificNotation,
+      | formatNumberIEEE754ScientificNotation($value->toFloat()),
+      | assert(false, |'Unsupported DecimalFormat: ' + $decimalFormat->toString()); '';);
+}
+
+function <<access.private>> meta::pure::functions::math::formatNumberIEEE754ScientificNotation(value:Float[1]):String[1]
+{
+   format('%.15E', $value);
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEquals('1.234567890000000E+05', $f->eval(|formatNumber(123456.789, FloatFormat.IEEE754ScientificNotation)));
+}
+
+function <<PCT.test>> meta::pure::functions::math::tests::formatNumber::testFormatNumber_Decimal_IEEE754ScientificNotation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+   assertEquals('1.234567890000000E+05', $f->eval(|formatNumber(123456.789d, DecimalFormat.IEEE754ScientificNotation)));
+}
