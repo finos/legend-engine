@@ -294,7 +294,8 @@ function meta::external::dataquality::datarecon::buildJoinFunction(joinFields: S
   let joinCondition = $joinFields->map(field | 
     let sourceCol = if ($field == 'DIGEST' && $sourceHashCol->isNotEmpty(), | $sourceHashCol->toOne(), | $field) + '_SOURCE';
     let targetCol = if ($field == 'DIGEST' && $targetHashCol->isNotEmpty(), | $targetHashCol->toOne(), | $field) + '_TARGET';
-    buildComparisonExpression(equal_Any_MANY__Any_MANY__Boolean_1_, 'x', $relTypeParam1, $sourceCol, 'y', $relTypeParam2, $targetCol, getColGenericType($relTypeParam1, $sourceCol));
+    let colType = getColGenericType($relTypeParam1, $sourceCol);
+    buildNullSafeComparisonExpression('x', $relTypeParam1, $sourceCol, 'y', $relTypeParam2, $targetCol, $colType);
   );
   let andCondition = $joinCondition->tail()->fold({val1, val2 | buildAndExpression($val1->evaluateAndDeactivate(), $val2->evaluateAndDeactivate())}, $joinCondition->head()->toOne()->evaluateAndDeactivate());
 
@@ -415,6 +416,20 @@ function meta::external::dataquality::datarecon::buildAndExpression(param1: Func
       $param2
     ]
   )->evaluateAndDeactivate()
+}
+
+// Null-safe equality: (isEmpty(left) && isEmpty(right)) || (left == right)
+// Equivalent to SQL IS NOT DISTINCT FROM — ensures NULL == NULL evaluates to TRUE in join conditions
+function meta::external::dataquality::datarecon::buildNullSafeComparisonExpression(param1Name: String[1], relTypeParam1: RelationType<Any>[1], colNameParam1: String[1], param2Name: String[1], relTypeParam2: RelationType<Any>[1], colNameParam2: String[1], colType: GenericType[1]):SimpleFunctionExpression[1]
+{
+  let left = buildGetValueAtColumnFunctionExpression($relTypeParam1, $colNameParam1, $param1Name, $colType);
+  let right = buildGetValueAtColumnFunctionExpression($relTypeParam2, $colNameParam2, $param2Name, $colType);
+  let bothEmpty = sfe(and_Boolean_1__Boolean_1__Boolean_1_, [
+    sfe(isEmpty_Any_$0_1$__Boolean_1_, $left),
+    sfe(isEmpty_Any_$0_1$__Boolean_1_, $right)
+  ]);
+  let bothEqual = sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$left, $right]);
+  sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$bothEmpty, $bothEqual]);
 }
 
 function meta::external::dataquality::datarecon::buildNormalizeExpression(input: ValueSpecification[1], type: Type[1]):Pair<ValueSpecification, Type>[1]
