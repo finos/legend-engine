@@ -222,7 +222,6 @@ public class Test_Relational_Databricks_EssentialFunctions_PCT extends PCTReport
             one("meta::pure::functions::date::tests::testMinute_Function_1__Boolean_1_", "\nexpected: 9\nactual:   0"),
             one("meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_", "Date has no day: 2015-04", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "Ensure the target system understands Year or Year-month semantic.", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_", "Error running query: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] org.apache.spark.SparkRuntimeException: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] Unrecognized datetime pattern: 'yyyy-MM-ddTHH:mm:ss.SSSSSSSSS'.", AdapterQualifier.unsupportedFeature),
 
             //if
             one("meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_", "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"CASE WHEN true THEN truesentence ELSE falsesentence END\" due to data type mismatch"),

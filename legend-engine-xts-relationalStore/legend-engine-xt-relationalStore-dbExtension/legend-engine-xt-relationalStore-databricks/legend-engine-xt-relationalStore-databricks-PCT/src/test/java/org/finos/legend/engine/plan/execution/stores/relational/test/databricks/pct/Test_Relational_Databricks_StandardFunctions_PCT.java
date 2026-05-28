@@ -142,6 +142,9 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             // Hash
             one("meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_", "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""),
 
+            // formatDate
+            one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_", "Error running query: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] org.apache.spark.SparkRuntimeException: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] Unrecognized datetime pattern: 'yyyy-MM-ddTHH:mm:ss.SSSSSSSSS'.", AdapterQualifier.unsupportedFeature),
+            
             // Covariance/Correlation
             one("meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_", "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\""),
             one("meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_", "Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\""),
