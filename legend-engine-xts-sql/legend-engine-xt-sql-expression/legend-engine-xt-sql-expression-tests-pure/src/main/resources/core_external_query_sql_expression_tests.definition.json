@@ -3,6 +3,7 @@
   "pattern": "(meta::external::query::sql::expression)(::.*)?",
   "dependencies": [
     "platform",
+    "platform_dsl_mapping",
     "core_functions_unclassified",
     "core",
     "core_external_extensions",

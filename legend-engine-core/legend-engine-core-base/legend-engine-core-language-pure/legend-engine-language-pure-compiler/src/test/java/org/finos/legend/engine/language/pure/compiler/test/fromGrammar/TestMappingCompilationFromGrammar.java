@@ -3225,6 +3225,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  my::Person: Relation \n" +
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
@@ -3240,6 +3241,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  my::Person: Relation \n" +
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE,\n" +
                 "    +firmId: Integer[1]: FIRMID\n" +
@@ -3262,6 +3264,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  *my::Person[person]: Relation\n" +
                 "  {\n" +
                 "    ~func my::personFunctionWithQuotedCol():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
                 "    firstName: FIRSTNAME," +
                 "    firmId: 'FIRM ID'" +
                 "  }\n" +
@@ -3390,5 +3393,70 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")\n", "COMPILATION error at [32:1-35:1]: Relation mapping function expecting arguments is not supported!");
     }
-    
+
+    @Test
+    public void testValidRelationFunctionMappingWithPrimaryKey()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME, AGE]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithUnknownPrimaryKeyColumn()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person[person]: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FOO]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [34:3-40:3]: Primary key column 'FOO' declared in class mapping 'person' (mapping 'my::testMapping') is not part of the columns returned by the relation function. Available columns: [FIRSTNAME, AGE, FIRMID, CITY]. Use `~primaryKey: [col1, col2, ...]` referencing only columns from the relation function's output.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingNoPK()
+    {
+        // No explicit ~primaryKey — auto-inference deferred to runtime.
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person[person]: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingPKWithUnmappedColumn()
+    {
+        // PK columns must exist in the function output but need not be mapped to a property.
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  my::Person: Relation \n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRMID]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
 }
