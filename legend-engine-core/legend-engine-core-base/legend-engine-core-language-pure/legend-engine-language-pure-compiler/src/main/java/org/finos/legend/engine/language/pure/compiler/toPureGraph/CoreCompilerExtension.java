@@ -18,8 +18,8 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -57,7 +57,7 @@ public class CoreCompilerExtension extends FunctionDispatchExtension implements 
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
+        return Lists.mutable.with("Core");
     }
 
     @Override
@@ -93,9 +93,7 @@ public class CoreCompilerExtension extends FunctionDispatchExtension implements 
     @Override
     public Map<String, IncludedMappingHandler> getExtraIncludedMappingHandlers()
     {
-        return Maps.mutable.of(
-                MappingIncludeMapping.class.getName(), new MappingIncludedMappingHandler()
-        );
+        return Maps.mutable.of(MappingIncludeMapping.class.getName(), new MappingIncludedMappingHandler());
     }
 
     @Override
@@ -106,9 +104,9 @@ public class CoreCompilerExtension extends FunctionDispatchExtension implements 
 
     private static List<EmbeddedData> getDataFromDataReferencePMCD(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
     {
-        return ListIterate
-                .select(pureModelContextData.getElementsOfType(DataElement.class), e -> dataElementReference.dataElement.path.equals(e.getPath()))
-                .collect(d -> d.data);
+        return ListIterate.collectIf(pureModelContextData.getElementsOfType(DataElement.class),
+                e -> dataElementReference.dataElement.path.equals(e.getPath()),
+                d -> d.data);
     }
 
     @Override
