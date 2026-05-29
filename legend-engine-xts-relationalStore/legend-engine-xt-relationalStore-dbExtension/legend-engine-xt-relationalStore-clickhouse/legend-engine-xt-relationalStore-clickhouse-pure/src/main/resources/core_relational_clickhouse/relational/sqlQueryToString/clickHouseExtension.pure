@@ -164,8 +164,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let v = $params->at(0);
+  let exp = 'floor(log10(abs(' + $v + ')))';
+  let mantissaStr = 'toString(toDecimal128(' + $v + ' / pow(10, ' + $exp + '), 15))';
+  let padCount = 'toUInt32(greatest(0, toInt32(15) - (toInt32(length(' + $mantissaStr + ')) - toInt32(position(' + $mantissaStr + ', \'.\')))))';
+  let paddedMantissa = 'concat(' + $mantissaStr + ', repeat(\'0\', ' + $padCount + '))';
   let formatPairs = [
-    pair('IEEE754ScientificNotation', format('multiIf(%s = 0, \'0.000000000000000E+00\', concat(toString(toDecimal128(%s / pow(10, floor(log10(abs(%s)))), 15)), \'E\', if(floor(log10(abs(%s))) >= 0, \'+\', \'-\'), leftPad(toString(toInt64(abs(floor(log10(abs(%s)))))), 2, \'0\')))', [$v, $v, $v, $v, $v]))
+    pair('IEEE754ScientificNotation', 'multiIf(' + $v + ' = 0, \'0.000000000000000E+00\', concat(' + $paddedMantissa + ', \'E\', if(' + $exp + ' >= 0, \'+\', \'-\'), leftPad(toString(toInt64(abs(' + $exp + '))), 2, \'0\')))')
   ];
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported NumberFormat: ' + $enumValue);
 }

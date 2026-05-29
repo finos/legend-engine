@@ -51,7 +51,15 @@ meta::pure::functions::math::formatNumber(value:Decimal[1], decimalFormat:Decima
 
 function <<access.private>> meta::pure::functions::math::formatNumberIEEE754ScientificNotation(value:Float[1]):String[1]
 {
-   format('%.15E', $value);
+   if($value == 0.0,
+      | '0.000000000000000E+00',
+      | let exponent = $value->abs()->log10()->floor();
+        let mantissa = $value / 10.0->pow($exponent);
+        let mantissaStr = format('%.15f', $mantissa);
+        let expSign = if($exponent < 0, | '-', | '+');
+        let expAbs = $exponent->abs()->toString();
+        let expPadded = if($expAbs->length() < 2, | '0' + $expAbs, | $expAbs);
+        $mantissaStr + 'E' + $expSign + $expPadded;);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
