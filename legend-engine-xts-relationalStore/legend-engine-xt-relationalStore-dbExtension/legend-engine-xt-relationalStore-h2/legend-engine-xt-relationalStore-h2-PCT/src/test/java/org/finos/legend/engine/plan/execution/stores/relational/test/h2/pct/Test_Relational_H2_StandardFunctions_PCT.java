@@ -105,6 +105,10 @@ public class Test_Relational_H2_StandardFunctions_PCT extends PCTReportConfigura
             one("meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - time_bucket\""),
             one("meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_", "\"H2 SQL Dialect does not support the function - time_bucket\""),
 
+            //formatNumber
+            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation_Function_1__Boolean_1_", "No matched function in function registry for - to_char(DoubleSqlType, VarcharSqlType).", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Decimal_IEEE754ScientificNotation_Function_1__Boolean_1_", "No matched function in function registry for - to_char(DecimalSqlType, VarcharSqlType).", AdapterQualifier.unsupportedFeature),
+
             // Average
             one("meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\""),
             one("meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_", "\"\nexpected: 3.8\nactual:   5.0\""),
