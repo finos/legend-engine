@@ -52,7 +52,8 @@ public class Test_Relational_H2_Semistructured
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstMakeString_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStrings_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMapMakeString_Connection_1__Boolean_1_"
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMapMakeString_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::flattening::testSemiStructuredSubAggregation_Connection_1__Boolean_1_"
     );
 
     public static Test suite()
