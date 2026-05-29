@@ -1,0 +1,44 @@
+name: service-with-binding
+title: "Relational-backed Service Sharing a Domain Class with a JSON Binding"
+description: |
+  A multi-area fixture for the cross-feature -emit module: the demo::Person
+  class is mapped relationally to an H2 database and consumed by a Service
+  whose test suite primes its data per Connection, and the same class is
+  also exposed via an ExternalFormat Binding for 'application/json'. Spans
+  the Pure type system, the relational store / mapping / connection /
+  runtime stack, the service DSL with a Testable suite, and the
+  external-format DSL. No single per-feature -emit module covers this
+  combination, which is exactly why it belongs here rather than in the
+  relational or service module.
+
+modelSources:
+  model:
+    root: service-with-binding
+    files:
+      - model/person.pure
+      - store/db.pure
+      - mapping/personMapping.pure
+      - connection/h2Connection.pure
+      - runtime/personRuntime.pure
+      - service/personService.pure
+      - binding/personBinding.pure
+
+features:
+  - class
+  - derived-property
+  - relational-store
+  - relational-mapping
+  - relational-connection
+  - runtime
+  - service
+  - service-test
+  - external-format-binding
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - service-test
+  - plan-generation
+  - json-binding
+  - cross-feature
