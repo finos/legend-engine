@@ -59,20 +59,20 @@ jobs:
 
     steps:
       - name: Checkout legend-pure
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ inputs.pure_repo }}
           ref: ${{ inputs.pure_ref }}
           path: legend-pure
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 11
           distribution: 'zulu'
 
       - name: Cache Maven dependencies (pure)
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-mvn-deps-pure
         with:
@@ -97,7 +97,7 @@ jobs:
         run: mvn -B -e clean install -DskipTests
 
       - name: Upload local Maven repo (legend-pure artifacts)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pure-m2-snapshot
           path: ~/.m2/repository/org/finos/legend/pure/
@@ -119,10 +119,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         env:
           cache-name: cache-mvn-deps
         with:
@@ -134,7 +134,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 11
           distribution: 'zulu'
@@ -157,7 +157,7 @@ jobs:
 
       - name: Restore legend-pure snapshot
         if: inputs.pure_ref != ''
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pure-m2-snapshot
           path: ~/.m2/repository/org/finos/legend/pure/
@@ -197,7 +197,7 @@ jobs:
         run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot,pct-cloud-test
 
       - name: Store build output artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
           # upload the target directory as it is the output of the build
@@ -216,7 +216,7 @@ jobs:
 
       - name: Upload CI Event
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: event-file
           path: ${{ github.event_path }}
@@ -230,14 +230,14 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
       - name: Restore legend-pure snapshot
         if: inputs.pure_ref != ''
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pure-m2-snapshot
           path: ~/.m2/repository/org/finos/legend/pure/
@@ -255,7 +255,7 @@ jobs:
           mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
@@ -273,14 +273,14 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
 
       - name: Restore legend-pure snapshot
         if: inputs.pure_ref != ''
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pure-m2-snapshot
           path: ~/.m2/repository/org/finos/legend/pure/
@@ -301,7 +301,7 @@ jobs:
           mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
@@ -316,7 +316,7 @@ jobs:
       - test-modules
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup
         uses: ./.github/workflows/actions/before-test
@@ -326,13 +326,13 @@ jobs:
           mvn exec:java -pl org.finos.legend.engine:legend-engine-pure-ide-light-http-server -Dexec.mainClass="org.finos.legend.engine.server.core.pct.GeneratePCTFiles"
 
       - name: Upload PCT HTML Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pct-html-report
           path: target/ok.html
 
       - name: Checkout Legend Docs
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: 'legend-docs'
           ref: 'master'
