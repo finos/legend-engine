@@ -54,10 +54,10 @@ public class RelationFunctionMappingParseTreeWalker
                     .map(PureGrammarParserUtility::fromIdentifier)
                     .collect(Collectors.toList());
         }
-        else
-        {
-            relationFunctionClassMapping.primaryKey = Collections.emptyList();
-        }
+        // else: leave primaryKey as null (its declared default) — the compiler will auto-infer
+        // PKs from the relation function body, and the grammar composer will skip emitting
+        // ~primaryKey on round-trip. Setting it to an empty list here would break Studio's
+        // grammar round-trip tests by introducing a synthetic ~primaryKey [] clause.
         relationFunctionClassMapping.propertyMappings = ctx.singlePropertyMapping()
                 .stream()
                 .map(c -> this.visitPropertyMapping(c, relationFunctionClassMapping))
