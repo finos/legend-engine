@@ -1091,7 +1091,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         RelationFunctionClassMapping cm = (RelationFunctionClassMapping) mapping.classMappings.get(0);
         org.junit.Assert.assertEquals(java.util.Arrays.asList("firstName", "lastName"), cm.primaryKey);
 
-        // omitted ~primaryKey -> empty list
+        // omitted ~primaryKey -> null (so grammar composer doesn't emit a synthetic ~primaryKey [] on round-trip)
         PureModelContextData data2 = test("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +
@@ -1103,7 +1103,6 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 ")\n");
         Mapping mapping2 = (Mapping) ListIterate.select(data2.getElements(), e -> e.name.equals("testMapping")).get(0);
         RelationFunctionClassMapping cm2 = (RelationFunctionClassMapping) mapping2.classMappings.get(0);
-        org.junit.Assert.assertNotNull(cm2.primaryKey);
-        org.junit.Assert.assertTrue(cm2.primaryKey.isEmpty());
+        org.junit.Assert.assertNull(cm2.primaryKey);
     }
 }
