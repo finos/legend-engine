@@ -86,10 +86,10 @@ public class Test_Deephaven_StandardFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_\""),
 
             one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::formatDate_DateTime_1__DateTimeFormat_1__String_1_\""),
-            one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::formatNumber_Float_1__FloatFormat_1__String_1_\""),
+            one("meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_\""),
 
             one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Decimal_IEEE754ScientificNotation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::formatNumber_Decimal_1__DecimalFormat_1__String_1_\""),
-            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::formatDate_StrictDate_1__StrictDateFormat_1__String_1_\""),
+            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::math::formatNumber_Float_1__FloatFormat_1__String_1_\""),
 
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),
             one("meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_\""),

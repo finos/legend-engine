@@ -212,7 +212,7 @@ public class Test_Relational_Spanner_StandardFunctions_PCT extends PCTReportConf
 
             //formatNumber
             one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Float_IEEE754ScientificNotation_Function_1__Boolean_1_", "[ERROR] type \"float64\" does not exist - Statement: 'select FORMAT('%.15E',CAST(123456.789 AS FLOAT64))'", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Decimal_IEEE754ScientificNotation_Function_1__Boolean_1_", "[ERROR] type \"float64\" does not exist - Statement: 'select FORMAT('%.15E',CAST(123456.789 AS FLOAT64))'", AdapterQualifier.unsupportedFeature),
+            one("meta::pure::functions::math::tests::formatNumber::testFormatNumber_Decimal_IEEE754ScientificNotation_Function_1__Boolean_1_", "[ERROR] type \"float64\" does not exist - Statement: 'select FORMAT('%.15E',CAST(cast(123456.789 as DECIMAL(32, 16)) AS FLOAT64))'", AdapterQualifier.unsupportedFeature),
 
             //zscore
             one("meta::pure::functions::math::tests::zScore::testZScore_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),

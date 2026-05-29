@@ -40,11 +40,6 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       (
         parameterTypes = [TimestampSqlType, AbstractStringSqlType],
         returnType = AbstractStringSqlType
-      ),
-      ^SqlFunctionVariation
-      (
-        parameterTypes = [AbstractNumericSqlType, AbstractStringSqlType],
-        returnType = AbstractStringSqlType
       )
     ],
     tests = [
