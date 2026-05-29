@@ -170,6 +170,7 @@ public class MappingCompilerExtension implements CompilerExtension
         }
         if (mapping.associationMappings != null)
         {
+            // Associations (e.g. ModelJoin) resolve source/target sets from compiled class mappings, so they must run after both class-mapping passes.
             RichIterable<AssociationImplementation> associationImplementations = ListIterate.collect(mapping.associationMappings, cm -> HelperMappingBuilder.processAssociationImplementation(cm, context, pureMapping));
             pureMapping._associationMappings(associationImplementations);
         }

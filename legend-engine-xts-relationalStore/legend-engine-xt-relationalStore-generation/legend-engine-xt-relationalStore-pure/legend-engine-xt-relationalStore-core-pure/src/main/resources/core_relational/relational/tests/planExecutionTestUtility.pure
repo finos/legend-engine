@@ -56,6 +56,7 @@ function meta::relational::metamodel::execute::tests::executeLegendFunction(conn
   let function = $elements->filter(x | $x->elementToPath() == $funcName)->toOne('Not found: ' + $funcName)->cast(@FunctionDefinition<Any>);
   let mapping = $elements->filter(x | $x->elementToPath() == $mappingName)->toOne('Not found: ' + $mappingName)->cast(@Mapping);
   let db = $elements->filter(x | $x->elementToPath() == $databaseName)->toOne('Not found: ' + $databaseName)->cast(@Database);
+  
   executeLegendFunction($function, $mapping, $db, $conn, $csvs, $expectedCsv);
 }
 
@@ -80,19 +81,18 @@ function meta::relational::metamodel::execute::tests::executeLegendFunction(func
   let rawPlan = meta::pure::executionPlan::executionPlan($func, $mapping, $runtime, $shouldDebug, meta::legend::getLegendExtensions());
 
   // assert SQL if expected is provided
-  // if($expectedSql->isNotEmpty(),
-  //   | let actualSql = $rawPlan->extractSqlFromPlan();
-  //     assertEquals($expectedSql->toOne(), $actualSql);,
-  //   | true;
-  // );
-  $rawPlan->extractSqlFromPlan()->println();
+  if($expectedSql->isNotEmpty(),
+    | let actualSql = $rawPlan->extractSqlFromPlan();
+      assertEquals($expectedSql->toOne(), $actualSql);,
+    | true;
+  );
 
   let planWithTeardown = ^$rawPlan(rootExecutionNode =
-      ^meta::pure::executionPlan::RelationalBlockExecutionNode(
-          executionNodes = $setup->concatenate($rawPlan.rootExecutionNode),
-          resultType = $rawPlan.rootExecutionNode.resultType,
-          resultSizeRange =  $rawPlan.rootExecutionNode.resultSizeRange
-      )
+    ^meta::pure::executionPlan::RelationalBlockExecutionNode(
+      executionNodes = $setup->concatenate($rawPlan.rootExecutionNode),
+      resultType = $rawPlan.rootExecutionNode.resultType,
+      resultSizeRange =  $rawPlan.rootExecutionNode.resultSizeRange
+    )
   );
 
   // bind to available local platform

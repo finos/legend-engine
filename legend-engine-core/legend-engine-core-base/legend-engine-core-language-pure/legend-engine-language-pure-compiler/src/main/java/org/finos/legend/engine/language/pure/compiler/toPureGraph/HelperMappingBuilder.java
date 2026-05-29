@@ -507,6 +507,12 @@ public class HelperMappingBuilder
         {
             ModelJoinAssociationMapping modelJoinMapping = (ModelJoinAssociationMapping) associationMapping;
             prerequisiteElements.add(modelJoinMapping.association);
+            prerequisiteElements.addAll(ListIterate.collect(modelJoinMapping.stores, s -> new PackageableElementPointer(PackageableElementType.STORE, s)));
+            if (modelJoinMapping.joinCondition != null && modelJoinMapping.joinCondition.body != null)
+            {
+                ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+                ListIterate.forEach(modelJoinMapping.joinCondition.body, vs -> vs.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+            }
         }
         else
         {
@@ -908,7 +914,7 @@ public class HelperMappingBuilder
     {
         if (!isExplicitTypedLambda(original))
         {
-            throw new EngineException("ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[*] | $a.prop == $b.prop}", original.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop}", original.sourceInformation, EngineErrorType.COMPILATION);
         }
         LambdaFunction result = new LambdaFunction();
         String[] resolved = resolveExplicitLambdaParamNames(original, thisName, thatName, thisProp, thatProp, context);
@@ -923,7 +929,7 @@ public class HelperMappingBuilder
     }
 
     /**
-     * For an explicit typed lambda {a:TypeA[1], b:TypeB[*]|expr}, determines which param
+     * For an explicit typed lambda {a:TypeA[1], b:TypeB[1]|expr}, determines which param
      * corresponds to $this and which to $that.
      *
      * For self-associations (both properties return the same type), param names MUST match

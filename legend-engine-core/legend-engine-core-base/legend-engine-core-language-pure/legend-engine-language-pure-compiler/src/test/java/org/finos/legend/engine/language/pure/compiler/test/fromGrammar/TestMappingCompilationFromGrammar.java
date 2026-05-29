@@ -1073,7 +1073,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testCompileSrcTypeMapping()
     {
-        test("Class test::Person{lastName:String[1];} Class test::Firm{employees:test::Person[*];} Class test::SrcPerson{} Class test::SrcFirm{empl:test::SrcPerson[*];}\n" +
+        test("Class test::Person{lastName:String[1];} Class test::Firm{employees:test::Person[1];} Class test::SrcPerson{} Class test::SrcFirm{empl:test::SrcPerson[*];}\n" +
                 "###Mapping\n" +
                 "Mapping a::mapping" +
                 "(" +
@@ -3502,7 +3502,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         // Valid ModelJoin — explicit typed lambda
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.firmId}\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id == $employees.firmId}\n" +
                 "   }"));
 
         // Invalid: syntactic sugar (no params) — no longer supported
@@ -3510,14 +3510,14 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   test::Firm_Person: ModelJoin {\n" +
                 "      employer.id == employees.firmId\n" +
                 "   }"),
-                "COMPILATION error at [21:1-38:1]: Error in 'test::modelJoinMapping': ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[*] | $a.prop == $b.prop}");
+                "COMPILATION error at [21:1-38:1]: Error in 'test::modelJoinMapping': ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop}");
 
         // Invalid: non-boolean return type
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id + $employees.firmId}\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id + $employees.firmId}\n" +
                 "   }"),
-                "COMPILATION error at [36:19-36]: ModelJoin property mapping function should return 'Boolean[1]'");
+                "COMPILATION error at [36:71-89]: ModelJoin property mapping function should return 'Boolean[1]'");
     }
 
     @Test
@@ -3555,7 +3555,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      legalName: $src.legalName\n" +
                 "   }\n\n" +
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.firmId}\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id == $employees.firmId}\n" +
                 "   }\n" +
                 ")\n");
 
@@ -3613,7 +3613,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      legalName: $src.legalName\n" +
                 "   }\n\n" +
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      {firm:test::Firm[1], person:test::Person[*]|$firm.id == $person.firmId}\n" +
+                "      {firm:test::Firm[1], person:test::Person[1]|$firm.id == $person.firmId}\n" +
                 "   }\n" +
                 ")\n");
 
@@ -3650,7 +3650,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      legalName: $src.legalName\n" +
                 "   }\n\n" +
                 "   test::Firm_Person2: ModelJoin {\n" +
-                "      {firm:test::Firm2[1], person:test::Person2[*]|$firm.id == $person.firmId}\n" +
+                "      {firm:test::Firm2[1], person:test::Person2[1]|$firm.id == $person.firmId}\n" +
                 "   }\n" +
                 ")\n");
     }
@@ -3693,7 +3693,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      description: $src.description\n" +
                 "   }\n\n" +
                 "   test::EntityOrder: ModelJoin {\n" +
-                "      {base:test::BaseEntity[1], ord:test::Order[*]|$base.id == $ord.entityId}\n" +
+                "      {base:test::BaseEntity[1], ord:test::Order[1]|$base.id == $ord.entityId}\n" +
                 "   }\n" +
                 ")\n");
     }
@@ -3728,15 +3728,15 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         // Valid: param names match association property names
         test(String.format(model,
                 "   test::Employee_Manager: ModelJoin {\n" +
-                "      {manager:test::Employee[0..1], reports:test::Employee[*]|$reports.managerId == $manager.id}\n" +
+                "      {manager:test::Employee[1], reports:test::Employee[1]|$reports.managerId == $manager.id}\n" +
                 "   }"));
 
         // Invalid: param names don't match association property names for self-association
         test(String.format(model,
                 "   test::Employee_Manager: ModelJoin {\n" +
-                "      {a:test::Employee[0..1], b:test::Employee[*]|$b.managerId == $a.id}\n" +
+                "      {a:test::Employee[1], b:test::Employee[1]|$b.managerId == $a.id}\n" +
                 "   }"),
-                "COMPILATION error at [26:51-72]: Self-association ModelJoin requires lambda parameter names to match association property names ('manager' and 'reports'), got 'a' and 'b'");
+                "COMPILATION error at [26:48-69]: Self-association ModelJoin requires lambda parameter names to match association property names ('manager' and 'reports'), got 'a' and 'b'");
     }
 
     @Test
@@ -3821,7 +3821,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      description: $src.description\n" +
                 "   }\n\n" +
                 "   test::BaseEntityOrder: ModelJoin {\n" +
-                "      {e:test::BaseEntity[1], o:test::Order[*]|$e.id == $o.entityId}\n" +
+                "      {e:test::BaseEntity[1], o:test::Order[1]|$e.id == $o.entityId}\n" +
                 "   }\n" +
                 ")\n");
     }

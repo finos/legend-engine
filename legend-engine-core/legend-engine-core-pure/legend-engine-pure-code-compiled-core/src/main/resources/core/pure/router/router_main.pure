@@ -127,32 +127,13 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
-   routeFunction($f, true, $routingStrategy, $exeCtx, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars, $graphFetchFlow, $extensions, $debug);
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
-{
-   routeFunction($f, true, $routingStrategy, $exeCtx, $initialVars, $inScopeVars, false, false, $extensions, $debug);
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[0..1], shouldBeRouted:Boolean[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
-{
-   routeFunction($f, true, $routingStrategy, $exeCtx, $initialVars, $inScopeVars, false, $shouldBeRouted, $extensions, $debug);
+   routeFunction($f, true, $routingStrategy, $exeCtx, $inScopeVars, $graphFetchFlow, $extensions, $debug);
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], cluster: Boolean[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
-   routeFunction($f, $cluster, $routingStrategy, $exeCtx, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars, $graphFetchFlow, $extensions, $debug);
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], cluster: Boolean[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
-{
-   routeFunction($f, $cluster, $routingStrategy, $exeCtx, $initialVars, $inScopeVars, $graphFetchFlow, false, $extensions, $debug);
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], cluster: Boolean[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], shouldBeRouted:Boolean[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
-{
-   let initialState = ^RoutingState(shouldBeRouted=$shouldBeRouted, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow);
+   let initialState = ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow);
+   let initialVars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
    routeFunction($f, $cluster, $initialState, $exeCtx, $initialVars, $inScopeVars, $extensions, $debug);
 }
 

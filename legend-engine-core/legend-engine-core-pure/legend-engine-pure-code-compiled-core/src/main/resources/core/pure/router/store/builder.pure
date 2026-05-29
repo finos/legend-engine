@@ -309,29 +309,32 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   );
 }
 
-function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourcedRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
+function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
 {
   $pm->match(
     [
       m:ModelJoinPropertyMapping[1]|
         // Build vars map so the router can resolve $this and $that with routing context.
         // $this = source side (e.g. Firm), $that = target side (e.g. Person)
-        let thisVar = ^VariableExpression(name='_mj_src', genericType=$sourcedRoutedVS.value.genericType, multiplicity=PureOne);
+        let thisVar = ^VariableExpression(name='_mj_src', genericType=$sourceRoutedVS.value.genericType, multiplicity=PureOne);
         let thatVar = ^VariableExpression(name='_mj_tgt', genericType=$propertyRoutedVS.value.genericType, multiplicity=PureOne);
 
-        // Resolve source and target SetImplementations directly from the ModelJoinPropertyMapping.
+        // Find PermutationSets from existing strategy that exactly match source/target SetImplementations.
         let routingStrategy = $propertyRoutedVS.routingStrategy->cast(@StoreMappingRoutingStrategy);
-        let sourceSetImpl = $routingStrategy.mapping->classMappingById($m.sourceSetImplementationId)->toOne();
-        let targetSetImpl = $routingStrategy.mapping->classMappingById($m.targetSetImplementationId)->toOne();
-
-        // Build PermutationSets and variable ValueSpecifications narrowed to the specific sets.
-        let srcPermSet = $routingStrategy.sets->filter(ps| $ps.id->toString() == $sourcedRoutedVS.id)->first()->toOne();
+        let srcPermSet = $routingStrategy.sets->filter(ps| $ps.id->toString() == $sourceRoutedVS.id)->first()->toOne();
         let tgtPermSet = $routingStrategy.sets->filter(ps| $ps.id->toString() == $propertyRoutedVS.id)->first()->toOne();
-        let resolvedSrcPermSet = ^$srcPermSet(sets = $sourceSetImpl);
-        let resolvedTgtPermSet = ^$tgtPermSet(sets = $targetSetImpl);
 
-        let srcVarVS = ^$sourcedRoutedVS(sets = $sourceSetImpl)->cast(@ValueSpecification);
-        let tgtVarVS = ^$propertyRoutedVS(sets = $targetSetImpl)->cast(@ValueSpecification);
+        // For the target side, resolve to the specific sub-impl that this ModelJoinPropertyMapping targets.
+        let srcSetImpl = $srcPermSet.sets->map(s|$s->resolveOperation($sourceRoutedVS.mapping))->filter(s|$s.id == $m.sourceSetImplementationId)->toOne();
+        let tgtSetImpl = $tgtPermSet.sets->map(s|$s->resolveOperation($sourceRoutedVS.mapping))->filter(s|$s.id == $m.targetSetImplementationId)->toOne();
+        let resolvedSrcPermSet = ^$srcPermSet(sets = $srcSetImpl);
+        let resolvedTgtPermSet = ^$tgtPermSet(sets = $tgtSetImpl);
+
+        // When the router resolves $_mj_tgt from initialVars, it reuses the SMRVS's `sets` field
+        // directly (see router_routing.pure line 199). So we must provide a version of $sourceRoutedVS
+        // and $propertyRoutedVS with sets narrowed to the specific target sub-impl.
+        let srcVarVS = ^$sourceRoutedVS(sets = $srcSetImpl);
+        let tgtVarVS = ^$propertyRoutedVS(sets = $tgtSetImpl);
 
         let initialVars = newMap(
           [
@@ -348,13 +351,13 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
 
         // Build RoutingState with pre-populated counter so new PermutationSets get non-colliding ids
         let initialState = ^RoutingState(
-          shouldBeRouted = true,
-          lambdaContext = [],
-          counter = $initialCounter,
-          depth = '',
-          propertyMap = ^PropertyMap(),
-          routingStrategy = $newRoutingStrategy,
-          graphFetchFlow = false
+            shouldBeRouted = true,
+            lambdaContext = [],
+            counter = $initialCounter,
+            depth = '',
+            propertyMap = ^PropertyMap(),
+            routingStrategy = $newRoutingStrategy,
+            graphFetchFlow = false
         );
 
         let routed = $m.joinCondition->routeFunction(true, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);

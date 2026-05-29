@@ -37,17 +37,17 @@ import meta::pure::store::*;
 // =========================================================================================
 // Store Mapping Routing Strategy Builder Helper
 // =========================================================================================
-function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1]):StoreMappingRoutingStrategy[1]
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
 {
     getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, []);
 }
 
-function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
 {
     getRoutingStrategyFromMappingAndRuntime([],$mapping, $runtime, $extensions);
 }
 
-function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(routingStrategy: RoutingStrategy[0..1], mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(routingStrategy: RoutingStrategy[0..1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
 {
     let modifiedRuntime = $runtime;
     let modifiedMapping = modifyMappingBasedOnRuntimeLocality($mapping, $modifiedRuntime, $extensions);
@@ -59,7 +59,7 @@ function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRun
     );
 }
 
-function <<access.private>> meta::pure::router::store::routing::modifyMappingBasedOnRuntimeLocality(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: meta::pure::extension::Extension[*]):Mapping[1]
+function <<access.private>> meta::pure::router::store::routing::modifyMappingBasedOnRuntimeLocality(mapping:Mapping[1], runtime:Runtime[1], extensions: meta::pure::extension::Extension[*]):Mapping[1]
 {
   let allMappings = $mapping->getIncludedMappingsRecursively();
   let classMappings = $allMappings.classMappings;
@@ -72,12 +72,6 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
                                                                                       r:RelationFunctionInstanceSetImplementation[1]|$runtime.connectionStores.element->cast(@meta::pure::store::Store)->toOne('Relation mapping only supported for queries having a single store definitions!'),
                                                                                       a:SetImplementation[1]|meta::pure::router::clustering::storeContractForSetImplementation($setImpl, $mapping, $extensions).second;
                                                                                     ]));
-          $runtime.connectionStores->println();
-          $inScopeStores->println();
-          let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s));
-          ($connection->size() == 2 && $connection->distinct()->size() == 1)->println();
-          ($connection->size() == 0 && $runtime.preprocessFunction->isNotEmpty())->println();
-          // fail();
           if(
             $runtime.connectionStores->size() >= 1,
             | let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s));
@@ -110,17 +104,17 @@ function <<access.private>> meta::pure::router::store::routing::getIncludedMappi
   $m->concatenate(if($m.includes->isEmpty(), |[], |$m.includes.included->map(i|$i->getIncludedMappingsRecursively())));
 }
 
-function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSets(sets:SetImplementation[*], mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):SetImplementation[*]
+function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSets(sets:SetImplementation[*], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):SetImplementation[*]
 {
   $sets->map(s|$s->potentiallyRouteRelationFunctionSet($mapping, $runtime, $extensions));
 }
 
 function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet(s:SetImplementation[1], mapping:Mapping[1], extensions: Extension[*]):SetImplementation[1]
 {
-  potentiallyRouteRelationFunctionSet($s, $mapping, ^meta::core::runtime::Runtime(connectionStores=^ConnectionStore(connection=^meta::core::runtime::Connection(),element='Mock')), $extensions);
+  potentiallyRouteRelationFunctionSet($s, $mapping, ^Runtime(connectionStores=^ConnectionStore(connection=^Connection(),element='Mock')), $extensions);
 }
 
-function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet(s:SetImplementation[1], mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):SetImplementation[1]
+function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet(s:SetImplementation[1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):SetImplementation[1]
 {
   $s->match(
     [
@@ -136,7 +130,7 @@ function meta::pure::router::store::routing::isRelationFunctionRouted(r:Relation
   $r.relationFunction->evaluateAndDeactivate().expressionSequence->at(0)->instanceOf(ClusteredValueSpecification);
 }
 
-function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
+function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
 {
   if(isRelationFunctionRouted($r),
     | $r.relationFunction,
@@ -144,7 +138,7 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:
   );
 }
 
-function <<access.private>> meta::pure::router::store::routing::getRoutingStrategy(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1]):StoreMappingRoutingStrategy[1]
+function <<access.private>> meta::pure::router::store::routing::getRoutingStrategy(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
 {
   ^StoreMappingRoutingStrategy(
     mapping = $mapping,
@@ -159,7 +153,7 @@ function <<access.private>> meta::pure::router::store::routing::getRoutingStrate
   )
 }
 
-function meta::pure::router::store::routing::getRoutingStrategyFromRuntime(runtime:meta::core::runtime::Runtime[1]):StoreRoutingStrategy[1]
+function meta::pure::router::store::routing::getRoutingStrategyFromRuntime(runtime:Runtime[1]):StoreRoutingStrategy[1]
 {
   ^StoreRoutingStrategy(runtime = $runtime,
                         processRelationStoreAccessor = processRelationStoreAccessor_RelationStoreAccessor_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
@@ -508,7 +502,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                                                                                      f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
                                                                                                                                               $r->reactivate($inScopeVars);,
                                                                                                                      i:InstanceValue[1]      |$i.values]));
-                let fromRuntime            = $resolvedParameters->at(0)->match([runtime:meta::core::runtime::Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
+                let fromRuntime            = $resolvedParameters->at(0)->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
                 routeValueSpecification(
                   ^$state(value = $fe.parametersValues->at(0), 
                   routingStrategy = getRoutingStrategyFromRuntime($fromRuntime)), 
@@ -565,8 +559,8 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                                                                                                               $r->reactivate($inScopeVars);,
                                           
                                                                                                                         i:InstanceValue[1]      |$i.values]));
-                let fromRuntime = $resolvedParameters->last()->match([runtime:meta::core::runtime::Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
-                
+                let fromRuntime = $resolvedParameters->last()->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
+
                 let routingStrategy = $resolvedParameters->init()->head()->match([
                   fromMapping: Mapping[1] | getRoutingStrategyFromMappingAndRuntime($state.routingStrategy, $fromMapping, $fromRuntime, $extensions),
                   m: Any[0] | getRoutingStrategyFromRuntime($fromRuntime)
@@ -614,10 +608,10 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let fromMapping            = $resolvedParameters->at(0)->cast(@Mapping);
                 let fromRuntime            = $resolvedParameters->at(1)
                                               ->match([
-                                                 r:meta::core::runtime::Runtime[1]| $r,
+                                                 r:Runtime[1]| $r,
                                                  pr:PackageableRuntime[1] | $pr.runtimeValue;,
-                                                 fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)          
-                                              ])->toOne()->cast(@meta::core::runtime::Runtime);
+                                                 fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)
+                                              ])->toOne()->cast(@Runtime);
                 let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@meta::pure::runtime::ExecutionContext), | $executionContext);
 
                 let currentRoutingStrategy = $state.routingStrategy;
@@ -695,7 +689,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let prevalFunc = $fe->preval($inScopeVars, $extensions, $debug)->cast(@SimpleFunctionExpression);
 
                 let mapping = $prevalFunc.parametersValues->at(2)->cast(@InstanceValue).values->toOne()->cast(@Mapping);
-                let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->match([runtime:meta::core::runtime::Runtime[1] | $runtime, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue]);
+                let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->match([runtime:Runtime[1] | $runtime, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue]);
 
                 let currentRoutingStrategy = $state.routingStrategy;
                 let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $mapping, $runtime, $extensions);

@@ -668,11 +668,6 @@ function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relati
   $relation.columns->filter(c|$c->extractColumnName()->quoteSafeEqual($name))->first();
 }
 
-function meta::relational::functions::pureToSqlQuery::hasColumn(relation:Relation[1], name:String[1]):Boolean[1]
-{
-  $relation->findColumn($name)->isNotEmpty();
-}
-
 function meta::relational::functions::pureToSqlQuery::processPropertyFunctionExpression(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
   if (isVariantInputWithInstanceValue($fe, $vars, $state),
@@ -1547,47 +1542,41 @@ function meta::relational::functions::pureToSqlQuery::processColumnsInRelational
    $result;
 }
 
-
 function meta::relational::functions::pureToSqlQuery::extractColumnAliasesInRelationalTreeNodes(column:Column[1], relationalElement:RelationalOperationElement[1], nodes:RelationalTreeNode[*], context:DebugContext[1], extensions:Extension[*]): TableAliasColumn[*]
 {
   let aliasesToUse = $nodes->map(n |
-    let nodeRelElement = $n.alias.relationalElement;
-    $nodeRelElement->match(
+    $n.alias.relationalElement->match(
       [
-        v:ViewSelectSQLQuery[1] |
-          if($v.view == $relationalElement,
-            | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name)),
-            | []
-          );,
-
-        s:SelectSQLQuery[1] |
+        v:ViewSelectSQLQuery[1]|if($v.view == $relationalElement,
+                                  | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name)),
+                                  | [];
+                                );,
+        s:SelectSQLQuery[1]|
           let foundColumn = $s->findColumn($column.name);
-          if($foundColumn->isEmpty(),
-            | [],
+          if($foundColumn->isNotEmpty(),
             | let relationsSupportingProjectedColumn = $foundColumn->extractTableAliasColumns().alias.relation;
-              print(if(!$context.debug, |'', | $context.space + 'Found depth-2 nested select while processing column - ' + $column.name +
-                                                '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' +
-                                                $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
+              print(if(!$context.debug, |'', | $context.space+'Found depth-2 nested select while processing column - ' +  $column.name + '. Adding inner relations from depth-2 subselect for handling class mapping filter with inner join : ' + $relationsSupportingProjectedColumn->map(rel | $rel->buildUniqueName(false, $extensions))->joinStrings('[', ' , ', ']')));
               let columnName = $foundColumn->toOne()->extractColumnName();
-              let isViewMatch = $relationalElement->instanceOf(View) &&
-                                $relationsSupportingProjectedColumn->exists(rel |
-                                  $rel->instanceOf(ViewSelectSQLQuery) && $rel->cast(@ViewSelectSQLQuery).view == $relationalElement
-                                );
-              if($relationsSupportingProjectedColumn->concatenate($s)->contains($relationalElement) ||
+              let isViewMatch = if($relationalElement->instanceOf(View),
+                 | $relationsSupportingProjectedColumn->exists(rel |
+                   $rel->instanceOf(ViewSelectSQLQuery) && $rel->cast(@ViewSelectSQLQuery).view == $relationalElement
+                  );,
+                  | false;
+                );
+                if($relationsSupportingProjectedColumn->concatenate($s)->contains($relationalElement) ||
                   $relationalElement->instanceOf(RelationFunction) ||
                   $isViewMatch,
-                | ^TableAliasColumn(alias = $n.alias, columnName = $columnName, column = ^$column(name = $columnName)),
-                | []
-              );
-          );,
-
-        r:RelationalOperationElement[1] |
-          if($r == $relationalElement,
-            | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name)),
-            | []
-          );
-        ]
-    );
+                  | ^TableAliasColumn(alias = $n.alias, columnName = $columnName, column = ^$column(name = $columnName));,
+                  | [];
+                );,
+              | [];
+            );,
+        r:RelationalOperationElement[1]|if($r == $relationalElement,
+                                          | ^TableAliasColumn(alias = $n.alias, columnName = $column.name, column = ^$column(name = $column.name));,
+                                          | [];
+                                        );
+      ]
+    )
   );
 }
 

@@ -55,17 +55,9 @@ Class meta::pure::router::routing::PropertyMap
 
 function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars, $graphFetchFlow, $extensions, $debug);
-}
-
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
-{
-   enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, $initialVars, $inScopeVars, false, $graphFetchFlow, $extensions, $debug);
-}
-
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldBeRouted:Boolean[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
-{
-   enrichFunctionExpressions($expressions, ^RoutingState(shouldBeRouted=$shouldBeRouted, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow), $executionContext, $initialVars, $inScopeVars, $extensions, $debug);
+   let initialVars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
+   let initialState = ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow);
+   enrichFunctionExpressions($expressions, $initialState, $executionContext, $initialVars, $inScopeVars, $extensions, $debug);
 }
 
 function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], initialState:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], initialVars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
