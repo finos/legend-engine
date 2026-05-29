@@ -300,19 +300,19 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMapMakeString(conn: Connection[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStringsPrefixSuffix(conn: Connection[1]):Boolean[1]
 {
   arrayScalarExecute($conn,
-    'flatten::semiStructuredArrayFilterMapMakeString__TabularDataSet_1_',
+    'flatten::semiStructuredArrayJoinStringsPrefixSuffix__TabularDataSet_1_',
     'flatten::mapping::H2Mapping',
     'First Name,Firm Name,Matching Address Names\n' +
-    'Anthony,Firm X,\n' +
-    'David,Firm B,\n' +
-    'Fabrice,Firm A,\n' +
-    'John,Firm X,\n' +
-    'John,Firm X,\n' +
-    'Oliver,Firm B,\n' +
-    'Peter,Firm X,"A1A11"\n'
+    'Anthony,Firm X,[]\n' +
+    'David,Firm B,[]\n' +
+    'Fabrice,Firm A,[]\n' +
+    'John,Firm X,[]\n' +
+    'John,Firm X,[]\n' +
+    'Oliver,Firm B,[]\n' +
+    'Peter,Firm X,[A1-A11]\n'
   );
 }
 
