@@ -431,3 +431,43 @@ function flatten::multiArrayOlapWithNestedIfExists(): TabularDataSet[1]
     )
     ->distinct()
 }
+
+function flatten::semiStructuredArrayFilterFirstMakeString(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name->makeString(), 'First Matching Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterFirstJoinStrings(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->first().name->joinStrings(), 'First Matching Address Name')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterJoinStrings(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1')).name->joinStrings('-'), 'Matching Address Names')
+    ])
+}
+
+function flatten::semiStructuredArrayFilterMapMakeString(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.legalName, 'Firm Name'),
+        col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1'))->map(a | $a.name)->makeString(), 'Matching Address Names')
+    ])
+}

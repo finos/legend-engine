@@ -252,6 +252,70 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   );
 }
 
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstMakeString(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterFirstMakeString__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,First Matching Address Name\n' +
+    'Anthony,Firm X,\n' +
+    'David,Firm B,\n' +
+    'Fabrice,Firm A,\n' +
+    'John,Firm X,\n' +
+    'John,Firm X,\n' +
+    'Oliver,Firm B,\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterFirstJoinStrings__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,First Matching Address Name\n' +
+    'Anthony,Firm X,\n' +
+    'David,Firm B,\n' +
+    'Fabrice,Firm A,\n' +
+    'John,Firm X,\n' +
+    'John,Firm X,\n' +
+    'Oliver,Firm B,\n' +
+    'Peter,Firm X,A1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterJoinStrings(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterJoinStrings__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Matching Address Names\n' +
+    'Anthony,Firm X,\n' +
+    'David,Firm B,\n' +
+    'Fabrice,Firm A,\n' +
+    'John,Firm X,\n' +
+    'John,Firm X,\n' +
+    'Oliver,Firm B,\n' +
+    'Peter,Firm X,A1-A11\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterMapMakeString(conn: Connection[1]):Boolean[1]
+{
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredArrayFilterMapMakeString__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Firm Name,Matching Address Names\n' +
+    'Anthony,Firm X,\n' +
+    'David,Firm B,\n' +
+    'Fabrice,Firm A,\n' +
+    'John,Firm X,\n' +
+    'John,Firm X,\n' +
+    'Oliver,Firm B,\n' +
+    'Peter,Firm X,"A1A11"\n'
+  );
+}
+
 function meta::relational::tests::semistructured::flattening::semiRecordExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
 {
   let csv =
