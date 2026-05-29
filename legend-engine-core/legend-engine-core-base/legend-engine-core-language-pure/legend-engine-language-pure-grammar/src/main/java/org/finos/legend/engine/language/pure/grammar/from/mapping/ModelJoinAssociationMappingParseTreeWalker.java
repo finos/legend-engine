@@ -54,6 +54,10 @@ public class ModelJoinAssociationMappingParseTreeWalker
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);
 
+        if (valueSpecification instanceof LambdaFunction)
+        {
+            return (LambdaFunction) valueSpecification;
+        }
         LambdaFunction lambda = new LambdaFunction();
         lambda.body = Collections.singletonList(valueSpecification);
         return lambda;

@@ -593,7 +593,6 @@ function meta::pure::router::routing::processLambda(i:InstanceValue[1], routed:E
 
    // Process Lambda (Or Property)
    let oldPropMap = $state.propertyMap;
-   print(if($debug.debug,|$debug.space+'[LAMBDA] lambdaContext='+$func->id()+' propMap.entries='+$propMap->size()->toString()+' propMap.keys='+$propMap->map(p|$p.first)->joinStrings('[',',',']')+'\n',|''));
    ^$state(
          propertyMap = ^$oldPropMap(v=$propMap->concatenate($oldPropMap.v->filter(p|$p.first != '__propertyOwner'))),
          value=$i,

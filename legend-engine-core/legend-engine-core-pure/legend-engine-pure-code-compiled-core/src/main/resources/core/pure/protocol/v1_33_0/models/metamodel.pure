@@ -741,6 +741,11 @@ Class meta::protocols::pure::v1_33_0::metamodel::mapping::xStore::XStoreProperty
    crossExpression : meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[1];
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::modelJoin::ModelJoinAssociationMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::AssociationMapping
+{
+   joinCondition : meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
 Class meta::protocols::pure::v1_33_0::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends  meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
 {
 }

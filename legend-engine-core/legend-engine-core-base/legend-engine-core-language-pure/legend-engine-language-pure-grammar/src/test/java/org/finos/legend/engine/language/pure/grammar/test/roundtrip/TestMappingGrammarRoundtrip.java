@@ -1044,7 +1044,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "(\n" +
                 "  test::Firm_Person: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId\n" +
+                "    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}\n" +
                 "  }\n" +
                 ")\n");
     }
@@ -1057,7 +1057,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "(\n" +
                 "  test::Firm_Person[myId]: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId\n" +
+                "    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}\n" +
                 "  }\n" +
                 ")\n");
     }
@@ -1070,20 +1070,7 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "(\n" +
                 "  test::Firm_Person: ModelJoin\n" +
                 "  {\n" +
-                "    (firm.id == person.firmId) && (firm.name == person.firmName)\n" +
-                "  }\n" +
-                ")\n");
-    }
-
-    @Test
-    public void testModelJoinAssociationMappingExplicitLambda()
-    {
-        test("###Mapping\n" +
-                "Mapping test::myMapping\n" +
-                "(\n" +
-                "  test::Firm_Person: ModelJoin\n" +
-                "  {\n" +
-                "    {firm: test::Firm[1], person: test::Person[*]|$firm.id == $person.firmId}\n" +
+                "    {firm: test::Firm[1], person: test::Person[1]|($firm.id == $person.firmId) && ($firm.name == $person.firmName)}\n" +
                 "  }\n" +
                 ")\n");
     }

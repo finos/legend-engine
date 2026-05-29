@@ -1,0 +1,528 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::simple::*;
+import meta::relational::tests::mapping::modelJoin::store::*;
+
+// =============================================================================
+// Simple equality: employees.firmId == firm.id
+//
+// Expected: Alice+Bob→Apple, Charlie→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testSimpleEquality():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    SimpleEqualityMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_0".ID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Bob\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Multiple AND conditions: (employees.firmId == firm.id) && (employees.lastName == firm.code)
+//
+// Expected: Only Alice(firmId=1,lastName=Smith→code=Smith) and Charlie match.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testMultipleAndConditions():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Smith,,\n' +
+    '2,Google,Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n' +
+    '4,Diana,Smith,2,28\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    MultipleAndMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_0".ID and "persontable_0".LASTNAME = "firmtable_0".CODE)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,TDSNull\n' +
+            '   Charlie,Google\n' +
+            '   Diana,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// OR conditions: (employees.firmId == firm.id) || (employees.lastName == firm.code)
+//
+// Expected: Alice→Apple+Google, Bob→Apple, Charlie→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testOrConditions():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Jones,,\n' +
+    '2,Google,Smith,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,3,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    OrConditionsMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_0".ID or "persontable_0".LASTNAME = "firmtable_0".CODE)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Alice,Google\n' +
+            '   Bob,Apple\n' +
+            '   Charlie,Google\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending(), ~'Firm Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Function in condition: toLower(employees.lastName) == toLower(firm.code)
+//
+// Expected: Alice→Apple (Smith/SMITH), Bob→Google (BROWN/brown), Charlie→null.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testFunctionInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,SMITH,,\n' +
+    '2,Google,brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,BROWN,2,25\n' +
+    '3,Charlie,Jones,1,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    FunctionInConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on (lower("persontable_0".LASTNAME) = lower("firmtable_0".CODE))';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,Google\n' +
+            '   Charlie,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Concat condition: firstName + ' ' + lastName == firm.code
+//
+// Expected: Alice→Apple, Bob→Google, Charlie→null.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testConcatCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Alice Smith,,\n' +
+    '2,Google,Bob Jones,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    ConcatConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on (concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "firmtable_0".CODE)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,Google\n' +
+            '   Charlie,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Arithmetic condition: employees.firmId + firm.id == employees.age
+//
+// Expected: Alice(1+1=2=age)→Apple, Bob(2+2=4=age)→Google, Charlie→null.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testArithmeticCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,2\n' +
+    '2,Bob,Jones,2,4\n' +
+    '3,Charlie,Brown,1,10\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    ArithmeticConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on ("persontable_0".FIRMID + "firmtable_0".ID = "persontable_0".AGE)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,Google\n' +
+            '   Charlie,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Derived property in condition: employees.fullName == firm.code
+//   fullName = firstName + ' ' + lastName
+//
+// Expected: Alice→Apple, Bob→null, Charlie→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testDerivedPropertyInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,Alice Smith,,\n' +
+    '2,Google,Charlie Brown,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    DerivedPropertyConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on (concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) = "firmtable_0".CODE)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,TDSNull\n' +
+            '   Charlie,Google\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// In condition: employees.firmId == firm.id && employees.lastName->in([...])
+//
+// Expected: Alice→Apple (Smith in list), Charlie→Google (Brown in list), Bob excluded.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    InConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1" ' +
+         'where "persontable_1".LASTNAME in (\'Smith\', \'Brown\')) as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_0".ID and "persontable_0".LASTNAME in (\'Smith\', \'Brown\'))';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Relational simple equality: employees.firmId == firm.id (Relational class mappings)
+//
+// Expected: Apple has Alice+Bob, Google has Charlie.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::simple::testRelationalSimpleEquality():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    RelationalSimpleEqualityMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" left outer join personTable as "persontable_0" on ("persontable_0".FIRMID = "root".ID)';
+  assertEquals($expectedSql, $result->sql()); 
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Bob\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}

@@ -1,0 +1,717 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =========================================================================
+// Advanced Nesting & Target Processing Mappings
+// Uses the shared Database/domain from modelJoinSimpleSetup.pure
+// =========================================================================
+
+###Pure
+// =========================================================================
+// Complex Relation Function: personTable JOIN addressTable (pre-joined)
+// =========================================================================
+function meta::relational::tests::mapping::modelJoin::function::personWithAddressJoined(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.personTable}#
+    ->join(#>{meta::relational::tests::mapping::modelJoin::store::Db.addressTable}#->select(~[PERSONID, CITY, COUNTRY]), meta::pure::functions::relation::JoinKind.LEFT, {p,a | $p.ID == $a.PERSONID})
+    ->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE, CITY, COUNTRY])
+}
+
+###Mapping
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::store::*;
+import meta::relational::tests::mapping::modelJoin::function::*;
+
+// =========================================================================
+// Nested property chain: employees.address.city == firm.city && ...country
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::NestedPropertyChainMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    city: CITY,
+    country: COUNTRY,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::addressTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +personId: Integer[1]: PERSONID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.country == $firm.country}
+  }
+)
+
+// =========================================================================
+// Double-nested: employees.address.city == firm.headquarters.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::DoubleNestedModelJoinMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::addressTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +personId: Integer[1]: PERSONID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters[hq]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::headquartersTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +firmId: Integer[1]: FIRMID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.headquarters.city}
+  }
+)
+
+// =========================================================================
+// Chained two-hop: Firm→Department→Project
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::ChainedTwoHopsMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +city: String[0..1]: CITY
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Department[dept]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::departmentTable():Relation<Any>[1]
+    name: NAME,
+    code: CODE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Project[project]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::projectTable():Relation<Any>[1]
+    name: NAME,
+    city: CITY,
+    +id: Integer[1]: ID,
+    +deptId: Integer[1]: DEPTID
+  }
+
+  Department_Project: ModelJoin
+  {
+    {department: meta::relational::tests::mapping::modelJoin::domain::Department[1], projects: meta::relational::tests::mapping::modelJoin::domain::Project[1]|$department.id == $projects.deptId}
+  }
+
+  Firm_Department: ModelJoin
+  {
+    {firm_dept: meta::relational::tests::mapping::modelJoin::domain::Firm[1], departments: meta::relational::tests::mapping::modelJoin::domain::Department[1]|$firm_dept.id == $departments.firmId}
+  }
+)
+
+// =========================================================================
+// Relational nested property chain
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalNestedPropertyChainMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.COUNTRY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.PERSONID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.country == $firm.country}
+  }
+)
+
+// =========================================================================
+// Relational double-nested: employees.address.city == firm.headquarters.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalDoubleNestedMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.PERSONID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters[hq]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.COUNTRY,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.FIRMID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.headquarters.city}
+  }
+)
+
+// =========================================================================
+// Relational filter on nested: filter(f | f.headquarters.city == 'NYC')
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalFilterOnNestedMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters[hq]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.COUNTRY,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.FIRMID
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+)
+
+// =========================================================================
+// Target ~filter (AGE > 25): only persons with age > 25 pass
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::FilterOnTargetMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~filter [meta::relational::tests::mapping::modelJoin::store::Db]ActivePersonFilter
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Target ~filter + nested condition: employees.address.city == firm.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::FilterOnTargetNestedConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~filter [meta::relational::tests::mapping::modelJoin::store::Db]ActivePersonFilter
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.CITY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.PERSONID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city}
+  }
+)
+
+// =========================================================================
+// Target ~distinct
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::DistinctOnTargetMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~distinct
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Target ~filter with INNER join (PersonProfile + ProfileRankFilter)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::FilterWithInnerJoinOnTargetMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~filter [meta::relational::tests::mapping::modelJoin::store::Db] (INNER) @PersonProfile | [meta::relational::tests::mapping::modelJoin::store::Db] ProfileRankFilter
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Complex relation function mapping: source=firm(simple), target=person(pre-joined with address)
+// Condition: employees.city == firm.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::ComplexRelationFunctionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personWithAddressJoined():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    +city: String[0..1]: CITY
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +city: String[0..1]: CITY
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.city == $firm.city}
+  }
+)
+
+// =========================================================================
+// Mixed Relational + RelationFunction with nested property access
+//   Person (Relational) with Address via DB join, Firm (RelationFunction)
+//   Condition: employees.address.city == firm.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::MixedMappingNestedPropertyAccess
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.PERSONID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +city: String[0..1]: CITY
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city}
+  }
+)
+
+// =========================================================================
+// in() in join condition
+//   employees.firmId == firm.id && employees.lastName->in(['Smith', 'Brown'])
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::InConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id && $employees.lastName->in(['Smith', 'Brown'])}
+  }
+)
+
+// =========================================================================
+// Qualified property mapping: Firm.employeesInCity uses model join internally
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::QualifiedPropertyMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    city: CITY,
+    country: COUNTRY,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::addressTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +personId: Integer[1]: PERSONID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.country == $firm.country}
+  }
+)
+
+// =========================================================================
+// Nested model join with property access (compound inner condition via profile)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::NestedModelJoinWithPropertyAccess
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::addressTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +personId: Integer[1]: PERSONID,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters[hq]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::headquartersTable():Relation<Any>[1]
+    city: CITY,
+    country: COUNTRY,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Profile[profile]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::profileTable():Relation<Any>[1]
+    rank: RANK,
+    +personId: Integer[1]: PERSONID
+  }
+
+  Person_Profile: ModelJoin
+  {
+    {person_prof: meta::relational::tests::mapping::modelJoin::domain::Person[1], profile: meta::relational::tests::mapping::modelJoin::domain::Profile[1]|$person_prof.id == $profile.personId}
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.profile.rank == $address.country && $person.id == $address.personId}
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.headquarters.city}
+  }
+)
+
+// =========================================================================
+// Relational SimpleEquality: employees.firmId == firm.id
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalSimpleEqualityMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID,
+    +code: String[0..1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.CODE
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Column collision: Person→Firm with two CITY columns from different joins
+//   Condition: employees.address.city == firm.city && employees.address.country == firm.headquarters.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::advanced::ColumnCollisionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.CITY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address[address]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.addressTable.PERSONID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters[hq]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable
+    city: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.COUNTRY,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.headquartersTable.FIRMID
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.country == $firm.headquarters.city}
+  }
+)

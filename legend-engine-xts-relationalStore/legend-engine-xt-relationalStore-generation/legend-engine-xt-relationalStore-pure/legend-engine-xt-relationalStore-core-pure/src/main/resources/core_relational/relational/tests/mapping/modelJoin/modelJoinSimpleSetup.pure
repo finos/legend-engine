@@ -1,0 +1,481 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database meta::relational::tests::mapping::modelJoin::store::Db
+(
+  Schema default
+  (
+    Table firmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table addressTable
+    (
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table headquartersTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRMID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table departmentTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRMID INTEGER,
+      NAME VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table projectTable
+    (
+      ID INTEGER PRIMARY KEY,
+      DEPTID INTEGER,
+      NAME VARCHAR(100),
+      CITY VARCHAR(100)
+    )
+
+    Table profileTable
+    (
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      RANK VARCHAR(50)
+    )
+  )
+
+  Filter ActivePersonFilter(default.personTable.AGE > 25)
+  Filter ProfileRankFilter(default.profileTable.RANK = 'US')
+
+  Join PersonAddress(default.personTable.ID = default.addressTable.PERSONID)
+  Join PersonProfile(default.personTable.ID = default.profileTable.PERSONID)
+)
+
+###Pure
+import meta::core::runtime::*;
+import meta::relational::metamodel::*;
+Class meta::relational::tests::mapping::modelJoin::domain::Firm 
+{
+  legalName: String[1];
+  city: String[0..1];
+  country: String[0..1];
+  code: String[0..1];
+  employeesInCity(cityParam: String[1]) { $this.employees->filter(emp | $emp.address.city == $cityParam) }: meta::relational::tests::mapping::modelJoin::domain::Person[*];
+  employeeAddressCities() { $this.employees.address.city }: String[*];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+  fullName() { $this.firstName + ' ' + $this.lastName }: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Address
+{
+  city: String[1];
+  country: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Headquarters
+{
+  city: String[1];
+  country: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Department
+{
+  name: String[1];
+  code: String[0..1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Project
+{
+  name: String[1];
+  city: String[0..1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::Profile
+{
+  rank: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::domain::ExtendedPerson extends meta::relational::tests::mapping::modelJoin::domain::Person
+{
+  employeeCode: String[0..1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Person_Firm
+{
+  employees: meta::relational::tests::mapping::modelJoin::domain::Person[1];
+  firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Person_Address
+{
+  person: meta::relational::tests::mapping::modelJoin::domain::Person[1];
+  address: meta::relational::tests::mapping::modelJoin::domain::Address[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Firm_Headquarters
+{
+  firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1];
+  headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Firm_Department
+{
+  firm_dept: meta::relational::tests::mapping::modelJoin::domain::Firm[1];
+  departments: meta::relational::tests::mapping::modelJoin::domain::Department[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Department_Project
+{
+  department: meta::relational::tests::mapping::modelJoin::domain::Department[1];
+  projects: meta::relational::tests::mapping::modelJoin::domain::Project[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::domain::Person_Profile
+{
+  person_prof: meta::relational::tests::mapping::modelJoin::domain::Person[1];
+  profile: meta::relational::tests::mapping::modelJoin::domain::Profile[1];
+}
+
+// =========================================================================
+// Relation functions (table accessors)
+// =========================================================================
+function meta::relational::tests::mapping::modelJoin::function::personTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::firmTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.firmTable}#->select(~[ID, LEGALNAME, CITY, COUNTRY, CODE])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::addressTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.addressTable}#->select(~[ID, PERSONID, CITY, COUNTRY])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::headquartersTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.headquartersTable}#->select(~[ID, FIRMID, CITY, COUNTRY])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::departmentTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.departmentTable}#->select(~[ID, FIRMID, NAME, CODE])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::projectTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.projectTable}#->select(~[ID, DEPTID, NAME, CITY])
+}
+
+function meta::relational::tests::mapping::modelJoin::function::profileTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::store::Db.profileTable}#->select(~[ID, PERSONID, RANK])
+}
+
+// =========================================================================
+// Helper: load CSV data into H2 test database
+// =========================================================================
+function meta::relational::tests::mapping::modelJoin::setupTestData(csvs: String[*], db: Database[1], runtime: Runtime[1]):Boolean[1]
+{
+  let connection = $runtime.connectionByElement($db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+  let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($connection.type);
+  let sqls = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLsV2($db, $dbConfig);
+  $sqls->map(sql | meta::relational::metamodel::execute::executeInDb($sql, $connection));
+  true;
+}
+
+###Mapping
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::store::*;
+import meta::relational::tests::mapping::modelJoin::function::*;
+
+// =========================================================================
+// Simple equality: employees.firmId == firm.id
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::SimpleEqualityMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  *meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Multiple AND: employees.firmId == firm.id && employees.lastName == firm.code
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::MultipleAndMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id && $employees.lastName == $firm.code}
+  }
+)
+
+// =========================================================================
+// OR conditions: employees.firmId == firm.id || employees.lastName == firm.code
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::OrConditionsMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id || $employees.lastName == $firm.code}
+  }
+)
+
+// =========================================================================
+// Function in condition: toLower(employees.code) == toLower(firm.code)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::FunctionInConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    +code: String[0..1]: LASTNAME
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.code->toOne()->toLower() == $firm.code->toOne()->toLower()}
+  }
+)
+
+// =========================================================================
+// String concatenation: (employees.firstName + ' ' + employees.lastName) == firm.code
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::ConcatConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|($employees.firstName + ' ' + $employees.lastName) == $firm.code->toOne()}
+  }
+)
+
+// =========================================================================
+// Cross-side arithmetic: (employees.firmId + firm.id) == employees.age
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::ArithmeticConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|($employees.firmId + $firm.id) == $employees.age}
+  }
+)
+
+// =========================================================================
+// Derived property: employees.fullName == firm.code
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::DerivedPropertyConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID,
+    +code: String[0..1]: CODE
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.fullName == $firm.code->toOne()}
+  }
+)
+
+// =========================================================================
+// In condition: employees.firmId == firm.id && employees.lastName->in([...])
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::InConditionMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id && $employees.lastName->in(['Smith', 'Brown'])}
+  }
+)
+
+// =========================================================================
+// Relational Simple equality: employees.firmId == firm.id
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::simple::RelationalSimpleEqualityMapping
+(
+  *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID
+    )
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable
+    firstName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.FIRMID,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.personTable.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID
+    )
+    ~mainTable [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.ID,
+    +code: String[0..1]: [meta::relational::tests::mapping::modelJoin::store::Db]default.firmTable.CODE
+  }
+
+  *meta::relational::tests::mapping::modelJoin::domain::Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)

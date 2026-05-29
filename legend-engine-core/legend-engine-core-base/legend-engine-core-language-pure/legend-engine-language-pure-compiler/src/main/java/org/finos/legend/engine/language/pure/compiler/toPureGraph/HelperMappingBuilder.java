@@ -88,7 +88,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationFunctionSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.GroupByFunctionSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -903,46 +902,71 @@ public class HelperMappingBuilder
     /**
      * Rewrites a ModelJoin expression by replacing association property name qualifiers
      * with $this/$that variable references.
+     * Requires an explicit typed lambda with parameters (syntactic sugar form is not supported).
      */
     private static LambdaFunction rewriteModelJoinExpression(LambdaFunction original, String thisName, String thatName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
     {
+        if (!isExplicitTypedLambda(original))
+        {
+            throw new EngineException("ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[*] | $a.prop == $b.prop}", original.sourceInformation, EngineErrorType.COMPILATION);
+        }
         LambdaFunction result = new LambdaFunction();
-
-        if (isExplicitTypedLambda(original))
-        {
-            LambdaFunction innerLambda = (LambdaFunction) original.body.get(0);
-            String[] resolved = resolveExplicitLambdaParamNames(innerLambda, thisProp, thatProp, context);
-            result.parameters = Collections.emptyList();
-            result.body = ListIterate.collect(innerLambda.body, vs -> rewriteValueSpecification(vs, resolved[0], resolved[1]));
-        }
-        else
-        {
-            result.parameters = original.parameters;
-            result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, thisName, thatName));
-        }
+        String[] resolved = resolveExplicitLambdaParamNames(original, thisName, thatName, thisProp, thatProp, context);
+        result.parameters = Collections.emptyList();
+        result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, resolved[0], resolved[1]));
         return result;
     }
 
     private static boolean isExplicitTypedLambda(LambdaFunction lambda)
     {
-        return lambda.body != null && lambda.body.size() == 1 && lambda.body.get(0) instanceof LambdaFunction;
+        return lambda.parameters != null && !lambda.parameters.isEmpty();
     }
 
     /**
      * For an explicit typed lambda {a:TypeA[1], b:TypeB[*]|expr}, determines which param
-     * corresponds to $this and which to $that by comparing param types to association property return types.
+     * corresponds to $this and which to $that.
+     *
+     * For self-associations (both properties return the same type), param names MUST match
+     * the association property names. Otherwise, type-based matching is used.
+     *
      * Returns [thisParamName, thatParamName].
      */
-    private static String[] resolveExplicitLambdaParamNames(LambdaFunction innerLambda, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
+    private static String[] resolveExplicitLambdaParamNames(LambdaFunction lambda, String thisName, String thatName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
     {
-        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param0 = innerLambda.parameters.get(0);
-        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param1 = innerLambda.parameters.get(1);
+        if (lambda.parameters.size() != 2)
+        {
+            throw new EngineException("ModelJoin lambda must have exactly 2 parameters", lambda.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param0 = lambda.parameters.get(0);
+        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param1 = lambda.parameters.get(1);
+
+        // Self-association check: both properties return the same type
+        CoreInstance thisRawType = thisProp._genericType()._rawType();
+        CoreInstance thatRawType = thatProp._genericType()._rawType();
+        if (thisRawType.equals(thatRawType))
+        {
+            // For self-associations, param names must match property names
+            if (param0.name.equals(thisName) && param1.name.equals(thatName))
+            {
+                return new String[]{param0.name, param1.name};
+            }
+            else if (param0.name.equals(thatName) && param1.name.equals(thisName))
+            {
+                return new String[]{param1.name, param0.name};
+            }
+            else
+            {
+                throw new EngineException(
+                        "Self-association ModelJoin requires lambda parameter names to match association property names ('" + thisName + "' and '" + thatName + "'), got '" + param0.name + "' and '" + param1.name + "'",
+                        lambda.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
+
+        // Non-self-association: resolve by type matching
         String param0Type = getVariableTypePath(param0);
         String param1Type = getVariableTypePath(param1);
 
-        // Hierarchy match: check if property return type is a subtype of param type
         ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
-        CoreInstance thisRawType = thisProp._genericType()._rawType();
         if (param0Type != null)
         {
             CoreInstance param0CoreType = context.pureModel.getType(param0Type);
@@ -960,15 +984,19 @@ public class HelperMappingBuilder
             }
         }
 
-        // Fallback: positional
-        return new String[]{param0.name, param1.name};
-    }
+        // Fallback: try name matching (works even when type info unavailable)
+        if (param0.name.equals(thisName) && param1.name.equals(thatName))
+        {
+            return new String[]{param0.name, param1.name};
+        }
+        else if (param0.name.equals(thatName) && param1.name.equals(thisName))
+        {
+            return new String[]{param1.name, param0.name};
+        }
 
-    private static String getPropertyReturnTypePath(Property<?, ?> prop, CompileContext context)
-    {
-        return HelperModelBuilder.getElementFullPath(
-                (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) prop._genericType()._rawType(),
-                context.pureModel.getExecutionSupport());
+        throw new EngineException(
+                "Cannot resolve ModelJoin lambda parameters to association properties. Use parameter names matching association property names ('" + thisName + "' and '" + thatName + "')",
+                lambda.sourceInformation, EngineErrorType.COMPILATION);
     }
 
     private static String getVariableTypePath(org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var)

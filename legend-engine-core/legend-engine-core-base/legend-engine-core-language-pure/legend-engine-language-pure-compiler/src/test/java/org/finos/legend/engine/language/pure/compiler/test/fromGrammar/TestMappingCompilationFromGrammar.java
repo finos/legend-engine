@@ -3499,28 +3499,23 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "%s\n" +
                 ")\n";
 
-        // Valid ModelJoin — should compile successfully
+        // Valid ModelJoin — explicit typed lambda
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.firmId}\n" +
+                "   }"));
+
+        // Invalid: syntactic sugar (no params) — no longer supported
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
                 "      employer.id == employees.firmId\n" +
-                "   }"));
-
-        // Valid Complex ModelJoin — should compile successfully
-        test(String.format(mapping,
-                "   test::Firm_Person: ModelJoin {\n" +
-                "      employer.employees.employer.id == employees.firmId && employees.name->toLower() != 'abc'\n" +
-                "   }"));
-
-        // Valid ModelJoin — should compile successfully
-        test(String.format(mapping,
-                "   test::Firm_Person: ModelJoin {\n" +
-                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.name}\n" +
-                "   }"));
+                "   }"),
+                "COMPILATION error at [21:1-38:1]: Error in 'test::modelJoinMapping': ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[*] | $a.prop == $b.prop}");
 
         // Invalid: non-boolean return type
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      employer.id + employees.firmId\n" +
+                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id + $employees.firmId}\n" +
                 "   }"),
                 "COMPILATION error at [36:19-36]: ModelJoin property mapping function should return 'Boolean[1]'");
     }
@@ -3560,7 +3555,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      legalName: $src.legalName\n" +
                 "   }\n\n" +
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      employer.id == employees.firmId\n" +
+                "      {employer:test::Firm[1], employees:test::Person[*]|$employer.id == $employees.firmId}\n" +
                 "   }\n" +
                 ")\n");
 
@@ -3701,6 +3696,47 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      {base:test::BaseEntity[1], ord:test::Order[*]|$base.id == $ord.entityId}\n" +
                 "   }\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testModelJoinSelfAssociation()
+    {
+        String model = "###Pure\n" +
+                "Class test::Employee\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   managerId: Integer[0..1];\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Association test::Employee_Manager\n" +
+                "{\n" +
+                "   reports: test::Employee[*];\n" +
+                "   manager: test::Employee[0..1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::selfJoinMapping\n" +
+                "(\n" +
+                "   test::Employee[e]: Pure {\n" +
+                "      ~src test::Employee\n" +
+                "      id: $src.id,\n" +
+                "      managerId: $src.managerId,\n" +
+                "      name: $src.name\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        // Valid: param names match association property names
+        test(String.format(model,
+                "   test::Employee_Manager: ModelJoin {\n" +
+                "      {manager:test::Employee[0..1], reports:test::Employee[*]|$reports.managerId == $manager.id}\n" +
+                "   }"));
+
+        // Invalid: param names don't match association property names for self-association
+        test(String.format(model,
+                "   test::Employee_Manager: ModelJoin {\n" +
+                "      {a:test::Employee[0..1], b:test::Employee[*]|$b.managerId == $a.id}\n" +
+                "   }"),
+                "COMPILATION error at [26:51-72]: Self-association ModelJoin requires lambda parameter names to match association property names ('manager' and 'reports'), got 'a' and 'b'");
     }
 
     @Test
@@ -3872,7 +3908,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      legalName: $src.legalName\n" +
                 "   }\n\n" +
                 "   test::Firm_Person: ModelJoin {\n" +
-                "      employees.name == employer.legalName\n" +
+                "      {employees:test::Person[1], employer:test::Firm[1]|$employees.name == $employer.legalName}\n" +
                 "   }\n" +
                 ")\n");
 

@@ -1110,43 +1110,33 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
     @Test
     public void testModelJoinAssociationMapping()
     {
-        // Simple valid ModelJoin
+        // Simple valid ModelJoin with explicit typed lambda
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
                 "(\n" +
                 "  mapping::SomeClass: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId\n" +
+                "    {firm: test::Firm[1], person: test::Person[*]|$firm.id == $person.firmId}\n" +
                 "  }\n" +
                 ")");
 
-        // ModelJoin with complex expression
+        // ModelJoin with complex expression using explicit typed lambda
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
                 "(\n" +
                 "  mapping::SomeClass: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId && firm.name == person.firmName\n" +
+                "    {firm: test::Firm[1], person: test::Person[*]|($firm.id == $person.firmId) && ($firm.name == $person.firmName)}\n" +
                 "  }\n" +
                 ")");
 
-        // ModelJoin with mapping id
+        // ModelJoin with mapping id and explicit typed lambda
         test("###Mapping\n" +
                 "Mapping mapping::test\n" +
                 "(\n" +
                 "  mapping::SomeClass[myId]: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId\n" +
-                "  }\n" +
-                ")");
-
-        // ModelJoin with explicit typed lambda
-        test("###Mapping\n" +
-                "Mapping mapping::test\n" +
-                "(\n" +
-                "  mapping::SomeClass: ModelJoin\n" +
-                "  {\n" +
-                "    {firm:test::Firm[1], person:test::Person[*]|$firm.id == $person.firmId}\n" +
+                "    {firm: test::Firm[1], person: test::Person[*]|$firm.id == $person.firmId}\n" +
                 "  }\n" +
                 ")");
     }
@@ -1159,7 +1149,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "(\n" +
                 "  test::Firm_Person: ModelJoin\n" +
                 "  {\n" +
-                "    firm.id == person.firmId\n" +
+                "    {firm: test::Firm[1], person: test::Person[*]|$firm.id == $person.firmId}\n" +
                 "  }\n" +
                 ")\n");
 

@@ -306,6 +306,36 @@ function <<access.private>> meta::relational::mapping::buildSemiStructuredProper
   );
 }
 
+function meta::relational::mapping::resolvePropertyOwner(owner:Any[1]):Any[1]
+{
+  $owner->match(
+    [
+      m:MappingClass<Any>[1] | $m.generalizations.general.rawType->toOne(),
+      a:Any[1] | $a
+    ]
+  );
+}
+
+// Checks whether the property mappings from the router match the given property by name
+// and owner class. Handles the case where union sub-mappings create distinct Property
+// instances for `+` (local/mapped) properties — each sub-mapping's Property may be owned
+// by a different MappingClass, so we resolve through MappingClass to the domain class.
+function meta::relational::mapping::propertyMappingsFromRouterMatchProperty(propertyMappingFromRouter:PropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1]):Boolean[1]
+{
+  if($propertyMappingFromRouter->isEmpty(),
+    | false,
+    | let routerPropertyNames = $propertyMappingFromRouter.property.name->removeDuplicates();
+      let nameMatches = ($routerPropertyNames->size() == 1) && ($routerPropertyNames->toOne() == $property.name->toOne());
+      if(!$nameMatches,
+        | false,
+        | // Check owner class compatibility — resolve MappingClass on both sides
+          let resolvedOwner = $property.owner->resolvePropertyOwner();
+          let routerOwners = $propertyMappingFromRouter.property->map(p | $p.owner->resolvePropertyOwner())->removeDuplicates();
+          ($routerOwners->size() == 1) && ($routerOwners->toOne() == $resolvedOwner);
+      );
+  );
+}
+
 function meta::relational::mapping::findPropertyMapping(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], mapping:Mapping[1],debug:DebugContext[1]):PropertyMapping[*]
 {
   let propertyName = $property.name->toOne();
@@ -329,7 +359,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
       assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+
             '\' in the mapping \''+$mapping->elementToPath()+ '-> (Embedded)' + $currentPropertyMapping->at(0)->cast(@EmbeddedRelationalInstanceSetImplementation).setMappingOwner.class.name->toOne() + '.' + $currentPropertyMapping->at(0).property.name->toOne() + '\'');
       $result;,
-    | let propMappings = if(!$propertyMappingFromRouter->isEmpty() && $propertyMappingFromRouter.property->removeDuplicates() == $property,
+    | let propMappings = if(propertyMappingsFromRouterMatchProperty($propertyMappingFromRouter, $property, $propertyOwnerClass),
         | $propertyMappingFromRouter->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping()),
         | let rootClassMapping = $mapping->rootClassMappingByClass($propertyOwnerClass)->potentiallyResolveOperation($mapping);
           let classMapping = if($rootClassMapping->isEmpty() && $propertyOwnerClass->instanceOf(MappingClass),

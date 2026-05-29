@@ -136,7 +136,7 @@ public class HelperMappingGrammarComposer
     {
         return modelJoinAssociationMapping.association.path + renderMappingId(modelJoinAssociationMapping.id) + ": " + "ModelJoin\n" +
                 getTabString() + "{\n" +
-                getTabString(2) + modelJoinAssociationMapping.joinCondition.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + "\n" +
+                getTabString(2) + modelJoinAssociationMapping.joinCondition.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + "\n" +
                 getTabString() + "}";
     }
 
