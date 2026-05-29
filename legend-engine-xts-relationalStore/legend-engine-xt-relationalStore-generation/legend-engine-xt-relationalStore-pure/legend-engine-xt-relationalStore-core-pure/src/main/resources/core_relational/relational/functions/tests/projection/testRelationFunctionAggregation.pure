@@ -19,6 +19,9 @@ import meta::pure::router::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::relation::*;
 import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
 
 // Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
 // Analogous to meta::relational::tests::projection::aggregation::testSubAggregation
@@ -163,4 +166,42 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
       ['Firm A | ', 'Firm B | ', 'Firm C | Fabrice^Oliver', 'Firm D | David', 'Firm X | John'],
       $result.rows->map(r|$r.values->makeString(' | '))
    );
+}
+
+// Diagnostic: prints the generated plan AND executes. If H2 rejects the SQL, the SQL is right
+// above the H2 stack trace in the test log — direct correlation, no separate run needed.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationOnRelationMapping_SQL():Boolean[1]
+{
+   let plan = executionPlan(
+      |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet),
+      meta::relational::tests::mapping::relation::SimpleMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   let planStr = $plan->planToString(meta::relational::extension::relationalExtensions());
+   println('### AVG plan ###\n' + $planStr + '\n### end AVG plan ###');
+   // Now actually execute — succeeds or throws an H2 error we can see paired with the plan above.
+   let res = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet)
+   );
+   println('### AVG row count = ' + $res.rows->size()->toString() + ' ###');
+   true;
+}
+
+// Same pattern for the count case.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationCountOnlyOnRelationMapping_SQL():Boolean[1]
+{
+   let plan = executionPlan(
+      |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet),
+      meta::relational::tests::mapping::relation::SimpleMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   let planStr = $plan->planToString(meta::relational::extension::relationalExtensions());
+   println('### COUNT plan ###\n' + $planStr + '\n### end COUNT plan ###');
+   let res = meta::relational::tests::projection::aggregation::runFirmAgg(
+      |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet)
+   );
+   println('### COUNT row count = ' + $res.rows->size()->toString() + ' ###');
+   true;
 }
