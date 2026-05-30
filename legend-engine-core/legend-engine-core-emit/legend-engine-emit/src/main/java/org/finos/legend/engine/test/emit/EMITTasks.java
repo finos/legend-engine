@@ -72,6 +72,8 @@ import org.finos.legend.engine.test.runner.mapping.RichMappingTestResult;
 import org.finos.legend.engine.test.runner.service.RichServiceTestResult;
 import org.finos.legend.engine.test.runner.service.ServiceTestRunner;
 import org.finos.legend.engine.testable.TestableRunner;
+import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtensionLoader;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsTestableInput;
@@ -86,6 +88,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -338,6 +342,91 @@ public final class EMITTasks
             throw new EMITException(EMITPhase.TEST_EXECUTION, "Test runner returned no results for " + testablePath + " / " + suiteId + " / " + atomicTestId);
         }
         return result.results.get(0);
+    }
+
+    /**
+     * Open a session against the given {@code (testable, suite)} that holds
+     * expensive per-suite setup (execution plan, runtime, connections,
+     * …) so the caller can drive many atomic tests against it without
+     * re-paying that setup cost per test. The caller owns the session
+     * lifetime and MUST close it.
+     *
+     * <p>For a top-level atomic test ({@code suiteId == null}), no
+     * amortization is possible and the returned session simply delegates
+     * each {@link TestSuiteSession#runAtomicTest} call back to
+     * {@link #runTest}.</p>
+     */
+    public static TestSuiteSession<TestResult> openTestSession(String testablePath, String suiteId, PureModelContextData pmcd, PureModel pureModel)
+    {
+        if (suiteId == null)
+        {
+            return new TestSuiteSession<TestResult>()
+            {
+                @Override
+                public String getTestSuiteId()
+                {
+                    return null;
+                }
+
+                @Override
+                public Collection<String> getAtomicTestIds()
+                {
+                    return Collections.emptyList();
+                }
+
+                @Override
+                public boolean isAtomicTestId(String id)
+                {
+                    return false;
+                }
+
+                @Override
+                public void initialize()
+                {
+                    // no initialization
+                }
+
+                @Override
+                public TestResult runAtomicTest(String atomicTestId)
+                {
+                    return runTest(testablePath, getTestSuiteId(), atomicTestId, pmcd, pureModel);
+                }
+
+                @Override
+                public void close()
+                {
+                    // nothing to close
+                }
+            };
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element;
+        try
+        {
+            element = pureModel.getPackageableElement(testablePath);
+        }
+        catch (Exception e)
+        {
+            throw new EMITException(EMITPhase.TEST_EXECUTION, "Failed to resolve testable element '" + testablePath + "'", e);
+        }
+        if (!(element instanceof Testable))
+        {
+            throw new EMITException(EMITPhase.TEST_EXECUTION, "Element '" + testablePath + "' is not a testable element");
+        }
+        Testable testable = (Testable) element;
+        Root_meta_pure_test_TestSuite suite = (Root_meta_pure_test_TestSuite) testable._tests().detect(t -> (t instanceof Root_meta_pure_test_TestSuite) && suiteId.equals(((Root_meta_pure_test_TestSuite) t)._id()));
+        if (suite == null)
+        {
+            throw new EMITException(EMITPhase.TEST_EXECUTION, "Test suite '" + suiteId + "' not found on testable '" + testablePath + "'");
+        }
+        TestRunner runner = TestableRunnerExtensionLoader.forTestable(testable);
+        try
+        {
+            return runner.openTestSuiteSession(suite, pureModel, pmcd);
+        }
+        catch (Exception e)
+        {
+            throw new EMITException(EMITPhase.TEST_EXECUTION, "Failed to open test session for " + testablePath + " / " + suiteId, e);
+        }
     }
 
     /**
