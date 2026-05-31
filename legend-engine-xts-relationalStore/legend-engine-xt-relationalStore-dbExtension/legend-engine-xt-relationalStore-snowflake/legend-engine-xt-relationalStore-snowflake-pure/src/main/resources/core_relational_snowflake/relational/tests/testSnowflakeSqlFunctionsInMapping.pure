@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
     let stringVals = ['Joe Bloggs', 'Mrs.Smith', 'John'];
     let separator = ':';
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s|joinStrings($stringVals, $separator)], ['concatenatedCOL']),testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-    assertEquals('select concat(\'Joe Bloggs\', \':\', \'Mrs.Smith\', \':\', \'John\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
+    assertEquals('select array_to_string(cast(array_construct(\'Joe Bloggs\',\'Mrs.Smith\',\'John\') as ARRAY(VARCHAR(1024)))::ARRAY, \':\') as "concatenatedCOL" from dataTable as "root"',$snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testTriminNotSybaseASE():Boolean[1]{

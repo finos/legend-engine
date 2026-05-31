@@ -218,14 +218,14 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJoin
 {
    let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('')], ['legalName', 'employeesFirstName'])};
    let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'B\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+   assertEquals('select "root".LEGALNAME as "legalName", array_to_string(cast(array_construct(\'A\',\'B\',\'C\') as ARRAY(VARCHAR(1024)))::ARRAY, \'\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testJoinStringsArrayWithSeparator():Boolean[1]
 {
    let fn = {|Firm.all()->project([f|$f.legalName, f|['A', 'B', 'C']->joinStrings('*')], ['legalName', 'employeesFirstName'])};
    let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'*\', \'B\', \'*\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
+   assertEquals('select "root".LEGALNAME as "legalName", array_to_string(cast(array_construct(\'A\',\'B\',\'C\') as ARRAY(VARCHAR(1024)))::ARRAY, \'*\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::simpleGroupByOnNumberColumnName():Boolean[1]

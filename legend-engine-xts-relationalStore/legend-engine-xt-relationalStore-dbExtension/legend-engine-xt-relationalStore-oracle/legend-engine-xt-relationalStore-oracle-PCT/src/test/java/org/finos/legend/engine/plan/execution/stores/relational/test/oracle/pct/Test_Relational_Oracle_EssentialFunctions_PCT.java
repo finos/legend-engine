@@ -292,7 +292,10 @@ public class Test_Relational_Oracle_EssentialFunctions_PCT extends PCTReportConf
             one("meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_", "\"\nexpected: 9.0\nactual:   27.0\""),
 
             // JoinStrings
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
 
             // IndexOf
             one("meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'"),

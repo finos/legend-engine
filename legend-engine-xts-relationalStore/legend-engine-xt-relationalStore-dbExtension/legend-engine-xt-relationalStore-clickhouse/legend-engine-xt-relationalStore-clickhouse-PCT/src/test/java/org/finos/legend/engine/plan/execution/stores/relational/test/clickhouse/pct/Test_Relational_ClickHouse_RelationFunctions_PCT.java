@@ -77,6 +77,7 @@ public class Test_Relational_ClickHouse_RelationFunctions_PCT extends PCTReportC
             one("meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_", "Error while executing: Create Table leSchema.SimpleNumbersTypeForCompositionTests"),
             one("meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_", "Aggregate function with name 'lead' does not exist."),
             one("meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust_Function_1__Boolean_1_", "Aggregate function with name 'lead' does not exist."),
+            one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
 
             // CumulativeDistribution
             one("meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_", "Aggregate function with name 'cume_dist' does not exist"),

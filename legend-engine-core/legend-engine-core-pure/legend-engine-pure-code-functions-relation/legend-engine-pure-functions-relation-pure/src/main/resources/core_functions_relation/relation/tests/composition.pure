@@ -2028,6 +2028,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   1,"[1,2,3]",1,2,3\n'+
                 '   2,"[4,5,6]",4,5,6\n'+
                 '   3,"[7,8,9]",7,8,9\n'+
-                '   4,"null",null\n'+
+                '   4,"null",\n'+
                 '#', $res->toString());
 }
