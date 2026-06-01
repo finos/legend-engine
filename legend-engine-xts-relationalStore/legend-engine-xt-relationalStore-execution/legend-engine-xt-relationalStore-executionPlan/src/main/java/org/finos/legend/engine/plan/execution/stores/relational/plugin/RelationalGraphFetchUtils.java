@@ -347,7 +347,7 @@ class RelationalGraphFetchUtils
             for (Method getter : getters)
             {
                 Object val = getter.invoke(resolveValueIfIChecked(obj));
-                hash = hash + mul * (val == null ? -1 : val.hashCode());
+                hash = hash + mul * crossKeyValueHashCode(val);
                 mul = mul * 29;
             }
             return hash;
@@ -479,7 +479,7 @@ class RelationalGraphFetchUtils
             for (int index : indices)
             {
                 Object val = sqlExecutionResult.getTransformedValue(index);
-                hash = hash + mul * (val == null ? -1 : val.hashCode());
+                hash = hash + mul * crossKeyValueHashCode(val);
                 mul = mul * 29;
             }
             return hash;
@@ -532,6 +532,30 @@ class RelationalGraphFetchUtils
                     && (!dateB.hasHour() || (dateB.getHour() == 0 && dateB.getMinute() == 0 && dateB.getSecond() == 0));
         }
         return false;
+    }
+
+    /**
+     * Returns a normalized hash code for cross-key values.
+     * For PureDate values that represent a date-only (no hour) or midnight,
+     * we normalize to a date-only hash so that hash codes are consistent
+     * with {@link #crossKeyValuesEqual}.
+     */
+    static int crossKeyValueHashCode(Object val)
+    {
+        if (val == null)
+        {
+            return -1;
+        }
+        if (val instanceof PureDate)
+        {
+            PureDate d = (PureDate) val;
+            // Normalize: if no time or time is midnight, hash by date only
+            if (!d.hasHour() || (d.getHour() == 0 && d.getMinute() == 0 && d.getSecond() == 0))
+            {
+                return Objects.hash(d.getYear(), d.getMonth(), d.getDay());
+            }
+        }
+        return val.hashCode();
     }
 
     static boolean subTreeValidForCaching(GraphFetchTree graphFetchTree)
