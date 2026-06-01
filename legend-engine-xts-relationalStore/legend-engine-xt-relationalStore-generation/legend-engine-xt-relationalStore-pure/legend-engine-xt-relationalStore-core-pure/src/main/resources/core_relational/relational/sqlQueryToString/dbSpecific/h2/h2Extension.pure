@@ -3,11 +3,20 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
+import meta::relational::functions::sqlQueryToString::default::*;
 
 // Load the H2 extension according to the version that is actually running
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::h2::dbExtensionLoaderForH2():DbExtensionLoader[1]
 {
   ^DbExtensionLoader(dbType = DatabaseType.H2, loader = createDbExtensionForH2__DbExtension_1_);
+}
+
+function meta::relational::functions::sqlQueryToString::h2::processIdentifierWithDoubleQuotesAlways(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   if(isFreeMarkerIdentifier($identifier),
+      | $identifier,
+      | '"%s"'->format($identifier->replace('"', ''))
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::createDbExtensionForH2():DbExtension[1]

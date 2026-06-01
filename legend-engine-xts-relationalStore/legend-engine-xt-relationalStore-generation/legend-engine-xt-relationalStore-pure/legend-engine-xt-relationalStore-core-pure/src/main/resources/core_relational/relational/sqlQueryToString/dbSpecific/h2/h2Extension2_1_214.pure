@@ -36,7 +36,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
       selectSQLQueryProcessor = processSelectSQLQueryForH2_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForH2_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
       commitQueryProcessor = processCommitQueryForH2_CommitQuery_1__SqlGenerationContext_1__String_1_,
-      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      identifierProcessor = meta::relational::functions::sqlQueryToString::h2::processIdentifierWithDoubleQuotesAlways_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
       processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
