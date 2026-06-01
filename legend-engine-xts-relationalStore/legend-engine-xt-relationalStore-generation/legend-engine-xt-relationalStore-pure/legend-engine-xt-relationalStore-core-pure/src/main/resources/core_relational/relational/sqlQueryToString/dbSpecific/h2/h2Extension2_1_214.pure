@@ -83,9 +83,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::translateCreateTableStatementH2(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]): String[1]
 {
-  let t= $createTableSQL.table;
+  let t = $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
-  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+  'Create Table ' + $t->tableToString($dbConfig)
   + '('
   + $t.columns->cast(@meta::relational::metamodel::Column)
       ->map(c | $c.name->processColumnName($dbConfig) + ' ' + getColumnTypeSqlTextH2($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL')))
@@ -105,7 +105,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v2_1_214::loadValuesToDbTableH2(loadTableSQL: LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
   $loadTableSQL.parsedData.values->map(row| let sql =
-    'insert into ' + if($loadTableSQL.table.schema.name == 'default', | '' , | $loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name
+    'insert into ' + $loadTableSQL.table->tableToString($dbConfig)
     + ' ('
     + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
     +') '
