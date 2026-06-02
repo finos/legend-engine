@@ -157,10 +157,10 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'.", AdapterQualifier.unsupportedFeature),
 
             // JoinStrings
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"The database type 'Postgres' is not supported yet!\""),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\"\nexpected: 'a,b,c'\nactual:   ',a,b,c,'\""),
-            one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\"\nexpected: 'a,b,c'\nactual:   ',a,b,c,'\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
 
             // Split
             one("meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."),

@@ -2007,3 +2007,27 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testS
    );
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+   let tds = #TDS
+     id, payload:meta::pure::metamodel::variant::Variant
+     1, "[1,2,3]"
+     2, "[4,5,6]"
+     3, "[7,8,9]"
+     4, "null"
+   #;
+
+   let expr = {|
+                  $tds->extend(~joined:x | $x.payload->toMany(@String)->joinStrings(','))
+              };
+
+   let res =  $f->eval($expr);
+
+   assertEquals('#TDS\n'+
+                '   id,payload,joined\n'+
+                '   1,"[1,2,3]",1,2,3\n'+
+                '   2,"[4,5,6]",4,5,6\n'+
+                '   3,"[7,8,9]",7,8,9\n'+
+                '   4,"null",\n'+
+                '#', $res->toString());
+}

@@ -283,6 +283,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='array_generate_range(%s, %s, %s)')),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)', transform= {vals:String[*] | $vals->reverse()})),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='array_to_string(%s::ARRAY, %s)')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s, %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),
