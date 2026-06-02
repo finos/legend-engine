@@ -269,7 +269,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
   let pmPropName = $pmProp.name->toOne();
   let otherPropName = $otherProp.name->toOne();
   let rawLambda = meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($firstPm.joinCondition, $extensions);
-  // Rename _mj_src → otherPropName, _mj_tgt → pmPropName in body
+  // _mj_src corresponds to otherProp, _mj_tgt corresponds to pmProp
   let renamedBody = $rawLambda.body
     ->map(vs | $vs->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS('_mj_src', $otherPropName))
     ->map(vs | $vs->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS('_mj_tgt', $pmPropName));
@@ -297,13 +297,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS(vs:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1], oldName:String[1], newName:String[1]):meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1]
 {
-   $vs->match([
-      v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1] | if($v.name == $oldName, | ^$v(name = $newName), | $v),
-      f:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication[1] | ^$f(parameters = $f.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
-      c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | ^$c(values = $c.values->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
-      // l:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1] | ^$l(body = $l.body->map(b | $b->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
-      any:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $any
-   ]);
+  $vs->match([
+    v:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Variable[1] | if($v.name == $oldName, | ^$v(name = $newName), | $v),
+    f:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::FunctionApplication[1] | ^$f(parameters = $f.parameters->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+    c:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::Collection[1] | ^$c(values = $c.values->map(p | $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+    l:meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1] | ^$l(body = $l.body->map(b | $b->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+    any:meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::ValueSpecification[1] | $any
+  ]);
 }
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping[1]

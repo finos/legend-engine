@@ -1073,7 +1073,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     @Test
     public void testCompileSrcTypeMapping()
     {
-        test("Class test::Person{lastName:String[1];} Class test::Firm{employees:test::Person[1];} Class test::SrcPerson{} Class test::SrcFirm{empl:test::SrcPerson[*];}\n" +
+        test("Class test::Person{lastName:String[1];} Class test::Firm{employees:test::Person[*];} Class test::SrcPerson{} Class test::SrcFirm{empl:test::SrcPerson[*];}\n" +
                 "###Mapping\n" +
                 "Mapping a::mapping" +
                 "(" +
@@ -3847,50 +3847,6 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   }\n\n" +
                 "   test::BaseEntityOrder: ModelJoin {\n" +
                 "      {e:test::BaseEntity[1], o:test::Order[1]|$e.id == $o.entityId}\n" +
-                "   }\n" +
-                ")\n");
-    }
-
-    @Test
-    public void testXStoreAssociationMappingWithAssociationOnBaseClass()
-    {
-        // Association is between BaseEntity and Order, but mapping maps SpecificEntity (subclass)
-        test("###Pure\n" +
-                "Class test::BaseEntity\n" +
-                "{\n" +
-                "   id: Integer[1];\n" +
-                "}\n\n" +
-                "Class test::SpecificEntity extends test::BaseEntity\n" +
-                "{\n" +
-                "   name: String[1];\n" +
-                "}\n\n" +
-                "Class test::Order\n" +
-                "{\n" +
-                "   entityId: Integer[1];\n" +
-                "   description: String[1];\n" +
-                "}\n\n" +
-                "Association test::BaseEntityOrder\n" +
-                "{\n" +
-                "   entity: test::BaseEntity[1];\n" +
-                "   orders: test::Order[*];\n" +
-                "}\n\n" +
-                "###Mapping\n" +
-                "Mapping test::hierarchyXStoreMapping\n" +
-                "(\n" +
-                "   test::SpecificEntity[e]: Pure {\n" +
-                "      ~src test::SpecificEntity\n" +
-                "      id: $src.id,\n" +
-                "      name: $src.name\n" +
-                "   }\n" +
-                "   \n" +
-                "   test::Order[o]: Pure {\n" +
-                "      ~src test::Order\n" +
-                "      entityId: $src.entityId,\n" +
-                "      description: $src.description\n" +
-                "   }\n\n" +
-                "   test::BaseEntityOrder: XStore {\n" +
-                "      entity: $this.entityId == $that.id,\n" +
-                "      orders: $this.id == $that.entityId\n" +
                 "   }\n" +
                 ")\n");
     }

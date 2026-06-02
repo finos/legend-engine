@@ -174,21 +174,6 @@ public class HelperMappingBuilder
     }
 
     /**
-     * Resolves source and target classes for an association property mapping.
-     * Given a property name on the association, returns [sourceClass, targetClass] where:
-     * - targetClass = return type of the named property
-     * - sourceClass = return type of the other property (the owner side)
-     */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[] resolveSourceAndTargetClasses(Association association, String propertyName)
-    {
-        Property<?, ?> mappedProp = resolveAssociationPropertyByName(association, propertyName);
-        Property<?, ?> otherProp = association._properties().detect(p -> !p.equals(mappedProp));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type sourceClass = otherProp._genericType()._rawType();
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type targetClass = mappedProp._genericType()._rawType();
-        return new org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[]{sourceClass, targetClass};
-    }
-
-    /**
      * Resolves a property from an association by name, handling milestoned edge-point properties.
      */
     public static Property<?, ?> resolveAssociationPropertyByName(Association association, String propertyName)
@@ -451,35 +436,11 @@ public class HelperMappingBuilder
             XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
             final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association.path, xStoreAssociationMapping.association.sourceInformation);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
-            final String xstoreId = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
-            ImmutableSet<SetImplementation> allClassMappings = HelperMappingBuilder.getAllClassMappings(parentMapping);
-            base._id(xstoreId)
-                    ._association(pureAssociation)
-                    ._stores(stores)._parent(parentMapping);
-
-            PropertyMappingBuilder builder = new PropertyMappingBuilder(context, parentMapping, base, allClassMappings);
-            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiledMappings = Lists.mutable.empty();
-
-            for (PropertyMapping propertyMapping : xStoreAssociationMapping.propertyMappings)
-            {
-                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping xpm =
-                        (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping) propertyMapping;
-                String propertyMappingTargetId = HelperMappingBuilder.getPropertyMappingTargetId(xpm);
-                boolean hasExplicitSourceTarget = !org.apache.commons.lang3.StringUtils.isEmpty(xpm.source) || !org.apache.commons.lang3.StringUtils.isEmpty(propertyMappingTargetId);
-
-                if (hasExplicitSourceTarget)
-                {
-                    compiledMappings.add(builder.visit(xpm));
-                }
-                else
-                {
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type[] classes = resolveSourceAndTargetClasses(pureAssociation, xpm.property.property);
-                    MutableList<InstanceSetImplementation> sourceSets = findAllSetsForClassOrSubtypes(classes[0], allClassMappings, context);
-                    MutableList<InstanceSetImplementation> targetSets = findAllSetsForClassOrSubtypes(classes[1], allClassMappings, context);
-                    compileForAllPairs(sourceSets, targetSets, (s, t) -> builder.visitXStorePropertyMapping(xpm, s, t), compiledMappings);
-                }
-            }
-            base._propertyMappings(compiledMappings);
+            final String id = associationMapping.id != null ? associationMapping.id : PackageableElement.getUserPathForPackageableElement(pureAssociation, "_");
+            base._id(id)
+                ._association(pureAssociation)
+                ._stores(stores)._parent(parentMapping)
+                ._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
             return base;
         }
         else if (associationMapping instanceof ModelJoinAssociationMapping)
