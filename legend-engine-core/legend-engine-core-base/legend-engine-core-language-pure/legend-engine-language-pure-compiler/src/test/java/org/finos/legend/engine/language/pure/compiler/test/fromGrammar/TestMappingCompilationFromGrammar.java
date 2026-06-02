@@ -3505,12 +3505,13 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id == $employees.firmId}\n" +
                 "   }"));
 
-        // Invalid: syntactic sugar (no params) — no longer supported
+        // Invalid: syntactic sugar (no params) — rejected by the parser, since the join condition
+        // must parse as a lambda.
         test(String.format(mapping,
                 "   test::Firm_Person: ModelJoin {\n" +
                 "      employer.id == employees.firmId\n" +
                 "   }"),
-                "COMPILATION error at [21:1-38:1]: Error in 'test::modelJoinMapping': ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop}");
+                "PARSER error at [36:7-37]: ModelJoin association mapping requires a lambda join condition of the form '{src: SrcClass[1], tgt: TgtClass[1] | <boolean expression>}'");
 
         // Invalid: non-boolean return type
         test(String.format(mapping,
@@ -3518,6 +3519,30 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id + $employees.firmId}\n" +
                 "   }"),
                 "COMPILATION error at [36:71-89]: ModelJoin property mapping function should return 'Boolean[1]'");
+
+        // Valid: untyped lambda — param names match association property names, so the
+        // name-matching fallback in resolveExplicitLambdaParamNames pairs them correctly.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer, employees|$employer.id == $employees.firmId}\n" +
+                "   }"));
+
+        // Invalid: untyped lambda whose param names don't match either association property —
+        // type info is unavailable (untyped) and name fallback can't pair them, so resolution must fail.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {a, b|$a.id == $b.firmId}\n" +
+                "   }"),
+                "COMPILATION error at [36:12-30]: Cannot pair ModelJoin lambda parameters 'a' and 'b' with association properties 'employer' and 'employees'. Either type the parameters explicitly (e.g. {a:Firm[1], b:Person[1] | ...}) or rename the parameters to match the association property names ('employer' and 'employees').");
+
+        // Invalid: typed lambda whose param types don't match association property types —
+        // both params declared as Person while the association is Firm <-> Person, so neither
+        // ordering pairs up and resolution must fail with a type-mismatch error.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {a:test::Person[1], b:test::Person[1]|$a.name == $b.name}\n" +
+                "   }"),
+                "COMPILATION error at [36:44-62]: ModelJoin lambda parameter types do not match association property types: expected one parameter of type 'Firm' and one of type 'Person', got 'a:test::Person' and 'b:test::Person'");
     }
 
     @Test
@@ -3736,7 +3761,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   test::Employee_Manager: ModelJoin {\n" +
                 "      {a:test::Employee[1], b:test::Employee[1]|$b.managerId == $a.id}\n" +
                 "   }"),
-                "COMPILATION error at [26:48-69]: Self-association ModelJoin requires lambda parameter names to match association property names ('manager' and 'reports'), got 'a' and 'b'");
+                "COMPILATION error at [26:48-69]: Self-association ModelJoin requires lambda parameter names to match the association property names ('manager' and 'reports'), got 'a' and 'b'");
     }
 
     @Test

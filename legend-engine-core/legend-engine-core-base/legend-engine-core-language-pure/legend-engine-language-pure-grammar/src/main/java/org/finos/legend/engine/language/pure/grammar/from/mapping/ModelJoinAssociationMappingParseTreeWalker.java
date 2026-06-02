@@ -20,9 +20,11 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.modelJoinAssociationMapping.ModelJoinAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 
@@ -54,12 +56,10 @@ public class ModelJoinAssociationMappingParseTreeWalker
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
         ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);
 
-        if (valueSpecification instanceof LambdaFunction)
+        if (!(valueSpecification instanceof LambdaFunction))
         {
-            return (LambdaFunction) valueSpecification;
+            throw new EngineException("ModelJoin association mapping requires a lambda join condition of the form '{src: SrcClass[1], tgt: TgtClass[1] | <boolean expression>}'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
         }
-        LambdaFunction lambda = new LambdaFunction();
-        lambda.body = Collections.singletonList(valueSpecification);
-        return lambda;
+        return (LambdaFunction) valueSpecification;
     }
 }

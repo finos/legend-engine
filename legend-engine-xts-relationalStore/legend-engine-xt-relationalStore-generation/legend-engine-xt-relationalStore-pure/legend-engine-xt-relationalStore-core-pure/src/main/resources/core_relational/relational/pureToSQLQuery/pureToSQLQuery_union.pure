@@ -337,19 +337,19 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
                                                                                          e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner,
                                                                                          a:OperationSetImplementation[*]| fail( 'Found unexpected Operation set imeplentation for ' + $setId +' on properties ' + $relationalPropertyMappings.property.name->joinStrings(',')  + ':specify a non operation targetSet Id'); @RootRelationalInstanceSetImplementation;]
                                                                                          )->toOne();
-                                            let mainTable = $setImplementation->mainRelation();
+                                           let mainTable = $setImplementation->mainRelation();
                                            let cols = $propertyMappingBySetIds->get($setId).values.relationalOperationElement->cast(@RelationalOperationElementWithJoin).joinTreeNode
                                                                               ->extractTableAliasColumns()
                                                                               ->filter(a|$a.alias.relationalElement == $mainTable).column->removeDuplicates();
                                            let r = $cols->map(c|let rpm = $setImplementation->allPropertyMappings()->filter(c|$c->instanceOf(RelationalPropertyMapping))
-                                                                                              ->filter(pm|let roe = $pm->cast(@RelationalPropertyMapping).relationalOperationElement;
+                                                                                             ->filter(pm|let roe = $pm->cast(@RelationalPropertyMapping).relationalOperationElement;
                                                                                                          $roe->instanceOf(TableAliasColumn) && $roe->cast(@TableAliasColumn).column == $c;
-                                                                                                      );
-                                                                 if($avoidModeledProperties || $rpm->isEmpty(),
-                                                                    |$c,
-                                                                    |pair($rpm->at(0).property.name->toOne(), $rpm->at(0)->cast(@RelationalPropertyMapping).relationalOperationElement->cast(@TableAliasColumn).column)
-                                                                   );
-                                                              )->partition(p|$p->instanceOf(Pair));
+                                                                                                     );
+                                                                if($avoidModeledProperties || $rpm->isEmpty(),
+                                                                   |$c,
+                                                                   |pair($rpm->at(0).property.name->toOne(), $rpm->at(0)->cast(@RelationalPropertyMapping).relationalOperationElement->cast(@TableAliasColumn).column)
+                                                                  );
+                                                             )->partition(p|$p->instanceOf(Pair));
                                            let a = list($r.first.values->map(p|$p->cast(@Pair<String,Column>)));
                                            let b = list($r.second.values->map(c|$c->cast(@Column)));
                                            ^FKListModeledAndNonModeled(first= $a, second = $b);

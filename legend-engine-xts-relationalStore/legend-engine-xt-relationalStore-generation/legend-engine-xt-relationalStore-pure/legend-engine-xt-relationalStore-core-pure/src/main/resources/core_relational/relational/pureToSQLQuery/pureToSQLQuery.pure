@@ -2171,8 +2171,8 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 // Model join property mapping: compiles a Pure lambda join condition into SQL.
 //
 // For each unique (source, target) pair, compiles the condition against a branch-specific
-// SWC (rooted at the raw table, not the union), packages as a synthetic RelationalPropertyMapping,
-// then delegates to processRelationalPropertyMapping which handles single-pair (doJoinToClass)
+// SWC (rooted at the raw table), packages as a synthetic RelationalPropertyMapping, then
+// delegates to processRelationalPropertyMapping which handles single-pair (doJoinToClass)
 // and multi-pair (buildSQLQueryOutManySetImplementations) flows unchanged.
 function meta::relational::functions::pureToSqlQuery::processModelJoinPropertyMapping(modelJoinPropertyMappings:ModelJoinPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
@@ -2199,9 +2199,6 @@ function meta::relational::functions::pureToSqlQuery::processModelJoinPropertyMa
   print(if(!$context.debug, |'',
           | $context.space+'   syntheticRPMs: '+$syntheticRPMs->size()->toString()+'\n'));
 
-  // Delegate to existing relational property mapping flow
-  // Single pair → manageIsolation → doJoinToClass
-  // Multiple pairs → buildSQLQueryOutManySetImplementations (union)
   let result = processRelationalPropertyMapping($syntheticRPMs, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 
   print(if(!$context.debug, |'',
@@ -2211,7 +2208,7 @@ function meta::relational::functions::pureToSqlQuery::processModelJoinPropertyMa
 }
 
 // Compiles a single (source, target) pair's ModelJoin condition against branch-specific SWCs
-// (rooted at raw tables, not the union) and returns a synthetic RelationalPropertyMapping.
+// (rooted at raw tables) and returns a synthetic RelationalPropertyMapping.
 // This ensures TableAliasColumns in the compiled condition reference raw Table objects,
 // which is what the union infrastructure's modifyColumnNameInOperation/findFkListForEachSet expect.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::compileModelJoinForBranch(
@@ -2229,7 +2226,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   let sourceSet = $state->getClassMappingById($mjpm.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
   let targetSet = $state->getClassMappingById($mjpm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
 
-  // A. Branch-specific source SWC (raw table, not union)
+  // A. Branch-specific source SWC (raw table)
   // Use '_mj_src' suffix to ensure unique alias names when both sides are RelationFunction mappings
   let branchSrcSWC = buildBranchSourceSWC($sourceSet, $oldSrcOperation, $joinType, $nodeId + '_mj_src', $state, $context, $extensions);
   let branchSrcAlias = $branchSrcSWC.currentTreeNode->toOne().alias;
@@ -2302,7 +2299,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
 
   // H. Package as synthetic RelationalPropertyMapping
   ^RelationalPropertyMapping(
-    owner                      = $sourceSet->cast(@PropertyMappingsImplementation),
+    owner                      = $sourceSet,
     property                   = $property->cast(@Property<Nil,Any|*>),
     relationalOperationElement = ^RelationalOperationElementWithJoin(joinTreeNode = $fullChainJTN),
     sourceSetImplementationId  = $mjpm.sourceSetImplementationId,
@@ -2380,7 +2377,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
       processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions)
   ]);
   let tgtAlias = $targetSWC.select.data->toOne().alias;
-  // $tgtAlias->println();
 
   let placeholder = ^Join(
     name      = $placeholderName,
@@ -2403,11 +2399,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
 }
 
 // Materializes the target into a subselect that includes:
-//   - Children from condition compilation (nested joins, e.g. Person→Address)
-//   - Filter/groupBy/distinct from the target class mapping
+//   - Children from condition compilation (nested joins)
+//   - Filter/groupBy/distinct from the target class mapping (Relational)
 // The ON clause is rewritten to reference columns from the subselect.
-// This replaces the old collapseTargetIntoSubselect and handles filter/groupBy/distinct
-// that doJoinToClass would otherwise process (avoiding double-processing).
 function <<access.private>> meta::relational::functions::pureToSqlQuery::materializeTargetAsSubselect(
   realTargetJTN:JoinTreeNode[1], realJoin:Join[1], srcAlias:TableAlias[1],
   targetSet:InstanceSetImplementation[1],
@@ -2487,9 +2481,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
 
   // Rewrite ON clause: remap all target-internal aliases → subselect alias
   // Only remap the original target subtree aliases (pre-processGetAll).
-  // These are the only aliases that appear in the compiled ON clause from Step 2.
-  // processGetAll internal aliases (e.g. 'root') must NOT be included — they can
-  // collide with the source alias and corrupt the join condition.
   let aliasNamesToRemap = $targetSubtreeAliasNames;
   let aliasMap = $aliasNamesToRemap->map(name | ^OldAliasToNewAlias(first = $name, second = $tgtSubselectAlias));
   let rewrittenOp = $realJoin.operation->reprocessAliases($aliasMap, $oldColumnToNewColumn)->cast(@Operation);
@@ -2526,18 +2517,6 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildCo
     );
   );
   if($entries->isEmpty(), | ^Map<Column, Column>(), | newMap($entries));
-}
-
-// Find the parent node whose direct children contain a JTN with the given joinName.
-function <<access.private>> meta::relational::functions::pureToSqlQuery::findParentOfJTN(node:RelationalTreeNode[1], joinName:String[1]):RelationalTreeNode[1]
-{
-  let direct = $node->children()->filter(c | $c->cast(@JoinTreeNode).joinName == $joinName);
-  if($direct->isNotEmpty(),
-    | $node,
-    | let found = $node->children()->map(c | $c->findParentOfJTN($joinName));
-      assert($found->isNotEmpty(), | 'Could not find JTN with joinName=' + $joinName + ' in tree');
-      $found->toOne();
-  );
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]

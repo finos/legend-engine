@@ -314,10 +314,10 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
   $pm->match(
     [
       m:ModelJoinPropertyMapping[1]|
-        // Build vars map so the router can resolve $this and $that with routing context.
-        // $this = source side (e.g. Firm), $that = target side (e.g. Person)
-        let thisVar = ^VariableExpression(name='_mj_src', genericType=$sourceRoutedVS.value.genericType, multiplicity=PureOne);
-        let thatVar = ^VariableExpression(name='_mj_tgt', genericType=$propertyRoutedVS.value.genericType, multiplicity=PureOne);
+        // Build vars map so the router can resolve $_mj_src and $_mj_tgt with routing context.
+        // For ex. for a property access like $person.firm - $_mj_src = source side (Person), $_mj_tgt = target side (Firm) 
+        let srcVar = ^VariableExpression(name='_mj_src', genericType=$sourceRoutedVS.value.genericType, multiplicity=PureOne);
+        let tgtVar = ^VariableExpression(name='_mj_tgt', genericType=$propertyRoutedVS.value.genericType, multiplicity=PureOne);
 
         // Find PermutationSets from existing strategy that exactly match source/target SetImplementations.
         let routingStrategy = $propertyRoutedVS.routingStrategy->cast(@StoreMappingRoutingStrategy);
@@ -338,8 +338,8 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
 
         let initialVars = newMap(
           [
-            pair($thisVar->evaluateAndDeactivate(), $srcVarVS),
-            pair($thatVar->evaluateAndDeactivate(), $tgtVarVS)
+            pair($srcVar->evaluateAndDeactivate(), $srcVarVS),
+            pair($tgtVar->evaluateAndDeactivate(), $tgtVarVS)
           ],
           VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)
         );
@@ -351,13 +351,13 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
 
         // Build RoutingState with pre-populated counter so new PermutationSets get non-colliding ids
         let initialState = ^RoutingState(
-            shouldBeRouted = true,
-            lambdaContext = [],
-            counter = $initialCounter,
-            depth = '',
-            propertyMap = ^PropertyMap(),
-            routingStrategy = $newRoutingStrategy,
-            graphFetchFlow = false
+          shouldBeRouted = true,
+          lambdaContext = [],
+          counter = $initialCounter,
+          depth = '',
+          propertyMap = ^PropertyMap(),
+          routingStrategy = $newRoutingStrategy,
+          graphFetchFlow = false
         );
 
         let routed = $m.joinCondition->routeFunction(true, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);

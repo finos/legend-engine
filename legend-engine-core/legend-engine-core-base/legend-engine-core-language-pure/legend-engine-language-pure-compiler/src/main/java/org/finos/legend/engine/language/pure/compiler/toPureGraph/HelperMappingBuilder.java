@@ -810,26 +810,30 @@ public class HelperMappingBuilder
     }
 
     /**
-     * Compiles a ModelJoinAssociationMapping into an AssociationImplementation.
+     * Compiles a {@link ModelJoinAssociationMapping} into an {@link AssociationImplementation}.
      * <p>
-     * ModelJoin syntax: {@code firm.id == person.firmId} where {@code firm} and {@code person}
-     * are association property names. This method:
+     * The user supplies a single 2-parameter lambda (typed or untyped) describing how the two
+     * association ends relate, e.g. {@code {firm:Firm[1], person:Person[1] | $firm.id == $person.firmId}}.
+     * Compilation:
      * <ol>
-     *   <li>Resolves the association and its two properties</li>
-     *   <li>Identifies which identifiers in the expression correspond to which association property</li>
-     *   <li>Rewrites the expression: replaces association property name references with $this/$that</li>
-     *   <li>Generates two ModelJoinPropertyMapping instances (both directions)</li>
-     *   <li>Infers root set IDs for source/target</li>
+     *   <li>Resolves the association and asserts it has exactly 2 properties.</li>
+     *   <li>Pairs the lambda parameters with the two association properties (see
+     *       {@link #resolveLambdaParamNames}).</li>
+     *   <li>Rewrites the lambda body twice — once per direction — substituting the user's
+     *       parameter references with the {@code _mj_src} / {@code _mj_tgt} sentinels the
+     *       runtime expects (see {@link #MODEL_JOIN_SOURCE_VAR} / {@link #MODEL_JOIN_TARGET_VAR}).</li>
+     *   <li>For each direction, materialises one compiled PropertyMapping per (source-set, target-set)
+     *       pair across all class mappings of the participating classes (and their subtypes).</li>
      * </ol>
      */
     private static AssociationImplementation processModelJoinAssociationMapping(ModelJoinAssociationMapping modelJoinMapping, CompileContext context, Mapping parentMapping)
     {
-        ModelJoinAssociationImplementation base = new Root_meta_pure_mapping_modelJoin_ModelJoinAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(modelJoinMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation"));
+        ModelJoinAssociationImplementation assocImpl = new Root_meta_pure_mapping_modelJoin_ModelJoinAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(modelJoinMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation"));
         final Association pureAssociation = context.resolveAssociation(modelJoinMapping.association.path, modelJoinMapping.association.sourceInformation);
         MutableList<Store> stores = ListIterate.collect(modelJoinMapping.stores, context::resolveStore);
         final String id = modelJoinMapping.id != null ? modelJoinMapping.id : HelperModelBuilder.getElementFullPath(pureAssociation, context.pureModel.getExecutionSupport()).replaceAll("::", "_");
 
-        // Get the two association properties
+        // ModelJoin only models binary associations; reject anything else up-front.
         RichIterable<? extends Property<?, ?>> associationProperties = pureAssociation._properties();
         if (associationProperties.size() != 2)
         {
@@ -838,42 +842,40 @@ public class HelperMappingBuilder
         Property<?, ?> prop1 = associationProperties.toList().get(0);
         Property<?, ?> prop2 = associationProperties.toList().get(1);
 
-        // Resolve original (pre-milestoning) property names for the join condition rewrite
+        // Use pre-milestoning property names so the join condition references the names the user wrote.
         String rewriteProp1Name = resolveOriginalPropertyName(prop1, pureAssociation);
         String rewriteProp2Name = resolveOriginalPropertyName(prop2, pureAssociation);
 
         LambdaFunction joinCondition = modelJoinMapping.joinCondition;
 
-        // Create two ModelJoinPropertyMappings — one per direction
+        // One ModelJoinPropertyMapping per direction; the lambda body is rewritten so the
+        // owning side of each direction binds to _mj_src and the navigated side to _mj_tgt.
         ModelJoinPropertyMapping pm1 = createModelJoinPropertyMapping(modelJoinMapping, rewriteProp1Name,
                 rewriteModelJoinExpression(joinCondition, rewriteProp2Name, rewriteProp1Name, prop2, prop1, context));
         ModelJoinPropertyMapping pm2 = createModelJoinPropertyMapping(modelJoinMapping, rewriteProp2Name,
                 rewriteModelJoinExpression(joinCondition, rewriteProp1Name, rewriteProp2Name, prop1, prop2, context));
 
         ImmutableSet<SetImplementation> allClassMappings = HelperMappingBuilder.getAllClassMappings(parentMapping);
-        PropertyMappingBuilder builder = new PropertyMappingBuilder(context, parentMapping, base, allClassMappings);
+        PropertyMappingBuilder builder = new PropertyMappingBuilder(context, parentMapping, assocImpl, allClassMappings);
 
-        // Set association on base before compiling property mappings (needed by getAssociationPropertyNames)
-        base._id(id)._association(pureAssociation)._stores(stores)._parent(parentMapping);
+        // Wire the association onto the implementation before delegating to PropertyMappingBuilder —
+        // its visitor reads back getAssociationPropertyNames() during compilation.
+        assocImpl._id(id)._association(pureAssociation)._stores(stores)._parent(parentMapping);
 
-        // Resolve source/target sets: find all InstanceSetImplementations for subtypes of each association class
-        // prop1 points TO class1, prop2 points TO class2
-        // For pm1 (property = prop1Name): source = class2 sets (owner of prop1), target = class1 sets (return type of prop1)
-        // For pm2 (property = prop2Name): source = class1 sets, target = class2 sets
+        // Expand every direction across the full Cartesian product of (source-class set × target-class
+        // set). prop1 returns class1, so its OWNING side is class2 (and vice-versa for prop2).
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type class1 = prop1._genericType()._rawType();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type class2 = prop2._genericType()._rawType();
         MutableList<InstanceSetImplementation> class1Sets = findAllSetsForClassOrSubtypes(class1, allClassMappings, context);
         MutableList<InstanceSetImplementation> class2Sets = findAllSetsForClassOrSubtypes(class2, allClassMappings, context);
 
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiledMappings = Lists.mutable.empty();
-
-        // pm1: source=class2Sets, target=class1Sets
+        // pm1 navigates class2 → class1; pm2 navigates class1 → class2.
         compileForAllPairs(class2Sets, class1Sets, (s, t) -> builder.visitModelJoinPropertyMapping(pm1, s, t), compiledMappings);
-        // pm2: source=class1Sets, target=class2Sets
         compileForAllPairs(class1Sets, class2Sets, (s, t) -> builder.visitModelJoinPropertyMapping(pm2, s, t), compiledMappings);
 
-        base._propertyMappings(compiledMappings);
-        return base;
+        assocImpl._propertyMappings(compiledMappings);
+        return assocImpl;
     }
 
     private static String resolveOriginalPropertyName(Property<?, ?> prop, Association association)
@@ -906,103 +908,115 @@ public class HelperMappingBuilder
     }
 
     /**
-     * Rewrites a ModelJoin expression by replacing association property name qualifiers
-     * with $this/$that variable references.
-     * Requires an explicit typed lambda with parameters (syntactic sugar form is not supported).
+     * Rewrites a join-condition lambda body for one direction by substituting the user's
+     * parameter references with the {@code _mj_src} / {@code _mj_tgt} sentinel variables that
+     * downstream consumers (router, plan generator) bind to the source / target sets.
+     * <p>
+     * Accepts both typed ({@code {a:TypeA[1], b:TypeB[1] | ...}}) and untyped
+     * ({@code {a, b | ...}}) 2-parameter lambdas; pairing rules live in
+     * {@link #resolveLambdaParamNames}.
      */
-    private static LambdaFunction rewriteModelJoinExpression(LambdaFunction original, String thisName, String thatName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
+    private static LambdaFunction rewriteModelJoinExpression(LambdaFunction original, String srcName, String tgtName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
     {
-        if (!isExplicitTypedLambda(original))
+        if (!isValidLambda(original))
         {
-            throw new EngineException("ModelJoin requires an explicit typed lambda with parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop}", original.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("ModelJoin requires a lambda with exactly 2 parameters, e.g. {a:TypeA[1], b:TypeB[1] | $a.prop == $b.prop} (param types optional)", original.sourceInformation, EngineErrorType.COMPILATION);
         }
         LambdaFunction result = new LambdaFunction();
-        String[] resolved = resolveExplicitLambdaParamNames(original, thisName, thatName, thisProp, thatProp, context);
+        String[] resolved = resolveLambdaParamNames(original, srcName, tgtName, thisProp, thatProp, context);
         result.parameters = Collections.emptyList();
         result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, resolved[0], resolved[1]));
         return result;
     }
 
-    private static boolean isExplicitTypedLambda(LambdaFunction lambda)
+    private static boolean isValidLambda(LambdaFunction lambda)
     {
-        return lambda.parameters != null && !lambda.parameters.isEmpty();
+        return lambda.parameters != null && lambda.parameters.size() == 2;
     }
 
     /**
-     * For an explicit typed lambda {a:TypeA[1], b:TypeB[1]|expr}, determines which param
-     * corresponds to $this and which to $that.
-     *
-     * For self-associations (both properties return the same type), param names MUST match
-     * the association property names. Otherwise, type-based matching is used.
-     *
+     * Pairs the two lambda parameters with the two association properties so the body can be
+     * rewritten with one param standing in for $this (the owning side) and the other for $that.
+     * <p>
+     * Resolution order:
+     * <ol>
+     *   <li>Type-based — requires both params to be typed and to match the two association
+     *       property types unambiguously. Naturally skipped for self-associations (both
+     *       property types equal → both orderings match → ambiguous).</li>
+     *   <li>Name-based — pair by parameter name == association property name. Required
+     *       fallback for self-associations and for untyped lambdas.</li>
+     * </ol>
      * Returns [thisParamName, thatParamName].
      */
-    private static String[] resolveExplicitLambdaParamNames(LambdaFunction lambda, String thisName, String thatName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
+    private static String[] resolveLambdaParamNames(LambdaFunction lambda, String srcName, String tgtName, Property<?, ?> thisProp, Property<?, ?> thatProp, CompileContext context)
     {
-        if (lambda.parameters.size() != 2)
-        {
-            throw new EngineException("ModelJoin lambda must have exactly 2 parameters", lambda.sourceInformation, EngineErrorType.COMPILATION);
-        }
+
         org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param0 = lambda.parameters.get(0);
         org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable param1 = lambda.parameters.get(1);
 
-        // Self-association check: both properties return the same type
         CoreInstance thisRawType = thisProp._genericType()._rawType();
         CoreInstance thatRawType = thatProp._genericType()._rawType();
-        if (thisRawType.equals(thatRawType))
-        {
-            // For self-associations, param names must match property names
-            if (param0.name.equals(thisName) && param1.name.equals(thatName))
-            {
-                return new String[]{param0.name, param1.name};
-            }
-            else if (param0.name.equals(thatName) && param1.name.equals(thisName))
-            {
-                return new String[]{param1.name, param0.name};
-            }
-            else
-            {
-                throw new EngineException(
-                        "Self-association ModelJoin requires lambda parameter names to match association property names ('" + thisName + "' and '" + thatName + "'), got '" + param0.name + "' and '" + param1.name + "'",
-                        lambda.sourceInformation, EngineErrorType.COMPILATION);
-            }
-        }
+        boolean isSelfAssociation = thisRawType.equals(thatRawType);
 
-        // Non-self-association: resolve by type matching
+        // 1. Type-based pairing — only when both params are typed AND the association is not
+        // self-referential (otherwise both orderings match and pairing is ambiguous).
         String param0Type = getVariableTypePath(param0);
         String param1Type = getVariableTypePath(param1);
-
-        ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
-        if (param0Type != null)
+        if (!isSelfAssociation && param0Type != null && param1Type != null)
         {
+            ProcessorSupport ps = context.pureModel.getExecutionSupport().getProcessorSupport();
             CoreInstance param0CoreType = context.pureModel.getType(param0Type);
-            if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param0CoreType, ps))
+            CoreInstance param1CoreType = context.pureModel.getType(param1Type);
+            boolean p0IsThis = org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param0CoreType, ps);
+            boolean p1IsThat = org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thatRawType, param1CoreType, ps);
+            boolean p0IsThat = org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thatRawType, param0CoreType, ps);
+            boolean p1IsThis = org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param1CoreType, ps);
+            if (p0IsThis && p1IsThat)
             {
                 return new String[]{param0.name, param1.name};
             }
-        }
-        if (param1Type != null)
-        {
-            CoreInstance param1CoreType = context.pureModel.getType(param1Type);
-            if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(thisRawType, param1CoreType, ps))
+            if (p0IsThat && p1IsThis)
             {
                 return new String[]{param1.name, param0.name};
             }
+            // Types present but don't pair up — genuine type mismatch.
+            throw new EngineException(
+                    "ModelJoin lambda parameter types do not match association property types: expected one parameter of type '" + getTypeNameOrPlaceholder(thisProp) + "' and one of type '" + getTypeNameOrPlaceholder(thatProp) + "', got '" + param0.name + ":" + param0Type + "' and '" + param1.name + ":" + param1Type + "'",
+                    lambda.sourceInformation, EngineErrorType.COMPILATION);
         }
 
-        // Fallback: try name matching (works even when type info unavailable)
-        if (param0.name.equals(thisName) && param1.name.equals(thatName))
+        // 2. Name-based fallback — applies to self-associations and untyped lambdas.
+        if (param0.name.equals(srcName) && param1.name.equals(tgtName))
         {
             return new String[]{param0.name, param1.name};
         }
-        else if (param0.name.equals(thatName) && param1.name.equals(thisName))
+        if (param0.name.equals(tgtName) && param1.name.equals(srcName))
         {
             return new String[]{param1.name, param0.name};
         }
 
+        if (isSelfAssociation)
+        {
+            throw new EngineException(
+                    "Self-association ModelJoin requires lambda parameter names to match the association property names ('" + srcName + "' and '" + tgtName + "'), got '" + param0.name + "' and '" + param1.name + "'",
+                    lambda.sourceInformation, EngineErrorType.COMPILATION);
+        }
         throw new EngineException(
-                "Cannot resolve ModelJoin lambda parameters to association properties. Use parameter names matching association property names ('" + thisName + "' and '" + thatName + "')",
+                "Cannot pair ModelJoin lambda parameters '" + param0.name + "' and '" + param1.name + "' with association properties '" + srcName + "' and '" + tgtName + "'."
+                        + " Either type the parameters explicitly (e.g. {" + param0.name + ":" + getTypeNameOrPlaceholder(thisProp) + "[1], " + param1.name + ":" + getTypeNameOrPlaceholder(thatProp) + "[1] | ...})"
+                        + " or rename the parameters to match the association property names ('" + srcName + "' and '" + tgtName + "').",
                 lambda.sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    private static String getTypeNameOrPlaceholder(Property<?, ?> prop)
+    {
+        CoreInstance rawType = prop._genericType()._rawType();
+        if (rawType instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)
+        {
+            String name = ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) rawType)._name();
+            return name != null ? name : "Type";
+        }
+        return "Type";
     }
 
     private static String getVariableTypePath(org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var)
@@ -1016,7 +1030,7 @@ public class HelperMappingBuilder
 
     private static org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification rewriteValueSpecification(
             org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs,
-            String thisName, String thatName)
+            String srcName, String tgtName)
     {
         if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection)
         {
@@ -1024,7 +1038,7 @@ public class HelperMappingBuilder
             org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection();
             result.sourceInformation = collection.sourceInformation;
             result.multiplicity = collection.multiplicity;
-            result.values = collection.values != null ? ListIterate.collect(collection.values, p -> rewriteValueSpecification(p, thisName, thatName)) : null;
+            result.values = collection.values != null ? ListIterate.collect(collection.values, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
             return result;
         }
         if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty)
@@ -1032,17 +1046,17 @@ public class HelperMappingBuilder
             org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty ap = (org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty) vs;
             if (ap.parameters != null && !ap.parameters.isEmpty())
             {
-                String matchedVar = matchBaseToVariable(ap.parameters.get(0), thisName, thatName);
+                String matchedVar = matchBaseToVariable(ap.parameters.get(0), srcName, tgtName);
                 if (matchedVar != null)
                 {
-                    return createThisOrThatPropertyAccess(matchedVar, ap.property, ap.sourceInformation);
+                    return createPropertyAccessOnVariable(matchedVar, ap.property, ap.sourceInformation);
                 }
             }
             // Rewrite parameters recursively
             org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty();
             result.property = ap.property;
             result.sourceInformation = ap.sourceInformation;
-            result.parameters = ap.parameters != null ? ListIterate.collect(ap.parameters, p -> rewriteValueSpecification(p, thisName, thatName)) : null;
+            result.parameters = ap.parameters != null ? ListIterate.collect(ap.parameters, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
             return result;
         }
         else if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction)
@@ -1052,13 +1066,13 @@ public class HelperMappingBuilder
             result.function = af.function;
             result.fControl = af.fControl;
             result.sourceInformation = af.sourceInformation;
-            result.parameters = af.parameters != null ? ListIterate.collect(af.parameters, p -> rewriteValueSpecification(p, thisName, thatName)) : null;
+            result.parameters = af.parameters != null ? ListIterate.collect(af.parameters, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
             return result;
         }
         else if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
         {
             org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var = (org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) vs;
-            String mapped = mapVariableName(var.name, thisName, thatName);
+            String mapped = mapVariableName(var.name, srcName, tgtName);
             if (mapped != null)
             {
                 org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable();
@@ -1071,20 +1085,16 @@ public class HelperMappingBuilder
     }
 
     /**
-     * Checks if a base value specification matches thisName or thatName (as PackageableElementPtr or Variable).
-     * Returns "this", "that", or null if no match.
+     * If {@code base} is a variable bound to one of the user's lambda params, returns the
+     * corresponding ModelJoin sentinel ({@link #MODEL_JOIN_SOURCE_VAR} or
+     * {@link #MODEL_JOIN_TARGET_VAR}); otherwise returns {@code null}.
      */
-    private static String matchBaseToVariable(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification base, String thisName, String thatName)
+    private static String matchBaseToVariable(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification base, String srcName, String tgtName)
     {
-        if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr)
-        {
-            String fullPath = ((org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr) base).fullPath;
-            return mapVariableName(fullPath, thisName, thatName);
-        }
-        else if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
+        if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
         {
             String name = ((org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) base).name;
-            return mapVariableName(name, thisName, thatName);
+            return mapVariableName(name, srcName, tgtName);
         }
         return null;
     }
@@ -1092,20 +1102,20 @@ public class HelperMappingBuilder
     public static final String MODEL_JOIN_SOURCE_VAR = "_mj_src";
     public static final String MODEL_JOIN_TARGET_VAR = "_mj_tgt";
 
-    private static String mapVariableName(String name, String thisName, String thatName)
+    private static String mapVariableName(String name, String srcName, String tgtName)
     {
-        if (thisName.equals(name))
+        if (srcName.equals(name))
         {
             return MODEL_JOIN_SOURCE_VAR;
         }
-        else if (thatName.equals(name))
+        else if (tgtName.equals(name))
         {
             return MODEL_JOIN_TARGET_VAR;
         }
         return null;
     }
 
-    private static org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty createThisOrThatPropertyAccess(
+    private static org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty createPropertyAccessOnVariable(
             String varName, String propertyName,
             org.finos.legend.engine.protocol.pure.m3.SourceInformation sourceInformation)
     {
