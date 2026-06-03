@@ -18,7 +18,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.TreeSet;
@@ -28,15 +30,18 @@ import java.util.stream.StreamSupport;
 
 public class JsonNodeComparator implements Comparator<JsonNode>
 {
-    public static final JsonNodeComparator NULL_MISSING_EQUIVALENT = new JsonNodeComparator(0);
-    public static final JsonNodeComparator NULL_BEFORE_MISSING = new JsonNodeComparator(-1);
-    public static final JsonNodeComparator MISSING_BEFORE_NULL = new JsonNodeComparator(1);
+    public static final JsonNodeComparator NULL_MISSING_EQUIVALENT = new JsonNodeComparator(0, true);
+    public static final JsonNodeComparator NULL_BEFORE_MISSING = new JsonNodeComparator(-1, true);
+    public static final JsonNodeComparator MISSING_BEFORE_NULL = new JsonNodeComparator(1, true);
+    public static final JsonNodeComparator NULL_MISSING_EQUIVALENT_AND_UNORDERED_ARRAYS = new JsonNodeComparator(0, false);
 
     private final int nullMissingComparison;
+    private final boolean arrayOrderSensitive;
 
-    private JsonNodeComparator(int nullMissingComparison)
+    private JsonNodeComparator(int nullMissingComparison, boolean arrayOrderSensitive)
     {
         this.nullMissingComparison = nullMissingComparison;
+        this.arrayOrderSensitive = arrayOrderSensitive;
     }
 
     @Override
@@ -216,15 +221,42 @@ public class JsonNodeComparator implements Comparator<JsonNode>
     {
         int length1 = node1.size();
         int length2 = node2.size();
-        for (int i = 0, minLength = Math.min(length1, length2); i < minLength; i++)
+        if (this.arrayOrderSensitive)
         {
-            int cmp = compare(node1.get(i), node2.get(i));
-            if (cmp != 0)
+            for (int i = 0, minLength = Math.min(length1, length2); i < minLength; i++)
             {
-                return cmp;
+                int cmp = compare(node1.get(i), node2.get(i));
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+            }
+            return Integer.compare(length1, length2);
+        }
+        if (length1 != length2)
+        {
+            return Integer.compare(length1, length2);
+        }
+        List<JsonNode> remaining = new ArrayList<>(length2);
+        node2.forEach(remaining::add);
+        for (JsonNode e1 : node1)
+        {
+            boolean matched = false;
+            for (int i = 0; i < remaining.size(); i++)
+            {
+                if (compare(e1, remaining.get(i)) == 0)
+                {
+                    remaining.remove(i);
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched)
+            {
+                return 1;
             }
         }
-        return Integer.compare(length1, length2);
+        return 0;
     }
 
     private int comparePojos(JsonNode node1, JsonNode node2)

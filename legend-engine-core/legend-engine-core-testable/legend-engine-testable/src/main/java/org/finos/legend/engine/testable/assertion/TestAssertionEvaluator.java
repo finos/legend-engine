@@ -144,7 +144,7 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
                 JsonNode actualNode = objectMapper.readTree(actualJson.getBytes());
 
                 AssertionStatus assertionStatus;
-                if (JsonNodeComparator.NULL_MISSING_EQUIVALENT.compare(expectedNode, actualNode) == 0)
+                if (JsonNodeComparator.NULL_MISSING_EQUIVALENT_AND_UNORDERED_ARRAYS.compare(expectedNode, actualNode) == 0)
                 {
                     assertionStatus = new AssertPass();
                 }
