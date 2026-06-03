@@ -979,6 +979,64 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "    +localProp: String[1]: localProp\n" +
                 "  }\n" +
                 ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName,\n" +
+                "    status: EnumerationMapping statusMapping : STATUS\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName,\n" +
+                "    status: EnumerationMapping statusMapping : STATUS\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionEmbeddedMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName,\n" +
+                "    address\n" +
+                "    (\n" +
+                "      street: STREET,\n" +
+                "      city: CITY\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName,\n" +
+                "    address () Inline [addressSet]\n" +
+                "  }\n" +
+                "  *my::Address[addressSet]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    street: STREET,\n" +
+                "    city: CITY\n" +
+                "  }\n" +
+                ")\n");
     }
 
     @Test

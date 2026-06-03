@@ -18,6 +18,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -75,6 +76,17 @@ public class PropertyMappingPrerequisiteElementsBuilder implements PropertyMappi
         if (propertyMapping.localMappingProperty != null)
         {
             this.prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
+        }
+        return this.prerequisiteElements;
+    }
+
+    @Override
+    public Set<PackageableElementPointer> visit(RelationFunctionEmbeddedPropertyMapping propertyMapping)
+    {
+        HelperMappingBuilder.collectPrerequisiteElementsFromMappedProperty(this.prerequisiteElements, propertyMapping);
+        if (propertyMapping.propertyMappings != null)
+        {
+            ListIterate.forEach(propertyMapping.propertyMappings, pm -> pm.accept(this));
         }
         return this.prerequisiteElements;
     }

@@ -192,7 +192,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
       root = $r.root,
       extendsClassMappingId = $r.superSetImplementationId,
       mappingClass = $r.mappingClass->map(mc|$mc->transformMappingClass($mapping, $extensions)),
-      propertyMappings = $r.propertyMappings->map(pm|$pm->transformRelationFunctionPropertyMapping($mapping, $extensions)),
+      propertyMappings = $r.propertyMappings->map(pm|$pm->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping($mapping, $extensions)),
       relationFunction = ^meta::protocols::pure::v1_33_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_33_0::metamodel::PackageableElementType.FUNCTION, path=$r.relationFunction->elementToPath()),
       primaryKey = $r.primaryKey.name
    );
@@ -243,25 +243,50 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
    ]);
 }
 
-function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping[1]
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[1]
 {
-   $pm->match([r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
-      ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping
-       (
-          _type = 'RelationFunctionPropertyMapping',
-          property = ^meta::protocols::pure::v1_33_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
-          column = $r.column.name->toOne(),
-          source = $r.sourceSetImplementationId,
-          target = $r.targetSetImplementationId,
-          localMappingProperty = if ($r.localMappingProperty->isNotEmpty() && $r.localMappingProperty->toOne(),
-                                    | ^meta::protocols::pure::v1_33_0::metamodel::mapping::LocalMappingPropertyInfo
-                                      (
-                                          type = $r.localMappingPropertyType->toOne()->elementToPath(),
-                                          multiplicity = $r.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::transformMultiplicity()
-                                      ),
-                                    | []
-                                )
-       )
+   $pm->match([
+      e:EmbeddedSetImplementation[1]|
+         let isInline = $e.propertyMappings->isEmpty();
+         if($isInline,
+            | ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::InlineEmbeddedRelationFunctionPropertyMapping
+               (
+                  _type = 'inlineEmbeddedRelationFunctionPropertyMapping',
+                  property = ^meta::protocols::pure::v1_33_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                  id = $e.targetSetImplementationId,
+                  setImplementationId = $e.targetSetImplementationId,
+                  source = $e.sourceSetImplementationId,
+                  target = $e.targetSetImplementationId
+               ),
+            | ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::EmbeddedRelationFunctionPropertyMapping
+               (
+                  _type = 'relationFunctionEmbeddedPropertyMapping',
+                  property = ^meta::protocols::pure::v1_33_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                  id = $e.id,
+                  class = $e.class->elementToPath(),
+                  source = $e.sourceSetImplementationId,
+                  target = $e.targetSetImplementationId,
+                  propertyMappings = $e.propertyMappings->map(p|$p->transformRelationFunctionPropertyMapping($mapping, $extensions))
+               )
+         );,
+      r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
+         ^meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping
+          (
+             _type = 'relationFunctionPropertyMapping',
+             property = ^meta::protocols::pure::v1_33_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+             column = $r.column.name->toOne(),
+             source = $r.sourceSetImplementationId,
+             target = $r.targetSetImplementationId,
+             enumMappingId = $r.transformer->cast(@EnumerationMapping<Any>).name,
+             localMappingProperty = if ($r.localMappingProperty->isNotEmpty() && $r.localMappingProperty->toOne(),
+                                       | ^meta::protocols::pure::v1_33_0::metamodel::mapping::LocalMappingPropertyInfo
+                                         (
+                                             type = $r.localMappingPropertyType->toOne()->elementToPath(),
+                                             multiplicity = $r.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::domain::transformMultiplicity()
+                                         ),
+                                       | []
+                                   )
+          )
    ]);
 }
 

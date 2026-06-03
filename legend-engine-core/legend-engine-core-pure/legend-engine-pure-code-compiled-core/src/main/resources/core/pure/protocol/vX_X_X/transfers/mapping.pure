@@ -256,25 +256,50 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
    ]);
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::transformRelationFunctionPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[1]
 {
-   $pm->match([r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
-      ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping
-       (
-          _type = 'relationFunctionPropertyMapping',
-          property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
-          column = $r.column.name->toOne(),
-          source = $r.sourceSetImplementationId,
-          target = $r.targetSetImplementationId,
-          localMappingProperty = if ($r.localMappingProperty->isNotEmpty() && $r.localMappingProperty->toOne(),
-                                    | ^meta::protocols::pure::vX_X_X::metamodel::mapping::LocalMappingPropertyInfo
-                                      (
-                                          type = $r.localMappingPropertyType->toOne()->elementToPath(),
-                                          multiplicity = $r.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
-                                      ),
-                                    | []
-                                )
-       )
+   $pm->match([
+      e:EmbeddedSetImplementation[1]|
+         let isInline = $e.propertyMappings->isEmpty();
+         if($isInline,
+            | ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::InlineEmbeddedRelationFunctionPropertyMapping
+               (
+                  _type = 'inlineEmbeddedRelationFunctionPropertyMapping',
+                  property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                  id = $e.targetSetImplementationId,
+                  setImplementationId = $e.targetSetImplementationId,
+                  source = $e.sourceSetImplementationId,
+                  target = $e.targetSetImplementationId
+               ),
+            | ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::EmbeddedRelationFunctionPropertyMapping
+               (
+                  _type = 'relationFunctionEmbeddedPropertyMapping',
+                  property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                  id = $e.id,
+                  class = $e.class->elementToPath(),
+                  source = $e.sourceSetImplementationId,
+                  target = $e.targetSetImplementationId,
+                  propertyMappings = $e.propertyMappings->map(p|$p->transformRelationFunctionPropertyMapping($mapping, $extensions))
+               )
+         );,
+      r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
+         ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping
+          (
+             _type = 'relationFunctionPropertyMapping',
+             property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+             column = $r.column.name->toOne(),
+             source = $r.sourceSetImplementationId,
+             target = $r.targetSetImplementationId,
+             enumMappingId = $r.transformer->cast(@EnumerationMapping<Any>).name,
+             localMappingProperty = if ($r.localMappingProperty->isNotEmpty() && $r.localMappingProperty->toOne(),
+                                       | ^meta::protocols::pure::vX_X_X::metamodel::mapping::LocalMappingPropertyInfo
+                                         (
+                                             type = $r.localMappingPropertyType->toOne()->elementToPath(),
+                                             multiplicity = $r.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+                                         ),
+                                       | []
+                                   )
+          )
    ]);
 }
 
