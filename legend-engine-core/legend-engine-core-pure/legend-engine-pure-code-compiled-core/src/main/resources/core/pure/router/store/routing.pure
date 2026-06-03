@@ -118,6 +118,7 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet
 {
   $s->match(
     [
+      e:EmbeddedSetImplementation[1]|$e,
       t:RelationFunctionInstanceSetImplementation[1]|^$t(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions)),
       s:InstanceSetImplementation[1]|$s,
       o:OperationSetImplementation[1]|^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$mapping->classMappingById($i.id)->toOne()->potentiallyRouteRelationFunctionSet($mapping, $runtime, $extensions))))
@@ -270,7 +271,7 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyConve
 
 function <<access.private>> meta::pure::router::store::routing::potentiallyRouteRelationFunctionSets(classMappings:SetImplementation[*], c:Class<Any>[1], strategy:StoreMappingRoutingStrategy[1], extensions:Extension[*]):Pair<List<SetImplementation>, StoreMappingRoutingStrategy>[1]
 {
-  let partitionedMappings = $classMappings->partition(cm | $cm->instanceOf(RelationFunctionInstanceSetImplementation));
+  let partitionedMappings = $classMappings->partition(cm | $cm->instanceOf(RelationFunctionInstanceSetImplementation) && !$cm->instanceOf(EmbeddedSetImplementation));
   let relFuncMappings = $partitionedMappings.first.values->cast(@RelationFunctionInstanceSetImplementation);
   let nonRelFuncMappings = $partitionedMappings.second.values;
   let partitionedRelFuncMappings = $relFuncMappings->partition(r | $r->isRelationFunctionRouted());

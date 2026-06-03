@@ -25,10 +25,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class RelationFunctionMappingParseTreeWalker
@@ -83,19 +83,35 @@ public class RelationFunctionMappingParseTreeWalker
             visitRelationFunctionPropertyMapping(localPropertyMappingCtx.relationFunctionPropertyMapping(), propertyMapping);
             propertyPointer.property = PureGrammarParserUtility.fromQualifiedName(localPropertyMappingCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : localPropertyMappingCtx.qualifiedName().packagePath().identifier(), localPropertyMappingCtx.qualifiedName().identifier());
             propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(localPropertyMappingCtx.qualifiedName());
+            propertyMapping.source = relationFunctionClassMapping.id;
+            propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            return propertyMapping;
         }
         else if (ctx.singleNonLocalPropertyMapping() != null)
         {
             RelationFunctionMappingParserGrammar.SingleNonLocalPropertyMappingContext propertyMappingCtx = ctx.singleNonLocalPropertyMapping();
-            visitRelationFunctionPropertyMapping(propertyMappingCtx.relationFunctionPropertyMapping(), propertyMapping);
-            propertyPointer.property = PureGrammarParserUtility.fromQualifiedName(propertyMappingCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyMappingCtx.qualifiedName().packagePath().identifier(), propertyMappingCtx.qualifiedName().identifier());
-            propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx.qualifiedName());
+
+            if (propertyMappingCtx.relationFunctionEmbeddedPropertyMapping() != null)
+            {
+                return visitRelationFunctionEmbeddedPropertyMapping(propertyMappingCtx, relationFunctionClassMapping);
+            }
+            else if (propertyMappingCtx.inlineRelationFunctionEmbeddedPropertyMapping() != null)
+            {
+                return visitInlineRelationFunctionEmbeddedPropertyMapping(propertyMappingCtx, relationFunctionClassMapping);
+            }
+            else
+            {
+                visitRelationFunctionPropertyMapping(propertyMappingCtx.relationFunctionPropertyMapping(), propertyMapping);
+                propertyPointer.property = PureGrammarParserUtility.fromQualifiedName(propertyMappingCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyMappingCtx.qualifiedName().packagePath().identifier(), propertyMappingCtx.qualifiedName().identifier());
+                propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx.qualifiedName());
+
+                propertyMapping.source = relationFunctionClassMapping.id;
+                propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+                return propertyMapping;
+            }
         }
 
-        propertyMapping.source = relationFunctionClassMapping.id;
-        propertyMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        
-        return propertyMapping;
+        throw new UnsupportedOperationException("Unsupported property mapping type");
     }
 
     private void visitRelationFunctionPropertyMapping(RelationFunctionMappingParserGrammar.RelationFunctionPropertyMappingContext ctx, RelationFunctionPropertyMapping propertyMapping)
@@ -111,7 +127,50 @@ public class RelationFunctionMappingParseTreeWalker
                 bindingTransformer.sourceInformation = this.walkerSourceInformation.getSourceInformation(bindingNameCtx);
                 propertyMapping.bindingTransformer = bindingTransformer;
             }
+            else if (ctx.transformer().enumTransformer() != null)
+            {
+                propertyMapping.enumMappingId = PureGrammarParserUtility.fromIdentifier(ctx.transformer().enumTransformer().identifier());
+            }
         }
+    }
+
+    private PropertyMapping visitRelationFunctionEmbeddedPropertyMapping(RelationFunctionMappingParserGrammar.SingleNonLocalPropertyMappingContext propertyMappingCtx, RelationFunctionClassMapping relationFunctionClassMapping)
+    {
+        RelationFunctionEmbeddedPropertyMapping embeddedMapping = new RelationFunctionEmbeddedPropertyMapping();
+        PropertyPointer propertyPointer = new PropertyPointer();
+        propertyPointer._class = relationFunctionClassMapping._class;
+        propertyPointer.property = PureGrammarParserUtility.fromQualifiedName(propertyMappingCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyMappingCtx.qualifiedName().packagePath().identifier(), propertyMappingCtx.qualifiedName().identifier());
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx.qualifiedName());
+        embeddedMapping.property = propertyPointer;
+        embeddedMapping.source = relationFunctionClassMapping.id;
+        embeddedMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx);
+
+        RelationFunctionMappingParserGrammar.RelationFunctionEmbeddedPropertyMappingContext embeddedCtx = propertyMappingCtx.relationFunctionEmbeddedPropertyMapping();
+        embeddedMapping.propertyMappings = embeddedCtx.singlePropertyMapping()
+                .stream()
+                .map(c -> this.visitPropertyMapping(c, relationFunctionClassMapping))
+                .collect(Collectors.toList());
+
+
+        return embeddedMapping;
+    }
+
+    private PropertyMapping visitInlineRelationFunctionEmbeddedPropertyMapping(RelationFunctionMappingParserGrammar.SingleNonLocalPropertyMappingContext propertyMappingCtx, RelationFunctionClassMapping relationFunctionClassMapping)
+    {
+        RelationFunctionEmbeddedPropertyMapping embeddedMapping = new RelationFunctionEmbeddedPropertyMapping();
+        PropertyPointer propertyPointer = new PropertyPointer();
+        propertyPointer._class = relationFunctionClassMapping._class;
+        propertyPointer.property = PureGrammarParserUtility.fromQualifiedName(propertyMappingCtx.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyMappingCtx.qualifiedName().packagePath().identifier(), propertyMappingCtx.qualifiedName().identifier());
+        propertyPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx.qualifiedName());
+        embeddedMapping.property = propertyPointer;
+        embeddedMapping.source = relationFunctionClassMapping.id;
+        embeddedMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(propertyMappingCtx);
+
+        RelationFunctionMappingParserGrammar.InlineRelationFunctionEmbeddedPropertyMappingContext inlineCtx = propertyMappingCtx.inlineRelationFunctionEmbeddedPropertyMapping();
+        embeddedMapping.id = PureGrammarParserUtility.fromIdentifier(inlineCtx.identifier());
+        embeddedMapping.propertyMappings = Collections.emptyList();
+
+        return embeddedMapping;
     }
 
 }

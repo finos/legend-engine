@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CLatestDate;
@@ -993,6 +994,17 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    +localProp : String[1] : localProp\n" +
                 "  }\n" +
                 ")\n");
+
+        test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        firstName : firstName,\n" +
+                "        status : EnumerationMapping statusMapping : STATUS\n" +
+                "    }\n" +
+                ")\n");
     }
 
     @Test
@@ -1168,5 +1180,123 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         org.junit.Assert.assertNotNull(modelJoin.sourceInformation);
         org.junit.Assert.assertEquals(4, modelJoin.sourceInformation.startLine);
         org.junit.Assert.assertEquals(7, modelJoin.sourceInformation.endLine);
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithEnumerationMapping()
+    {
+        PureModelContextData pureModelContextData = test("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        firstName : firstName,\n" +
+                "        status : EnumerationMapping statusMapping : STATUS\n" +
+                "    }\n" +
+                ")\n");
+
+        Mapping mapping = (Mapping) ListIterate.select(pureModelContextData.getElements(), e -> e.name.equals("testMapping")).get(0);
+
+        org.junit.Assert.assertEquals(1, mapping.classMappings.size());
+        org.junit.Assert.assertTrue(mapping.classMappings.get(0) instanceof RelationFunctionClassMapping);
+        RelationFunctionClassMapping classMapping = (RelationFunctionClassMapping) mapping.classMappings.get(0);
+
+        org.junit.Assert.assertEquals(2, classMapping.propertyMappings.size());
+
+        RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.property.property);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.column);
+        org.junit.Assert.assertNull(propertyMapping1.enumMappingId);
+
+        RelationFunctionPropertyMapping propertyMapping2 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(1);
+        org.junit.Assert.assertEquals("status", propertyMapping2.property.property);
+        org.junit.Assert.assertEquals("STATUS", propertyMapping2.column);
+        org.junit.Assert.assertEquals("statusMapping", propertyMapping2.enumMappingId);
+    }
+
+    @Test
+    public void testRelationFunctionEmbeddedMapping()
+    {
+        PureModelContextData pureModelContextData = test(
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        firstName : firstName,\n" +
+                "        address\n" +
+                "        (\n" +
+                "            street : STREET,\n" +
+                "            city : CITY\n" +
+                "        )\n" +
+                "    }\n" +
+                ")\n");
+
+        Mapping mapping = (Mapping) ListIterate.select(pureModelContextData.getElements(), e -> e.name.equals("testMapping")).get(0);
+
+        org.junit.Assert.assertEquals(1, mapping.classMappings.size());
+        org.junit.Assert.assertTrue(mapping.classMappings.get(0) instanceof RelationFunctionClassMapping);
+        RelationFunctionClassMapping classMapping = (RelationFunctionClassMapping) mapping.classMappings.get(0);
+
+        org.junit.Assert.assertEquals(2, classMapping.propertyMappings.size());
+
+        RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.property.property);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.column);
+
+        org.junit.Assert.assertTrue(classMapping.propertyMappings.get(1) instanceof RelationFunctionEmbeddedPropertyMapping);
+        RelationFunctionEmbeddedPropertyMapping embeddedMapping = (RelationFunctionEmbeddedPropertyMapping) classMapping.propertyMappings.get(1);
+        org.junit.Assert.assertEquals("address", embeddedMapping.property.property);
+        org.junit.Assert.assertEquals(2, embeddedMapping.propertyMappings.size());
+
+        RelationFunctionPropertyMapping streetMapping = (RelationFunctionPropertyMapping) embeddedMapping.propertyMappings.get(0);
+        org.junit.Assert.assertEquals("street", streetMapping.property.property);
+        org.junit.Assert.assertEquals("STREET", streetMapping.column);
+
+        RelationFunctionPropertyMapping cityMapping = (RelationFunctionPropertyMapping) embeddedMapping.propertyMappings.get(1);
+        org.junit.Assert.assertEquals("city", cityMapping.property.property);
+        org.junit.Assert.assertEquals("CITY", cityMapping.column);
+    }
+
+    @Test
+    public void testRelationFunctionInlineEmbeddedMapping()
+    {
+        PureModelContextData pureModelContextData = test(
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "    *my::Person[person]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        firstName : firstName,\n" +
+                "        address () Inline [addressSet]\n" +
+                "    }\n" +
+                "\n" +
+                "    *my::Address[addressSet]: Relation\n" +
+                "    {\n" +
+                "        ~func my::testFunc():Any[1]\n" +
+                "        street : STREET,\n" +
+                "        city : CITY\n" +
+                "    }\n" +
+                ")\n");
+
+        Mapping mapping = (Mapping) ListIterate.select(pureModelContextData.getElements(), e -> e.name.equals("testMapping")).get(0);
+
+        org.junit.Assert.assertEquals(2, mapping.classMappings.size());
+        RelationFunctionClassMapping classMapping = (RelationFunctionClassMapping) mapping.classMappings.get(0);
+
+        org.junit.Assert.assertEquals(2, classMapping.propertyMappings.size());
+
+        org.junit.Assert.assertTrue(classMapping.propertyMappings.get(1) instanceof RelationFunctionEmbeddedPropertyMapping);
+        RelationFunctionEmbeddedPropertyMapping inlineMapping = (RelationFunctionEmbeddedPropertyMapping) classMapping.propertyMappings.get(1);
+        org.junit.Assert.assertEquals("address", inlineMapping.property.property);
+        org.junit.Assert.assertEquals("addressSet", inlineMapping.id);
+        org.junit.Assert.assertTrue(inlineMapping.propertyMappings.isEmpty());
+
+        RelationFunctionClassMapping addressClassMapping = (RelationFunctionClassMapping) mapping.classMappings.get(1);
+        org.junit.Assert.assertEquals("addressSet", addressClassMapping.id);
+        org.junit.Assert.assertEquals(classMapping.relationFunction.path, addressClassMapping.relationFunction.path);
     }
 }
