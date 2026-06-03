@@ -211,6 +211,15 @@ public class TestQueryStoreManager
             return this;
         }
 
+        TestQueryBuilder withIngestExecution(String ingestDefinitionPath, String dataSet)
+        {
+            IngestExecutionContext ctx = new IngestExecutionContext();
+            ctx.ingestDefinitionPath = ingestDefinitionPath;
+            ctx.dataSet = dataSet;
+            this.executionContext = ctx;
+            return this;
+        }
+
         TestQueryBuilder withGroupId(String groupId)
         {
             this.groupId = groupId;
@@ -414,6 +423,21 @@ public class TestQueryStoreManager
         Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataSpaceExec)).getMessage());
         queryDataSpaceExecutionContext.dataSpacePath = "";
         Assert.assertEquals("Query data Space execution context dataSpace path is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithDataSpaceExec)).getMessage());
+
+        // Ingest exec context
+        Query queryWithIngestExec = TestQueryBuilder.create("1", "query1", "testUser").withIngestExecution("my::ingest", "myDataSet").build();
+        QueryStoreManager.validateQuery(queryWithIngestExec);
+        IngestExecutionContext ingestExecutionContext = (IngestExecutionContext) queryWithIngestExec.executionContext;
+        ingestExecutionContext.ingestDefinitionPath = null;
+        Assert.assertEquals("Query ingest execution context ingestDefinitionPath is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithIngestExec)).getMessage());
+        ingestExecutionContext.ingestDefinitionPath = "";
+        Assert.assertEquals("Query ingest execution context ingestDefinitionPath is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithIngestExec)).getMessage());
+        Query queryWithIngestExecInvalidDataSet = TestQueryBuilder.create("1", "query1", "testUser").withIngestExecution("my::ingest", "myDataSet").build();
+        IngestExecutionContext ingestExecutionContextInvalidDataSet = (IngestExecutionContext) queryWithIngestExecInvalidDataSet.executionContext;
+        ingestExecutionContextInvalidDataSet.dataSet = null;
+        Assert.assertEquals("Query ingest execution context dataSet is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithIngestExecInvalidDataSet)).getMessage());
+        ingestExecutionContextInvalidDataSet.dataSet = "";
+        Assert.assertEquals("Query ingest execution context dataSet is missing or empty", Assert.assertThrows(ApplicationQueryException.class, () -> QueryStoreManager.validateQuery(queryWithIngestExecInvalidDataSet)).getMessage());
 
         // Content
         Query queryWithInvalidContent = _createTestQuery.get();
