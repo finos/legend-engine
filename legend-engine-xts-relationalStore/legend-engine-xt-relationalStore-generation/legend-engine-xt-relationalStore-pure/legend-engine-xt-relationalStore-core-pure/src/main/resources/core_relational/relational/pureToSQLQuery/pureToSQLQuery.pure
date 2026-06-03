@@ -569,7 +569,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                   v:PlanSetPlaceHolder[1] | let newTable = ^VarSetPlaceHolder(varName=$v.name,
                                                                                               columns=$v.tdsColumns->map(c|^Column(owner =^VarSetPlaceHolder(varName=$v.name),
                                                                                                                                    name= $c.name,
-                                                                                                                                   type = ^meta::relational::metamodel::datatype::Integer())),
+                                                                                                                                   type = $c->extractColumnTypeDefaultToInt())),
                                                                                               paths =  $v.tdsColumns->map(c| pair($c.name,^PathInformation(type = $c.type ->toOne(), relationalType = $c.sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()))));
                                                                                           ^$operation(select = ^$select(data=^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable))));,
                                   v:PlanVarPlaceHolder[1] |
@@ -1016,7 +1016,7 @@ function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionEx
    assert($valid, | 'Unsupported TDSRow function:' + $fe.func.functionName->toOne());
    let res1 = findColumnInTdsFromGetter($fe, $operation.select.columns->cast(@Alias),false, $vars, $state)->toOne();
    let newQuery = if($res1 ->instanceOf(WindowColumn),| $operation.select->moveSelectQueryToSubSelect($operation.currentTreeNode,[],'root', noDebug(), $extensions),|$operation.select);
-   let newfilterCol = if($res1->instanceOf(WindowColumn),| ^TableAliasColumn(alias = $newQuery.data->toOne().alias, column = ^Column(name = $res1->cast(@WindowColumn).columnName->addQuotesIfNecessary(), type =^meta::relational::metamodel::datatype::Integer())),|$res1);
+   let newfilterCol = if($res1->instanceOf(WindowColumn),| ^TableAliasColumn(alias = $newQuery.data->toOne().alias, column = ^Column(name = $res1->cast(@WindowColumn).columnName->addQuotesIfNecessary(), type =$res1->extractColumnTypeDefaultToInt())),|$res1);
 
    assert(!(($funcName=='isNull' || $funcName=='isNotNull' ) && $res1->instanceOf(WindowColumn)), | 'Window Column cannot be used in '+$funcName+' function');
 
@@ -1319,10 +1319,10 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                      childrenData=[]
                  );
 
-   let newFilters = $colForGroupBy->filter(f|$f.first==$select.filteringOperation).second->map(a|^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer())))->concatenate($select.filteringOperation->filter(f|!$f->in($colForGroupBy.first)));
+   let newFilters = $colForGroupBy->filter(f|$f.first==$select.filteringOperation).second->map(a|^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt())))->concatenate($select.filteringOperation->filter(f|!$f->in($colForGroupBy.first)));
    let newRoot = $root->replaceJoin($child, $newJoin)->cast(@RootJoinTreeNode);
    let remappedOuterColumns = if($isolateGroupBy,
-                                   |^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$colForGroupBy.second->toOne().name, type=^meta::relational::metamodel::datatype::Integer())),
+                                   |^TableAliasColumn(alias=$newTargetAlias, column=^Column(name=$colForGroupBy.second->toOne().name, type=$colForGroupBy.second->toOne()->extractColumnTypeDefaultToInt())),
                                    |$select.columns->map(c |
                                       if($flattenColumnsInSelect->contains($c),
                                          |let colName = $c->extractColumnName();
@@ -1370,6 +1370,26 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::extract
                 c:Column[1]|$c.name,
                 r:RelationalOperationElement[1]|fail('Extracting column name from ' + $r->type().name->toOne() + ' not supported yet!'); '';
               ]);
+}
+
+//defaulting to Integer if we can't extract the column type to keep consistent with old logic where type was always hardcoded to Integer
+function <<access.private>> meta::relational::functions::pureToSqlQuery::extractColumnTypeDefaultToInt(col:TDSColumn[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+   let type = $col.sourceDataType;
+   if ($type->isNotEmpty() && $type->toOne()->instanceOf(meta::relational::metamodel::datatype::DataType),
+    | $type->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
+    | ^meta::relational::metamodel::datatype::Integer()
+  );
+}
+
+//defaulting to Integer if we can't extract the column type to keep consistent with old logic where type was always hardcoded to Integer
+function <<access.private>> meta::relational::functions::pureToSqlQuery::extractColumnTypeDefaultToInt(rop: RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+  let inferredType = $rop->meta::relational::functions::typeInference::inferRelationalType(false);
+  let colType = if($inferredType->isEmpty(),
+    | ^meta::relational::metamodel::datatype::Integer(),
+    | $inferredType->toOne()
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::getNewColumnNameWithAlias(s: SelectSQLQuery[1], foundColumn: RelationalOperationElement[0..1], aliasesToUse: TableAliasColumn[*]): String[1] 
@@ -1848,8 +1868,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalOperation
                 | // We should not process the property mapping as it should have been done in the embedded selectSQLQuery....
                   let sel = $srcOperation.select;
                   //let embeddedSelect = $currentTreeNode.alias.relationalElement->cast(@SelectSQLQuery);
-                  // Warning the type of the column is bogus here....
-                  let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=^meta::relational::metamodel::datatype::Integer()));
+                  let newColumn = ^TableAliasColumn(alias=$newCurrentTreeNode.alias, column=^Column(name=$propName, type=$newCurrentTreeNode.alias->extractColumnTypeDefaultToInt()));
                   if ($state.inFilter,
                       |^$srcOperation(select = ^$sel(filteringOperation+=$newColumn)),
                       |^$srcOperation(select = ^$sel(columns+=$newColumn))
@@ -2457,7 +2476,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
        ^SelectWithCursor(
           select = ^$firstSel(
                          columns = $transformed.element->cast(@SelectWithCursor).select->at(0).columns
-                                      ->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
+                                      ->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()), alias=$rootTable)),
                                                          t:TableAliasColumn[1]|^$t(alias=$rootTable)
                                                         ])),
                          data = $newRoot,
@@ -2552,13 +2571,13 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                       columns = if($isDataType && !$state.inFilter,
                                       |let oldToNew = ^OldAliasToNewAlias(first=$firstChild.alias.name, second=$unionNode);
                                        let alias = $optimized->at(0).columns->at(0)->reprocessAliases($oldToNew)->cast(@Alias);
-                                       ^TableAliasColumn(alias=$unionNode, column=^Column(name=$alias.name, type=^meta::relational::metamodel::datatype::Integer()));,
+                                       ^TableAliasColumn(alias=$unionNode, column=^Column(name=$alias.name, type=$alias->extractColumnTypeDefaultToInt()));,
                                       |[]
                                 ),
                       savedFilteringOperation = [],
                       data = $newRoot,
                       leftSideOfFilter = if($sel.leftSideOfFilter->isEmpty(),|[],|$sel.leftSideOfFilter->toOne()->findOneNode($data, $newRoot)),
-                      filteringOperation = if($isDataType && $state.inFilter, |^TableAliasColumn(alias = $unionNode, column = ^Column(name=$propertyName, type=^meta::relational::metamodel::datatype::Integer())), |[])
+                      filteringOperation = if($isDataType && $state.inFilter, |^TableAliasColumn(alias = $unionNode, column = ^Column(name=$propertyName, type=$unionNode->extractColumnTypeDefaultToInt())), |[])
                    ),
           currentTreeNode = $newChild
        );
@@ -5019,8 +5038,8 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                                                                                         let union = buildUnion($setImpls, [], $joinType, false, $state.inProject, $milestoningContext, $nodeId, $state, $context, $extensions);
                                                                                         let newRoot = ^RootJoinTreeNode(alias = ^TableAlias(name='unionBase', relationalElement=$union));
                                                                                         let fullCols = $union.queries->at(0).columns->cast(@Alias).name->filter(n | $n != 'u_type');
-                                                                                        ^SelectWithCursor( select = ^SelectSQLQuery( columns = ^Alias(name= 'u_type', relationalElement = ^TableAliasColumn(alias = $newRoot.alias, column = ^Column(name='u_type', type=^meta::relational::metamodel::datatype::Integer())))
-                                                                                                                                               ->concatenate($fullCols->map(p|^Alias(name=$p, relationalElement =^TableAliasColumn(alias = $newRoot.alias, column = ^Column(name=$p, type=^meta::relational::metamodel::datatype::Integer()))))),
+                                                                                        ^SelectWithCursor( select = ^SelectSQLQuery( columns = ^Alias(name= 'u_type', relationalElement = ^TableAliasColumn(alias = $newRoot.alias, column = ^Column(name='u_type', type=$newRoot.alias->extractColumnTypeDefaultToInt())))
+                                                                                                                                               ->concatenate($fullCols->map(p|^Alias(name=$p, relationalElement =^TableAliasColumn(alias = $newRoot.alias, column = ^Column(name=$p, type=$newRoot.alias->extractColumnTypeDefaultToInt()))))),
                                                                                                                                      data = $newRoot,
                                                                                                                                      filteringOperation = []
                                                                                                                                    ),
@@ -6183,7 +6202,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationMap(a:AggCo
                                                       column = ^Column
                                                               (
                                                                   name = $name,
-                                                                  type = ^meta::relational::metamodel::datatype::Integer() // this type here does not mean much so we set it arbitrarily to Integer
+                                                                  type = $c->extractColumnTypeDefaultToInt()
                                                               )
                                                   )
                         );
@@ -6321,7 +6340,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(new:Boolean
                                                                                                    column = ^Column
                                                                                                             (
                                                                                                                name = $src.name,
-                                                                                                               type = ^meta::relational::metamodel::datatype::Integer()
+                                                                                                               type = $src->extractColumnTypeDefaultToInt()
                                                                                                             )
                                                                                                 )
                                                                      );
@@ -6494,10 +6513,10 @@ function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expres
                                                                                                                             column = ^Column
                                                                                                                                     (
                                                                                                                                       name = $pivotColumnAliasName,
-                                                                                                                                      type = ^meta::relational::metamodel::datatype::Integer()
+                                                                                                                                      type = $alias->extractColumnTypeDefaultToInt()
                                                                                                                                     )
                                                                                                                           ));
-                                                                        let groupByAliases = $allButPivotAndAggregateColumns->concatenate($pivotColumnAlias)->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$alias)),
+                                                                        let groupByAliases = $allButPivotAndAggregateColumns->concatenate($pivotColumnAlias)->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()), alias=$alias)),
                                                                                                                                                                                t:TableAliasColumn[1]|^$t(alias=$alias)]
                                                                                              ));
                                                                         ^TdsSelectSqlQuery(
@@ -6514,7 +6533,7 @@ function meta::relational::functions::pureToSqlQuery::processDynamicPivot(expres
         );
         let newRoot = ^RootJoinTreeNode(alias = $rootTable);
         let unionAllQuery = ^TdsSelectSqlQuery(
-          columns = $groupByQueries.select->at(0).columns->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
+          columns = $groupByQueries.select->at(0).columns->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()), alias=$rootTable)),
                                                                             t:TableAliasColumn[1]|^$t(alias=$rootTable)]
                                                               )),
           data = $newRoot,
@@ -6897,7 +6916,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(ex
                                        relationalElement = ^TableAliasColumn(
                                                                   alias=$newAlias,
                                                                   columnName = $newNamePair.second,
-                                                                  column=^Column(name=$newNamePair.first, type=^meta::relational::metamodel::datatype::Integer())
+                                                                  column=^Column(name=$newNamePair.first, type=$newAlias->extractColumnTypeDefaultToInt())
                                                          )
                                        );
                                  ),
@@ -7037,7 +7056,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                     data =$newData,
                                     columns = $newCols->map(c|
                                                 let tac = ^TableAliasColumn(alias=$newAlias,
-                                                                                column=^Column(name=$c->extractColumnName(), type=^meta::relational::metamodel::datatype::Integer()));
+                                                                                column=^Column(name=$c->extractColumnName(), type=$c->extractColumnTypeDefaultToInt()));
                                                 ^Alias(name=$tac.column.name, relationalElement=$tac);
                                              ),
                                     groupBy = []->cast(@Alias),
@@ -7241,23 +7260,24 @@ function <<access.protected>> meta::relational::functions::pureToSqlQuery::recur
 function meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newAlias : TableAlias[1], columns : RelationalOperationElement[*]):Alias[*]
 {
    $columns->map(cl|
+      let colType = $cl->extractColumnTypeDefaultToInt();
       $cl->match([
         als: Alias[1] |
           $als.relationalElement->match([
                 tac:TableAliasColumn[1] | let col = $tac.column; ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^$col(name=$als.name)));,
-                tacn:TableAliasColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^Column(name = $tacn.columnName, type = ^meta::relational::metamodel::datatype::Integer())));,
-                cn:ColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())));,
-                l:Literal[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer())));,
-                o:Operation[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))),
-                o:WindowColumn[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))),
+                tacn:TableAliasColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias , column=^Column(name = $tacn.columnName, type = $colType)));,
+                cn:ColumnName[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = $colType)));,
+                l:Literal[1] | ^Alias(name=$als.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = $colType)));,
+                o:Operation[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = $colType))),
+                o:WindowColumn[1] |  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = $colType))),
                 df:DynaFunction[1] |
                   ^Alias(
                       name=$als.name,
-                      relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))
+                      relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = $colType))
                   );
             ]);,
         tac: TableAliasColumn[1] | ^Alias(name=$tac.columnName->orElse($tac.column.name), relationalElement=^$tac(alias =$newAlias)),
-        cn:ColumnName[1] | ^Alias(name=$cn.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())))
+        cn:ColumnName[1] | ^Alias(name=$cn.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = $colType)))
       ]);
    );
 }
@@ -7637,7 +7657,7 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
                                                            (
                                                               columns = $u.queries->at(0).columns->cast(@Alias)
                                                                         ->filter(c|$c.name->startsWith('"pk_'))
-                                                                        ->map(a|^$a(relationalElement=^TableAliasColumn(alias=$merge.data.alias->toOne(), column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()))))
+                                                                        ->map(a|^$a(relationalElement=^TableAliasColumn(alias=$merge.data.alias->toOne(), column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()))))
                                                            );
                                          ]
                                         );
@@ -7819,8 +7839,8 @@ function meta::relational::functions::pureToSqlQuery::reAliasAndRemoveTopLevelDy
          if ($columnFound->isEmpty(), | $a, |
          $a.relationalElement->match(
             [
-               d:DynaFunction[1] |  ^Alias(name=$a.name, relationalElement=^TableAliasColumn(alias=$select.data->toOne().alias, column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()))),
-               o:Operation[1] |  ^Alias(name=$a.name, relationalElement=^TableAliasColumn(alias=$select.data->toOne().alias, column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()))),
+               d:DynaFunction[1] |  ^Alias(name=$a.name, relationalElement=^TableAliasColumn(alias=$select.data->toOne().alias, column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()))),
+               o:Operation[1] |  ^Alias(name=$a.name, relationalElement=^TableAliasColumn(alias=$select.data->toOne().alias, column=^Column(name=$a.name, type=$a->extractColumnTypeDefaultToInt()))),
                t:TableAliasColumn[1] | $a
             ]););,
          a:RelationalOperationElement[1]|$a]));
@@ -8193,7 +8213,7 @@ function meta::relational::functions::pureToSqlQuery::moveSelectQueryToSubSelect
     let newSelect = ^$newSelectClass(
                       data= ^RootJoinTreeNode(alias = $newAlias),
                       columns=$select.columns->map(c|let index = $select.columns->indexOf($c);
-                                                     let newCol = ^TableAliasColumn(column=^Column(name=$names->at($index), type=^meta::relational::metamodel::datatype::Integer()), alias=$newAlias);
+                                                     let newCol = ^TableAliasColumn(column=^Column(name=$names->at($index), type=$newAlias->extractColumnTypeDefaultToInt()), alias=$newAlias);
                                                      $c->match([
                                                                 a:Alias[1]|^$a(relationalElement=$newCol),
                                                                 t:RelationalOperationElement[1]|$newCol
