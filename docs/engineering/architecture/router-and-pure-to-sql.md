@@ -3,7 +3,8 @@
 > **Related docs:**
 > [Architecture Overview](overview.md) | [Domain Concepts](domain-concepts.md) |
 > [Key Java Areas](key-java-areas.md) | [Key Pure Areas](key-pure-areas.md) |
-> [Execution Plans](execution-plans.md) | [Pre-Evaluation (preeval)](preeval.md)
+> [Execution Plans](execution-plans.md) | [Pre-Evaluation (preeval)](preeval.md) |
+> [ModelJoin](model-join.md)
 
 > **legend-pure prerequisite:** To follow the SQL generation examples in this document you will
 > need to understand the grammar that feeds the pipeline:

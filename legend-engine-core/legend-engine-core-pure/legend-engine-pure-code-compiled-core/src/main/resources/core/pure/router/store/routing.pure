@@ -59,7 +59,7 @@ function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRun
     );
 }
 
-function <<access.private>> meta::pure::router::store::routing::modifyMappingBasedOnRuntimeLocality(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: meta::pure::extension::Extension[*]):Mapping[1]
+function <<access.private>> meta::pure::router::store::routing::modifyMappingBasedOnRuntimeLocality(mapping:Mapping[1], runtime:Runtime[1], extensions: meta::pure::extension::Extension[*]):Mapping[1]
 {
   let allMappings = $mapping->getIncludedMappingsRecursively();
   let classMappings = $allMappings.classMappings;
@@ -130,7 +130,7 @@ function meta::pure::router::store::routing::isRelationFunctionRouted(r:Relation
   $r.relationFunction->evaluateAndDeactivate().expressionSequence->at(0)->instanceOf(ClusteredValueSpecification);
 }
 
-function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
+function meta::pure::router::store::routing::potentiallyRouteRelationFunction(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):FunctionDefinition<{->Relation<Any>[1]}>[1]
 {
   if(isRelationFunctionRouted($r),
     | $r.relationFunction,
@@ -372,15 +372,15 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                         print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
                         let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
                         if($targetType->instanceOf(DataType),
-                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
-                            let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
+                          | let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne()->match([m:MappingClass<Any>[1]| $m.generalizations.general.rawType->toOne()->cast(@Class<Any>), c:Class<Any>[1]| $c]);
+                            let subTypes = $sourceClass->getMappedLeafClasses($mapping, $v);
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
                             let classMappings = $classes->map( c | $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c->cast(@Class<Any>)));
 
                             let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
                                                       | //look for direct mapping of base class, as none of the sub types have mappings
                                                         //Ideally (per Pierre) these mappings should not be allowed
-                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass->cast(@Class<Any>)),
+                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass),
                                                       | $classMappings);
 
                             let resolvedClassMappings = if($classMapping->isNotEmpty(),
@@ -388,7 +388,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                                             | $subTypes->map(s|$s->cast(@Class<Any>)->getClassMappings($v))->removeDuplicates()
                                                         );
                             assert($resolvedClassMappings->isNotEmpty(), | 'The class \''+$sourceClass.name->toOne()+'\' can\'t be found in the mapping \''+$mapping.name->toOne()+'\'');
-                            let updatedClassMappingAndRoutingStrategy = $resolvedClassMappings->potentiallyRouteRelationFunctionSets($sourceClass->cast(@Class<Any>), $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne(), $extensions);
+                            let updatedClassMappingAndRoutingStrategy = $resolvedClassMappings->potentiallyRouteRelationFunctionSets($sourceClass, $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne(), $extensions);
 
                             let r = ^StoreMappingRoutedValueSpecification(
                                       genericType = $fe.genericType,
@@ -402,7 +402,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
                                       routingStrategy = $updatedClassMappingAndRoutingStrategy.second
                                     );
                             ^$last(value = $r, routingStrategy = $updatedClassMappingAndRoutingStrategy.second);,
-                          | let propId = $v.lambdaContext->toOne()+$fe->propToString($vars, $inScopeVars);
+                          | let propId = if($v.lambdaContext->isNotEmpty(), |$v.lambdaContext->toOne(), |'') + $fe->propToString($vars, $inScopeVars);
                             let found = $v.propertyMap.v->filter(p|$p.first == $propId);
                             if (!$found->isEmpty(),
                                 | let routed = $found.second->toOne();
@@ -560,7 +560,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                           
                                                                                                                         i:InstanceValue[1]      |$i.values]));
                 let fromRuntime = $resolvedParameters->last()->match([runtime:Runtime[1] | $runtime;, packageableRuntime:PackageableRuntime[1] | $packageableRuntime.runtimeValue;]);
-                
+
                 let routingStrategy = $resolvedParameters->init()->head()->match([
                   fromMapping: Mapping[1] | getRoutingStrategyFromMappingAndRuntime($state.routingStrategy, $fromMapping, $fromRuntime, $extensions),
                   m: Any[0] | getRoutingStrategyFromRuntime($fromRuntime)
@@ -610,7 +610,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                               ->match([
                                                  r:Runtime[1]| $r,
                                                  pr:PackageableRuntime[1] | $pr.runtimeValue;,
-                                                 fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)          
+                                                 fe: FunctionExpression[1] | $fe->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug)->reactivate($inScopeVars)
                                               ])->toOne()->cast(@Runtime);
                 let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@meta::pure::runtime::ExecutionContext), | $executionContext);
 
@@ -918,19 +918,27 @@ function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:Routin
 
 function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
 {
+    $vs->propogateSubType($subTypeId, $subTypeSets, [], $extensions);
+}
+
+function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], subTypeRoutingStrategy:RoutingStrategy[0..1], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
+{
     $vs->evaluateAndDeactivate()->match([e: StoreMappingRoutedValueSpecification[1] | let castClass   = $subTypeSets->at(0).class;
                                                                                       let routedClass = $e.genericType.rawType->toOne();
-                                                                                      if($castClass->_subTypeOf($routedClass),| ^$e(sets=$subTypeSets, id=$subTypeId, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $extensions));,|$e);,
+                                                                                      if($castClass->_subTypeOf($routedClass),
+                                                                                         | let updatedStrategy = if($subTypeRoutingStrategy->isEmpty(), |$e.routingStrategy, |$subTypeRoutingStrategy->toOne());
+                                                                                           ^$e(sets=$subTypeSets, id=$subTypeId, routingStrategy=$updatedStrategy, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $subTypeRoutingStrategy, $extensions));,
+                                                                                         | $e);,
                                          f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
                                                                             |$f,
                                                                             |let func = $f.func;
                                                                              let newFunc = if($func->instanceOf(FunctionDefinition),
                                                                                               |let fd=$func->cast(@FunctionDefinition<Any>);
-                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $extensions));
+                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $extensions));
                                                                                                ^$fd(expressionSequence=$newEs);,
                                                                                               |$func
                                                                                             );
-                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $extensions))););,
+                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $subTypeRoutingStrategy, $extensions))););,
                                          vs: ValueSpecification[1] | $vs
                                        ])->cast(@ValueSpecification);
 }

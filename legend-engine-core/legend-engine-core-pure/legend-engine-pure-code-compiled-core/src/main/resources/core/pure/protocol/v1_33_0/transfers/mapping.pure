@@ -17,6 +17,7 @@ import meta::relational::tests::csv::mapping::*;
 import meta::flatten::metamodel::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelToModel::*;
 import meta::pure::mapping::xStore::*;
+import meta::pure::mapping::modelJoin::*;
 import meta::pure::mapping::relation::*;
 import meta::external::store::model::*;
 import meta::protocols::pure::v1_33_0::transformation::fromPureGraph::*;
@@ -81,7 +82,8 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
 {
    $s->match(
       $extensions.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).transfers_mapping_transformAssociationImplementation->map(f|$f->eval($mapping, $extensions))->concatenate([
-         x:XStoreAssociationImplementation[1]     | $x->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::xStore::transformXStoreAssociationImplementation($mapping, $extensions)
+         x:XStoreAssociationImplementation[1]     | $x->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::xStore::transformXStoreAssociationImplementation($mapping, $extensions),
+         m:meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation[1] | $m->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::transformModelJoinAssociationImplementation($mapping, $extensions)
       ])->toOneMany()
    );
 }
@@ -240,6 +242,53 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping:
           target = $p.targetSetImplementationId,
           crossExpression = meta::protocols::pure::v1_33_0::transformation::fromPureGraph::transformLambda($p.crossExpression, $extensions)
        )
+   ]);
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::transformModelJoinAssociationImplementation(r:meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_33_0::metamodel::mapping::modelJoin::ModelJoinAssociationMapping[1]
+{
+   // The compiler explodes one joinCondition into MxN ModelJoinPropertyMappings (one per source×target pair, per direction).
+   // We reverse this by picking ONE representative PM, extracting its joinCondition lambda,
+   // renaming _mj_src/_mj_tgt to association property names, and setting param types to association property return types.
+   let firstPm = $r->allPropertyMappings()->filter(pm | $pm->instanceOf(ModelJoinPropertyMapping))->at(0)->cast(@ModelJoinPropertyMapping);
+   let pmProp = $firstPm.property;
+   let otherProp = $r.association.properties->filter(p | $p.name != $pmProp.name)->first()->toOne();
+   let pmPropName = $pmProp.name->toOne();
+   let otherPropName = $otherProp.name->toOne();
+   // _mj_src corresponds to otherProp, _mj_tgt corresponds to pmProp
+   let srcTypePath = $otherProp.genericType.rawType->toOne()->elementToPath();
+   let tgtTypePath = $pmProp.genericType.rawType->toOne()->elementToPath();
+   let rawLambda = meta::protocols::pure::v1_33_0::transformation::fromPureGraph::transformLambda($firstPm.joinCondition, $extensions);
+   // Rename _mj_src → otherPropName, _mj_tgt → pmPropName in body
+   let renamedBody = $rawLambda.body
+      ->map(vs | $vs->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS('_mj_src', $otherPropName))
+      ->map(vs | $vs->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS('_mj_tgt', $pmPropName));
+   // Build params with correct names and types
+   let srcMul = $rawLambda.parameters->at(0).multiplicity;
+   let tgtMul = $rawLambda.parameters->at(1).multiplicity;
+   let fixedParams = [
+      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::Variable(_type = 'var', name = $otherPropName, class = $srcTypePath, multiplicity = $srcMul),
+      ^meta::protocols::pure::v1_33_0::metamodel::valueSpecification::Variable(_type = 'var', name = $pmPropName, class = $tgtTypePath, multiplicity = $tgtMul)
+   ];
+   let resultLambda = ^$rawLambda(parameters = $fixedParams, body = $renamedBody);
+   ^meta::protocols::pure::v1_33_0::metamodel::mapping::modelJoin::ModelJoinAssociationMapping
+   (
+      _type = 'modelJoin',
+      id = $r.id,
+      stores = $r.stores->map(s | $mapping->resolveStore($s)->elementToPath()),
+      association = $r.association->elementToPath(),
+      joinCondition = $resultLambda
+   );
+}
+
+function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS(vs:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ValueSpecification[1], oldName:String[1], newName:String[1]):meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ValueSpecification[1]
+{
+   $vs->match([
+      v:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::Variable[1] | if($v.name == $oldName, | ^$v(name = $newName), | $v),
+      f:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::application::FunctionApplication[1] | ^$f(parameters = $f.parameters->map(p | $p->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+      c:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::Collection[1] | ^$c(values = $c.values->map(p | $p->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+      l:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::raw::Lambda[1] | ^$l(body = $l.body->map(b | $b->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::modelJoin::renameVarInVS($oldName, $newName))),
+      any:meta::protocols::pure::v1_33_0::metamodel::valueSpecification::ValueSpecification[1] | $any
    ]);
 }
 

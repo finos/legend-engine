@@ -18,6 +18,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -58,6 +59,14 @@ public class PropertyMappingPrerequisiteElementsBuilder implements PropertyMappi
     {
         ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(this.context, this.prerequisiteElements);
         ListIterate.forEach(propertyMapping.crossExpression.body, p -> p.accept(valueSpecificationPrerequisiteElementsPassBuilder));
+        return this.prerequisiteElements;
+    }
+
+    @Override
+    public Set<PackageableElementPointer> visit(ModelJoinPropertyMapping propertyMapping)
+    {
+        ValueSpecificationPrerequisiteElementsPassBuilder valueSpecificationPrerequisiteElementsPassBuilder = new ValueSpecificationPrerequisiteElementsPassBuilder(this.context, this.prerequisiteElements);
+        ListIterate.forEach(propertyMapping.joinCondition.body, p -> p.accept(valueSpecificationPrerequisiteElementsPassBuilder));
         return this.prerequisiteElements;
     }
 

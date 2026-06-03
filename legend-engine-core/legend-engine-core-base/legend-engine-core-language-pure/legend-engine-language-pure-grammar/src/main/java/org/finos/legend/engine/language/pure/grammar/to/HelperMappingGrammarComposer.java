@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
@@ -109,6 +110,10 @@ public class HelperMappingGrammarComposer
         {
             return renderXStoreAssociationMapping((XStoreAssociationMapping) associationMapping, context);
         }
+        if (associationMapping instanceof ModelJoinAssociationMapping)
+        {
+            return renderModelJoinAssociationMapping((ModelJoinAssociationMapping) associationMapping, context);
+        }
         return context.extraAssociationMappingComposers.stream().map(composer -> composer.value(associationMapping, context)).filter(Objects::nonNull).findFirst().orElseGet(() -> unsupported(associationMapping.getClass()));
     }
 
@@ -125,6 +130,14 @@ public class HelperMappingGrammarComposer
         return PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.property.property) +
                 (xStorePropertyMapping.source == null || xStorePropertyMapping.source.isEmpty() ? "" : "[" + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.source) + ", " + PureGrammarComposerUtility.convertIdentifier(xStorePropertyMapping.target) + "]") +
                 ": " + xStorePropertyMapping.crossExpression.body.get(0).accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+    }
+
+    private static String renderModelJoinAssociationMapping(ModelJoinAssociationMapping modelJoinAssociationMapping, PureGrammarComposerContext context)
+    {
+        return modelJoinAssociationMapping.association.path + renderMappingId(modelJoinAssociationMapping.id) + ": " + "ModelJoin\n" +
+                getTabString() + "{\n" +
+                getTabString(2) + modelJoinAssociationMapping.joinCondition.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + "\n" +
+                getTabString() + "}";
     }
 
     public static String renderMappingTest(MappingTest_Legacy mappingTestLegacy, DEPRECATED_PureGrammarComposerCore transformer)

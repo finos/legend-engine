@@ -205,6 +205,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::xStore::XStorePropertyM
    crossExpression : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelJoin::ModelJoinAssociationMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::AssociationMapping
+{
+   joinCondition : meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
 }

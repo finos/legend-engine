@@ -1160,8 +1160,9 @@ public class HelperRelationalBuilder
         MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> localMappingProperties = ListIterate.select(relationalClassMapping.propertyMappings, p -> p.localMappingProperty != null);
         if (localMappingProperties.notEmpty())
         {
-            MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>("", SourceInformationHelper.toM3SourceInformation(relationalClassMapping.sourceInformation), null);
-            mappingClass._name(pureClass._name() + "_" + parent._name() + "_" + base._id());
+            String mappingClassName = pureClass._name() + "_" + parent._name() + "_" + base._id();
+            MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(mappingClassName, SourceInformationHelper.toM3SourceInformation(relationalClassMapping.sourceInformation), null);
+            mappingClass._name(mappingClassName);
             GenericType gType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                     ._rawType(context.pureModel.getType("meta::pure::mapping::MappingClass"))
                     ._typeArguments(Lists.mutable.with(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(mappingClass)));
@@ -1170,12 +1171,13 @@ public class HelperRelationalBuilder
                     ._specific(mappingClass)
                     ._general(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(pureClass));
             mappingClass._generalizations(Lists.mutable.with(g));
+            pureClass._specializationsAdd(g);
             mappingClass._properties(localMappingProperties.collect(propertyMapping ->
             {
                 GenericType returnGenericType = context.resolveGenericType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation);
                 return new Root_meta_pure_metamodel_function_property_Property_Impl<>(propertyMapping.property.property)
                         ._name(propertyMapping.property.property)
-                        ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(mappingClass), returnGenericType)))
+                        ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(mappingClass), returnGenericType))._multiplicityArguments(Lists.fixedSize.of(context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity))))
                         ._genericType(returnGenericType)
                         ._multiplicity(context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity))
                         ._owner(mappingClass);
