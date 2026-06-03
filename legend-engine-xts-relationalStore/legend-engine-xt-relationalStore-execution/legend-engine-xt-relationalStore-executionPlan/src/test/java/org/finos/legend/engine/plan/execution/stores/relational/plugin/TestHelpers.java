@@ -28,15 +28,15 @@ public class TestHelpers
         Assert.assertEquals("'There''s a quote'", RelationalExecutionNodeExecutor.getNormalizer("''", "GMT").apply("There's a quote"));
     }
 
-    // ==================== Cross-key value equality tests (ENGINE-5830) ====================
     // A StrictDate cross-key inserted into a TIMESTAMP temp table column comes back as
-    // DateTime at midnight. These tests verify that parent-child matching still succeeds.
+    // DateTime at midnight with subseconds (e.g. "000000000"). These tests verify that
+    // parent-child matching still succeeds despite the precision promotion.
 
     @Test
     public void testCrossKeyValuesEqual_StrictDateMatchesDateTimeAtMidnight() throws Exception
     {
         PureDate strictDate = PureDate.newPureDate(2026, 4, 9);
-        PureDate dateTimeAtMidnight = PureDate.newPureDate(2026, 4, 9, 0, 0, 0, "000000");
+        PureDate dateTimeAtMidnight = PureDate.newPureDate(2026, 4, 9, 0, 0, 0, "000000000");
 
         Assert.assertTrue(invokeCrossKeyValuesEqual(strictDate, dateTimeAtMidnight));
         Assert.assertTrue(invokeCrossKeyValuesEqual(dateTimeAtMidnight, strictDate));
@@ -52,13 +52,16 @@ public class TestHelpers
     }
 
     @Test
-    public void testCrossKeyHashConsistent_StrictDateAndMidnightDateTime() throws Exception
+    public void testCrossKeyValueHashCode_ConsistentForStrictDateAndMidnightDateTime() throws Exception
     {
         PureDate strictDate = PureDate.newPureDate(2026, 4, 9);
-        PureDate dateTimeAtMidnight = PureDate.newPureDate(2026, 4, 9, 0, 0, 0);
+        PureDate dateTimeAtMidnight = PureDate.newPureDate(2026, 4, 9, 0, 0, 0, "000000000");
 
         // hashCode() must be the same for the HashMap bucket lookup to work
-        Assert.assertEquals(strictDate.hashCode(), dateTimeAtMidnight.hashCode());
+        Assert.assertEquals(
+                RelationalGraphFetchUtils.crossKeyValueHashCode(strictDate),
+                RelationalGraphFetchUtils.crossKeyValueHashCode(dateTimeAtMidnight)
+        );
     }
 
     private static boolean invokeCrossKeyValuesEqual(Object a, Object b) throws Exception

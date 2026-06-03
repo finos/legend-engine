@@ -519,8 +519,6 @@ class RelationalGraphFetchUtils
         {
             return true;
         }
-        // Handle PureDate precision mismatch caused by temp table round-trip:
-        // A StrictDate (hour=-1) inserted into a TIMESTAMP column comes back as a DateTime at midnight (hour=0).
         if (a instanceof PureDate && b instanceof PureDate)
         {
             PureDate dateA = (PureDate) a;
@@ -534,12 +532,6 @@ class RelationalGraphFetchUtils
         return false;
     }
 
-    /**
-     * Returns a normalized hash code for cross-key values.
-     * For PureDate values that represent a date-only (no hour) or midnight,
-     * we normalize to a date-only hash so that hash codes are consistent
-     * with {@link #crossKeyValuesEqual}.
-     */
     static int crossKeyValueHashCode(Object val)
     {
         if (val == null)
@@ -549,7 +541,6 @@ class RelationalGraphFetchUtils
         if (val instanceof PureDate)
         {
             PureDate d = (PureDate) val;
-            // Normalize: if no time or time is midnight, hash by date only
             if (!d.hasHour() || (d.getHour() == 0 && d.getMinute() == 0 && d.getSecond() == 0))
             {
                 return Objects.hash(d.getYear(), d.getMonth(), d.getDay());
