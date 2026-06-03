@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.testable.assertion;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
@@ -26,11 +29,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToRelationAssertFail;
-import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator
 {
@@ -57,18 +59,18 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
 
             Object actual;
             Object expected = ((EqualTo) testAssertion).expected.accept(new PrimitiveValueSpecificationToObjectVisitor());;
-            if (result instanceof ConstantResult)
+            if (this.result instanceof ConstantResult)
             {
-                 actual = ((ConstantResult) result).getValue();
+                 actual = ((ConstantResult) this.result).getValue();
             }
-            else if (result instanceof StreamingResult)
+            else if (this.result instanceof StreamingResult)
             {
-                  actual = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
+                  actual = ((StreamingResult) this.result).flush(((StreamingResult) this.result).getSerializer(this.serializationFormat));
             }
 
             else
             {
-                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualTo Assert !!");
+                throw new UnsupportedOperationException("Result type - " + this.result.getClass().getSimpleName() + " not supported with EqualTo Assert !!");
             }
 
 
@@ -88,47 +90,47 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
 
             return assertionStatus;
         }
-        else if (testAssertion instanceof EqualToJson)
+        if (testAssertion instanceof EqualToJson)
         {
             String actualJson;
-            if (result instanceof ConstantResult)
+            if (this.result instanceof ConstantResult)
             {
-                actualJson = (String) ((ConstantResult) result).getValue();
+                actualJson = (String) ((ConstantResult) this.result).getValue();
             }
-            else if (result instanceof StreamingResult)
+            else if (this.result instanceof StreamingResult)
             {
-                actualJson = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
+                actualJson = ((StreamingResult) this.result).flush(((StreamingResult) this.result).getSerializer(this.serializationFormat));
             }
             else
             {
-                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualToJson Assert !!");
+                throw new UnsupportedOperationException("Result type - " + this.result.getClass().getSimpleName() + " not supported with EqualToJson Assert !!");
             }
             try
             {
                 return TestAssertionHelper.compareAssertionJSON(testAssertion, ((EqualToJson) testAssertion).expected.data, actualJson);
             }
-            catch (Exception e)
+            catch (IOException e)
             {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
-        else if (testAssertion instanceof EqualToRelation)
+        if (testAssertion instanceof EqualToRelation)
         {
             EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
 
             // 1. Get actual result as JSON
             String actualJson;
-            if (result instanceof ConstantResult)
+            if (this.result instanceof ConstantResult)
             {
-                actualJson = (String) ((ConstantResult) result).getValue();
+                actualJson = (String) ((ConstantResult) this.result).getValue();
             }
-            else if (result instanceof StreamingResult)
+            else if (this.result instanceof StreamingResult)
             {
-                actualJson = ((StreamingResult) result).flush(((StreamingResult) result).getSerializer(this.serializationFormat));
+                actualJson = ((StreamingResult) this.result).flush(((StreamingResult) this.result).getSerializer(this.serializationFormat));
             }
             else
             {
-                throw new UnsupportedOperationException("Result type - " + result.getClass().getSimpleName() + " not supported with EqualToRelation Assert !!");
+                throw new UnsupportedOperationException("Result type - " + this.result.getClass().getSimpleName() + " not supported with EqualToRelation Assert !!");
             }
 
             try
@@ -158,9 +160,9 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
                 assertionStatus.id = testAssertion.id;
                 return assertionStatus;
             }
-            catch (Exception e)
+            catch (IOException e)
             {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException(e);
             }
         }
         return null;

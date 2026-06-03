@@ -19,14 +19,17 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.filter.FilteringParserDelegate;
 import com.fasterxml.jackson.core.filter.JsonPointerBasedFilter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -51,14 +54,14 @@ import java.util.stream.StreamSupport;
 
 public abstract class JsonDataReader<T>
 {
-    private  JsonParser parser;
-    private  ObjectMapper objectMapper;
+    private final JsonParser parser;
+    private final ObjectMapper objectMapper;
 
     private boolean finishedReading = false;
     private boolean inArray = false;
     private final AtomicInteger arrayCounter = new AtomicInteger(0);
     private long recordCount = 0;
-    
+
     private JsonNode node;
     private JsonNode nextNode;
 
@@ -82,18 +85,20 @@ public abstract class JsonDataReader<T>
             this.objectMapper = new ObjectMapper();
             if (useBigDecimalForFloats)
             {
-                this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
+                this.objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true);
             }
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
     public JsonDataReader(JsonNode node)
     {
         this.node = node;
+        this.parser = null;
+        this.objectMapper = null;
     }
 
     public Stream<IChecked<T>> startStream()
@@ -177,7 +182,7 @@ public abstract class JsonDataReader<T>
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -188,6 +193,10 @@ public abstract class JsonDataReader<T>
             this.recordCount++;
             return Collections.singleton(readCheckedObject(this.nextNode, new JsonDataRecord(this.recordCount, this.nextNode)));
         }
+        catch (RuntimeException e)
+        {
+            throw e;
+        }
         catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -197,15 +206,15 @@ public abstract class JsonDataReader<T>
     private boolean isFinished()
     {
         nextToken();
-        if (!this.finishedReading && getCurrentToken() == JsonToken.START_ARRAY && !inArray)
+        if (!this.finishedReading && getCurrentToken() == JsonToken.START_ARRAY && !this.inArray)
         {
             nextToken();
-            inArray = true;
+            this.inArray = true;
         }
-        if (!this.finishedReading && getCurrentToken() == JsonToken.END_ARRAY && inArray)
+        if (!this.finishedReading && getCurrentToken() == JsonToken.END_ARRAY && this.inArray)
         {
             nextToken();
-            inArray = false;
+            this.inArray = false;
             this.finishedReading = true;
         }
         this.finishedReading |= getCurrentToken() == null;
@@ -218,24 +227,22 @@ public abstract class JsonDataReader<T>
         {
             this.nextNode = this.node.path(arrayCounter.getAndIncrement());
         }
-        this.finishedReading |= this.nextNode.isMissingNode() ? true : false;
-        return finishedReading;
+        this.finishedReading |= this.nextNode.isMissingNode();
+        return this.finishedReading;
     }
 
     private void close()
     {
-        if (this.parser.isClosed())
+        if (!this.parser.isClosed())
         {
-            return;
-        }
-
-        try
-        {
-            this.parser.close();
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
+            try
+            {
+                this.parser.close();
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 
@@ -247,7 +254,7 @@ public abstract class JsonDataReader<T>
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -270,16 +277,26 @@ public abstract class JsonDataReader<T>
         }
         catch (NoSuchMethodException e)
         {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException("Could not find method " + name + "(" + JsonNode.class.getName() + ") on class " + getClass().getName(), e);
         }
 
         try
         {
             return m.invoke(this, node);
         }
-        catch (IllegalAccessException | InvocationTargetException e)
+        catch (IllegalAccessException e)
         {
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException("Error executing method " + name + "(" + JsonNode.class.getName() + ") on class " + getClass().getName(), e);
+        }
+        catch (InvocationTargetException e)
+        {
+            StringBuilder sb = new StringBuilder("Error executing method ").append(name).append("(").append(JsonNode.class.getName()).append(") on class ").append(getClass().getName());
+            String message;
+            if ((e.getCause() != null) && ((message = e.getCause().getMessage()) != null))
+            {
+                sb.append(": ").append(message);
+            }
+            throw new RuntimeException(sb.toString(), e);
         }
     }
 
@@ -293,9 +310,9 @@ public abstract class JsonDataReader<T>
                     errorMessage);
             return node.textValue();
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -309,9 +326,9 @@ public abstract class JsonDataReader<T>
                     errorMessage);
             return node.booleanValue();
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -325,9 +342,9 @@ public abstract class JsonDataReader<T>
                     errorMessage);
             return node.longValue();
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -341,9 +358,9 @@ public abstract class JsonDataReader<T>
                     errorMessage);
             return node.doubleValue();
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -352,18 +369,16 @@ public abstract class JsonDataReader<T>
         try
         {
             String errorMessage = "Unexpected node type:" + node.getNodeType() + " for PURE Decimal";
-            this.check(Arrays.asList(JsonNodeType.valueOf("STRING"),
-                    JsonNodeType.valueOf("NUMBER")),
+            this.check(Arrays.asList(JsonNodeType.valueOf("STRING"), JsonNodeType.valueOf("NUMBER")),
                     node.getNodeType(),
                     errorMessage);
-            return node.getNodeType()
-                    .equals(JsonNodeType.STRING)
+            return JsonNodeType.STRING.equals(node.getNodeType())
                     ? new BigDecimal(node.textValue())
                     : node.decimalValue();
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -372,20 +387,16 @@ public abstract class JsonDataReader<T>
         try
         {
             String errorMessage = "Unexpected node type:" + node.getNodeType() + " for PURE Number";
-            this.check(Arrays.asList(JsonNodeType.valueOf("STRING"),
-                    JsonNodeType.valueOf("NUMBER")),
+            this.check(Arrays.asList(JsonNodeType.valueOf("STRING"), JsonNodeType.valueOf("NUMBER")),
                     node.getNodeType(),
                     errorMessage);
-            return node.getNodeType()
-                    .equals(JsonNodeType.STRING)
+            return JsonNodeType.STRING.equals(node.getNodeType())
                     ? new BigDecimal(node.textValue())
-                    : node.isDouble()
-                    ? node.doubleValue()
-                    : node.longValue();
+                    : (node.isDouble() ? node.doubleValue() : node.longValue());
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -397,12 +408,11 @@ public abstract class JsonDataReader<T>
             this.check(Collections.singletonList(JsonNodeType.valueOf("STRING")),
                     node.getNodeType(),
                     errorMessage);
-            return org.finos.legend.engine.plan.dependencies.domain.date.PureDate
-                    .parsePureDate(node.textValue());
+            return PureDate.parsePureDate(node.textValue());
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -414,12 +424,11 @@ public abstract class JsonDataReader<T>
             this.check(Collections.singletonList(JsonNodeType.valueOf("STRING")),
                     node.getNodeType(),
                     errorMessage);
-            return org.finos.legend.engine.plan.dependencies.domain.date.PureDate
-                    .parsePureDate(node.textValue());
+            return PureDate.parsePureDate(node.textValue());
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
@@ -431,18 +440,15 @@ public abstract class JsonDataReader<T>
             this.check(Collections.singletonList(JsonNodeType.valueOf("STRING")),
                     node.getNodeType(),
                     errorMessage);
-            return org.finos.legend.engine.plan.dependencies.domain.date.PureDate
-                    .parsePureDate(node.textValue());
+            return PureDate.parsePureDate(node.textValue());
         }
-        catch (IllegalArgumentException ex)
+        catch (IllegalArgumentException e)
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(ex.getMessage());
+            throw new DataParsingException(e.getMessage(), e);
         }
     }
 
-    protected <U> List<U> acceptMany(JsonNode node,
-                                     Function<JsonNode, U> acceptor,
-                                     Consumer<String> defectRecorder)
+    protected <U> List<U> acceptMany(JsonNode node, Function<JsonNode, U> acceptor, Consumer<String> defectRecorder)
     {
         List<U> result = new ArrayList<>();
         if (node.isNull())
@@ -457,7 +463,7 @@ public abstract class JsonDataReader<T>
                 {
                     result.add(acceptor.apply(n));
                 }
-                catch (org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException ex)
+                catch (DataParsingException ex)
                 {
                     defectRecorder.accept(ex.getMessage());
                 }
@@ -469,7 +475,7 @@ public abstract class JsonDataReader<T>
             {
                 result.add(acceptor.apply(node));
             }
-            catch (org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException ex)
+            catch (DataParsingException ex)
             {
                 defectRecorder.accept(ex.getMessage());
             }
@@ -487,13 +493,11 @@ public abstract class JsonDataReader<T>
         check(Collections.singletonList(expectedNode), currentNode, errorMessage);
     }
 
-    protected void check(List<JsonNodeType> expectedNodes,
-                         JsonNodeType currentNode,
-                         String errorMessage)
+    protected void check(List<JsonNodeType> expectedNodes, JsonNodeType currentNode, String errorMessage)
     {
         if (!expectedNodes.contains(currentNode))
         {
-            throw new org.finos.legend.engine.plan.dependencies.store.inMemory.DataParsingException(errorMessage);
+            throw new DataParsingException(errorMessage);
         }
     }
 }

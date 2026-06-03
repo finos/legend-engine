@@ -194,8 +194,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
                                                                                       eo: ExecutionOptionContext[1]| $exeCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf(meta::pure::executionPlan::featureFlag::FeatureFlagOption)),
                                                                                       ec: meta::pure::runtime::ExecutionContext[1] | []
                                                                                   ]);
-                                                                        );
-                            ,
+                                                                        );,
                           | []
                       )->cast(@meta::pure::executionPlan::featureFlag::FeatureFlagOption);
 
@@ -220,7 +219,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::inter
       tree              = $graphFetchTree->orElse(generateTreeWithPrimitiveProperties($class)),
       executionNodes    = generateSourceNodeFromFunctionExpression($fe, $state, $extensions, $debug),
       fromCluster       = ^ExternalFormatClusteredValueSpecification(val = $fe, executable=true, binding = $binding, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([])),
-      useJsonNodeType   = $hasFeatureFlag.flags == meta::pure::executionPlan::features::Feature.VARIANT_TYPE_AS_INPUT
+      useJsonNodeType   = meta::pure::executionPlan::features::Feature.VARIANT_TYPE_AS_INPUT->in($hasFeatureFlag.flags)
    );
 }
 

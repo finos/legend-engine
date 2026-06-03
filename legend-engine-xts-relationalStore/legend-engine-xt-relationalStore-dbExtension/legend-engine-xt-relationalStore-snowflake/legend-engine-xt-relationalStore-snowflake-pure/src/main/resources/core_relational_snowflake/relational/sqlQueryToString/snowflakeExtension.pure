@@ -283,6 +283,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='array_generate_range(%s, %s, %s)')),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)', transform= {vals:String[*] | $vals->reverse()})),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='array_to_string(%s::ARRAY, %s)')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='BITAND(%s, %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='BITNOT(%s)')),
@@ -380,7 +381,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)}))
+    dynaFnToSql('convertTimeZone',        $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[3],s:SqlGenerationContext[1] | $p->transformConvertTimeZone($s)})),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSnowflake()}))
   ];
 }
 
@@ -728,6 +730,17 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
   );
 }
 
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformFormatDateSnowflake(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('ISO8601', '\'YYYY-MM-DD\''),
+    pair('ISO8601_NanoSecondPrecision', '\'YYYY-MM-DD"T"HH24:MI:SS.FF9\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+  format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformConvertTimeZone(params:String[3],context:SqlGenerationContext[1]):String[1]
 {

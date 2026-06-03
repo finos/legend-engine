@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.authentication.flows;
 
-import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.AuroraDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -23,24 +21,12 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
-public class AuroraWithUserNamePasswordFlow implements DatabaseAuthenticationFlow<AuroraDatasourceSpecification, UserNamePasswordAuthenticationStrategy>
+public class AuroraWithUserNamePasswordFlow extends AbstractAuroraFlow<UserNamePasswordAuthenticationStrategy>
 {
-    @Override
-    public Class<AuroraDatasourceSpecification> getDatasourceClass()
-    {
-        return AuroraDatasourceSpecification.class;
-    }
-
     @Override
     public Class<UserNamePasswordAuthenticationStrategy> getAuthenticationStrategyClass()
     {
         return UserNamePasswordAuthenticationStrategy.class;
-    }
-
-    @Override
-    public DatabaseType getDatabaseType()
-    {
-        return DatabaseType.Aurora;
     }
 
     @Override

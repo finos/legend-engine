@@ -15,7 +15,7 @@
 package org.finos.legend.engine.test.emit.relational;
 
 import org.finos.legend.engine.test.emit.junit.EMITTestSuiteBuilder;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.stream.Stream;
@@ -26,11 +26,11 @@ import java.util.stream.Stream;
  * and yields one dynamic test per granular operation (init/parse/compile,
  * file generation, individual mapping tests, service plans).
  */
-public class RelationalEMITTestSuite
+public class RelationalEMITTests
 {
     @TestFactory
-    Stream<DynamicTest> emit()
+    Stream<DynamicContainer> emit()
     {
-        return EMITTestSuiteBuilder.taskStream("emit-models/");
+        return EMITTestSuiteBuilder.testContainers("emit-models/");
     }
 }

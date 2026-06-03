@@ -570,7 +570,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('SS', 'ss'),
     pair('MS', 'SSS'),
     pair('US', 'SSSSSS'),
-    pair('Day', 'EEEE')
+    pair('FF9', 'SSSSSSSSS'),
+    pair('Day', 'EEEE'),
+    pair('"', '\'\'')
     // TODO: Handle more format specifiers
   ];
 

@@ -395,8 +395,8 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationalInstanceSet
    ])
 }
 
-// RelationFunctionInstanceSetImplementation is not a RelationalInstanceSetImplementation,
-// so it needs its own overload.
+// RelationFunctionInstanceSetImplementation is a sibling of RelationalInstanceSetImplementation
+// (neither extends the other) so it cannot be dispatched through the match above.
 function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
 {
    $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();

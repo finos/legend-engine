@@ -183,21 +183,25 @@ function <<access.private>> meta::pure::mapping::relation::inferPrimaryKeyColumn
 
 // join: INNER/LEFT preserve leftPK ∪ rightPK; RIGHT/FULL/unknown → [].
 // JoinKind literal appears either as InstanceValue (grammar path) or as
-// extractEnumValue SFE (legend-pure PAR path).
+// extractEnumValue SFE (legend-pure PAR path); both are resolved to a JoinKind.
 function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:String[*], fe:SimpleFunctionExpression[1], extensions:Extension[*]):String[*]
 {
   let args = $fe.parametersValues;
   let rightPK = $args->at(1)->meta::pure::mapping::relation::inferPrimaryKeyColumnNames($extensions);
-  let kindName = if($args->size() >= 3,
+  let kind = if($args->size() >= 3,
     | $args->at(2)->evaluateAndDeactivate()->match([
         iv: InstanceValue[1] |
-            let direct = $iv.values->filter(v | $v->instanceOf(JoinKind))->cast(@JoinKind)->first();
-            if($direct->isNotEmpty(), | $direct->toOne().name, | []);,
+            $iv.values->filter(v | $v->instanceOf(JoinKind))->cast(@JoinKind)->first(),
         sfe: SimpleFunctionExpression[1] |
-            if($sfe.func.functionName == 'extractEnumValue',
+            if($sfe.func == meta::pure::functions::lang::extractEnumValue_Enumeration_1__String_1__T_1_,
               | $sfe.parametersValues->at(1)->evaluateAndDeactivate()->match([
-                  iv2: InstanceValue[1] | $iv2.values->filter(x | $x->instanceOf(String))->cast(@String)->first(),
-                  a:   Any[*]           | []
+                  iv2: InstanceValue[1] |
+                      let name = $iv2.values->filter(x | $x->instanceOf(String))->cast(@String)->first();
+                      if($name->isNotEmpty(),
+                        | extractEnumValue(JoinKind, $name->toOne()),
+                        | []
+                      );,
+                  a:   Any[*] | []
                 ]),
               | []
             );,
@@ -205,7 +209,7 @@ function <<access.private>> meta::pure::mapping::relation::applyJoinToPK(leftPK:
       ]),
     | []
   );
-  if($kindName->isNotEmpty() && ($kindName->toOne() == 'INNER' || $kindName->toOne() == 'LEFT'),
+  if($kind->isNotEmpty() && ($kind->toOne() == JoinKind.INNER || $kind->toOne() == JoinKind.LEFT),
     | $leftPK->concatenate($rightPK)->removeDuplicates(),
     | []
   );
@@ -242,7 +246,10 @@ function <<access.private>> meta::pure::mapping::relation::extractColumnNamesFro
     cs:  ColSpec<Any>[1]      | $cs.name,
     csa: ColSpecArray<Any>[1] | $csa.names,
     sfe: SimpleFunctionExpression[1] |
-        if ($sfe.func.functionName->in(['colSpec', 'colSpecArray']),
+        if ($sfe.func->in([
+              meta::pure::functions::relation::colSpec_String_1__T_1__ColSpec_1_,
+              meta::pure::functions::relation::colSpecArray_String_MANY__T_1__ColSpecArray_1_
+            ]),
           | $sfe.parametersValues->at(0)->evaluateAndDeactivate()->match([
               iv2: InstanceValue[1] |
                   $iv2.values->filter(x | $x->instanceOf(String))->cast(@String),

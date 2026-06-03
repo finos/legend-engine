@@ -170,6 +170,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='range(%s, %s, %s)')),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
+    dynaFnToSql('array_to_string',        $allStates,           ^ToSql(format='array_to_string(%s, %s)')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ',' + constructIntervalFunction($p->at(2), $p->at(1)) })),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(cast(%s as BIGINT) & cast(%s as BIGINT))')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ cast(%s as BIGINT))')),
@@ -273,8 +274,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_samp('+$p->toOne()+')',|'list_var_samp('+$p->joinStrings('[',',',']')+')'); })),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 1,|'var_pop('+$p->toOne()+')',|'list_var_pop('+$p->joinStrings('[',',',']')+')'); })),
-    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'}))
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*]| if ($p->last() == 'true', | 'list_var_samp', |'list_var_pop') + '('+$p->init()->joinStrings('[', ',', ']')+')'})),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDuckDB()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformFormatDateDuckDB(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('ISO8601', format('strftime(%s, \'%%Y-%%m-%%d\')', [$params->at(0)])),
+    pair('ISO8601_NanoSecondPrecision', format('strftime(%s, \'%%Y-%%m-%%dT%%H:%%M:%%S.\') || lpad(cast(extract(\'microsecond\' from %s) %% 1000000 as varchar), 6, \'0\') || \'000\'', [$params->at(0), $params->at(0)]))
+  ];
+  $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processExtractFromSemiStructuredParamsFoDuckDb(params:String[3]):String[1]

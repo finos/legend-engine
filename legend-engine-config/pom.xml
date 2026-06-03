@@ -32,5 +32,6 @@
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-server</module>
         <module>legend-engine-repl</module>
+        <module>legend-engine-emit-tests</module>
     </modules>
 </project>

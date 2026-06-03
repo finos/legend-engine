@@ -37,10 +37,14 @@ function meta::external::store::mongodb::graphFetch::executionPlan::planRootGrap
   let lhsFe = $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
   let rootTree = $clusteredTree->byPassClusteringInfo()->cast(@RoutedRootGraphFetchTree<Any>);
   let store = $sq.store->cast(@MongoDatabase);
+  
+  let collection = $mapping.classMappings->at(0)->cast(@MongoDBSetImplementation)->at(0).mainCollection->toOne();
+  let objectId = $store.collections->filter(c | $collection.name->equal($c.name))->first().objectId();
+  let objectIdField = if($objectId->isNotEmpty(),| $objectId.key->toOne(),| []);
 
   let propertiesToProject = getSubTreeProperties($rootTree.subTrees->cast(@RoutedPropertyGraphFetchTree));
 
-  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->addProjectedFields($propertiesToProject);
+  let databaseCommand = $lhsFe->toDatabaseCommand($mapping, $sq.inScopeVars, $debug, $extensions)->cast(@DatabaseCommand)->addProjectedFields($propertiesToProject, $objectIdField);
 
   let connection = $runtime->toOne()->connectionByElement($store)->cast(@MongoDBConnection);
 
@@ -90,12 +94,15 @@ function meta::external::store::mongodb::graphFetch::executionPlan::getSubTreePr
   }, []);
 }
 
-function meta::external::store::mongodb::graphFetch::executionPlan::addProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*]): DatabaseCommand[1]
+function meta::external::store::mongodb::graphFetch::executionPlan::addProjectedFields(databaseCommand: DatabaseCommand[1], fieldNames: String[*], objectIdPropertyName: String[0..1]): DatabaseCommand[1]
 {
   let matchStage = $databaseCommand.aggregationPipeline.stages->filter(x | $x->instanceOf(MatchStage))->cast(@MatchStage);
 
   let keyValuesToProject = $fieldNames->map(k |
-    ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
+    if($objectIdPropertyName->isNotEmpty() && $k == $objectIdPropertyName->toOne() ,
+      | ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k->toOne()), value= ^ObjectQueryExpression(keyValues = ^QueryExprKeyValue(key = ^ComputedFieldValue(value='$toString'), value =^ComputedFieldValue(value='$'+$k->toOne())))); , 
+      | ^QueryExprKeyValue(key=^FieldPathExpression(fieldPath=$k->toOne()), value=^LiteralValue(value=^IntTypeValue(value=1)));
+    );
   );
 
   ^$databaseCommand(

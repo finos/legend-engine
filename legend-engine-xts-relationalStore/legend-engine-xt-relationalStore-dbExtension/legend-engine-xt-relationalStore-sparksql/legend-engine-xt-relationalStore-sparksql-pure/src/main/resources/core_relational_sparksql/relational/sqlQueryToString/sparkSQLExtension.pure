@@ -141,8 +141,20 @@ function meta::relational::functions::sqlQueryToString::sparkSQL::getDynaFunctio
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSparkSQL()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSparkSQL()}))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sparkSQL::transformFormatDateSparkSQL(params:String[2]):String[1]
+{
+  let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
+  let formatPairs = [
+    pair('ISO8601', '\'yyyy-MM-dd\''),
+    pair('ISO8601_NanoSecondPrecision', '\'yyyy-MM-dd\'\'T\'\'HH:mm:ss.SSSSSSSSS\'')
+  ];
+  let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+  format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sparkSQL::convertToDateIQ(params:String[*]):String[1]

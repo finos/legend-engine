@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::relational::metamodel::*;
 import meta::relational::graphFetch::executionPlan::*;
@@ -2850,4 +2851,18 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTypedTDSWithEnumFil
   let generatedPlan = executionPlan($query, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(true), meta::relational::extension::relationalExtensions());
   let sqlQuery = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
   assertEquals('select "root"."TYPE" as "type" from "productSchema"."synonymTable" as "root" where "root"."TYPE" = \'CUSIP\'', $sqlQuery);
+}
+
+function <<test.Test>> {doc.doc = 'Test that execution plan generation when using ->from() contains case statement for enum push down'} meta::pure::executionPlan::tests::testExecutionPlanGenerationForLambdaFromWithEnumMapping():Boolean[1]  
+{
+   let generatedPlan = executionPlan(
+      |meta::relational::tests::mapping::enumeration::model::domain::Employee.all()
+         ->project([e|$e.id, e|$e.name, e|$e.type], ['id', 'name', 'type'])
+         ->from(meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping,
+                meta::relational::tests::mapping::enumeration::enumTestRuntime()),
+      meta::relational::extension::relationalExtensions()
+   );
+   // Assert that the SQL contains CASE WHEN statement for the enum 'type' column
+   let planString = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
+   assert($planString->contains('case when "root".type in (\'FTC\', \'FTO\') then \'CONTRACT\' when "root".type = \'FTE\' then \'FULL_TIME\' else null end'), 'Expected enum push-down CASE expression in SQL');
 }

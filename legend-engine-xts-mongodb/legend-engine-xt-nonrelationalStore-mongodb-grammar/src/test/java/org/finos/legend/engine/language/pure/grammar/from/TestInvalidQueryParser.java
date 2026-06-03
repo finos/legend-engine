@@ -49,7 +49,7 @@ public class TestInvalidQueryParser
                 //TODO:     {"json/query/invalid_project_mixed_selection.json"},
                 {"json/query/invalid_multi_stage.json", "Expected Stage command node to be an object, with just 1 key(stage)"},
                 {"json/query/invalid_match_non_expr.json", "Match stage supports only  $expr style syntax"},
-                {"json/query/invalid_project_syntax.json", "Project syntax supports only field: 1 / bool"},
+                {"json/query/invalid_project_syntax.json", "An empty sub-projection is not a valid value. Found empty object at path: name"},
         });
     }
 

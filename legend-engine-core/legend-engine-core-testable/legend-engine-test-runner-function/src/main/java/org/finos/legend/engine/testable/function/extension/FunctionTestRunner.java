@@ -37,7 +37,9 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
+import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
+import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -45,7 +47,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
@@ -54,15 +55,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.S
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
-import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.helper.TestResultHelper;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_JsonModelConnection;
@@ -160,10 +160,7 @@ public class FunctionTestRunner implements TestRunner
             {
                 if (atomicTestIds.contains(testedError._id()) && results.stream().noneMatch(t -> t.atomicTestId.equals(testedError._id())))
                 {
-                    TestError testError = new TestError();
-                    testError.atomicTestId = testedError._id();
-                    testError.error = e.toString();
-                    results.add(testError);
+                    results.add(TestResultHelper.newTestError(testedError._id(), e));
                 }
             }
         }
@@ -197,10 +194,7 @@ public class FunctionTestRunner implements TestRunner
         }
         catch (Exception error)
         {
-            TestError testError = new TestError();
-            testError.atomicTestId = functionTest.id;
-            testError.error = error.toString();
-            return testError;
+            return TestResultHelper.newTestError(functionTest.id, error);
         }
     }
 
