@@ -121,7 +121,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyCo
     element = meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase,connection=
   ^RelationalDatabaseConnection(
     type = DatabaseType.H2,
-    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = '', databaseToUpper = true),
     authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
   ))
 }

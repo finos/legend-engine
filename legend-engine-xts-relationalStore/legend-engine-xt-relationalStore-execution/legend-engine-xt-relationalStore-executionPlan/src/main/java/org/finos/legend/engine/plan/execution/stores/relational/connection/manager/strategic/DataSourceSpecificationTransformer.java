@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
+import java.util.Properties;
+
 public class DataSourceSpecificationTransformer implements DatasourceSpecificationVisitor<DataSourceSpecification>
 {
 
@@ -56,10 +58,14 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
+                Properties properties = new Properties();
+                properties.setProperty("DATABASE_TO_UPPER", Boolean.toString(localH2DatasourceSpecification.databaseToUpper));
+
                 return new LocalH2DataSourceSpecification(
                         localH2DatasourceSpecification.testDataSetupSqls,
                         new H2Manager(),
-                        new TestDatabaseAuthenticationStrategy()
+                        new TestDatabaseAuthenticationStrategy(),
+                        properties
                 );
             }
             else

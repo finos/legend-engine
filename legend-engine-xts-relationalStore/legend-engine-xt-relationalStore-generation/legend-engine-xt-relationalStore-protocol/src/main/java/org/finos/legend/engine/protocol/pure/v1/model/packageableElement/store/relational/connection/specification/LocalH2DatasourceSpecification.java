@@ -20,6 +20,7 @@ public class LocalH2DatasourceSpecification extends DatasourceSpecification
 {
     public String testDataSetupCsv;
     public List<String> testDataSetupSqls;
+    public boolean databaseToUpper = true;
 
     public LocalH2DatasourceSpecification()
     {

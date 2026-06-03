@@ -47,6 +47,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification local = new Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification"));
             local._testDataSetupCsv(localH2DatasourceSpecification.testDataSetupCsv);
             local._testDataSetupSqls(localH2DatasourceSpecification.testDataSetupSqls == null ? FastList.newList() : FastList.newList(localH2DatasourceSpecification.testDataSetupSqls));
+            local._databaseToUpper(localH2DatasourceSpecification.databaseToUpper);
             return local;
         }
         else if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
