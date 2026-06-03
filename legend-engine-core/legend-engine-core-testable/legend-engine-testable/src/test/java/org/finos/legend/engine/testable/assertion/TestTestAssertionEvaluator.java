@@ -370,6 +370,28 @@ public class TestTestAssertionEvaluator
         Assert.assertTrue(status instanceof AssertPass);
     }
 
+    @Test
+    public void testEqualToRelationAssertionPassWithDifferentRowOrder()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"id\":2,\"firstName\":\"Jane\",\"lastName\":\"Doe\"},{\"id\":1,\"firstName\":\"John\",\"lastName\":\"Smith\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("id", "firstName", "lastName");
+        element.rows = Arrays.asList(
+                makeRow("1", "John", "Smith"),
+                makeRow("2", "Jane", "Doe")
+        );
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(status instanceof AssertPass);
+        Assert.assertEquals("assert1", status.id);
+    }
+
     private static RelationRowTestData makeRow(String... values)
     {
         RelationRowTestData row = new RelationRowTestData();
