@@ -526,8 +526,8 @@ class RelationalGraphFetchUtils
             return dateA.getYear() == dateB.getYear()
                     && dateA.getMonth() == dateB.getMonth()
                     && dateA.getDay() == dateB.getDay()
-                    && (!dateA.hasHour() || (dateA.getHour() == 0 && dateA.getMinute() == 0 && dateA.getSecond() == 0))
-                    && (!dateB.hasHour() || (dateB.getHour() == 0 && dateB.getMinute() == 0 && dateB.getSecond() == 0));
+                    && isMidnightOrDateOnly(dateA)
+                    && isMidnightOrDateOnly(dateB);
         }
         return false;
     }
@@ -541,12 +541,19 @@ class RelationalGraphFetchUtils
         if (val instanceof PureDate)
         {
             PureDate d = (PureDate) val;
-            if (!d.hasHour() || (d.getHour() == 0 && d.getMinute() == 0 && d.getSecond() == 0))
+            if (isMidnightOrDateOnly(d))
             {
                 return Objects.hash(d.getYear(), d.getMonth(), d.getDay());
             }
         }
         return val.hashCode();
+    }
+
+    private static boolean isMidnightOrDateOnly(PureDate d)
+    {
+        return !d.hasHour()
+                || (d.getHour() == 0 && d.getMinute() == 0 && d.getSecond() == 0
+                    && (!d.hasSubsecond() || d.getSubsecond().chars().allMatch(c -> c == '0')));
     }
 
     static boolean subTreeValidForCaching(GraphFetchTree graphFetchTree)
