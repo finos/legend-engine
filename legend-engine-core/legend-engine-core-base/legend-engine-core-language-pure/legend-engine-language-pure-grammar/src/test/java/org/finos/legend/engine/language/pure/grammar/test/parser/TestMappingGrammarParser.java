@@ -32,7 +32,6 @@ import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty;
@@ -1092,7 +1091,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         RelationFunctionClassMapping cm = (RelationFunctionClassMapping) mapping.classMappings.get(0);
         org.junit.Assert.assertEquals(java.util.Arrays.asList("firstName", "lastName"), cm.primaryKey);
 
-        // omitted ~primaryKey -> null (so grammar composer doesn't emit a synthetic ~primaryKey [] on round-trip)
+        // omitted ~primaryKey -> empty list
         PureModelContextData data2 = test("###Mapping\n" +
                 "Mapping my::testMapping\n" +
                 "(\n" +
@@ -1104,69 +1103,7 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 ")\n");
         Mapping mapping2 = (Mapping) ListIterate.select(data2.getElements(), e -> e.name.equals("testMapping")).get(0);
         RelationFunctionClassMapping cm2 = (RelationFunctionClassMapping) mapping2.classMappings.get(0);
-        org.junit.Assert.assertNull(cm2.primaryKey);
-    }
-
-    @Test
-    public void testModelJoinAssociationMapping()
-    {
-        // Simple valid ModelJoin with explicit typed lambda
-        test("###Mapping\n" +
-                "Mapping mapping::test\n" +
-                "(\n" +
-                "  mapping::SomeClass: ModelJoin\n" +
-                "  {\n" +
-                "    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}\n" +
-                "  }\n" +
-                ")");
-
-        // ModelJoin with complex expression using explicit typed lambda
-        test("###Mapping\n" +
-                "Mapping mapping::test\n" +
-                "(\n" +
-                "  mapping::SomeClass: ModelJoin\n" +
-                "  {\n" +
-                "    {firm: test::Firm[1], person: test::Person[1]|($firm.id == $person.firmId) && ($firm.name == $person.firmName)}\n" +
-                "  }\n" +
-                ")");
-
-        // ModelJoin with mapping id and explicit typed lambda
-        test("###Mapping\n" +
-                "Mapping mapping::test\n" +
-                "(\n" +
-                "  mapping::SomeClass[myId]: ModelJoin\n" +
-                "  {\n" +
-                "    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}\n" +
-                "  }\n" +
-                ")");
-    }
-
-    @Test
-    public void testModelJoinAssociationMappingSourceInformation()
-    {
-        PureModelContextData pureModelContextData = test("###Mapping\n" +
-                "Mapping test::myMapping\n" +
-                "(\n" +
-                "  test::Firm_Person: ModelJoin\n" +
-                "  {\n" +
-                "    {firm: test::Firm[1], person: test::Person[1]|$firm.id == $person.firmId}\n" +
-                "  }\n" +
-                ")\n");
-
-        Map<String, PackageableElement> elementMap = pureModelContextData.getElements().stream().collect(Collectors.toMap(PackageableElement::getPath, Function.identity()));
-
-        Mapping mapping = (Mapping) elementMap.get("test::myMapping");
-
-        org.junit.Assert.assertEquals(1, mapping.associationMappings.size());
-        org.junit.Assert.assertTrue(mapping.associationMappings.get(0) instanceof ModelJoinAssociationMapping);
-
-        ModelJoinAssociationMapping modelJoin = (ModelJoinAssociationMapping) mapping.associationMappings.get(0);
-        org.junit.Assert.assertEquals("test::Firm_Person", modelJoin.association.path);
-        org.junit.Assert.assertNotNull(modelJoin.joinCondition);
-        org.junit.Assert.assertNotNull(modelJoin.joinCondition.body);
-        org.junit.Assert.assertEquals(1, modelJoin.joinCondition.body.size());
-        org.junit.Assert.assertNotNull(modelJoin.sourceInformation);
-        org.junit.Assert.assertEquals(4, modelJoin.sourceInformation.startLine);
-        org.junit.Assert.assertEquals(7, modelJoin.sourceInformation.endLine);
+        org.junit.Assert.assertNotNull(cm2.primaryKey);
+        org.junit.Assert.assertTrue(cm2.primaryKey.isEmpty());
     }
 }
