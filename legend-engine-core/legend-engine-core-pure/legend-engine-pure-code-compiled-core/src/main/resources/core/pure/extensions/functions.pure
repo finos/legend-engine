@@ -34,26 +34,10 @@ import meta::pure::graphFetch::executionPlan::*;
 // Store Extension --------------------------------------------------------------------------
 function meta::pure::extension::storeContractForSetImplementation(extensions: Extension[*], s:InstanceSetImplementation[1]):StoreContract[1]
 {
-  $s->match([
-      e: EmbeddedSetImplementation[1]|
-        if($e.owner->isEmpty(),
-           | $extensions.availableStores->removeDuplicatesBy(x|$x.id)
-                                        ->filter(sc|$sc.supportsSetImplementation->eval($s))
-                                        ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']'),
-           | $extensions->meta::pure::extension::_storeContractForSetImplementation($e.owner->toOne()->cast(@SetImplementation))
-        ),
-      r: meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation[1]|
-        let routed = $r->meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet($r.parent, $extensions)
-                       ->cast(@meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation);
-        let vs = $routed.relationFunction.expressionSequence->evaluateAndDeactivate();
-        assert($vs->size() == 1, 'Function used in Relation function class mapping can only have a single expression!');
-        assert($vs->at(0)->instanceOf(meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification), |'Relation function for set \'' + $r.id + '\' may not have been routed correctly.');
-        meta::pure::extension::storeContractFromStore($extensions, $vs->at(0)->cast(@meta::pure::router::store::metamodel::clustering::StoreClusteredValueSpecification).store);,
-      a: InstanceSetImplementation[1]|
-          $extensions.availableStores->removeDuplicatesBy(x|$x.id)
-                                     ->filter(sc|$sc.supportsSetImplementation->eval($s))
-                                     ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
-  ]);
+  $extensions.availableStores
+    ->removeDuplicatesBy(x|$x.id)
+    ->filter(sc|$sc.supportsSetImplementation->eval($s))
+    ->unique(|'for the setImplementation ' + $s->class().name->toOne() + '. For the extensions: [' + $extensions.type->joinStrings(',') + ']');
 }
 
 function meta::pure::extension::_storeContractForSetImplementation(extensions: Extension[*], setImpl:SetImplementation[1]):StoreContract[1]

@@ -177,6 +177,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
 
 
      supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelationalInstanceSetImplementation) ||
+                                                        $s->instanceOf(meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation) ||
                                                         ($s->instanceOf(CrossSetImplementation) && $s->cast(@CrossSetImplementation).targetStore->instanceOf(Database)),
      supportsStore = s:Store[1]|$s->instanceOf(Database),
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->meta::relational::contract::getStore(),
