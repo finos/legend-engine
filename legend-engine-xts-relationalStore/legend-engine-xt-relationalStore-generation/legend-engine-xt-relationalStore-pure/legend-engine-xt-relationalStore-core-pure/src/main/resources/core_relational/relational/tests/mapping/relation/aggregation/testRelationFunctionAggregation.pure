@@ -26,8 +26,16 @@ import meta::pure::executionPlan::toString::*;
 // Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
 // Analogous to meta::relational::tests::projection::aggregation::testSubAggregation
 // but with a relation (~func) class mapping as the root.
+//
+// Lives under meta::relational::tests::mapping::relation::aggregation so that the
+// parent package's <<BeforePackage>> setUp() (relationMappingSetup.pure) runs and
+// creates the personTable / firmTable schema this suite expects ("FIRST NAME"
+// column, no ADDRESSID, etc.). Do NOT move these tests under
+// meta::relational::tests::projection::aggregation — that package's existing
+// BeforePackage installs an incompatible schema (FIRSTNAME / LASTNAME / ADDRESSID)
+// and the two would clobber each other in the shared H2 instance.
 
-function <<access.private>> meta::relational::tests::projection::aggregation::runFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1]):TabularDataSet[1]
+function <<access.private>> meta::relational::tests::mapping::relation::aggregation::runFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1]):TabularDataSet[1]
 {
    execute(
       $query,
@@ -38,9 +46,9 @@ function <<access.private>> meta::relational::tests::projection::aggregation::ru
 }
 
 // (1) Average — basic single sub-aggregation.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet)
    );
    assertSize($result.rows, 5);
@@ -48,9 +56,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Average + simple property.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees.age->average()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -60,9 +68,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Two sub-aggregations on the same root (count + average).
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[
          b:f|$f.employees.firstName->count(),
          a:f|$f.employees.age->average()
@@ -75,9 +83,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Sum (NULL for empty groups via LEFT OUTER JOIN).
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->sum()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -87,9 +95,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Max.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->max()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -99,9 +107,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Sub-aggregation with a filter inside the collection navigation.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -111,9 +119,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Min.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->min()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -123,9 +131,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Count only — single aggregation column with no extra projected properties.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet)
    );
    assertSize($result.rows, 5);
@@ -133,9 +141,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Top-level if wrapping a sub-aggregation (exercises CASE/WHEN wrapping path).
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, a:f|if($f.legalName == 'Firm X', |1.0, |$f.employees.age->average())])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -145,9 +153,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // map + arithmetic then sum (validates expression wrapping inside aggregate).
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -157,9 +165,9 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // joinStrings (listagg SQL path). sortBy makes the per-group order deterministic.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
 {
-   let result = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[name:f|$f.legalName, e:f|$f.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet)
    );
    assertSameElements(
@@ -170,7 +178,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 
 // Diagnostic: prints the generated plan AND executes. If H2 rejects the SQL, the SQL is right
 // above the H2 stack trace in the test log — direct correlation, no separate run needed.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationOnRelationMapping_SQL():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping_SQL():Boolean[1]
 {
    let plan = executionPlan(
       |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet),
@@ -181,7 +189,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    let planStr = $plan->planToString(meta::relational::extension::relationalExtensions());
    println('### AVG plan ###\n' + $planStr + '\n### end AVG plan ###');
    // Now actually execute — succeeds or throws an H2 error we can see paired with the plan above.
-   let res = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let res = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet)
    );
    println('### AVG row count = ' + $res.rows->size()->toString() + ' ###');
@@ -189,7 +197,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
 }
 
 // Same pattern for the count case.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationCountOnlyOnRelationMapping_SQL():Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping_SQL():Boolean[1]
 {
    let plan = executionPlan(
       |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet),
@@ -199,9 +207,10 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::projection
    );
    let planStr = $plan->planToString(meta::relational::extension::relationalExtensions());
    println('### COUNT plan ###\n' + $planStr + '\n### end COUNT plan ###');
-   let res = meta::relational::tests::projection::aggregation::runFirmAgg(
+   let res = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
       |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet)
    );
    println('### COUNT row count = ' + $res.rows->size()->toString() + ' ###');
    true;
 }
+
