@@ -207,10 +207,20 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
   $r->toOne().relationalOperationElement->inferRelationalType(false)->cast(@meta::relational::metamodel::datatype::DataType)
 }
 
+function meta::relational::mapping::uniqueRelationName(n:NamedRelation[1]):String[1]
+{
+  $n->match([
+    g:GeneratedAccessorTable[1]|$g.sourceElement->elementToPath()+'_'+$g.name,
+    t:TabularFunction[1]|$t.name+ '_'+ $t.schema.name+'_'+ $t.schema->toOne().database->elementToPath();,
+    tf:Table[1]|$tf.name+ '_'+ $tf.schema.name+'_'+ $tf.schema.database->elementToPath();,
+    nr:NamedRelation[1]| $nr.name
+  ])
+}
+
 function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):SQLExecutionNode[1]
 {
    let sql = toSqlString($query, $connection, false, $extensions);
-   let relations = $query->meta::relational::milestoning::getQueryRelationAliases()->map(a|$a.relationalElement)->cast(@NamedRelation)->removeDuplicatesBy(t| $t.name);
+   let relations = $query->meta::relational::milestoning::getQueryRelationAliases()->map(a|$a.relationalElement)->cast(@NamedRelation)->removeDuplicatesBy(t| $t->uniqueRelationName());
 
    ^SQLExecutionNode
    (
