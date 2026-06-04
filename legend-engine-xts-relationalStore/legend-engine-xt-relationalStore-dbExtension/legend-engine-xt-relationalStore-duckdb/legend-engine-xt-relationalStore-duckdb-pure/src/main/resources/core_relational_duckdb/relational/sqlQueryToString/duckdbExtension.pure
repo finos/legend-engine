@@ -184,7 +184,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     // dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
-    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='strptime(%s, [\'%%Y-%%m-%%d\', \'%%Y%%m%%d\', \'%%b%%Y\'])::DATE', transform={p:String[*] | $p->at(0)})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDuckDB()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='CAST(%s AS VARCHAR)')),
     dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForDuckDB()})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(\'%s\',%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForDuckDB(),$p->at(0),$p->at(1)]})),
@@ -287,6 +287,36 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     pair('ISO8601_NanoSecondPrecision', format('strftime(%s, \'%%Y-%%m-%%dT%%H:%%M:%%S.\') || lpad(cast(extract(\'microsecond\' from %s) %% 1000000 as varchar), 6, \'0\') || \'000\'', [$params->at(0), $params->at(0)]))
   ];
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::dateFormatsDuckDB():Map<String,String>[1]
+{
+   newMap([
+      pair('yyyy-MM-dd', '%Y-%m-%d'),
+      pair('yyyyMMdd',   '%Y%m%d'),
+      pair('MMMyyyy',    '%b%Y'),
+      pair('dd MMM yy',  '%d %b %y'),
+      pair('ddMMMyyyy',  '%d%b%Y'),
+      pair('yyyy/MM/dd', '%Y/%m/%d'),
+      pair('dd/MM/yyyy', '%d/%m/%Y')
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::normalizeDuckDBDateFormat(format:String[1]):String[1]
+{
+   [
+      pair('YYYY', 'yyyy'), pair('DD',   'dd')]->fold({e, a | $a->replace($e.first, $e.second)}, $format);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::convertToDateDuckDB(params:String[*]):String[1]
+{
+   assert($params->size() <= 2, 'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   let dateFormat = if($params->size() == 1, | '\'%Y-%m-%d\'',
+                       | let userFormat = $params->at(1)->replace('\'', '')->normalizeDuckDBDateFormat();
+                         let mapped = dateFormatsDuckDB()->get($userFormat);
+                         assert($mapped->isNotEmpty(), | 'convertDate format \'' + $params->at(1)->replace('\'', '') + '\' is not supported on DuckDB');
+                         '\'' + $mapped->toOne() + '\'';);
+   'strptime(' + $params->at(0) + ', ' + $dateFormat + ')::DATE';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processExtractFromSemiStructuredParamsFoDuckDb(params:String[3]):String[1]
