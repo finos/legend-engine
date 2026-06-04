@@ -444,7 +444,6 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             EnumerationMapping<Object> eMap = allEnumerationMappings.select(e -> e._name().equals(propertyMapping.enumMappingId)).toList().getFirst();
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
             relationFunctionPropertyMapping._transformer(eMap);
-            relationFunctionPropertyMapping._targetSetImplementationId(propertyMapping.enumMappingId);
         }
         
         return relationFunctionPropertyMapping;
