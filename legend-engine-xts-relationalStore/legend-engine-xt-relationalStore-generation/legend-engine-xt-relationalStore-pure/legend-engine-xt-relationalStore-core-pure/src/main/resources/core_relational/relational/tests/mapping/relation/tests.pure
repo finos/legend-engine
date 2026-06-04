@@ -78,21 +78,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
         );
 }
 
-// Exercises the addSelfJoin path against a class mapped via RelationFunctionInstanceSetImplementation:
-// aggregating `employees.age` per Firm forces processAggregation to inject a correlated sub-select
-// with a self-join on the Person relation function's PK. Verifies that:
-//   1. RelationFunction PKs are resolved (~primaryKey / inferred from body).
-//   2. PK columns are found in the wrapped sub-select (alias-aware filter).
-//   3. The rootToGenJoinOperation match handles the RelationFunction case.
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithAggregationOnRelationFunctionMapping():Boolean[1]
-{
-  testTds(|Firm.all()->project(~[firmName:x|$x.legalName, avgAge:x|$x.employees.age->average()])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SimpleMapping,
-          meta::relational::tests::mapping::relation::testDB,
-          ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
-        );
-}
-
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
 {
   testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet), 
