@@ -111,8 +111,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 // fails to bind the AGE column when the navigation contains a filter, with error
 //   "Found 0 relations that could support the column AGE in the nested SQL select <firmTable subselect>"
 // Resolution requires threading the inner-relation wrapper through the column-lookup path so
-// AGE resolves against personTable rather than the outer firmTable subselect. Out of scope for
-// the current ~primaryKey / addSelfJoin patch.
+// AGE resolves against personTable rather than the outer firmTable subselect.
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
@@ -165,7 +164,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 // than the true sum. Confirmed by actual = ['Firm A | 2', 'Firm B | 2', 'Firm C | 4',
 // 'Firm D | 2', 'Firm X | 2']. Same query works on the equivalent RootRelationalInstanceSet
 // mapping; bug is specific to processMap/processAggregation when the source is a
-// RelationFunctionInstanceSetImplementation. Out of scope for the current patch.
+// RelationFunctionInstanceSetImplementation.
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
 {
    let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
