@@ -1,6 +1,7 @@
 import meta::analytics::quality::tests::*;
 import meta::analytics::quality::model::*;
 import meta::analytics::quality::model::domain::*;
+import meta::analytics::quality::profiles::*;
 import meta::relational::runtime::*;
 import meta::analytics::quality::model::domain::tests::*;
 

@@ -1,9 +1,10 @@
 import meta::analytics::quality::*;
 import meta::analytics::quality::model::*;
+import meta::analytics::quality::model::domain::*;
+import meta::analytics::quality::profiles::*;
 import meta::pure::functions::collection::*;
 import meta::pure::functions::meta::applications::*;
 import meta::pure::metamodel::serialization::grammar::*;
-import meta::analytics::quality::model::domain::*;
 
 function meta::analytics::quality::model::domain::functionRules():Rule<List<FunctionDefinition<Any>>>[*]
 {
