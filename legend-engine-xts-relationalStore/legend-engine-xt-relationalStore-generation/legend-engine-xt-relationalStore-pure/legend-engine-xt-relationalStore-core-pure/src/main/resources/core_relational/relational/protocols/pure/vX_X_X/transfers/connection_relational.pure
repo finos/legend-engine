@@ -201,7 +201,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
          ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification(
              _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
-             testDataSetupSqls = $l.testDataSetupSqls
+             testDataSetupSqls = $l.testDataSetupSqls,
+             databaseToUpper = $l.databaseToUpper
          )
    ])->toOneMany())
 }
