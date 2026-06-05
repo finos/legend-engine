@@ -1,3 +1,4 @@
+import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::flow::*;
 import meta::pure::metamodel::variant::*;
 import meta::external::query::sql::transformation::utils::*;
@@ -387,6 +388,12 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         ]);
 
         sfe(size_Any_MANY__Integer_1_, $args->at(0));
+      }),
+
+      array('string_to_array', String, {args, fc, expCtx, ctx | 
+        assertEquals(2, $args->size(), 'only string_to_array with arg 2 supported');
+
+        sfe(split_String_1__String_1__String_MANY_, [$args->at(0), $args->at(1)]);
       }),
 
       //FORMAT

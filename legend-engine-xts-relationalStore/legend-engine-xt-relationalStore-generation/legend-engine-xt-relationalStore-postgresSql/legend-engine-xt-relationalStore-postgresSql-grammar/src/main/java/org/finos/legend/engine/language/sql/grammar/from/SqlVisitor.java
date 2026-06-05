@@ -1125,6 +1125,23 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     }
 
     @Override
+    public Node visitLateralRelation(SqlBaseParser.LateralRelationContext context)
+    {
+        LateralRelation lateralRelation = new LateralRelation();
+        if (context.queryStatement() != null)
+        {
+            TableSubquery tableSubquery = new TableSubquery();
+            tableSubquery.query = (Query) visit(context.queryStatement());
+            lateralRelation.relation = tableSubquery;
+        }
+        else
+        {
+            lateralRelation.relation = (Relation) visit(context.table());
+        }
+        return lateralRelation;
+    }
+
+    @Override
     public Node visitParenthesizedRelation(SqlBaseParser.ParenthesizedRelationContext context)
     {
         return visit(context.relation());

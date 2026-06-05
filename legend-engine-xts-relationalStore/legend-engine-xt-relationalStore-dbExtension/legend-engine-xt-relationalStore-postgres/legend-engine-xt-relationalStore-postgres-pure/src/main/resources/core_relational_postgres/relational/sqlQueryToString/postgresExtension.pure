@@ -296,30 +296,26 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
         'DATE_PART(\'month\', %s) - DATE_PART(\'month\', %s)'
      ])},
      {| format('(%s)', [
-        'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
+        'TRUNC((%s - %s) / 7)'
      ])},
      {| format('(%s)', [
-        'DATE_PART(\'day\', %s - %s)'
+        '%s - %s'
      ])},
-     {| format('(%s * 24 + (%s))', [
-        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
-        'DATE_PART(\'hour\', %s - %s)'
+     {| format('(%s)', [
+        '(trunc(DATE_PART(\'EPOCH\', (%s - %s)) / 3600))::bigint'
      ])},
-     {| format('(%s * 60 + (%s))', [
-        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.HOURS->toString()]),
-        'DATE_PART(\'minute\', %s - %s)'
+     {| format('(%s)', [
+        '(trunc(DATE_PART(\'EPOCH\', (%s - %s)) / 60))::bigint'
      ])},
-     {| format('(%s * 60 + (%s))', [
-        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.MINUTES->toString()]),
-        'DATE_PART(\'second\', %s - %s)'
+     {| format('(%s)', [
+        'trunc(DATE_PART(\'EPOCH\', (%s - %s)))::bigint'
      ])},
-     {| format('(%s * 1000 + (%s))', [
-        generateDateDiffExpressionForPostgres([$params->at(0), $params->at(1), DurationUnit.SECONDS->toString()]),
-        'DATE_PART(\'milliseconds\', %s - %s)'
+     {| format('(%s)', [
+        '(trunc(DATE_PART(\'EPOCH\', (%s - %s)) * 1000))::bigint'
      ])}
   ];
 
-  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(1), $params->at(0)]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processJoinStringsOperationForPostgres(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
