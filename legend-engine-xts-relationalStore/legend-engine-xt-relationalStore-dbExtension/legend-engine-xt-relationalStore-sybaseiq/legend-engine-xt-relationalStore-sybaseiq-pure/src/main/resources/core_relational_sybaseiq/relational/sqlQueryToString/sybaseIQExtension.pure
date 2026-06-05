@@ -157,8 +157,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 {
   let enumValue = $params->at(1)->replace('\'', '')->replace('Text', '');
   let formatPairs = [
-    pair('ISO8601', 'CONVERT(VARCHAR(10), %s, 23)'),
-    pair('ISO8601_NanoSecondPrecision', 'REPLACE(CONVERT(VARCHAR(19), %s, 120), \' \', \'T\') || \'.000000000\'')
+    pair('ISO8601', 'DATEFORMAT(%s, \'YYYY-MM-DD\')'),
+    pair('ISO8601_NanoSecondPrecision', 'REPLACE(DATEFORMAT(%s, \'YYYY-MM-DD HH:NN:SS.SSSSSS\'), \' \', \'T\') || \'000\'')
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format($sqlFmt, [$params->at(0)]);

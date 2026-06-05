@@ -108,13 +108,13 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
   let lambda = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
     ->select(~[DOB,CODE,COUPOUN,CREATED])
-    ->extend(~[DOB_SOURCE: row | $row.DOB->normalizeDateTime(), CODE_SOURCE: row | $row.CODE->normalizeFloat(), COUPOUN_SOURCE: row | $row.COUPOUN->normalizeDecimal(), CREATED_SOURCE: row | $row.CREATED->normalizeDate()])
+    ->extend(~[DOB_SOURCE: row | $row.DOB->normalizeDateTime(), CODE_SOURCE: row | $row.CODE->normalizeFloat(), COUPOUN_SOURCE: row | $row.COUPOUN, CREATED_SOURCE: row | $row.CREATED->normalizeDate()])
     ->select(~[DOB_SOURCE,CODE_SOURCE,COUPOUN_SOURCE,CREATED_SOURCE])
     ->from($runtime)
     ->join(
         #>{meta::external::dataquality::tests::domain::db.personTable}#
           ->select(~[DOB,CODE,COUPOUN,CREATED])
-          ->extend(~[DOB_TARGET: row | $row.DOB->normalizeDateTime(), CODE_TARGET: row | $row.CODE->normalizeFloat(), COUPOUN_TARGET: row | $row.COUPOUN->normalizeDecimal(), CREATED_TARGET: row | $row.CREATED->normalizeDate()])
+          ->extend(~[DOB_TARGET: row | $row.DOB->normalizeDateTime(), CODE_TARGET: row | $row.CODE->normalizeFloat(), COUPOUN_TARGET: row | $row.COUPOUN, CREATED_TARGET: row | $row.CREATED->normalizeDate()])
           ->select(~[DOB_TARGET,CODE_TARGET,COUPOUN_TARGET,CREATED_TARGET])
           ->from($runtime),
         JoinKind.FULL,

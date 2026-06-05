@@ -112,28 +112,17 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
 
 function meta::external::dataquality::normalizeDateTime(value:DateTime[0..1]):String[0..1]
 {
-  //TODO - this is converting to ISO8601 format but change to use formatDate function when available
   if ($value->isEmpty(),
     | [],
-    | $value->toOne()->year()->toString() + '-' + $value->toOne()->monthNumber()->toString()->lpad(2, '0') + '-' + $value->toOne()->dayOfMonth()->toString()->lpad(2, '0') + 'T' + 
-        $value->toOne()->hour()->toString()->lpad(2, '0') + ':' + $value->toOne()->minute()->toString()->lpad(2, '0') + ':' + $value->toOne()->second()->toString()->lpad(2, '0') + '.000000000';
+    | $value->toOne()->formatDate(DateTimeFormat.ISO8601_NanoSecondPrecision)
   );
 }
 
-function meta::external::dataquality::normalizeDate(value:Date[0..1]):String[0..1]
+function meta::external::dataquality::normalizeDate(value:StrictDate[0..1]):String[0..1]
 {
   if ($value->isEmpty(),
     | [],
-    | $value->toOne()->year()->toString() + '-' + $value->toOne()->monthNumber()->toString()->lpad(2, '0') + '-' + $value->toOne()->dayOfMonth()->toString()->lpad(2, '0')
-  );
-}
-
-function meta::external::dataquality::normalizeDecimal(value:Decimal[0..1]):String[0..1]
-{
-  //TODO - this is converting to IEEE 754 Scientific Notation but see if we can do this in-line in a more simple way
-  if ($value->isEmpty(),
-    | [],
-    | if($value->toOne() == 0, | '0.000000000000000E+000', | ($value->toOne() / pow(10, $value->toOne()->abs()->log10()->floor()))->round(15)->toString()->rpad(17, '0') + 'E' + if($value->toOne()->abs()->log10()->floor() >= 0, | '+', | '-') + $value->toOne()->abs()->log10()->floor()->abs()->toString()->lpad(3, '0'))
+    | $value->toOne()->formatDate(StrictDateFormat.ISO8601)
   );
 }
 
@@ -142,7 +131,7 @@ function meta::external::dataquality::normalizeFloat(value:Float[0..1]):String[0
   //TODO - this is converting to IEEE 754 Scientific Notation but see if we can do this in-line in a more simple way
   if ($value->isEmpty(),
     | [],
-    | if($value->toOne() == 0, | '0.000000000000000E+000', | ($value->toOne() / pow(10, $value->toOne()->abs()->log10()->floor()))->round(15)->toString()->rpad(17, '0') + 'E' + if($value->toOne()->abs()->log10()->floor() >= 0, | '+', | '-') + $value->toOne()->abs()->log10()->floor()->abs()->toString()->lpad(3, '0'))
+    | if($value->toOne() == 0, | '0.000000000000000E+000', | (($value->toOne() / pow(10, $value->toOne()->abs()->log10()->floor()))->round(15)->toString() + '00000000000000000')->substring(0, 17) + 'E' + if ($value->toOne()->abs()->log10()->floor() >= 0, | '+', | '-') + ('000' + $value->toOne()->abs()->log10()->floor()->abs()->toString())->substring($value->toOne()->abs()->log10()->floor()->abs()->toString()->length() + 1, $value->toOne()->abs()->log10()->floor()->abs()->toString()->length() + 3))
   );
 }
 

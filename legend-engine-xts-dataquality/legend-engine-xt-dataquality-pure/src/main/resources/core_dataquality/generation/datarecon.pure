@@ -24,11 +24,6 @@ import meta::external::dataquality::dataprofile::*;
 import meta::relational::metamodel::datatype::*;
 import meta::pure::tds::schema::*;
 
-function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: DataQualityReconInput[1]): LambdaFunction<Any>[1]
-{  
-  getDataReconLambda($reconInput, {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
-}
-
 /*
   This method will:
     1) select only columns required for hash + keys
@@ -441,10 +436,9 @@ function meta::external::dataquality::datarecon::buildNullSafeComparisonExpressi
 function meta::external::dataquality::datarecon::buildNormalizeExpression(input: ValueSpecification[1], type: Type[1]):Pair<ValueSpecification, Type>[1]
 {
   let func = if ([
-      pair(| $type->subTypeOf(Decimal), | normalizeDecimal_Decimal_$0_1$__String_$0_1$_),
       pair(| $type->subTypeOf(Float), | normalizeFloat_Float_$0_1$__String_$0_1$_),
       pair(| $type->subTypeOf(DateTime), | normalizeDateTime_DateTime_$0_1$__String_$0_1$_),
-      pair(| $type->subTypeOf(Date), | normalizeDate_Date_$0_1$__String_$0_1$_),
+      pair(| $type->subTypeOf(StrictDate), | normalizeDate_StrictDate_$0_1$__String_$0_1$_),
       pair(| $type->subTypeOf(Binary), | normalizeBinary_Binary_$0_1$__String_$0_1$_)
     ],
     | []
