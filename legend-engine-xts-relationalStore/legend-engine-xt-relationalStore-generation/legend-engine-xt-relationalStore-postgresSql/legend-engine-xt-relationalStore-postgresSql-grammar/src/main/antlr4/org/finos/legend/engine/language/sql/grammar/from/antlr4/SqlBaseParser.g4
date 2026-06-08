@@ -253,6 +253,8 @@ relationPrimary
     : table                                                                          #tableRelation
     | OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET                          #subqueryRelation
     | OPEN_ROUND_BRACKET relation CLOSE_ROUND_BRACKET                                #parenthesizedRelation
+    | LATERAL OPEN_ROUND_BRACKET queryStatement CLOSE_ROUND_BRACKET                  #lateralRelation
+    | LATERAL table                                                                  #lateralRelation
     ;
 
 tableWithPartition

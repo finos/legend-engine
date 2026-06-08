@@ -2724,10 +2724,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | %2023-01-01->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS), 'INTERVAL_MIX'),
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->adjust(year($row.getStrictDate('StrictDate')) * 2, DurationUnit.YEARS)->adjust(year($row.getStrictDate('StrictDate')) * 3, DurationUnit.DAYS), 'INTERVAL_MIX2'),
                   col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS), 'INTERVAL_MIX3'),
-                  col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), $row.getDateTime('DateTime'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
+                  col(row:TDSRow[1] | dateDiff($row.getDateTime('DateTime'), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
                   col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), -1, DurationUnit.DAYS), 'INTERVAL_SUBTRACT'),
-                  col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), %2023-01-01, DurationUnit.DAYS), 'STRING_SUBSTRACT'),
-                  col(row:TDSRow[1] | dateDiff(%2023-01-01, $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
+                  col(row:TDSRow[1] | dateDiff(%2023-01-01, $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
+                  col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), %2023-01-01, DurationUnit.DAYS), 'STRING_SUBSTRACT2')
                 ])
         },
 
@@ -2744,10 +2744,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                     INTERVAL_MIX : x|%2023-01-01->adjust(2 * 1, DurationUnit.DAYS)->adjust(3 * 2, DurationUnit.DAYS),
                     INTERVAL_MIX2 : x|$x.StrictDate->adjust($x.StrictDate->year() * 2, DurationUnit.YEARS)->adjust($x.StrictDate->year() * 3, DurationUnit.DAYS),
                     INTERVAL_MIX3 : x|$x.StrictDate->firstHourOfDay()->adjust($x.StrictDate->dayOfWeekNumber() * 1, DurationUnit.DAYS),
-                    DATE_SUBTRACT : x|$x.StrictDate->dateDiff($x.DateTime, DurationUnit.DAYS),
+                    DATE_SUBTRACT : x|$x.DateTime->dateDiff($x.StrictDate, DurationUnit.DAYS),
                     INTERVAL_SUBTRACT : x|$x.StrictDate->adjust(-1, DurationUnit.DAYS),
-                    STRING_SUBSTRACT : x|$x.StrictDate->dateDiff(%2023-01-01, DurationUnit.DAYS),
-                    STRING_SUBSTRACT2 : x|%2023-01-01->dateDiff($x.StrictDate, DurationUnit.DAYS)
+                    STRING_SUBSTRACT : x|%2023-01-01->dateDiff($x.StrictDate, DurationUnit.DAYS),
+                    STRING_SUBSTRACT2 : x|$x.StrictDate->dateDiff(%2023-01-01, DurationUnit.DAYS)
                   ]
               )
           }
@@ -4176,6 +4176,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralRelation():Boolean[1]
+{
+  error(
+    'select * from service."/service/service1", lateral unnest(ARRAY[5,1,2,8,3]) as a',
+    'lateral not yet supported'
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
 {
   test(
@@ -4258,6 +4266,32 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           //   array: x | list([$x.Integer, $x.Float, $x.Decimal])
           // ])
       }, false, false) //TODO false, false means we are not asserting, just ensuring no error, this is due to the project with newMap not compiling in IDE
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArrayFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'array_position(ARRAY[\'a\', \'b\', \'c\'], \'b\') as array_position, ' + 
+    'array_length(ARRAY[\'a\', \'b\', \'c\'], 1) as array_length, ' + 
+    'string_to_array(\'a,b,c\', \',\') as string_to_array ' +
+    'FROM service."/service/service7"',
+
+    [
+      c({|
+        #TDS
+              id, variant:meta::pure::metamodel::variant::Variant, int_array, object_col, object_col_array
+              1, "[1,2,3]", "[1,2,3]", "{"hello": {"world": 1}}", "{"hello": {"world": [1]}}"
+              2, "[4,5,6]", "[4,5,6]", "{"hello": {"world": 2}}", "{"hello": {"world": [2]}}"
+              3, "[7,8,9]", "[7,8,9]", "{"hello": {"world": 3}}", "{"hello": {"world": [3]}}"
+            #->project(~[
+              array_position: x | ['a', 'b', 'c']->indexOf('b'),
+              array_length: x | ['a', 'b', 'c']->size(),
+              string_to_array: x | 'a,b,c'->split(',')
+            ])
+      }, true, false)
     ]
   )
 }

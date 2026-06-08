@@ -540,7 +540,7 @@ public class SQLGrammarComposer
             public String visit(QuerySpecification val)
             {
                 return val.select.accept(this)
-                        + (val.from.isEmpty() ? "" : " from " + visit(val.from, ""))
+                        + (val.from.isEmpty() ? "" : " from " + visit(val.from, ", "))
                         + (val.where == null ? "" : " where " + val.where.accept(this))
                         + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
                         + (val.having == null ? "" : " having " + visit(val.having))
@@ -651,6 +651,12 @@ public class SQLGrammarComposer
             public String visit(TableSubquery val)
             {
                 return "(" + visit(val.query) + ")";
+            }
+
+            @Override
+            public String visit(LateralRelation val)
+            {
+                return "LATERAL " + val.relation.accept(this);
             }
 
             @Override

@@ -26,6 +26,7 @@ function meta::external::query::sql::reversePCT::tests::essential::reverses():Re
     meta::external::query::sql::reversePCT::tests::essential::date::creation::date::reverses(),
 
     meta::external::query::sql::reversePCT::tests::essential::date::operation::adjust::reverses(),
+    meta::external::query::sql::reversePCT::tests::essential::date::operation::dateDiff::reverses(),
 
     meta::external::query::sql::reversePCT::tests::essential::date::extract::datePart::reverses(),
     meta::external::query::sql::reversePCT::tests::essential::date::extract::dayOfMonth::reverses(),

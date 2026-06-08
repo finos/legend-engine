@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.LateralRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
 import org.finos.legend.engine.protocol.sql.metamodel.StringConcatenate;
 import org.finos.legend.engine.protocol.sql.metamodel.SubscriptExpression;
@@ -323,6 +324,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(Join val)
     {
         return collect(val.left, val.right);
+    }
+
+    @Override
+    public T visit(LateralRelation val)
+    {
+        return collect(val.relation);
     }
 
     @Override
