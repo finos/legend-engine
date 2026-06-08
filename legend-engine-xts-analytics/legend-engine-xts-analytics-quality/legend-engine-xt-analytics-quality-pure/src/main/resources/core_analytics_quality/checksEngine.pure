@@ -1,7 +1,8 @@
 import meta::analytics::quality::model::*;
 import meta::analytics::quality::model::domain::*;
-import meta::relational::tests::*;
+import meta::analytics::quality::profiles::*;
 import meta::pure::runtime::*;
+import meta::relational::tests::*;
 
 
 Enum meta::analytics::quality::model::Severity
@@ -25,7 +26,7 @@ Class meta::analytics::quality::model::Rule<T>
 
 }
 
-Profile meta::analytics::quality::model::rule
+Profile meta::analytics::quality::profiles::rule
 {
     stereotypes: [skipTests];
     tags: [rule, severity, category, description, ignore];
@@ -93,7 +94,7 @@ function meta::analytics::quality::model::domain::createRule<T>(ruleFunctionB: F
     let description = $ruleFunction->value4Tag('description', rule).value->toOne();
     let severity = Severity->extractEnumValue($tags->filter(t | $t.tag == rule->tag('severity'))->map(t | $t.value)->toOne()->toString());
     let category = Category->extractEnumValue($tags->filter(t | $t.tag == rule->tag('category'))->map(t | $t.value)->toOne()->toString());
-    let skipTestsTag = $ruleFunction->hasStereotype('skipTests',meta::analytics::quality::model::rule);
+    let skipTestsTag = $ruleFunction->hasStereotype('skipTests',meta::analytics::quality::profiles::rule);
     ^Rule<T>(id=$rule,func=$ruleFunctionB,severity=$severity,category=$category,description=$description,hasSkipTestsFlag=$skipTestsTag);
 }
 

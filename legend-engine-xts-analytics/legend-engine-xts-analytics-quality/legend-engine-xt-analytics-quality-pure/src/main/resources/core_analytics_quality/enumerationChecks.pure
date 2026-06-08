@@ -1,6 +1,7 @@
 import meta::analytics::quality::*;
 import meta::analytics::quality::model::*;
 import meta::analytics::quality::model::domain::*;
+import meta::analytics::quality::profiles::*;
 
 function meta::analytics::quality::model::domain::enumerationRules():Rule<Enumeration<Any>>[*]
 {
