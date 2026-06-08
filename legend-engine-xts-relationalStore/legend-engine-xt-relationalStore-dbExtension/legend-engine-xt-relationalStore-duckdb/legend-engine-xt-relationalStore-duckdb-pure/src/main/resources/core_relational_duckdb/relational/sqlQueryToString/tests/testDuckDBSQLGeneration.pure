@@ -25,6 +25,8 @@ import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::postProcessor::cteExtraction::*;
 import meta::external::store::relational::sqlDialectTranslation::duckDB::*;
+import meta::relational::tests::mapping::sqlFunction::model::domain::*;
+import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCTESQLGeneration(): Boolean[1]
 {
@@ -36,4 +38,40 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testCT
       'select "subselect"."TradeID" as "TradeID", "subselect"."Quantity" as "Quantity" from subquery_cte_1_1 as "subselect" where "subselect"."TradeID" = 100',
       $result
    );
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertVarchar128InDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertVarchar128], ['convertVarchar128']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select CAST("root".int1 AS VARCHAR) as "convertVarchar128" from dataTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateNoFormatInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate1], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateISOFormatInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDate], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateMMMyyyyFormatInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select strptime("root".stringUserDefinedDateFormat, \'%b%Y\')::DATE as "convertToDate" from dataTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateUppercaseFormatNormalizedInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateMemSQL], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
+}
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateSlashedFormatInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat2], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select strptime("root".stringUserDefinedDateFormat, \'%Y/%m/%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
