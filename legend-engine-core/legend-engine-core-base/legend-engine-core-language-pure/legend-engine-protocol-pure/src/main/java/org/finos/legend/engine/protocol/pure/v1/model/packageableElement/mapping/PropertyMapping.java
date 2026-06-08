@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -30,6 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
         @JsonSubTypes.Type(value = ModelJoinPropertyMapping.class, name = "modelJoinPropertyMapping"),
         @JsonSubTypes.Type(value = AggregationAwarePropertyMapping.class, name = "AggregationAwarePropertyMapping"),
         @JsonSubTypes.Type(value = RelationFunctionPropertyMapping.class, name = "relationFunctionPropertyMapping"),
+        @JsonSubTypes.Type(value = RelationFunctionEmbeddedPropertyMapping.class, name = "relationFunctionEmbeddedPropertyMapping"),
+        @JsonSubTypes.Type(value = RelationFunctionEmbeddedPropertyMapping.class, name = "inlineEmbeddedRelationFunctionPropertyMapping"),
 })
 public abstract class PropertyMapping
 {

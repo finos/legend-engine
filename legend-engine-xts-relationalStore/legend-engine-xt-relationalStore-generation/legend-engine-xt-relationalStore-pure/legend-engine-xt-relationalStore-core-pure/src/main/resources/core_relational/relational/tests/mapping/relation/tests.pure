@@ -260,3 +260,223 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
           ['Firm X | Peter']
         );
 }
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMapping():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | FULL_TIME', 'Fabrice | FULL_TIME', 'Oliver | CONTRACT', 'David | CONTRACT']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilter():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Oliver | CONTRACT', 'David | CONTRACT']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterRight():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->filter(x|EmployeeType.FULL_TIME == $x.employeeType)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | FULL_TIME', 'Fabrice | FULL_TIME']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterNotEqual():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType != EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | FULL_TIME', 'Fabrice | FULL_TIME']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithIn():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME]))->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | FULL_TIME', 'Fabrice | FULL_TIME', 'Oliver | CONTRACT', 'David | CONTRACT']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithGroupBy():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->groupBy([x|$x.employeeType], [agg(x|$x.age, y|$y->count())], ['type', 'count'])
+                                        ->project([col(r:TDSRow[1]|$r.getString('type'), 'type'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['CONTRACT | 2', 'FULL_TIME | 2']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingProjection():Boolean[1]
+{
+   testTds(|PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | 30 | FULL_TIME', 'Fabrice | 45 | FULL_TIME', 'Oliver | 26 | CONTRACT', 'David | 52 | CONTRACT']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
+{
+   testTds(|PersonWithMultipleEnums.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType, active:x|$x.activeStatus])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | FULL_TIME | ACTIVE', 'Fabrice | FULL_TIME | ACTIVE', 'Oliver | CONTRACT | ACTIVE', 'David | CONTRACT | ACTIVE']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappingsWithFilter():Boolean[1]
+{
+   testTds(|PersonWithMultipleEnums.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT && $x.activeStatus == ActiveStatus.ACTIVE)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Oliver | CONTRACT', 'David | CONTRACT']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMapping():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | Main St | New York', 'Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilter():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Oliver | Oak Ave | Chicago']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithComplexFilter():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago' || $x.address.street->startsWith('Pine'))->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilterOnMultipleEmbeddedProperties():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | New York']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingGroupBy():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->groupBy([x|$x.address.city], [agg(x|$x.age, y|$y->count())], ['city', 'count'])
+                                   ->project([col(r:TDSRow[1]|$r.getString('city'), 'city'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Boston | 1', 'Chicago | 1', 'New York | 1', 'Seattle | 1']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithIsEmpty():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city->isEmpty())->project(~[name:x|$x.firstName])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           []
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociation():Boolean[1]
+{
+   testTds(|PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | New York | Firm X', 'Oliver | Chicago | Firm A', 'David | Boston | Firm B', 'Fabrice | Seattle | Firm C']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
+{
+   testTds(|PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm X')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | New York']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMapping():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | Main St | New York', 'Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Boston')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['David | Pine Rd | Boston']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Boston' || $x.address.city == 'Seattle')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | New York']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
+{
+   testTds(|PersonWithAddress.all()->groupBy([x|$x.address.city], [agg(x|$x.age, y|$y->count())], ['city', 'count'])
+                                   ->project([col(r:TDSRow[1]|$r.getString('city'), 'city'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
+           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Boston | 1', 'Chicago | 1', 'New York | 1', 'Seattle | 1']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
+{
+   testTds(|PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['John | New York | Firm X', 'Oliver | Chicago | Firm A', 'David | Boston | Firm B', 'Fabrice | Seattle | Firm C']
+         );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
+{
+   testTds(|PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm C')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
+           meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
+           meta::relational::tests::mapping::relation::testDB,
+           ['Fabrice | Seattle']
+         );
+}
+

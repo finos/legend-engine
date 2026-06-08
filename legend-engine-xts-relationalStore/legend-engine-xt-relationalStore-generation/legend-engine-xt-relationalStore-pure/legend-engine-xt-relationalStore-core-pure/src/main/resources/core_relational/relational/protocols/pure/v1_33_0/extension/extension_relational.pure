@@ -70,7 +70,7 @@ function meta::protocols::pure::v1_33_0::extension::getRelationalExtension():met
    ^meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0
    (
        moduleSerializerExtensions = meta::protocols::pure::v1_33_0::extension::relationalModuleSerializerExtension(),
-       transfers_mapping_transformMapping = x:SetImplementation[1] | !$x->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+       transfers_mapping_transformMapping = x:SetImplementation[1] | !$x->instanceOf(EmbeddedRelationalInstanceSetImplementation) && !$x->instanceOf(EmbeddedSetImplementation),
        transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | [
                   r:RootRelationalInstanceSetImplementation[1]| $r->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::transformRootRelationalInstanceSetImplementation($mapping, $extensions),
                   a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]| $a->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::relational::transformAggregationAwareSetImplementation($mapping, $extensions);

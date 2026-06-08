@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
@@ -64,7 +65,7 @@ public class MappingValidator
         this.validateGeneralization(pureModel, mappings);
         this.validateEnumerationMappings(pureModel, mappings);
         this.validateMappingElementIds(pureModel, mappings, pureMappings, mappingByClassMappingId);
-        this.validateRelationFunctionClassMapping(pureModel, pureMappings);
+        this.validateRelationFunctionClassMapping(pureModel, pureMappings, mappings);
 
         MappingValidatorContext mappingValidatorContext = new MappingValidatorContext(mappingByClassMappingId, pureMappings, mappings);
         extensions.getExtraMappingPostValidators().forEach(v -> v.accept(pureModel, mappingValidatorContext));
@@ -289,8 +290,38 @@ public class MappingValidator
         return Lists.mutable.empty();
     }
 
-    public void validateRelationFunctionClassMapping(PureModel pureModel, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
+    public void validateRelationFunctionClassMapping(PureModel pureModel, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings, Map<String, Mapping> protocolMappings)
     {
+        protocolMappings.forEach((mappingPath, protocolMapping) ->
+        {
+            if (protocolMapping.classMappings != null)
+            {
+                Set<String> classMappingIds = protocolMapping.classMappings.stream()
+                        .filter(cm -> cm instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping)
+                        .map(cm -> cm.id != null ? cm.id : cm._class.replace("::", "_"))
+                        .collect(Collectors.toSet());
+                protocolMapping.classMappings.stream()
+                        .filter(cm -> cm instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping)
+                        .forEach(cm ->
+                        {
+                            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping rfcm = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping) cm;
+                            if (rfcm.propertyMappings != null)
+                            {
+                                rfcm.propertyMappings.stream()
+                                        .filter(pm -> pm instanceof RelationFunctionEmbeddedPropertyMapping)
+                                        .map(pm -> (RelationFunctionEmbeddedPropertyMapping) pm)
+                                        .forEach(pm ->
+                                        {
+                                            if (pm.id != null && !pm.id.isEmpty() && (pm.propertyMappings == null || pm.propertyMappings.isEmpty()) && !classMappingIds.contains(pm.id))
+                                            {
+                                                throw new EngineException("The set implementation '" + pm.id + "' referenced in the inline embedded mapping for property '" + pm.property.property + "' does not exist in the mapping " + mappingPath, pm.sourceInformation, EngineErrorType.COMPILATION);
+                                            }
+                                        });
+                            }
+                        });
+            }
+        });
+
         pureMappings.forEach((mappingPath, mapping) ->
                 mapping._classMappings().select(classMapping -> (classMapping instanceof RelationFunctionInstanceSetImplementation)).each(classMapping ->
                 {
@@ -298,7 +329,7 @@ public class MappingValidator
                     FunctionDefinition<?> relationFunction = relationClassMapping._relationFunction();
                     ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
                     FunctionType functionType = (FunctionType) processorSupport.function_getFunctionType(relationFunction);
-                    if (functionType._parameters().size() != 0)
+                    if (!functionType._parameters().isEmpty())
                     {
                         throw new EngineException("Relation mapping function expecting arguments is not supported!", SourceInformationHelper.fromM3SourceInformation(relationFunction.getSourceInformation()), EngineErrorType.COMPILATION);
                     }
@@ -308,24 +339,42 @@ public class MappingValidator
                     }
                     GenericType lastExpressionType = relationFunction._expressionSequence().toList().getLast()._genericType();
                     RelationType<?> relationType = (RelationType<?>) lastExpressionType._typeArguments().toList().getFirst()._rawType();
-                    relationClassMapping._propertyMappings().each(pm -> 
-                    {
-                        RelationFunctionPropertyMapping propertyMapping = (RelationFunctionPropertyMapping) pm;
-                        try
-                        {
-                            Column<?, ?> column = (Column<?, ?>) _RelationType.findColumn(relationType, propertyMapping._column()._name(), propertyMapping.getSourceInformation(), processorSupport);
-                            if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.subTypeOf(_Column.getColumnType(column), _Column.getColumnType(propertyMapping._column()), processorSupport))
-                            {
-                                throw new EngineException("Mismatching property and relation column types. Property type is " + _Column.getColumnType(propertyMapping._column())._rawType()._name() + ", but relation column it is mapped to has type " + _Column.getColumnType(column)._rawType()._name() + ".", SourceInformationHelper.fromM3SourceInformation(propertyMapping.getSourceInformation()), EngineErrorType.COMPILATION);
-                            }
-                        }
-                        catch (PureCompilationException e) 
-                        {
-                            throw new EngineException(e.getInfo(), SourceInformationHelper.fromM3SourceInformation(e.getSourceInformation()), EngineErrorType.COMPILATION);
-                        }
-                    });
+                    Set<String> relationFunctionClassMappingIds = mapping._classMappings()
+                            .select(cm -> cm instanceof RelationFunctionInstanceSetImplementation)
+                            .collect(SetImplementation::_id).toSet();
+                    validateRelationPropertyMappings(relationClassMapping._propertyMappings(), relationType, processorSupport, mapping, pureModel, relationFunctionClassMappingIds);
                 }));
-        
+    }
+
+    private void validateRelationPropertyMappings(RichIterable<? extends PropertyMapping> propertyMappings, RelationType<?> relationType, ProcessorSupport processorSupport, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, PureModel pureModel, Set<String> relationFunctionClassMappingIds)
+    {
+        propertyMappings.each(pm ->
+        {
+            if (pm instanceof RelationFunctionPropertyMapping)
+            {
+                RelationFunctionPropertyMapping propertyMapping = (RelationFunctionPropertyMapping) pm;
+                try
+                {
+                    Column<?, ?> column = (Column<?, ?>) _RelationType.findColumn(relationType, propertyMapping._column()._name(), propertyMapping.getSourceInformation(), processorSupport);
+                    if (propertyMapping._transformer() != null)
+                    {
+                        return;
+                    }
+                    if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.subTypeOf(_Column.getColumnType(column), _Column.getColumnType(propertyMapping._column()), processorSupport))
+                    {
+                        throw new EngineException("Mismatching property and relation column types. Property type is " + _Column.getColumnType(propertyMapping._column())._rawType()._name() + ", but relation column it is mapped to has type " + _Column.getColumnType(column)._rawType()._name() + ".", SourceInformationHelper.fromM3SourceInformation(propertyMapping.getSourceInformation()), EngineErrorType.COMPILATION);
+                    }
+                }
+                catch (PureCompilationException e)
+                {
+                    throw new EngineException(e.getInfo(), SourceInformationHelper.fromM3SourceInformation(e.getSourceInformation()), EngineErrorType.COMPILATION);
+                }
+            }
+            else if (pm instanceof EmbeddedSetImplementation)
+            {
+                validateRelationPropertyMappings(((EmbeddedSetImplementation) pm)._propertyMappings(), relationType, processorSupport, mapping, pureModel, relationFunctionClassMappingIds);
+            }
+        });
     }
     
 }

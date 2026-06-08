@@ -334,6 +334,112 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")\n", "COMPILATION error at [47:6-48]: The system can't find the column FOO_DETAILS in the Relation (FIRSTNAME:String, AGE:Integer, FIRM_DETAILS:Variant)");
     }
 
+    public static final String RELATION_MAPPING_ENUM_PURE_SOURCE = "###Pure\n" +
+            "Enum my::EmployeeType\n" +
+            "{\n" +
+            "  CONTRACT,\n" +
+            "  FULL_TIME\n" +
+            "}\n" +
+            "Class my::PersonWithEmployeeType\n" +
+            "{\n" +
+            "  firstName: String[1];\n" +
+            "  age: Integer[1];\n" +
+            "  employeeType: my::EmployeeType[1];\n" +
+            "}\n" +
+            "function my::personWithEnumFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+            "{\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, EMPLOYEE_TYPE:String)>);\n" +
+            "}\n";
+
+    @Test
+    public void testValidRelationFunctionMappingWithEnumerationMapping()
+    {
+        test(RELATION_MAPPING_ENUM_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithEmployeeType: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithEnumFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    employeeType: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE\n" +
+                "  }\n" +
+                "  my::EmployeeType: EnumerationMapping employeeTypeMapping\n" +
+                "  {\n" +
+                "    CONTRACT: ['C', 'CONTRACT'],\n" +
+                "    FULL_TIME: ['F', 'FULL_TIME']\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingEnumPropertyWithoutEnumerationMapping()
+    {
+        test(RELATION_MAPPING_ENUM_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithEmployeeType: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithEnumFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    employeeType: EMPLOYEE_TYPE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [25:5-31]: Relation mapping is only supported for primitive properties, enumeration properties (which require an EnumerationMapping), or mapping to semi-structured data (which requires a binding), but the property 'employeeType' has type EmployeeType and no binding was specified.");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithNonExistentEnumerationMapping()
+    {
+        test(RELATION_MAPPING_ENUM_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithEmployeeType: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithEnumFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    employeeType: EnumerationMapping nonExistentMapping : EMPLOYEE_TYPE\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [25:5-71]: Can't find enumeration mapping 'nonExistentMapping'");
+    }
+
+    public static final String RELATION_MAPPING_EMBEDDED_PURE_SOURCE = "###Pure\n" +
+            "Class my::PersonWithAddress\n" +
+            "{\n" +
+            "  firstName: String[1];\n" +
+            "  age: Integer[1];\n" +
+            "  address: my::FullAddress[1];\n" +
+            "}\n" +
+            "\n" +
+            "Class my::FullAddress\n" +
+            "{\n" +
+            "  street: String[1];\n" +
+            "  city: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+            "{\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+            "}\n";
+
+    @Test
+    public void testRelationFunctionInlineEmbeddedMappingWithMissingTargetSet()
+    {
+        test(RELATION_MAPPING_EMBEDDED_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address () Inline [addressSet]\n" +
+                "  }\n" +
+                ")\n", "COMPILATION error at [27:5-34]: The set implementation 'addressSet' referenced in the inline embedded mapping for property 'address' does not exist in the mapping my::testMapping");
+    }
+
+
     @Override
     public String getDuplicatedElementTestCode()
     {

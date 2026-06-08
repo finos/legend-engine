@@ -112,6 +112,21 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         }
         FunctionDefinition<?> relationFunction = (FunctionDefinition<?>) context.resolvePackageableElement(functionId, classMapping.sourceInformation);
         setImpl._relationFunction(relationFunction);
+        propagateRelationFunctionToEmbedded(setImpl, relationFunction);
+
         return setImpl;
+    }
+
+    private static void propagateRelationFunctionToEmbedded(RelationFunctionInstanceSetImplementation parent, FunctionDefinition<?> relationFunction)
+    {
+        parent._propertyMappings().forEach(pm ->
+        {
+            if (pm instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.EmbeddedRelationFunctionSetImplementation)
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.EmbeddedRelationFunctionSetImplementation embedded = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.EmbeddedRelationFunctionSetImplementation) pm;
+                embedded._relationFunction(relationFunction);
+                propagateRelationFunctionToEmbedded(embedded, relationFunction);
+            }
+        });
     }
 }

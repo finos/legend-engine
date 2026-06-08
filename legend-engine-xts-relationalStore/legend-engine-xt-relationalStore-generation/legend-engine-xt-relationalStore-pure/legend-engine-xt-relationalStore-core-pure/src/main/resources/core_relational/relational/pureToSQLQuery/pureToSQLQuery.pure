@@ -1613,7 +1613,8 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMapping(pro
                e:EmbeddedRelationalInstanceSetImplementation[*] | if(($state.inGetterFlow == true || $state.milestoningUseOtherwise == true) && $e->size() == 1 && $e->toOne()->instanceOf(OtherwiseEmbeddedRelationalInstanceSetImplementation),
                                                                      | processRelationalPropertyMapping($e->toOne()->cast(@OtherwiseEmbeddedRelationalInstanceSetImplementation).otherwisePropertyMapping->cast(@RelationalPropertyMapping), $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
                                                                      | $srcOperation;
-                                                                  )
+                                                                  ),
+               e:EmbeddedSetImplementation[*] | $srcOperation;
              ]);
 
    print(if(!$context.debug, |'',
@@ -1908,7 +1909,8 @@ function meta::relational::functions::pureToSqlQuery::processRelationFunctionPro
 {
   let propertyMapping = $propertyMappings->toOne('Unions not supported with Relation Expression mappings yet!');
   let transformedRelationalPropertyMapping = $propertyMapping->transformRelationPropertyMappingsToRelational($state->getClassMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@RelationFunctionInstanceSetImplementation));
-  processPropertyMapping($transformedRelationalPropertyMapping, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+  let updatedState = if($propertyMapping.transformer->isNotEmpty(), |^$state(pushDownEnumTransformations=true), |$state);
+  processPropertyMapping($transformedRelationalPropertyMapping, $propertyOwnerClass, $oldSrcOperation, $updatedState, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -6337,8 +6339,8 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                       let newLiteral = if($literal.value->instanceOf(Enum),
                                             |if($valueArg->instanceOf(VariableExpression),
                                                 | ^DynaFunction(name = 'equal', parameters = [$value, $collection]),
-                                                | let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping);
-                                                  let vals = $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($literal.value);
+                                                | let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0);
+                                                  let vals = $enumPropMapping->getEnumPropMappingTransformer()->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($literal.value);
                                                   if($vals->size() == 1,
                                                       | ^DynaFunction(name = 'equal', parameters=[$value, ^Literal(value=$vals->at(0))]),
                                                       | ^DynaFunction(name = 'in', parameters = [$value, ^LiteralList(values=$vals->map(v|^Literal(value=$v)))]);
@@ -6354,8 +6356,8 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                  let newCollection =
                      if ($literalList.values->at(0).value->instanceOf(Enum) && !$valueArg->instanceOf(VariableExpression),
                      |let enum = $literalList.values->at(0).value;
-                      let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping);
-                      ^LiteralList(values=$literalList.values->map(v|$enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($v.value))->map(v|^Literal(value=$v)));,
+                      let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0);
+                      ^LiteralList(values=$literalList.values->map(v|$enumPropMapping->getEnumPropMappingTransformer()->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($v.value))->map(v|^Literal(value=$v)));,
                      |$literalList
                   );
                ^DynaFunction(name = 'in', parameters=[$value,$newCollection]);
@@ -8720,7 +8722,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::generat
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::generateFreeMarkerForEnumParam(propertyMapping:OperationWithParentPropertyMapping[1], enumParam:RelationalOperationElement[1]):FreeMarkerOperationHolder[1]
 {
-  ^FreeMarkerOperationHolder(name = 'enumMap_' + fetchEnumFullPath($propertyMapping.currentPropertyMapping->cast(@RelationalPropertyMapping).transformer->cast(@EnumerationMapping<Any>)->at(0)), parameters = [$enumParam->cast(@Literal)])
+  ^FreeMarkerOperationHolder(name = 'enumMap_' + fetchEnumFullPath($propertyMapping.currentPropertyMapping->at(0)->getEnumPropMappingTransformer()->cast(@EnumerationMapping<Any>)->toOne()), parameters = [$enumParam->cast(@Literal)])
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::hasOptionalVarPlaceHolderValue(e:RelationalOperationElement[1]):Boolean[1]
@@ -8782,6 +8784,12 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
       );
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumPropMappingTransformer(enumPropMapping: PropertyMapping[*]): ValueTransformer<Any>[0..1]
+{
+  $enumPropMapping->toOne()->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
+}
+
+
 function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapper : Literal[1],
         enumPropWrapper : ValueSpecification[1],
         currentPropertyMapping:PropertyMapping[*]):RelationalOperationElement[1]
@@ -8789,7 +8797,7 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
     let enum = $enumWrapper->cast(@Literal).value;
     let expr = $enumPropWrapper->byPassRouterInfo()->cast(@SimpleFunctionExpression);
     let enumPropMapping = if($currentPropertyMapping->isNotEmpty(),
-                            |$currentPropertyMapping->at(0)->cast(@RelationalPropertyMapping),
+                            |$currentPropertyMapping->at(0),
                             |[]
                           );
 
@@ -8810,8 +8818,9 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
                           pair(|$enumPropMapping->isEmpty(), |$enum->id()->toString()),
                           pair(|$enumPropMapping->toOne()->instanceOf(SemiStructuredRelationalPropertyMapping), |$enum->id())
                         ],
-                        | assert($enumPropMapping.transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
-                          $enumPropMapping.transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
+                        | let transformer = $enumPropMapping->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
+                          assert($transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
+                          $transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
                     );
 
     if ($sourceVal->size() == 1,
@@ -8863,7 +8872,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::mapEnum
    ) : Any[1]
 {
 
-    let hasPropertyMapping = $currentPropertyMapping->size() == 1 && $currentPropertyMapping->toOne()->instanceOf(RelationalPropertyMapping);
+    let hasPropertyMapping = $currentPropertyMapping->size() == 1 && ($currentPropertyMapping->toOne()->instanceOf(RelationalPropertyMapping) || $currentPropertyMapping->toOne()->instanceOf(meta::pure::mapping::relation::RelationFunctionPropertyMapping));
 
     print(if(!$context.debug, |'',
             | $context.space+ '  Has property mapping: '+$hasPropertyMapping->toString()+'\n'));
@@ -8873,7 +8882,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::mapEnum
                         |
                           print(if(!$context.debug, |'',
                                     | $context.space+ '     PropertyMapping: '+$currentPropertyMapping->toOne().property.name->joinStrings('')+'\n'));
-                          let transformer = $currentPropertyMapping->toOne()->cast(@RelationalPropertyMapping).transformer;
+                          let transformer = $currentPropertyMapping->getEnumPropMappingTransformer();
                           let hasEnumMappingTransformer = !$transformer->isEmpty() && $transformer->toOne()->instanceOf(EnumerationMapping);
                           print(if(!$context.debug, |'',
                                     | $context.space+ '  Has EnumMapping Transformer: '+$hasEnumMappingTransformer->toString()+'\n'));

@@ -760,6 +760,20 @@ Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunc
 Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
 {
   column: String[1];
+  enumMappingId : String[0..1];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::EmbeddedRelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
+{
+   id : String[1];
+   class : String[0..1];
+   propertyMappings : meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::v1_33_0::metamodel::mapping::relation::InlineEmbeddedRelationFunctionPropertyMapping extends meta::protocols::pure::v1_33_0::metamodel::mapping::PropertyMapping
+{
+   id : String[1];
+   setImplementationId : String[1];
 }
 
 Class meta::protocols::pure::v1_33_0::metamodel::runtime::Connection

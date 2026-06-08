@@ -1,4 +1,4 @@
-// Copyright 2025 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,19 +14,24 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 
-public class RelationFunctionPropertyMapping extends PropertyMapping
+import java.util.List;
+
+public class RelationFunctionEmbeddedPropertyMapping extends PropertyMapping
 {
-    public String column;
-    public BindingTransformer bindingTransformer;
-    public String enumMappingId;
-    
+    @JsonProperty(value = "class")
+    public String _class;
+    public String id;
+    public String setImplementationId;
+    public List<PropertyMapping> propertyMappings;
+
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)
     {
         return visitor.visit(this);
     }
 }
+
