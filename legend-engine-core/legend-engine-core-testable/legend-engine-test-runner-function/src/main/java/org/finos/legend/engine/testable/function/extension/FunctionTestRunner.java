@@ -35,7 +35,6 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
@@ -60,25 +59,24 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
+import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_JsonModelConnection;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureModelConnection;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_XmlModelConnection;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -86,26 +84,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+import java.util.function.Consumer;
 
 public class FunctionTestRunner implements TestRunner
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FunctionTestRunner.class);
-    private final ConcreteFunctionDefinition functionDefinition;
-    private FunctionDefinition<?> modifiedFunctionDefinition;
+    private final ConcreteFunctionDefinition<?> functionDefinition;
     private final MutableList<PlanGeneratorExtension> extensions;
     private final PlanExecutor executor;
     private final String pureVersion;
 
-    private final MutableList<ConnectionFactoryExtension> connectionBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
-    private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
-    private List<Closeable> closeables = Lists.mutable.empty();
-    private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
-    private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
+    private final MutableList<ConnectionFactoryExtension> connectionBuilders = Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+    private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders = Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
 
-    public FunctionTestRunner(ConcreteFunctionDefinition functionDefinition, String pureVersion)
+    public FunctionTestRunner(ConcreteFunctionDefinition<?> functionDefinition, String pureVersion)
     {
         this.pureVersion = pureVersion;
         this.functionDefinition = functionDefinition;
@@ -116,297 +107,272 @@ public class FunctionTestRunner implements TestRunner
     @Override
     public TestResult executeAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
     {
-        throw new UnsupportedOperationException("Function Test should be executed in context of Mapping Test Suite only");
+        throw new UnsupportedOperationException("Function Test should be executed in context of Function Test Suite only");
     }
 
     @Override
-    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData pureModelContextData)
+    public TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
     {
-        List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
-        RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        MutableList<PlanTransformer> planTransformers = extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
         Assert.assertTrue(testSuite instanceof Root_meta_legend_function_metamodel_FunctionTestSuite, () -> "Function test suite expected in functions");
-        Root_meta_legend_function_metamodel_FunctionTestSuite functionTestSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) testSuite;
-        String testablePath = getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
-        try
-        {
-            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(this.functionDefinition, pureModel);
-            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
-            // handle data
-            Function protocolFunc = ListIterate.detect(pureModelContextData.getElementsOfType(Function.class), el -> el.getPath().equals(testablePath));
-            FunctionTestSuite protocolSuite = ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
-            FunctionTestRunnerContext runnerContext = new FunctionTestRunnerContext(Tuples.pair(pureModelContextData, pureModel), Tuples.pair(protocolSuite, functionTestSuite), extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers),
-                    new ConnectionFirstPassBuilder(pureModel.getContext()),
-                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())));
-            List<FunctionTest> functionTests = protocolSuite.tests.stream().filter(t -> t instanceof FunctionTest)
-                            .map(t -> (FunctionTest) t).filter(t -> atomicTestIds.contains(t.id)).collect(Collectors.toList());
-            // setup
-            this.setup(runnerContext);
-            // run tests
-            for (FunctionTest functionTest: functionTests)
-            {
-                TestResult functionTestResult = executeFunctionTest(functionTest, runnerContext);
-                functionTestResult.testable = testablePath;
-                functionTestResult.testSuiteId = functionTestSuite._id();
-                results.add(functionTestResult);
-            }
-            //
-            this.tearDown();
-        }
-        catch (Exception e)
-        {
-            // this is to catch any error for the setup of the test suite. we return test error for each test run
-            for (Root_meta_pure_test_AtomicTest testedError: functionTestSuite._tests())
-            {
-                if (atomicTestIds.contains(testedError._id()) && results.stream().noneMatch(t -> t.atomicTestId.equals(testedError._id())))
-                {
-                    results.add(TestResultHelper.newTestError(testedError._id(), e));
-                }
-            }
-        }
-        return results;
-    }
-
-    private TestResult executeFunctionTest(FunctionTest functionTest, FunctionTestRunnerContext context)
-    {
-        try
-        {
-            // build plan
-            SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : this.functionDefinition, null, null, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
-            // execute assertion
-            TestAssertion assertion = functionTest.assertions.get(0);
-            // add execute
-            PlanExecutor.ExecuteArgsBuilder executeArgs = context.getExecuteBuilder().withPlan(executionPlan);
-            Map<String, Object> parameters = Maps.mutable.empty();
-            if (functionTest.parameters != null)
-            {
-                for (ParameterValue parameterValue : functionTest.parameters)
-                {
-                    parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
-                }
-            }
-            executeArgs.withParams(parameters);
-            Result result = this.executor.executeWithArgs(executeArgs.build());
-            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
-            TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
-            testResult.atomicTestId = functionTest.id;
-            return testResult;
-        }
-        catch (Exception error)
-        {
-            return TestResultHelper.newTestError(functionTest.id, error);
-        }
-    }
-
-    private void setup(FunctionTestRunnerContext context)
-    {
-        Root_meta_legend_function_metamodel_FunctionTestSuite functionTestSuite = context.getTestSuite();
-        FunctionTestSuite protocolFunctionSuite = context.getProtocolSuite();
-        if (functionTestSuite._testData() == null || functionTestSuite._testData().isEmpty())
-        {
-            return;
-        }
-        if (protocolFunctionSuite.testData == null || protocolFunctionSuite.testData.isEmpty())
-        {
-            return;
-        }
-        org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime = getRuntimesInFunction(context.getPureModel());
-        List<FunctionTestData> storeTestData = new ArrayList<>();
-        List<FunctionTestData> nonStoreRelationTestData = new ArrayList<>();
-        protocolFunctionSuite.testData.forEach(testData ->
-        {
-            try
-            {
-                StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(testData.packageableElementPointer, context.getPureModel().getContext());
-                storeTestData.add(testData);
-            }
-            catch (Exception e)
-            {
-                nonStoreRelationTestData.add(testData);
-            }
-        });
-        if (!storeTestData.isEmpty() && !nonStoreRelationTestData.isEmpty())
-        {
-            throw new IllegalStateException("Error in function testSuite " + context.getTestSuite()._id() + ". The combination of store and non-store relation test data is not supported");
-        }
-        if (!storeTestData.isEmpty())
-        {
-            setupStoreTestData(storeTestData, context, runtime);
-        }
-        else if (!nonStoreRelationTestData.isEmpty())
-        {
-            setupNonStoreRelationTestData(nonStoreRelationTestData, context);
-        }
-    }
-
-    private void setupNonStoreRelationTestData(List<FunctionTestData> nonStoreRelationTestData, FunctionTestRunnerContext context)
-    {
-        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, RelationElementsData> relationData = Maps.mutable.empty();
-        nonStoreRelationTestData.forEach(testData ->
-        {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = context.getPureModel().getPackageableElement(testData.packageableElementPointer.path, testData.packageableElementPointer.sourceInformation);
-            EmbeddedData data = (testData.data instanceof DataElementReference)
-                    ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) testData.data, context.getPureModelContextData())
-                    : testData.data;
-            if (data instanceof RelationElementsData)
-            {
-                relationData.put(element, (RelationElementsData) data);
-            }
-        });
-        List<FunctionDefinition<?>> modifiedFunctions = new ArrayList<>(this.connectionAndDatabaseBuilders.collect(f -> f.rewriteFunctionForTestDataExecution(this.functionDefinition, relationData, context.getPureModel())).select(Objects::nonNull));
-        if (modifiedFunctions.size() > 1)
-        {
-            throw new IllegalStateException("Error in function testSuite " + context.getTestSuite()._id() + ". The combination of accessors used is not supported");
-        }
-        if (modifiedFunctions.isEmpty())
-        {
-            throw new IllegalStateException("Error in function testSuite " + context.getTestSuite()._id() + ". Unsupported accessors type");
-        }
-        this.modifiedFunctionDefinition = modifiedFunctions.get(0);
-    }
-
-    private void setupStoreTestData(List<FunctionTestData> functionTestData, FunctionTestRunnerContext context, org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime)
-    {
-        if (runtime == null)
-        {
-            return;
-        }
-        Map<Root_meta_core_runtime_Connection, List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore>> connectionMap = Maps.mutable.empty();
-        runtime._connectionStores().forEach(connectionStores ->
-        {
-            List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore> stores = connectionMap.get(connectionStores._connection());
-            if (stores == null)
-            {
-                stores = Lists.mutable.empty();
-                connectionMap.putIfAbsent(connectionStores._connection(), stores);
-            }
-            stores.add(connectionStores);
-        });
-        for (Map.Entry<Root_meta_core_runtime_Connection, List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore>> entry : connectionMap.entrySet())
-        {
-
-            Root_meta_core_runtime_Connection key = entry.getKey();
-            List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore> values = entry.getValue();
-            Map<Store, EmbeddedData> storeTestDataList = Maps.mutable.empty();
-            // collect test data
-            entry.getValue().forEach(connectionStore ->
-            {
-                Object element = connectionStore._element();
-                if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store)
-                {
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store metamodelStore = (org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store) element;
-                    String connectionStorePath = getElementFullPath(metamodelStore, context.getPureModel().getExecutionSupport());
-                    Optional<FunctionTestData> optionalStoreTestData = functionTestData.stream().filter(
-                            pTestData ->
-                            {
-                                String testDataStorePath = getElementFullPath(StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(pTestData.packageableElementPointer, context.getPureModel().getContext()), context.getPureModel().getExecutionSupport());
-                                return testDataStorePath.equals(connectionStorePath);
-                            }).findFirst();
-                    if (optionalStoreTestData.isPresent())
-                    {
-                        FunctionTestData resolvedStoreTestData = optionalStoreTestData.get();
-                        EmbeddedData testData = (resolvedStoreTestData.data instanceof DataElementReference)
-                                ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, context.getPureModelContextData())
-                                : resolvedStoreTestData.data;
-                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(resolvedStoreTestData.packageableElementPointer, context.getPureModel().getContext());
-                        Store protocolStore = this.resolveStore(context.getPureModelContextData(), getElementFullPath(store, context.getPureModel().getExecutionSupport()));
-                        storeTestDataList.put(protocolStore, testData);
-                    }
-                }
-            });
-            if (!storeTestDataList.isEmpty())
-            {
-                Pair<Connection, List<Closeable>> closeableMockedConnections = this.buildTestConnection(context, key, storeTestDataList);
-                Connection mockedConnection = closeableMockedConnections.getOne();
-                Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(context.getConnectionVisitor());
-                // we replace with mocked connection. We set back to original at cleanup
-                for (Root_meta_core_runtime_ConnectionStore value : values)
-                {
-                    Root_meta_core_runtime_Connection realConnection = value._connection();
-                    this.storeConnectionsPairs.add(Tuples.pair(value, realConnection));
-                    value._connection(mockedCompileConnection);
-                    this.closeables.addAll(closeableMockedConnections.getTwo());
-                }
-            }
-        }
-    }
-
-    private Pair<Connection, List<Closeable>> buildTestConnection(FunctionTestRunnerContext context,Root_meta_core_runtime_Connection connection, Map<Store, EmbeddedData> storeEmbeddedDataMap)
-    {
-        if (storeEmbeddedDataMap.size() == 1 && connection instanceof Root_meta_external_store_model_PureModelConnection)
-        {
-            EmbeddedData embeddedData = storeEmbeddedDataMap.values().stream().findFirst().get();
-            if (embeddedData instanceof ExternalFormatData)
-            {
-                ExternalFormatData externalFormatData = (ExternalFormatData) embeddedData;
-                if (connection instanceof Root_meta_external_store_model_JsonModelConnection)
-                {
-                    String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_JsonModelConnection) connection)._class(), context.getPureModel().getExecutionSupport());
-                    return new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
-                }
-                else if (connection instanceof Root_meta_external_store_model_XmlModelConnection)
-                {
-                    String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_XmlModelConnection) connection)._class(), context.getPureModel().getExecutionSupport());
-                    return  new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
-                }
-            }
-        }
-        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap, this.hints)).select(Objects::nonNull).select(Optional::isPresent)
-                .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported test data for function test suite: " + context.getTestSuite()._id()));
-    }
-
-    private void tearDown()
-    {
-        if (this.closeables != null)
-        {
-            this.closeables.forEach(closeable ->
-            {
-                try
-                {
-                    closeable.close();
-                }
-                catch (IOException e)
-                {
-                    LOGGER.warn("Exception occurred closing closeable resource" + e);
-                }
-            });
-        }
-        // restore original connection value
-        if (this.storeConnectionsPairs != null)
-        {
-            this.storeConnectionsPairs.forEach(storeConnectionsPairs ->
-            {
-                storeConnectionsPairs.getOne()._connection(storeConnectionsPairs.getTwo());
-            });
-        }
+        String testablePath = HelperModelBuilder.getElementFullPath(this.functionDefinition, pureModel.getExecutionSupport());
+        Function protocolFunc = ListIterate.detect(data.getElementsOfType(Function.class), el -> el.getPath().equals(testablePath));
+        FunctionTestSuite protocolSuite = ListIterate.detect(protocolFunc.tests, t -> t.id.equals(testSuite._id()));
+        return new FunctionTestSuiteSession(testSuite, protocolSuite, pureModel, data, testablePath);
     }
 
     private Store resolveStore(PureModelContextData pureModelContextData, String store)
     {
-        if (store.equals("ModelStore"))
-        {
-            return new ModelStore();
-        }
-        else
-        {
-            return ListIterate.detect(pureModelContextData.getElementsOfType(Store.class), x -> x.getPath().equals(store));
-        }
+        return "ModelStore".equals(store)
+               ? new ModelStore()
+               : ListIterate.detect(pureModelContextData.getElementsOfType(Store.class), x -> x.getPath().equals(store));
     }
 
-    public org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime getRuntimesInFunction(PureModel pureModel)
+    private Root_meta_core_runtime_Runtime getRuntimesInFunction(PureModel pureModel)
     {
-            RichIterable<org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime> runtimes =  org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(this.functionDefinition, pureModel.getExecutionSupport());
-            if (runtimes.isEmpty())
+        RichIterable<? extends Root_meta_core_runtime_Runtime> runtimes = org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(this.functionDefinition, pureModel.getExecutionSupport());
+        switch (runtimes.size())
+        {
+            case 0:
             {
                 return null;
             }
-            else if (runtimes.size() == 1)
+            case 1:
             {
-                return runtimes.getOnly();
+                return runtimes.getAny();
             }
-            else
+            default:
             {
                 throw new UnsupportedOperationException("Currently cannot test functions with more than one runtime present");
             }
+        }
+    }
+
+    private class FunctionTestSuiteSession extends AbstractTestSuiteSessionWithResources<FunctionTestSuite, FunctionTest, TestResult>
+    {
+        private final String testablePath;
+        private FunctionTestRunnerContext context;
+        private FunctionDefinition<?> modifiedFunctionDefinition;
+        private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
+        private final List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
+
+        FunctionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
+        {
+            super(pureSuite, protocolSuite, pureModel, pmcd, FunctionTestSuiteSession::getTestSuiteTests, FunctionTestSuiteSession::getAtomicTestId);
+            this.testablePath = testablePath;
+        }
+
+        @Override
+        protected void initialize(Consumer<? super AutoCloseable> closeableConsumer)
+        {
+            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(FunctionTestRunner.this.functionDefinition, this.pureModel);
+            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
+            Root_meta_legend_function_metamodel_FunctionTestSuite functionTestSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) this.pureSuite;
+            this.context = new FunctionTestRunnerContext(
+                    Tuples.pair(this.pmcd, this.pureModel),
+                    Tuples.pair(this.protocolSuite, functionTestSuite),
+                    FunctionTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers),
+                    new ConnectionFirstPassBuilder(this.pureModel.getContext()),
+                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport())));
+            closeableConsumer.accept((AutoCloseable) () -> this.storeConnectionsPairs.forEach(p -> p.getOne()._connection(p.getTwo())));
+            setup(closeableConsumer);
+        }
+
+        @Override
+        protected TestResult buildErrorResult(String atomicTestId, Throwable t)
+        {
+            return TestResultHelper.newTestError(this.testablePath, getTestSuiteId(), atomicTestId, t);
+        }
+
+        @Override
+        protected TestResult runAtomicTest(FunctionTest atomicTest)
+        {
+            TestResult testResult = executeFunctionTest(atomicTest);
+            testResult.testable = this.testablePath;
+            testResult.testSuiteId = getTestSuiteId();
+            return testResult;
+        }
+
+        private TestResult executeFunctionTest(FunctionTest functionTest)
+        {
+            try
+            {
+                FunctionDefinition<?> effectiveFunction = this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : FunctionTestRunner.this.functionDefinition;
+                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, null, this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
+                TestAssertion assertion = functionTest.assertions.get(0);
+                PlanExecutor.ExecuteArgsBuilder executeArgs = this.context.getExecuteBuilder().withPlan(executionPlan);
+                Map<String, Object> parameters = Maps.mutable.empty();
+                if (functionTest.parameters != null)
+                {
+                    for (ParameterValue parameterValue : functionTest.parameters)
+                    {
+                        parameters.put(parameterValue.name, parameterValue.value.accept(new PrimitiveValueSpecificationToObjectVisitor()));
+                    }
+                }
+                executeArgs.withParams(parameters);
+                Result result = FunctionTestRunner.this.executor.executeWithArgs(executeArgs.build());
+                AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+                TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
+                testResult.atomicTestId = functionTest.id;
+                return testResult;
+            }
+            catch (Exception error)
+            {
+                return TestResultHelper.newTestError(functionTest.id, error);
+            }
+        }
+
+        private void setup(Consumer<? super AutoCloseable> closeableConsumer)
+        {
+            Root_meta_legend_function_metamodel_FunctionTestSuite functionTestSuite = this.context.getTestSuite();
+            FunctionTestSuite protocolFunctionSuite = this.context.getProtocolSuite();
+            if (functionTestSuite._testData() == null || functionTestSuite._testData().isEmpty())
+            {
+                return;
+            }
+            if (protocolFunctionSuite.testData == null || protocolFunctionSuite.testData.isEmpty())
+            {
+                return;
+            }
+            Root_meta_core_runtime_Runtime runtime = getRuntimesInFunction(this.context.getPureModel());
+            List<FunctionTestData> storeTestData = new ArrayList<>();
+            List<FunctionTestData> nonStoreRelationTestData = new ArrayList<>();
+            protocolFunctionSuite.testData.forEach(testData ->
+            {
+                try
+                {
+                    StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(testData.packageableElementPointer, this.context.getPureModel().getContext());
+                    storeTestData.add(testData);
+                }
+                catch (Exception e)
+                {
+                    nonStoreRelationTestData.add(testData);
+                }
+            });
+            if (!storeTestData.isEmpty() && !nonStoreRelationTestData.isEmpty())
+            {
+                throw new IllegalStateException("Error in function testSuite " + this.context.getTestSuite()._id() + ". The combination of store and non-store relation test data is not supported");
+            }
+            if (!storeTestData.isEmpty())
+            {
+                setupStoreTestData(storeTestData, runtime, closeableConsumer);
+            }
+            else if (!nonStoreRelationTestData.isEmpty())
+            {
+                setupNonStoreRelationTestData(nonStoreRelationTestData);
+            }
+        }
+
+        private void setupNonStoreRelationTestData(List<FunctionTestData> nonStoreRelationTestData)
+        {
+            Map<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, RelationElementsData> relationData = Maps.mutable.empty();
+            nonStoreRelationTestData.forEach(testData ->
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = this.context.getPureModel().getPackageableElement(testData.packageableElementPointer.path, testData.packageableElementPointer.sourceInformation);
+                EmbeddedData data = (testData.data instanceof DataElementReference)
+                                    ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) testData.data, this.context.getPureModelContextData())
+                                    : testData.data;
+                if (data instanceof RelationElementsData)
+                {
+                    relationData.put(element, (RelationElementsData) data);
+                }
+            });
+            List<FunctionDefinition<?>> modifiedFunctions = new ArrayList<>(FunctionTestRunner.this.connectionAndDatabaseBuilders.collect(f -> f.rewriteFunctionForTestDataExecution(FunctionTestRunner.this.functionDefinition, relationData, this.context.getPureModel())).select(Objects::nonNull));
+            if (modifiedFunctions.size() > 1)
+            {
+                throw new IllegalStateException("Error in function testSuite " + this.context.getTestSuite()._id() + ". The combination of accessors used is not supported");
+            }
+            if (modifiedFunctions.isEmpty())
+            {
+                throw new IllegalStateException("Error in function testSuite " + this.context.getTestSuite()._id() + ". Unsupported accessors type");
+            }
+            this.modifiedFunctionDefinition = modifiedFunctions.get(0);
+        }
+
+        private void setupStoreTestData(List<FunctionTestData> functionTestData, Root_meta_core_runtime_Runtime runtime, Consumer<? super AutoCloseable> closeableConsumer)
+        {
+            if (runtime == null)
+            {
+                return;
+            }
+            Map<Root_meta_core_runtime_Connection, List<Root_meta_core_runtime_ConnectionStore>> connectionMap = Maps.mutable.empty();
+            runtime._connectionStores().forEach(connectionStores ->
+            {
+                List<Root_meta_core_runtime_ConnectionStore> stores = connectionMap.get(connectionStores._connection());
+                if (stores == null)
+                {
+                    stores = Lists.mutable.empty();
+                    connectionMap.putIfAbsent(connectionStores._connection(), stores);
+                }
+                stores.add(connectionStores);
+            });
+            for (Map.Entry<Root_meta_core_runtime_Connection, List<Root_meta_core_runtime_ConnectionStore>> entry : connectionMap.entrySet())
+            {
+                Root_meta_core_runtime_Connection key = entry.getKey();
+                List<Root_meta_core_runtime_ConnectionStore> values = entry.getValue();
+                Map<Store, EmbeddedData> storeTestDataList = Maps.mutable.empty();
+                entry.getValue().forEach(connectionStore ->
+                {
+                    Object element = connectionStore._element();
+                    if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store)
+                    {
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store metamodelStore = (org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store) element;
+                        String connectionStorePath = HelperModelBuilder.getElementFullPath(metamodelStore, this.context.getPureModel().getExecutionSupport());
+                        Optional<FunctionTestData> optionalStoreTestData = functionTestData.stream().filter(
+                                pTestData ->
+                                {
+                                    String testDataStorePath = HelperModelBuilder.getElementFullPath(StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(pTestData.packageableElementPointer, this.context.getPureModel().getContext()), this.context.getPureModel().getExecutionSupport());
+                                    return testDataStorePath.equals(connectionStorePath);
+                                }).findFirst();
+                        if (optionalStoreTestData.isPresent())
+                        {
+                            FunctionTestData resolvedStoreTestData = optionalStoreTestData.get();
+                            EmbeddedData testData = (resolvedStoreTestData.data instanceof DataElementReference)
+                                                    ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, this.context.getPureModelContextData())
+                                                    : resolvedStoreTestData.data;
+                            org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(resolvedStoreTestData.packageableElementPointer, this.context.getPureModel().getContext());
+                            Store protocolStore = resolveStore(this.context.getPureModelContextData(), HelperModelBuilder.getElementFullPath(store, this.context.getPureModel().getExecutionSupport()));
+                            storeTestDataList.put(protocolStore, testData);
+                        }
+                    }
+                });
+                if (!storeTestDataList.isEmpty())
+                {
+                    Pair<Connection, List<Closeable>> closeableMockedConnections = buildTestConnection(key, storeTestDataList);
+                    Connection mockedConnection = closeableMockedConnections.getOne();
+                    Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(this.context.getConnectionVisitor());
+                    for (Root_meta_core_runtime_ConnectionStore value : values)
+                    {
+                        Root_meta_core_runtime_Connection realConnection = value._connection();
+                        this.storeConnectionsPairs.add(Tuples.pair(value, realConnection));
+                        value._connection(mockedCompileConnection);
+                        closeableMockedConnections.getTwo().forEach(closeableConsumer);
+                    }
+                }
+            }
+        }
+
+        private Pair<Connection, List<Closeable>> buildTestConnection(Root_meta_core_runtime_Connection connection, Map<Store, EmbeddedData> storeEmbeddedDataMap)
+        {
+            if (storeEmbeddedDataMap.size() == 1 && connection instanceof Root_meta_external_store_model_PureModelConnection)
+            {
+                EmbeddedData embeddedData = storeEmbeddedDataMap.values().stream().findFirst().get();
+                if (embeddedData instanceof ExternalFormatData)
+                {
+                    ExternalFormatData externalFormatData = (ExternalFormatData) embeddedData;
+                    if (connection instanceof Root_meta_external_store_model_JsonModelConnection)
+                    {
+                        String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_JsonModelConnection) connection)._class(), this.context.getPureModel().getExecutionSupport());
+                        return new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
+                    }
+                    else if (connection instanceof Root_meta_external_store_model_XmlModelConnection)
+                    {
+                        String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_XmlModelConnection) connection)._class(), this.context.getPureModel().getExecutionSupport());
+                        return new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
+                    }
+                }
+            }
+            return FunctionTestRunner.this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(this.context.getDataElementIndex(), storeEmbeddedDataMap, this.hints)).select(Objects::nonNull).select(Optional::isPresent)
+                    .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported test data for function test suite: " + this.context.getTestSuite()._id()));
+        }
     }
 }

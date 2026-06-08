@@ -144,6 +144,61 @@ public class TestEMITTestSuiteBuilder
     }
 
     @Test
+    void m2mPassingExecutingASingleAtomicTaskPasses() throws Throwable
+    {
+        // A single atomic-test DynamicTest must run cleanly on its own — the
+        // per-group LazyTestSession has to open the session on first use rather
+        // than relying on a previous task to have done so. Without that
+        // invariant, selecting and running one atomic test from an IDE would
+        // fail; this regression-guards the lazy-open path independently of the
+        // bulk-execution path that {@link #m2mPassingYieldsOneTaskPerAtomicTest}
+        // covers.
+        MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/m2m-passing");
+        DynamicTest atomic = tasks.detect(t -> "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / johnSmith".equals(t.getDisplayName()));
+        Assertions.assertNotNull(atomic, () -> "expected to find the johnSmith atomic-test task; got:\n" + names(tasks));
+        atomic.getExecutable().execute();
+    }
+
+    @Test
+    void m2mPassingAtomicTaskCanBeExecutedAcrossDistinctStreamConstructions() throws Throwable
+    {
+        // Re-discovering the m2m-passing model from scratch must yield a fresh
+        // LazyTestSession each time, so executing the same atomic test against
+        // two independently-built streams must both succeed — i.e. the close
+        // on a prior session leaves no residual static state that breaks the
+        // next open. Pairs with {@code TestEMITTaskSessions.reopeningASession…}
+        // at the underlying TestSuiteSession layer.
+        MutableList<DynamicTest> firstStream = tasksFor("emit-models/", "basic/m2m-passing");
+        DynamicTest firstJohn = firstStream.detect(t -> t.getDisplayName().endsWith("johnSmith"));
+        Assertions.assertNotNull(firstJohn, "expected johnSmith in the first stream");
+        firstJohn.getExecutable().execute();
+
+        MutableList<DynamicTest> secondStream = tasksFor("emit-models/", "basic/m2m-passing");
+        DynamicTest secondJane = secondStream.detect(t -> t.getDisplayName().endsWith("janeDoe"));
+        Assertions.assertNotNull(secondJane, "expected janeDoe in the second stream");
+        secondJane.getExecutable().execute();
+    }
+
+    @Test
+    void m2mPassingAtomicTasksAreGroupedAdjacentlyByTestableAndSuite()
+    {
+        // The session-grouped stream emits all atomic tests for a given
+        // (testable, suite) consecutively so the per-group LazyTestSession can
+        // amortize plan generation across them and so Stream#onClose can
+        // release the session exactly once at the end of the group.
+        // Interleaving tasks across suites would defeat both. m2m-passing has
+        // only one suite, so this regression-guards by checking the two
+        // atomic-test entries are immediate neighbors in the stream output.
+        MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/m2m-passing");
+        MutableList<String> names = tasks.collect(DynamicTest::getDisplayName);
+        int john = names.indexOf("[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / johnSmith");
+        int jane = names.indexOf("[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / janeDoe");
+        Assertions.assertTrue(john >= 0 && jane >= 0, () -> "expected both atomic-test tasks; got:\n" + names(tasks));
+        Assertions.assertEquals(1, Math.abs(john - jane),
+                () -> "atomic tests in the same suite must be emitted consecutively so the per-group session amortizes and closes correctly; got positions " + john + " and " + jane);
+    }
+
+    @Test
     void modelGenerationYieldsOnlyTheInitializationPhase() throws Throwable
     {
         MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/model-generation");
