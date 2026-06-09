@@ -1249,17 +1249,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $relation->match([
         j: Join[1] | processJoin($j, $context),
         v: Values[1] | processValues($v, $context),
-        t: TableSubquery[1] | processTableSubQuery($t, $context),
+        t: TableSubquery[1] | processTableSubquery($t, $context),
         q: QueryBody[1] | processQueryBody($q, $context),
         a: AliasedRelation[1] | processAliasedRelation($a, $context),
         l: LateralRelation[1] | processLateralRelation($l, $context),
         r: Relation[0..1] | fail('Not yet supported'); $context;
   ]);
-}
-
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableSubQuery(table: TableSubquery[1], context: SqlTransformContext[1]): SqlTransformContext[1]
-{
-  $table.query->processQuery($context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processValues(values: Values[1], context: SqlTransformContext[1]): SqlTransformContext[1]
