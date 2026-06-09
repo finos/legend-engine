@@ -1036,7 +1036,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1106,7 +1106,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1116,7 +1116,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->getSize())}
             )
          ])
       ),
@@ -1126,7 +1126,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->getSize())}
             )
          ])
       ),      
@@ -1454,7 +1454,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]) * 2)} // Safe
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize() * 2)} // Safe
             )
          ])
       ),
@@ -1474,7 +1474,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1512,7 +1512,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1612,7 +1612,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1818,7 +1818,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          list([
             pair(
                {params: RelationalOperationElement[*] | true},
-               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->match([c:meta::relational::metamodel::datatype::Char[1]|$c.size,c:meta::relational::metamodel::datatype::Varchar[1]|$c.size]))}
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(0)->inferRelationalType($failOnMatchFailure)->getSize())}
             )
          ])
       ),
@@ -1888,29 +1888,35 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
 
 function <<access.private>> meta::relational::functions::typeInference::isSafeTypePossible(types: meta::relational::metamodel::datatype::DataType[*]):Boolean[1]
 {
-   $types->tail()->fold({n,a |
-      if(!$a.first,
-         | $a,
-         | if(isSafeTypePossible($n, $a.second),
-              | pair(true, getSafeType($n, $a.second)),
-              | pair(false, ^meta::relational::metamodel::datatype::DataType())
+   if($types->isEmpty(),
+      | false,
+      | $types->tail()->fold({n,a |
+           if(!$a.first,
+              | $a,
+              | if(isSafeTypePossible($n, $a.second),
+                   | pair(true, getSafeType($n, $a.second)),
+                   | pair(false, ^meta::relational::metamodel::datatype::DataType())
+                )
            )
-      )
-   }, pair(true, $types->head()->toOne())).first
+        }, pair(true, $types->head()->toOne())).first
+   )
 }
 
 
 function <<access.private>> meta::relational::functions::typeInference::getSafeType(types: meta::relational::metamodel::datatype::DataType[*]):meta::relational::metamodel::datatype::DataType[1]
 {
-   $types->tail()->fold({n,a |
-      if(!$a.first,
-         | $a,
-         | if(isSafeTypePossible($n, $a.second),
-              | pair(true, getSafeType($n, $a.second)),
-              | pair(false, ^meta::relational::metamodel::datatype::DataType())
+   if($types->isEmpty(),
+      | ^meta::relational::metamodel::datatype::DataType(),
+      | $types->tail()->fold({n,a |
+           if(!$a.first,
+              | $a,
+              | if(isSafeTypePossible($n, $a.second),
+                   | pair(true, getSafeType($n, $a.second)),
+                   | pair(false, ^meta::relational::metamodel::datatype::DataType())
+                )
            )
-      )
-   }, pair(true, $types->head()->toOne())).second
+        }, pair(true, $types->head()->toOne())).second
+   )
 }
 
 
@@ -1977,8 +1983,19 @@ function <<access.private>> meta::relational::functions::typeInference::getSize(
 {
    $t->match([
       c:meta::relational::metamodel::datatype::Char[1]|$c.size,
-      c:meta::relational::metamodel::datatype::Varchar[1]|$c.size,
-      c:Any[0..1]|1024; //if can't infer size then default to 1024 
+      v:meta::relational::metamodel::datatype::Varchar[1]|$v.size,
+      a:Any[0..1]|1024; //if can't infer size then default to 1024 
+   ])
+}
+
+function <<access.private>> meta::relational::functions::typeInference::getSize(rop: RelationalOperationElement[0..1]):Integer[1]
+{
+   $rop->match([
+      l:Literal[1] | $l.value->match([
+        i:Integer[1] | $i,
+        a: Any[1] | 1024;
+      ]),
+      a:Any[0..1]|1024; //if can't infer size then default to 1024 
    ])
 }
 
