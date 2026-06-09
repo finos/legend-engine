@@ -19,17 +19,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 
+import java.util.Collections;
 import java.util.List;
 
 public class RelationFunctionClassMapping extends ClassMapping
 {
     public PackageableElementPointer relationFunction;
     public List<PropertyMapping> propertyMappings;
-    // Left null when ~primaryKey is omitted in the grammar; the compiler auto-infers PKs from the
-    // relation function body in that case. Keeping it null (rather than an empty list) ensures the
-    // grammar composer doesn't emit a synthetic '~primaryKey []' on round-trip, which would break
-    // Studio's grammar-roundtrip tests.
-    public List<String> primaryKey = null;
+    public List<String> primaryKey = Collections.emptyList();
     
     @Override
     public <T> T accept(ClassMappingVisitor<T> visitor)
