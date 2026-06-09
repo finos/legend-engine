@@ -173,7 +173,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             //  _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls,
-             databaseToUpper = $l.databaseToUpper
+             disableDatabaseToUpper = $l.disableDatabaseToUpper
          )
    ])->toOneMany());
 }

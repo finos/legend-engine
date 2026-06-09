@@ -35,5 +35,5 @@ Class meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpe
 {
     <<equality.Key>> testDataSetupCsv:String[0..1];
     <<equality.Key>> testDataSetupSqls:String[*];
-    <<equality.Key>> databaseToUpper:Boolean[1] = true;
+    <<equality.Key>> disableDatabaseToUpper:Boolean[0..1];
 }
