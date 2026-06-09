@@ -59,7 +59,7 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
                 Properties properties = new Properties();
-                properties.setProperty("DATABASE_TO_UPPER", Boolean.toString(localH2DatasourceSpecification.databaseToUpper));
+                properties.setProperty("DATABASE_TO_UPPER", Boolean.toString(!localH2DatasourceSpecification.disableDatabaseToUpper));
 
                 return new LocalH2DataSourceSpecification(
                         localH2DatasourceSpecification.testDataSetupSqls,
