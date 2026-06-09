@@ -177,8 +177,23 @@ public class SQLExecutor
             ExecutionPlan preGeneratedPlan = sources.getFirst().getPreGeneratedPlan();
             span.setTag("selectStar", true);
 
+            if (!(preGeneratedPlan instanceof SingleExecutionPlan))
+            {
+                LOGGER.info("Pre-generated plan is not a SingleExecutionPlan, falling back to standard execution path");
+                return executeStandard(query, FastList.newList(), user, context, identity);
+            }
+
             SingleExecutionPlan plan = (SingleExecutionPlan) preGeneratedPlan;
-            Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, identity);
+            Result result;
+            try
+            {
+                result = planExecutor.execute(plan, Maps.mutable.empty(), user, identity);
+            }
+            catch (Exception e)
+            {
+                LOGGER.warn("Pre-generated plan execution failed, falling back to standard path", e);
+                return executeStandard(query, FastList.newList(), user, context, identity);
+            }
 
             long elapsed = System.currentTimeMillis() - start;
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
@@ -194,8 +209,6 @@ public class SQLExecutor
         return process(query, positionalArguments, (transformedContext, pureModel, sources, positionals, span) ->
         {
             long start = System.currentTimeMillis();
-            LOGGER.info("Executing query using standard path (full SQL-to-Pure transformation)");
-            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
 
             Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult plans = planResult(transformedContext, pureModel, sources);
 
@@ -212,7 +225,7 @@ public class SQLExecutor
             long elapsed = System.currentTimeMillis() - start;
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
             MetricsHandler.observe("execute_standard", start, System.currentTimeMillis());
-            LOGGER.debug("Standard query executed in {}ms (full SQL-to-Pure transformation)", elapsed);
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) elapsed).toString());
 
             return result;
         }, "execute", context, identity);
