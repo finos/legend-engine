@@ -75,6 +75,7 @@ public class Test_Relational_Trino_RelationFunctions_PCT extends PCTReportConfig
             one("meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression_Function_1__Boolean_1_", "Error while executing: Create Table leSchema"),
             one("meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_", "Error while executing: insert into leSchema"),
             one("meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust_Function_1__Boolean_1_", "Error while executing: insert into leSchema"),
+            one("meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide_Function_1__Boolean_1_", "Common table expression not supported on DB Trino"),
 
             // Concatenate
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB Trino"),

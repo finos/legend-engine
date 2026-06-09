@@ -2412,31 +2412,29 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                    );
 
    let setImpl = if($isDataType || $targetType ->_subTypeOf(TabularDataSet) || $targetType ->_subTypeOf(meta::pure::metamodel::relation::Relation),|[],|$elements->map(e|$e->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->removeDuplicates());
-
-   // Fix columns ----------------
-   let columns = $processed.element->cast(@SelectWithCursor).select.columns;
-   let transformed = if (!$columns->isEmpty() && $columns->at(0)->instanceOf(Alias),
-                           | $processed->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
-                                               let select = $selectWithCursor.select->alignJoinAndPkColumnsForUnion($columns);
-                                               let element = $elements->at($processed->indexOf($p));
-                                               let type = if($isDataType || $targetType ->_subTypeOf(TabularDataSet) || $targetType ->_subTypeOf(meta::pure::metamodel::relation::Relation),
-                                                             |[],
-                                                             |^Alias
-                                                              (
-                                                                 name='u_type',
-                                                                 relationalElement=^Literal(value=$setImpl->indexOf($element->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->toString())
-                                                              )
-                                                          );
-                                               let newSelect = ^$select(columns = $type->concatenate($select.columns));
-                                               let newSelectWithCursor = ^$selectWithCursor(select = $newSelect);
-                                               ^$p(element = $newSelectWithCursor);
-                                          );,
-                           | $processed
-                     );
-   // -----------------------------
-
    let res = if ($operation.select.data->isEmpty(),
-      |print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n')->makeString('')));
+      |// Align columns across union arms (all arms must have the same columns for SQL UNION ALL)
+       let columns = $processed.element->cast(@SelectWithCursor).select.columns;
+       let transformed = if (!$columns->isEmpty() && $columns->forAll(c | $c->instanceOf(Alias) || $c->instanceOf(TableAliasColumn)),
+                              | $processed->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
+                                                  let select = $selectWithCursor.select->alignJoinAndPkColumnsForUnion($columns);
+                                                  let element = $elements->at($processed->indexOf($p));
+                                                  let type = if($isDataType || $targetType ->_subTypeOf(TabularDataSet) || $targetType ->_subTypeOf(meta::pure::metamodel::relation::Relation),
+                                                                |[],
+                                                                |^Alias
+                                                                 (
+                                                                    name='u_type',
+                                                                    relationalElement=^Literal(value=$setImpl->indexOf($element->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->toString())
+                                                                 )
+                                                             );
+                                                  let newSelect = ^$select(columns = $type->concatenate($select.columns));
+                                                  let newSelectWithCursor = ^$selectWithCursor(select = $newSelect);
+                                                  ^$p(element = $newSelectWithCursor);
+                                             );,
+                              | $processed
+                        );
+
+       print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n')->makeString('')));
        let firstSel = $transformed->at(0).element->cast(@SelectWithCursor).select;
 
        let selects = $transformed.element->cast(@SelectWithCursor).select->map(s | $s->pushSavedFilteringOperation($extensions));
@@ -2470,10 +2468,10 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                    ),
          currentTreeNode = $newRoot
        );,
-      |let propertyName = $transformed->map(t|if ($t.currentPropertyMapping->isEmpty(), |$t.element->cast(@SelectWithCursor).select.columns->map(c|$c->buildUniqueName(false, $extensions))->makeString('_'), |$t.currentPropertyMapping.property.name->toOne());)->removeDuplicates()->makeString('_')->addQuotesIfNecessary();
+      |let propertyName = $processed->map(t|if ($t.currentPropertyMapping->isEmpty(), |$t.element->cast(@SelectWithCursor).select.columns->map(c|$c->buildUniqueName(false, $extensions))->makeString('_'), |$t.currentPropertyMapping.property.name->toOne());)->removeDuplicates()->makeString('_')->addQuotesIfNecessary();
 
        // Build new Select
-       let newSelectsWithCutNode = $transformed->map(t| let nodeToCut = $operation.select.data->toOne()->findOneNode($operation.currentTreeNode->toOne(), $t.element->cast(@SelectWithCursor).select.data->toOne());
+       let newSelectsWithCutNode = $processed->map(t| let nodeToCut = $operation.select.data->toOne()->findOneNode($operation.currentTreeNode->toOne(), $t.element->cast(@SelectWithCursor).select.data->toOne());
                                                         let newSelect = if ($nodeToCut->children()->isEmpty(),
                                                                         |let select = $t.element->cast(@SelectWithCursor).select;
                                                                          let withSelf = $select->addSelfJoin($nodeToCut->toOne(), $select.columns->map(q|$q->buildUniqueName(false, $extensions))->makeString('_'), $extensions).first;
@@ -2489,7 +2487,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                                                          pair($child, buildConcatenateSubSelect($child, $t.element->cast(@SelectWithCursor).select, $isDataType, $propertyName, $state.inFilter, $extensions));
                                                                     );
                                                  );
-       print(if(!$context.debug, |'', | $transformed->zip($newSelectsWithCutNode.second)->map(t|$context.space+' >Result: '+$t.first.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'+
+       print(if(!$context.debug, |'', | $processed->zip($newSelectsWithCutNode.second)->map(t|$context.space+' >Result: '+$t.first.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'+
                                                                                                 $context.space+' >Result reprocessed: '+$t.second->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'
                                                                                              )->makeString('')
              )
@@ -2498,8 +2496,8 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
        let currentTreeNodes = $newSelectsWithCutNode.second->map(t|$t.data->toOne()->findLastJoinTreeNode());
 
-       let setImplementationIds = if($transformed->at(0).currentPropertyMapping.targetSetImplementationId == '',|[],
-                                                                                                                |$transformed->map(t| if ($t.currentPropertyMapping->isEmpty(),
+       let setImplementationIds = if($processed->at(0).currentPropertyMapping.targetSetImplementationId == '',|[],
+                                                                                                                |$processed->map(t| if ($t.currentPropertyMapping->isEmpty(),
                                                                                                                                              |[],
                                                                                                                                              |$t.currentPropertyMapping->match([
                                                                                                                                                  e:EmbeddedRelationalInstanceSetImplementation[1]| $e,
@@ -2594,10 +2592,10 @@ function meta::relational::functions::pureToSqlQuery::buildConcatenateSubSelect(
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::alignJoinAndPkColumnsForUnion(select: SelectSQLQuery[1], allColumns:RelationalOperationElement[*]):SelectSQLQuery[1]
 {
-   let allCols = $allColumns->map(c | $c->cast(@Alias).name)->removeDuplicates();
+   let allCols = $allColumns->map(c | $c->extractColumnName())->removeDuplicates();
 
    let sqlNull = ^Literal(value=^SQLNull());
-   let newCols = $allCols->map(a| let col = $select.columns->filter(c|$c->cast(@Alias).name == $a);
+   let newCols = $allCols->map(a| let col = $select.columns->filter(c|$c->extractColumnName() == $a);
                                   if ($col->isEmpty(),
                                       |^Alias(name=$a, relationalElement=$sqlNull),
                                       |$col->at(0)

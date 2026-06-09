@@ -671,7 +671,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
                     $rel->filter(row|$row.FIRSTNAME==$firstName)->select(~[FIRSTNAME,LASTNAME])
             }
             ->meta::pure::functions::lang::eval(#>{meta::external::dataquality::tests::domain::db.personTable}#->filter(row|$row.AGE >= $age)->meta::pure::functions::relation::select(~[FIRSTNAME,LASTNAME]));},
-          'meta::external::dataquality::tests::domain::DataQualityRuntime'        
+          'meta::external::dataquality::tests::domain::DataQualityRuntime'
     );
 }
 
