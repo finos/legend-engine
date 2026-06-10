@@ -69,6 +69,8 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
@@ -172,6 +174,7 @@ import java.util.stream.StreamSupport;
 
 public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RelationalExecutionNodeExecutor.class);
     private final ExecutionState executionState;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
     private Identity identity;
@@ -2056,8 +2059,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                     node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 }
-                                catch (Exception ignored2)
+                                catch (Exception e)
                                 {
+                                    LOGGER.warn("Failed to drop cross-store parent temp table '{}' before re-creation. " +
+                                            "This may indicate a connection/session mismatch for temp table lifecycle.", node.parentTempTableName, e);
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.identity);
@@ -2068,8 +2073,10 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                     node.parentTempTableStrategy.dropTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                                 }
-                                catch (Exception ignored2)
+                                catch (Exception e)
                                 {
+                                    LOGGER.warn("Failed to drop cross-store parent temp table '{}' before re-creation. " +
+                                            "This may indicate a connection/session mismatch for temp table lifecycle.", node.parentTempTableName, e);
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
