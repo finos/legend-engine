@@ -1,0 +1,41 @@
+name: persistence-append-only
+title: "Persistence append-only ingestion (allow duplicates)"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  with append-only updates handling and the `AllowDuplicates` append strategy:
+  every batch is appended in full, stamped with its batch id, and existing rows
+  are never updated or closed out — so a key re-appearing in a later batch
+  produces a second physical row. Exercises the non-temporal append-only target.
+
+modelSources:
+  model:
+    root: persistence-append-only
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-append-only
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:append-only
+  - persistence:auditing
+  - persistence:delta
+  - persistence:nontemporal
+  - persistence:persistence
+  - persistence:service-output-target
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - append-only
+  - allow-duplicates
+  - auditing
+  - h2

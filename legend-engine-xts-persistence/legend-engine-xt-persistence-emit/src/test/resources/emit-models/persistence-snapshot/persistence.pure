@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Persistence
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+  TDS
+  {
+    keys: []
+    deduplication: None;
+    datasetType: Snapshot
+    {
+      partitioning: None
+      {
+        emptyDatasetHandling: NoOp;
+      }
+    }
+  }
+  ->
+  Relational
+  #{
+    table: personTable;
+    database: test::TestDatabase;
+    temporality: None
+    {
+        updatesHandling: Overwrite;
+    }
+  }#
+  ];
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
+                }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":1}]';
+                }#;
+              }#
+          ]
+        },
+        testBatch2:
+        {
+          data:
+          {
+            connection:
+            {
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":2, "NAME":"BRADLEY"},{"ID":3, "NAME":"CATHY"}]';
+                }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                ExternalFormat
+                #{
+                  contentType: 'application/json';
+                  data: '[{"ID":2, "NAME":"BRADLEY", "BATCH_ID":2},{"ID":3, "NAME":"CATHY", "BATCH_ID":2}]';
+                }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: true;
+    }
+  ]
+}

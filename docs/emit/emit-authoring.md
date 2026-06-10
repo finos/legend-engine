@@ -96,6 +96,7 @@ Apply the rule from `emit.md` §3.2:
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
 | Flat-data store | `legend-engine-xts-flatdata/legend-engine-xt-flatdata-emit` |
+| Persistence (service-output target, ingestion tests) | `legend-engine-xts-persistence/legend-engine-xt-persistence-emit` |
 
 If the module you want doesn't exist yet, create it — see §9.
 

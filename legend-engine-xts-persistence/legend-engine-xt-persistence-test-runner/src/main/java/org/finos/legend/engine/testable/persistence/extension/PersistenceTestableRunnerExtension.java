@@ -14,18 +14,20 @@
 
 package org.finos.legend.engine.testable.persistence.extension;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Testable;
-
 
 public class PersistenceTestableRunnerExtension implements TestableRunnerExtension
 {
@@ -34,7 +36,7 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence");
+        return Lists.mutable.with("PackageableElement", "Persistence");
     }
 
     @Override
@@ -44,11 +46,24 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
     }
 
     @Override
+    public Boolean isTestable(PackageableElement element)
+    {
+        return element instanceof Persistence;
+    }
+
+    @Override
+    public Boolean isTestableEmpty(PackageableElement element)
+    {
+        Persistence persistence = (Persistence) element;
+        return persistence.tests == null || persistence.tests.isEmpty();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Root_meta_pure_persistence_metamodel_Persistence)
         {
-            return new PersistenceTestRunner((Root_meta_pure_persistence_metamodel_Persistence) testable, pureVersion);
+            return new PersistenceTestRunner((Root_meta_pure_persistence_metamodel_Persistence) testable, this.pureVersion);
         }
         return null;
     }
@@ -60,13 +75,10 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
             throw new UnsupportedOperationException("Expected Persistence testable. Found : " + testable.getName());
         }
 
-        PersistenceTestRunner testRunner = new PersistenceTestRunner((Root_meta_pure_persistence_metamodel_Persistence) testable, pureVersion);
+        PersistenceTestRunner testRunner = new PersistenceTestRunner((Root_meta_pure_persistence_metamodel_Persistence) testable, this.pureVersion);
 
         RunTestsResult runTestsResult = new RunTestsResult();
-        ((Root_meta_pure_persistence_metamodel_Persistence) testable)._tests().forEach(test ->
-        {
-            runTestsResult.results.add(testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, pureModelContextData));
-        });
+        testable._tests().collect(test -> testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, pureModelContextData), runTestsResult.results);
         return runTestsResult;
     }
 

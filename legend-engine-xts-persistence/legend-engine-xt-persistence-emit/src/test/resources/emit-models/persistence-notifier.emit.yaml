@@ -1,0 +1,40 @@
+name: persistence-notifier
+title: "Persistence with email and PagerDuty notifier"
+description: |
+  A non-temporal snapshot Persistence (the same ingestion shape as
+  `persistence-snapshot`) that additionally declares a `notifier` with both an
+  Email and a PagerDuty notifyee. The notifier is run-time metadata — it does
+  not affect ingestion — so this exists as the catalog's example of the notifier
+  grammar and to prove it parses and compiles through the full EMIT pipeline.
+
+modelSources:
+  model:
+    root: persistence-notifier
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-notifier
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:nontemporal
+  - persistence:notifier
+  - persistence:persistence
+  - persistence:service-output-target
+  - persistence:snapshot
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - notifier
+  - email
+  - pager-duty
+  - h2

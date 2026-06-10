@@ -1,0 +1,44 @@
+name: persistence-snapshot
+title: "Persistence (non-temporal snapshot) with service-output target"
+description: |
+  A Persistence element that ingests a service's output into a relational H2
+  table as a non-temporal snapshot. Exercises the Persistence Testable, whose
+  tests are top-level atomic tests (a `tests` block) rather than a `testSuites`
+  block — the suite-less shape that distinguishes Persistence (and Function)
+  from Mapping/Service Testables.
+
+  Exists to prove EMIT actually discovers and executes Testable tests that are
+  NOT organized into a test suite. The supporting model, mapping, store and
+  service are pulled in as a dependency so the Persistence element is the only
+  in-scope (primary) element: test execution therefore runs exactly the
+  persistence test, and plan generation is skipped (no in-scope service).
+
+modelSources:
+  model:
+    root: persistence-snapshot
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-snapshot
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:nontemporal
+  - persistence:persistence
+  - persistence:service-output-target
+  - persistence:snapshot
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - non-temporal-snapshot
+  - h2
+  - testable-without-suite

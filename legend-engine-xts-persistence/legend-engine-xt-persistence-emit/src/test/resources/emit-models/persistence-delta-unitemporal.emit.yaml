@@ -1,0 +1,39 @@
+name: persistence-delta-unitemporal
+title: "Persistence unitemporal delta (batch-id milestoning)"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  as a unitemporal delta keyed on `ID` and milestoned on processing batch id.
+  Unlike a snapshot, a delta does not close out rows that are merely absent from
+  the next batch: batch 2 only re-milestones the keys it carries, and batch 3
+  (an empty input) is a no-op — the assertions lock in both behaviours.
+
+modelSources:
+  model:
+    root: persistence-delta-unitemporal
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-delta-unitemporal
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:delta
+  - persistence:persistence
+  - persistence:service-output-target
+  - persistence:unitemporal
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - unitemporal-delta
+  - batch-id-milestoning
+  - empty-batch
+  - h2
