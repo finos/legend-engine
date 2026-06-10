@@ -460,6 +460,24 @@ public class TestSQLRoundTrip
         check("SELECT data @@ '$.age > 18' FROM myTable");
     }
 
+    @Test
+    public void testLateralSubquery()
+    {
+        check("SELECT * FROM myTable, LATERAL (SELECT * FROM myTable2 WHERE myTable2.id = myTable.id) AS t");
+    }
+
+    @Test
+    public void testLateralJoin()
+    {
+        check("SELECT * FROM myTable LEFT OUTER JOIN LATERAL (SELECT * FROM myTable2 WHERE myTable2.id = myTable.id) AS t ON (true)");
+    }
+
+    @Test
+    public void testLateralFunction()
+    {
+        check("SELECT * FROM myTable, LATERAL generate_series(1, myTable.n) AS t");
+    }
+
     private void fail(String sql, int start, int end, String message)
     {
         try

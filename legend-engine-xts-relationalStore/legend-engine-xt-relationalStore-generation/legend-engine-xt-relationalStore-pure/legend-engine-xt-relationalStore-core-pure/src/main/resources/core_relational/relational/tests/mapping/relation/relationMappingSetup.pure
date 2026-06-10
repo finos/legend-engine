@@ -21,7 +21,9 @@ Database meta::relational::tests::mapping::relation::testDB
     "FIRST NAME" VARCHAR(100),
     AGE INTEGER,
     FIRMID INTEGER,
-    SALARY FLOAT
+    SALARY FLOAT,
+    EMPLOYEE_TYPE VARCHAR(20),
+    IS_MALE INTEGER
   )
 
   Table firmTable
@@ -35,6 +37,16 @@ Database meta::relational::tests::mapping::relation::testDB
     GROUPID INTEGER PRIMARY KEY,
     PERSONID INTEGER,
     GROUPNAME VARCHAR(30)
+  )
+
+  Table personWithAddressTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    STREET VARCHAR(100),
+    CITY VARCHAR(100),
+    FIRMID INTEGER
   )
 )
 
@@ -236,6 +248,51 @@ Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::
 Class <<temporal.bitemporal>> meta::relational::tests::mapping::relation::BiTemporalFirm
 {
   legalName: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithEmployeeType extends meta::relational::tests::mapping::relation::Person
+{
+   employeeType: meta::relational::tests::mapping::relation::EmployeeType[1];
+}
+
+Class meta::relational::tests::mapping::relation::Address
+{
+  street: String[1];
+  city: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithAddress extends meta::relational::tests::mapping::relation::Person
+{
+  address: meta::relational::tests::mapping::relation::Address[1];
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithAddressAndFirm extends meta::relational::tests::mapping::relation::Person
+{
+  address: meta::relational::tests::mapping::relation::Address[1];
+}
+
+Association meta::relational::tests::mapping::relation::PersonWithAddressAndFirm_Firm
+{
+  employeesWithAddr: meta::relational::tests::mapping::relation::PersonWithAddressAndFirm[*];
+  firmOfAddr: meta::relational::tests::mapping::relation::Firm[1];
+}
+
+Enum meta::relational::tests::mapping::relation::EmployeeType
+{
+   CONTRACT,
+   FULL_TIME
+}
+
+Enum meta::relational::tests::mapping::relation::ActiveStatus
+{
+   ACTIVE,
+   INACTIVE
+}
+
+Class meta::relational::tests::mapping::relation::PersonWithMultipleEnums extends meta::relational::tests::mapping::relation::Person
+{
+   employeeType: meta::relational::tests::mapping::relation::EmployeeType[1];
+   activeStatus: meta::relational::tests::mapping::relation::ActiveStatus[1];
 }
 
 Association meta::relational::tests::mapping::relation::Person_Firm
@@ -495,6 +552,140 @@ Mapping meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapp
   }
 )
 
+Mapping meta::relational::tests::mapping::relation::EnumerationRelationMapping
+(
+   *PersonWithEmployeeType: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithEnum():Relation<Any>[1]
+      firstName: 'FIRST NAME',
+      age: AGE,
+      employeeType: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE
+   }
+
+   EmployeeType: EnumerationMapping employeeTypeMapping
+   {
+     CONTRACT: 'CONTRACT',
+     FULL_TIME: ['SALARY', 'FULL_TIME']
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping
+(
+   *PersonWithMultipleEnums: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithMultipleEnums():Relation<Any>[1]
+      firstName: 'FIRST NAME',
+      age: AGE,
+      employeeType: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE,
+      activeStatus: EnumerationMapping activeStatusMapping : IS_MALE
+   }
+
+   EmployeeType: EnumerationMapping employeeTypeMapping
+   {
+     CONTRACT: 'CONTRACT',
+     FULL_TIME: ['SALARY', 'FULL_TIME']
+   }
+
+   ActiveStatus: EnumerationMapping activeStatusMapping
+   {
+     ACTIVE: 1,
+     INACTIVE: 0
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::EmbeddedRelationMapping
+(
+  *PersonWithAddress: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping
+(
+  *PersonWithAddress[personWithAddr]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    address () Inline [addressSet]
+  }
+  *Address[addressSet]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping
+(
+  *PersonWithAddressAndFirm[personAddr]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  PersonWithAddressAndFirm_Firm: XStore
+  {
+    employeesWithAddr[firm, personAddr]: $this.id == $that.firmId,
+    firmOfAddr[personAddr, firm]: $this.firmId == $that.id
+  }
+)
+
+Mapping meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping
+(
+  *PersonWithAddressAndFirm[personAddr]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    address () Inline [addressSet]
+  }
+
+  *Address[addressSet]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personFunctionWithAddress():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+    legalName: legalName,
+    +id: Integer[1]: ID
+  }
+
+  PersonWithAddressAndFirm_Firm: XStore
+  {
+    employeesWithAddr[firm, personAddr]: $this.id == $that.firmId,
+    firmOfAddr[personAddr, firm]: $this.firmId == $that.id
+  }
+)
+
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -603,6 +794,26 @@ function meta::relational::tests::mapping::relation::personFunctionWithMultipleM
   );
 }
 
+function meta::relational::tests::mapping::relation::personFunctionWithEnum(): Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->filter(x | $x.AGE > 25)
+      ->select(~['FIRST NAME', AGE, EMPLOYEE_TYPE])
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithMultipleEnums(): Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->filter(x | $x.AGE > 25)
+      ->select(~['FIRST NAME', AGE, EMPLOYEE_TYPE, IS_MALE])
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithAddress(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.personWithAddressTable}#
+    ->select(~[FIRSTNAME, AGE, STREET, CITY, FIRMID])
+}
+
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
 {
   createTablesAndFillDb();
@@ -613,14 +824,14 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   let connection = meta::external::store::relational::tests::testRuntime(testDB).connectionByElement(testDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
   
   executeInDb('Drop table if exists PersonTable;', $connection);
-  executeInDb('Create Table PersonTable(id INT, "FIRST NAME" VARCHAR(200), age INT, firmId INT, birthdate DATE, salary DOUBLE, isMale BIT);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (1, \'Peter\',   23,  1, \'2000-11-01\', 14.34, 1);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (2, \'John\',    30,  1, \'1994-11-01\', 72.40, 1);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (3, \'Jane\',    23,  2, \'2000-11-01\', 48.00, 0);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (4, \'Anthony\', 19,  3, \'2005-11-01\', 64.90, 1);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (5, \'Fabrice\', 45,  4, \'1979-11-01\', 19.29, 1);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (6, \'Oliver\',  26,  4, \'1998-11-01\', 42.34, 1);', $connection);
-  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, isMale) values (7, \'David\',   52,  5, \'1972-11-01\', 88.88, 1);', $connection);
+  executeInDb('Create Table PersonTable(id INT, "FIRST NAME" VARCHAR(200), age INT, firmId INT, birthdate DATE, salary DOUBLE, IS_MALE INT, EMPLOYEE_TYPE VARCHAR(20));', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (1, \'Peter\',   23,  1, \'2000-11-01\', 14.34, 1, \'CONTRACT\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (2, \'John\',    30,  1, \'1994-11-01\', 72.40, 1, \'FULL_TIME\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (3, \'Jane\',    23,  2, \'2000-11-01\', 48.00, 0, \'CONTRACT\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (4, \'Anthony\', 19,  3, \'2005-11-01\', 64.90, 1, \'SALARY\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (5, \'Fabrice\', 45,  4, \'1979-11-01\', 19.29, 1, \'FULL_TIME\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (6, \'Oliver\',  26,  4, \'1998-11-01\', 42.34, 1, \'CONTRACT\');', $connection);
+  executeInDb('insert into PersonTable (id, "FIRST NAME", age, firmId, birthDate, salary, IS_MALE, EMPLOYEE_TYPE) values (7, \'David\',   52,  5, \'1972-11-01\', 88.88, 1, \'CONTRACT\');', $connection);
 
   executeInDb('Drop table if exists FirmTable;', $connection);
   executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
@@ -639,6 +850,13 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (3, 5, \'Group C\');', $connection);
   executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (3, 6, \'Group C\');', $connection);
   executeInDb('insert into GroupMembershipTable (groupid, personid, groupname) values (4, 7, \'Group D\');', $connection);
+
+  executeInDb('Drop table if exists personWithAddressTable;', $connection);
+  executeInDb('Create Table personWithAddressTable(ID INT, FIRSTNAME VARCHAR(200), AGE INT, STREET VARCHAR(200), CITY VARCHAR(200), FIRMID INT);', $connection);
+  executeInDb('insert into personWithAddressTable (ID, FIRSTNAME, AGE, STREET, CITY, FIRMID) values (1, \'John\',    30, \'Main St\',    \'New York\', 1);', $connection);
+  executeInDb('insert into personWithAddressTable (ID, FIRSTNAME, AGE, STREET, CITY, FIRMID) values (2, \'Oliver\',  26, \'Oak Ave\',    \'Chicago\',  2);', $connection);
+  executeInDb('insert into personWithAddressTable (ID, FIRSTNAME, AGE, STREET, CITY, FIRMID) values (3, \'David\',   52, \'Pine Rd\',    \'Boston\',   3);', $connection);
+  executeInDb('insert into personWithAddressTable (ID, FIRSTNAME, AGE, STREET, CITY, FIRMID) values (4, \'Fabrice\', 45, \'Elm Blvd\',   \'Seattle\',  4);', $connection);
 
   executeInDb('Drop table if exists PERSON_TABLE_PROCESSING_SNAPSHOT;', $connection);
   executeInDb('Create Table PERSON_TABLE_PROCESSING_SNAPSHOT(ID INT, FIRSTNAME VARCHAR(200), SALARY INT, FIRMID INT, SNAPSHOTDATE DATE);', $connection);

@@ -22,6 +22,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinAssociationImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelJoin.ModelJoinPropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStoreAssociationImplementation;
 import org.junit.Test;
 
@@ -3457,6 +3459,445 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    age: AGE\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+
+    @Test
+    public void testModelJoinAssociationMapping()
+    {
+        String mapping = "###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        // Valid ModelJoin — explicit typed lambda
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id == $employees.firmId}\n" +
+                "   }"));
+
+        // Invalid: syntactic sugar (no params) — rejected by the parser, since the join condition
+        // must parse as a lambda.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      employer.id == employees.firmId\n" +
+                "   }"),
+                "PARSER error at [36:7-37]: ModelJoin association mapping requires a lambda join condition of the form '{src: SrcClass[1], tgt: TgtClass[1] | <boolean expression>}'");
+
+        // Invalid: non-boolean return type
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id + $employees.firmId}\n" +
+                "   }"),
+                "COMPILATION error at [36:71-89]: ModelJoin property mapping function should return 'Boolean[1]'");
+
+        // Valid: untyped lambda — param names match association property names, so the
+        // name-matching fallback in resolveExplicitLambdaParamNames pairs them correctly.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer, employees|$employer.id == $employees.firmId}\n" +
+                "   }"));
+
+        // Invalid: untyped lambda whose param names don't match either association property —
+        // type info is unavailable (untyped) and name fallback can't pair them, so resolution must fail.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {a, b|$a.id == $b.firmId}\n" +
+                "   }"),
+                "COMPILATION error at [36:12-30]: Cannot pair ModelJoin lambda parameters 'a' and 'b' with association properties 'employer' and 'employees'. Either type the parameters explicitly (e.g. {a:Firm[1], b:Person[1] | ...}) or rename the parameters to match the association property names ('employer' and 'employees').");
+
+        // Invalid: typed lambda whose param types don't match association property types —
+        // both params declared as Person while the association is Firm <-> Person, so neither
+        // ordering pairs up and resolution must fail with a type-mismatch error.
+        test(String.format(mapping,
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {a:test::Person[1], b:test::Person[1]|$a.name == $b.name}\n" +
+                "   }"),
+                "COMPILATION error at [36:44-62]: ModelJoin lambda parameter types do not match association property types: expected one parameter of type 'Firm' and one of type 'Person', got 'a:test::Person' and 'b:test::Person'");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingProducesAssociationImplementation()
+    {
+        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employer:test::Firm[1], employees:test::Person[1]|$employer.id == $employees.firmId}\n" +
+                "   }\n" +
+                ")\n");
+
+        PureModel pureModel = result.getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping compiledMapping = pureModel.getMapping("test::modelJoinMapping");
+
+        // Should produce an association implementation with two property mappings (both directions)
+        RichIterable<? extends AssociationImplementation> associationImpls = compiledMapping._associationMappings();
+        assertEquals(1, associationImpls.size());
+
+        AssociationImplementation assocImpl = associationImpls.toList().get(0);
+        assertTrue(assocImpl instanceof ModelJoinAssociationImplementation);
+
+        // Two property mappings — one per direction
+        assertEquals(2, assocImpl._propertyMappings().size());
+        assocImpl._propertyMappings().forEach(
+                propertyMapping -> assertTrue(propertyMapping instanceof ModelJoinPropertyMapping)
+        );
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithOneSideMilestoned()
+    {
+        // Only Firm is milestoned (businesstemporal), Person is not.
+        // Using explicit typed lambda avoids edge-point property name issues.
+        test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::Firm\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {firm:test::Firm[1], person:test::Person[1]|$firm.id == $person.firmId}\n" +
+                "   }\n" +
+                ")\n");
+
+        // Only Person is milestoned (processingtemporal), Firm is not.
+        test("###Pure\n" +
+                "Class <<temporal.processingtemporal>> test::Person2\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm2\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person2\n" +
+                "{\n" +
+                "   employees: test::Person2[*];\n" +
+                "   employer: test::Firm2[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinMapping2\n" +
+                "(\n" +
+                "   test::Person2[p]: Pure {\n" +
+                "      ~src test::Person2\n" +
+                "      +firmId: Integer[1]: 1,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Firm2[f]: Pure {\n" +
+                "      ~src test::Firm2\n" +
+                "      id: $src.id,\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person2: ModelJoin {\n" +
+                "      {firm:test::Firm2[1], person:test::Person2[1]|$firm.id == $person.firmId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithClassHierarchy()
+    {
+        // Test: explicit typed lambda uses a parent class type for param, association targets a subclass
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::EntityOrder\n" +
+                "{\n" +
+                "   entity: test::SpecificEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::EntityOrder: ModelJoin {\n" +
+                "      {base:test::BaseEntity[1], ord:test::Order[1]|$base.id == $ord.entityId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinSelfAssociation()
+    {
+        String model = "###Pure\n" +
+                "Class test::Employee\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "   managerId: Integer[0..1];\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Association test::Employee_Manager\n" +
+                "{\n" +
+                "   reports: test::Employee[*];\n" +
+                "   manager: test::Employee[0..1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::selfJoinMapping\n" +
+                "(\n" +
+                "   test::Employee[e]: Pure {\n" +
+                "      ~src test::Employee\n" +
+                "      id: $src.id,\n" +
+                "      managerId: $src.managerId,\n" +
+                "      name: $src.name\n" +
+                "   }\n\n" +
+                "%s\n" +
+                ")\n";
+
+        // Valid: param names match association property names
+        test(String.format(model,
+                "   test::Employee_Manager: ModelJoin {\n" +
+                "      {manager:test::Employee[1], reports:test::Employee[1]|$reports.managerId == $manager.id}\n" +
+                "   }"));
+
+        // Invalid: param names don't match association property names for self-association
+        test(String.format(model,
+                "   test::Employee_Manager: ModelJoin {\n" +
+                "      {a:test::Employee[1], b:test::Employee[1]|$b.managerId == $a.id}\n" +
+                "   }"),
+                "COMPILATION error at [26:48-69]: Self-association ModelJoin requires lambda parameter names to match the association property names ('manager' and 'reports'), got 'a' and 'b'");
+    }
+
+    @Test
+    public void testXStoreAssociationMappingWithClassHierarchy()
+    {
+        // Test: XStore mapping maps a subclass, but association is on a parent class
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::EntityOrder\n" +
+                "{\n" +
+                "   entity: test::SpecificEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyXStoreMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::EntityOrder: XStore {\n" +
+                "      entity: $this.entityId == $that.id,\n" +
+                "      orders: $this.id == $that.entityId\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithAssociationOnBaseClass()
+    {
+        // Association is between BaseEntity and Order, but mapping maps SpecificEntity (subclass)
+        test("###Pure\n" +
+                "Class test::BaseEntity\n" +
+                "{\n" +
+                "   id: Integer[1];\n" +
+                "}\n\n" +
+                "Class test::SpecificEntity extends test::BaseEntity\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Order\n" +
+                "{\n" +
+                "   entityId: Integer[1];\n" +
+                "   description: String[1];\n" +
+                "}\n\n" +
+                "Association test::BaseEntityOrder\n" +
+                "{\n" +
+                "   entity: test::BaseEntity[1];\n" +
+                "   orders: test::Order[*];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::hierarchyMapping\n" +
+                "(\n" +
+                "   test::SpecificEntity[e]: Pure {\n" +
+                "      ~src test::SpecificEntity\n" +
+                "      id: $src.id,\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   \n" +
+                "   test::Order[o]: Pure {\n" +
+                "      ~src test::Order\n" +
+                "      entityId: $src.entityId,\n" +
+                "      description: $src.description\n" +
+                "   }\n\n" +
+                "   test::BaseEntityOrder: ModelJoin {\n" +
+                "      {e:test::BaseEntity[1], o:test::Order[1]|$e.id == $o.entityId}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithUnionSets()
+    {
+        // Test: ModelJoin where one side has Operation (union) set implementations
+        // Should create 2 property mappings per direction (one per union member), total 4
+        Pair<PureModelContextData, PureModel> result = test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "}\n\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   legalName: String[1];\n" +
+                "}\n\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::unionModelJoinMapping\n" +
+                "(\n" +
+                "   test::Person[p1]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   test::Person[p2]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      name: $src.name\n" +
+                "   }\n" +
+                "   *test::Person: Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)\n" +
+                "   }\n" +
+                "   *test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      legalName: $src.legalName\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {employees:test::Person[1], employer:test::Firm[1]|$employees.name == $employer.legalName}\n" +
+                "   }\n" +
+                ")\n");
+
+        PureModel pureModel = result.getTwo();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping = pureModel.getMapping("test::unionModelJoinMapping");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation assocImpl = mapping._associationMappings().getFirst();
+        // With union on Person side (2 members), we get 2 property mappings per direction = 4 total
+        org.junit.Assert.assertEquals(4, assocImpl._propertyMappings().size());
     }
 
 }

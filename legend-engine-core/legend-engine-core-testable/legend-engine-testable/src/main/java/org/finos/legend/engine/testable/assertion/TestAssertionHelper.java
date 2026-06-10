@@ -43,7 +43,7 @@ public class TestAssertionHelper
         JsonNode actualJsonNode = objectMapper.readTree(_actual.getBytes());
 
         AssertionStatus assertionStatus;
-        if (JsonNodeComparator.NULL_MISSING_EQUIVALENT.compare(expectedJsonNode, actualJsonNode) == 0)
+        if (JsonNodeComparator.NULL_MISSING_EQUIVALENT_AND_UNORDERED_ARRAYS.compare(expectedJsonNode, actualJsonNode) == 0)
         {
             assertionStatus = new AssertPass();
         }

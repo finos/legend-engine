@@ -1,0 +1,1471 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::metamodel::execute::tests::*;
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::advanced::*;
+import meta::relational::tests::mapping::modelJoin::store::*;
+
+// =============================================================================
+// Nested property chain: employees.address.city == firm.city && ...country
+//
+// Expected: Match via nested address city/country — Alice→Apple, Bob→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testNestedPropertyChain():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    NestedPropertyChainMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join ' +
+        '(select "addresstable_0".CITY as CITY, "addresstable_0".COUNTRY as COUNTRY, "persontable_1".FIRSTNAME as FIRSTNAME ' +
+         'from (select "persontable_2".ID as ID, "persontable_2".FIRSTNAME as FIRSTNAME, "persontable_2".LASTNAME as LASTNAME, ' +
+              '"persontable_2".FIRMID as FIRMID, "persontable_2".AGE as AGE from personTable as "persontable_2") as "persontable_1" ' +
+         'left outer join (select "addresstable_1".ID as ID, "addresstable_1".PERSONID as PERSONID, "addresstable_1".CITY as CITY, ' +
+              '"addresstable_1".COUNTRY as COUNTRY from addressTable as "addresstable_1") as "addresstable_0" ' +
+         'on ("persontable_1".ID = "addresstable_0".PERSONID)) as "persontable_0" ' +
+    'on ("persontable_0".CITY = "firmtable_0".CITY and "persontable_0".COUNTRY = "firmtable_0".COUNTRY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Double-nested both sides: employees.address.city == firm.headquarters.city
+//
+// Expected: Alice(addr=NYC)→Apple(HQ=NYC), Bob(addr=London)→Google(HQ=London).
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testDoubleNestedBothSides():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    DoubleNestedModelJoinMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "addresstable_1".ID as ID, "addresstable_1".FIRMID as FIRMID, "addresstable_1".CITY as CITY, ' +
+         '"addresstable_1".COUNTRY as COUNTRY from headquartersTable as "addresstable_1") as "headquarterstable_0" ' +
+    'on ("firmtable_0".ID = "headquarterstable_0".FIRMID) ' +
+    'left outer join ' +
+        '(select "addresstable_0".CITY as CITY, "persontable_1".FIRSTNAME as FIRSTNAME ' +
+         'from (select "persontable_2".ID as ID, "persontable_2".FIRSTNAME as FIRSTNAME, "persontable_2".LASTNAME as LASTNAME, ' +
+              '"persontable_2".FIRMID as FIRMID, "persontable_2".AGE as AGE from personTable as "persontable_2") as "persontable_1" ' +
+         'left outer join (select "addresstable_1".ID as ID, "addresstable_1".PERSONID as PERSONID, "addresstable_1".CITY as CITY, ' +
+              '"addresstable_1".COUNTRY as COUNTRY from addressTable as "addresstable_1") as "addresstable_0" ' +
+         'on ("persontable_1".ID = "addresstable_0".PERSONID)) as "persontable_0" ' +
+    'on ("persontable_0".CITY = "headquarterstable_0".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Chained two-hop: Firm→Department→Project
+//
+// Expected: Apple→ProjectX, ProjectY (via Engineering) + null (via Marketing).
+//   Google→ProjectZ (via Research).
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testChainedTwoHops():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let deptCsv =
+    'default\n' +
+    'departmentTable\n' +
+    'ID,FIRMID,NAME,CODE\n' +
+    '10,1,Engineering,ENG\n' +
+    '20,1,Marketing,MKT\n' +
+    '30,2,Research,RES\n';
+
+  let projectCsv =
+    'default\n' +
+    'projectTable\n' +
+    'ID,DEPTID,NAME,CITY\n' +
+    '100,10,ProjectX,NYC\n' +
+    '200,10,ProjectY,LA\n' +
+    '300,30,ProjectZ,London\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $deptCsv, $projectCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Project Name': x|$x.departments.projects.name
+       ]
+    ),
+    ChainedTwoHopsMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "projecttable_0".NAME as "Project Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "departmenttable_1".ID as ID, "departmenttable_1".FIRMID as FIRMID, "departmenttable_1".NAME as NAME, ' +
+         '"departmenttable_1".CODE as CODE from departmentTable as "departmenttable_1") as "departmenttable_0" ' +
+    'on ("firmtable_0".ID = "departmenttable_0".FIRMID) ' +
+    'left outer join (select "projecttable_1".ID as ID, "projecttable_1".DEPTID as DEPTID, "projecttable_1".NAME as NAME, ' +
+         '"projecttable_1".CITY as CITY from projectTable as "projecttable_1") as "projecttable_0" ' +
+    'on ("departmenttable_0".ID = "projecttable_0".DEPTID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Project Name\'\n' +
+            '   Apple,TDSNull\n' +
+            '   Apple,ProjectY\n' +
+            '   Apple,ProjectX\n' +
+            '   Google,ProjectZ\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Project Name'->descending()])->toString());
+}
+
+// =============================================================================
+// Direct single-hop property access: Person.all()->project(~[firstName, address.city])
+//
+// Expected: Alice→NYC, Bob→London, Charlie→null.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testDirectPropertyAccess():Boolean[1]
+{
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'City': x|$x.address.city
+       ]
+    ),
+    NestedPropertyChainMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "persontable_0".FIRSTNAME as "First Name", "addresstable_0".CITY as "City" ' +
+    'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
+         '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
+    'left outer join (select "addresstable_1".ID as ID, "addresstable_1".PERSONID as PERSONID, "addresstable_1".CITY as CITY, ' +
+         '"addresstable_1".COUNTRY as COUNTRY from addressTable as "addresstable_1") as "addresstable_0" ' +
+    'on ("persontable_0".ID = "addresstable_0".PERSONID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',City\n' +
+            '   Alice,NYC\n' +
+            '   Bob,London\n' +
+            '   Charlie,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Filter on double-nested model-join property:
+//   Firm.all()->filter(f | f.headquarters.city == 'NYC')->project(~[legalName])
+//
+// Expected: Only Apple (HQ in NYC) passes.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testNestedInFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n' +
+    '3,Meta,,,\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->filter(f|$f.headquarters.city == 'NYC')->project(
+      ~[
+        'Legal Name': x|$x.legalName
+       ]
+    ),
+    DoubleNestedModelJoinMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+         '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "headquarterstable_1".ID as ID, "headquarterstable_1".FIRMID as FIRMID, ' +
+         '"headquarterstable_1".CITY as CITY, "headquarterstable_1".COUNTRY as COUNTRY ' +
+         'from headquartersTable as "headquarterstable_1") as "headquarterstable_0" ' +
+    'on ("firmtable_0".ID = "headquarterstable_0".FIRMID) ' +
+    'where "headquarterstable_0".CITY = \'NYC\'';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\'\n' +
+            '   Apple\n' +
+            '#',
+            $result.values->at(0)->toString());
+}
+
+// =============================================================================
+// Relational nested property chain: same as testNestedPropertyChain but with
+// Relational class mappings.
+//
+// Expected: Alice→Apple, Bob→Google (same logic).
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testRelationalNestedPropertyChain():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    RelationalNestedPropertyChainMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "addresstable_0".CITY as CITY, "addresstable_0".COUNTRY as COUNTRY, ' +
+         '"root".FIRSTNAME as FIRSTNAME from personTable as "root" ' +
+         'left outer join addressTable as "addresstable_0" on ("root".ID = "addresstable_0".PERSONID)) as "persontable_0" ' +
+    'on ("persontable_0".CITY = "root".CITY and "persontable_0".COUNTRY = "root".COUNTRY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Relational double-nested both sides: employees.address.city == firm.headquarters.city
+//
+// Expected: Alice→Apple, Bob→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testRelationalDoubleNestedBothSides():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    RelationalDoubleNestedMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join headquartersTable as "headquarterstable_0" on ("root".ID = "headquarterstable_0".FIRMID) ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "addresstable_0".CITY as CITY, ' +
+         '"root".FIRSTNAME as FIRSTNAME from personTable as "root" ' +
+         'left outer join addressTable as "addresstable_0" on ("root".ID = "addresstable_0".PERSONID)) as "persontable_0" ' +
+    'on ("persontable_0".CITY = "headquarterstable_0".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Relational filter on nested: Firm.all()->filter(f|f.headquarters.city=='NYC')
+//
+// Expected: Only Apple passes.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testRelationalNestedInFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n' +
+    '3,Meta,,,\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->filter(f|$f.headquarters.city == 'NYC')->project(
+      ~[
+        'Legal Name': x|$x.legalName
+       ]
+    ),
+    RelationalFilterOnNestedMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join headquartersTable as "headquarterstable_0" on ("root".ID = "headquarterstable_0".FIRMID) ' +
+    'where "headquarterstable_0".CITY = \'NYC\'';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\'\n' +
+            '   Apple\n' +
+            '#',
+            $result.values->at(0)->toString());
+}
+
+// =============================================================================
+// Filter on target: ~filter AGE > 25, so Bob (age=20) is excluded.
+//
+// Expected: Apple→Alice only, Google→Charlie.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testFilterOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    FilterOnTargetMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "root".FIRMID as FIRMID, "root".FIRSTNAME as FIRSTNAME ' +
+         'from personTable as "root" where "root".AGE > 25) as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "root".ID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Filter on target + nested condition: ~filter AGE>25, condition via address.city
+//
+// Expected: Bob excluded (age=20). Alice(NYC)→Apple, Charlie(SF)→Google.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testFilterOnTargetNestedCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,\n' +
+    '2,Google,,SF,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,NYC,US\n' +
+    '3,3,SF,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    FilterOnTargetNestedConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "addresstable_0".CITY as CITY, "root".FIRSTNAME as FIRSTNAME ' +
+         'from personTable as "root" left outer join addressTable as "addresstable_0" ' +
+         'on ("root".ID = "addresstable_0".PERSONID) where "root".AGE > 25) as "persontable_0" ' +
+    'on ("persontable_0".CITY = "root".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Distinct on target: ~distinct on Person mapping.
+//
+// Expected: All rows still appear (all unique). Apple→Alice,Bob; Google→Charlie.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testDistinctOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    DistinctOnTargetMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join (select distinct "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "root".FIRMID as FIRMID, "root".FIRSTNAME as FIRSTNAME ' +
+         'from personTable as "root") as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "root".ID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Bob\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Filter on target reverse: query Person→Firm using FilterOnTargetMapping.
+// Only active persons (age>25) are returned.
+//
+// Expected: Alice(30)→Apple, Charlie(35)→Google. Bob(20) excluded.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testFilterOnTargetReverse():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,20\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    FilterOnTargetMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from personTable as "root" ' +
+    'left outer join firmTable as "firmtable_0" on ("root".FIRMID = "firmtable_0".ID) ' +
+    'where "root".AGE > 25';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Charlie,Google\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Filter with INNER join on target: PersonProfile inner join + ProfileRankFilter.
+// Only persons with profile rank='US' pass.
+//
+// Expected: Alice(US)→Apple, Charlie(US)→Google. Bob(UK) excluded.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testFilterWithInnerJoinOnTarget():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let profileCsv =
+    'default\n' +
+    'profileTable\n' +
+    'ID,PERSONID,RANK\n' +
+    '1,1,US\n' +
+    '2,2,UK\n' +
+    '3,3,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $profileCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    FilterWithInnerJoinOnTargetMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from firmTable as "root" ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+         '"root".ID as "id", "root".FIRMID as "firmId", "root".FIRMID as FIRMID, "root".FIRSTNAME as FIRSTNAME ' +
+         'from (select "root".ID as ID, "root".FIRSTNAME as FIRSTNAME, "root".LASTNAME as LASTNAME, ' +
+         '"root".FIRMID as FIRMID, "root".AGE as AGE from personTable as "root" ' +
+         'inner join profileTable as "profiletable_0" on ("root".ID = "profiletable_0".PERSONID) ' +
+         'where "profiletable_0".RANK = \'US\') as "root") as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "root".ID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Complex relation function: join via nested address city
+//
+// Expected: Apple←Alice (NYC), Google←Bob,Charlie (London).
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testComplexRelationFunction():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::ComplexRelationFunctionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0"."FIRSTNAME" as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+    '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "persontable_1"."ID" as "ID", "persontable_1"."FIRSTNAME" as "FIRSTNAME", ' +
+    '"persontable_1"."LASTNAME" as "LASTNAME", "persontable_1"."FIRMID" as "FIRMID", "persontable_1"."AGE" as "AGE", ' +
+    '"persontable_1"."CITY" as "CITY", "persontable_1"."COUNTRY" as "COUNTRY" from (select * from ' +
+    '(select "persontable_3".ID as "ID", "persontable_3".FIRSTNAME as "FIRSTNAME", "persontable_3".LASTNAME as "LASTNAME", ' +
+    '"persontable_3".FIRMID as "FIRMID", "persontable_3".AGE as "AGE" from personTable as "persontable_3") as "persontable_2" ' +
+    'left outer join (select "addresstable_1".PERSONID as "PERSONID", "addresstable_1".CITY as "CITY", ' +
+    '"addresstable_1".COUNTRY as "COUNTRY" from addressTable as "addresstable_1") as "addresstable_0" ' +
+    'on ("persontable_2"."ID" = "addresstable_0"."PERSONID")) as "persontable_1") as "persontable_0" ' +
+    'on ("persontable_0"."CITY" = "firmtable_0".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Mixed Relational + RelationFunction: Firm→Employee navigation
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testMixedMappingFirmToEmployee():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::MixedMappingNestedPropertyAccess,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+    '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", ' +
+    '"root".ID as "id", "root".FIRMID as "firmId", "addresstable_0".CITY as CITY, "root".FIRSTNAME as FIRSTNAME ' +
+    'from personTable as "root" left outer join addressTable as "addresstable_0" ' +
+    'on ("root".ID = "addresstable_0".PERSONID)) as "persontable_0" on ("persontable_0".CITY = "firmtable_0".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Same mixed mapping, navigated from Person side: Person→Firm
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testMixedMappingEmployeeToFirm():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::MixedMappingNestedPropertyAccess,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from personTable as "root" left outer join addressTable as "addresstable_0" ' +
+    'on ("root".ID = "addresstable_0".PERSONID) left outer join (select "firmtable_1".ID as ID, ' +
+    '"firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, "firmtable_1".COUNTRY as COUNTRY, ' +
+    '"firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'on ("addresstable_0".CITY = "firmtable_0".CITY)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,Google\n' +
+            '   Charlie,Google\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// in() in model join condition: only Smith/Brown get matched
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testInCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::InConditionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "firmtable_0".LEGALNAME as "Legal Name", "persontable_0".FIRSTNAME as "Employee First Name" ' +
+    'from (select "firmtable_1".ID as ID, "firmtable_1".LEGALNAME as LEGALNAME, "firmtable_1".CITY as CITY, ' +
+    '"firmtable_1".COUNTRY as COUNTRY, "firmtable_1".CODE as CODE from firmTable as "firmtable_1") as "firmtable_0" ' +
+    'left outer join (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, ' +
+    '"persontable_1".LASTNAME as LASTNAME, "persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE ' +
+    'from personTable as "persontable_1" where "persontable_1".LASTNAME in (\'Smith\', \'Brown\')) as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_0".ID and "persontable_0".LASTNAME in (\'Smith\', \'Brown\'))';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Charlie\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// Column collision in materializeTargetAsSubselect
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testColumnCollisionInSubselect():Boolean[1]
+{
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,2,25\n';
+
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,US,\n' +
+    '2,2,UK,\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$personCsv, $firmCsv, $addressCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Person.all()->project(
+      ~[
+        'First Name': x|$x.firstName,
+        'Firm Name': x|$x.firm.legalName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::ColumnCollisionMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".FIRSTNAME as "First Name", "firmtable_0".LEGALNAME as "Firm Name" ' +
+    'from personTable as "root" left outer join addressTable as "addresstable_0" ' +
+    'on ("root".ID = "addresstable_0".PERSONID) left outer join (select "root".LEGALNAME as "legalName", ' +
+    '"root".CITY as "city", "root".ID as "id", "root".CITY as CITY, "headquarterstable_0".CITY as CITY_1, ' +
+    '"root".LEGALNAME as LEGALNAME from firmTable as "root" left outer join headquartersTable as "headquarterstable_0" ' +
+    'on ("root".ID = "headquarterstable_0".FIRMID)) as "firmtable_0" ' +
+    'on ("addresstable_0".CITY = "firmtable_0".CITY and "addresstable_0".COUNTRY = "firmtable_0".CITY_1)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'First Name\',\'Firm Name\'\n' +
+            '   Alice,Apple\n' +
+            '   Bob,Google\n' +
+            '#',
+            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// ToFix: Nested model join with compound inner condition
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testNestedModelJoinCompoundInnerCondition():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let profileCsv =
+    'default\n' +
+    'profileTable\n' +
+    'ID,PERSONID,RANK\n' +
+    '1,1,US\n' +
+    '2,2,UK\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,Paris,FR\n';
+
+  let hqCsv =
+    'default\n' +
+    'headquartersTable\n' +
+    'ID,FIRMID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $profileCsv, $addressCsv, $hqCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee First Name': x|$x.employees.firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::NestedModelJoinWithPropertyAccess,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee First Name\'\n' +
+            '   Apple,Alice\n' +
+            '   Google,Bob\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// ToFix: Sub-filter within project
+// ============================================================================= 
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'NYC Employee': x|$x.employees->filter(e|$e.address.city == 'NYC').firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::NestedPropertyChainMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'NYC Employee\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Charlie\n' +
+            '   Google,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+}
+
+// =============================================================================
+// ToFix: Sub-aggregation within project — count employees
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregation():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+  
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee Count': x|$x.employees->count()
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::simple::SimpleEqualityMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee Count\'\n' +
+            '   Apple,2\n' +
+            '   Google,1\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+}
+
+// =============================================================================
+// ToFix: Qualified property in query
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testQualifiedPropertyInQuery():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee In NYC': x|$x.employeesInCity('NYC').firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::QualifiedPropertyMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee In NYC\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Charlie\n' +
+            '   Google,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee In NYC'->descending()])->toString());
+}
+
+// =============================================================================
+// ToFix: Relational sub-filter (no union)
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testRelationalSubFilter():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,NYC,US\n' +
+    '2,Google,,London,UK\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,0,30\n' +
+    '2,Bob,Jones,0,25\n' +
+    '3,Charlie,Brown,0,35\n';
+
+  let addressCsv =
+    'default\n' +
+    'addressTable\n' +
+    'ID,PERSONID,CITY,COUNTRY\n' +
+    '1,1,NYC,US\n' +
+    '2,2,London,UK\n' +
+    '3,3,NYC,US\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv, $addressCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'NYC Employee': x|$x.employees->filter(e|$e.address.city == 'NYC').firstName
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::RelationalNestedPropertyChainMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'NYC Employee\'\n' +
+            '   Apple,Alice\n' +
+            '   Apple,Charlie\n' +
+            '   Google,TDSNull\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+}
+// =============================================================================
+// ToFix: Sub-aggregation (Relational class mappings)
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregationRelational():Boolean[1]
+{
+  let firmCsv =
+    'default\n' +
+    'firmTable\n' +
+    'ID,LEGALNAME,CODE,CITY,COUNTRY\n' +
+    '1,Apple,,,\n' +
+    '2,Google,,,\n';
+
+  let personCsv =
+    'default\n' +
+    'personTable\n' +
+    'ID,FIRSTNAME,LASTNAME,FIRMID,AGE\n' +
+    '1,Alice,Smith,1,30\n' +
+    '2,Bob,Jones,1,25\n' +
+    '3,Charlie,Brown,2,35\n';
+
+  let db = meta::relational::tests::mapping::modelJoin::store::Db;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  meta::relational::tests::mapping::modelJoin::setupTestData([$firmCsv, $personCsv], $db, $runtime);
+
+  let result = execute(
+    |Firm.all()->project(
+      ~[
+        'Legal Name': x|$x.legalName,
+        'Employee Count': x|$x.employees->count()
+       ]
+    ),
+    meta::relational::tests::mapping::modelJoin::advanced::RelationalSimpleEqualityMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expectedSql =
+    'select "root".LEGALNAME as "Legal Name", "firmtable_1".aggCol as "Employee Count" ' +
+    'from firmTable as "root" left outer join (select "firmtable_2".ID as ID, count(*) as aggCol ' +
+    'from firmTable as "firmtable_2" left outer join personTable as "persontable_0" ' +
+    'on ("persontable_0".FIRMID = "firmtable_2".ID) group by "firmtable_2".ID) as "firmtable_1" ' +
+    'on ("root".ID = "firmtable_1".ID)';
+  assertEquals($expectedSql, $result->sql());
+
+  assertEquals( '#TDS\n' +
+            '   \'Legal Name\',\'Employee Count\'\n' +
+            '   Apple,2\n' +
+            '   Google,1\n' +
+            '#',
+            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+}

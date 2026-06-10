@@ -74,6 +74,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
 {
     testDataSetupCsv:String[0..1];
     testDataSetupSqls:String[*];
+    disableDatabaseToUpper: Boolean[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::EmbeddedH2DatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification

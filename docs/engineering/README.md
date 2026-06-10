@@ -104,6 +104,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Alloy Compiler](architecture/alloy-compiler.md) | Deep-dive on the Alloy (Legend Engine) compiler: compilation phases, type/function resolution, extension points, and testing |
 | [Execution Plans](architecture/execution-plans.md) | What execution plans are, the planning/execution split, node catalogue, caching, versioning |
 | [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension |
+| [ModelJoin](architecture/model-join.md) | Store-agnostic model-level associations: parser, compiler, router, and Relational SQL translation |
 | [Pre-Evaluation (preeval)](architecture/preeval.md) | AST simplification pass that runs before the router: constant folding, let inlining, short-circuiting |
 
 ### Guides

@@ -47,6 +47,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.IsNullPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Join;
 import org.finos.legend.engine.protocol.sql.metamodel.JoinOn;
+import org.finos.legend.engine.protocol.sql.metamodel.LateralRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.LikePredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.Literal;
 import org.finos.legend.engine.protocol.sql.metamodel.LogicalBinaryExpression;
@@ -333,6 +334,14 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
         {
             ((JoinOn) val.criteria).expression = (Expression) ((JoinOn) val.criteria).expression.accept(this);
         }
+
+        return val;
+    }
+
+    @Override
+    public Node visit(LateralRelation val)
+    {
+        val.relation = (Relation) val.relation.accept(this);
 
         return val;
     }

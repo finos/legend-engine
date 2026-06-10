@@ -825,6 +825,12 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     }
 
     @Override
+    public String visitLateralRelation(SqlBaseParser.LateralRelationContext ctx)
+    {
+        return "LATERAL " + (ctx.queryStatement() != null ? ctx.queryStatement().accept(this) : ctx.table().accept(this));
+    }
+
+    @Override
     public String visitTableWithPartition(SqlBaseParser.TableWithPartitionContext ctx)
     {
         throw new RuntimeException("");

@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.testable.helper;
 
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 
 public class TestResultHelper
 {
@@ -32,6 +35,28 @@ public class TestResultHelper
         error.testable = testable;
         error.testSuiteId = testSuiteId;
         error.atomicTestId = atomicTestId;
+        error.error = toErrorString(t);
+        return error;
+    }
+
+    public static TestExecutionPlanDebug newTestExecutionPlanDebugError(String atomicTestId, Throwable t)
+    {
+        return newTestExecutionPlanDebugError(null, null, atomicTestId, t);
+    }
+
+    public static TestExecutionPlanDebug newTestExecutionPlanDebugError(String testable, String testSuiteId, String atomicTestId, Throwable t)
+    {
+        return newTestExecutionPlanDebugError(testable, testSuiteId, atomicTestId, null, null, t);
+    }
+
+    public static TestExecutionPlanDebug newTestExecutionPlanDebugError(String testable, String testSuiteId, String atomicTestId, ExecutionPlan executionPlan, List<String> debug, Throwable t)
+    {
+        TestExecutionPlanDebug error = new TestExecutionPlanDebug();
+        error.testable = testable;
+        error.testSuiteId = testSuiteId;
+        error.atomicTestId = atomicTestId;
+        error.executionPlan = executionPlan;
+        error.debug = debug;
         error.error = toErrorString(t);
         return error;
     }

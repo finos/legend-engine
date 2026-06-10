@@ -17,6 +17,7 @@ package org.finos.legend.engine.test.emit.junit;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.test.emit.EMITModel;
 import org.finos.legend.engine.test.emit.EMITModelLoader;
 import org.finos.legend.engine.test.emit.EMITSourceSet;
@@ -24,15 +25,19 @@ import org.finos.legend.engine.test.emit.EMITTasks;
 import org.finos.legend.engine.test.emit.EMITTasks.ParseResult;
 import org.finos.legend.engine.test.emit.EMITTasks.TestCandidate;
 import org.finos.legend.engine.test.emit.error.EMITAssertionError;
+import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.function.Executable;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -391,8 +396,7 @@ public final class EMITTestSuiteBuilder
         if (!(testCandidates.isEmpty() && legacyMappingTestCandidates.isEmpty() && legacyServiceTestCandidates.isEmpty()))
         {
             String containerName = "Test";
-            Stream<DynamicNode> testableStream = testCandidates.isEmpty() ? null : testCandidates.stream().map(candidate ->
-                    test(() -> assertTestPassed(model, candidate), verboseNames, label, containerName, candidate.testablePath + ((candidate.suiteId == null) ? "" : (" / " + candidate.suiteId)) + " / " + candidate.atomicTestId));
+            Stream<DynamicNode> testableStream = testCandidates.isEmpty() ? null : sessionGroupedTestStream(verboseNames, label, containerName, model, testCandidates);
             Stream<DynamicNode> legacyMappingTestStream = legacyMappingTestCandidates.isEmpty() ? null : legacyMappingTestCandidates.stream().map(candidate ->
                     test(() -> EMITTasks.assertLegacyMappingTestPassed(EMITTasks.runLegacyMappingTest(candidate.mappingPath, candidate.test, model.getPureModel())), verboseNames, label, containerName, "Legacy Mapping Test", candidate.mappingPath + " / " + candidate.test.name));
             Stream<DynamicNode> legacyServiceTestSteam = legacyServiceTestCandidates.isEmpty() ? null : legacyServiceTestCandidates.stream().map(candidate ->
@@ -407,6 +411,101 @@ public final class EMITTestSuiteBuilder
         }
     }
 
+    /**
+     * Group the test candidates by {@code (testablePath, suiteId)} and yield
+     * one {@link DynamicTest} per atomic test. Each group opens a single
+     * {@link TestSuiteSession} lazily (so empty/filtered groups pay no
+     * setup) and closes it when its sub-stream is exhausted (so every
+     * runtime / connection resource the session held is released
+     * regardless of test outcome). Suite-level setup — plan generation,
+     * runtime build — is therefore paid once per suite instead of once per
+     * atomic test.
+     */
+    private static Stream<DynamicNode> sessionGroupedTestStream(boolean verboseNames, String label, String containerName, EMITModel model, List<TestCandidate> testCandidates)
+    {
+        Map<String, List<TestCandidate>> groups = new LinkedHashMap<>();
+        testCandidates.forEach(candidate -> groups.computeIfAbsent(candidate.testablePath + "\0" + ((candidate.suiteId == null) ? "" : candidate.suiteId), k -> new ArrayList<>()).add(candidate));
+        return groups.values().stream().flatMap(group -> sessionGroupStream(verboseNames, label, containerName, model, group));
+    }
+
+    private static Stream<DynamicNode> sessionGroupStream(boolean verboseNames, String label, String containerName, EMITModel model, List<TestCandidate> group)
+    {
+        TestCandidate head = group.get(0);
+        LazyTestSession lazy = new LazyTestSession(head.testablePath, head.suiteId, model);
+        return group.stream()
+                .<DynamicNode>map(candidate -> test(
+                        () -> EMITTasks.assertTestPassed(lazy.get().runAtomicTest(candidate.atomicTestId)),
+                        verboseNames, label, containerName,
+                        candidate.testablePath + ((candidate.suiteId == null) ? "" : (" / " + candidate.suiteId)) + " / " + candidate.atomicTestId))
+                .onClose(lazy::close);
+    }
+
+    /**
+     * Memoized opener for a {@link TestSuiteSession}. The first
+     * {@link #get} attempts the open and caches either the live session or
+     * the failure that prevented it; subsequent calls return the cached
+     * outcome rather than retrying. {@link #close} releases the live
+     * session if there is one, and is a no-op otherwise so it is safe to
+     * register on stream close handlers even when no test ever runs.
+     */
+    private static class LazyTestSession
+    {
+        private final String testablePath;
+        private final String suiteId;
+        private final EMITModel model;
+        private boolean opened;
+        private TestSuiteSession<TestResult> session;
+        private RuntimeException openError;
+
+        LazyTestSession(String testablePath, String suiteId, EMITModel model)
+        {
+            this.testablePath = testablePath;
+            this.suiteId = suiteId;
+            this.model = model;
+        }
+
+        TestSuiteSession<TestResult> get()
+        {
+            if (!this.opened)
+            {
+                this.opened = true;
+                try
+                {
+                    this.session = EMITTasks.openTestSession(this.testablePath, this.suiteId, this.model.getPmcd(), this.model.getPureModel());
+                }
+                catch (RuntimeException e)
+                {
+                    this.openError = e;
+                }
+                catch (Exception e)
+                {
+                    this.openError = new RuntimeException(e);
+                }
+            }
+            if (this.openError != null)
+            {
+                throw this.openError;
+            }
+            return this.session;
+        }
+
+        void close()
+        {
+            if (this.session != null)
+            {
+                try
+                {
+                    this.session.close();
+                }
+                catch (Exception ignored)
+                {
+                    // Best-effort cleanup; surfacing close failures past test completion has no useful destination.
+                }
+                this.session = null;
+            }
+        }
+    }
+
     private static void servicePlanTasks(boolean verboseNames, String label, EMITModel model, Consumer<? super DynamicContainer> containerConsumer)
     {
         List<Service> services = EMITTasks.findServices(model);
@@ -415,11 +514,6 @@ public final class EMITTestSuiteBuilder
             containerConsumer.accept(DynamicContainer.dynamicContainer("Service Plan Generation", services.stream()
                     .map(service -> test(() -> EMITTasks.runPlan(service, model.getPureModel()), verboseNames, label, "Plan", service.getPath()))));
         }
-    }
-
-    private static void assertTestPassed(EMITModel model, TestCandidate candidate)
-    {
-        EMITTasks.assertTestPassed(EMITTasks.runTest(candidate.testablePath, candidate.suiteId, candidate.atomicTestId, model.getPmcd(), model.getPureModel()));
     }
 
     private static DynamicTest test(Executable executable, boolean verboseName, String name, String... moreNames)

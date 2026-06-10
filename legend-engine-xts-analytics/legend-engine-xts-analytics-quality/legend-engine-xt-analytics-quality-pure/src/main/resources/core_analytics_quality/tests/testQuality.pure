@@ -2,6 +2,7 @@ import apps::pure::quality::tests::*;
 import meta::relational::tests::*;
 import meta::relational::runtime::*;
 import meta::analytics::quality::model::*;
+import meta::analytics::quality::profiles::*;
 
 Class meta::analytics::quality::model::domain::tests::myTestClass
 {

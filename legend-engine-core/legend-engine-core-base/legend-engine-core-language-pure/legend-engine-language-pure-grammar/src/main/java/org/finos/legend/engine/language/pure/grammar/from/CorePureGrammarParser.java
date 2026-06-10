@@ -36,6 +36,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureIns
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.pureInstanceClassMapping.PureInstanceClassMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.relationFunctionMapping.RelationFunctionMappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.modelJoinAssociationMapping.ModelJoinAssociationMappingLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.modelJoinAssociationMapping.ModelJoinAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.xStoreAssociationMapping.XStoreAssociationMappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionValueSourceCode;
@@ -62,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
@@ -89,6 +92,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String PURE_INSTANCE_CLASS_MAPPING_TYPE = "Pure";
     public static final String OBJECT_TEST_DATA_INPUT_TYPE = "Object";
     public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
+    public static final String MODEL_JOIN_ASSOCIATION_MAPPING_TYPE = "ModelJoin";
     public static final String AGGREGATION_AWARE_MAPPING_TYPE = "AggregationAware";
     public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
     public static final String RELATION_EXPRESSION = "Relation";
@@ -109,6 +113,7 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
                 MappingElementParser.newParser(OPERATION_CLASS_MAPPING_TYPE, CorePureGrammarParser::parseOperationClassMapping),
                 MappingElementParser.newParser(PURE_INSTANCE_CLASS_MAPPING_TYPE, CorePureGrammarParser::parsePureClassMapping),
                 MappingElementParser.newParser(XSTORE_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseXStoreAssociationMapping),
+                MappingElementParser.newParser(MODEL_JOIN_ASSOCIATION_MAPPING_TYPE, CorePureGrammarParser::parseModelJoinAssociationMapping),
                 MappingElementParser.newParser(AGGREGATION_AWARE_MAPPING_TYPE, CorePureGrammarParser::parseAggregationAwareMapping),
                 MappingElementParser.newParser(AGGREGATE_SPECIFICATION, CorePureGrammarParser::parseAggregateSpecification),
                 MappingElementParser.newParser(RELATION_EXPRESSION, CorePureGrammarParser::parseRelationFunctionClassMapping)
@@ -268,6 +273,20 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return xStoreAssociationMapping;
     }
 
+    private static AssociationMapping parseModelJoinAssociationMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
+    {
+        MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
+        SourceCodeParserInfo parserInfo = getModelJoinAssociationMappingParserInfo(mappingElementSourceCode);
+        ModelJoinAssociationMappingParseTreeWalker walker = new ModelJoinAssociationMappingParseTreeWalker(parserInfo.walkerSourceInformation, parserInfo.input, parserContext);
+        ModelJoinAssociationMapping modelJoinAssociationMapping = new ModelJoinAssociationMapping();
+        modelJoinAssociationMapping.id = ctx.mappingElementId() != null ? ctx.mappingElementId().getText() : null;
+        String path = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
+        modelJoinAssociationMapping.association = new PackageableElementPointer(PackageableElementType.ASSOCIATION, path, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(ctx.qualifiedName()));
+        modelJoinAssociationMapping.sourceInformation = parserInfo.sourceInformation;
+        walker.visitModelJoinAssociationMapping((ModelJoinAssociationMappingParserGrammar.ModelJoinAssociationMappingContext) parserInfo.rootContext, modelJoinAssociationMapping);
+        return modelJoinAssociationMapping;
+    }
+
     private static ClassMapping parseAggregationAwareMapping(MappingElementSourceCode mappingElementSourceCode, PureGrammarParserContext parserContext)
     {
         MappingParserGrammar.MappingElementContext ctx = mappingElementSourceCode.mappingElementParserRuleContext;
@@ -394,6 +413,19 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.xStoreAssociationMapping());
+    }
+
+    private static SourceCodeParserInfo getModelJoinAssociationMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)
+    {
+        CharStream input = CharStreams.fromString(mappingElementSourceCode.code);
+        ParserErrorListener errorListener = new ParserErrorListener(mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation);
+        ModelJoinAssociationMappingLexerGrammar lexer = new ModelJoinAssociationMappingLexerGrammar(CharStreams.fromString(mappingElementSourceCode.code));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        ModelJoinAssociationMappingParserGrammar parser = new ModelJoinAssociationMappingParserGrammar(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
+        return new SourceCodeParserInfo(mappingElementSourceCode.code, input, mappingElementSourceCode.mappingParseTreeWalkerSourceInformation.getSourceInformation(mappingElementSourceCode.mappingElementParserRuleContext), mappingElementSourceCode.mappingElementParseTreeWalkerSourceInformation, lexer, parser, parser.modelJoinAssociationMapping());
     }
 
     private static SourceCodeParserInfo getAggregationAwareMappingParserInfo(MappingElementSourceCode mappingElementSourceCode)

@@ -1249,16 +1249,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $relation->match([
         j: Join[1] | processJoin($j, $context),
         v: Values[1] | processValues($v, $context),
-        t: TableSubquery[1] | processTableSubQuery($t, $context),
+        t: TableSubquery[1] | processTableSubquery($t, $context),
         q: QueryBody[1] | processQueryBody($q, $context),
         a: AliasedRelation[1] | processAliasedRelation($a, $context),
+        l: LateralRelation[1] | processLateralRelation($l, $context),
         r: Relation[0..1] | fail('Not yet supported'); $context;
   ]);
-}
-
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTableSubQuery(table: TableSubquery[1], context: SqlTransformContext[1]): SqlTransformContext[1]
-{
-  $table.query->processQuery($context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processValues(values: Values[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1283,6 +1279,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         aliased:AliasedRelation[1] | $aliased.alias,
         r:Relation[1] | []
   ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLateralRelation(lateral: LateralRelation[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  fail('lateral not yet supported');
+  $_context;
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAliasedRelation(aliased: AliasedRelation[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1392,6 +1394,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   [
     pair(JoinType.LEFT,  | meta::pure::functions::relation::JoinKind.LEFT),
+    pair(JoinType.RIGHT, | meta::pure::functions::relation::JoinKind.RIGHT),
     pair(JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER),
     pair(JoinType.CROSS, | meta::pure::functions::relation::JoinKind.INNER)
   ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
@@ -3347,7 +3350,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processDateArithmeticExpression', $context.debug);
 
-
   let simplified = simplifyDateArithmetic($a, $expContext, $context)->match([
     a:ArithmeticExpression[1] | $a,
     n:NullLiteral[1] | ^ArithmeticExpression(type=$a.type,left=^NullLiteral(),right=^NullLiteral()),
@@ -3378,7 +3380,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let left = $simplified.left->processExpression($expContext, $context);
         let right = $simplified.right->processExpression($expContext, $context);
 
-        sfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$left, $right, processExtractEnumValue(DurationUnit, DurationUnit.DAYS.name)]);
+        sfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$right, $left, processExtractEnumValue(DurationUnit, DurationUnit.DAYS.name)]);
       })
   ]->getValue(true, {|
       let left = $simplified.left->processExpression($expContext, $context);
@@ -3691,6 +3693,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         c:JoinCriteria[0..1] | []
       ]);
       $l->concatenate($r)->concatenate($c);,
+    l:LateralRelation[1] | walk($l.relation, $accumulator, $extras),
     q:Query[1] |
       walk($q.queryBody, $accumulator, $extras),
     q:QuerySpecification[1] |
@@ -3989,6 +3992,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       $indent + 'name: ' + $this.name->orElse('[]') + '\n' +
       $indent + 'root: ' + $this.root->toString() + '\n' +
       if ($this.aliases->isNotEmpty(), | $indent + 'aliases: \n' + $indent + '  ' + $this.aliases.toString()->joinStrings('\n' + $indent + '  ') + '\n', | '') +
+      if ($this.columns->isNotEmpty(), | $indent + 'columns: \n' + $indent + '  ' + $this.columns->map(c | $c.name)->joinStrings('\n' + $indent + '  ') + '\n', | '') +
       if ($this.contexts->isNotEmpty(), | $indent + 'contexts: \n' + $this.contexts->map(c | $c.toString($indent + '    '))->joinStrings('\n'), | '') +
       if ($this.assignments->isNotEmpty(), | $indent + 'assigments: ' + $this.assignments->size()->toString(), | '') +
       if ($this.parameters->isNotEmpty(), | $indent + 'parameters: ' + $this.parameters->map(p | $p.toString)->joinStrings('\n'), | '') +

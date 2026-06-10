@@ -14,12 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
 public class LocalH2DatasourceSpecification extends DatasourceSpecification
 {
     public String testDataSetupCsv;
     public List<String> testDataSetupSqls;
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public boolean disableDatabaseToUpper;
 
     public LocalH2DatasourceSpecification()
     {

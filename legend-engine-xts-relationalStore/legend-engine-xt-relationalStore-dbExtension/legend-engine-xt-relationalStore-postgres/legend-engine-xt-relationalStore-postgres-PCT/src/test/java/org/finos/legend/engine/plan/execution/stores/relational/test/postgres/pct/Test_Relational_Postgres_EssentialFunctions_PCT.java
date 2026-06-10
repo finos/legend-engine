@@ -226,7 +226,7 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_", "Date has no day: 2012-03", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: interval out of range"),
             one("meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function date_part(unknown, integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 15"),
+            one("meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_", "\"\nexpected: 1\nactual:   0\""),
             one("meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_", "Date has no day: 1973-11", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
@@ -234,12 +234,6 @@ public class Test_Relational_Postgres_EssentialFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::date::tests::testMinute_Function_1__Boolean_1_", "\"\nexpected: 9\nactual:   0\""),
             one("meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_", "Date has no day: 2015-04"),
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::date::tests::testDateDiffDays_Function_1__Boolean_1_", "org.postgresql.util.PSQLException: ERROR: function date_part(unknown, integer) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts.\n  Position: 9"),
-            one("meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_", "\"\nexpected: 1\nactual:   -1\""),
-            one("meta::pure::functions::date::tests::testDateDiffMilliseconds_Function_1__Boolean_1_", "\"\nexpected: 1000\nactual:   -2000\""),
-            one("meta::pure::functions::date::tests::testDateDiffMinutes_Function_1__Boolean_1_", "\"\nexpected: 1\nactual:   -1\""),
-            one("meta::pure::functions::date::tests::testDateDiffMonths_Function_1__Boolean_1_", "\"\nexpected: 1\nactual:   -1\""),
-            one("meta::pure::functions::date::tests::testDateDiffSeconds_Function_1__Boolean_1_", "\"\nexpected: 1\nactual:   -1\""),
 
             // Match
             one("meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_", "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""),

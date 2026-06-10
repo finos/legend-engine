@@ -66,6 +66,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             connection.element = relationalInputData.database;
             connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
             LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
+            localH2DatasourceSpecification.disableDatabaseToUpper = true;
             if (relationalInputData.inputType == RelationalInputType.SQL)
             {
                 localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\;", ";") + ";");
@@ -191,6 +192,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
         connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
         LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
         localH2DatasourceSpecification.testDataSetupCsv = new HelperRelationalCSVBuilder(data).build();
+        localH2DatasourceSpecification.disableDatabaseToUpper = true;
         connection.datasourceSpecification = localH2DatasourceSpecification;
         return Optional.of(Tuples.pair(connection, Collections.emptyList()));
     }

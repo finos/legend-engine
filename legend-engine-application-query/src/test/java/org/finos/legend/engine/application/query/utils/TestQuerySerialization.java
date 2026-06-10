@@ -17,6 +17,7 @@ package org.finos.legend.engine.application.query.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.application.query.model.DataProductModelAccessExecutionContext;
 import org.finos.legend.engine.application.query.model.DataProductNativeExecutionContext;
+import org.finos.legend.engine.application.query.model.IngestExecutionContext;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.DataProductLakehouseAccessExecutionContext;
 import org.finos.legend.engine.application.query.model.QueryDataSpaceExecutionContext;
@@ -168,6 +169,29 @@ public class TestQuerySerialization
             "  \"versionId\": \"0.0.0\"\n" +
             "}";
 
+    String INGEST_QUERY = "{\n" +
+            "  \"artifactId\": \"test-artifact\",\n" +
+            "  \"content\": \"content\",\n" +
+            "  \"createdAt\": 1713280515492,\n" +
+            "  \"defaultParameterValues\": [],\n" +
+            "  \"description\": \"description\",\n" +
+            "  \"gridConfig\": null,\n" +
+            "  \"groupId\": \"test.group\",\n" +
+            "  \"id\": \"1\",\n" +
+            "  \"lastUpdatedAt\": 1713280515492,\n" +
+            "  \"name\": \"query1\",\n" +
+            "  \"originalVersionId\": \"0.0.0\",\n" +
+            "  \"owner\": \"testUser\",\n" +
+            "  \"executionContext\": \n" +
+            "    {\n" +
+            "      \"_type\": \"ingestExecutionContext\",\n" +
+            "      \"ingestDefinitionPath\": \"my::ingest\",\n" +
+            "      \"dataSet\": \"myDataSet\"\n" +
+            "    }\n" +
+            "  ,\n" +
+            "  \"versionId\": \"0.0.0\"\n" +
+            "}";
+
     @Test
     public void testDeserialization() throws Exception
     {
@@ -249,5 +273,27 @@ public class TestQuerySerialization
         Assert.assertTrue(json.contains("\"accessGroupId\":\"myGroup\""));
         Assert.assertTrue(json.contains("\"accessPointId\":\"myAccessPoint\""));
         Assert.assertTrue(json.contains("\"_type\":\"dataProductLakehouseAccessExecutionContext\""));
+    }
+
+    @Test
+    public void testIngestDeserialization() throws Exception
+    {
+        Query query = objectMapper.readValue(INGEST_QUERY, Query.class);
+        Assert.assertTrue(query.executionContext instanceof IngestExecutionContext);
+        IngestExecutionContext ctx = (IngestExecutionContext) query.executionContext;
+        Assert.assertEquals("my::ingest", ctx.ingestDefinitionPath);
+        Assert.assertEquals("myDataSet", ctx.dataSet);
+    }
+
+    @Test
+    public void testIngestSerialization() throws Exception
+    {
+        IngestExecutionContext ctx = new IngestExecutionContext();
+        ctx.ingestDefinitionPath = "my::ingest";
+        ctx.dataSet = "myDataSet";
+        String json = objectMapper.writeValueAsString(ctx);
+        Assert.assertTrue(json.contains("\"ingestDefinitionPath\":\"my::ingest\""));
+        Assert.assertTrue(json.contains("\"dataSet\":\"myDataSet\""));
+        Assert.assertTrue(json.contains("\"_type\":\"ingestExecutionContext\""));
     }
 }

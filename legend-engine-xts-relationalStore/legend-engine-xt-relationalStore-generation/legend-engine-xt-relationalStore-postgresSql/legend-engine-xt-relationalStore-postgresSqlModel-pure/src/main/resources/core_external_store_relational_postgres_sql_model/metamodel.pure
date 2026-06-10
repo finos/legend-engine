@@ -96,6 +96,11 @@ Class meta::external::query::sql::metamodel::AliasedRelation extends meta::exter
   <<equality.Key>> columnNames: String[*];
 }
 
+Class meta::external::query::sql::metamodel::LateralRelation extends meta::external::query::sql::metamodel::Relation
+{
+  <<equality.Key>> relation:meta::external::query::sql::metamodel::Relation[1];
+}
+
 Class meta::external::query::sql::metamodel::Union extends meta::external::query::sql::metamodel::SetOperation
 {
   <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];

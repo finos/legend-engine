@@ -109,3 +109,26 @@ These can be specified using `Service Post Validations` that allow assertions / 
 a `Service` that returns a slice / set of data.
 
 For more information see [here](./service-post-validations.md)
+
+### Relation Data Validation
+
+`DataQualityRelationValidation` allows you to define a named, reusable catalogue of data quality
+rules directly against a relational table or view query.  It supports:
+
+- **Row-level** checks (e.g. price must always be above 100)
+- **Conditional** checks across columns (e.g. if order type is LIMIT, price must be specified)
+- **Aggregate / dataset-level** checks (e.g. a column must be distinct, row count within range)
+- **Cross-dataset joins** to validate referential integrity (e.g. user ID must exist in the employee table)
+
+For more information see [Relation Data Validation](./relation-data-validation.md)
+
+### Reconciliation Data Validation
+
+`DataQualityReconciliation` compares two datasets — a **source** and a **target** — to
+identify rows that differ between them.  It works by hashing selected columns on each side,
+performing a full outer join on the key columns, and returning only the rows where the hashes
+differ.  Typical uses include verifying ETL outputs, confirming two systems hold the same
+data, or validating a migration.
+
+For more information see [Reconciliation Data Validation](./reconciliation-data-validation.md)
+

@@ -1,0 +1,694 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =========================================================================
+// Milestoning Mappings for ModelJoin Tests
+// Uses a dedicated DB with temporal tables.
+// =========================================================================
+
+###Relational
+Database meta::relational::tests::mapping::modelJoin::milestoning::store::Db
+(
+  Schema default
+  (
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table contractLogTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      DESCRIPTION VARCHAR(200),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table orderTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      PRODUCTID INTEGER,
+      DESCRIPTION VARCHAR(200),
+      REFCODE VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table productTable
+    (
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CODE VARCHAR(50),
+      CATEGORY VARCHAR(50)
+    )
+
+    Table warehouseTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      SECTIONID INTEGER
+    )
+
+    Table sectionTable
+    (
+      ID INTEGER PRIMARY KEY,
+      WAREHOUSEID INTEGER,
+      ZONE VARCHAR(50)
+    )
+
+    Table shipmentTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CARRIER VARCHAR(100),
+      TRACKINGID INTEGER,
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table trackingTable
+    (
+      ID INTEGER PRIMARY KEY,
+      SHIPMENTID INTEGER,
+      PREFIX VARCHAR(50)
+    )
+
+    Table auditTable
+    (
+      milestoning(
+        processing(PROCESSING_IN=IN_Z, PROCESSING_OUT=OUT_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ENTITYREF VARCHAR(50),
+      MESSAGE VARCHAR(200),
+      IN_Z TIMESTAMP,
+      OUT_Z TIMESTAMP
+    )
+
+    Table productMilTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      ORDERID INTEGER,
+      CODE VARCHAR(50),
+      CATEGORY VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+
+    Table trackingMilTable
+    (
+      milestoning(
+        business(BUS_FROM=FROM_Z, BUS_THRU=THRU_Z, INFINITY_DATE=%9999-12-31T00:00:00.0000)
+      )
+      ID INTEGER PRIMARY KEY,
+      SHIPMENTID INTEGER,
+      PREFIX VARCHAR(50),
+      FROM_Z DATE,
+      THRU_Z DATE
+    )
+  )
+)
+
+###Pure
+import meta::relational::tests::mapping::modelJoin::milestoning::*;
+
+Class meta::relational::tests::mapping::modelJoin::milestoning::domain::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::Contract
+{
+  description: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::Order
+{
+  description: String[1];
+  refCode: String[0..1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::milestoning::domain::Product
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse
+{
+  name: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::milestoning::domain::Section
+{
+  zone: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment
+{
+  carrier: String[1];
+}
+
+Class meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef
+{
+  prefix: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry
+{
+  entityRef: String[1];
+  message: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedProduct
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedTrackingRef
+{
+  prefix: String[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Person_Contract
+{
+  person_contract: meta::relational::tests::mapping::modelJoin::milestoning::domain::Person[1];
+  contracts: meta::relational::tests::mapping::modelJoin::milestoning::domain::Contract[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Order_Product
+{
+  order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1];
+  product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse_Section
+{
+  warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1];
+  section: meta::relational::tests::mapping::modelJoin::milestoning::domain::Section[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Order_Warehouse
+{
+  orders: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1];
+  warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Order_Shipment
+{
+  order_ship: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1];
+  shipments: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment_Tracking
+{
+  shipment: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1];
+  trackingRef: meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Order_Audit
+{
+  order_audit: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1];
+  auditEntries: meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Order_MilestonedProduct
+{
+  order_mp: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1];
+  milestonedProduct: meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedProduct[1];
+}
+
+Association meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment_MilestonedTracking
+{
+  shipment_mt: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1];
+  milestonedTrackingRef: meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedTrackingRef[1];
+}
+
+// =========================================================================
+// Relation functions
+// =========================================================================
+function meta::relational::tests::mapping::modelJoin::milestoning::function::personTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::contractLogTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.contractLogTable}#->select(~[ID, PERSONID, DESCRIPTION, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.orderTable}#->select(~[ID, PRODUCTID, DESCRIPTION, REFCODE, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::productTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.productTable}#->select(~[ID, ORDERID, CODE, CATEGORY])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::warehouseTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.warehouseTable}#->select(~[ID, NAME, SECTIONID])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::sectionTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.sectionTable}#->select(~[ID, WAREHOUSEID, ZONE])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::shipmentTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.shipmentTable}#->select(~[ID, ORDERID, CARRIER, TRACKINGID, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::trackingTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.trackingTable}#->select(~[ID, SHIPMENTID, PREFIX])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::auditTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.auditTable}#->select(~[ID, ENTITYREF, MESSAGE, IN_Z, OUT_Z])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::productMilTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.productMilTable}#->select(~[ID, ORDERID, CODE, CATEGORY, FROM_Z, THRU_Z])
+}
+
+function meta::relational::tests::mapping::modelJoin::milestoning::function::trackingMilTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.trackingMilTable}#->select(~[ID, SHIPMENTID, PREFIX, FROM_Z, THRU_Z])
+}
+
+###Mapping
+import meta::relational::tests::mapping::modelJoin::milestoning::domain::*;
+import meta::relational::tests::mapping::modelJoin::milestoning::store::*;
+import meta::relational::tests::mapping::modelJoin::milestoning::function::*;
+
+// =========================================================================
+// Person→Contract (business temporal)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestonedContractMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Person[person]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::personTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +id: Integer[1]: ID,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Contract[contract]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::contractLogTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    +personId: Integer[1]: PERSONID
+  }
+
+  Person_Contract: ModelJoin
+  {
+    {person_contract: meta::relational::tests::mapping::modelJoin::milestoning::domain::Person[1], contracts: meta::relational::tests::mapping::modelJoin::milestoning::domain::Contract[1]|$person_contract.id == $contracts.personId}
+  }
+)
+
+// =========================================================================
+// Order/Warehouse milestoning: target milestoned, nested condition
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestonedOrderWarehouseMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[warehouse]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::warehouseTable():Relation<Any>[1]
+    name: NAME,
+    +id: Integer[1]: ID,
+    +sectionId: Integer[1]: SECTIONID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Section[section]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::sectionTable():Relation<Any>[1]
+    zone: ZONE,
+    +id: Integer[1]: ID,
+    +warehouseId: Integer[1]: WAREHOUSEID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Warehouse_Section: ModelJoin
+  {
+    {warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1], section: meta::relational::tests::mapping::modelJoin::milestoning::domain::Section[1]|$warehouse.id == $section.warehouseId}
+  }
+
+  Order_Warehouse: ModelJoin
+  {
+    {orders: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1]|$orders.product.category == $warehouse.section.zone}
+  }
+)
+
+// =========================================================================
+// Both sides milestoned same scheme (Order + Shipment, both business)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestoningSameSchemeBothMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[shipment]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::shipmentTable():Relation<Any>[1]
+    carrier: CARRIER,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID,
+    +trackingId: Integer[1]: TRACKINGID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef[tracking]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::trackingTable():Relation<Any>[1]
+    prefix: PREFIX,
+    +id: Integer[1]: ID,
+    +shipmentId: Integer[1]: SHIPMENTID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Shipment_Tracking: ModelJoin
+  {
+    {shipment: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1], trackingRef: meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef[1]|$shipment.id == $trackingRef.shipmentId}
+  }
+
+  Order_Shipment: ModelJoin
+  {
+    {order_ship: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], shipments: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1]|$order_ship.product.code == $shipments.trackingRef.prefix}
+  }
+)
+
+// =========================================================================
+// Different milestoning schemes (Order=business, AuditEntry=processing)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestoningDiffSchemeMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[audit]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::auditTable():Relation<Any>[1]
+    entityRef: ENTITYREF,
+    message: MESSAGE,
+    +id: Integer[1]: ID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Order_Audit: ModelJoin
+  {
+    {order_audit: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], auditEntries: meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[1]|$order_audit.product.code == $auditEntries.entityRef}
+  }
+)
+
+// =========================================================================
+// Milestoned intermediates in join condition
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestonedIntermediatesMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedProduct[milProduct]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::productMilTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[shipment]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::shipmentTable():Relation<Any>[1]
+    carrier: CARRIER,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID,
+    +trackingId: Integer[1]: TRACKINGID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedTrackingRef[milTracking]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::trackingMilTable():Relation<Any>[1]
+    prefix: PREFIX,
+    +id: Integer[1]: ID,
+    +shipmentId: Integer[1]: SHIPMENTID
+  }
+
+  Order_MilestonedProduct: ModelJoin
+  {
+    {order_mp: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], milestonedProduct: meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedProduct[1]|$order_mp.id == $milestonedProduct.orderId}
+  }
+
+  Shipment_MilestonedTracking: ModelJoin
+  {
+    {shipment_mt: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1], milestonedTrackingRef: meta::relational::tests::mapping::modelJoin::milestoning::domain::MilestonedTrackingRef[1]|$shipment_mt.id == $milestonedTrackingRef.shipmentId}
+  }
+
+  Order_Shipment: ModelJoin
+  {
+    {order_ship: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], shipments: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1]|$order_ship.milestonedProduct.code == $shipments.milestonedTrackingRef.prefix}
+  }
+)
+
+// =========================================================================
+// Relational variants
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::RelationalMilestonedOrderWarehouseMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable
+    description: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.DESCRIPTION,
+    refCode: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.REFCODE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID,
+    +productId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable
+    code: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CODE,
+    category: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CATEGORY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID,
+    +orderId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[warehouse]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.warehouseTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.warehouseTable
+    name: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.warehouseTable.NAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.warehouseTable.ID,
+    +sectionId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.warehouseTable.SECTIONID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Section[section]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.sectionTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.sectionTable
+    zone: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.sectionTable.ZONE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.sectionTable.ID,
+    +warehouseId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.sectionTable.WAREHOUSEID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Warehouse_Section: ModelJoin
+  {
+    {warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1], section: meta::relational::tests::mapping::modelJoin::milestoning::domain::Section[1]|$warehouse.id == $section.warehouseId}
+  }
+
+  Order_Warehouse: ModelJoin
+  {
+    {orders: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], warehouse: meta::relational::tests::mapping::modelJoin::milestoning::domain::Warehouse[1]|$orders.product.category == $warehouse.section.zone}
+  }
+)
+
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::RelationalMilestoningSameSchemeBothMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable
+    description: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.DESCRIPTION,
+    refCode: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.REFCODE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID,
+    +productId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable
+    code: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CODE,
+    category: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CATEGORY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID,
+    +orderId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[shipment]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable
+    carrier: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable.CARRIER,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable.ID,
+    +orderId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable.ORDERID,
+    +trackingId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.shipmentTable.TRACKINGID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef[tracking]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.trackingTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.trackingTable
+    prefix: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.trackingTable.PREFIX,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.trackingTable.ID,
+    +shipmentId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.trackingTable.SHIPMENTID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Shipment_Tracking: ModelJoin
+  {
+    {shipment: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1], trackingRef: meta::relational::tests::mapping::modelJoin::milestoning::domain::TrackingRef[1]|$shipment.id == $trackingRef.shipmentId}
+  }
+
+  Order_Shipment: ModelJoin
+  {
+    {order_ship: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], shipments: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1]|$order_ship.product.code == $shipments.trackingRef.prefix}
+  }
+)
+
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::RelationalMilestoningDiffSchemeMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable
+    description: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.DESCRIPTION,
+    refCode: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.REFCODE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.ID,
+    +productId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.orderTable.PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable
+    code: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CODE,
+    category: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.CATEGORY,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ID,
+    +orderId: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.productTable.ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[audit]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.auditTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.auditTable
+    entityRef: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.auditTable.ENTITYREF,
+    message: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.auditTable.MESSAGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::milestoning::store::Db]default.auditTable.ID
+  }
+
+  Order_Product: ModelJoin 
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Order_Audit: ModelJoin
+  {
+    {order_audit: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], auditEntries: meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[1]|$order_audit.product.code == $auditEntries.entityRef}
+  }
+)

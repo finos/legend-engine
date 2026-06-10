@@ -1,0 +1,472 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// =========================================================================
+// Union & Subtype Mappings
+// Extends the shared Database with union tables (fullTimeTable, contractTable, firmTableB)
+// =========================================================================
+
+###Relational
+Database meta::relational::tests::mapping::modelJoin::union::store::Db
+(
+  Schema default
+  (
+    Table firmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table firmTableB
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100),
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100),
+      CODE VARCHAR(50)
+    )
+
+    Table personTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table fullTimeTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table contractTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100),
+      LASTNAME VARCHAR(100),
+      FIRMID INTEGER,
+      AGE INTEGER
+    )
+
+    Table addressTableA
+    (
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table addressTableB
+    (
+      ID INTEGER PRIMARY KEY,
+      PERSONID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table hqTableA
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRMID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+
+    Table hqTableB
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRMID INTEGER,
+      CITY VARCHAR(100),
+      COUNTRY VARCHAR(100)
+    )
+  )
+) 
+
+###Pure
+// =========================================================================
+// Relation-function union both sides: Person=union(FT,CT), Firm=union(firmA,firmB)
+// =========================================================================
+function meta::relational::tests::mapping::modelJoin::union::function::fullTimeTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::union::store::Db.fullTimeTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function meta::relational::tests::mapping::modelJoin::union::function::contractTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::union::store::Db.contractTable}#->select(~[ID, FIRSTNAME, LASTNAME, FIRMID, AGE])
+}
+
+function meta::relational::tests::mapping::modelJoin::union::function::firmTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::union::store::Db.firmTable}#->select(~[ID, LEGALNAME, CITY, COUNTRY, CODE])
+}
+
+function meta::relational::tests::mapping::modelJoin::union::function::firmTableB(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::union::store::Db.firmTableB}#->select(~[ID, LEGALNAME, CITY, COUNTRY, CODE])
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::union::store::*;
+
+// =========================================================================
+// Relational Union source: Person = union(fullTime, contract), Firm = simple
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::union::RelationalUnionSourceMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Person[personCT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Relational Union both sides: Person = union(FT, CT), Firm = union(firmA, firmB)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::union::RelationalUnionBothSidesMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Person[personCT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmA]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmB]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+// Union with exists filter (reused for sub-aggregation test)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::union::UnionWithExistsMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Person[personCT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+###Mapping
+import meta::relational::tests::mapping::modelJoin::domain::*;
+import meta::relational::tests::mapping::modelJoin::union::store::*;
+import meta::relational::tests::mapping::modelJoin::union::function::*;
+
+Mapping meta::relational::tests::mapping::modelJoin::union::UnionBothSidesMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::fullTimeTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Person[personCT]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::contractTable():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    lastName: LASTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmA]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::firmTable():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmB]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::union::function::firmTableB():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+
+// =========================================================================
+// Union property in condition: address/hq both union, person/firm both union
+//   employees.address.city == firm.headquarters.city
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::union::UnionPropertyInConditionMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Person[personCT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.AGE,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Address[addrA]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableA.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableA
+    city: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableA.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableA.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableA.PERSONID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Address[addrB]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableB.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableB
+    city: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableB.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableB.COUNTRY,
+    +personId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.addressTableB.PERSONID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Address: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(addrA, addrB)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmA]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmB]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Headquarters[hqA]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableA.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableA
+    city: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableA.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableA.COUNTRY,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableA.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Headquarters[hqB]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableB.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableB
+    city: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableB.CITY,
+    country: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableB.COUNTRY,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.hqTableB.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Headquarters: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(hqA, hqB)
+  }
+
+  Person_Address: ModelJoin
+  {
+    {person: meta::relational::tests::mapping::modelJoin::domain::Person[1], address: meta::relational::tests::mapping::modelJoin::domain::Address[1]|$person.id == $address.personId}
+  }
+
+  Firm_Headquarters: ModelJoin
+  {
+    {firm_hq: meta::relational::tests::mapping::modelJoin::domain::Firm[1], headquarters: meta::relational::tests::mapping::modelJoin::domain::Headquarters[1]|$firm_hq.id == $headquarters.firmId}
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.headquarters.city}
+  }
+)
+
+// =========================================================================
+// Union with subtype query: Person=union(FT, ExtendedPerson CT), Firm=union(A,B)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::union::UnionWithSubtypeQueryMapping
+(
+  meta::relational::tests::mapping::modelJoin::domain::Person[personFT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.fullTimeTable.FIRMID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::ExtendedPerson[personCT]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable
+    firstName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRSTNAME,
+    lastName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    age: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.AGE,
+    employeeCode: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.LASTNAME,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.contractTable.FIRMID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(personFT, personCT)
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmA]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTable.ID
+  }
+  meta::relational::tests::mapping::modelJoin::domain::Firm[firmB]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID)
+    ~mainTable [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB
+    legalName: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.LEGALNAME,
+    +id: Integer[1]: [meta::relational::tests::mapping::modelJoin::union::store::Db]default.firmTableB.ID
+  }
+  *meta::relational::tests::mapping::modelJoin::domain::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firmA, firmB)
+  }
+
+  Person_Firm: ModelJoin
+  {
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.firmId == $firm.id}
+  }
+)
+

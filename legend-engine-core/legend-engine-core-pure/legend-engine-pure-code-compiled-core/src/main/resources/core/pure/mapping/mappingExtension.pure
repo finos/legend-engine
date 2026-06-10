@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::relation::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::operations::*;
 import meta::pure::router::routing::*;
@@ -230,12 +231,15 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                    | if($embeddedMappings->at(0)->instanceOf(InlineEmbeddedSetImplementation),
                                           |$embeddedMappings->at(0)->cast(@InlineEmbeddedSetImplementation)->inlineEmbeddedMapping($mapping),
                                           |
+                                     if($embeddedMappings->at(0)->instanceOf(EmbeddedRelationFunctionSetImplementation) && $embeddedMappings->at(0)->cast(@EmbeddedRelationFunctionSetImplementation).propertyMappings->isEmpty(),
+                                          |$embeddedMappings->at(0)->cast(@EmbeddedRelationFunctionSetImplementation)->inlineEmbeddedRelationFunctionMapping($mapping);,
+                                          |
                                      if($state.graphFetchFlow == true && $embeddedMappings->at(0)->instanceOf(OtherwiseEmbeddedSetImplementation),
                                           | let otherwiseTargetIds = $embeddedMappings->at(0)->cast(@OtherwiseEmbeddedSetImplementation).otherwisePropertyMapping.targetSetImplementationId;
                                             let classMappingsById = if ($otherwiseTargetIds->isEmpty(),|[],|findMappingsFromProperty($p, $mapping, $mapping->_classMappingByIdRecursive($otherwiseTargetIds), $state, $extensions));
                                             $classMappingsById;,
                                           | $embeddedMappings
-                                       ))
+                                       )))
                           );
 
        // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
@@ -264,6 +268,15 @@ function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetI
     assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline implementation Set Id [' + $i.inlineSetImplementationId+']');
     let pmaps = $cm->cast(@InstanceSetImplementation)->toOne()->allPropertyMappings()->map(pm | ^$pm(owner = $i.owner, sourceSetImplementationId = $i.sourceSetImplementationId));
     ^$i(propertyMappings=$pmaps);
+}
+
+function meta::pure::router::routing::inlineEmbeddedRelationFunctionMapping(e:meta::pure::mapping::relation::EmbeddedRelationFunctionSetImplementation[1], m:Mapping[1]):meta::pure::mapping::relation::EmbeddedRelationFunctionSetImplementation[1]
+{
+    let inlineTargetId = $e.targetSetImplementationId;
+    let cm = $m->_classMappingByIdRecursive($inlineTargetId)->filter(c | !$c->instanceOf(EmbeddedSetImplementation));
+    assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline relation function implementation Set Id [' + $inlineTargetId + ']');
+    let pmaps = $cm->cast(@InstanceSetImplementation)->toOne()->allPropertyMappings()->map(pm | ^$pm(owner = $e.owner, sourceSetImplementationId = $e.sourceSetImplementationId));
+    ^$e(id = $inlineTargetId, propertyMappings = $pmaps);
 }
 
 function meta::pure::router::routing::reprocessAggregationAwarePropertyMapping(pm: PropertyMapping[1]):PropertyMapping[1]

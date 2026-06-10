@@ -49,7 +49,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.modelJoin.ModelJoinPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionEmbeddedPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction.RelationFunctionPropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -594,6 +596,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
+    public String visit(ModelJoinPropertyMapping propertyMapping)
+    {
+        return unsupported(ModelJoinPropertyMapping.class);
+    }
+
+    @Override
     public String visit(AggregationAwareClassMapping classMapping)
     {
         String mainMapping = "";
@@ -640,9 +648,26 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(RelationFunctionPropertyMapping propertyMapping)
     {
-        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) 
-                + (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
+        return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
+                (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
+                (propertyMapping.enumMappingId != null ? ": EnumerationMapping " + propertyMapping.enumMappingId + " " : "") +
                 ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, identifierConverter());
+    }
+
+    @Override
+    public String visit(RelationFunctionEmbeddedPropertyMapping propertyMapping)
+    {
+        if (propertyMapping.id != null && propertyMapping.propertyMappings.isEmpty())
+        {
+            return propertyMapping.property.property + " () Inline [" + propertyMapping.id + "]";
+        }
+        else
+        {
+            return propertyMapping.property.property + "\n" +
+                    getTabString(getBaseTabLevel() + 1) + "(\n" +
+                    LazyIterate.collect(propertyMapping.propertyMappings, pm -> getTabString(getBaseTabLevel() + 2) + pm.accept(this)).makeString(",\n") + (propertyMapping.propertyMappings.isEmpty() ? "" : "\n") +
+                    getTabString(getBaseTabLevel() + 1) + ")";
+        }
     }
 
     // ----------------------------------------------- CONNECTION -----------------------------------------------

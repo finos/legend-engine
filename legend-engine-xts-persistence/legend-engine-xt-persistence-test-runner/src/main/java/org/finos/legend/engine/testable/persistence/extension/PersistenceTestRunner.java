@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.testable.persistence.extension;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -24,7 +26,6 @@ import org.finos.legend.engine.persistence.components.relational.api.IngestorRes
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.pure.dsl.path.valuespecification.constant.classInstance.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
@@ -40,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
@@ -50,12 +52,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
 public class PersistenceTestRunner implements TestRunner
 {
@@ -63,50 +62,46 @@ public class PersistenceTestRunner implements TestRunner
     public static final boolean STATS_COLLECTION_DEFAULT = true;
     public static final boolean SCHEMA_EVOLUTION_DEFAULT = false;
 
-    private Root_meta_pure_persistence_metamodel_Persistence purePersistence;
-    private PlanExecutor planExecutor;
-    private String pureVersion;
+    private final Root_meta_pure_persistence_metamodel_Persistence purePersistence;
 
     public PersistenceTestRunner(Root_meta_pure_persistence_metamodel_Persistence purePersistence, String pureVersion)
     {
         this.purePersistence = purePersistence;
-        this.planExecutor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        this.pureVersion = pureVersion;
     }
 
     @Override
     public TestResult executeAtomicTest(Root_meta_pure_test_AtomicTest atomicTest, PureModel pureModel, PureModelContextData data)
     {
-        TestResult result;
-        Persistence persistence = ListIterate.detect(data.getElementsOfType(Persistence.class), ele -> ele.getPath().equals(getElementFullPath(purePersistence, pureModel.getExecutionSupport())));
+        Persistence persistence = ListIterate.detect(data.getElementsOfType(Persistence.class), ele -> ele.getPath().equals(HelperModelBuilder.getElementFullPath(this.purePersistence, pureModel.getExecutionSupport())));
         PersistenceTest persistenceTest = persistence.tests.stream().filter(test -> test.id.equals(atomicTest._id())).findFirst().get();
         Path graphFetchPath = persistenceTest.graphFetchPath;
         List<PersistenceTestBatch> testBatches = persistenceTest.testBatches;
 
         PersistenceTestH2Connection persistenceTestH2Connection = new PersistenceTestH2Connection();
         Connection connection = persistenceTestH2Connection.getConnection();
-        boolean isPersistenceSpecModelV1 = persistence.persister != null ? true : false;
+        boolean isPersistenceSpecModelV1 = persistence.persister != null;
 
         try
         {
             validatePersistenceSpec(persistence);
-            List<AssertionStatus> assertStatuses = new ArrayList<>();
+            List<AssertionStatus> assertStatuses = Lists.mutable.empty();
             Dataset targetDataset;
             Set<String> fieldsToIgnore;
             boolean isTransactionMilestoningTimeBased;
-            ServiceOutputTarget serviceOutputTarget = null;
+            ServiceOutputTarget serviceOutputTarget;
 
             // Test runner flow for v1
             if (isPersistenceSpecModelV1)
             {
-                targetDataset = DatasetMapper.getTargetDataset(purePersistence);
+                targetDataset = DatasetMapper.getTargetDataset(this.purePersistence);
+                serviceOutputTarget = null;
                 fieldsToIgnore = IngestModeMapper.getFieldsToIgnore(persistence);
                 isTransactionMilestoningTimeBased = IngestModeMapper.isTransactionMilestoningTimeBased(persistence);
             }
             // Test runner flow for v2
             else
             {
-                targetDataset = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.getTargetDatasetV2(purePersistence, graphFetchPath);
+                targetDataset = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.getTargetDatasetV2(this.purePersistence, graphFetchPath);
                 serviceOutputTarget = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getServiceOutputTarget(persistence, graphFetchPath);
                 fieldsToIgnore = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.getFieldsToIgnoreForComparison(serviceOutputTarget);
                 isTransactionMilestoningTimeBased = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.isTransactionMilestoningTimeBased(serviceOutputTarget);
@@ -154,30 +149,28 @@ public class PersistenceTestRunner implements TestRunner
                 }
             }
             // Construct the Test Result
-            result = constructTestResult(atomicTest._id(), persistence.getPath(), assertStatuses);
+            return constructTestResult(atomicTest._id(), persistence.getPath(), assertStatuses);
         }
         catch (Exception exception)
         {
-            result = TestResultHelper.newTestError(null, "", atomicTest._id(), exception);
+            return TestResultHelper.newTestError(null, "", atomicTest._id(), exception);
         }
         finally
         {
             persistenceTestH2Connection.closeConnection();
         }
-        return result;
     }
 
     private void validatePersistenceSpec(Persistence persistence) throws PersistenceException
     {
-        if ((persistence.persister != null && persistence.serviceOutputTargets != null && persistence.serviceOutputTargets.size() > 0)
+        if ((persistence.persister != null && persistence.serviceOutputTargets != null && !persistence.serviceOutputTargets.isEmpty())
                 || (persistence.persister == null && persistence.serviceOutputTargets == null))
         {
             throw new PersistenceException("Persistence spec should contain either persister or serviceOutputTarget blocks ");
         }
     }
 
-    private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData,
-                                             Connection connection) throws Exception
+    private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData, Connection connection) throws Exception
     {
         Datasets enrichedDatasets = DatasetMapper.enrichAndDeriveDatasets(persistence, targetDataset, testData);
         IngestMode ingestMode = IngestModeMapper.from(persistence);
@@ -190,12 +183,10 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
-        return result;
+        return ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
     }
 
-    private IngestorResult invokePersistence(Dataset targetDataset, ServiceOutputTarget serviceOutputTarget, String testData,
-                                             Connection connection) throws Exception
+    private IngestorResult invokePersistence(Dataset targetDataset, ServiceOutputTarget serviceOutputTarget, String testData, Connection connection) throws Exception
     {
         Datasets enrichedDatasets = org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapper.enrichAndDeriveDatasets(serviceOutputTarget, targetDataset, testData);
         IngestMode ingestMode = org.finos.legend.engine.testable.persistence.mapper.v2.IngestModeMapper.from(serviceOutputTarget);
@@ -208,8 +199,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
-        return result;
+        return ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
     }
 
     private TestResult constructTestResult(String atomicTestId, String testable, List<AssertionStatus> assertionStatuses)
@@ -227,8 +217,7 @@ public class PersistenceTestRunner implements TestRunner
         if (conTestData.data instanceof ExternalFormatData)
         {
             ExternalFormatData externalFormatData = (ExternalFormatData) conTestData.data;
-            String testDataString = externalFormatData.data;
-            return testDataString;
+            return externalFormatData.data;
         }
         else
         {
@@ -237,7 +226,7 @@ public class PersistenceTestRunner implements TestRunner
     }
 
     @Override
-    public List<TestResult> executeTestSuite(Root_meta_pure_test_TestSuite testSuite, List<String> atomicTestIds, PureModel pureModel, PureModelContextData data)
+    public TestSuiteSession<TestResult> openTestSuiteSession(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
     {
         throw new UnsupportedOperationException("TestSuite is not supported for Persistence");
     }

@@ -22,6 +22,7 @@ public class RelationFunctionPropertyMapping extends PropertyMapping
 {
     public String column;
     public BindingTransformer bindingTransformer;
+    public String enumMappingId;
     
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)

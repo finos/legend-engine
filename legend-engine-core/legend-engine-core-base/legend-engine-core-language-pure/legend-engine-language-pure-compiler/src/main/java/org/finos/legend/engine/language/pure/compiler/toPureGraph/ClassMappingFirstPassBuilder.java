@@ -182,8 +182,9 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
                 ._superSetImplementationId(classMapping.extendsClassMappingId)
                 ._root(classMapping.root)
                 ._parent(parentMapping)
-                ._propertyMappings(ListIterate.collect(classMapping.propertyMappings, p -> p.accept(new PropertyMappingBuilder(this.context, baseSetImpl, Lists.mutable.empty()))));
+                ._propertyMappings(ListIterate.collect(classMapping.propertyMappings, p -> p.accept(new PropertyMappingBuilder(this.context, baseSetImpl, HelperMappingBuilder.getAllEnumerationMappings(this.parentMapping)))));
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(setImpl, setImpl._propertyMappings(), this.context);
-        return Tuples.pair(setImpl, Lists.immutable.empty());
+        org.eclipse.collections.api.list.MutableList<EmbeddedSetImplementation> embeddedSets = Lists.mutable.withAll(setImpl._propertyMappings().selectInstancesOf(EmbeddedSetImplementation.class));
+        return Tuples.pair(setImpl, embeddedSets);
     }
 }
