@@ -258,11 +258,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Hour (1-12)
                     case 'h':
                     {
-                        if (!hasHour())
-                        {
-                            throw new IllegalArgumentException("Date has no hour: " + this);
-                        }
-                        int preDisplayHour = (calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY);
+                        int preDisplayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
                         int displayHour = (preDisplayHour == 0) ? 12 : ((preDisplayHour > 12) ? (preDisplayHour - 12) : preDisplayHour);
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayHour, count + 1);
@@ -272,11 +268,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Hour (0-23)
                     case 'H':
                     {
-                        if (!hasHour())
-                        {
-                            throw new IllegalArgumentException("Date has no hour: " + this);
-                        }
-                        int displayHour = (calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY);
+                        int displayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayHour, count + 1);
                         i += count;
@@ -285,22 +277,14 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // AM/PM
                     case 'a':
                     {
-                        if (!hasHour())
-                        {
-                            throw new IllegalArgumentException("Date has no hour: " + this);
-                        }
-                        int displayHour = (calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY);
+                        int displayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
                         appendable.append((displayHour < 12) ? "AM" : "PM");
                         break;
                     }
                     // Minute
                     case 'm':
                     {
-                        if (!hasMinute())
-                        {
-                            throw new IllegalArgumentException("Date has no minute: " + this);
-                        }
-                        int displayMinute = (calendar == null) ? this.minute : calendar.get(Calendar.MINUTE);
+                        int displayMinute = hasMinute() ? ((calendar == null) ? this.minute : calendar.get(Calendar.MINUTE)) : 0;
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayMinute, count + 1);
                         i += count;
@@ -309,35 +293,42 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Second
                     case 's':
                     {
-                        if (!hasSecond())
-                        {
-                            throw new IllegalArgumentException("Date has no second: " + this);
-                        }
+                        int displaySecond = hasSecond() ? this.second : 0;
                         int count = getCharCountFrom(character, formatString, i);
-                        appendZeroPaddedInt(appendable, this.second, count + 1);
+                        appendZeroPaddedInt(appendable, displaySecond, count + 1);
                         i += count;
                         break;
                     }
                     // Subsecond
                     case 'S':
                     {
+                        int count = getCharCountFrom(character, formatString, i);
+                        int maxLen = count + 1;
                         if (!hasSubsecond())
                         {
-                            throw new IllegalArgumentException("Date has no sub-second: " + this);
-                        }
-                        int count = getCharCountFrom(character, formatString, i);
-                         int maxLen = count + 1;
-                        int len = this.subsecond.length();
-                        if (len <= maxLen)
-                        {
-                            appendable.append(this.subsecond);
+                            for (int j = 0; j < maxLen; j++)
+                            {
+                                appendable.append('0');
+                            }
                         }
                         else
                         {
-                            int j = 0;
-                            while (j < maxLen)
+                            int len = this.subsecond.length();
+                            if (len <= maxLen)
                             {
-                                appendable.append(this.subsecond.charAt(j++));
+                                appendable.append(this.subsecond);
+                                for (int j = len; j < maxLen; j++)
+                                {
+                                    appendable.append('0');
+                                }
+                            }
+                            else
+                            {
+                                int j = 0;
+                                while (j < maxLen)
+                                {
+                                    appendable.append(this.subsecond.charAt(j++));
+                                }
                             }
                         }
                         i += count;

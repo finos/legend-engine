@@ -106,17 +106,311 @@ public class TestPureDate
     @Test
     public void testFormatRefersToNonexistentComponent()
     {
+        // When a date has no hour, timezone shifts are no-ops, so multiple timezones don't conflict
         PureDate date = PureDate.newPureDate(2014, 1, 1);
+        Assert.assertEquals("2014-01-01 00:00:00.000+0000", date.format("[EST]yyyy-MM-dd[CST] HH:mm:ss.SSSZ"));
+    }
+
+    @Test
+    public void testFormatISO8601SubSecondPrecisionVariants()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // 1. No sub-seconds with various S format lengths
+        PureDate noSubSec = PureDate.parsePureDate("2023-01-01T00:00:00Z");
+        Assert.assertEquals("2023-01-01T00:00:00.0+0000", noSubSec.format("yyyy-MM-dd\"T\"HH:mm:ss.SZ"));
+        Assert.assertEquals("2023-01-01T00:00:00.000+0000", noSubSec.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T00:00:00.000000+0000", noSubSec.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSZ"));
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", noSubSec.format(fmt9));
+
+        // 2. 1 digit sub-second
+        PureDate oneSub = PureDate.parsePureDate("2023-01-01T12:30:45.1Z");
+        Assert.assertEquals("2023-01-01T12:30:45.1+0000", oneSub.format("yyyy-MM-dd\"T\"HH:mm:ss.SZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.100+0000", oneSub.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.100000000+0000", oneSub.format(fmt9));
+
+        // 3. 2 digits sub-second
+        PureDate twoSub = PureDate.parsePureDate("2023-01-01T12:30:45.12Z");
+        Assert.assertEquals("2023-01-01T12:30:45.1+0000", twoSub.format("yyyy-MM-dd\"T\"HH:mm:ss.SZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.12+0000", twoSub.format("yyyy-MM-dd\"T\"HH:mm:ss.SSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.120+0000", twoSub.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.120000000+0000", twoSub.format(fmt9));
+
+        // 4. 3 digits (milliseconds)
+        PureDate millis = PureDate.parsePureDate("2023-01-01T12:30:45.123Z");
+        Assert.assertEquals("2023-01-01T12:30:45.12+0000", millis.format("yyyy-MM-dd\"T\"HH:mm:ss.SSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123+0000", millis.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123000+0000", millis.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123000000+0000", millis.format(fmt9));
+
+        // 5. 6 digits (microseconds)
+        PureDate micros = PureDate.parsePureDate("2023-01-01T12:30:45.123456Z");
+        Assert.assertEquals("2023-01-01T12:30:45.123+0000", micros.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123456+0000", micros.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123456000+0000", micros.format(fmt9));
+
+        // 6. 9 digits (nanoseconds) — exact match, no padding needed
+        PureDate nanos = PureDate.parsePureDate("2023-01-01T12:30:45.123456789Z");
+        Assert.assertEquals("2023-01-01T12:30:45.123+0000", nanos.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2023-01-01T12:30:45.123456789+0000", nanos.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601TimezoneOffsetVariants()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // UTC designator "Z"
+        PureDate utc = PureDate.parsePureDate("2023-01-01T00:00:00Z");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", utc.format(fmt9));
+
+        // Explicit zero offset +0000
+        PureDate zeroPos = PureDate.parsePureDate("2023-01-01T00:00:00+0000");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", zeroPos.format(fmt9));
+
+        // Negative zero offset -0000
+        PureDate zeroNeg = PureDate.parsePureDate("2023-01-01T00:00:00-0000");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", zeroNeg.format(fmt9));
+
+        // Positive offset (India +0530)
+        PureDate india = PureDate.parsePureDate("2023-01-01T05:30:00+0530");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", india.format(fmt9));
+
+        // Negative offset (US Eastern -0500)
+        PureDate eastern = PureDate.parsePureDate("2023-01-01T00:00:00-0500");
+        Assert.assertEquals("2023-01-01T05:00:00.000000000+0000", eastern.format(fmt9));
+
+        // Max positive offset (+1400, Line Islands)
+        PureDate maxPos = PureDate.parsePureDate("2023-01-01T14:00:00+1400");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", maxPos.format(fmt9));
+
+        // Max negative offset (-1200, Baker Island)
+        PureDate maxNeg = PureDate.parsePureDate("2023-01-01T00:00:00-1200");
+        Assert.assertEquals("2023-01-01T12:00:00.000000000+0000", maxNeg.format(fmt9));
+    }
+
+    @Test
+    public void testParseISO8601ColonOffsetsNotSupported()
+    {
+        // PureDate parser requires RFC 822 style offsets (+0530), not colon-separated (+05:30)
         try
         {
-            date.format("[EST]yyyy-MM-dd [CST] HH:mm:ss.SSSZ");
-            Assert.fail();
+            PureDate.parsePureDate("2023-01-01T00:00:00+05:30");
+            Assert.fail("Expected exception for colon-separated offset");
         }
         catch (IllegalArgumentException e)
         {
-            Assert.assertEquals("Date has no hour: 2014-01-01", e.getMessage());
+            // expected
+        }
+
+        try
+        {
+            PureDate.parsePureDate("2023-01-01T00:00:00-05:00");
+            Assert.fail("Expected exception for colon-separated offset");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // expected
+        }
+
+        try
+        {
+            PureDate.parsePureDate("2023-01-01T00:00:00+00:00");
+            Assert.fail("Expected exception for colon-separated offset");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // expected
         }
     }
+
+    @Test
+    public void testFormatISO8601SubSecondsWithTimezoneOffsets()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // Millis + positive offset
+        PureDate millisPos = PureDate.parsePureDate("2023-01-01T12:30:45.123+0530");
+        Assert.assertEquals("2023-01-01T07:00:45.123000000+0000", millisPos.format(fmt9));
+
+        // Nanos + negative offset
+        PureDate nanosNeg = PureDate.parsePureDate("2023-01-01T12:30:45.123456789-0500");
+        Assert.assertEquals("2023-01-01T17:30:45.123456789+0000", nanosNeg.format(fmt9));
+
+        // Nanos + RFC 822 zero offset
+        PureDate nanosZero = PureDate.parsePureDate("2023-01-01T12:30:45.123456789+0000");
+        Assert.assertEquals("2023-01-01T12:30:45.123456789+0000", nanosZero.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601BoundaryTimeValues()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // Midnight with explicit subsecond zeros
+        PureDate midnightSub = PureDate.parsePureDate("2023-07-04T00:00:00.000000000Z");
+        Assert.assertEquals("2023-07-04T00:00:00.000000000+0000", midnightSub.format(fmt9));
+
+        // Last second of day (no sub-seconds)
+        PureDate lastSecond = PureDate.parsePureDate("2023-01-01T23:59:59Z");
+        Assert.assertEquals("2023-01-01T23:59:59.000000000+0000", lastSecond.format(fmt9));
+
+        // Last nanosecond of day
+        PureDate lastNano = PureDate.parsePureDate("2023-01-01T23:59:59.999999999Z");
+        Assert.assertEquals("2023-01-01T23:59:59.999999999+0000", lastNano.format(fmt9));
+
+        // Last nanosecond of year
+        PureDate lastNanoYear = PureDate.parsePureDate("2023-12-31T23:59:59.999999999Z");
+        Assert.assertEquals("2023-12-31T23:59:59.999999999+0000", lastNanoYear.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601BoundaryDateValues()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // Leap year Feb 29
+        PureDate leapDay = PureDate.parsePureDate("2000-02-29T12:00:00Z");
+        Assert.assertEquals("2000-02-29T12:00:00.000000000+0000", leapDay.format(fmt9));
+
+        // Unix epoch
+        PureDate epoch = PureDate.parsePureDate("1970-01-01T00:00:00Z");
+        Assert.assertEquals("1970-01-01T00:00:00.000000000+0000", epoch.format(fmt9));
+
+        // Max common year
+        PureDate maxYear = PureDate.parsePureDate("9999-12-31T23:59:59.999999999Z");
+        Assert.assertEquals("9999-12-31T23:59:59.999999999+0000", maxYear.format(fmt9));
+
+        // Negative year (1 BCE)
+        PureDate negYear = PureDate.newPureDate(-1, 1, 1, 0, 0, 0);
+        Assert.assertEquals("-1-01-01T00:00:00.000000000+0000", negYear.format(fmt9));
+
+        // Year zero
+        PureDate yearZero = PureDate.newPureDate(0, 1, 1, 0, 0, 0);
+        Assert.assertEquals("0-01-01T00:00:00.000000000+0000", yearZero.format(fmt9));
+
+        // Subsecond all zeros
+        PureDate zeroSub = PureDate.parsePureDate("2023-01-01T12:00:00.000000Z");
+        Assert.assertEquals("2023-01-01T12:00:00.000000000+0000", zeroSub.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601NoTimezone()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // No timezone, no sub-seconds
+        PureDate noTzNoSub = PureDate.parsePureDate("2023-01-01T00:00:00");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", noTzNoSub.format(fmt9));
+
+        // No timezone, with millis
+        PureDate noTzMillis = PureDate.parsePureDate("2023-01-01T12:30:45.123");
+        Assert.assertEquals("2023-01-01T12:30:45.123000000+0000", noTzMillis.format(fmt9));
+
+        // No timezone, with nanos
+        PureDate noTzNanos = PureDate.parsePureDate("2023-01-01T12:30:45.123456789");
+        Assert.assertEquals("2023-01-01T12:30:45.123456789+0000", noTzNanos.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601TimezoneOutputFormats()
+    {
+        // Z and z/X output formats with subsecond padding (Z+RFC822 offset already tested in testFormatISO8601TimezoneOffsetVariants,
+        // EST shift already tested in testFormatWithTimeZoneShift)
+        PureDate date = PureDate.parsePureDate("2023-01-01T00:00:00Z");
+
+        // X format (ISO 8601) — outputs "Z" for UTC
+        Assert.assertEquals("2023-01-01T00:00:00.000000000Z", date.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSX"));
+
+        // z format (general timezone name)
+        Assert.assertEquals("2023-01-01T00:00:00.000000000 GMT", date.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSS z"));
+
+        // EST shift with subsecond padding (no sub-seconds)
+        Assert.assertEquals("2022-12-31T19:00:00.000000000-0500", date.format("[EST]yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ"));
+    }
+
+    @Test
+    public void testFormatISO8601PartialDateTimesThrowOnFullFormat()
+    {
+        String fmt9 = "yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSSSSZ";
+
+        // Year only
+        PureDate yearOnly = PureDate.parsePureDate("2023");
+        try
+        {
+            yearOnly.format(fmt9);
+            Assert.fail("Expected exception for year-only date formatted with full datetime format");
+        }
+        catch (IllegalArgumentException e)
+        {
+            Assert.assertEquals("Date has no month: 2023", e.getMessage());
+        }
+
+        // Year-month
+        PureDate yearMonth = PureDate.parsePureDate("2023-01");
+        try
+        {
+            yearMonth.format(fmt9);
+            Assert.fail("Expected exception for year-month date formatted with full datetime format");
+        }
+        catch (IllegalArgumentException e)
+        {
+            Assert.assertEquals("Date has no day: 2023-01", e.getMessage());
+        }
+
+        // Date only — hours, minutes, seconds padded with 0
+        PureDate dateOnly = PureDate.parsePureDate("2023-01-01");
+        Assert.assertEquals("2023-01-01T00:00:00.000000000+0000", dateOnly.format(fmt9));
+
+        // Date + hour only — minutes and seconds padded with 0
+        PureDate dateHour = PureDate.parsePureDate("2023-01-01T12");
+        Assert.assertEquals("2023-01-01T12:00:00.000000000+0000", dateHour.format(fmt9));
+
+        // Date + hour:minute (no seconds) — seconds padded with 0
+        PureDate dateHourMin = PureDate.parsePureDate("2023-01-01T12:30");
+        Assert.assertEquals("2023-01-01T12:30:00.000000000+0000", dateHourMin.format(fmt9));
+    }
+
+    @Test
+    public void testFormatISO8601PartialDateTimesWithMatchingFormats()
+    {
+        // Only test partial formats not already covered by testFormat (which tests yyyy, yyyy-MM, yyyy-MM-dd, etc.)
+        Assert.assertEquals("2023-01-01T12", PureDate.parsePureDate("2023-01-01T12").format("yyyy-MM-dd\"T\"HH"));
+        Assert.assertEquals("2023-01-01T12:30", PureDate.parsePureDate("2023-01-01T12:30").format("yyyy-MM-dd\"T\"HH:mm"));
+    }
+
+    @Test
+    public void testFormatPadsHoursMinutesSecondsWithZeroNoSubseconds()
+    {
+        String fmtSeconds = "yyyy-MM-dd\"T\"HH:mm:ss";
+
+        // Date only — hours, minutes, seconds all padded with 0
+        PureDate dateOnly = PureDate.parsePureDate("2023-06-15");
+        Assert.assertEquals("2023-06-15T00:00:00", dateOnly.format(fmtSeconds));
+
+        // Date + hour only — minutes and seconds padded with 0
+        PureDate dateHour = PureDate.parsePureDate("2023-06-15T14");
+        Assert.assertEquals("2023-06-15T14:00:00", dateHour.format(fmtSeconds));
+
+        // Date + hour:minute — seconds padded with 0
+        PureDate dateHourMin = PureDate.parsePureDate("2023-06-15T14:45");
+        Assert.assertEquals("2023-06-15T14:45:00", dateHourMin.format(fmtSeconds));
+
+        // Full datetime — no padding needed
+        PureDate full = PureDate.parsePureDate("2023-06-15T14:45:30");
+        Assert.assertEquals("2023-06-15T14:45:30", full.format(fmtSeconds));
+
+        // Format with only HH:mm (no seconds in format) — hours and minutes padded
+        String fmtMinutes = "yyyy-MM-dd\"T\"HH:mm";
+        Assert.assertEquals("2023-06-15T00:00", dateOnly.format(fmtMinutes));
+        Assert.assertEquals("2023-06-15T14:00", dateHour.format(fmtMinutes));
+
+        // Format with only HH (no minutes/seconds in format) — hours padded
+        String fmtHours = "yyyy-MM-dd\"T\"HH";
+        Assert.assertEquals("2023-06-15T00", dateOnly.format(fmtHours));
+    }
+
+
 
     @Test
     public void testInvalidSubseconds()
