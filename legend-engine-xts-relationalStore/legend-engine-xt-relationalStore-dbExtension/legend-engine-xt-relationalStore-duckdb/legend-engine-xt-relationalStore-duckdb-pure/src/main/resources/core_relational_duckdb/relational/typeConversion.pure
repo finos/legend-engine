@@ -71,6 +71,8 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
         t : meta::relational::metamodel::datatype::TinyInt[1] | 'TINYINT',
         d : meta::relational::metamodel::datatype::Double[1] | 'DOUBLE',
         n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
+        b : meta::relational::metamodel::datatype::Binary[1] | 'BLOB',
+        v : meta::relational::metamodel::datatype::Varbinary[1] | 'BLOB',
         a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty(), |'JSON[]', |$a.type->toOne()->dataTypeToSqlTextDuckDB() + '[]'),
         o : meta::relational::metamodel::datatype::Object[1] | 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextDuckDB(), $o.valueType->dataTypeToSqlTextDuckDB()]),
         s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',

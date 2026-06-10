@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class model::BinaryData
+{
+  name: String[1];
+  checksum: String[0..1];
+  payload: String[0..1];
+  uuid: String[0..1];
+}
+
+
+###Relational
+Database store::BinaryDB
+(
+  Table BinaryTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(200),
+    checksum BINARY(32),
+    payload VARBINARY(256),
+    uuid BINARY(16)
+  )
+)
+
+
+###Mapping
+Mapping execution::BinaryMapping
+(
+  *model::BinaryData: Relational
+  {
+    ~primaryKey
+    (
+      [store::BinaryDB]BinaryTable.id
+    )
+    ~mainTable [store::BinaryDB]BinaryTable
+    name: [store::BinaryDB]BinaryTable.name,
+    checksum: [store::BinaryDB]BinaryTable.checksum,
+    payload: [store::BinaryDB]BinaryTable.payload,
+    uuid: [store::BinaryDB]BinaryTable.uuid
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::BinaryConnection
+{
+  store: store::BinaryDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::BinaryRuntime
+{
+  mappings:
+  [
+    execution::BinaryMapping
+  ];
+  connectionStores:
+  [
+    model::BinaryConnection:
+    [
+      store::BinaryDB
+    ]
+  ];
+}
+
+

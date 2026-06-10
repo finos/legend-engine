@@ -154,6 +154,7 @@ public class ResultColumn
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
             {
                 this.transformedValueExtractor = BiFunctionHelper.unchecked(
                         (resultSet, calendar) ->

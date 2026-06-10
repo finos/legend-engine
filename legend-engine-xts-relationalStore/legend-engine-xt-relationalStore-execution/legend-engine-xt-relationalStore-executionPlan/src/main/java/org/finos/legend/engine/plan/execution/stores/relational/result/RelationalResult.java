@@ -523,6 +523,18 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 }
             }
         }
+        else if (resultDBColumnsMetaData.isBinaryColumn(columnIndex))
+        {
+            byte[] bytes = resultSet.getBytes(columnIndex);
+            if (bytes != null)
+            {
+                result = BinaryUtils.encodeHex(bytes);
+            }
+            else
+            {
+                result = null;
+            }
+        }
         else
         {
             result = resultSet.getObject(columnIndex);
@@ -611,6 +623,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
             {
                 byte[] bytes = this.resultSet.getBytes(columnIndex);
                 if (bytes != null)
