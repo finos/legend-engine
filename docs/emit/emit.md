@@ -405,7 +405,7 @@ This phase covers both types of file generation:
 
 ### 4.6 Phase 5: Test Execution
 
-- **Run Testable tests**: Find all `Testable` elements in the compiled `PureModel` (e.g., services, mappings, functions with test suites).
+- **Run Testable tests**: Find all `Testable` elements in the compiled `PureModel`. A Testable's tests may be grouped into **test suites** (services, mappings, functions) or be **top-level atomic tests** with no enclosing suite (e.g., `Persistence`); both shapes are discovered and executed.
 - **Run Legacy Mapping tests**: Find `Mapping` elements with legacy `MappingTest` / `MappingTestSuite` elements.
 - **Run Legacy Service tests**: Find `Service` elements with legacy `ServiceTest` elements.
 - **Dependency Exclusion**: Only execute tests for elements defined in the primary `model`. Any test defined in an element loaded via `dependencies` MUST be ignored.
@@ -485,6 +485,10 @@ It then yields one `DynamicTest` per granular operation, with descriptive names:
 - `[service-simple] Plan: demo::PersonService`
 - `[service-simple] Legacy Mapping Test: demo::PersonMapping / legacyTest_1`
 - `[service-simple] Legacy Service Test: demo::PersonService`
+
+For a Testable whose tests are **top-level atomic tests** (no enclosing suite — e.g., a `Persistence`), the test task carries no suite segment between the testable and the atomic-test id:
+
+- `[persistence-snapshot] Test: demo::MyPersistence / test_1`
 
 Because each `DynamicTest` is a distinct JUnit test, IDEs and build servers (like Maven Surefire) report granular pass/fail statuses, durations, and diffs natively.
 

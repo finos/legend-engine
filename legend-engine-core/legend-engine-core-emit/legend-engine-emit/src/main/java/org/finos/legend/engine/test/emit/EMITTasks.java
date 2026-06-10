@@ -88,8 +88,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
@@ -351,54 +349,16 @@ public final class EMITTasks
      * re-paying that setup cost per test. The caller owns the session
      * lifetime and MUST close it.
      *
-     * <p>For a top-level atomic test ({@code suiteId == null}), no
-     * amortization is possible and the returned session simply delegates
-     * each {@link TestSuiteSession#runAtomicTest} call back to
-     * {@link #runTest}.</p>
+     * <p>{@code suiteId} must identify a real {@link Root_meta_pure_test_TestSuite}
+     * on the testable. Suite-less top-level atomic tests have no suite whose
+     * setup could be amortized; they are run standalone via {@link #runTest}
+     * (which dispatches to the runner's {@code executeAtomicTest}). Accordingly
+     * this method rejects a null {@code suiteId} rather than fabricating a
+     * session for a suite that does not exist.</p>
      */
     public static TestSuiteSession<TestResult> openTestSession(String testablePath, String suiteId, PureModelContextData pmcd, PureModel pureModel)
     {
-        if (suiteId == null)
-        {
-            return new TestSuiteSession<TestResult>()
-            {
-                @Override
-                public String getTestSuiteId()
-                {
-                    return null;
-                }
-
-                @Override
-                public Collection<String> getAtomicTestIds()
-                {
-                    return Collections.emptyList();
-                }
-
-                @Override
-                public boolean isAtomicTestId(String id)
-                {
-                    return false;
-                }
-
-                @Override
-                public void initialize()
-                {
-                    // no initialization
-                }
-
-                @Override
-                public TestResult runAtomicTest(String atomicTestId)
-                {
-                    return runTest(testablePath, getTestSuiteId(), atomicTestId, pmcd, pureModel);
-                }
-
-                @Override
-                public void close()
-                {
-                    // nothing to close
-                }
-            };
-        }
+        Objects.requireNonNull(suiteId, "openTestSession requires a non-null suiteId; suite-less atomic tests are run standalone via runTest");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element;
         try
         {
@@ -413,7 +373,8 @@ public final class EMITTasks
             throw new EMITException(EMITPhase.TEST_EXECUTION, "Element '" + testablePath + "' is not a testable element");
         }
         Testable testable = (Testable) element;
-        Root_meta_pure_test_TestSuite suite = (Root_meta_pure_test_TestSuite) testable._tests().detect(t -> (t instanceof Root_meta_pure_test_TestSuite) && suiteId.equals(((Root_meta_pure_test_TestSuite) t)._id()));
+
+        Root_meta_pure_test_TestSuite suite = (Root_meta_pure_test_TestSuite) testable._tests().detect(t -> (t instanceof Root_meta_pure_test_TestSuite) && suiteId.equals(t._id()));
         if (suite == null)
         {
             throw new EMITException(EMITPhase.TEST_EXECUTION, "Test suite '" + suiteId + "' not found on testable '" + testablePath + "'");
