@@ -151,6 +151,17 @@ public class TestEMITTaskSessions
                 () -> "Message should explain the testable-element rejection; got: " + ex.getMessage());
     }
 
+    @Test
+    void openTestSessionRejectsNullSuiteId()
+    {
+        // A session is a per-suite amortization handle, so it requires a real suite id. Suite-less
+        // top-level atomic tests (e.g. Persistence) have no suite to amortize and are run standalone
+        // via EMITTasks.runTest, not through a fabricated "no-suite" session.
+        Assertions.assertThrows(NullPointerException.class,
+                () -> EMITTasks.openTestSession(TESTABLE_PATH, null, pmcd, pureModel),
+                "openTestSession must reject a null suiteId rather than fabricating a suite-less session");
+    }
+
     private static void assertPasses(TestResult result, String label)
     {
         Assertions.assertNotNull(result, () -> "Expected a TestResult for " + label + " but got null");

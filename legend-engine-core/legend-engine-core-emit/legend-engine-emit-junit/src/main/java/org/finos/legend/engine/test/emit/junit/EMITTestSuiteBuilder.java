@@ -412,20 +412,43 @@ public final class EMITTestSuiteBuilder
     }
 
     /**
-     * Group the test candidates by {@code (testablePath, suiteId)} and yield
-     * one {@link DynamicTest} per atomic test. Each group opens a single
-     * {@link TestSuiteSession} lazily (so empty/filtered groups pay no
-     * setup) and closes it when its sub-stream is exhausted (so every
-     * runtime / connection resource the session held is released
-     * regardless of test outcome). Suite-level setup — plan generation,
-     * runtime build — is therefore paid once per suite instead of once per
-     * atomic test.
+     * Yield one {@link DynamicTest} per atomic test, mirroring the engine's own
+     * {@code TestRunner} split between standalone atomic tests and suite members:
+     * <ul>
+     *   <li><b>Suite-less atomic tests</b> ({@code suiteId == null}) are run
+     *       standalone via {@link EMITTasks#runTest}. There is no suite, hence no
+     *       per-suite setup to amortize and no {@link TestSuiteSession} to
+     *       open.</li>
+     *   <li><b>Suite members</b> are grouped by {@code (testablePath, suiteId)};
+     *       each group opens a single {@link TestSuiteSession} lazily (so
+     *       empty/filtered groups pay no setup) and closes it when its sub-stream
+     *       is exhausted (so every runtime / connection resource the session held
+     *       is released regardless of test outcome). Suite-level setup — plan
+     *       generation, runtime build — is therefore paid once per suite instead
+     *       of once per atomic test.</li>
+     * </ul>
+     * Standalone atomic tests are emitted before suite tests.
      */
     private static Stream<DynamicNode> sessionGroupedTestStream(boolean verboseNames, String label, String containerName, EMITModel model, List<TestCandidate> testCandidates)
     {
-        Map<String, List<TestCandidate>> groups = new LinkedHashMap<>();
-        testCandidates.forEach(candidate -> groups.computeIfAbsent(candidate.testablePath + "\0" + ((candidate.suiteId == null) ? "" : candidate.suiteId), k -> new ArrayList<>()).add(candidate));
-        return groups.values().stream().flatMap(group -> sessionGroupStream(verboseNames, label, containerName, model, group));
+        List<TestCandidate> standalone = new ArrayList<>();
+        Map<String, List<TestCandidate>> suiteGroups = new LinkedHashMap<>();
+        testCandidates.forEach(candidate ->
+        {
+            if (candidate.suiteId == null)
+            {
+                standalone.add(candidate);
+            }
+            else
+            {
+                suiteGroups.computeIfAbsent(candidate.testablePath + "\0" + candidate.suiteId, k -> new ArrayList<>()).add(candidate);
+            }
+        });
+        Stream<DynamicNode> standaloneStream = standalone.stream().map(candidate -> test(
+                () -> EMITTasks.assertTestPassed(EMITTasks.runTest(candidate.testablePath, null, candidate.atomicTestId, model.getPmcd(), model.getPureModel())),
+                verboseNames, label, containerName, candidate.testablePath + " / " + candidate.atomicTestId));
+        Stream<DynamicNode> suiteStream = suiteGroups.values().stream().flatMap(group -> sessionGroupStream(verboseNames, label, containerName, model, group));
+        return Stream.concat(standaloneStream, suiteStream);
     }
 
     private static Stream<DynamicNode> sessionGroupStream(boolean verboseNames, String label, String containerName, EMITModel model, List<TestCandidate> group)
@@ -436,7 +459,7 @@ public final class EMITTestSuiteBuilder
                 .<DynamicNode>map(candidate -> test(
                         () -> EMITTasks.assertTestPassed(lazy.get().runAtomicTest(candidate.atomicTestId)),
                         verboseNames, label, containerName,
-                        candidate.testablePath + ((candidate.suiteId == null) ? "" : (" / " + candidate.suiteId)) + " / " + candidate.atomicTestId))
+                        candidate.testablePath + " / " + candidate.suiteId + " / " + candidate.atomicTestId))
                 .onClose(lazy::close);
     }
 
