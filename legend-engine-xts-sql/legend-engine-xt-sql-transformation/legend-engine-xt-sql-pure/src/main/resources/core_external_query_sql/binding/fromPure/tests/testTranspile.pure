@@ -82,31 +82,20 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
             [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
             ->renameColumns([
-                  pair('Boolean', 'Boolean_table1'),
                   pair('Integer', 'Integer_table1'),
-                  pair('Float', 'Float_table1'),
-                  pair('Decimal', 'Decimal_table1'),
-                  pair('StrictDate', 'StrictDate_table1'),
-                  pair('DateTime', 'DateTime_table1'),
                   pair('String', 'String_table1')
             ])
           ->join(FlatInput.all()->project(
                   [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                   ['ID', 'Integer', 'String']
                 )->renameColumns([
-                  pair('ID', 'ID_table2'),
                   pair('Integer', 'Integer_table2'),
                   pair('String', 'String_table2')
             ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
           )
-          ->restrict(['Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1'])
+          ->restrict(['Boolean', 'Integer_table1', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String_table1'])
           ->renameColumns([
-                pair('Boolean_table1', 'Boolean'),
                 pair('Integer_table1', 'Integer'),
-                pair('Float_table1', 'Float'),
-                pair('Decimal_table1', 'Decimal'),
-                pair('StrictDate_table1', 'StrictDate'),
-                pair('DateTime_table1', 'DateTime'),
                 pair('String_table1', 'String')
           ])
       },
@@ -114,28 +103,18 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {| FlatInput.all()->project(
             ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
           )
-          ->rename(~Boolean, ~Boolean_table1)
           ->rename(~Integer, ~Integer_table1)
-          ->rename(~Float, ~Float_table1)
-          ->rename(~Decimal, ~Decimal_table1)
-          ->rename(~StrictDate, ~StrictDate_table1)
-          ->rename(~DateTime, ~DateTime_table1)
           ->rename(~String, ~String_table1)
           ->join(
               FlatInput.all()->project(~[
                 ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn
-              ])->rename(~ID, ~ID_table2)
+              ])
                 ->rename(~Integer, ~Integer_table2)
                 ->rename(~String, ~String_table2), JoinKind.LEFT, {row1, row2 | $row1.Integer_table1 == $row2.Integer_table2}
           )->select(~[
-            Boolean_table1, Integer_table1, Float_table1, Decimal_table1, StrictDate_table1, DateTime_table1, String_table1
+            Boolean, Integer_table1, Float, Decimal, StrictDate, DateTime, String_table1
           ])
-          ->rename(~Boolean_table1, ~Boolean)
           ->rename(~Integer_table1, ~Integer)
-          ->rename(~Float_table1, ~Float)
-          ->rename(~Decimal_table1, ~Decimal)
-          ->rename(~StrictDate_table1, ~StrictDate)
-          ->rename(~DateTime_table1, ~DateTime)
           ->rename(~String_table1, ~String)
       }
     ]
@@ -151,35 +130,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
       {| FlatInput.all()->project(
             [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-            [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])->renameColumns([
-              pair('Boolean', 'Boolean_table1'),
-              pair('Integer', 'Integer_table1'),
-              pair('Float', 'Float_table1'),
-              pair('Decimal', 'Decimal_table1'),
-              pair('StrictDate', 'StrictDate_table1'),
-              pair('DateTime', 'DateTime_table1'),
-              pair('String', 'String_table1')
-            ])
+            [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
           ->join(FlatInput.all()->project(
                   [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
                   ['ID', 'Integer', 'String']
                 )->restrict(['ID', 'Integer'])->renameColumns([
                   pair('ID', 'id'),
                   pair('Integer', 'int')
-                ])->renameColumns([
-                  pair('id', 'id_table2'),
-                  pair('int', 'int_table2')
-                ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('int_table2')}
+                ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer') == $row2.getInteger('int')}
           )->project([
-            col(row:TDSRow[1] | $row.getBoolean('Boolean_table1'), 'Boolean'),
-            col(row:TDSRow[1] | $row.getInteger('Integer_table1'), 'Integer'),
-            col(row:TDSRow[1] | $row.getFloat('Float_table1'), 'Float'),
-            col(row:TDSRow[1] | $row.getDecimal('Decimal_table1'), 'Decimal'),
-            col(row:TDSRow[1] | $row.getStrictDate('StrictDate_table1'), 'StrictDate'),
-            col(row:TDSRow[1] | $row.getDateTime('DateTime_table1'), 'DateTime'),
-            col(row:TDSRow[1] | $row.getString('String_table1'), 'String'),
-            col(row:TDSRow[1] | $row.getInteger('id_table2'), 'id'),
-            col(row:TDSRow[1] | sin($row.getInteger('int_table2')), 'sin(int)')
+            col(row:TDSRow[1] | $row.getBoolean('Boolean'), 'Boolean'),
+            col(row:TDSRow[1] | $row.getInteger('Integer'), 'Integer'),
+            col(row:TDSRow[1] | $row.getFloat('Float'), 'Float'),
+            col(row:TDSRow[1] | $row.getDecimal('Decimal'), 'Decimal'),
+            col(row:TDSRow[1] | $row.getStrictDate('StrictDate'), 'StrictDate'),
+            col(row:TDSRow[1] | $row.getDateTime('DateTime'), 'DateTime'),
+            col(row:TDSRow[1] | $row.getString('String'), 'String'),
+            col(row:TDSRow[1] | $row.getInteger('id'), 'id'),
+            col(row:TDSRow[1] | sin($row.getInteger('int')), 'sin(int)')
           ])
       }
 
@@ -1637,26 +1605,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         let const_s2 = 123;
         meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
           ->project(~[Boolean:x|$x.booleanIn,Integer:x|$x.integerIn,Float:x|$x.floatIn,Decimal:x|$x.decimalIn,StrictDate:x|$x.strictDateIn,DateTime:x|$x.dateTimeIn,String:x|$x.stringIn])
-          ->rename(~Boolean, ~Boolean_s1)
           ->rename(~Integer, ~Integer_s1)
-          ->rename(~Float, ~Float_s1)
-          ->rename(~Decimal, ~Decimal_s1)
-          ->rename(~StrictDate, ~StrictDate_s1)
-          ->rename(~DateTime, ~DateTime_s1)
-          ->rename(~String, ~String_s1)
           ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
                   ->project(~[ID:x|$x.idIn,Integer:x|$x.integerIn,'The Enum Value':x|$x.enumVal,'The Type':x|$x.type,Const:x|$const_s2])
-                  ->rename(~ID, ~ID_s2)->rename(~Integer, ~Integer_s2)
-                  ->rename(~'The Enum Value', ~'The Enum Value_s2')
-                  ->rename(~'The Type', ~'The Type_s2')
-                  ->rename(~Const, ~Const_s2),
+                  ->rename(~Integer, ~Integer_s2),
                 meta::pure::functions::relation::JoinKind.INNER,
-                {row1, row2 |$row1.String_s1 == $row2.ID_s2})
-          ->filter(x|$x.String_s1 == 'abc')
-          ->groupBy(~[String_s1], ~[Sum:x|$x.Integer_s1:y: Integer[*]|$y->sum()])
+                {row1, row2 |$row1.String == $row2.ID})
+          ->filter(x|$x.String == 'abc')
+          ->groupBy(~[String], ~[Sum:x|$x.Integer_s1:y: Integer[*]|$y->sum()])
           ->filter(x|not($x.Sum == 0))
-          ->select(~[Sum,String_s1])
-          ->rename(~String_s1, ~String)
+          ->select(~[Sum,String])
           ->select(~[String,Sum]);
       }, true, false)
     ]
@@ -1844,7 +1802,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCaseWhen():Boolean[1]
 {
   test(
-    'SELECT CASE String WHEN \'abc\' THEN 1 WHEN \'def\' THEN 2 ELSE 3 END AS "Number" FROM service."/service/service1"',
+    'SELECT ' + 
+    'CASE String WHEN \'abc\' THEN 1 WHEN \'def\' THEN 2 ELSE 3 END AS "WithElse", ' + 
+    'CASE String WHEN \'abc\' THEN 1 WHEN \'def\' THEN 2 END AS "WithoutElse" ' + 
+    'FROM service."/service/service1"',
 
     [
       {| FlatInput.all()->project(
@@ -1852,13 +1813,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
           ->project(
             [
-              col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'Number')
+              col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | 3)), 'WithElse'),
+              col(row:TDSRow[1] | if ($row.getString('String') == 'abc', | 1, | if ($row.getString('String') == 'def', | 2, | [])), 'WithoutElse')
             ]
           )
       },
       {|FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-          ->project(~[Number : x|if($x.String == 'abc', |1, |if($x.String == 'def', |2, |3))])}
+          ->project(~[
+            WithElse : x|if($x.String == 'abc', |1, |if($x.String == 'def', |2, |3)),
+            WithoutElse : x|if($x.String == 'abc', |1, |if($x.String == 'def', |2, |[]))
+          ])}
     ]
   )
 }
@@ -1944,13 +1909,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
-            pair('Boolean', 'Boolean_table1'),
-            pair('Integer', 'Integer_table1'),
-            pair('Float', 'Float_table1'),
-            pair('Decimal', 'Decimal_table1'),
-            pair('StrictDate', 'StrictDate_table1'),
-            pair('DateTime', 'DateTime_table1'),
-            pair('String', 'String_table1')
+            pair('Integer', 'Integer_table1')
           ])
         ->join(FlatInput.all()->project(
                 [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
@@ -1964,13 +1923,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
       {|FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-          ->rename(~Boolean, ~Boolean_table1)
           ->rename(~Integer, ~Integer_table1)
-          ->rename(~Float, ~Float_table1)
-          ->rename(~Decimal, ~Decimal_table1)
-          ->rename(~StrictDate, ~StrictDate_table1)
-          ->rename(~DateTime, ~DateTime_table1)
-          ->rename(~String, ~String_table1)
           ->join(FlatInput.all()
                 ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
                 ->select(~[Integer])
@@ -1990,12 +1943,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
-          pair('Boolean', 'Boolean_table1'),
           pair('Integer', 'Integer_table1'),
-          pair('Float', 'Float_table1'),
-          pair('Decimal', 'Decimal_table1'),
-          pair('StrictDate', 'StrictDate_table1'),
-          pair('DateTime', 'DateTime_table1'),
           pair('String', 'String_table1')
         ])->join(
           FlatInput.all()->project(
@@ -2025,18 +1973,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
-          pair('Boolean', 'Boolean_table1'),
           pair('Integer', 'Integer_table1'),
-          pair('Float', 'Float_table1'),
-          pair('Decimal', 'Decimal_table1'),
-          pair('StrictDate', 'StrictDate_table1'),
-          pair('DateTime', 'DateTime_table1'),
           pair('String', 'String_table1')
         ])->join(
           FlatInput.all()
             ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
             ->renameColumns([
-              pair('ID', 'ID_table2'),
               pair('Integer', 'Integer_table2'),
               pair('String', 'String_table2')
             ]), meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true}
@@ -2047,16 +1989,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       },
       {|FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-          ->rename(~Boolean, ~Boolean_table1)
           ->rename(~Integer, ~Integer_table1)
-          ->rename(~Float, ~Float_table1)
-          ->rename(~Decimal, ~Decimal_table1)
-          ->rename(~StrictDate, ~StrictDate_table1)
-          ->rename(~DateTime, ~DateTime_table1)
           ->rename(~String, ~String_table1)
           ->join(FlatInput.all()
             ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
-            ->rename(~ID, ~ID_table2)
             ->rename(~Integer, ~Integer_table2)
             ->rename(~String, ~String_table2), JoinKind.INNER, {row1, row2|true})
           ->select(~[Integer_table1, String_table2])
@@ -2075,19 +2011,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     [
       c({| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
-            pair('Boolean', 'Boolean_table1'),
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+          ->renameColumns([
             pair('Integer', 'Integer_table1'),
-            pair('Float', 'Float_table1'),
-            pair('Decimal', 'Decimal_table1'),
-            pair('StrictDate', 'StrictDate_table1'),
-            pair('DateTime', 'DateTime_table1'),
             pair('String', 'String_table1')
           ])->join(
             FlatInput.all()
               ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
               ->renameColumns([
-                pair('ID', 'ID_table2'),
                 pair('Integer', 'Integer_table2'),
                 pair('String', 'String_table2')
               ]), meta::relational::metamodel::join::JoinType.INNER, {row1, row2 | true}
@@ -2100,16 +2031,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
       c({|FlatInput.all()
               ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-              ->rename(~Boolean, ~Boolean_table1)
               ->rename(~Integer, ~Integer_table1)
-              ->rename(~Float, ~Float_table1)
-              ->rename(~Decimal, ~Decimal_table1)
-              ->rename(~StrictDate, ~StrictDate_table1)
-              ->rename(~DateTime, ~DateTime_table1)
               ->rename(~String, ~String_table1)
               ->join(FlatInput.all()
                       ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
-                      ->rename(~ID, ~ID_table2)
                       ->rename(~Integer, ~Integer_table2)
                       ->rename(~String, ~String_table2), JoinKind.INNER, {row1, row2|true})
               ->filter(x|$x.Integer_table1 == $x.Integer_table2)
@@ -2127,19 +2052,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->renameColumns([
-          pair('Boolean', 'Boolean_table1'),
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->renameColumns([
           pair('Integer', 'Integer_table1'),
-          pair('Float', 'Float_table1'),
-          pair('Decimal', 'Decimal_table1'),
-          pair('StrictDate', 'StrictDate_table1'),
-          pair('DateTime', 'DateTime_table1'),
           pair('String', 'String_table1')
         ])->join(FlatInput.all()->project(
             [x | $x.idIn, x | $x.integerIn, x | $x.stringIn],
             ['ID', 'Integer', 'String']
         )->renameColumns([
-          pair('ID', 'ID_table2'),
           pair('Integer', 'Integer_table2'),
           pair('String', 'String_table2')
         ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')})
@@ -2158,43 +2078,45 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       'SELECT * FROM (SELECT * FROM service(\'/service/service1\')) "table1" LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table2" ON ("table1"."String" = "table2"."ID") ' +
       'LEFT JOIN (SELECT * FROM service(\'/service/service2\')) "table3" ON ("table1"."String" = "table3"."String") WHERE "table2"."String" = \'ABC\'',
 
-      {|FlatInput.all()
+      [
+        c({|FlatInput.all()
           ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
           ->renameColumns([
-            pair('Boolean', 'Boolean_table1'),
             pair('Integer', 'Integer_table1'),
-            pair('Float', 'Float_table1'),
-            pair('Decimal', 'Decimal_table1'),
-            pair('StrictDate', 'StrictDate_table1'),
-            pair('DateTime', 'DateTime_table1'),
             pair('String', 'String_table1')
           ])
           ->join(FlatInput.all()
                   ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
                   ->renameColumns([
-                    pair('ID', 'ID_table2'),
                     pair('Integer', 'Integer_table2'),
                     pair('String', 'String_table2')
                   ]),
             meta::relational::metamodel::join::JoinType.LEFT_OUTER,
-            {row1, row2|$row1.getString('String_table1') == $row2.getInteger('ID_table2')})
+            {row1, row2|$row1.getString('String_table1') == $row2.getInteger('ID')})
           ->join(FlatInput.all()
                   ->project([{x|$x.idIn}, {x|$x.integerIn}, {x|$x.stringIn}], ['ID', 'Integer', 'String'])
                   ->renameColumns([
-                    pair('ID', 'ID_table3'),
-                    pair('Integer', 'Integer_table3'),
-                    pair('String', 'String_table3')
+                    pair('ID', 'ID_table3')
                   ]),
             meta::relational::metamodel::join::JoinType.LEFT_OUTER,
-            {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table3')})
+            {row1, row2|$row1.getString('String_table1') == $row2.getString('String')})
           ->filter({row|$row.getString('String_table2') == 'ABC'})
-          ->renameColumns([
-            pair('Boolean_table1', 'Boolean'),
-            pair('Float_table1', 'Float'),
-            pair('Decimal_table1', 'Decimal'),
-            pair('StrictDate_table1', 'StrictDate'),
-            pair('DateTime_table1', 'DateTime')
-          ])}, false)
+          }, true, false),
+
+        c({|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+          ->rename(~Integer, ~Integer_table1)
+          ->rename(~String, ~String_table1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[ID : {x|$x.idIn}, Integer : {x|$x.integerIn}, String : {x|$x.stringIn}])
+          ->rename(~Integer, ~Integer_table2)
+          ->rename(~String, ~String_table2), JoinKind.LEFT, {row1, row2|$row1.String_table1 == $row2.ID})
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[ID : {x|$x.idIn}, Integer : {x|$x.integerIn}, String : {x|$x.stringIn}])
+          ->rename(~ID, ~ID_table3), JoinKind.LEFT, {row1, row2|$row1.String_table1 == $row2.String})
+          ->filter({x|$x.String_table2 == 'ABC'})}
+        )
+      ])
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoinSelectStarFromLimited():Boolean[1]
@@ -2238,11 +2160,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT "t0"."String" AS "String", "t1"."measure" AS "sum" FROM (SELECT "t3"."String" AS "String" FROM service."/service/service1" "t3" GROUP BY 1) "t0" CROSS JOIN (SELECT SUM("t3"."Integer") AS "measure" FROM service."/service/service1" "Staples" HAVING (COUNT(1) > 0)) "t1"',
 
-    {| FlatInput.all()->project(
+    [
+      c({| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         ->restrict('String')->distinct()
-        ->renameColumns(pair('String', 'String_t0'))
         ->join(FlatInput.all()->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
@@ -2251,14 +2173,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 agg('COUNT(1)', row | 1, y | $y->count())
               ])
               ->filter(row|($row.getInteger('COUNT(1)') > 0))
-              ->restrict('measure')
-              ->renameColumns(pair('measure', 'measure_t1')),
+              ->restrict('measure'),
               meta::relational::metamodel::join::JoinType.INNER, {row1, row2 | true})
         ->renameColumns([
-          pair('String_t0', 'String'),
-          pair('measure_t1', 'sum')
+          pair('measure', 'sum')
         ])
-    }, false
+      }, true, false),
+      
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[String])
+          ->distinct()
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->aggregate(~[measure : x|$x.Integer : y|$y->sum(), 'COUNT(1)' : x|1 : y|$y->count()])
+          ->filter({x|$x.'COUNT(1)' > 0})
+          ->select(~[measure]), JoinKind.INNER, {row1, row2|true})
+          ->rename(~measure, ~sum)
+        })
+    ]
   )
 }
 
@@ -2266,41 +2200,47 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   test(
     'SELECT "t0"."int"           AS "int",' +
-    '       "t1"."Integer"       AS "Integer"' +
-    'FROM service."/service/service1" "t1"' +
+    '       "t1"."int"           AS "Integer"' +
+    'FROM (select String, Integer as int from service."/service/service1") "t1"' +
     'INNER JOIN (' +
     '    SELECT "t1"."Integer"      AS "int",' +
     '           "t1"."String"       AS "str"' +
     '    FROM service."/service/service2" "t1"' +
-    ') "t0" ON (("t1"."Integer" = "t0"."int") AND ("t1"."String" = "t0"."str"))',
+    ') "t0" ON (("t1"."int" = "t0"."int") AND ("t1"."String" = "t0"."str"))',
 
-    {|FlatInput.all()
-        ->project([x|$x.booleanIn, x|$x.integerIn, x|$x.floatIn, x|$x.decimalIn, x|$x.strictDateIn, x|$x.dateTimeIn, x|$x.stringIn],
-        ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
-        ->renameColumns([
-          pair('Boolean', 'Boolean_t1'),
-          pair('Integer', 'Integer_t1'),
-          pair('Float', 'Float_t1'),
-          pair('Decimal', 'Decimal_t1'),
-          pair('StrictDate', 'StrictDate_t1'),
-          pair('DateTime', 'DateTime_t1'),
-          pair('String', 'String_t1')])
-        ->join(FlatInput.all()
-          ->project([x|$x.idIn, x|$x.integerIn, x|$x.stringIn], ['ID', 'Integer', 'String'])
-            ->restrict(['Integer', 'String'])
-            ->renameColumns([
-              pair('Integer', 'int'),
-              pair('String', 'str')])
-            ->renameColumns([
-              pair('int', 'int_t0'),
-              pair('str', 'str_t0')]),
-          meta::relational::metamodel::join::JoinType->extractEnumValue('INNER'),
-          {row1, row2|(($row1.getInteger('Integer_t1') == $row2.getInteger('int_t0')) && ($row1.getString('String_t1') == $row2.getString('str_t0')))})
-        ->restrict(['int_t0', 'Integer_t1'])
-        ->renameColumns([
-          pair('int_t0', 'int'),
-          pair('Integer_t1', 'Integer')])
-      }, false
+    [
+      c({|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+      ->project([x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.booleanIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.integerIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.floatIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.decimalIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.strictDateIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.dateTimeIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.stringIn], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->restrict(['String', 'Integer'])
+        ->renameColumns(pair('Integer', 'int'))
+        ->renameColumns(pair('int', 'int_t1'))
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->project([x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.idIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.integerIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.stringIn], ['ID', 'Integer', 'String'])
+              ->restrict(['Integer', 'String'])
+              ->renameColumns([
+                pair('Integer', 'int'),
+                pair('String', 'str')
+              ])
+              ->renameColumns(pair('int', 'int_t0')), meta::relational::metamodel::join::JoinType.INNER, {row1: meta::pure::tds::TDSRow[1], row2: meta::pure::tds::TDSRow[1]|($row1.getInteger('int_t1') == $row2.getInteger('int_t0')) && ($row1.getString('String') == $row2.getString('str'))}
+          )->project([
+              col(row: meta::pure::tds::TDSRow[1]|$row.getInteger('int_t0'), 'int'), 
+              col(row: meta::pure::tds::TDSRow[1]|$row.getInteger('int_t1'), 'Integer')])
+      }, true, false),
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->select(~[String, Integer])
+          ->rename(~Integer, ~int)
+          ->rename(~int, ~int_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+          ->select(~[Integer, String])
+          ->rename(~Integer, ~int)
+          ->rename(~String, ~str)
+          ->rename(~int, ~int_t0), JoinKind.INNER, {row1, row2|($row1.int_t1 == $row2.int_t0) && ($row1.String == $row2.str)})
+          ->project(~[int : x|$x.int_t0, Integer : x|$x.int_t1])}
+      )
+    ]
   )
 }
 
@@ -2476,13 +2416,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     [
       {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
         ->project(~[Boolean:x|$x.booleanIn,Integer:x|$x.integerIn,Float:x|$x.floatIn,Decimal:x|$x.decimalIn,StrictDate:x|$x.strictDateIn,DateTime:x|$x.dateTimeIn,String:x|$x.stringIn])
-        ->rename(~Boolean, ~Boolean_s1)
-        ->rename(~Integer, ~Integer_s1)
-        ->rename(~Float, ~Float_s1)
-        ->rename(~Decimal, ~Decimal_s1)
-        ->rename(~StrictDate, ~StrictDate_s1)
-        ->rename(~DateTime, ~DateTime_s1)
-        ->rename(~String, ~String_s1)
         ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
               ->project(~[Boolean:x|$x.booleanIn,Integer:x|$x.integerIn,Float:x|$x.floatIn,Decimal:x|$x.decimalIn,StrictDate:x|$x.strictDateIn,DateTime:x|$x.dateTimeIn,String:x|$x.stringIn])
               ->rename(~Boolean, ~Boolean_a)
@@ -2507,13 +2440,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->project(~[col:x|1])
               ->concatenate(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
                 ->project(~[Boolean:x|$x.booleanIn,Integer:x|$x.integerIn,Float:x|$x.floatIn,Decimal:x|$x.decimalIn,StrictDate:x|$x.strictDateIn,DateTime:x|$x.dateTimeIn,String:x|$x.stringIn])
-                ->project(~[col:x|2]))
-                ->rename(~col, ~col_scope),
+                ->project(~[col:x|2])),
             meta::pure::functions::relation::JoinKind.INNER,
-            {row1, row2|$row2.col_scope == $row1.String_s1}
+            {row1, row2|$row2.col == $row1.String}
         )
-        ->select(~[String_s1])
-        ->rename(~String_s1, ~String)
+        ->select(~[String])
       }
     ]
   )
@@ -3378,7 +3309,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'nth_value(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTH", ' +
     'ntile(2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTILE", ' +
     'percent_rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "PERCENT_RANK", ' +
-    'cume_dist() OVER (PARTITION BY String ORDER BY Integer ASC) AS "CUME_DIST" ' +
+    'cume_dist() OVER (PARTITION BY String ORDER BY Integer ASC) AS "CUME_DIST", ' +
+    'string_agg(CASE WHEN String = \'A\' THEN String END, \',\') OVER (PARTITION BY String ORDER BY Integer ASC) AS "AGG_WITH_EXPRESSION" ' +
     'FROM service."/service/service1"',
 
     [
@@ -3400,7 +3332,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~[NTILE:{p,w,r| $p->ntile($r, 2)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[PERCENT_RANK:{p,w,r| $p->percentRank($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[CUME_DIST:{p,w,r| $p->cumulativeDistribution($w, $r)}])
-              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, NTH, NTILE, PERCENT_RANK, CUME_DIST])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[AGG_WITH_EXPRESSION:{p,w,r|if ($r.String == 'A', | $r.String, | [])}:y|$y->joinStrings(',')])
+              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, NTH, NTILE, PERCENT_RANK, CUME_DIST, AGG_WITH_EXPRESSION])
       }, true, false)
     ]
   )
@@ -4012,7 +3945,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
                           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]);
             $myCTE->restrict('Integer')->renameColumns(pair('Integer', 'int'));
-      }, dummyMapping, $runtime)}, false, true)
+      }, dummyMapping, $runtime)}, false, true, false, [])
     ], true
   );
 }
@@ -4058,27 +3991,20 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
           $leftCTE
             ->renameColumns([
-                  pair('Boolean', 'Boolean_leftCTE'),
                   pair('Integer', 'Integer_leftCTE'),
-                  pair('Float', 'Float_leftCTE'),
-                  pair('Decimal', 'Decimal_leftCTE'),
-                  pair('StrictDate', 'StrictDate_leftCTE'),
-                  pair('DateTime', 'DateTime_leftCTE'),
                   pair('String', 'String_leftCTE')
             ])
             ->join($rightCTE
                     ->renameColumns([
-                          pair('ID', 'ID_rightCTE'),
                           pair('Integer', 'Integer_rightCTE'),
                           pair('String', 'String_rightCTE')
                     ]),
                     meta::relational::metamodel::join::JoinType.LEFT_OUTER,
                     {row1:TDSRow[1], row2:TDSRow[1] | $row1.getString('String_leftCTE') == $row2.getString('String_rightCTE')}
             )
-            ->restrict(['Integer_leftCTE', 'ID_rightCTE'])
+            ->restrict(['Integer_leftCTE', 'ID'])
             ->renameColumns([
-              pair('Integer_leftCTE', 'int'),
-              pair('ID_rightCTE', 'ID')
+              pair('Integer_leftCTE', 'int')
             ]);
       })
     ]
