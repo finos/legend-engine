@@ -1792,12 +1792,12 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
 function <<test.Test>> meta::pure::executionPlan::tests::testTDSRenameExpression():Boolean[1]
 {
     let result = executionPlan({|
-    testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID')])->renameColumns([
-      ^Pair<String, String>(first='firstName', second = 'first_name'),
-      ^Pair<String, String>(first='eID', second = 'employer_id')
-    ])
-    // ->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'), col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');});
-    },testJoinTDSMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID')])
+            ->renameColumns([
+                ^Pair<String, String>(first='firstName', second = 'first_name'),
+                ^Pair<String, String>(first='eID', second = 'employer_id')
+            ])
+    }, testJoinTDSMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
     assertEquals('Relational\n' +
                   '(\n' +
