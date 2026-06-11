@@ -433,17 +433,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
   //if source is a mappingclass or a primitive type skip the filter (TODO: should we handle filters on primtive sources?)
   let sourceClass = $targetSet->sourceClass($extensions);
   if($sourceClass->instanceOf(meta::pure::metamodel::type::Class), 
-    | let sourceClassMappings = $targetSet.parent->_classMappingByClass($sourceClass->cast(@meta::pure::metamodel::type::Class<Any>))->filter(i|$i->instanceOf(InstanceSetImplementation))->cast(@InstanceSetImplementation);
-      let targetSrcJType = $context.conventions->className($sourceClass);
-
-      if($targetSet->instanceOf(PureInstanceSetImplementation) && $sourceClassMappings.mappingClass->isEmpty(),
+    | let targetSrcJType = $context.conventions->className($sourceClass);
+      if($targetSet->instanceOf(PureInstanceSetImplementation),
         |let interParam  = j_parameter(javaClassType(), 'interParam');
-          $input->js_filter(j_lambda($propertyType,  j_streamOf( $propertyType->j_invoke('getClass',[],javaClassType())->j_invoke('getInterfaces',[],javaClassType()))
-              ->j_invoke('anyMatch', j_lambda($interParam,  $interParam->j_invoke('equals',[$targetSrcJType-> j_field('class'  ,$targetSrcJType)])),javaBoolean())));,
+         $input->js_filter(j_lambda($propertyType, $propertyType->j_instanceof($targetSrcJType)));,
         |$input
         );,
     | $input);
-
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::validateXStorePropertyMapping(xStorePropertyMapping: XStorePropertyMapping[1]):Boolean[1]

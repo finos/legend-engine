@@ -401,7 +401,7 @@ meta::pure::mapping::modelToModel::test::alloy::union::testUnionSubTypeSource() 
                         testJsonRuntime(_S_Firm, $source),
                         meta::pure::extension::defaultExtensions());
 
-  assert(jsonEquivalent('{"legalName":"FINOS","employees":[{"firstName":"Person Super"},{"firstName":"CC"},{"firstName":"A1A"},{"firstName":"A2A"},{"firstName":"BB"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+  assert(jsonEquivalent('{"legalName":"FINOS","employees":[{"firstName":"A1 Super"},{"firstName":"A2 Super"},{"firstName":"B Super"},{"firstName":"Person Super"},{"firstName":"C Super"},{"firstName":"CC"},{"firstName":"A1A"},{"firstName":"A2A"},{"firstName":"BB"},{"firstName":"CB"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
@@ -418,5 +418,5 @@ meta::pure::mapping::modelToModel::test::alloy::union::testUnionSubTypeSourceWit
                         testJsonRuntime(_S_Firm, $source),
                         meta::pure::extension::defaultExtensions());
 
-  assert(jsonEquivalent('{"legalName":"FINOS","employees":[{"firstName":"Person Super","type":"_S_Person"},{"firstName":"CC","type":"_S_PersonC"},{"firstName":"A1A","type":"_S_PersonA"},{"firstName":"A2A","type":"_S_PersonA"},{"firstName":"BB","type":"_S_PersonB"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
+  assert(jsonEquivalent('{"legalName":"FINOS","employees":[{"firstName":"A1 Super","type":"_S_PersonA"},{"firstName":"A2 Super","type":"_S_PersonA"},{"firstName":"B Super","type":"_S_PersonB"},{"firstName":"Person Super","type":"_S_Person"},{"firstName":"C Super","type":"_S_PersonC"},{"firstName":"CC","type":"_S_PersonC"},{"firstName":"A1A","type":"_S_PersonA"},{"firstName":"A2A","type":"_S_PersonA"},{"firstName":"BB","type":"_S_PersonB"},{"firstName":"CB","type":"_S_PersonC"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
