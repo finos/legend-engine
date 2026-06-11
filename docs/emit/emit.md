@@ -449,7 +449,7 @@ This is useful for scripting, CI pipelines, or any context where JUnit is not th
 
 ### 5.2 JUnit Integration
 
-The JUnit 5 integration lives in the `legend-engine-emit-junit` module, separate from the core runner. To achieve granular pass/fail reporting without forcing developers to write individual tests by hand, EMIT uses JUnit 5's `@TestFactory` mechanism. The framework provides a builder that discovers models, parses and compiles them upfront, and flattens their downstream operations into discrete `DynamicTest` tasks.
+The JUnit 5 integration lives in the `legend-engine-emit-junit` module, separate from the core runner. To achieve granular pass/fail reporting without forcing developers to write individual tests by hand, EMIT uses JUnit 5's `@TestFactory` mechanism. The framework provides a builder that discovers models and flattens every operation on them — including parsing and compilation themselves — into discrete `DynamicTest` tasks.
 
 To test EMIT models in a module, create a single test class:
 
@@ -459,9 +459,9 @@ public class MyModuleEMITTestSuite
     @TestFactory
     Stream<DynamicTest> emit()
     {
-        // Discovers models, performs initialization + parse + compile, and
-        // returns a flattened stream of granular dynamic tests for generation,
-        // testing, and plan creation.
+        // Discovers models and returns a flattened stream of granular dynamic
+        // tests covering initialization (parse, compile, model generation),
+        // generation, testing, and plan creation.
         return EMITTestSuiteBuilder.taskStream("emit-models/");
     }
 }
@@ -470,18 +470,20 @@ public class MyModuleEMITTestSuite
 `EMITTestSuiteBuilder` also exposes `taskList(String)` for callers that prefer
 a `List<DynamicTest>` (e.g., for fan-out into nested containers).
 
-When JUnit invokes the factory method, `EMITTestSuiteBuilder` scans for `*.emit.yaml` files. For each model, it eagerly performs Phase 0 (Initialization), Phase 1 (Parse), Phase 2 (Compile), and Phase 3 (Model Generation), each reported as its own DynamicTest. If an eager phase fails, its task is failing and no subsequent tasks are emitted for that model. Discovery operates on the model-generation-enriched PMCD, so any element produced by a `GenerationSpecification` is eligible for downstream tasks. By inspecting that enriched model it identifies every file-generation specification, every artifact-generation candidate, every test (modern Testable plus legacy Mapping/Service tests), and every service.
+When JUnit invokes the factory method, `EMITTestSuiteBuilder` scans for `*.emit.yaml` files and loads each model descriptor (only this load is eager — the model's container is named after the descriptor). Phase 1 (Parse), Phase 2 (Compile), and Phase 3 (Model Generation) each run *inside* their own DynamicTest: JUnit consumes dynamic-test streams lazily, executing each task before pulling the next, so the duration JUnit reports for the Parsing or Compilation task is the real cost of that phase. If a phase fails, its task fails and no subsequent tasks are emitted for that model. Downstream task discovery is deferred until after the initialization tasks have run, and operates on the model-generation-enriched PMCD, so any element produced by a `GenerationSpecification` is eligible for downstream tasks. By inspecting that enriched model the builder identifies every file-generation specification, every artifact-generation candidate, every test (modern Testable plus legacy Mapping/Service tests), and every service.
 
-It then yields one `DynamicTest` per granular operation, with descriptive names:
+It then yields one `DynamicTest` per granular operation, with descriptive names. Each test suite's atomic-test tasks are framed by an `Open Test Suite` task (the suite's setup cost: plan generation, runtime build) and a `Close Test Suite` task (releasing the session's runtime/connection resources), so the time spent — and any failure — in suite setup and teardown is reported in its own right rather than being folded into the first test or lost entirely:
 
-- `[service-simple] Initialization`
-- `[service-simple] Parsing`
-- `[service-simple] Compilation`
-- `[service-simple] Model Generation`
+- `[service-simple] Load Model Descriptor`
+- `[service-simple] Initialization: Parsing`
+- `[service-simple] Initialization: Compilation`
+- `[service-simple] Initialization: Model Generation`
 - `[service-simple] File Generation: demo::MyAvroGenerationSpec`
 - `[service-simple] Artifact Generation: demo::PersonService (ServiceArtifactExtension)`
+- `[service-simple] Test: demo::PersonService / testSuite_1 / Open Test Suite`
 - `[service-simple] Test: demo::PersonService / testSuite_1 / test_1`
 - `[service-simple] Test: demo::PersonService / testSuite_1 / test_2`
+- `[service-simple] Test: demo::PersonService / testSuite_1 / Close Test Suite`
 - `[service-simple] Plan: demo::PersonService`
 - `[service-simple] Legacy Mapping Test: demo::PersonMapping / legacyTest_1`
 - `[service-simple] Legacy Service Test: demo::PersonService`
@@ -492,7 +494,7 @@ For a Testable whose tests are **top-level atomic tests** (no enclosing suite �
 
 Because each `DynamicTest` is a distinct JUnit test, IDEs and build servers (like Maven Surefire) report granular pass/fail statuses, durations, and diffs natively.
 
-To optimize performance, the `PureModel` compiled during discovery is cached and shared among all tasks belonging to the same model. If a model fails initialization, parse, or compile during discovery, `EMITTestSuiteBuilder` yields a single `Initialization` task that is guaranteed to fail upon execution, skipping discovery of downstream tasks.
+To optimize performance, each phase's result is memoized and shared among all tasks belonging to the same model: the `PureModel` produced inside the Compilation task is reused by every downstream task, and a suite's session is opened once and shared across its atomic tests. The memoization also works on demand — executing a single task out of context (e.g. re-running one atomic test from an IDE) computes whatever earlier phases it needs itself, and tasks for already-computed phases simply replay the memoized outcome.
 
 ### 5.3 Result Model and Reporting
 

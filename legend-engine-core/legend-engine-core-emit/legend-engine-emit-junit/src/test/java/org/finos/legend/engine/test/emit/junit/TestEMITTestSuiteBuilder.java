@@ -25,11 +25,13 @@ import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.TestAbortedException;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestEMITTestSuiteBuilder
 {
@@ -69,13 +71,18 @@ public class TestEMITTestSuiteBuilder
                 initChildren.collect(DynamicNode::getDisplayName),
                 "Initialization container should hold Parsing, Compilation and Model Generation, in order");
 
-        // The Test phase nests one task per atomic test; running them exercises the model end-to-end.
+        // The Test phase nests one task per atomic test, framed by the suite's session tasks;
+        // running them exercises the model end-to-end.
         DynamicContainer testPhase = (DynamicContainer) children.detect(n -> (n instanceof DynamicContainer) && "Test".equals(n.getDisplayName()));
         MutableList<DynamicNode> testChildren = childrenOf(testPhase);
         Assertions.assertEquals(
-                Lists.mutable.with("demo::PersonM2MMapping / fullNameSuite / johnSmith", "demo::PersonM2MMapping / fullNameSuite / janeDoe"),
+                Lists.mutable.with(
+                        "demo::PersonM2MMapping / fullNameSuite / Open Test Suite",
+                        "demo::PersonM2MMapping / fullNameSuite / johnSmith",
+                        "demo::PersonM2MMapping / fullNameSuite / janeDoe",
+                        "demo::PersonM2MMapping / fullNameSuite / Close Test Suite"),
                 testChildren.collect(DynamicNode::getDisplayName),
-                "Test container should hold one task per atomic test");
+                "Test container should hold one task per atomic test, framed by Open Test Suite and Close Test Suite");
         executeAll(initChildren);
         executeAll(testChildren);
     }
@@ -128,17 +135,20 @@ public class TestEMITTestSuiteBuilder
     {
         MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/m2m-passing");
 
-        // The load + initialization phase, followed by one Test task per atomic test in the suite.
+        // The load + initialization phase, followed by one Test task per atomic test in the suite,
+        // framed by the suite's Open Test Suite / Close Test Suite tasks.
         Assertions.assertEquals(
                 Lists.mutable.with(
                         "[m2m-passing] Load Model Descriptor",
                         "[m2m-passing] Initialization: Parsing",
                         "[m2m-passing] Initialization: Compilation",
                         "[m2m-passing] Initialization: Model Generation",
+                        "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / Open Test Suite",
                         "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / johnSmith",
-                        "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / janeDoe"),
+                        "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / janeDoe",
+                        "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / Close Test Suite"),
                 tasks.collect(DynamicTest::getDisplayName),
-                () -> "m2m-passing should yield the load + init phase plus one task per atomic test; got:\n" + names(tasks));
+                () -> "m2m-passing should yield the load + init phase plus the session-framed atomic-test tasks; got:\n" + names(tasks));
 
         executeAll(tasks);
     }
@@ -196,6 +206,65 @@ public class TestEMITTestSuiteBuilder
         Assertions.assertTrue(john >= 0 && jane >= 0, () -> "expected both atomic-test tasks; got:\n" + names(tasks));
         Assertions.assertEquals(1, Math.abs(john - jane),
                 () -> "atomic tests in the same suite must be emitted consecutively so the per-group session amortizes and closes correctly; got positions " + john + " and " + jane);
+    }
+
+    @Test
+    void closeTestSuiteTaskAbortsWhenNoSessionWasOpened()
+    {
+        // The Close Test Suite task reports the cost and outcome of releasing the suite's session.
+        // Executed without any session having been opened (e.g. selected on its own from an IDE),
+        // there is nothing to close, so the task aborts (reported as skipped) rather than passing
+        // as if it had closed something.
+        MutableList<DynamicTest> tasks = tasksFor("emit-models/", "basic/m2m-passing");
+        DynamicTest close = tasks.detect(t -> "[m2m-passing] Test: demo::PersonM2MMapping / fullNameSuite / Close Test Suite".equals(t.getDisplayName()));
+        Assertions.assertNotNull(close, () -> "expected to find the Close Test Suite task; got:\n" + names(tasks));
+        Assertions.assertThrows(TestAbortedException.class, () -> close.getExecutable().execute(),
+                "Close Test Suite with no open session should abort, not pass or fail");
+    }
+
+    @Test
+    void streamingExecutionRunsEveryTaskInOrder()
+    {
+        // JUnit consumes dynamic-node streams lazily, executing each node before pulling the
+        // next. Simulate that pull-execute-pull interleaving (the other tests materialize the
+        // stream up front instead) and check the full m2m-passing task sequence emerges and
+        // passes — the deferred segments discover the downstream tasks only after the
+        // Initialization tasks have already run.
+        DynamicContainer container = EMITTestSuiteBuilder.testContainer("emit-models/", "basic/m2m-passing");
+        Assertions.assertNotNull(container, "expected to find the m2m-passing model");
+        MutableList<String> executed = Lists.mutable.empty();
+        executeStreaming(container, executed);
+        Assertions.assertEquals(
+                Lists.mutable.with(
+                        "Load Model Descriptor",
+                        "Parsing",
+                        "Compilation",
+                        "Model Generation",
+                        "demo::PersonM2MMapping / fullNameSuite / Open Test Suite",
+                        "demo::PersonM2MMapping / fullNameSuite / johnSmith",
+                        "demo::PersonM2MMapping / fullNameSuite / janeDoe",
+                        "demo::PersonM2MMapping / fullNameSuite / Close Test Suite"),
+                executed,
+                "streaming execution should produce and pass every task, in order");
+    }
+
+    @Test
+    void compileFailureStreamingExecutionFailsInTheCompilationTask()
+    {
+        // Under streaming execution the parse work happens inside the Parsing task and the
+        // compile failure surfaces inside the Compilation task — and once it does, no further
+        // tasks are emitted for the model.
+        DynamicContainer container = EMITTestSuiteBuilder.testContainer("emit-models-failure/", "compile-failure");
+        Assertions.assertNotNull(container, "expected to find the compile-failure model");
+        MutableList<String> executed = Lists.mutable.empty();
+        executeStreaming(container, executed);
+        Assertions.assertEquals(
+                Lists.mutable.with(
+                        "Load Model Descriptor",
+                        "Parsing",
+                        "Compilation !FAILED(EMITAssertionError)"),
+                executed,
+                "the compile failure should surface in the Compilation task, after which no tasks are emitted");
     }
 
     @Test
@@ -382,6 +451,35 @@ public class TestEMITTestSuiteBuilder
     private static MutableList<DynamicNode> childrenOf(DynamicContainer container)
     {
         return Lists.mutable.fromStream(container.getChildren());
+    }
+
+    /**
+     * Execute a dynamic-node tree the way the Jupiter engine does: pull one node at a time from
+     * each container's children stream, executing it before pulling the next. Task outcomes are
+     * recorded in {@code log} — the display name for a pass, with a {@code !FAILED(...)} suffix
+     * for a failure — and execution continues past failures, as JUnit's would.
+     */
+    private static void executeStreaming(DynamicNode node, MutableList<String> log)
+    {
+        if (node instanceof DynamicContainer)
+        {
+            try (Stream<? extends DynamicNode> children = ((DynamicContainer) node).getChildren())
+            {
+                children.forEachOrdered(child -> executeStreaming(child, log));
+            }
+        }
+        else
+        {
+            try
+            {
+                ((DynamicTest) node).getExecutable().execute();
+                log.add(node.getDisplayName());
+            }
+            catch (Throwable t)
+            {
+                log.add(node.getDisplayName() + " !FAILED(" + t.getClass().getSimpleName() + ")");
+            }
+        }
     }
 
     private static void executeAll(Iterable<? extends DynamicNode> nodes) throws Throwable
