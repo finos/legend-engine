@@ -372,6 +372,53 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossSto
    );
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossStoreGraphFetchSnowflakeParentTempTableStrategy():Boolean[1]
+{
+   // Verifies that the cross-store parent temp table has a proper temp table strategy
+   // with CREATE, LOAD and DROP nodes for Snowflake.
+   let tree = #{
+      meta::pure::executionPlan::tests::snowflake::model::ParentRecord {
+         zFieldAccount,
+         quantity,
+         children {
+            detail
+         }
+      }
+   }#;
+
+   let query = {|meta::pure::executionPlan::tests::snowflake::model::ParentRecord.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::pure::executionPlan::tests::snowflake::mapping::ParentChildOrderMapping;
+   let conn1 = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName', databaseName='databaseName', accountName = 'accountName', tempTableDb = 'temp_db1', tempTableSchema = 'temp_schema1'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+   let conn2 = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+                  datasourceSpecification = ^SnowflakeDatasourceSpecification(region = 'us-region-1', warehouseName='warehouseName', databaseName='databaseName', accountName = 'accountName', tempTableDb = 'temp_db2', tempTableSchema = 'temp_schema2'),
+                  authenticationStrategy = ^SnowflakePublicAuthenticationStrategy(privateKeyVaultReference = 'privatekey', passPhraseVaultReference= 'passphrase', publicUserName = 'public'),
+                  type=DatabaseType.Snowflake
+              );
+
+   let generatedPlan = executionPlan($query, $mapping, ^Runtime(connectionStores=[^ConnectionStore(element = meta::pure::executionPlan::tests::snowflake::database::ParentDB, connection=$conn1), ^ConnectionStore(element = meta::pure::executionPlan::tests::snowflake::database::ChildDB, connection=$conn2)]), meta::relational::extension::relationalExtensions());
+   let rootGlobalNode = $generatedPlan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode);
+   let crossChild = $rootGlobalNode.children->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).localGraphFetchExecutionNode->cast(@RelationalCrossRootQueryTempTableGraphFetchExecutionNode);
+
+   // Verify parentTempTableStrategy is present (Snowflake uses temp table strategy)
+   assert($crossChild.parentTempTableStrategy->isNotEmpty(), 'parentTempTableStrategy should be present for Snowflake cross-store graph fetch');
+
+   // Verify the CREATE statement
+   let parentTempTableStrategy = $crossChild.parentTempTableStrategy->toOne();
+   let createSql = $parentTempTableStrategy.createTempTableNode->toOne().executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
+   assert($createSql->startsWith('CREATE TEMPORARY TABLE'),
+      'Cross-store parent temp table CREATE must use CREATE TEMPORARY TABLE. Got: ' + $createSql
+   );
+   assertEquals('CREATE TEMPORARY TABLE temp_db2.temp_schema2.cross_temp_table_node_0(zFieldAccount VARCHAR(4000),bFieldId VARCHAR(4000),mFieldType VARCHAR(4000),aFieldDate TIMESTAMP);', $createSql);
+
+   // Verify DROP statement is also present (used as best-effort cleanup)
+   let dropSql = $parentTempTableStrategy.dropTempTableNode->toOne().executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery;
+   assertEquals('Drop table if exists temp_db2.temp_schema2.cross_temp_table_node_0;', $dropSql);
+}
+
 Class meta::pure::executionPlan::tests::snowflake::model::ParentRecord
 {
    zFieldAccount: String[1];

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
@@ -346,7 +347,7 @@ class RelationalGraphFetchUtils
             for (Method getter : getters)
             {
                 Object val = getter.invoke(resolveValueIfIChecked(obj));
-                hash = hash + mul * (val == null ? -1 : val.hashCode());
+                hash = hash + mul * crossKeyValueHashCode(val);
                 mul = mul * 29;
             }
             return hash;
@@ -478,7 +479,7 @@ class RelationalGraphFetchUtils
             for (int index : indices)
             {
                 Object val = sqlExecutionResult.getTransformedValue(index);
-                hash = hash + mul * (val == null ? -1 : val.hashCode());
+                hash = hash + mul * crossKeyValueHashCode(val);
                 mul = mul * 29;
             }
             return hash;
@@ -498,7 +499,7 @@ class RelationalGraphFetchUtils
             {
                 Object thisVal = sqlResult.getTransformedValue(index);
                 Object thatVal = getters.get(i).invoke(resolveValueIfIChecked(object));
-                if (!Objects.equals(thisVal, thatVal))
+                if (!crossKeyValuesEqual(thisVal, thatVal))
                 {
                     return false;
                 }
@@ -510,6 +511,49 @@ class RelationalGraphFetchUtils
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static boolean crossKeyValuesEqual(Object a, Object b)
+    {
+        if (Objects.equals(a, b))
+        {
+            return true;
+        }
+        if (a instanceof PureDate && b instanceof PureDate)
+        {
+            PureDate dateA = (PureDate) a;
+            PureDate dateB = (PureDate) b;
+            return dateA.getYear() == dateB.getYear()
+                    && dateA.getMonth() == dateB.getMonth()
+                    && dateA.getDay() == dateB.getDay()
+                    && isMidnightOrDateOnly(dateA)
+                    && isMidnightOrDateOnly(dateB);
+        }
+        return false;
+    }
+
+    static int crossKeyValueHashCode(Object val)
+    {
+        if (val == null)
+        {
+            return -1;
+        }
+        if (val instanceof PureDate)
+        {
+            PureDate d = (PureDate) val;
+            if (isMidnightOrDateOnly(d))
+            {
+                return Objects.hash(d.getYear(), d.getMonth(), d.getDay());
+            }
+        }
+        return val.hashCode();
+    }
+
+    private static boolean isMidnightOrDateOnly(PureDate d)
+    {
+        return !d.hasHour()
+                || (d.getHour() == 0 && d.getMinute() == 0 && d.getSecond() == 0
+                    && (!d.hasSubsecond() || d.getSubsecond().chars().allMatch(c -> c == '0')));
     }
 
     static boolean subTreeValidForCaching(GraphFetchTree graphFetchTree)
