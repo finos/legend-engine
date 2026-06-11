@@ -122,16 +122,11 @@ function meta::relational::functions::sqlQueryToString::duckDB::loadValuesToDbTa
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::convertValuesToCsvDuckDB(str: String[*], types: Any[*]): String[1]
 {
-   let stringToken = map(range($types->size()), {x | if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |$types->at($x)->match([
-      s: meta::relational::metamodel::datatype::Varchar[*]        | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
-      s: meta::relational::metamodel::datatype::SemiStructured[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
-      s: meta::relational::metamodel::datatype::Char[*]           | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
-      d: meta::relational::metamodel::datatype::Date[*]           | '\'' + $str->at($x) + '\'',
-      t: meta::relational::metamodel::datatype::Timestamp[*]      | '\'' + $str->at($x) + '\'',
-      b: meta::relational::metamodel::datatype::Binary[*]         | 'unhex(\'' + $str->at($x) + '\')',
-      v: meta::relational::metamodel::datatype::Varbinary[*]      | 'unhex(\'' + $str->at($x) + '\')',
-      a: Any[*]                                                   | $str->at($x)
-   ]))})->joinStrings(',');
+   range($types->size())->map(x | $types->at($x)->match([
+      b: meta::relational::metamodel::datatype::Binary[1]    | if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |'unhex(\'' + $str->at($x) + '\')'),
+      v: meta::relational::metamodel::datatype::Varbinary[1] | if($str->at($x) == '' || $str->at($x) == '---null---', |'null', |'unhex(\'' + $str->at($x) + '\')'),
+      a: Any[*]                                              | $str->at($x)->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($types->at($x))
+   ]))->joinStrings(',');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::getLiteralProcessorsForDuckDB():Map<Type,LiteralProcessor>[1]
