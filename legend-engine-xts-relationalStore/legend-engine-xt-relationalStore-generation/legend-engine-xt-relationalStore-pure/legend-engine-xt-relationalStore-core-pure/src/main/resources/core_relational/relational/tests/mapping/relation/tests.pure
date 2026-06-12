@@ -20,463 +20,947 @@ import meta::relational::metamodel::*;
 import meta::pure::router::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
 import meta::relational::tests::mapping::relation::*;
 
-function <<access.private>> meta::relational::tests::mapping::relation::testTds(func: FunctionDefinition<{->TabularDataSet[1]}>[1], mapping: Mapping[1], db:Database[1], expectedRows:String[*]):Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQuery():Boolean[1]
 {
-  let result = execute($func, 
-                      $mapping, 
-                      meta::external::store::relational::tests::testRuntime($db), 
-                      meta::relational::extension::relationalExtensions()
-                    ).values->at(0);
-  assertSameElements($expectedRows, $result.rows->map(r|$r.values->makeString(' | ')));
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, age
+       David, 52
+       Fabrice, 45
+       John, 30
+       Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQuery():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingWithAssociation():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::SimpleMapping,
-          meta::relational::tests::mapping::relation::testDB,
-          ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
-        );
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, firmName
+       David, Firm D
+       Fabrice, Firm C
+       John, Firm X
+       Oliver, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingWithAssociation():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithPreFilter():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SimpleMapping, 
-          meta::relational::tests::mapping::relation::testDB,
-          ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
-        );
+  let result = execute(
+    |Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName]),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firmName, name
+       Firm A, TDSNull
+       Firm B, TDSNull
+       Firm C, Fabrice
+       Firm C, Oliver
+       Firm D, David
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithPreFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithFilterInProject():Boolean[1]
 {
-  testTds(|Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::SimpleMapping, 
-          meta::relational::tests::mapping::relation::testDB,        
-          ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice', 'Firm C | Oliver', 'Firm D | David']
-        );
+  let result = execute(
+    |Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName]),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name1, name2
+       David, TDSNull
+       Fabrice, TDSNull
+       John, John
+       Oliver, Fabrice
+       Oliver, Oliver
+    #->toString(),
+    $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithFilterInProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithObjectGroupByAndTdsProject():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::SimpleMapping, 
-          meta::relational::tests::mapping::relation::testDB,        
-          ['David | TDSNull', 'Fabrice | TDSNull', 'John | John', 'Oliver | Fabrice', 'Oliver | Oliver']
-        );
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firm.legalName, age:x|$x.age])->groupBy(~name, ~averageAge:x|$x.age:y|$y->average()),
+    meta::relational::tests::mapping::relation::SimpleMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, averageAge
+       Firm C, 35.5
+       Firm D, 52.0
+       Firm X, 30.0
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithObjectGroupByAndTdsProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
 {
-  testTds(|Person.all()->groupBy([p|$p.firm.legalName], [agg(p|$p.age, y | $y->average())], ['name', 'averageAge'])
-                      ->project([col(r:TDSRow[1]|$r.getString('name'), 'name'), col(r:TDSRow[1]|$r.getString('averageAge'), 'averageAge')]),
-          meta::relational::tests::mapping::relation::SimpleMapping,
-          meta::relational::tests::mapping::relation::testDB,        
-          ['Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
-        );
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
+    meta::relational::tests::mapping::relation::MixedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, age
+       David, 52
+       Fabrice, 45
+       John, 30
+       Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name:x|$x.firstName, age:x|$x.age])->cast(@TabularDataSet), 
-            meta::relational::tests::mapping::relation::MixedMapping, 
-            meta::relational::tests::mapping::relation::testDB,        
-            ['David | 52', 'Fabrice | 45', 'John | 30', 'Oliver | 26']
-        );
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
+    meta::relational::tests::mapping::relation::MixedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, firmName
+       David, Firm D
+       Fabrice, Firm C
+       John, Firm X
+       Oliver, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::MixedMapping,
-          meta::relational::tests::mapping::relation::testDB,        
-          ['David | Firm D', 'Fabrice | Firm C', 'John | Firm X', 'Oliver | Firm C']
-        );
-}
-
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
-{
-  testTds(|Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[name1:x|$x.legalName, name2:x|$x.employees.firstName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::MixedMapping, 
-          meta::relational::tests::mapping::relation::testDB,        
-          ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice', 'Firm C | Oliver', 'Firm D | David']
-        );
+  let result = execute(
+    |Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName]),
+    meta::relational::tests::mapping::relation::MixedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firmName, name
+       Firm A, TDSNull
+       Firm B, TDSNull
+       Firm C, Fabrice
+       Firm C, Oliver
+       Firm D, David
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+  );
 }
 
 // SQL Gen fails during isolation when adding a self join, need to investigate further
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::testMixedMappingWithFilterInProject():Boolean[1]
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testMixedMappingWithFilterInProject():Boolean[1]
 {
-  testTds(|Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName])->cast(@TabularDataSet), 
-          meta::relational::tests::mapping::relation::MixedMapping, 
-          meta::relational::tests::mapping::relation::testDB,        
-          ['David | TDSNull', 'Fabrice | TDSNull', 'John | John', 'Oliver | Fabrice', 'Oliver | Oliver']
-        );
+  let result = execute(
+    |Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName]),
+    meta::relational::tests::mapping::relation::MixedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name1, name2
+       David, TDSNull
+       Fabrice, TDSNull
+       John, John
+       Oliver, Fabrice
+       Oliver, Oliver
+    #->toString(),
+    $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedMappingWithObjectGroupByAndTdsProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithObjectGroupByAndTdsProject():Boolean[1]
 {
-  testTds(|Person.all()->groupBy([p|$p.firm.legalName], [agg(p|$p.age, y | $y->average())], ['name', 'averageAge'])
-                      ->project([col(r:TDSRow[1]|$r.getString('name'), 'name'), col(r:TDSRow[1]|$r.getString('averageAge'), 'averageAge')]),
-          meta::relational::tests::mapping::relation::MixedMapping,
-          meta::relational::tests::mapping::relation::testDB,        
-          ['Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
-        );
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firm.legalName, age:x|$x.age])->groupBy(~name, ~averageAge:x|$x.age:y|$y->average()),
+    meta::relational::tests::mapping::relation::MixedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, averageAge
+       Firm C, 35.5
+       Firm D, 52.0
+       Firm X, 30.0
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithWindowColumn():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithWindowColumn():Boolean[1]
 {
-  testTds(|ExtendedPerson.all()->filter(x|$x.age > 25)->project(~[name:x|$x.firstName, groupName:x|$x.groupName, rank:x|$x.rank])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::WindowColumnMapping,
-          meta::relational::tests::mapping::relation::testDB,        
-          ['David | Group D | 1', 'Fabrice | Group C | 1', 'John | Group A | 2', 'Oliver | Group C | 2']
-        );
+  let result = execute(
+    |ExtendedPerson.all()->filter(x|$x.age > 25)->project(~[name:x|$x.firstName, groupName:x|$x.groupName, rank:x|$x.rank]),
+    meta::relational::tests::mapping::relation::WindowColumnMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, groupName, rank
+       David, Group D, 1
+       Fabrice, Group C, 1
+       John, Group A, 2
+       Oliver, Group C, 2
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithGroupBy():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupBy():Boolean[1]
 {
-  testTds(|GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, sum:x|$x.sum])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::GroupByMapping, 
-          meta::relational::tests::mapping::relation::testDB,        
-          ['1 | 53', '2 | 23', '3 | 19', '4 | 71', '5 | 52']
-        );
+  let result = execute(
+    |GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
+    meta::relational::tests::mapping::relation::GroupByMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firmId, sum
+       1, 53
+       2, 23
+       3, 19
+       4, 71
+       5, 52
+    #->toString(),
+    $result.values->at(0)->sort(~firmId->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoning():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoning():Boolean[1]
 {
-  testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'David | TDSNull', 'Peter | TDSNull']
-        );
+  let result = execute(
+    |ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::SnapshotMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoningAllVersionsInRange():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoningAllVersionsInRange():Boolean[1]
 {
-  testTds(|ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-        meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
-        meta::relational::tests::mapping::relation::MilestonedDB,        
-        ['Anthony | Firm B', 'David | TDSNull', 'Jane | Firm A', 'John | TDSNull', 'Oliver | TDSNull', 'Peter | TDSNull']
-      );
+  let result = execute(
+    |ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::SnapshotMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Jane, Firm A
+       John, TDSNull
+       Oliver, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoning():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoning():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'David | TDSNull', 'Peter | TDSNull']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::SnapshotMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoningAllVersionsInRange():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoningAllVersionsInRange():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::SnapshotMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'David | TDSNull', 'Jane | Firm A', 'John | TDSNull', 'Oliver | TDSNull', 'Peter | TDSNull']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::SnapshotMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Jane, Firm A
+       John, TDSNull
+       Oliver, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoning():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoning():Boolean[1]
 {
-  testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
-        );
+  let result = execute(
+    |ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::TemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoningAllVersionsInRange():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoningAllVersionsInRange():Boolean[1]
 {
-  testTds(|ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-        meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
-        meta::relational::tests::mapping::relation::MilestonedDB,        
-        ['Anthony | Firm B', 'Fabrice | Firm C', 'Jane | TDSNull', 'Oliver | Firm C', 'Peter | Firm X']
-      );
+  let result = execute(
+    |ProcessingTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.ptFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::TemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Fabrice, Firm C
+       Jane, TDSNull
+       Oliver, Firm C
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoning():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoning():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::TemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoningAllVersionsInRange():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoningAllVersionsInRange():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'Fabrice | Firm C', 'Jane | TDSNull', 'Oliver | Firm C', 'Peter | Firm X']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.allVersionsInRange(%2024-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.biztFirm(%2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::TemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Fabrice, Firm C
+       Jane, TDSNull
+       Oliver, Firm C
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithBiTemporalMilestoning():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBiTemporalMilestoning():Boolean[1]
 {
-  testTds(|BiTemporalPerson.all(%2025-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.btFirm(%2024-11-01, %2024-11-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::TemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | Firm B', 'Jane | TDSNull', 'Peter | Firm X']
-        );
+  let result = execute(
+    |BiTemporalPerson.all(%2025-01-01, %2025-01-01)->project(~[firstName:x|$x.firstName, legalName:x|$x.btFirm(%2024-11-01, %2024-11-01).legalName]),
+    meta::relational::tests::mapping::relation::TemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMappingWithMultipleMilestonedTables():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithMultipleMilestonedTables():Boolean[1]
 {
-  testTds(|ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Peter']
-        );
+  let result = execute(
+    |ProcessingTemporalPerson.all(%2025-01-01)->project(~[firstName:x|$x.firstName]),
+    meta::relational::tests::mapping::relation::MultipleMilestonedTablesMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName
+       Peter
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedTemporalMapping():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedTemporalMapping():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirm(%2025-01-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | TDSNull', 'Jane | TDSNull', 'Peter | Firm X']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirm(%2025-01-01).legalName]),
+    meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, legalName
+       Anthony, TDSNull
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 // Generates incorrect SQL due to incorrect milestoning filter in self join condition added due to isolation
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange1():Boolean[1]
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange1():Boolean[1]
 {
-  testTds(|BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirmAllVersionsInRange(%2024-01-01, %2025-01-01).legalName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Anthony | TDSNull', 'Jane | TDSNull', 'Peter | Firm X']
-        );
+  let result = execute(
+    |BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirmAllVersionsInRange(%2024-01-01, %2025-01-01).legalName]),
+    meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       name, legalName
+       Anthony, TDSNull
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange2():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange2():Boolean[1]
 {
-  testTds(|BusinessTemporalFirm.all(%2025-01-01)->project(~[legalName:x|$x.legalName, employeeName:x|$x.biztEmployeesAllVersionsInRange(%2024-01-01, %2025-01-01).firstName])->cast(@TabularDataSet),
-          meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping, 
-          meta::relational::tests::mapping::relation::MilestonedDB,        
-          ['Firm X | Peter']
-        );
+  let result = execute(
+    |BusinessTemporalFirm.all(%2025-01-01)->project(~[legalName:x|$x.legalName, employeeName:x|$x.biztEmployeesAllVersionsInRange(%2024-01-01, %2025-01-01).firstName]),
+    meta::relational::tests::mapping::relation::MixedTemporalMilestonedMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       legalName, employeeName
+       Firm X, Peter
+    #->toString(),
+    $result.values->at(0)->sort(~legalName->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMapping():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMapping():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | FULL_TIME', 'Fabrice | FULL_TIME', 'Oliver | CONTRACT', 'David | CONTRACT']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilter():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Oliver | CONTRACT', 'David | CONTRACT']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterRight():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterRight():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->filter(x|EmployeeType.FULL_TIME == $x.employeeType)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | FULL_TIME', 'Fabrice | FULL_TIME']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->filter(x|EmployeeType.FULL_TIME == $x.employeeType)->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterNotEqual():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterNotEqual():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType != EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | FULL_TIME', 'Fabrice | FULL_TIME']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->filter(x|$x.employeeType != EmployeeType.CONTRACT)->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithIn():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithIn():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->filter(x|$x.employeeType->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME]))->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | FULL_TIME', 'Fabrice | FULL_TIME', 'Oliver | CONTRACT', 'David | CONTRACT']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->filter(x|$x.employeeType->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME]))->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingWithGroupBy():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithGroupBy():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->groupBy([x|$x.employeeType], [agg(x|$x.age, y|$y->count())], ['type', 'count'])
-                                        ->project([col(r:TDSRow[1]|$r.getString('type'), 'type'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['CONTRACT | 2', 'FULL_TIME | 2']
-         );
+   let result = execute(
+      |PersonWithEmployeeType.all()->project(~[type:x|$x.employeeType, age:x|$x.age])->groupBy(~type, ~count:x|$x.age:y|$y->count()),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       type, count
+       CONTRACT, 2
+       FULL_TIME, 2
+    #->toString(),
+    $result.values->at(0)->sort(~type->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEnumerationMappingProjection():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingProjection():Boolean[1]
 {
-   testTds(|PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | 30 | FULL_TIME', 'Fabrice | 45 | FULL_TIME', 'Oliver | 26 | CONTRACT', 'David | 52 | CONTRACT']
-         );
+  let result = execute(
+      |PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, age, type
+       David, 52, CONTRACT
+       Fabrice, 45, FULL_TIME
+       John, 30, FULL_TIME
+       Oliver, 26, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
 {
-   testTds(|PersonWithMultipleEnums.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType, active:x|$x.activeStatus])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | FULL_TIME | ACTIVE', 'Fabrice | FULL_TIME | ACTIVE', 'Oliver | CONTRACT | ACTIVE', 'David | CONTRACT | ACTIVE']
-         );
+   let result = execute(
+      |PersonWithMultipleEnums.all()->project(~[name:x|$x.firstName, type:x|$x.employeeType, active:x|$x.activeStatus]),
+      meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type, active
+       David, CONTRACT, ACTIVE
+       Fabrice, FULL_TIME, ACTIVE
+       John, FULL_TIME, ACTIVE
+       Oliver, CONTRACT, ACTIVE
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappingsWithFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappingsWithFilter():Boolean[1]
 {
-   testTds(|PersonWithMultipleEnums.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT && $x.activeStatus == ActiveStatus.ACTIVE)->project(~[name:x|$x.firstName, type:x|$x.employeeType])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Oliver | CONTRACT', 'David | CONTRACT']
-         );
+   let result = execute(
+      |PersonWithMultipleEnums.all()->filter(x|$x.employeeType == EmployeeType.CONTRACT && $x.activeStatus == ActiveStatus.ACTIVE)->project(~[name:x|$x.firstName, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::MultipleEnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMapping():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMapping():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | Main St | New York', 'Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+       John, Main St, New York
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilter():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Oliver | Oak Ave | Chicago']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithComplexFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithComplexFilter():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago' || $x.address.street->startsWith('Pine'))->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Chicago' || $x.address.street->startsWith('Pine'))->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilterOnMultipleEmbeddedProperties():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilterOnMultipleEmbeddedProperties():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | New York']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingGroupBy():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingGroupBy():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->groupBy([x|$x.address.city], [agg(x|$x.age, y|$y->count())], ['city', 'count'])
-                                   ->project([col(r:TDSRow[1]|$r.getString('city'), 'city'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Boston | 1', 'Chicago | 1', 'New York | 1', 'Seattle | 1']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->project(~[city:x|$x.address.city, age:x|$x.age])->groupBy(~city, ~count : x|$x.age : y|$y->count()),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       city, count
+       Boston, 1
+       Chicago, 1
+       New York, 1
+       Seattle, 1
+    #->toString(),
+    $result.values->at(0)->sort(~city->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithIsEmpty():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithIsEmpty():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city->isEmpty())->project(~[name:x|$x.firstName])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           []
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city->isEmpty())->project(~[name:x|$x.firstName]),
+      meta::relational::tests::mapping::relation::EmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociation():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociation():Boolean[1]
 {
-   testTds(|PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | New York | Firm X', 'Oliver | Chicago | Firm A', 'David | Boston | Firm B', 'Fabrice | Seattle | Firm C']
-         );
+   let result = execute(
+      |PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName]),
+      meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city, firm
+       David, Boston, Firm B
+       Fabrice, Seattle, Firm C
+       John, New York, Firm X
+       Oliver, Chicago, Firm A
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
 {
-   testTds(|PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm X')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | New York']
-         );
+   let result = execute(
+      |PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm X')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::EmbeddedWithAssociationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMapping():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMapping():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | Main St | New York', 'Oliver | Oak Ave | Chicago', 'David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+       John, Main St, New York
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Boston')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['David | Pine Rd | Boston']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'Boston' || $x.address.city == 'Seattle')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['David | Pine Rd | Boston', 'Fabrice | Elm Blvd | Seattle']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston' || $x.address.city == 'Seattle')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | New York']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
 {
-   testTds(|PersonWithAddress.all()->groupBy([x|$x.address.city], [agg(x|$x.age, y|$y->count())], ['city', 'count'])
-                                   ->project([col(r:TDSRow[1]|$r.getString('city'), 'city'), col(r:TDSRow[1]|$r.getInteger('count'), 'count')]),
-           meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Boston | 1', 'Chicago | 1', 'New York | 1', 'Seattle | 1']
-         );
+   let result = execute(
+      |PersonWithAddress.all()->project(~[city:x|$x.address.city, age:x|$x.age])->groupBy(~city, ~count : x|$x.age : y|$y->count()),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       city, count
+       Boston, 1
+       Chicago, 1
+       New York, 1
+       Seattle, 1
+    #->toString(),
+    $result.values->at(0)->sort(~city->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
 {
-   testTds(|PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['John | New York | Firm X', 'Oliver | Chicago | Firm A', 'David | Boston | Firm B', 'Fabrice | Seattle | Firm C']
-         );
+   let result = execute(
+      |PersonWithAddressAndFirm.all()->project(~[name:x|$x.firstName, city:x|$x.address.city, firm:x|$x.firmOfAddr.legalName]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city, firm
+       David, Boston, Firm B
+       Fabrice, Seattle, Firm C
+       John, New York, Firm X
+       Oliver, Chicago, Firm A
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
 {
-   testTds(|PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm C')->project(~[name:x|$x.firstName, city:x|$x.address.city])->cast(@TabularDataSet),
-           meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
-           meta::relational::tests::mapping::relation::testDB,
-           ['Fabrice | Seattle']
-         );
+   let result = execute(
+      |PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm C')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, city
+       Fabrice, Seattle
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
-

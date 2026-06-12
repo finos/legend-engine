@@ -73,12 +73,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".ID = "contractlogtable_0".PERSONID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'First Name\',Contract\n' +
-            '   Alice,ContractA\n' +
-            '   Bob,ContractC\n' +
-            '#',
-            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'First Name', Contract
+       Alice, ContractA
+       Bob, ContractC
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -153,12 +154,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("ordertable_0".CATEGORY = "sectiontable_0".ZONE)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Warehouse,Order\n' +
-            '   WarehouseA,OrderA\n' +
-            '   WarehouseB,OrderC\n' +
-            '#',
-            $result.values->at(0)->sort([~'Warehouse'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Warehouse, Order
+       WarehouseA, OrderA
+       WarehouseB, OrderC
+    #->toString(),
+    $result.values->at(0)->sort([~'Warehouse'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -233,12 +235,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("producttable_0".CATEGORY = "warehousetable_0".ZONE)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Warehouse\n' +
-            '   OrderA,WarehouseA\n' +
-            '   OrderC,WarehouseB\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Warehouse
+       OrderA, WarehouseA
+       OrderC, WarehouseB
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -317,13 +320,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("producttable_0".CODE = "shipmenttable_0".PREFIX)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Carrier\n' +
-            '   OrderA,TDSNull\n' +
-            '   OrderB,DHL\n' +
-            '   OrderB,UPS\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending(), ~'Carrier'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Carrier
+       OrderA, TDSNull
+       OrderB, DHL
+       OrderB, UPS
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending(), ~'Carrier'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -387,11 +391,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("producttable_0".CODE = "audittable_0".ENTITYREF)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Audit\n' +
-            '   OrderA,Audit1\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Audit
+       OrderA, Audit1
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -451,12 +456,13 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   Order,Carrier\n' +
-            '   OrderA,DHL\n' +
-            '   OrderB,UPS\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Carrier
+       OrderA, DHL
+       OrderB, UPS
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -523,12 +529,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("ordertable_0".CATEGORY = "sectiontable_0".ZONE)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Warehouse,Order\n' +
-            '   WarehouseA,OrderA\n' +
-            '   WarehouseB,OrderC\n' +
-            '#',
-            $result.values->at(0)->sort([~'Warehouse'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Warehouse, Order
+       WarehouseA, OrderA
+       WarehouseB, OrderC
+    #->toString(),
+    $result.values->at(0)->sort([~'Warehouse'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -595,12 +602,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "root".FROM_Z <= DATE\'2024-01-01\' and "root".THRU_Z > DATE\'2024-01-01\'';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Warehouse\n' +
-            '   OrderA,WarehouseA\n' +
-            '   OrderC,WarehouseB\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Warehouse
+       OrderA, WarehouseA
+       OrderC, WarehouseB
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -670,13 +678,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "root".FROM_Z <= DATE\'2024-03-01\' and "root".THRU_Z > DATE\'2024-03-01\''; 
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Carrier\n' +
-            '   OrderA,TDSNull\n' +
-            '   OrderB,DHL\n' +
-            '   OrderB,UPS\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending(), ~'Carrier'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Carrier
+       OrderA, TDSNull
+       OrderB, DHL
+       OrderB, UPS
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending(), ~'Carrier'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -734,9 +743,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "root".FROM_Z <= DATE\'2024-01-01\' and "root".THRU_Z > DATE\'2024-01-01\'';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   Order,Audit\n' +
-            '   OrderA,Audit1\n' +
-            '#',
-            $result.values->at(0)->sort([~'Order'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       Order, Audit
+       OrderA, Audit1
+    #->toString(),
+    $result.values->at(0)->sort([~'Order'->ascending()])->toString());
 }
