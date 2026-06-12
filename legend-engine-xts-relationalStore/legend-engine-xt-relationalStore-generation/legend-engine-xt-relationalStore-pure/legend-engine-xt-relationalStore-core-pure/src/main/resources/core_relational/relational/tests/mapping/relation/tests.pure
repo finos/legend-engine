@@ -31,14 +31,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,age\n' +
-               '   David,52\n' +
-               '   Fabrice,45\n' +
-               '   John,30\n' +
-               '   Oliver,26\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, age
+       David, 52
+       Fabrice, 45
+       John, 30
+       Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingWithAssociation():Boolean[1]
@@ -49,18 +51,19 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,firmName\n' +
-               '   David,Firm D\n' +
-               '   Fabrice,Firm C\n' +
-               '   John,Firm X\n' +
-               '   Oliver,Firm C\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, firmName
+       David, Firm D
+       Fabrice, Firm C
+       John, Firm X
+       Oliver, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
-// SQL Gen fails during isolation when adding a self join, need to investigate further
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithPreFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithPreFilter():Boolean[1]
 {
   let result = execute(
     |Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName]),
@@ -68,19 +71,20 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firmName,name\n' +
-               '   Firm A,TDSNull\n' +
-               '   Firm B,TDSNull\n' +
-               '   Firm C,Fabrice\n' +
-               '   Firm C,Oliver\n' +
-               '   Firm D,David\n' +
-               '#',
-               $result.values->at(0)->sort([ascending(~firmName), ascending(~name)])->toString());
+  assertEquals(
+    #TDS
+       firmName, name
+       Firm A, TDSNull
+       Firm B, TDSNull
+       Firm C, Fabrice
+       Firm C, Oliver
+       Firm D, David
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+  );
 }
 
-// SQL Gen fails during isolation when adding a self join, need to investigate further
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithFilterInProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithFilterInProject():Boolean[1]
 {
   let result = execute(
     |Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName]),
@@ -88,15 +92,17 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name1,name2\n' +
-               '   David,TDSNull\n' +
-               '   Fabrice,TDSNull\n' +
-               '   John,John\n' +
-               '   Oliver,Fabrice\n' +
-               '   Oliver,Oliver\n' +
-               '#',
-               $result.values->at(0)->sort([ascending(~name1), ascending(~name2)])->toString());
+  assertEquals(
+    #TDS
+       name1, name2
+       David, TDSNull
+       Fabrice, TDSNull
+       John, John
+       Oliver, Fabrice
+       Oliver, Oliver
+    #->toString(),
+    $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQueryWithObjectGroupByAndTdsProject():Boolean[1]
@@ -107,13 +113,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,averageAge\n' +
-               '   Firm C,35.5\n' +
-               '   Firm D,52.0\n' +
-               '   Firm X,30.0\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, averageAge
+       Firm C, 35.5
+       Firm D, 52.0
+       Firm X, 30.0
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
@@ -124,14 +132,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,age\n' +
-               '   David,52\n' +
-               '   Fabrice,45\n' +
-               '   John,30\n' +
-               '   Oliver,26\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, age
+       David, 52
+       Fabrice, 45
+       John, 30
+       Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
@@ -142,14 +152,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,firmName\n' +
-               '   David,Firm D\n' +
-               '   Fabrice,Firm C\n' +
-               '   John,Firm X\n' +
-               '   Oliver,Firm C\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, firmName
+       David, Firm D
+       Fabrice, Firm C
+       John, Firm X
+       Oliver, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
@@ -160,15 +172,17 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firmName,name\n' +
-               '   Firm A,TDSNull\n' +
-               '   Firm B,TDSNull\n' +
-               '   Firm C,Fabrice\n' +
-               '   Firm C,Oliver\n' +
-               '   Firm D,David\n' +
-               '#',
-               $result.values->at(0)->sort([ascending(~firmName), ascending(~name)])->toString());
+  assertEquals(
+    #TDS
+       firmName, name
+       Firm A, TDSNull
+       Firm B, TDSNull
+       Firm C, Fabrice
+       Firm C, Oliver
+       Firm D, David
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+  );
 }
 
 // SQL Gen fails during isolation when adding a self join, need to investigate further
@@ -180,15 +194,17 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name1,name2\n' +
-               '   David,TDSNull\n' +
-               '   Fabrice,TDSNull\n' +
-               '   John,John\n' +
-               '   Oliver,Fabrice\n' +
-               '   Oliver,Oliver\n' +
-               '#',
-               $result.values->at(0)->sort([ascending(~name1), ascending(~name2)])->toString());
+  assertEquals(
+    #TDS
+       name1, name2
+       David, TDSNull
+       Fabrice, TDSNull
+       John, John
+       Oliver, Fabrice
+       Oliver, Oliver
+    #->toString(),
+    $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithObjectGroupByAndTdsProject():Boolean[1]
@@ -199,13 +215,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,averageAge\n' +
-               '   Firm C,35.5\n' +
-               '   Firm D,52.0\n' +
-               '   Firm X,30.0\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, averageAge
+       Firm C, 35.5
+       Firm D, 52.0
+       Firm X, 30.0
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithWindowColumn():Boolean[1]
@@ -216,14 +234,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,groupName,rank\n' +
-               '   David,Group D,1\n' +
-               '   Fabrice,Group C,1\n' +
-               '   John,Group A,2\n' +
-               '   Oliver,Group C,2\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, groupName, rank
+       David, Group D, 1
+       Fabrice, Group C, 1
+       John, Group A, 2
+       Oliver, Group C, 2
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupBy():Boolean[1]
@@ -234,15 +254,17 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firmId,sum\n' +
-               '   1,53\n' +
-               '   2,23\n' +
-               '   3,19\n' +
-               '   4,71\n' +
-               '   5,52\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firmId))->toString());
+  assertEquals(
+    #TDS
+       firmId, sum
+       1, 53
+       2, 23
+       3, 19
+       4, 71
+       5, 52
+    #->toString(),
+    $result.values->at(0)->sort(~firmId->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoning():Boolean[1]
@@ -253,13 +275,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   David,TDSNull\n' +
-               '   Peter,TDSNull\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingSnapshotMilestoningAllVersionsInRange():Boolean[1]
@@ -270,16 +294,18 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   David,TDSNull\n' +
-               '   Jane,Firm A\n' +
-               '   John,TDSNull\n' +
-               '   Oliver,TDSNull\n' +
-               '   Peter,TDSNull\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Jane, Firm A
+       John, TDSNull
+       Oliver, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoning():Boolean[1]
@@ -290,13 +316,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   David,TDSNull\n' +
-               '   Peter,TDSNull\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessSnapshotMilestoningAllVersionsInRange():Boolean[1]
@@ -307,16 +335,18 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   David,TDSNull\n' +
-               '   Jane,Firm A\n' +
-               '   John,TDSNull\n' +
-               '   Oliver,TDSNull\n' +
-               '   Peter,TDSNull\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       David, TDSNull
+       Jane, Firm A
+       John, TDSNull
+       Oliver, TDSNull
+       Peter, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoning():Boolean[1]
@@ -327,13 +357,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   Jane,TDSNull\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithProcessingTemporalMilestoningAllVersionsInRange():Boolean[1]
@@ -344,15 +376,17 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   Fabrice,Firm C\n' +
-               '   Jane,TDSNull\n' +
-               '   Oliver,Firm C\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Fabrice, Firm C
+       Jane, TDSNull
+       Oliver, Firm C
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoning():Boolean[1]
@@ -363,13 +397,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   Jane,TDSNull\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBusinessTemporalMilestoningAllVersionsInRange():Boolean[1]
@@ -380,15 +416,17 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   Fabrice,Firm C\n' +
-               '   Jane,TDSNull\n' +
-               '   Oliver,Firm C\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Fabrice, Firm C
+       Jane, TDSNull
+       Oliver, Firm C
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithBiTemporalMilestoning():Boolean[1]
@@ -399,13 +437,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName,legalName\n' +
-               '   Anthony,Firm B\n' +
-               '   Jane,TDSNull\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName, legalName
+       Anthony, Firm B
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithMultipleMilestonedTables():Boolean[1]
@@ -416,11 +456,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   firstName\n' +
-               '   Peter\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~firstName))->toString());
+  assertEquals(
+    #TDS
+       firstName
+       Peter
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedTemporalMapping():Boolean[1]
@@ -431,13 +473,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,legalName\n' +
-               '   Anthony,TDSNull\n' +
-               '   Jane,TDSNull\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, legalName
+       Anthony, TDSNull
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 // Generates incorrect SQL due to incorrect milestoning filter in self join condition added due to isolation
@@ -449,13 +493,15 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapp
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   name,legalName\n' +
-               '   Anthony,TDSNull\n' +
-               '   Jane,TDSNull\n' +
-               '   Peter,Firm X\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~name))->toString());
+  assertEquals(
+    #TDS
+       name, legalName
+       Anthony, TDSNull
+       Jane, TDSNull
+       Peter, Firm X
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange2():Boolean[1]
@@ -466,11 +512,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::MilestonedDB),
     meta::relational::extension::relationalExtensions()
   );
-  assertEquals('#TDS\n' +
-               '   legalName,employeeName\n' +
-               '   Firm X,Peter\n' +
-               '#',
-               $result.values->at(0)->sort(ascending(~legalName))->toString());
+  assertEquals(
+    #TDS
+       legalName, employeeName
+       Firm X, Peter
+    #->toString(),
+    $result.values->at(0)->sort(~legalName->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMapping():Boolean[1]
@@ -481,14 +529,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   David,CONTRACT\n' +
-                '   Fabrice,FULL_TIME\n' +
-                '   John,FULL_TIME\n' +
-                '   Oliver,CONTRACT\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilter():Boolean[1]
@@ -499,12 +549,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   David,CONTRACT\n' +
-                '   Oliver,CONTRACT\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterRight():Boolean[1]
@@ -515,12 +567,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   Fabrice,FULL_TIME\n' +
-                '   John,FULL_TIME\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithFilterNotEqual():Boolean[1]
@@ -531,12 +585,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   Fabrice,FULL_TIME\n' +
-                '   John,FULL_TIME\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithIn():Boolean[1]
@@ -547,14 +603,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   David,CONTRACT\n' +
-                '   Fabrice,FULL_TIME\n' +
-                '   John,FULL_TIME\n' +
-                '   Oliver,CONTRACT\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Fabrice, FULL_TIME
+       John, FULL_TIME
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingWithGroupBy():Boolean[1]
@@ -565,32 +623,34 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   type,count\n' +
-                '   CONTRACT,2\n' +
-                '   FULL_TIME,2\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~type))->toString());
+   assertEquals(
+    #TDS
+       type, count
+       CONTRACT, 2
+       FULL_TIME, 2
+    #->toString(),
+    $result.values->at(0)->sort(~type->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEnumerationMappingProjection():Boolean[1]
 {
-  //  let result = execute(
-  //     |PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType]),
-  //     meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-  //     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-  //     meta::relational::extension::relationalExtensions()
-  //  );
-  //  assertEquals('#TDS\n' +
-  //               '   name,age,type\n' +
-  //               '   David,52,CONTRACT\n' +
-  //               '   Fabrice,45,FULL_TIME\n' +
-  //               '   John,30,FULL_TIME\n' +
-  //               '   Oliver,26,CONTRACT\n' +
-  //               '#',
-  //               $result.values->at(0)->sort(ascending(~name))->toString());
-  meta::pure::executionPlan::executionPlan(|PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType]), meta::relational::tests::mapping::relation::EnumerationRelationMapping, meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB), meta::relational::extension::relationalExtensions(), noDebug());
-  true;
+  let result = execute(
+      |PersonWithEmployeeType.all()->project(~[name:x|$x.firstName, age:x|$x.age, type:x|$x.employeeType]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, age, type
+       David, 52, CONTRACT
+       Fabrice, 45, FULL_TIME
+       John, 30, FULL_TIME
+       Oliver, 26, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
@@ -601,14 +661,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type,active\n' +
-                '   David,CONTRACT,ACTIVE\n' +
-                '   Fabrice,FULL_TIME,ACTIVE\n' +
-                '   John,FULL_TIME,ACTIVE\n' +
-                '   Oliver,CONTRACT,ACTIVE\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type, active
+       David, CONTRACT, ACTIVE
+       Fabrice, FULL_TIME, ACTIVE
+       John, FULL_TIME, ACTIVE
+       Oliver, CONTRACT, ACTIVE
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappingsWithFilter():Boolean[1]
@@ -619,12 +681,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,type\n' +
-                '   David,CONTRACT\n' +
-                '   Oliver,CONTRACT\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, type
+       David, CONTRACT
+       Oliver, CONTRACT
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMapping():Boolean[1]
@@ -635,14 +699,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   David,Pine Rd,Boston\n' +
-                '   Fabrice,Elm Blvd,Seattle\n' +
-                '   John,Main St,New York\n' +
-                '   Oliver,Oak Ave,Chicago\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+       John, Main St, New York
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilter():Boolean[1]
@@ -653,11 +719,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   Oliver,Oak Ave,Chicago\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithComplexFilter():Boolean[1]
@@ -668,12 +736,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   David,Pine Rd,Boston\n' +
-                '   Oliver,Oak Ave,Chicago\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithFilterOnMultipleEmbeddedProperties():Boolean[1]
@@ -684,11 +754,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city\n' +
-                '   John,New York\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingGroupBy():Boolean[1]
@@ -699,14 +771,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   city,count\n' +
-                '   Boston,1\n' +
-                '   Chicago,1\n' +
-                '   New York,1\n' +
-                '   Seattle,1\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~city))->toString());
+   assertEquals(
+    #TDS
+       city, count
+       Boston, 1
+       Chicago, 1
+       New York, 1
+       Seattle, 1
+    #->toString(),
+    $result.values->at(0)->sort(~city->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithIsEmpty():Boolean[1]
@@ -717,10 +791,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name\n\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociation():Boolean[1]
@@ -731,14 +807,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city,firm\n' +
-                '   David,Boston,Firm B\n' +
-                '   Fabrice,Seattle,Firm C\n' +
-                '   John,New York,Firm X\n' +
-                '   Oliver,Chicago,Firm A\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city, firm
+       David, Boston, Firm B
+       Fabrice, Seattle, Firm C
+       John, New York, Firm X
+       Oliver, Chicago, Firm A
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
@@ -749,11 +827,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city\n' +
-                '   John,New York\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMapping():Boolean[1]
@@ -764,14 +844,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   David,Pine Rd,Boston\n' +
-                '   Fabrice,Elm Blvd,Seattle\n' +
-                '   John,Main St,New York\n' +
-                '   Oliver,Oak Ave,Chicago\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+       John, Main St, New York
+       Oliver, Oak Ave, Chicago
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
@@ -782,11 +864,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   David,Pine Rd,Boston\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
@@ -797,12 +881,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,street,city\n' +
-                '   David,Pine Rd,Boston\n' +
-                '   Fabrice,Elm Blvd,Seattle\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
@@ -813,11 +899,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city\n' +
-                '   John,New York\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city
+       John, New York
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
@@ -828,14 +916,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   city,count\n' +
-                '   Boston,1\n' +
-                '   Chicago,1\n' +
-                '   New York,1\n' +
-                '   Seattle,1\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~city))->toString());
+   assertEquals(
+    #TDS
+       city, count
+       Boston, 1
+       Chicago, 1
+       New York, 1
+       Seattle, 1
+    #->toString(),
+    $result.values->at(0)->sort(~city->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
@@ -846,14 +936,16 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city,firm\n' +
-                '   David,Boston,Firm B\n' +
-                '   Fabrice,Seattle,Firm C\n' +
-                '   John,New York,Firm X\n' +
-                '   Oliver,Chicago,Firm A\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city, firm
+       David, Boston, Firm B
+       Fabrice, Seattle, Firm C
+       John, New York, Firm X
+       Oliver, Chicago, Firm A
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
@@ -864,9 +956,11 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('#TDS\n' +
-                '   name,city\n' +
-                '   Fabrice,Seattle\n' +
-                '#',
-                $result.values->at(0)->sort(ascending(~name))->toString());
+   assertEquals(
+    #TDS
+       name, city
+       Fabrice, Seattle
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
 }

@@ -73,13 +73,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'from contractTable as "root") as "unionalias_0" on ("unionalias_0".firmId = "root".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Bob\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Apple, Bob
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -141,13 +142,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'from contractTable as "root") as "unionalias_1" on ("unionalias_1".firmId = "unionBase".id)';
   assertEquals($expectedSql, $result->sql()); 
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Bob\n' +
-            '   Meta,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Apple, Bob
+       Meta, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -208,11 +210,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'from contractTable as "root") as "unionalias_1" where "unionalias_1".firmId = "root".ID and "unionalias_1"."fullTimeTableAGE_contractTableAGE" > 30)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -267,12 +270,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee Count\'\n' +
-            '   Apple,2\n' +
-            '   Google,1\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee Count'
+       Apple, 2
+       Google, 1
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -332,12 +336,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "unionalias_1".firmId = "root".ID and "unionalias_1"."fullTimeTableAGE_contractTableAGE" > 30)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
+
 // =============================================================================
 // Union-mapped properties in condition (all unions)
 // =============================================================================
@@ -400,13 +406,15 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
+
 // =============================================================================
 // Union with subType in query
 // =============================================================================
@@ -461,12 +469,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'left outer join contractTable as "contracttable_0" on ("contracttable_0".FIRMID = "unionBase".id)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee Code\'\n' +
-            '   Apple,TDSNull\n' +
-            '   Google,BCODE\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee Code'
+       Apple, TDSNull
+       Google, BCODE
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -515,11 +524,12 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Bob\n' +
-            '   Meta,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Apple, Bob
+       Meta, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
