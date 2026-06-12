@@ -22,15 +22,16 @@ modelSources:
     - source: relational-shared-firm-db.emit.yaml
 
 features:
-  - class
-  - association
-  - relational-store
-  - relational-mapping
-  - data-element
-  - test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - execution:data-element
+  - execution:test-data
+  - grammar:association
+  - store:relational-inner-join
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - join

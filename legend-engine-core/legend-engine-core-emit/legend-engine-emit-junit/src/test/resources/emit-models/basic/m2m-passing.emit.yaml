@@ -14,9 +14,9 @@ modelSources:
       - mapping/personMapping.pure
 
 features:
-  - class
-  - m2m-mapping
-  - mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - mapping:mapping
 complexity: basic
 tags:
   - m2m

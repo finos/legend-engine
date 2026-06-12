@@ -13,8 +13,8 @@ modelSources:
       - model.pure
 
 features:
-  - class
-  - file-generation
+  - scaffolding:class
+  - execution:file-generation
 complexity: basic
 tags:
   - file-generation

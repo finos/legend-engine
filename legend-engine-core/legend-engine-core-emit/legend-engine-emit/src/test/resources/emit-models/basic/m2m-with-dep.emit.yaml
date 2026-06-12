@@ -20,9 +20,9 @@ modelSources:
         - mapping/depMapping.pure
 
 features:
-  - class
-  - m2m-mapping
-  - mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - mapping:mapping
 complexity: basic
 tags:
   - dependency

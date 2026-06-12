@@ -12,4 +12,7 @@ modelSources:
   dependencies:
     - source: shared-dep.emit.yaml
 
+features:
+  - scaffolding:class
+
 complexity: basic

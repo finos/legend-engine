@@ -15,7 +15,9 @@ modelSources:
       - store/firmDb.pure
 
 features:
-  - relational-store
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
 stores:
   - relational
 complexity: basic

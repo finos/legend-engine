@@ -205,8 +205,8 @@ modelSources:
       - mapping/mapping.pure
 
 features:
-  - class
-  - mapping
+  - mapping:mapping
+  - scaffolding:class
 complexity: basic
 tags:
   - <your-tag>
@@ -221,13 +221,16 @@ The fields are documented in `emit.md` §6.1. Notes from experience:
   feature, combination, or behavior it exists to exercise. Most models run
   through most of the pipeline, so listing the phases adds little; say what
   the model proves, not which phases happen to fire.
-- **`features`** must come from the controlled taxonomy in `emit.md` §6.2.
-  If you genuinely need a new tag, add it to the taxonomy in the same PR.
+- **`features`** must use `domain:capability` pairs from the controlled
+  taxonomy in `emit.md` §6.2 (e.g., `grammar:association`,
+  `mapping:relational-embedded`, `store:relational-filter`). Sort
+  alphabetically. If you need a new capability, add it to the taxonomy
+  in the same PR.
 - **`stores`** is the empty list `[]` for store-less models. Omitting it is
   not the same — be explicit.
-- **`complexity`** is one of `basic`, `intermediate`, `advanced`. Reserve
-  `advanced` for models that combine four-plus feature areas or stress a
-  non-trivial interaction.
+- **`complexity`** is determined by domain-crossing depth: count the
+  distinct non-scaffolding domains in the feature list. 1–2 domains → `basic`,
+  3–4 domains → `intermediate`, 5+ domains → `advanced`.
 - **`tags`** is free-form. Use it for the things you would type into a
   hypothetical search box — `h2`, `multi-execution`, `derived-property`,
   `failure-mode`.
@@ -511,3 +514,43 @@ Tie the gap to the taxonomy: if no existing feature tag describes the gap,
 extend the taxonomy in `emit.md` §6.2 in the same PR and tag the new
 descriptor with it. This is how the catalog converges on full coverage over
 time.
+
+---
+
+## 11. Classification and Deduplication Guidelines
+
+When harvesting EMIT tests from Studio projects (or adding models to close
+coverage gaps), follow these rules to avoid redundant models and to keep
+the feature metadata accurate.
+
+### 11.1 Classification
+
+Every `features` entry must be a `domain:capability` pair from `emit.md`
+§6.2. Classify by examining the `.pure` source for concrete engine
+constructs — not by category labels the source project may carry.
+
+**Complexity** is derived mechanically: count the distinct non-scaffolding
+domains in the feature list (scaffolding = any `scaffolding:*` entry).
+
+| Distinct domains | Complexity |
+|---|---|
+| 1–2 | `basic` |
+| 3–4 | `intermediate` |
+| 5+ | `advanced` |
+
+### 11.2 Deduplication
+
+Before adding a model, extract its sorted `features` set and compare it
+against **all** existing `*.emit.yaml` files in the Engine repository.
+
+**The only reason to skip a candidate is an exact feature-set match** —
+when another model (existing or newly selected) has the identical sorted
+set of `domain:capability` features. Subsets and supersets are **not**
+duplicates:
+
+- `{A}` isolates feature A through the pipeline.
+- `{A, B}` tests the A+B interaction — may catch regressions that
+  neither `{A}` nor `{B}` alone would catch.
+- `{A, B, C, D}` tests the full multi-feature composition.
+
+All three provide distinct regression coverage and should all be kept.

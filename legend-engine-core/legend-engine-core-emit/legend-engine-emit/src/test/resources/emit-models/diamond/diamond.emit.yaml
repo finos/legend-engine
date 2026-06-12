@@ -15,4 +15,7 @@ modelSources:
     - source: left-dep.emit.yaml
     - source: right-dep.emit.yaml
 
+features:
+  - scaffolding:class
+
 complexity: basic

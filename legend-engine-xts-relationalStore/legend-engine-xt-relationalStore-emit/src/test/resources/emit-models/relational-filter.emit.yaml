@@ -19,11 +19,12 @@ modelSources:
     - source: relational-shared-domain.emit.yaml
 
 features:
-  - class
-  - relational-store
-  - relational-mapping
-  - data-element
-  - test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - execution:data-element
+  - execution:test-data
+  - store:relational-filter
 stores:
   - relational
 complexity: basic

@@ -12,4 +12,7 @@ modelSources:
     files:
       - model/shared.pure
 
+features:
+  - scaffolding:class
+
 complexity: basic

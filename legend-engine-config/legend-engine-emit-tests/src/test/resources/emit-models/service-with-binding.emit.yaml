@@ -24,18 +24,18 @@ modelSources:
       - binding/personBinding.pure
 
 features:
-  - class
-  - derived-property
-  - relational-store
-  - relational-mapping
-  - relational-connection
-  - runtime
-  - service
-  - service-test
-  - external-format-binding
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - execution:external-format-binding
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
 stores:
   - relational
-complexity: intermediate
+complexity: basic
 tags:
   - h2
   - service-test
