@@ -14,10 +14,10 @@
 
 package org.finos.legend.engine.testable.mapping.extension;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
-import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -37,7 +37,7 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mapping");
+        return Lists.mutable.with("PackageableElement", "Mapping");
     }
 
     @Override
@@ -80,9 +80,9 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
 
         return testable._tests().flatCollect(testSuite ->
         {
-            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id).toList();
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id, Lists.mutable.empty());
             return testRunner.executeTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, pureModelContextData);
-        }).toList();
+        }, Lists.mutable.empty());
     }
 
     public void setPureVersion(String pureVersion)
