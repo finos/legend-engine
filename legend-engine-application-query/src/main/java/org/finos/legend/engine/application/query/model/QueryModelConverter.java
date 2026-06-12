@@ -91,6 +91,7 @@ public class QueryModelConverter
         stored.stereotypes = query.stereotypes;
         stored.defaultParameterValues = query.defaultParameterValues;
         stored.gridConfig = query.gridConfig;
+        stored.attributeMetadata = query.attributeMetadata;
         stored.lastOpenAt = Instant.now().toEpochMilli();
 
         // Initialize audit with info from query
