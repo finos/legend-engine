@@ -1,0 +1,191 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::tds::*;
+import meta::pure::mapping::*;
+import meta::pure::router::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+
+// Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
+// Analogous to meta::relational::tests::projection::aggregation::testSubAggregation
+// but with a relation (~func) class mapping as the root.
+//
+// Lives under meta::relational::tests::mapping::relation::aggregation so that the
+// parent package's <<BeforePackage>> setUp() (relationMappingSetup.pure) runs and
+// creates the personTable / firmTable schema this suite expects ("FIRST NAME"
+// column, no ADDRESSID, etc.). Do NOT move these tests under
+// meta::relational::tests::projection::aggregation — that package's existing
+// BeforePackage installs an incompatible schema (FIRSTNAME / LASTNAME / ADDRESSID)
+// and the two would clobber each other in the shared H2 instance.
+
+function <<access.private>> meta::relational::tests::mapping::relation::aggregation::runFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1]):TabularDataSet[1]
+{
+   execute(
+      $query,
+      meta::relational::tests::mapping::relation::SimpleMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+}
+
+// (1) Average — basic single sub-aggregation.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[a:f|$f.employees.age->average()])->cast(@TabularDataSet)
+   );
+   assertSize($result.rows, 5);
+   assertSameElements(['30.0', '35.5', '52.0', 'TDSNull', 'TDSNull'], $result.rows->map(r|$r.values->at(0)->toString()));
+}
+
+// Average + simple property.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees.age->average()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Two sub-aggregations on the same root (count + average).
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[
+         b:f|$f.employees.firstName->count(),
+         a:f|$f.employees.age->average()
+      ])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['0 | TDSNull', '0 | TDSNull', '1 | 30.0', '1 | 52.0', '2 | 35.5'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Sum (NULL for empty groups via LEFT OUTER JOIN).
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->sum()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 71', 'Firm D | 52', 'Firm X | 30'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Max.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->max()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45', 'Firm D | 52', 'Firm X | 30'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Sub-aggregation with a filter inside the collection navigation.
+// TODO(relation-function-subagg): real engine bug — processColumnsInRelationalOperationElements
+// fails to bind the AGE column when the navigation contains a filter, with error
+//   "Found 0 relations that could support the column AGE in the nested SQL select <firmTable subselect>"
+// Resolution requires threading the inner-relation wrapper through the column-lookup path so
+// AGE resolves against personTable rather than the outer firmTable subselect.
+function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45.0', 'Firm D | 52.0', 'Firm X | TDSNull'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Min.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->min()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 26', 'Firm D | 52', 'Firm X | 30'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// Count only — single aggregation column with no extra projected properties.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[c:f|$f.employees.firstName->count()])->cast(@TabularDataSet)
+   );
+   assertSize($result.rows, 5);
+   assertSameElements(['0', '0', '1', '1', '2'], $result.rows->map(r|$r.values->at(0)->toString()));
+}
+
+// Top-level if wrapping a sub-aggregation (exercises CASE/WHEN wrapping path).
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, a:f|if($f.legalName == 'Firm X', |1.0, |$f.employees.age->average())])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 1.0'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// map + arithmetic then sum (validates expression wrapping inside aggregate).
+// TODO(relation-function-subagg): real engine bug — the inner lambda `$a * 2` is dropped during
+// sub-aggregation processing on the relation-function path: the engine generates `sum(2)` (a
+// constant) instead of `sum(age * 2)`, so each firm's result equals `count(rows) * 2` rather
+// than the true sum. Confirmed by actual = ['Firm A | 2', 'Firm B | 2', 'Firm C | 4',
+// 'Firm D | 2', 'Firm X | 2']. Same query works on the equivalent RootRelationalInstanceSet
+// mapping; bug is specific to processMap/processAggregation when the source is a
+// RelationFunctionInstanceSetImplementation.
+function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 142', 'Firm D | 104', 'Firm X | 60'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
+
+// joinStrings (listagg SQL path). sortBy makes the per-group order deterministic.
+// Empty groups (Firm A, Firm B — no employees with AGE > 25 because of personFunction's filter)
+// surface as TDSNull from H2's LISTAGG over the LEFT OUTER JOIN, not as empty strings.
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
+{
+   let result = meta::relational::tests::mapping::relation::aggregation::runFirmAgg(
+      |Firm.all()->project(~[name:f|$f.legalName, e:f|$f.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet)
+   );
+   assertSameElements(
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice^Oliver', 'Firm D | David', 'Firm X | John'],
+      $result.rows->map(r|$r.values->makeString(' | '))
+   );
+}
