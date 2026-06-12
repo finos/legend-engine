@@ -1123,6 +1123,10 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.pac4j</groupId>
             <artifactId>jersey-pac4j</artifactId>
             <scope>runtime</scope>

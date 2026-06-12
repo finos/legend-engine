@@ -353,6 +353,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new PCT());
         environment.jersey().register(new Documentation());
 
+        // EMIT
+        environment.jersey().register(new org.finos.legend.engine.server.core.emit.EMIT());
+
         // Protocol
         environment.jersey().register(new PureProtocol());
 
