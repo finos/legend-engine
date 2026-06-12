@@ -3878,28 +3878,35 @@ function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:Func
              |if($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation),
                  |let rs = $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@RelationFunctionInstanceSetImplementation)->meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved($extensions);
                   let pk = $rs->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
-                  let valid = if ($pk->isEmpty(), | fail('There is no primary key defined on the relation function mapping for class ' + $rs.class.name->toOne() + '. A primary key must be defined (via ~primaryKey on the relation class mapping, or inferable from the relation function body) to use sub-aggregation.'); false; ,| true);
-                  let existingSelect = $existingQuery.select;
-                  // processRelationFunctionClassMapping returns SelectWithCursor with currentTreeNode=[];
-                  // processColumnsInRelationalOperationElements requires it to be the root join tree node.
-                  let queryWithTreeNode = if($existingQuery.currentTreeNode->isEmpty(),
-                                              | ^$existingQuery(currentTreeNode = $existingQuery.select.data),
-                                              | $existingQuery);
-                  let all = $pk->map(p|$p->processColumnsInRelationalOperationElements(^$state(inFilter=false), ^$queryWithTreeNode(select=^$existingSelect(leftSideOfFilter=[]), positionBeforeLastApplyJoinTreeNode=[]), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions));
-                  let sel = $all->map(c|$c.select)->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
-                  let mergedWithCollapsedFilteringOperation = ^$sel(filteringOperation = $sel.filteringOperation->tail()->fold({f,a|[$a->toOne(),$f]->andFilters($extensions)}, $sel.filteringOperation->head()));
-                  let res = $all->first()->toOne();
-                  let result = ^$res
-                               (
-                                  select = ^$mergedWithCollapsedFilteringOperation
-                                           (
-                                              leftSideOfFilter = if($existingQuery.select.leftSideOfFilter->isEmpty(),|[],|$existingQuery.select.leftSideOfFilter->toOne()->findNode($existingQuery.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne())->toOne())
-                                           ),
-                                  currentTreeNode = $res.currentTreeNode->toOne()->findOneNode($res.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne()),
-                                  positionBeforeLastApplyJoinTreeNode = if($existingQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$existingQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($existingQuery.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne())->toOne())
-                               );
-                  $result->validate([], $extensions);
-                  $result;,
+                  // addPkForAggregation is called speculatively from processProject for *every* project,
+                  // not just aggregation ones (multi-flatten, primitive-flatten, etc. all hit this).
+                  // If the relation function mapping has no PK (none specified, none inferable),
+                  // skip PK injection and fall through unchanged. Genuine sub-aggregation paths get a
+                  // clear error from addSelfJoin's assertion downstream.
+                  if($pk->isEmpty(),
+                     |$existingQuery,
+                     |let existingSelect = $existingQuery.select;
+                      // processRelationFunctionClassMapping returns SelectWithCursor with currentTreeNode=[];
+                      // processColumnsInRelationalOperationElements requires it to be the root join tree node.
+                      let queryWithTreeNode = if($existingQuery.currentTreeNode->isEmpty(),
+                                                  | ^$existingQuery(currentTreeNode = $existingQuery.select.data),
+                                                  | $existingQuery);
+                      let all = $pk->map(p|$p->processColumnsInRelationalOperationElements(^$state(inFilter=false), ^$queryWithTreeNode(select=^$existingSelect(leftSideOfFilter=[]), positionBeforeLastApplyJoinTreeNode=[]), $nodeId, ^List<ColumnGroup>(), false, $context, $extensions));
+                      let sel = $all->map(c|$c.select)->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+                      let mergedWithCollapsedFilteringOperation = ^$sel(filteringOperation = $sel.filteringOperation->tail()->fold({f,a|[$a->toOne(),$f]->andFilters($extensions)}, $sel.filteringOperation->head()));
+                      let res = $all->first()->toOne();
+                      let result = ^$res
+                                   (
+                                      select = ^$mergedWithCollapsedFilteringOperation
+                                               (
+                                                  leftSideOfFilter = if($existingQuery.select.leftSideOfFilter->isEmpty(),|[],|$existingQuery.select.leftSideOfFilter->toOne()->findNode($existingQuery.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne())->toOne())
+                                               ),
+                                      currentTreeNode = $res.currentTreeNode->toOne()->findOneNode($res.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne()),
+                                      positionBeforeLastApplyJoinTreeNode = if($existingQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$existingQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($existingQuery.select.data->toOne(), $mergedWithCollapsedFilteringOperation.data->toOne())->toOne())
+                                   );
+                      $result->validate([], $extensions);
+                      $result;
+                  );,
                  |if($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->instanceOf(OperationSetImplementation) && ($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping->toOne())->size() > 1) && $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping->toOne())->forAll(set | $set->instanceOf(RootRelationalInstanceSetImplementation)) && $existingQuery.currentTreeNode->isNotEmpty() && $existingQuery.currentTreeNode->toOne().alias.relationalElement->instanceOf(Union),
                      |addPkForAggregationInUnion($existingQuery, $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping->toOne())->cast(@RootRelationalInstanceSetImplementation), $state, $extensions),
                      |$existingQuery
@@ -11070,4 +11077,3 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::runtime::currentUserId__String_1_, second = meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
    ])
 }
-
