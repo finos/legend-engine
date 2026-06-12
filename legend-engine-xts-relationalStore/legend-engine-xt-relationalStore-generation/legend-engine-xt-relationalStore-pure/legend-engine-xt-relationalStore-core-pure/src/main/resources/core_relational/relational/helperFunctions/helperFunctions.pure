@@ -568,6 +568,15 @@ function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(cla
   );
 }
 
+// Lazily auto-infers primaryKey if not already set; otherwise returns the input unchanged.
+function meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved(rf:RelationFunctionInstanceSetImplementation[1], extensions:meta::pure::extension::Extension[*]):RelationFunctionInstanceSetImplementation[1]
+{
+  if($rf.primaryKey->isEmpty(),
+    | let pkCols = $rf->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
+      ^$rf(primaryKey = $pkCols);,
+    | $rf
+  );
+}
 
 function meta::relational::mapping::transformRelationFunctionSemiStructuredPropertyMapping(propertyMappings:PropertyMapping[*], classMapping:SetImplementation[1]):PropertyMapping[*]
 {
