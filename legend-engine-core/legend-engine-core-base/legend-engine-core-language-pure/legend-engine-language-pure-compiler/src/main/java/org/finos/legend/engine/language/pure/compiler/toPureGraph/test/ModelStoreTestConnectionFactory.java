@@ -14,19 +14,26 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelEmbeddedTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 
@@ -35,7 +42,11 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 // TO BE MOVED TO MODEL STORE MODULE ONCE CREATED
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
@@ -43,7 +54,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "M2M");
+        return Lists.mutable.with("Store", "M2M");
     }
 
     public static final String MODEL_STORE = "ModelStore";
@@ -55,7 +66,6 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
 
     private static JsonModelConnection jsonModelConnection = new JsonModelConnection();
     private static XmlModelConnection xmlModelConnection = new XmlModelConnection();
-
 
     public Pair<Connection, List<Closeable>> buildCloseableConnectionFromExternalFormat(ExternalFormatData externalFormatData, String _class)
     {
@@ -138,7 +148,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement>  dataElements, Store store, EmbeddedData testData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Map<String, DataElement> dataElements, Store store, EmbeddedData testData)
     {
         if (store instanceof ModelStore && testData instanceof ModelStoreData)
         {
@@ -200,5 +210,4 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     {
         return DATA_PROTOCOL_NAME + ":" + type + ";base64," + Base64.getEncoder().encodeToString(externalFormatData.data.getBytes(StandardCharsets.UTF_8));
     }
-
 }

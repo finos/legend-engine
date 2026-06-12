@@ -15,17 +15,24 @@
 package org.finos.legend.engine.testable.mapping.extension;
 
 import net.javacrumbs.jsonunit.JsonAssert;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.*;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestDebug;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionPlanDebug;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.TestAccessor;
@@ -33,11 +40,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TestMappingTestRunner
 {
-
     private String getGrammar1MappingSuite(String TEST_SUITE_GRAMMAR)
     {
         return "###Pure\n" +
@@ -177,6 +182,71 @@ public class TestMappingTestRunner
             "  ]");
 
 
+    String TEST_SUITE_SHARED_DATA = getGrammar1MappingSuite("  testSuites:\n" +
+            "  [\n" +
+            "    testSuite1:\n" +
+            "    {\n" +
+            "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+            "      tests:\n" +
+            "      [\n" +
+            "        test1:\n" +
+            "        {\n" +
+            "          data:\n" +
+            "          [\n" +
+            "           ModelStore: ModelStore\n" +
+            "            #{\n" +
+            "               test::model:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  test::data::MyData\n" +
+            "                }#\n" +
+            "            }#\n" +
+            "          ];\n" +
+            "          asserts:\n" +
+            "          [\n" +
+            "            assert1:\n" +
+            "              EqualToJson\n" +
+            "              #{\n" +
+            "                expected :\n" +
+            "                  ExternalFormat\n" +
+            "                  #{\n" +
+            "                    contentType: 'application/json';\n" +
+            "                    data: '{\"id\" : 77, \"name\" : \"john doe\"}';\n" +
+            "                  }#;\n" +
+            "              }#\n" +
+            "          ];\n" +
+            "        },\n" +
+            "        test2:\n" +
+            "        {\n" +
+            "          data:\n" +
+            "          [\n" +
+            "           ModelStore: ModelStore\n" +
+            "            #{\n" +
+            "               test::model:\n" +
+            "                Reference\n" +
+            "                #{\n" +
+            "                  test::data::MyData\n" +
+            "                }#\n" +
+            "            }#\n" +
+            "          ];\n" +
+            "          asserts:\n" +
+            "          [\n" +
+            "            assert1:\n" +
+            "              EqualToJson\n" +
+            "              #{\n" +
+            "                expected :\n" +
+            "                  ExternalFormat\n" +
+            "                  #{\n" +
+            "                    contentType: 'application/json';\n" +
+            "                    data: '{\"name\" : \"john doe\", \"id\" : 77}';\n" +
+            "                  }#;\n" +
+            "              }#\n" +
+            "          ];\n" +
+            "        }\n" +
+            "      ];\n" +
+            "    }\n" +
+            "  ]");
+
     String grammar2 = "###Data\n" +
             "Data test::data::MyTestData\n" +
             "{\n" +
@@ -282,7 +352,6 @@ public class TestMappingTestRunner
             "    }\n" +
             "  ]\n" +
             ")\n";
-
 
 
     String multiInputWithReferenceM2M = "###Data\n" +
@@ -596,7 +665,6 @@ public class TestMappingTestRunner
             ")\n";
 
 
-
     @Test
     public void testMappingTestSuiteForM2MUsecase()
     {
@@ -624,12 +692,12 @@ public class TestMappingTestRunner
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_1);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("test::modelToModelMapping");
-        TestRunner runner =  mappingTestableRunnerExtension.getTestRunner(mappingToTest);
+        TestRunner runner = mappingTestableRunnerExtension.getTestRunner(mappingToTest);
         List<TestDebug> debugLists = mappingToTest._tests().flatCollect(testSuite ->
         {
-            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id).toList();
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id, Lists.mutable.empty());
             return runner.debugTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModelWithReferenceData, modelDataWithReferenceData);
-        }).toList();
+        }, Lists.mutable.empty());
         Assert.assertEquals(1, debugLists.size());
         Assert.assertEquals("test::modelToModelMapping", debugLists.get(0).testable);
         Assert.assertEquals("testSuite1", debugLists.get(0).testSuiteId);
@@ -714,6 +782,162 @@ public class TestMappingTestRunner
     }
 
     @Test
+    public void testSharedStoreTestDataSuiteSharesOnePlanAcrossTests()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_SHARED_DATA);
+        PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModel.getPackageableElement("test::modelToModelMapping");
+
+        // Both tests reference the same DataElement, so one plan serves the suite: it is generated
+        // during session initialization and shared, which the debug session exposes as the same
+        // plan instance on every test.
+        TestRunner runner = mappingTestableRunnerExtension.getTestRunner(mappingToTest);
+        List<TestDebug> debugs = mappingToTest._tests().flatCollect(testSuite ->
+        {
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id, Lists.mutable.empty());
+            return runner.debugTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, modelData);
+        }, Lists.mutable.empty());
+        Assert.assertEquals(2, debugs.size());
+        ExecutionPlan plan1 = ((TestExecutionPlanDebug) debugs.get(0)).executionPlan;
+        ExecutionPlan plan2 = ((TestExecutionPlanDebug) debugs.get(1)).executionPlan;
+        Assert.assertNotNull(plan1);
+        Assert.assertSame("tests sharing store test data should share the plan generated during session initialization", plan1, plan2);
+
+        // And both tests pass against the shared plan.
+        List<TestResult> results = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModel, modelData);
+        Assert.assertEquals(2, results.size());
+        results.forEach(result -> Assert.assertTrue("expected " + result.atomicTestId + " to pass", hasTestPassed(result)));
+    }
+
+    @Test
+    public void testM2MDifferingDataStillSharesOnePlan()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(TEST_SUITE_2);
+        PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModel.getPackageableElement("test::modelToModelMapping");
+
+        // test1 references a DataElement while test2 carries different inline data, but both bind
+        // the same model class with JSON data — and ModelStore plans do not embed the data content
+        // (it reaches the execution out of band), so one plan still serves the whole suite.
+        TestRunner runner = mappingTestableRunnerExtension.getTestRunner(mappingToTest);
+        List<TestDebug> debugs = mappingToTest._tests().flatCollect(testSuite ->
+        {
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id, Lists.mutable.empty());
+            return runner.debugTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, modelData);
+        }, Lists.mutable.empty());
+        Assert.assertEquals(2, debugs.size());
+        ExecutionPlan plan1 = ((TestExecutionPlanDebug) debugs.get(0)).executionPlan;
+        ExecutionPlan plan2 = ((TestExecutionPlanDebug) debugs.get(1)).executionPlan;
+        Assert.assertNotNull(plan1);
+        Assert.assertSame("ModelStore tests differing only in data content should share the plan generated during session initialization", plan1, plan2);
+    }
+
+    @Test
+    public void testDifferingStoreTestDataShapeGeneratesPlanPerTest()
+    {
+        MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
+        mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
+
+        // test2's ModelStore data binds two model classes where test1's binds one: the runner
+        // cannot prove the connections equivalent, so it falls back to generating a plan per test.
+        String suiteGrammar = getGrammar1MappingSuite("  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      function: |test::changedModel.all()->graphFetch(#{test::changedModel{id,name}}#)->serialize(#{test::changedModel{id,name}}#);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "           ModelStore: ModelStore\n" +
+                "            #{\n" +
+                "               test::model:\n" +
+                "               ExternalFormat\n" +
+                "               #{\n" +
+                "                 contentType: 'application/json';\n" +
+                "                 data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "               }#\n" +
+                "            }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected :\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"id\" : 77, \"name\" : \"john doe\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "           ModelStore: ModelStore\n" +
+                "            #{\n" +
+                "               test::model:\n" +
+                "               ExternalFormat\n" +
+                "               #{\n" +
+                "                 contentType: 'application/json';\n" +
+                "                 data: '{\"name\":\"john doe\",\"id\":\"77\"}';\n" +
+                "               }#,\n" +
+                "               test::changedModel:\n" +
+                "               ExternalFormat\n" +
+                "               #{\n" +
+                "                 contentType: 'application/json';\n" +
+                "                 data: '{\"name\":\"john doe\",\"id\":77}';\n" +
+                "               }#\n" +
+                "            }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected :\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"id\" : 77, \"name\" : \"john doe\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]");
+
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(suiteGrammar);
+        PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModel.getPackageableElement("test::modelToModelMapping");
+
+        TestRunner runner = mappingTestableRunnerExtension.getTestRunner(mappingToTest);
+        List<TestDebug> debugs = mappingToTest._tests().flatCollect(testSuite ->
+        {
+            List<String> atomicTestIds = ((Root_meta_pure_test_TestSuite) testSuite)._tests().collect(TestAccessor::_id, Lists.mutable.empty());
+            return runner.debugTestSuite((Root_meta_pure_test_TestSuite) testSuite, atomicTestIds, pureModel, modelData);
+        }, Lists.mutable.empty());
+        Assert.assertEquals(2, debugs.size());
+        ExecutionPlan plan1 = ((TestExecutionPlanDebug) debugs.get(0)).executionPlan;
+        ExecutionPlan plan2 = ((TestExecutionPlanDebug) debugs.get(1)).executionPlan;
+        Assert.assertNotNull(plan1);
+        Assert.assertNotNull(plan2);
+        Assert.assertNotSame("tests whose store test data is not provably equivalent should each generate their own plan", plan1, plan2);
+    }
+
+    @Test
     public void testMultiInputsWithDifferentSerializationAndReferences()
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
@@ -726,14 +950,14 @@ public class TestMappingTestRunner
 
         // basic assertions 2 suites
         Assert.assertEquals(8, mappingTestResults.size());
-        List<TestResult> graphFetchSuite = mappingTestResults.stream().filter(e -> e.testSuiteId.equals("graphFetchSuite")).collect(Collectors.toList());;
+        MutableList<TestResult> graphFetchSuite = ListIterate.select(mappingTestResults, e -> e.testSuiteId.equals("graphFetchSuite"));
         Assert.assertEquals(6, graphFetchSuite.size());
-        List<TestResult> graphFetchCheckedSuite = mappingTestResults.stream().filter(e -> e.testSuiteId.equals("graphFetchChecked")).collect(Collectors.toList());;
+        MutableList<TestResult> graphFetchCheckedSuite = ListIterate.select(mappingTestResults, e -> e.testSuiteId.equals("graphFetchChecked"));
         Assert.assertEquals(2, graphFetchCheckedSuite.size());
 
         // graphFetchSuite
-        Assert.assertEquals(4,graphFetchSuite.stream().filter(this::hasTestPassed).collect(Collectors.toList()).size());
-        Assert.assertEquals(2,graphFetchSuite.stream().filter(e -> !this.hasTestPassed(e)).collect(Collectors.toList()).size());
+        Assert.assertEquals(4, graphFetchSuite.count(this::hasTestPassed));
+        Assert.assertEquals(2, graphFetchSuite.count(e -> !hasTestPassed(e)));
         Assert.assertTrue(hasTestPassed(findTestById(graphFetchSuite, "basicInput")));
         Assert.assertTrue(hasTestPassed(findTestById(graphFetchSuite, "differentInput")));
         Assert.assertTrue(hasTestPassed(findTestById(graphFetchSuite, "dataReferenceOnPerson")));
@@ -758,8 +982,8 @@ public class TestMappingTestRunner
         testFailingTest(findTestById(graphFetchSuite, "dataReferenceFail"), expected1, actual1);
 
         // graphFetchSuite Checked
-        Assert.assertEquals(1, graphFetchCheckedSuite.stream().filter(this::hasTestPassed).collect(Collectors.toList()).size());
-        Assert.assertEquals(1, graphFetchCheckedSuite.stream().filter(e -> !this.hasTestPassed(e)).collect(Collectors.toList()).size());
+        Assert.assertEquals(1, graphFetchCheckedSuite.count(this::hasTestPassed));
+        Assert.assertEquals(1, graphFetchCheckedSuite.count(e -> !this.hasTestPassed(e)));
         String e = "{}";
         String a = "{\n" +
                 "  \"defects\": [],\n" +
@@ -789,7 +1013,7 @@ public class TestMappingTestRunner
         AssertionStatus status = testExecuted.assertStatuses.get(0);
         if (status instanceof EqualToJsonAssertFail)
         {
-            EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail)status;
+            EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status;
             JsonAssert.assertJsonEquals(expected, equalToJsonAssertFail.expected);
             JsonAssert.assertJsonEquals(actual, equalToJsonAssertFail.actual);
         }
@@ -806,7 +1030,7 @@ public class TestMappingTestRunner
 
     private TestExecuted guaranteedTestExecuted(TestResult result)
     {
-        if (result instanceof  TestExecuted)
+        if (result instanceof TestExecuted)
         {
             return (TestExecuted) result;
         }
@@ -815,7 +1039,7 @@ public class TestMappingTestRunner
 
     private boolean hasTestPassed(TestResult result)
     {
-        if (result instanceof  TestExecuted)
+        if (result instanceof TestExecuted)
         {
             return ((TestExecuted) result).testExecutionStatus.equals(TestExecutionStatus.PASS);
         }
@@ -823,4 +1047,3 @@ public class TestMappingTestRunner
     }
 
 }
-

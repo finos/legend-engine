@@ -41,13 +41,19 @@ public class VersionPlanTransformer implements PlanTransformer
     {
         try
         {
-            Class cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
-            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__Extension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+            Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_executionPlan");
+            Method method = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_executionPlan_transformPlan_ExecutionPlan_1__Extension_MANY__ExecutionPlan_1_", Root_meta_pure_executionPlan_ExecutionPlan.class, RichIterable.class, ExecutionSupport.class);
             return method.invoke(null, purePlan, extensions, executionSupport);
         }
-        catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
+        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e)
         {
             throw new RuntimeException(e);
+        }
+        catch (InvocationTargetException e)
+        {
+            Throwable cause = e.getCause();
+            String message = (cause == null) ? null : cause.getMessage();
+            throw (message == null) ? new RuntimeException(e) : new RuntimeException(message, e);
         }
     }
 }

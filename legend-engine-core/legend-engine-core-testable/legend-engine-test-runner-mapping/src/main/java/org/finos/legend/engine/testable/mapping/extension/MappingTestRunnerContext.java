@@ -17,127 +17,90 @@ package org.finos.legend.engine.testable.mapping.extension;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 
-import java.util.List;
 import java.util.Map;
 
+/**
+ * Immutable per-suite context for {@link MappingTestRunner}: the compiled and
+ * protocol views of the suite plus the loaded plan-generation extensions.
+ * Holding no mutable state, it is safe to share across threads; plans and
+ * connections are managed by the session (see {@code MappingTestRunner}'s
+ * class Javadoc for the plan management strategy).
+ */
 class MappingTestRunnerContext
 {
     private final PureModel pureModel;
     private final PureModelContextData pureModelContextData;
     private final MutableList<PlanTransformer> executionPlanTransformers;
-    private final ConnectionVisitor<Root_meta_core_runtime_Connection> connectionVisitor;
     private final Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite;
     private final RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions;
-    private final org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping;
-    private final PlanExecutor.ExecuteArgsBuilder executeBuilder;
+    private final Mapping mapping;
     private final Map<String, DataElement> dataElementIndex;
-    private SingleExecutionPlan plan;
-    private List<String> debug;
-    private List<Connection> connections;
 
-    public MappingTestRunnerContext(Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping, PureModel pureModel, PureModelContextData pureModelContextData, MutableList<PlanTransformer> executionPlanTransformers,
-                                    ConnectionVisitor<Root_meta_core_runtime_Connection> connectionVisitor, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions)
+    MappingTestRunnerContext(Root_meta_pure_mapping_metamodel_MappingTestSuite metamodelTestSuite, Mapping mapping, PureModel pureModel, PureModelContextData pureModelContextData, MutableList<PlanTransformer> executionPlanTransformers, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions)
     {
         this.pureModel = pureModel;
         this.pureModelContextData = pureModelContextData;
-        this.dataElementIndex = this.buildDataElementIndex(pureModelContextData);
+        this.dataElementIndex = buildDataElementIndex(pureModelContextData);
         this.mapping = mapping;
         this.executionPlanTransformers = executionPlanTransformers;
-        this.connectionVisitor = connectionVisitor;
         this.metamodelTestSuite = metamodelTestSuite;
         this.routerExtensions = routerExtensions;
-        this.executeBuilder = PlanExecutor.withArgs();
     }
 
     private Map<String, DataElement> buildDataElementIndex(PureModelContextData pureModelContextData)
     {
-        Map<String, DataElement> result = Maps.mutable.empty();
-        pureModelContextData.getElementsOfType(DataElement.class).forEach(d -> result.put(d.getPath(), d));
-        return result;
+        MutableMap<String, DataElement> result = Maps.mutable.empty();
+        pureModelContextData.getElements().forEach(e ->
+        {
+            if (e instanceof DataElement)
+            {
+                result.put(e.getPath(), (DataElement) e);
+            }
+        });
+        return result.asUnmodifiable();
     }
 
-    public void withConnections(List<Connection> connections)
+    PureModel getPureModel()
     {
-        this.connections = connections;
+        return this.pureModel;
     }
 
-    public List<Connection> getConnections()
+    Mapping getMapping()
     {
-        return connections;
+        return this.mapping;
     }
 
-    public PureModel getPureModel()
+    PureModelContextData getPureModelContextData()
     {
-        return pureModel;
+        return this.pureModelContextData;
     }
 
-    public Mapping getMapping()
+    Map<String, DataElement> getDataElementIndex()
     {
-        return mapping;
+        return this.dataElementIndex;
     }
 
-    public PureModelContextData getPureModelContextData()
+    RichIterable<? extends Root_meta_pure_extension_Extension> getRouterExtensions()
     {
-        return pureModelContextData;
+        return this.routerExtensions;
     }
 
-    public PlanExecutor.ExecuteArgsBuilder getExecuteBuilder()
+    MutableList<PlanTransformer> getExecutionPlanTransformers()
     {
-        return executeBuilder;
+        return this.executionPlanTransformers;
     }
 
-    public Map<String, DataElement> getDataElementIndex()
+    Root_meta_pure_mapping_metamodel_MappingTestSuite getMetamodelTestSuite()
     {
-        return dataElementIndex;
-    }
-
-    public SingleExecutionPlan getPlan()
-    {
-        return plan;
-    }
-
-    public List<String> getDebug()
-    {
-        return this.debug;
-    }
-
-    public void withPlan(SingleExecutionPlan plan, List<String> debug)
-    {
-        this.executeBuilder.withPlan(plan);
-        this.debug = debug;
-        this.plan = plan;
-    }
-
-    public ConnectionVisitor<Root_meta_core_runtime_Connection> getConnectionVisitor()
-    {
-        return connectionVisitor;
-    }
-
-    public RichIterable<? extends Root_meta_pure_extension_Extension> getRouterExtensions()
-    {
-        return routerExtensions;
-    }
-
-    public MutableList<PlanTransformer> getExecutionPlanTransformers()
-    {
-        return executionPlanTransformers;
-    }
-
-    public Root_meta_pure_mapping_metamodel_MappingTestSuite getMetamodelTestSuite()
-    {
-        return metamodelTestSuite;
+        return this.metamodelTestSuite;
     }
 }
