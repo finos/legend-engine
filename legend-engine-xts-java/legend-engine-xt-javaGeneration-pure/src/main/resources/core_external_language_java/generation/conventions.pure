@@ -1262,7 +1262,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
 
       meta::json::escape_String_1__String_1_,
       meta::json::fromJsonDeprecated_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
-      meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
+      meta::json::fromJsonNative_String_1__Class_1__JSONDeserializationConfig_1__T_1_,
       meta::json::parseJSON_String_1__JSONElement_1_,
       meta::json::toJsonBeta_Any_MANY__JSONSerializationConfig_1__String_1_
    ]->concatenate($extraProhibitedFunctions)->map(f | pair($f, true))->newMap();

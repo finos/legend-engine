@@ -19,9 +19,9 @@ function meta::json::fromJsonDeprecated<T>(string:String[1], clazz:Class<T>[1]):
     fromJsonDeprecated($string, $clazz, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));
 }
 
-function meta::json::fromJson<T>(string:String[1], clazz:Class<T>[1]):T[1]
+function meta::json::fromJsonNative<T>(string:String[1], clazz:Class<T>[1]):T[1]
 {
-    fromJson($string, $clazz, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));
+    fromJsonNative($string, $clazz, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));
 }
 
 function meta::json::toJsonBeta(instance: Any[*]):String[1]

@@ -209,7 +209,7 @@ public abstract class AbstractTo extends NativeFunction
                 Instance.setValuesForProperty(desConfig, "typeLookup", typeLookup, processorSupport);
                 Instance.setValueForProperty(desConfig, "failOnUnknownProperties", this.repository.newBooleanCoreInstance(false), processorSupport);
 
-                CoreInstance fromJsonToClassFunc = processorSupport.package_getByUserPath("meta::json::fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
+                CoreInstance fromJsonToClassFunc = processorSupport.package_getByUserPath("meta::json::fromJsonNative_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
                 ListIterable<CoreInstance> arguments = Lists.fixedSize.of(
                         ValueSpecificationBootstrap.wrapValueSpecification(this.repository.newStringCoreInstance(jsonNode.toString()), true, processorSupport),
                         ValueSpecificationBootstrap.wrapValueSpecification(targetRawType, true, processorSupport),

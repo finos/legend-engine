@@ -29,7 +29,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleStringTests():Boolean[
 {
    let example = ^SimpleString(string='foo');
    let exampleJson = '{"string":"foo"}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleString));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleString));
 }
 
 Class meta::json::tests::fromJson::SimpleInteger
@@ -41,7 +41,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleIntegerTests():Boolean
 {
    let example = ^SimpleInteger(integer=3);
    let exampleJson = '{"integer":3}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleInteger));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleInteger));
 }
 
 Class meta::json::tests::fromJson::SimpleFloat
@@ -53,7 +53,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleFloatTests():Boolean[1
 {
    let example = ^SimpleFloat(float=3.14);
    let exampleJson = '{"float":3.14}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleFloat));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleFloat));
 }
 
 Class meta::json::tests::fromJson::SimpleBoolean
@@ -65,11 +65,11 @@ function <<test.Test>> meta::json::tests::fromJson::simpleBooleanTests():Boolean
 {
    let trueExample = ^SimpleBoolean(boolean=true);
    let trueExampleJson = '{"boolean":true}';
-   assertLogicallyEqual($trueExample, $trueExampleJson -> fromJson(SimpleBoolean));
+   assertLogicallyEqual($trueExample, $trueExampleJson -> fromJsonNative(SimpleBoolean));
    
    let falseExample = ^SimpleBoolean(boolean=false);
    let falseExampleJson = '{"boolean":false}';
-   assertLogicallyEqual($falseExample, $falseExampleJson -> fromJson(SimpleBoolean));
+   assertLogicallyEqual($falseExample, $falseExampleJson -> fromJsonNative(SimpleBoolean));
 }
 
 Class meta::json::tests::fromJson::SimpleNull
@@ -81,7 +81,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleNullTests():Boolean[1]
 {
    let example = ^SimpleNull(null=[]);
    let exampleJson = '{"null":null}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleNull));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleNull));
 }
 
 Class meta::json::tests::fromJson::SimpleArray
@@ -93,7 +93,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleArrayTests():Boolean[1
 {
    let example = ^SimpleArray(array=['1','2']);
    let exampleJson = '{"array":["1","2"]}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleArray));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleArray));
 }
 
 Enum meta::json::tests::fromJson::TestingEnum
@@ -110,7 +110,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleEnumTests():Boolean[1]
 {
    let example = ^SimpleEnum(enum=TestingEnum.Value1);
    let exampleJson = '{"enum":"meta::json::tests::fromJson::TestingEnum.Value1"}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SimpleEnum));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SimpleEnum));
 }
 
 Class meta::json::tests::fromJson::OptionalField
@@ -122,14 +122,14 @@ function <<test.Test>> meta::json::tests::fromJson::optionalFieldTest_Without():
 {
    let example = ^OptionalField();
    let exampleJson = '{}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(OptionalField));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(OptionalField));
 }
 
 function <<test.Test>> meta::json::tests::fromJson::optionalFieldTest_With():Boolean[1]
 {
    let example = ^OptionalField(field='with');
    let exampleJson = '{"field":"with"}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(OptionalField));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(OptionalField));
 }
 
 Class meta::json::tests::fromJson::ExactlyTwo
@@ -141,7 +141,7 @@ function <<test.Test>> meta::json::tests::fromJson::exactlyTwoTest():Boolean[1]
 {
    let example = ^ExactlyTwo(field=['one','two']);
    let exampleJson = '{"field":["one","two"]}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(ExactlyTwo));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(ExactlyTwo));
 }
 
 Class meta::json::tests::fromJson::Many
@@ -153,7 +153,7 @@ function <<test.Test>> meta::json::tests::fromJson::manyTest():Boolean[1]
 {
    let example = ^Many(field=['one','two','more']);
    let exampleJson = '{"field":["one","two","more"]}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(Many));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(Many));
 }
 
 Class <<access.private>> meta::json::tests::fromJson::Child
@@ -170,7 +170,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleInheritenceTest():Bool
 {  
    let example = ^ExtendedChild(a='a', b=1);
    let exampleJson = '{"a" : "a", "b" : 1}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(ExtendedChild));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(ExtendedChild));
 }   
 
 Class <<access.private>> meta::json::tests::fromJson::Parent
@@ -182,7 +182,7 @@ function <<test.Test>> meta::json::tests::fromJson::simpleCompositionTest():Bool
 {  
    let example = ^Parent(b=^Child(a='a'));
    let exampleJson = '{"b":{"a":"a"}}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(Parent));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(Parent));
 }
 
 Class <<access.private>> meta::json::tests::fromJson::EmptyParent {}
@@ -201,21 +201,21 @@ function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass():Bool
 {  
    let example = ^SS(s='a');
    let exampleJson = '{"s":"a"}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SS));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SS));
 }
 
 function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass2():Boolean[1]
 {  
    let example = ^SSS(s=['a']);
    let exampleJson = '{"s":["a"]}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SSS));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SSS));
 }
 
 function <<test.Test>> meta::json::tests::fromJson::arrayPropertySubclass3():Boolean[1]
 {  
    let example = ^SSS(s=['a','b']);
    let exampleJson = '{"s":["a","b"]}';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(SSS));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(SSS));
 }
 
 Class <<access.private>> meta::json::tests::fromJson::OwnerOfAmbigousChildren
@@ -242,7 +242,7 @@ function <<test.Test>> meta::json::tests::fromJson::ambiguityResolvedByHint():Bo
    let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);
    let example = ^OwnerOfAmbigousChildren(a=^AmbigousChild1(b=10));
    let exampleJson = '{"a" : { "@type": "AmbigousChild1", "b" : 10 } }';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(OwnerOfAmbigousChildren, $config));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(OwnerOfAmbigousChildren, $config));
 }   
 
 function <<test.Test>> meta::json::tests::fromJson::notStrictJson():Boolean[1]
@@ -250,7 +250,7 @@ function <<test.Test>> meta::json::tests::fromJson::notStrictJson():Boolean[1]
    let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false);
    let example = ^OwnerOfAmbigousChildren(a=^AmbigousChild1(b=10));
    let exampleJson = '{"a" : { "@type": "AmbigousChild1", "b" : 10 }, "c" : 42 }';
-   assertLogicallyEqual($example, $exampleJson -> fromJson(OwnerOfAmbigousChildren, $config));
+   assertLogicallyEqual($example, $exampleJson -> fromJsonNative(OwnerOfAmbigousChildren, $config));
 }  
 
 Class <<access.private>> meta::json::tests::fromJson::Assoc_class1
@@ -271,7 +271,7 @@ Association meta::json::tests::fromJson::Assoc1
 
 function <<test.Test>> meta::json::tests::fromJson::associationOneToOne():Any[1]
 {
-   let exampleJson = '{"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}' -> fromJson(Assoc_class1);   
+   let exampleJson = '{"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}' -> fromJsonNative(Assoc_class1);   
 }
 
 Class <<access.private>> meta::json::tests::fromJson::HasAssocProp
@@ -281,7 +281,7 @@ Class <<access.private>> meta::json::tests::fromJson::HasAssocProp
 
 function <<test.Test>> {test.excludePlatform = 'Interpreted'} meta::json::tests::fromJson::associationHasAssocProperty():Any[1]
 {
-   let exampleJson = '{"c": {"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}}' -> fromJson(HasAssocProp);
+   let exampleJson = '{"c": {"a":3,"ASSOC2":{"b":2,"ASSOC1":{"a":3}}}}' -> fromJsonNative(HasAssocProp);
 }
 
 Class <<access.private>> meta::json::tests::fromJson::Assoc_class3 {}
@@ -294,7 +294,7 @@ Association meta::json::tests::fromJson::Assoc2
 
 function <<test.Test>> meta::json::tests::fromJson::associationOptional():Any[1]
 {
-   let exampleJson = '{}' -> fromJson(Assoc_class3);   
+   let exampleJson = '{}' -> fromJsonNative(Assoc_class3);   
 }
 
 Class <<access.private>> meta::json::tests::fromJson::Assoc_class5 {}
@@ -307,8 +307,8 @@ Association meta::json::tests::fromJson::Assoc3
 
 function <<test.Test>> meta::json::tests::fromJson::associationOneToMany():Any[1]
 {
-   '{}' -> fromJson(Assoc_class5);
-   '{"ASSOC6":{"ASSOC5":{}}}' -> fromJson(Assoc_class5);
+   '{}' -> fromJsonNative(Assoc_class5);
+   '{"ASSOC6":{"ASSOC5":{}}}' -> fromJsonNative(Assoc_class5);
 }
 
 Class <<access.private>> meta::json::tests::fromJson::Assoc_class7 {}
@@ -321,6 +321,6 @@ Association meta::json::tests::fromJson::Assoc4
 
 function <<test.Test>> meta::json::tests::fromJson::associationOneToThreeExactly():Any[1]
 {
-   '{"ASSOC8":[{"ASSOC7":{}},{"ASSOC7":{}},{"ASSOC7":{}}]}' -> fromJson(Assoc_class7);
+   '{"ASSOC8":[{"ASSOC7":{}},{"ASSOC7":{}},{"ASSOC7":{}}]}' -> fromJsonNative(Assoc_class7);
 }
 
