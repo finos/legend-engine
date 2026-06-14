@@ -31,7 +31,7 @@ public class JsonExtensionInterpreted extends BaseInterpretedExtension
         super(Tuples.pair("escape_String_1__String_1_", Escape::new),
                 Tuples.pair("parseJSON_String_1__JSONElement_1_", ParseJSON::new),
                 Tuples.pair("equalJsonStrings_String_1__String_1__Boolean_1_", JsonStringsEqual::new),
-                Tuples.pair("fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_", FromJson::new),
+                Tuples.pair("fromJsonNative_String_1__Class_1__JSONDeserializationConfig_1__T_1_", FromJson::new),
                 Tuples.pair("fromJsonDeprecated_String_1__Class_1__JSONDeserializationConfig_1__T_1_", FromJsonDeprecated::new),
                 Tuples.pair("toJsonBeta_Any_MANY__JSONSerializationConfig_1__String_1_", ToJson::new)
         );

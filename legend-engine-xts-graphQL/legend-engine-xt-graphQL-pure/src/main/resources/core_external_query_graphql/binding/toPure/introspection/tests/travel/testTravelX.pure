@@ -6,6 +6,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspe
 {
     let str = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/travel/travelx.json')->toOne();
     let expected = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/travel/travelResult.txt', '\n')->toOne();
-    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    let res = $str->meta::json::fromJsonNative(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
     assertEquals($expected, $res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
 }

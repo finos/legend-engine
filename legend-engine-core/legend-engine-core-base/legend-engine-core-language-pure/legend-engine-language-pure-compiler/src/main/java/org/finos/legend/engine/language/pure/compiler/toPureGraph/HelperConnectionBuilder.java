@@ -48,7 +48,7 @@ public class HelperConnectionBuilder
     public static MutableMap<Class<?>, org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List<Root_meta_pure_metamodel_type_Any_Impl>> processModelInput(ModelStringInput modelInput, CompileContext context, boolean deserializeInstances, ExecutionSupport executionSupport)
     {
         Class<?> _class = context.resolveClass(modelInput._class);
-        RichIterable<?> values = deserializeInstances ? ListIterate.collect(modelInput.instances, i -> core_external_format_json_jsonExtension.Root_meta_json_fromJson_String_1__Class_1__T_1_(cleanInstanceString(i), _class, executionSupport)) : Lists.immutable.withAll(modelInput.instances);
+        RichIterable<?> values = deserializeInstances ? ListIterate.collect(modelInput.instances, i -> core_external_format_json_jsonExtension.Root_meta_json_fromJsonNative_String_1__Class_1__T_1_(cleanInstanceString(i), _class, executionSupport)) : Lists.immutable.withAll(modelInput.instances);
         org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List pureList = new Root_meta_pure_functions_collection_List_Impl<>("");
         pureList._values(values);
         return Maps.mutable.with(_class, pureList);
