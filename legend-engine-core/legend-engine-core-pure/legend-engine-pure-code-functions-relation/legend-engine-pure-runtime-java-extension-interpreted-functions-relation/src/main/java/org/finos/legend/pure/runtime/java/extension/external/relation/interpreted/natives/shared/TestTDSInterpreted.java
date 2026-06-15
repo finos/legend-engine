@@ -27,6 +27,7 @@ import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m3.navigation.enumeration.Enumeration;
 import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -105,6 +106,22 @@ public class TestTDSInterpreted extends TestTDS
         else if (processorSupport.type_subTypeOf(pureType, processorSupport.package_getByUserPath(M3Paths.Number)))
         {
             result = data[rowNum] == null ? ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(_Package.getByUserPath(M3Paths.Number, processorSupport), processorSupport), true, processorSupport) : wrapValueSpecification((data[rowNum] instanceof BigDecimal ? modelRepository.newDecimalCoreInstance((BigDecimal) data[rowNum]) : modelRepository.newFloatCoreInstance(BigDecimal.valueOf((double) data[rowNum]))), true, processorSupport);
+        }
+        else if (processorSupport.instance_instanceOf(pureType, M3Paths.Enumeration))
+        {
+            if (data[rowNum] == null)
+            {
+                result = ValueSpecificationBootstrap.wrapValueSpecification_ResultGenericTypeIsKnown(Lists.mutable.empty(), Type.wrapGenericType(pureType, processorSupport), true, processorSupport);
+            }
+            else
+            {
+                CoreInstance enumValue = Enumeration.findEnum(pureType, (String) data[rowNum]);
+                if (enumValue == null)
+                {
+                    throw new RuntimeException("Unknown enum value '" + data[rowNum] + "' for type '" + pureType._name() + "'");
+                }
+                result = wrapValueSpecification(enumValue, true, processorSupport);
+            }
         }
         else
         {
