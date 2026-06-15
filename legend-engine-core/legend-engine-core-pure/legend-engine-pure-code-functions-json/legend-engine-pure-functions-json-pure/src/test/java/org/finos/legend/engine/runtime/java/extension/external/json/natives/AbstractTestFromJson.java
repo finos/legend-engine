@@ -409,7 +409,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "{\n" +
                 // this json describes a Firm with one employee, but the association states all Firms must have exactly 7 employees.
                 "    let json = '{\"employees\":[{\"employer\":{\"employees\":[{}]}}]}';\n" +
-                "    $json -> fromJson(Firm, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(Firm, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}\n";
         String testFunction = "Association():Any[*]";
         String exceptionMessage = "Error populating property 'employees' on class 'meta::pure::functions::json::tests::Firm': \n" +
@@ -440,7 +440,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function Association():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"firms\": {\"employees\":[{\"employer\":{\"employees\":{}}}]}}';\n" +
-                "    $json -> fromJson(OfficeBuilding, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(OfficeBuilding, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}\n";
         String testFunction = "Association():Any[*]";
         String exceptionMessage = "Error populating property 'firms' on class 'meta::pure::functions::json::tests::OfficeBuilding': \n" +
@@ -476,7 +476,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function Association():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"occupant\": {\"building\": {\"occupant\": {}}, \"employees\":[{\"employer\":{\"employees\":{}}}]}}';\n" +
-                "    $json -> fromJson(OfficeBuilding, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(OfficeBuilding, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}\n";
         String testFunction = "Association():Any[*]";
         String exceptionMessage = "Error populating property 'occupant' on class 'meta::pure::functions::json::tests::OfficeBuilding': \n" +
@@ -502,7 +502,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function mimic():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"check\": \"passes here\", \"bar\": {\"foo\": {\"check\": \"and here\", \"bar\": {}}}}';\n" +
-                "    $json -> fromJson(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunction = "mimic():Any[*]";
         assertPassesExecution(sourceCode, testFunction);
@@ -531,7 +531,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"buildings\": {\"occupant\": {\"building\": {}}}}';\n" +
-                "    $json -> fromJson(Campus, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(Campus, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunction = "foo():Any[*]";
         assertPassesExecution(sourceCode, testFunction);
@@ -556,7 +556,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"str\": \"bar\", \"b\": {\"a\": {\"str\": \"foo\"}}}';\n" +
-                "    let o = $json -> fromJson(C, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    let o = $json -> fromJsonNative(C, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "    assert($o.str == 'bar', |'');\n" +
                 "}";
         String testFunction = "foo():Any[*]";
@@ -583,7 +583,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "{\n" +
                 "    let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);\n\n" +
                 "    let json = '{\"str\": \"foo\", \"b\": {\"a\": {\"str\": \"foo\"}}}';\n" +
-                "    let o = $json -> fromJson(C, $config);\n" +
+                "    let o = $json -> fromJsonNative(C, $config);\n" +
                 "}";
         String testFunction = "foo():Any[*]";
         String expectedException = "Error populating property 'b' on class 'meta::pure::functions::json::tests::C': \n" +
@@ -604,7 +604,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function InRangeToOne():Any[*]\n" +
                 "{\n" +
                 "    let json = '{}';\n" +
-                "    $json -> fromJson(must, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(must, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunction = "InRangeToOne():Any[*]";
         String expectedException = "Error populating property 'testField' on class 'meta::pure::functions::json::tests::must': \n" +
@@ -635,7 +635,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function missing():Any[*]\n" +
                 "{\n" +
                 "    let json = '{}';\n" +
-                "    $json -> fromJson(MissingData, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(MissingData, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "missing():Any[*]";
         String expectedException = "Error populating property 'missing' on class 'meta::pure::functions::json::tests::MissingData': \n" +
@@ -656,7 +656,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "{\n" +
                 "    let json = '{\"testField\": 1,\"secondProperty\":2}';\n" +
                 "    let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);\n" +
-                "    $json -> fromJson(failUnknown, $config);\n" +
+                "    $json -> fromJsonNative(failUnknown, $config);\n" +
                 "}";
         String testFunc = "failUnknown():Any[*]";
         String expectedException = "Property 'secondProperty' can't be found in class meta::pure::functions::json::tests::failUnknown. ";
@@ -676,7 +676,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "{\n" +
                 "  let json = '{\"testField\": 1,\"__TYPE\":\"failUnknown\"}';\n" +
                 "  let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true);\n" +
-                "  $json -> fromJson(failUnknown, $config);\n" +
+                "  $json -> fromJsonNative(failUnknown, $config);\n" +
                 "}";
         String testFunc = "TypeKey():Any[*]";
         String expectedException = "Property '__TYPE' can't be found in class meta::pure::functions::json::tests::failUnknown. ";
@@ -695,7 +695,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{ \"a\": \"fred\" }'->meta::json::fromJson(meta::pure::functions::json::tests::A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{ \"a\": \"fred\" }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  assert(!$json->isEmpty(), |'');\n" +
                 "  assert('fred' == $json.a, |'');\n" +
                 "}";
@@ -721,7 +721,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function go():Any[*]\n" +
                 "{\n" +
                 "  let config = ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true, constraintsHandler=^ConstraintsOverride(constraintsManager=myFunc_Any_1__Any_1_));\n" +
-                "  let json='{ \"a\": \"fred\" }'->meta::json::fromJson(meta::pure::functions::json::tests::A, $config);\n" +
+                "  let json='{ \"a\": \"fred\" }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::A, $config);\n" +
                 "  assert(!$json->isEmpty(), |''); \n" +
                 "  assert('fred' == $json.a, |''); \n" +
                 "}";
@@ -742,7 +742,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{ \"str\": \"fred\", \"a\": {} }'->meta::json::fromJson(meta::pure::functions::json::tests::B, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{ \"str\": \"fred\", \"a\": {} }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::B, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  assert(!$json->isEmpty(), |'');\n" +
                 "  assert('fred' == $json.str, |'');\n" +
                 "}";
@@ -767,7 +767,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{ \"b\": {\"a\": \"fred\" } }'->meta::json::fromJson(meta::pure::functions::json::tests::B, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{ \"b\": {\"a\": \"fred\" } }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::B, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  assert(!$json->isEmpty(), |'');\n" +
                 "  assert('fred' == $json.b.a, |'');\n" +
                 "}";
@@ -792,7 +792,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{ \"b\": {\"a\": \"fred\" } }'->meta::json::fromJson(meta::pure::functions::json::tests::B, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{ \"b\": {\"a\": \"fred\" } }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::B, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  assert(!$json->isEmpty(), |'');\n" +
                 "  assert('fred' == $json.b.a, |'');\n" +
                 "}";
@@ -820,7 +820,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{ \"string\": \"dave\", \"B\": {\"string\": \"fred\", \"A\": { \"string\": \"dave\" } } }'->meta::json::fromJson(meta::pure::functions::json::tests::a, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{ \"string\": \"dave\", \"B\": {\"string\": \"fred\", \"A\": { \"string\": \"dave\" } } }'->meta::json::fromJsonNative(meta::pure::functions::json::tests::a, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         String expectedException = "Error populating property 'B' on class 'meta::pure::functions::json::tests::a': \n" +
@@ -851,7 +851,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "    '" + json + "' -> fromJson(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    '" + json + "' -> fromJsonNative(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -869,7 +869,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function foo():Any[*]\n" +
                 "{\n" +
-                "   let fromJson = '{\"@id\": 1, \"str\": \"one\", \"FOO\": {\"@id\": 1, \"str\": \"two\", \"FOO\": 1}}' -> fromJson(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let fromJson = '{\"@id\": 1, \"str\": \"one\", \"FOO\": {\"@id\": 1, \"str\": \"two\", \"FOO\": 1}}' -> fromJsonNative(Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   assert($fromJson.FOO.FOO == [], |'');\n" +
                 "}";
         String testFunc = "foo():Any[*]";
@@ -894,7 +894,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "  let json = '{\"@id\": 1, \"str\": \"foo\", \"b\": {\"a\": 1}}';\n" +
-                "  let o = $json -> fromJson(_A, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let o = $json -> fromJsonNative(_A, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  let _b = $o.b;\n" +
                 "  assert($_b == $_b.a.b, |'');\n" +
                 "}";
@@ -919,7 +919,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "  let json = '{\"@id\": 1, \"str\": \"foo\", \"two\": {\"one\": 1}}';\n" +
-                "  let one = $json -> fromJson(ClassOne, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let one = $json -> fromJsonNative(ClassOne, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  let two = $one.two;\n" +
                 "  assert($two.one == [], |'');\n" +
                 "}";
@@ -945,7 +945,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "  let json = '{\"str\": \"foo\", \"b\": {}}';\n" +
-                "  let o = $json -> fromJson(A, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let o = $json -> fromJsonNative(A, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "  let _b = $o.b -> toOne();\n" +
                 "  assert($_b == $_b.a.b, |'');\n" +
                 "}";
@@ -974,7 +974,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function foo():Any[*]\n" +
                 "{\n" +
                 "   let json = '{\"a\": [{\"@type\": \"B\", \"float\": 4167}, {\"@type\": \"C\", \"string\": \"foo\"}]}';\n" +
-                "   let o = $json -> fromJson(Parent, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let o = $json -> fromJsonNative(Parent, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   assert(4167.0 == $o.a -> first() -> cast(@B).float, |'');\n" +
                 "}";
         String testFunc = "foo():Any[*]";
@@ -994,7 +994,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "{\n" +
                 "   let config = ^JSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true);\n" +
                 "   let json = '{\"__TYPE\": \"B\", \"float\": 4167}';\n" +
-                "   let o = $json -> fromJson(B, $config);\n" +
+                "   let o = $json -> fromJsonNative(B, $config);\n" +
                 "   assert(4167.0 == $o.float, |'');\n" +
                 "}";
         String testFunc = "foo():Any[*]";
@@ -1015,7 +1015,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function go():Any[*]\n" +
                 "{\n" +
                 "   let json = '{\"a\": {\"float\": 4167}}';\n" +
-                "   let o = $json -> fromJson(Parent, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let o = $json -> fromJsonNative(Parent, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -1031,7 +1031,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  let json='{}'->fromJson(meta::pure::functions::json::tests::a, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{}'->fromJsonNative(meta::pure::functions::json::tests::a, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         String expectedException = "Error populating property 'string' on class 'meta::pure::functions::json::tests::a': \n" +
@@ -1049,7 +1049,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n\n" +
-                "  let json='{\"string\": [\"foo\", \"bar\"]}'->fromJson(meta::pure::functions::json::tests::a, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  let json='{\"string\": [\"foo\", \"bar\"]}'->fromJsonNative(meta::pure::functions::json::tests::a, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -1064,7 +1064,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  '{\"@type\": \"Foo\"}'->fromJson(meta::pure::functions::json::tests::Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  '{\"@type\": \"Foo\"}'->fromJsonNative(meta::pure::functions::json::tests::Foo, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -1084,7 +1084,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  '{\"e\": \"Foo\"}'->fromJson(meta::pure::functions::json::tests::Foo, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  '{\"e\": \"Foo\"}'->fromJsonNative(meta::pure::functions::json::tests::Foo, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -1098,7 +1098,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "Class meta::json::test::Bar {}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  '{\"@type\": \"Foo\"}'->fromJson(meta::json::test::Bar, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  '{\"@type\": \"Foo\"}'->fromJsonNative(meta::json::test::Bar, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         String expectedException = "Could not find a sub-type of \"meta::json::test::Bar\" with name \"Foo\".";
@@ -1112,7 +1112,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "Class meta::json::test::Foo {}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  '[]'->fromJson(meta::json::test::Foo, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "  '[]'->fromJsonNative(meta::json::test::Foo, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         String expectedException = "Can only deserialize root-level JSONObjects i.e. serialized single instances of PURE classes. Cannot deserialize collections of multiple PURE objects.";
@@ -1129,7 +1129,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function go():Any[*]\n" +
                 "{\n" +
-                "  '{\"_type\":\"z\",\"name\":\"bla\"}'->fromJson(meta::json::test::Foo, ^meta::json::JSONDeserializationConfig(failOnUnknownProperties=true, typeKeyName='_type', typeLookup = [pair('z','meta::json::test::Foo')]));\n" +
+                "  '{\"_type\":\"z\",\"name\":\"bla\"}'->fromJsonNative(meta::json::test::Foo, ^meta::json::JSONDeserializationConfig(failOnUnknownProperties=true, typeKeyName='_type', typeLookup = [pair('z','meta::json::test::Foo')]));\n" +
                 "}";
         String testFunc = "go():Any[*]";
         assertPassesExecution(sourceCode, testFunc);
@@ -1151,7 +1151,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJson():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}}'\n->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}}'\n->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight;\n" +
                 "}\n";
         String testFunc = "testUnitToJson():Any[*]";
@@ -1176,7 +1176,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJson():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"myWeight\":[{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5},{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":1}]}'\n->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"myWeight\":[{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5},{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":1}]}'\n->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight->at(0);\n" +
                 "}\n";
         String testFunc = "testUnitToJson():Any[*]";
@@ -1201,7 +1201,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJson():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}}'\n->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}}'\n->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight;\n" +
                 "}\n";
         String testFunc = "testUnitToJson():Any[*]";
@@ -1227,7 +1227,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJsonWithType():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}, \"myOptionalWeight\":[]}'->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":5.5}, \"myOptionalWeight\":[]}'->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight;\n" +
                 "}\n";
         String testFunc = "testUnitToJsonWithType():Any[*]";
@@ -1252,7 +1252,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJsonWithType():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"badtype\",\"exponentValue\":1}],\"value\":5.5}}'->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"badtype\",\"exponentValue\":1}],\"value\":5.5}}'->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight;\n" +
                 "}\n";
         String testFunc = "testUnitToJsonWithType():Any[*]";
@@ -1277,7 +1277,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJsonWithType():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":\"5.5\"}}'->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1}],\"value\":\"5.5\"}}'->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "   $res.myWeight;\n" +
                 "}\n";
         String testFunc = "testUnitToJsonWithType():Any[*]";
@@ -1302,7 +1302,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJsonWithType():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":3}],\"value\":5}}'->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":3}],\"value\":5}}'->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}\n";
         String testFunc = "testUnitToJsonWithType():Any[*]";
         String expectedException = "Error populating property 'myWeight' on class 'A': \n" +
@@ -1326,7 +1326,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "}\n" +
                 "function testUnitToJsonWithType():Any[*]\n" +
                 "{\n" +
-                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1},{\"unitId\":\"pkg::Mass~Gram\",\"exponentValue\":1}],\"value\":5}}'->meta::json::fromJson(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "   let res ='{\"__TYPE\":\"A\",\"myWeight\":{\"unit\":[{\"unitId\":\"pkg::Mass~Kilogram\",\"exponentValue\":1},{\"unitId\":\"pkg::Mass~Gram\",\"exponentValue\":1}],\"value\":5}}'->meta::json::fromJsonNative(A, ^meta::json::JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}\n";
         String testFunc = "testUnitToJsonWithType():Any[*]";
         String expectedException = "Error populating property 'myWeight' on class 'A': \n" +
@@ -1361,7 +1361,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function " + testName + "():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"testField\": " + actualJson + "}';\n" +
-                "    $json -> fromJson(" + testName + ", ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    $json -> fromJsonNative(" + testName + ", ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "}";
         String testFunction = testName + "():Any[*]";
         String exceptionDetails = "".equals(expectedExceptionSnippet) ? "" : ": \n" + expectedExceptionSnippet;
@@ -1386,7 +1386,7 @@ public abstract class AbstractTestFromJson extends AbstractPureTestWithCoreCompi
                 "function " + testName + "():Any[*]\n" +
                 "{\n" +
                 "    let json = '{\"testField\": " + actualJson + "}';\n" +
-                "    let jsonAsPure = $json -> fromJson(" + testName + ", ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
+                "    let jsonAsPure = $json -> fromJsonNative(" + testName + ", ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=false));\n" +
                 "    assertEquals(" + result + ", $jsonAsPure.testField, 'Output does match expected');\n" +
                 "}";
         String testFunction = testName + "():Any[*]";
