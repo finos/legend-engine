@@ -106,6 +106,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension |
 | [ModelJoin](architecture/model-join.md) | Store-agnostic model-level associations: parser, compiler, router, and Relational SQL translation |
 | [Pre-Evaluation (preeval)](architecture/preeval.md) | AST simplification pass that runs before the router: constant folding, let inlining, short-circuiting |
+| [Source Tree Calculation](architecture/source-tree-calculation.md) | calculateSourceTree pipeline and the new-instance operator pattern: intermediate-class handling, edge cases, design alternatives |
 
 ### Guides
 
