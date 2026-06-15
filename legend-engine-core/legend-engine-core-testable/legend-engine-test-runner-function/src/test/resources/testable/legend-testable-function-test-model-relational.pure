@@ -13,12 +13,6 @@ Data data::RelationalData
           'id,legal_name\n' +
           '1,Finos\n' +
           '2,Apple';
-
-    default.firmtable:
-          'id,legalname\n' +
-          '1,Finos\n' +
-          '2,Apple';
-
   }#
 }
 
@@ -29,11 +23,6 @@ Database store::TestDB
   (
     id INTEGER PRIMARY KEY,
     legal_name VARCHAR(200)
-  )
-  Table firmtable
-  (
-    id INTEGER PRIMARY KEY,
-    legalname VARCHAR(200)
   )
   Table PersonTable
   (
