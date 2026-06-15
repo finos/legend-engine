@@ -593,7 +593,25 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                               && !$c->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($ownerPath););
          let setImplSrcClassMatchesOwner = $setImplementation.srcClass->isNotEmpty()
                                               && $setImplementation.srcClass->toOne()->elementToPath() == $ownerPath;
-         assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty(),
+         // Owner can also reach a tree class through inheritance: if any of owner's class-typed
+         // properties returns a class that shares a hierarchy with a non-trivial tree class
+         // (in either direction), the tree is not truly disjoint. For example, when a mapping
+         // constructs a `^PersonB(...)` literal from owner Firm where Firm.employees: Person[*],
+         // PersonB shares hierarchy with Person via inheritance — the legacy fallback's empty
+         // source tree is the correct output and the precondition must stay inert.
+         let ownerClassTypedReturnTypes = $owner->meta::pure::functions::meta::allNestedProperties()
+                                                ->map(p | $p.genericType.rawType)
+                                                ->filter(t | $t->isNotEmpty() && $t->toOne()->instanceOf(Class))
+                                                ->map(t | $t->toOne()->cast(@Class<Any>))
+                                                ->removeDuplicates();
+         let hasReachableTreeClass = $nonTrivialTreeClasses->exists(c | let cPath = $c->elementToPath();
+                                                                        let cGenPaths = $c->getAllTypeGeneralisations()->map(t | $t->elementToPath());
+                                                                        $ownerClassTypedReturnTypes->exists(r | let rPath = $r->elementToPath();
+                                                                                                                $rPath == $cPath
+                                                                                                                || $cGenPaths->contains($rPath)
+                                                                                                                || $r->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($cPath););
+                                                                       );
+         assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty() || $hasReachableTreeClass,
                 |'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $nonTrivialTreeClasses->at(0)->elementToPath() + ' - cannot build path back to owner.');
 
          // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
