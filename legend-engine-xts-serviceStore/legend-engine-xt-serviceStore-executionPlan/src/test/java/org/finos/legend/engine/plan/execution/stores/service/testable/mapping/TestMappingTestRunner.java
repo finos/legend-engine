@@ -21,9 +21,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.junit.Assert;
@@ -263,12 +263,26 @@ public class TestMappingTestRunner
 
     private TestExecuted guaranteedTestExecuted(TestResult result)
     {
-        if (result instanceof  TestExecuted)
+        if (result instanceof TestExecuted)
         {
             return (TestExecuted) result;
         }
-        throw new RuntimeException("test expected to have been executed");
+        String resultString;
+        if (result == null)
+        {
+            resultString = "null";
+        }
+        else
+        {
+            try
+            {
+                resultString = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(result);
+            }
+            catch (Exception ignore)
+            {
+                resultString = result.toString();
+            }
+        }
+        throw new RuntimeException("test expected to have been executed, got: " + resultString);
     }
-
-
 }
