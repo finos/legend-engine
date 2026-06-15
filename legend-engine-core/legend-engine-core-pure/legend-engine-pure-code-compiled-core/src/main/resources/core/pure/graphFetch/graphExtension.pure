@@ -579,11 +579,20 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
          let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
          let treeClasses = $inlinedPropertyTree->meta::pure::graphFetch::collectPropertyTreeClasses()->removeDuplicates();
-         let nonTrivialTreeClasses = $treeClasses->filter(c | $c != $owner
-                                                              && !$owner->getAllTypeGeneralisations()->contains($c)
-                                                              && !$c->getAllTypeGeneralisations()->contains($owner));
+         // Compare classes by element path, not object identity: Pure's lazy evaluation can
+         // produce multiple objects for the same Class. The existing isStrictSubType helper
+         // in this file uses the same path-based form for the same reason. Without this, a
+         // tree containing a supertype-of-owner reference (e.g. _S_Person seen under owner
+         // _S_PersonC, where PersonC extends Person) slips through the hierarchy filter and
+         // the precondition fires for an inheritance-reachable class.
+         let ownerPath          = $owner->elementToPath();
+         let ownerGenPaths      = $owner->getAllTypeGeneralisations()->map(t | $t->elementToPath());
+         let nonTrivialTreeClasses = $treeClasses->filter(c | let cPath = $c->elementToPath();
+                                                              $cPath != $ownerPath
+                                                              && !$ownerGenPaths->contains($cPath)
+                                                              && !$c->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($ownerPath););
          let setImplSrcClassMatchesOwner = $setImplementation.srcClass->isNotEmpty()
-                                              && $setImplementation.srcClass->toOne() == $owner;
+                                              && $setImplementation.srcClass->toOne()->elementToPath() == $ownerPath;
          assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty(),
                 |'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $nonTrivialTreeClasses->at(0)->elementToPath() + ' - cannot build path back to owner.');
 
