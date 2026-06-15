@@ -48,6 +48,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -78,7 +79,7 @@ public class Compile
     @ApiOperation(value = "Loads the model and then compiles. It performs no action. Mostly used for testing")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Prometheus(name = "compile model", doc = "Pure model compilation duration summary")
-    public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    public Response compile(PureModelContext model, @ApiParam("Optional client version. When omitted, falls back to the serializer version if a Pointer, otherwise null.") @QueryParam("clientVersion") String clientVersion, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
@@ -86,7 +87,10 @@ public class Compile
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensions.logAvailableExtensions();
-            Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, identity, null);
+            String effectiveClientVersion = clientVersion != null
+                    ? clientVersion
+                    : (model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null);
+            Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, effectiveClientVersion, identity, null);
             long end = System.currentTimeMillis();
             MetricsHandler.observe("compile model", start, end);
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
