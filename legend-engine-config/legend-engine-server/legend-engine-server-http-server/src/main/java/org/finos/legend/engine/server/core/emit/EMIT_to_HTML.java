@@ -17,6 +17,7 @@ package org.finos.legend.engine.server.core.emit;
 import org.finos.legend.engine.test.emit.EMITModelDiscovery;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -98,7 +99,7 @@ public class EMIT_to_HTML
         String html = buildHTML(descriptors);
         Path output = Paths.get("./target/emit-coverage.html").toAbsolutePath().normalize();
         Files.createDirectories(output.getParent());
-        Files.write(output, html.getBytes());
+        Files.write(output, html.getBytes(StandardCharsets.UTF_8));
         System.out.println("EMIT coverage report written to: " + output);
     }
 
