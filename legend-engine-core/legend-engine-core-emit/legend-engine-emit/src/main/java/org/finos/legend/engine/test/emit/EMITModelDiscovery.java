@@ -67,7 +67,7 @@ public final class EMITModelDiscovery
             Enumeration<URL> urls = classLoader.getResources(normalizedRoot);
             while (urls.hasMoreElements())
             {
-                walkClasspathRoot(urls.nextElement(), result::add);
+                walkRoot(urls.nextElement(), result::add);
             }
             result.sort(null);
             return result;
@@ -111,11 +111,11 @@ public final class EMITModelDiscovery
         return (classLoader == null) ? EMITModelDiscovery.class.getClassLoader() : classLoader;
     }
 
-    private static void walkClasspathRoot(URL url, Consumer<? super Path> consumer)
+    private static void walkRoot(URL url, Consumer<? super Path> consumer)
     {
         if (!"file".equals(url.getProtocol()))
         {
-            throw new UnsupportedOperationException("EMIT discovery currently only supports file: classpath roots, but got: " + url);
+            throw new UnsupportedOperationException("EMIT JUnit discovery currently only supports file: classpath roots, but got: " + url);
         }
         Path root;
         try
@@ -139,4 +139,3 @@ public final class EMITModelDiscovery
         }
     }
 }
-
