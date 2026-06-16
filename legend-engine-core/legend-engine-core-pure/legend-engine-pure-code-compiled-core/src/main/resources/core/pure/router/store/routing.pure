@@ -347,7 +347,7 @@ function <<access.private>> meta::pure::router::store::routing::routeFunctionExp
 
    let res = if([
                   pair(
-                    |$results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue),
+                    |$results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue) && $results.value->toOne()->cast(@InstanceValue).values->notEmpty() && $results.value->toOne()->cast(@InstanceValue).values->forAll(v | !$v->instanceOf(ValueSpecification)),
                       | 
                         let val  = $results.value->toOne()->cast(@InstanceValue).values->map(v | $p->eval($v));
                         let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
