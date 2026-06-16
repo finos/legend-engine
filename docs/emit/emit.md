@@ -522,6 +522,40 @@ EMIT Result: FAILED
   --   PLAN_GENERATION  (0ms) - skipped due to failure in TEST_EXECUTION
 ```
 
+### 5.4 HTML Coverage Report
+
+Beyond per-model JUnit output, EMIT exposes a **read-only HTML coverage
+dashboard** that visualises which models exist in the catalog and which
+features they exercise. It complements §5.2's per-model execution view
+with a catalog-wide one — feature combinations, a heatmap of
+descriptor-to-feature coverage, and a list of taxonomy features that no
+model currently covers (the "coverage gaps" tab).
+
+The dashboard ships in two interchangeable forms, both backed by the
+same renderer:
+
+| Form | How to access | Entry point |
+|---|---|---|
+| **REST endpoint** | `GET /api/emit/html` on a running server | `EMIT.java` JAX-RS handler |
+| **CLI** | Writes `./target/emit-coverage.html` | `EMIT_to_HTML#main(String[])` |
+
+Both invoke an identical pipeline and produce the same HTML for the same
+classpath:
+
+```
+EMITModelDiscovery.findDescriptorsViaSPI()       ← java.util.ServiceLoader
+        ↓
+EMIT_to_HTML.buildHTML(descriptors)              ← deterministic HTML render
+```
+
+The "YAML Path" column shows each yaml's **repo-relative source path**
+(rooted at the repo name `legend-engine`) so a reader can copy the
+string straight into their editor to jump to the file. This rendering
+is identical whether the report was produced from an IDE classpath
+(file-URL resources) or from a deployed shaded jar (jar-URL resources)
+— the providers carry the path string explicitly rather than deriving
+it from the URL.
+
 ---
 
 ## 6. Example Catalog Design
@@ -887,13 +921,12 @@ Concrete artifact coordinates are kept in each module's `pom.xml`; listing them 
   and the classpath**, not declared in `emit.yaml` — keeping the test descriptor focused
   on what the model is, and letting an external tool decide which variations to actually
   run.
-- **Catalog search tool**: A web UI or CLI tool for searching and browsing the catalog index
-  (e.g., `emit search --feature relational-mapping --complexity basic`).
+- **Catalog search CLI**: A `emit search --feature relational-mapping --complexity basic`
+  command that filters the same descriptor set the HTML dashboard (§5.4) renders.
+  The dashboard's client-side filter bar already covers the in-browser case; a
+  scriptable CLI would help CI workflows and offline browsing.
 - **Auto-derived metadata**: Introspect `PureModelContextData` to supplement `emit.yaml` tags.
 - **Catalog completeness CI check**: Validate that every model has `emit.yaml`, required fields
   are present, and feature tags come from the controlled vocabulary.
 - **Model diff testing**: Compare EMIT results between two model versions.
 - **Performance benchmarking**: Track phase durations over time.
-- **Model coverage**: Track which model elements are exercised by tests.
-- **Feature coverage matrix**: Auto-generate a matrix showing which features are covered by
-  examples and which lack coverage, helping guide the creation of new examples.

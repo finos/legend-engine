@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.test.emit.junit;
+package org.finos.legend.engine.test.emit;
+
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -24,20 +26,23 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-final class EMITModelDiscovery
+public final class EMITModelDiscovery
 {
+    private static final String EMIT_YAML_SUFFIX = ".emit.yaml";
+
     private EMITModelDiscovery()
     {
     }
 
-    static Path findEmitYaml(String classpathRoot, String name)
+    public static Path findEmitYaml(String classpathRoot, String name)
     {
         String normalizedRoot = normalizeRoot(classpathRoot);
         ClassLoader classLoader = getClassLoader();
-        URL url = classLoader.getResource(normalizedRoot + "/" + name + ".emit.yaml");
+        URL url = classLoader.getResource(normalizedRoot + "/" + name + EMIT_YAML_SUFFIX);
         if (url == null)
         {
             return null;
@@ -52,7 +57,7 @@ final class EMITModelDiscovery
         }
     }
 
-    static List<Path> findEmitYamls(String classpathRoot)
+    public static List<Path> findEmitYamls(String classpathRoot)
     {
         String normalizedRoot = normalizeRoot(classpathRoot);
         ClassLoader classLoader = getClassLoader();
@@ -62,7 +67,7 @@ final class EMITModelDiscovery
             Enumeration<URL> urls = classLoader.getResources(normalizedRoot);
             while (urls.hasMoreElements())
             {
-                walkRoot(urls.nextElement(), result::add);
+                walkClasspathRoot(urls.nextElement(), result::add);
             }
             result.sort(null);
             return result;
@@ -71,6 +76,24 @@ final class EMITModelDiscovery
         {
             throw new UncheckedIOException("Failed to enumerate classpath resources under '" + classpathRoot + "'", e);
         }
+    }
+
+    public static List<EMITModelDescriptor> findDescriptorsViaSPI()
+    {
+        List<EMITModelDescriptor> result = new ArrayList<>();
+        for (EMITModelProvider provider : ServiceLoader.load(EMITModelProvider.class))
+        {
+            String module = provider.getModule();
+            for (EMITModelDescriptor descriptor : provider.getDescriptors())
+            {
+                if (module != null && descriptor.getModule() == null)
+                {
+                    descriptor.setModule(module);
+                }
+                result.add(descriptor);
+            }
+        }
+        return result;
     }
 
     private static String normalizeRoot(String classpathRoot)
@@ -88,11 +111,11 @@ final class EMITModelDiscovery
         return (classLoader == null) ? EMITModelDiscovery.class.getClassLoader() : classLoader;
     }
 
-    private static void walkRoot(URL url, Consumer<? super Path> consumer)
+    private static void walkClasspathRoot(URL url, Consumer<? super Path> consumer)
     {
         if (!"file".equals(url.getProtocol()))
         {
-            throw new UnsupportedOperationException("EMIT JUnit discovery currently only supports file: classpath roots, but got: " + url);
+            throw new UnsupportedOperationException("EMIT discovery currently only supports file: classpath roots, but got: " + url);
         }
         Path root;
         try
@@ -107,7 +130,7 @@ final class EMITModelDiscovery
         {
             try (Stream<Path> walk = Files.walk(root))
             {
-                walk.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().endsWith(".emit.yaml")).forEach(consumer);
+                walk.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().endsWith(EMIT_YAML_SUFFIX)).forEach(consumer);
             }
             catch (IOException e)
             {
@@ -116,3 +139,4 @@ final class EMITModelDiscovery
         }
     }
 }
+

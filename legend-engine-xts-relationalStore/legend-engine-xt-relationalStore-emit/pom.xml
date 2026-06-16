@@ -26,7 +26,41 @@
     <name>Legend Engine - XT - Relational Store - EMIT Examples</name>
     <description>Example EMIT (Engine Model Integration Test) models exercising the relational store: parse, compile and execute relational mapping tests against an in-memory H2.</description>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-emit-yamls-into-main-jar</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/legend-engine/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit/src/test/resources/emit-models</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/emit-models</directory>
+                                    <includes>
+                                        <include>**/*.emit.yaml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-emit</artifactId>
+        </dependency>
+
         <!-- EMIT framework + JUnit integration -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

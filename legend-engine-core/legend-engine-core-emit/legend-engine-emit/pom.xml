@@ -25,6 +25,35 @@
     <artifactId>legend-engine-emit</artifactId>
     <name>Legend Engine - Testing - EMIT (Engine Model Integration Test) Framework</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-emit-yamls-into-main-jar</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/legend-engine/legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/test/resources/emit-models</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/resources/emit-models</directory>
+                                    <includes>
+                                        <include>**/*.emit.yaml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <!-- PURE -->
         <dependency>

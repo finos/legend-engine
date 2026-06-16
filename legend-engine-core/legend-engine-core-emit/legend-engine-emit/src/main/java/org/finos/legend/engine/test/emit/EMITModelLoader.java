@@ -27,6 +27,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -43,6 +45,14 @@ public class EMITModelLoader
         EMITModelDescriptor descriptor = YAML.readValue(emitYaml.toFile(), EMITModelDescriptor.class);
         descriptor.setSource(emitYaml.toAbsolutePath().normalize());
         return descriptor;
+    }
+
+    public EMITModelDescriptor parseDescriptor(URL url) throws IOException
+    {
+        try (InputStream in = url.openStream())
+        {
+            return YAML.readValue(in, EMITModelDescriptor.class);
+        }
     }
 
     public EMITSourceSet load(Path emitYaml) throws IOException

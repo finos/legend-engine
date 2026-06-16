@@ -16,6 +16,8 @@ package org.finos.legend.engine.server.core.emit;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.finos.legend.engine.test.emit.EMITModelDiscovery;
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,8 +38,8 @@ public class EMIT
     {
         try
         {
-            List<EMIT_to_HTML.EmitDescriptor> descriptors = EMIT_to_HTML.discoverFromClasspath("emit-models");
-            String html = EMIT_to_HTML.buildHTML(descriptors, "classpath");
+            List<EMITModelDescriptor> descriptors = EMITModelDiscovery.findDescriptorsViaSPI();
+            String html = EMIT_to_HTML.buildHTML(descriptors);
             return Response.status(200).type(MediaType.TEXT_HTML).entity(html).build();
         }
         catch (Exception e)

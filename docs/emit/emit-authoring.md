@@ -493,7 +493,190 @@ classpath; do not put production code in it.
 
 ---
 
-## 10. Closing Coverage Gaps
+## 10. Wiring Yamls into the HTML Coverage Report
+
+By default, yamls under `src/test/resources/emit-models/` are only
+discoverable through the JUnit `@TestFactory` integration (§8) — they
+do **not** show up in the HTML coverage report served at
+`/api/emit/html` or written by `EMIT_to_HTML#main`. To make a module's
+yamls appear in the report, the module has to be wired into the
+`EMITModelProvider` SPI. See `emit.md` §5.4 for the framework-side view;
+this section is the authoring-side workflow.
+
+### 10.1 When you need to do something
+
+| You are… | What's required |
+|---|---|
+| **Adding a yaml to a module that already has a provider** | Edit the provider's `getDescriptors()` list (§10.2). Nothing else. |
+| **Renaming a yaml in a contributing module** | Edit the provider's resource-path string to match the new file name. |
+| **Deleting a yaml from a contributing module** | Remove the corresponding entry from the provider's list. |
+| **Adding the first yaml to a brand-new `-emit` module** | Wire up all four pieces in §10.3. |
+| **Adding a yaml to a module whose fixtures are deliberately test-only** (e.g. the JUnit framework's own self-test fixtures in `legend-engine-emit-junit`) | Nothing |
+
+The currently-contributing modules are:
+
+| Module | Provider class |
+|---|---|
+| `legend-engine-emit` | `org.finos.legend.engine.test.emit.CoreEMITModelProvider` |
+| `legend-engine-emit-tests` | `org.finos.legend.engine.test.emit.tests.CrossFeatureEMITModelProvider` |
+| `legend-engine-xt-relationalStore-emit` | `org.finos.legend.engine.test.emit.relational.RelationalEMITModelProvider` |
+
+### 10.2 Existing module — adding/renaming/deleting a yaml
+
+Edit the two files together in the same commit:
+
+1. **`src/test/resources/emit-models/<your-path>.emit.yaml`** — the yaml
+   itself (add / rename / delete on disk).
+2. **`src/main/java/.../*EMITModelProvider.java`** — update the
+   `EMITModelProviderTool.load(...)` call to match.
+
+The resource-path string follows the convention "repo-relative source
+path, prefixed with the repo name `legend-engine`". For example, a yaml
+at:
+
+```
+legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit/src/test/resources/emit-models/relational-new-feature.emit.yaml
+```
+
+…goes into `RelationalEMITModelProvider.getDescriptors()` as:
+
+```java
+"legend-engine/legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit/src/test/resources/emit-models/relational-new-feature.emit.yaml"
+```
+
+The `maven-resources-plugin` execution in the module's pom already
+matches `src/test/resources/emit-models/**/*.emit.yaml`, so no pom edit
+is needed when adding a yaml — the build will pick the new file up
+automatically.
+
+> **Failure mode.** Forgetting to update the provider is **silent**:
+> the yaml is just absent from the report. The build does **not** fail.
+> The safest habit is to re-run `EMIT_to_HTML#main` (§10.4) after every
+> yaml change and visually confirm the new entry appears in the All
+> Models tab. A per-module test that catches this automatically is
+> listed as a future extension in `emit.md` §9.
+
+The reverse failure (renaming a yaml on disk but leaving the old name
+in the provider's list) **is** loud: at provider construction time you
+get `IllegalStateException: EMIT yaml resource not found on classpath:
+legend-engine/.../old-name.emit.yaml`.
+
+### 10.3 New `-emit` module — full SPI wiring
+
+When standing up a new `-emit` module (see §9) and wanting its yamls in
+the report, four pieces are required.
+
+#### (a) `pom.xml` — compile-scope dep + maven-resources copy
+
+Add a compile-scope dep on `legend-engine-emit` (which carries the
+`EMITModelProvider` interface and the `EMITModelProviderTool` helper):
+
+```xml
+<dependency>
+    <groupId>org.finos.legend.engine</groupId>
+    <artifactId>legend-engine-emit</artifactId>
+</dependency>
+```
+
+And add a `<build><plugins>` block with a `maven-resources-plugin`
+execution that copies the yamls into the main jar at a path mirroring
+their repo-relative source location:
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>copy-emit-yamls-into-main-jar</id>
+                    <phase>process-resources</phase>
+                    <goals><goal>copy-resources</goal></goals>
+                    <configuration>
+                        <!-- Replace <your/module/path> with this module's
+                             path relative to the repo root, e.g.
+                             legend-engine-xts-foo/legend-engine-xt-foo-emit -->
+                        <outputDirectory>${project.build.outputDirectory}/legend-engine/<your/module/path>/src/test/resources/emit-models</outputDirectory>
+                        <resources>
+                            <resource>
+                                <directory>${project.basedir}/src/test/resources/emit-models</directory>
+                                <includes>
+                                    <include>**/*.emit.yaml</include>
+                                </includes>
+                            </resource>
+                        </resources>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+
+The `<outputDirectory>` is the only line that needs per-module
+customisation — every other line is identical across the existing
+contributing modules.
+
+#### (b) `src/main/java/.../YourEMITModelProvider.java`
+
+```java
+package org.finos.legend.engine.test.emit.<yourpkg>;
+
+import org.finos.legend.engine.test.emit.EMITModelProvider;
+import org.finos.legend.engine.test.emit.EMITModelProviderTool;
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
+
+import java.util.List;
+
+public class YourEMITModelProvider implements EMITModelProvider
+{
+    @Override
+    public String getModule()
+    {
+        return "<your-artifact-id>";       // shown in the report's "Module" column
+    }
+
+    @Override
+    public List<EMITModelDescriptor> getDescriptors()
+    {
+        return EMITModelProviderTool.load(
+                YourEMITModelProvider.class.getClassLoader(),
+                "legend-engine/<your/module/path>/src/test/resources/emit-models/<yaml-1>.emit.yaml",
+                "legend-engine/<your/module/path>/src/test/resources/emit-models/<yaml-2>.emit.yaml"
+                // …one entry per yaml; keep this list in sync with the directory
+        );
+    }
+}
+```
+
+#### (c) `src/main/resources/META-INF/services/org.finos.legend.engine.test.emit.EMITModelProvider`
+
+A single line with the provider's FQN:
+
+```
+org.finos.legend.engine.test.emit.<yourpkg>.YourEMITModelProvider
+```
+
+#### (d) Server pom — add a runtime-scope dep
+
+In `legend-engine-config/legend-engine-server/legend-engine-server-http-server/pom.xml`,
+add the new module under the existing EMIT-provider deps so its SPI
+registration lands on the deployed server's runtime classpath:
+
+```xml
+<dependency>
+    <groupId>org.finos.legend.engine</groupId>
+    <artifactId>your-new-artifact-id</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+If your module isn't already in the root `pom.xml`'s
+`<dependencyManagement>` block, add it there too (the existing emit
+entries make a good template).
+
+## 11. Closing Coverage Gaps
 
 When you discover a gap — a bug found in the field, an interaction with no
 example, a feature combination the catalog is missing — the gap-closing
@@ -518,13 +701,13 @@ time.
 
 ---
 
-## 11. Classification and Deduplication Guidelines
+## 12. Classification and Deduplication Guidelines
 
 When harvesting EMIT tests from Studio projects (or adding models to close
 coverage gaps), follow these rules to avoid redundant models and to keep
 the feature metadata accurate.
 
-### 11.1 Classification
+### 12.1 Classification
 
 Every `features` entry must be a `domain:capability` pair from `emit.md`
 §6.2. Classify by examining the `.pure` source for concrete engine
@@ -539,7 +722,7 @@ domains in the feature list (scaffolding = any `scaffolding:*` entry).
 | 3–4 | `intermediate` |
 | 5+ | `advanced` |
 
-### 11.2 Deduplication
+### 12.2 Deduplication
 
 Before adding a model, extract its sorted `features` set and compare it
 against **all** existing `*.emit.yaml` files in the Engine repository.

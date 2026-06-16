@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGen
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.test.emit.EMITModel;
+import org.finos.legend.engine.test.emit.EMITModelDiscovery;
 import org.finos.legend.engine.test.emit.EMITModelLoader;
 import org.finos.legend.engine.test.emit.EMITSourceSet;
 import org.finos.legend.engine.test.emit.EMITTasks;

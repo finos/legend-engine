@@ -36,6 +36,8 @@ public class EMITModelDescriptor
     private final String complexity;
     private final ImmutableList<String> tags;
     private Path source;
+    private String module;
+    private String resourcePath;
 
     private EMITModelDescriptor(String name,
                                 String title,
@@ -126,6 +128,28 @@ public class EMITModelDescriptor
     public void setSource(Path source)
     {
         this.source = source;
+    }
+    
+    @JsonIgnore
+    public String getModule()
+    {
+        return this.module;
+    }
+
+    public void setModule(String module)
+    {
+        this.module = module;
+    }
+
+    @JsonIgnore
+    public String getResourcePath()
+    {
+        return this.resourcePath;
+    }
+
+    public void setResourcePath(String resourcePath)
+    {
+        this.resourcePath = resourcePath;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

@@ -14,23 +14,14 @@
 
 package org.finos.legend.engine.server.core.emit;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.finos.legend.engine.test.emit.EMITModelDiscovery;
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,8 +33,6 @@ import java.util.stream.Collectors;
 
 public class EMIT_to_HTML
 {
-    private static final ObjectMapper YAML_MAPPER = new ObjectMapper(new YAMLFactory());
-
     private static final List<String> FULL_TAXONOMY = Arrays.asList(
             // grammar
             "grammar:association", "grammar:class-inheritance", "grammar:constraint",
@@ -105,118 +94,21 @@ public class EMIT_to_HTML
 
     public static void main(String[] args) throws Exception
     {
-        Path repoRoot = args.length > 0 ? Paths.get(args[0]) : Paths.get(".");
-        List<EmitDescriptor> descriptors = discoverFromFilesystem(repoRoot);
-        String html = buildHTML(descriptors, repoRoot.toString());
-        Path output = repoRoot.resolve("target").resolve("emit-coverage.html");
+        List<EMITModelDescriptor> descriptors = EMITModelDiscovery.findDescriptorsViaSPI();
+        String html = buildHTML(descriptors);
+        Path output = Paths.get("./target/emit-coverage.html").toAbsolutePath().normalize();
         Files.createDirectories(output.getParent());
         Files.write(output, html.getBytes());
-        System.out.println("EMIT coverage report written to: " + output.toAbsolutePath());
+        System.out.println("EMIT coverage report written to: " + output);
     }
 
-    public static List<EmitDescriptor> discoverFromFilesystem(Path repoRoot) throws IOException
-    {
-        List<EmitDescriptor> descriptors = new ArrayList<>();
-        Files.walkFileTree(repoRoot, new SimpleFileVisitor<Path>()
-        {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
-            {
-                if (file.getFileName().toString().endsWith(".emit.yaml"))
-                {
-                    EmitDescriptor descriptor = YAML_MAPPER.readValue(file.toFile(), EmitDescriptor.class);
-                    descriptor.sourcePath = repoRoot.relativize(file).toString().replace('\\', '/');
-                    descriptor.module = inferModule(descriptor.sourcePath);
-                    descriptors.add(descriptor);
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-            {
-                String name = dir.getFileName().toString();
-                if (name.equals(".git") || name.equals("target") || name.equals("node_modules"))
-                {
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
-        return deduplicateByName(descriptors);
-    }
-
-    public static List<EmitDescriptor> discoverFromClasspath(String classpathRoot) throws IOException
-    {
-        List<EmitDescriptor> descriptors = new ArrayList<>();
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        if (cl == null)
-        {
-            cl = EMIT_to_HTML.class.getClassLoader();
-        }
-        java.util.Enumeration<java.net.URL> urls = cl.getResources(
-                classpathRoot.endsWith("/") ? classpathRoot.substring(0, classpathRoot.length() - 1) : classpathRoot);
-        while (urls.hasMoreElements())
-        {
-            java.net.URL url = urls.nextElement();
-            if ("file".equals(url.getProtocol()))
-            {
-                try
-                {
-                    Path root = Paths.get(url.toURI());
-                    if (Files.isDirectory(root))
-                    {
-                        Files.walk(root)
-                                .filter(p -> p.getFileName().toString().endsWith(".emit.yaml"))
-                                .forEach(p ->
-                                {
-                                    try
-                                    {
-                                        EmitDescriptor d = YAML_MAPPER.readValue(p.toFile(), EmitDescriptor.class);
-                                        d.sourcePath = root.relativize(p).toString().replace('\\', '/');
-                                        d.module = "classpath";
-                                        descriptors.add(d);
-                                    }
-                                    catch (IOException e)
-                                    {
-                                        throw new UncheckedIOException(e);
-                                    }
-                                });
-                    }
-                }
-                catch (java.net.URISyntaxException e)
-                {
-                    throw new IOException("Invalid URL: " + url, e);
-                }
-            }
-        }
-        return deduplicateByName(descriptors);
-    }
-
-    private static List<EmitDescriptor> deduplicateByName(List<EmitDescriptor> descriptors)
-    {
-        Map<String, EmitDescriptor> deduped = new LinkedHashMap<>();
-        for (EmitDescriptor d : descriptors)
-        {
-            EmitDescriptor existing = deduped.get(d.name);
-            if (existing == null
-                    || (d.features != null && (existing.features == null || d.features.size() > existing.features.size())))
-            {
-                deduped.put(d.name, d);
-            }
-        }
-        List<EmitDescriptor> result = new ArrayList<>(deduped.values());
-        result.sort(Comparator.comparing(d -> d.name));
-        return result;
-    }
-
-    public static String buildHTML(List<EmitDescriptor> descriptors, String repoContext)
+    public static String buildHTML(List<EMITModelDescriptor> descriptors)
     {
         // Compute data structures
-        Map<String, List<EmitDescriptor>> combinationMap = buildCombinationMap(descriptors);
+        Map<String, List<EMITModelDescriptor>> combinationMap = buildCombinationMap(descriptors);
         Map<String, Integer> featureHeatmap = buildFeatureHeatmap(descriptors);
         Set<String> allFeatures = new TreeSet<>();
-        descriptors.forEach(d -> allFeatures.addAll(d.features != null ? d.features : Collections.emptyList()));
+        descriptors.forEach(d -> allFeatures.addAll(d.getFeatures()));
         Set<String> coveredFeatures = new TreeSet<>(featureHeatmap.keySet());
         List<String> uncoveredFeatures = FULL_TAXONOMY.stream()
                 .filter(f -> !coveredFeatures.contains(f))
@@ -260,14 +152,7 @@ public class EMIT_to_HTML
         sb.append("  <select id=\"storeFilter\" onchange=\"filterAll()\">\n");
         sb.append("    <option value=\"\">All Stores</option>\n");
         Set<String> allStores = new TreeSet<>();
-        descriptors.forEach(d ->
-                {
-                    if (d.stores != null)
-                    {
-                        allStores.addAll(d.stores);
-                    }
-                }
-            );
+        descriptors.forEach(d -> allStores.addAll(d.getStores()));
         for (String store : allStores)
         {
             sb.append("    <option value=\"").append(escapeHtml(store)).append("\">").append(escapeHtml(store)).append("</option>\n");
@@ -297,26 +182,27 @@ public class EMIT_to_HTML
         sb.append("<table class=\"data-table\" id=\"combinationsTable\">\n");
         sb.append("<thead><tr><th>Features</th><th>Models</th><th>Complexity</th><th>Stores</th><th>Module</th></tr></thead>\n");
         sb.append("<tbody>\n");
-        List<Map.Entry<String, List<EmitDescriptor>>> sortedCombos = new ArrayList<>(combinationMap.entrySet());
-        sortedCombos.sort(Comparator.<Map.Entry<String, List<EmitDescriptor>>>comparingInt(e -> -e.getValue().size())
+        List<Map.Entry<String, List<EMITModelDescriptor>>> sortedCombos = new ArrayList<>(combinationMap.entrySet());
+        sortedCombos.sort(Comparator.<Map.Entry<String, List<EMITModelDescriptor>>>comparingInt(e -> -e.getValue().size())
                 .thenComparing(Map.Entry::getKey));
-        for (Map.Entry<String, List<EmitDescriptor>> entry : sortedCombos)
+        for (Map.Entry<String, List<EMITModelDescriptor>> entry : sortedCombos)
         {
-            List<EmitDescriptor> models = entry.getValue();
-            String featuresDisplay = formatFeatureTags(models.get(0).features);
+            List<EMITModelDescriptor> models = entry.getValue();
+            EMITModelDescriptor first = models.get(0);
+            String featuresDisplay = formatFeatureTags(first.getFeatures());
             String modelsDisplay = models.stream()
-                    .map(m -> "<a href=\"#\" onclick=\"showModelDetail('" + escapeJs(m.name) + "'); return false;\" class=\"model-link\">" + escapeHtml(m.name) + "</a>")
+                    .map(m -> "<a href=\"#\" onclick=\"showModelDetail('" + escapeJs(m.getName()) + "'); return false;\" class=\"model-link\">" + escapeHtml(m.getName()) + "</a>")
                     .collect(Collectors.joining(", "));
-            String complexity = models.get(0).complexity != null ? models.get(0).complexity : "—";
-            String stores = models.get(0).stores != null ? String.join(", ", models.get(0).stores) : "—";
-            String module = models.stream().map(m -> m.module != null ? m.module : "—").distinct().collect(Collectors.joining(", "));
-            String dataFeatures = models.get(0).features != null ? String.join(",", models.get(0).features) : "";
-            String dataTags = models.stream().flatMap(m -> m.tags != null ? m.tags.stream() : java.util.stream.Stream.empty()).distinct().collect(Collectors.joining(","));
+            String complexity = first.getComplexity() != null ? first.getComplexity() : "—";
+            String stores = first.getStores().isEmpty() ? "—" : String.join(", ", first.getStores());
+            String module = models.stream().map(EMIT_to_HTML::displayModule).distinct().collect(Collectors.joining(", "));
+            String dataFeatures = String.join(",", first.getFeatures());
+            String dataTags = models.stream().flatMap(m -> m.getTags().stream()).distinct().collect(Collectors.joining(","));
             sb.append("<tr data-features=\"").append(escapeHtml(dataFeatures))
                     .append("\" data-complexity=\"").append(escapeHtml(complexity))
                     .append("\" data-stores=\"").append(escapeHtml(stores))
                     .append("\" data-tags=\"").append(escapeHtml(dataTags))
-                    .append("\" data-models=\"").append(escapeHtml(models.stream().map(m -> m.name).collect(Collectors.joining(","))))
+                    .append("\" data-models=\"").append(escapeHtml(models.stream().map(EMITModelDescriptor::getName).collect(Collectors.joining(","))))
                     .append("\">\n");
             sb.append("  <td class=\"features-cell\">").append(featuresDisplay).append("</td>\n");
             sb.append("  <td>").append(modelsDisplay).append("</td>\n");
@@ -400,24 +286,26 @@ public class EMIT_to_HTML
         sb.append("<table class=\"data-table\" id=\"modelsTable\">\n");
         sb.append("<thead><tr><th>Name</th><th>Title</th><th>Features</th><th>Complexity</th><th>Stores</th><th>Tags</th><th>Module</th><th>YAML Path</th></tr></thead>\n");
         sb.append("<tbody>\n");
-        for (EmitDescriptor d : descriptors)
+        for (EMITModelDescriptor d : descriptors)
         {
-            String dataFeatures = d.features != null ? String.join(",", d.features) : "";
-            String dataTags = d.tags != null ? String.join(",", d.tags) : "";
+            String dataFeatures = String.join(",", d.getFeatures());
+            String dataTags = String.join(",", d.getTags());
+            String displayPath = displayPath(d);
+            String module = displayModule(d);
             sb.append("<tr data-features=\"").append(escapeHtml(dataFeatures))
-                    .append("\" data-complexity=\"").append(escapeHtml(d.complexity != null ? d.complexity : ""))
-                    .append("\" data-stores=\"").append(escapeHtml(d.stores != null ? String.join(",", d.stores) : ""))
+                    .append("\" data-complexity=\"").append(escapeHtml(d.getComplexity() != null ? d.getComplexity() : ""))
+                    .append("\" data-stores=\"").append(escapeHtml(String.join(",", d.getStores())))
                     .append("\" data-tags=\"").append(escapeHtml(dataTags))
-                    .append("\" data-models=\"").append(escapeHtml(d.name))
+                    .append("\" data-models=\"").append(escapeHtml(d.getName()))
                     .append("\">\n");
-            sb.append("  <td><strong>").append(escapeHtml(d.name)).append("</strong></td>\n");
-            sb.append("  <td>").append(escapeHtml(d.title != null ? d.title : "")).append("</td>\n");
-            sb.append("  <td class=\"features-cell\">").append(formatFeatureTags(d.features)).append("</td>\n");
-            sb.append("  <td><span class=\"complexity-badge ").append(d.complexity != null ? d.complexity : "").append("\">").append(escapeHtml(d.complexity != null ? d.complexity : "—")).append("</span></td>\n");
-            sb.append("  <td>").append(d.stores != null ? escapeHtml(String.join(", ", d.stores)) : "—").append("</td>\n");
-            sb.append("  <td class=\"tags-cell\">").append(formatTags(d.tags)).append("</td>\n");
-            sb.append("  <td class=\"module-cell\">").append(escapeHtml(d.module != null ? d.module : "—")).append("</td>\n");
-            sb.append("  <td class=\"path-cell\"><code>").append(escapeHtml(d.sourcePath != null ? d.sourcePath : "—")).append("</code></td>\n");
+            sb.append("  <td><strong>").append(escapeHtml(d.getName())).append("</strong></td>\n");
+            sb.append("  <td>").append(escapeHtml(d.getTitle() != null ? d.getTitle() : "")).append("</td>\n");
+            sb.append("  <td class=\"features-cell\">").append(formatFeatureTags(d.getFeatures())).append("</td>\n");
+            sb.append("  <td><span class=\"complexity-badge ").append(d.getComplexity() != null ? d.getComplexity() : "").append("\">").append(escapeHtml(d.getComplexity() != null ? d.getComplexity() : "—")).append("</span></td>\n");
+            sb.append("  <td>").append(d.getStores().isEmpty() ? "—" : escapeHtml(String.join(", ", d.getStores()))).append("</td>\n");
+            sb.append("  <td class=\"tags-cell\">").append(formatTags(d.getTags())).append("</td>\n");
+            sb.append("  <td class=\"module-cell\">").append(escapeHtml(module)).append("</td>\n");
+            sb.append("  <td class=\"path-cell\"><code>").append(escapeHtml(displayPath.isEmpty() ? "—" : displayPath)).append("</code></td>\n");
             sb.append("</tr>\n");
         }
         sb.append("</tbody></table>\n");
@@ -444,30 +332,27 @@ public class EMIT_to_HTML
         return sb.toString();
     }
 
-    private static Map<String, List<EmitDescriptor>> buildCombinationMap(List<EmitDescriptor> descriptors)
+    private static Map<String, List<EMITModelDescriptor>> buildCombinationMap(List<EMITModelDescriptor> descriptors)
     {
-        Map<String, List<EmitDescriptor>> map = new LinkedHashMap<>();
-        for (EmitDescriptor d : descriptors)
+        Map<String, List<EMITModelDescriptor>> map = new LinkedHashMap<>();
+        for (EMITModelDescriptor d : descriptors)
         {
-            List<String> features = d.features != null ? new ArrayList<>(d.features) : Collections.emptyList();
-            Collections.sort(features);
+            List<String> features = new ArrayList<>(d.getFeatures());
+            features.sort(null);
             String key = String.join(" + ", features);
             map.computeIfAbsent(key, k -> new ArrayList<>()).add(d);
         }
         return map;
     }
 
-    private static Map<String, Integer> buildFeatureHeatmap(List<EmitDescriptor> descriptors)
+    private static Map<String, Integer> buildFeatureHeatmap(List<EMITModelDescriptor> descriptors)
     {
         Map<String, Integer> heatmap = new TreeMap<>();
-        for (EmitDescriptor d : descriptors)
+        for (EMITModelDescriptor d : descriptors)
         {
-            if (d.features != null)
+            for (String f : d.getFeatures())
             {
-                for (String f : d.features)
-                {
-                    heatmap.merge(f, 1, Integer::sum);
-                }
+                heatmap.merge(f, 1, Integer::sum);
             }
         }
         return heatmap;
@@ -510,52 +395,40 @@ public class EMIT_to_HTML
         return String.format("rgba(%d, %d, %d, %.2f)", r, g, b, alpha);
     }
 
-    private static String inferModule(String path)
+    private static String displayModule(EMITModelDescriptor d)
     {
-        String[] parts = path.split("/");
-        for (int i = 0; i < parts.length; i++)
-        {
-            if (parts[i].contains("-emit") && i > 0)
-            {
-                return parts[i];
-            }
-            if (parts[i].equals("legend-engine-emit-tests"))
-            {
-                return parts[i];
-            }
-        }
-        for (String part : parts)
-        {
-            if (part.startsWith("legend-engine"))
-            {
-                return part;
-            }
-        }
-        return "unknown";
+        String module = d.getModule();
+        return module != null ? module : "";
     }
 
-    private static String buildModelJson(List<EmitDescriptor> descriptors)
+    private static String displayPath(EMITModelDescriptor d)
+    {
+        String resourcePath = d.getResourcePath();
+        return resourcePath != null ? resourcePath : "";
+    }
+
+    private static String buildModelJson(List<EMITModelDescriptor> descriptors)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         boolean first = true;
-        for (EmitDescriptor d : descriptors)
+        for (EMITModelDescriptor d : descriptors)
         {
             if (!first)
             {
                 sb.append(",");
             }
             first = false;
-            sb.append("\"").append(escapeJs(d.name)).append("\":{");
-            sb.append("\"name\":\"").append(escapeJs(d.name)).append("\",");
-            sb.append("\"title\":\"").append(escapeJs(d.title != null ? d.title : "")).append("\",");
-            sb.append("\"description\":\"").append(escapeJs(d.description != null ? d.description.replace("\n", "\\n") : "")).append("\",");
-            sb.append("\"features\":").append(jsonList(d.features)).append(",");
-            sb.append("\"stores\":").append(jsonList(d.stores)).append(",");
-            sb.append("\"complexity\":\"").append(escapeJs(d.complexity != null ? d.complexity : "")).append("\",");
-            sb.append("\"tags\":").append(jsonList(d.tags)).append(",");
-            sb.append("\"module\":\"").append(escapeJs(d.module != null ? d.module : "")).append("\",");
-            sb.append("\"path\":\"").append(escapeJs(d.sourcePath != null ? d.sourcePath : "")).append("\"");
+            sb.append("\"").append(escapeJs(d.getName())).append("\":{");
+            sb.append("\"name\":\"").append(escapeJs(d.getName())).append("\",");
+            sb.append("\"title\":\"").append(escapeJs(d.getTitle() != null ? d.getTitle() : "")).append("\",");
+            sb.append("\"description\":\"").append(escapeJs(d.getDescription() != null ? d.getDescription().replace("\n", "\\n") : "")).append("\",");
+            sb.append("\"features\":").append(jsonList(d.getFeatures())).append(",");
+            sb.append("\"stores\":").append(jsonList(d.getStores())).append(",");
+            sb.append("\"complexity\":\"").append(escapeJs(d.getComplexity() != null ? d.getComplexity() : "")).append("\",");
+            sb.append("\"tags\":").append(jsonList(d.getTags())).append(",");
+            sb.append("\"module\":\"").append(escapeJs(displayModule(d))).append("\",");
+            sb.append("\"path\":\"").append(escapeJs(displayPath(d))).append("\"");
             sb.append("}");
         }
         sb.append("}");
@@ -587,38 +460,6 @@ public class EMIT_to_HTML
             return "";
         }
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'").replace("\n", "\\n").replace("\r", "");
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class EmitDescriptor
-    {
-        public String name;
-        public String title;
-        public String description;
-        public List<String> features;
-        public List<String> stores;
-        public String complexity;
-        public List<String> tags;
-        public String sourcePath;
-        public String module;
-
-        @JsonCreator
-        public EmitDescriptor(@JsonProperty("name") String name,
-                              @JsonProperty("title") String title,
-                              @JsonProperty("description") String description,
-                              @JsonProperty("features") List<String> features,
-                              @JsonProperty("stores") List<String> stores,
-                              @JsonProperty("complexity") String complexity,
-                              @JsonProperty("tags") List<String> tags)
-        {
-            this.name = name;
-            this.title = title;
-            this.description = description;
-            this.features = features;
-            this.stores = stores;
-            this.complexity = complexity;
-            this.tags = tags;
-        }
     }
 
     private static final String HTML_HEAD = "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>EMIT Coverage Report</title>\n<style>\n" +

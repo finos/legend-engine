@@ -142,6 +142,7 @@ import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
 import org.finos.legend.engine.server.core.api.Memory;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
+import org.finos.legend.engine.server.core.emit.EMIT;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.pct.PCT;
@@ -354,7 +355,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new Documentation());
 
         // EMIT
-        environment.jersey().register(new org.finos.legend.engine.server.core.emit.EMIT());
+        environment.jersey().register(new EMIT());
 
         // Protocol
         environment.jersey().register(new PureProtocol());
