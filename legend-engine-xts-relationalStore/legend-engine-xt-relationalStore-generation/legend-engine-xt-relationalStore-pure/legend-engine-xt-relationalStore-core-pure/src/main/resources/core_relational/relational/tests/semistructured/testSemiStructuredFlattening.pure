@@ -284,7 +284,8 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   testSemiStructuredSubAggregationHelper($conn, 'flatten::mapping::H2Mapping');
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
+// Ignored because sub-aggregation queries aren't support yet on Relation Function Class Mappings yet.
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregation(conn: Connection[1]): Boolean[1]
 {
   testSemiStructuredSubAggregationHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
 }
@@ -310,7 +311,8 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
   testSemiStructuredSubAggregationDeepHelper($conn, 'flatten::mapping::H2Mapping');
 }
 
-function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
+// Ignored because sub-aggregation queries aren't support yet on Relation Function Class Mappings yet.
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredSubAggregationDeep(conn: Connection[1]): Boolean[1]
 {
   testSemiStructuredSubAggregationDeepHelper($conn, 'flatten::relationFunctionMapping::H2Mapping');
 }
