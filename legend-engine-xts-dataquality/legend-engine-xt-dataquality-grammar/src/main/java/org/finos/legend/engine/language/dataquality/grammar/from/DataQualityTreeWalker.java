@@ -411,6 +411,12 @@ public class DataQualityTreeWalker
                 dataqualityRelationValidation.sourceInformation);
         dataqualityRelationValidation.validations = visitValidations(validationsContext, dataqualityRelationValidation.sourceInformation);
 
+        DataQualityParserGrammar.PersistenceStrategyContext persistenceStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(relationValidationDefinitionContext.persistenceStrategy(), "persistenceStrategy", dataqualityRelationValidation.sourceInformation);
+        if (Objects.nonNull(persistenceStrategyContext))
+        {
+            dataqualityRelationValidation.persistenceStrategy = IDataQualityGrammarParserExtension.parsePersistenceStrategy(persistenceStrategyContext.islandDefinition(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        }
+
         return dataqualityRelationValidation;
     }
 

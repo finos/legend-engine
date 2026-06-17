@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPersistenceStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
@@ -61,6 +62,7 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStr
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPersistenceStrategy;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataSpaceDataQualityExecutionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MappingAndRuntimeDataQualityExecutionContext;
@@ -86,7 +88,6 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -202,10 +203,26 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     LambdaFunction<?> relationValidationQuery = buildRelationLambda(dataqualityRelationValidation.query, compileContext);
                     metamodel._query(relationValidationQuery);
                     metamodel._validations(buildDataQualityRelationValidations(dataqualityRelationValidation.validations, dataqualityRelationValidation.query, relationValidationQuery, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext));
+                    if (dataqualityRelationValidation.persistenceStrategy != null)
+                    {
+                        metamodel._persistenceStrategy(buildPersistenceStrategy(dataqualityRelationValidation.persistenceStrategy, compileContext));
+                    }
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
                 },
                 this::dataQualityRelationValidationPrerequisiteElementsPass
         );
+    }
+
+    private static Root_meta_external_dataquality_DataQualityPersistenceStrategy buildPersistenceStrategy(DataQualityPersistenceStrategy persistenceStrategy, CompileContext context)
+    {
+        return IDataQualityCompilerExtension.getExtensions(context)
+                .map(IDataQualityCompilerExtension::getExtraDataQualityPersistenceStrategyProcessors)
+                .flatMap(List::stream)
+                .map(processor -> processor.value(persistenceStrategy, context))
+                .filter(Objects::nonNull)
+                .findAny()
+                .orElseThrow(() -> new EngineException("Can't compile persistence strategy ", persistenceStrategy.sourceInformation, EngineErrorType.COMPILATION));
+
     }
 
     private Set<PackageableElementPointer> dataQualityRelationComparisonPrerequisiteElementsPass(DataQualityRelationComparison relationComparison, CompileContext compileContext)

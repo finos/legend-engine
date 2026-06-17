@@ -53,6 +53,11 @@ Class meta::external::dataquality::DataQualityRelationValidation extends Package
 {
   query: LambdaFunction<Any>[1];                                         // should return a relation - enforced in compiler
   validations: RelationValidation[*];
+  persistenceStrategy: DataQualityPersistenceStrategy[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::dataquality::DataQualityPersistenceStrategy
+{
 }
 
 Class meta::external::dataquality::RelationValidation

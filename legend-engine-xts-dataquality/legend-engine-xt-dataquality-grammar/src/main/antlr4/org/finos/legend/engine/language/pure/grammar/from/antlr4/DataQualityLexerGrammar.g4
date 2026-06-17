@@ -42,3 +42,6 @@ RECON_SOURCE_HASH_COLUMN:                'sourceHashColumn';
 RECON_TARGET_HASH_COLUMN:                'targetHashColumn';
 RECON_AGGREGATED_HASH:                   'aggregatedHash';
 RECON_EXPECTED_MATCH:                    'expectedMatch';
+
+// -------------------- PERSISTENCE STRATEGY ----------------------------------------------
+PERSISTENCE_STRATEGY:                    'persistenceStrategy';
