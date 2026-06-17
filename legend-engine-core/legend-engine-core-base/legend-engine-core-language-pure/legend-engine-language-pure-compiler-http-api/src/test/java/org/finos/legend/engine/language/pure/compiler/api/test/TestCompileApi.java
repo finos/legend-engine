@@ -16,12 +16,18 @@ package org.finos.legend.engine.language.pure.compiler.api.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentracing.Span;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.m3.relation.RelationType;
@@ -29,9 +35,11 @@ import org.finos.legend.engine.protocol.pure.m3.relation.Column;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -80,7 +88,7 @@ public class TestCompileApi
         try
         {
             PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
-            Object response = compileApi.compile(pureModelContextData, null, null).getEntity();
+            Object response = compileApi.compile(pureModelContextData, null, null, null).getEntity();
             actual = objectMapper.writeValueAsString(response);
             if (compilationResult != null)
             {
@@ -188,6 +196,62 @@ public class TestCompileApi
         Assert.assertEquals("test::SampleProfile", ageColumn.taggedValues.get(0).tag.profile);
         Assert.assertEquals("doc", ageColumn.taggedValues.get(0).tag.value);
         Assert.assertEquals("age documentation", ageColumn.taggedValues.get(0).value);
+    }
+
+    @Test
+    public void testCompileCombinationWithPointersUsesQueryParamClientVersion() throws JsonProcessingException
+    {
+        // Stub loader: succeeds only if Compile.compile() propagated a non-null clientVersion. This is the
+        // assertion path that used to trip the bug (SDLCLoader rejects null clientVersion).
+        ModelLoader loader = new ModelLoader()
+        {
+            @Override
+            public boolean supports(PureModelContext context)
+            {
+                return context instanceof PureModelContextPointer;
+            }
+
+            @Override
+            public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
+            {
+                Assert.assertEquals("Compile endpoint must forward the supplied clientVersion when resolving pointers", "v1_33_0", clientVersion);
+                return PureGrammarParser.newInstance().parseModel("Class loaded::FromPointer { y: Integer[1]; }");
+            }
+
+            @Override
+            public void setModelManager(ModelManager modelManager)
+            {
+            }
+
+            @Override
+            public boolean shouldCache(PureModelContext context)
+            {
+                return false;
+            }
+
+            @Override
+            public PureModelContext cacheKey(PureModelContext context, Identity identity)
+            {
+                return context;
+            }
+        };
+
+        AlloySDLC sdlc = new AlloySDLC();
+        sdlc.groupId = "org.example";
+        sdlc.artifactId = "some-published-model";
+        sdlc.version = "1.0.0";
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlc;
+
+        PureModelContextText text = new PureModelContextText();
+        text.code = "Class my::A { x: String[1]; }";
+
+        PureModelContextCombination combination = new PureModelContextCombination();
+        combination.contexts = Arrays.asList(text, pointer);
+
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST, loader));
+        Object response = api.compile(combination, "v1_33_0", null, null).getEntity();
+        Assert.assertEquals("{\"message\":\"OK\",\"defects\":[]}", objectMapper.writeValueAsString(response));
     }
 
 }
