@@ -196,18 +196,23 @@ jobs:
           MAVEN_OPTS: "-Xmx8g"
         run: mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} -P docker-snapshot,pct-cloud-test
 
-      - name: Store build output artifacts
+      - name: Upload build output
         uses: actions/upload-artifact@v7
         with:
           name: build-output
-          # upload the target directory as it is the output of the build
-          # upload also the m2 repo to store the state of the install step
-          path: |
-            ~/**/target/
-            ~/.m2/repository/org/finos/legend/engine/
+          path: ~/**/target/
           retention-days: 1
           overwrite: true
           include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Upload m2 repository
+        uses: actions/upload-artifact@v7
+        with:
+          name: m2-repo
+          path: ~/.m2/repository/org/finos/legend/engine/
+          retention-days: 1
+          overwrite: true
           if-no-files-found: error
 
       - name: Set Test Matrix
