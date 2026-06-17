@@ -1376,7 +1376,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::bus
    let tree = #{
       Book {
          id,
-         authors($businessDate) {
+         'authors': authors($businessDate) {
             authorId
          }
       }
@@ -1384,5 +1384,5 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::bus
    let query = {|Book.all($businessDate)->filter(b | $b.id == '101')->graphFetch($tree)->serialize($tree)};
    let result = execute($query, meta::relational::tests::milestoning::bookCatalogMap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
 
-   assertJsonStringsEqual('{"authors($businessDate)":[{"authorId":["5001"]}],"id":"101"}', $result);
+   assertJsonStringsEqual('{"authors":[{"authorId":["5001"]}],"id":"101"}', $result);
 }
