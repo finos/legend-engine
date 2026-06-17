@@ -443,6 +443,23 @@ Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheri
    engineType : EngineType[0..1];
 }
 
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Volume
+{
+   book : Book[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Book
+{
+   id      : String[1];
+   authors : Author[*];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::milestoning::inheritance::Author
+{
+   authorId      : String[*];
+   authorEndDate : StrictDate[0..1];
+}
+
 Class  meta::relational::tests::milestoning::inheritance::CarDetails
 {
    time: DateTime[1];
