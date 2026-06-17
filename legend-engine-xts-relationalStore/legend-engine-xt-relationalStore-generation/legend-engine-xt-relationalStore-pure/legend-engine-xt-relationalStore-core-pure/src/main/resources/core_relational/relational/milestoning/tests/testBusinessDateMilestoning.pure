@@ -22,12 +22,14 @@ import meta::relational::functions::sqlstring::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::milestoning::*;
+import meta::pure::graphFetch::execution::*;
 
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inheritance::*;
 import meta::relational::tests::milestoning::businessdate::*;
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::businessdate::setUp():Any[0..1]
@@ -1368,3 +1370,19 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testD
    assertEquals($inlineTds, $derivedTds);
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::businessdate::testGraphFetchMultiPrimitiveOnInlineChild():Boolean[1]
+{
+   let businessDate = %2025-01-01;
+   let tree = #{
+      Book {
+         id,
+         'authors': authors($businessDate) {
+            authorId
+         }
+      }
+   }#;
+   let query = {|Book.all($businessDate)->filter(b | $b.id == '101')->graphFetch($tree)->serialize($tree)};
+   let result = execute($query, meta::relational::tests::milestoning::bookCatalogMap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual('{"authors":[{"authorId":["5001"]}],"id":"101"}', $result);
+}

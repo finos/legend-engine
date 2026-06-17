@@ -377,13 +377,19 @@ function meta::relational::tests::milestoning::initDatabase():Runtime[1]
    executeInDb('DROP TABLE IF EXISTS CarDetails;', $connection);
    executeInDb('DROP TABLE IF EXISTS Bicycles;', $connection);
    executeInDb('DROP TABLE IF EXISTS Jets;', $connection);
+   executeInDb('DROP TABLE IF EXISTS BookTable;', $connection);
+   executeInDb('DROP TABLE IF EXISTS AuthorshipTable;', $connection);
    executeInDb('CREATE TABLE Person (name VARCHAR(100),id INTEGER, PRIMARY KEY(id));', $connection);
    executeInDb('CREATE TABLE Cars (in_z TIMESTAMP,  out_z TIMESTAMP, id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
+   executeInDb('CREATE TABLE BookTable (in_z TIMESTAMP NOT NULL, out_z TIMESTAMP NOT NULL, book_id INTEGER NOT NULL, PRIMARY KEY (in_z, book_id));', $connection);
+   executeInDb('CREATE TABLE AuthorshipTable (in_z TIMESTAMP NOT NULL, out_z TIMESTAMP NOT NULL, author_child_id INTEGER NOT NULL, book_id INTEGER NOT NULL, author_type CHAR(3) NOT NULL, author_end_d TIMESTAMP, PRIMARY KEY (in_z, author_child_id, book_id, author_type));', $connection);
    executeInDb('CREATE TABLE CarDetails (id INTEGER PRIMARY KEY,  time TIMESTAMP);', $connection);
    executeInDb('CREATE TABLE Bicycles (in_z TIMESTAMP, out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
    executeInDb('CREATE TABLE Jets (in_z TIMESTAMP,  out_z TIMESTAMP,  id INTEGER PRIMARY KEY,  description VARCHAR(200));', $connection);
    executeInDb('INSERT INTO Person (name, id) VALUES (\'Alice\', 1), (\'Bob\', 2), (\'Charlie\', 3), (\'Diana\', 4), (\'Eve\', 5);', $connection);
    executeInDb('INSERT INTO Cars (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 1, \'Sedan\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'SUV\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hatchback\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Convertible\'),\n(\'2020-01-01\', \'2050-01-01\', 5, \'Truck\'),\n(\'2100-01-01\', \'2200-01-01\', 6, \'Nuclear Car\');', $connection);
+   executeInDb('INSERT INTO BookTable (in_z, out_z, book_id) VALUES (\'2020-01-01\', \'9999-12-31\', 101);', $connection);
+   executeInDb('INSERT INTO AuthorshipTable (in_z, out_z, author_child_id, book_id, author_type, author_end_d) VALUES (\'2020-01-01\', \'9999-12-31\', 5001, 101, \'PRI\', NULL), (\'2018-01-01\', \'2019-12-31\', 5002, 101, \'PRI\', NULL), (\'2020-01-01\', \'9999-12-31\', 5003, 101, \'SUP\', NULL);', $connection);
    executeInDb('INSERT INTO CarDetails (id, time) VALUES\n(1, \'2025-01-01\'),\n(2, \'2030-01-01\'),\n(3, \'2035-01-01\'),\n(4, \'2040-01-01\'),\n(5, \'2045-01-01\'),\n(6, \'2150-01-01\');', $connection);
    executeInDb('INSERT INTO Bicycles (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 5, \'Mountain Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Road Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 3, \'Hybrid Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Electric Bike\'),\n(\'2020-01-01\', \'2050-01-01\', 1, \'Folding Bike\'),\n(\'2200-01-01\', \'2300-01-01\', 6, \'Nuclear Bike\');', $connection);
    executeInDb('INSERT INTO Jets (in_z, out_z, id, description) VALUES\n(\'2020-01-01\', \'2050-01-01\', 3, \'Fighter Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 8, \'Water Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 6, \'Hybrid Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 4, \'Supersonic Jet\'),\n(\'2020-01-01\', \'2050-01-01\', 2, \'Transformer Jet\');', $connection);
@@ -2307,7 +2313,7 @@ Database meta::relational::tests::milestoning::db(
       in_z INTEGER,
       out_z INTEGER,
       id INTEGER PRIMARY KEY,
-      description VARCHAR(200) 
+      description VARCHAR(200)
     )
 
     Table Bicycles
@@ -2320,13 +2326,32 @@ Database meta::relational::tests::milestoning::db(
       in_z INTEGER,
       out_z INTEGER,
       id INTEGER PRIMARY KEY,
-      description VARCHAR(200) 
+      description VARCHAR(200)
     )
 
     Table CarDetails
     (
       id INTEGER PRIMARY KEY,
       time TIMESTAMP NOT NULL
+    )
+
+    Table BookTable
+    (
+      milestoning(business(BUS_FROM = in_z, BUS_THRU = out_z, INFINITY_DATE = %9999-12-31T00:00:00.000+0000))
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP,
+      book_id INTEGER PRIMARY KEY
+    )
+
+    Table AuthorshipTable
+    (
+      milestoning(business(BUS_FROM = in_z, BUS_THRU = out_z, INFINITY_DATE = %9999-12-31T00:00:00.000+0000))
+      in_z TIMESTAMP PRIMARY KEY,
+      out_z TIMESTAMP,
+      author_child_id INTEGER PRIMARY KEY,
+      book_id INTEGER PRIMARY KEY,
+      author_type CHAR(3) PRIMARY KEY,
+      author_end_d TIMESTAMP
     )
 
 
@@ -2422,6 +2447,8 @@ Database meta::relational::tests::milestoning::db(
    Join PersonBicycle(Person.id = Bicycles.id)
    Join CarBicycle(Cars.id = Bicycles.id)
    Join Car_CarDetails(Cars.id = CarDetails.id)
+   Join Book_Authorship(BookTable.book_id = AuthorshipTable.book_id
+      and AuthorshipTable.author_type = 'PRI')
 
 
    // Nested Exists tables
@@ -2534,5 +2561,47 @@ Mapping meta::relational::tests::milestoning::derivedPropertyAssociationMileston
       (
          leaves : [db]@Child_Leaf
       )
+   }
+)
+
+###Mapping
+import meta::relational::tests::milestoning::*;
+import meta::relational::tests::milestoning::inheritance::*;
+
+Mapping meta::relational::tests::milestoning::bookCatalogMap
+(
+   *meta::relational::tests::milestoning::inheritance::Volume : Relational
+   {
+      ~primaryKey
+      (
+         [db]BookTable.in_z,
+         [db]BookTable.book_id
+      )
+      ~mainTable [db]BookTable
+      book() Inline[book_impl]
+   }
+
+   *meta::relational::tests::milestoning::inheritance::Book [book_impl] : Relational
+   {
+      ~primaryKey
+      (
+         [db]BookTable.in_z,
+         [db]BookTable.book_id
+      )
+      ~mainTable [db]BookTable
+      id      : toString([db]BookTable.book_id),
+      authors() Inline[author_impl]
+   }
+
+   meta::relational::tests::milestoning::inheritance::Author [author_impl] : Relational
+   {
+      ~primaryKey
+      (
+         [db]BookTable.in_z,
+         [db]BookTable.book_id
+      )
+      ~mainTable [db]BookTable
+      authorId      : toString([db]@Book_Authorship | AuthorshipTable.author_child_id),
+      authorEndDate : datePart([db]@Book_Authorship | AuthorshipTable.author_end_d)
    }
 )

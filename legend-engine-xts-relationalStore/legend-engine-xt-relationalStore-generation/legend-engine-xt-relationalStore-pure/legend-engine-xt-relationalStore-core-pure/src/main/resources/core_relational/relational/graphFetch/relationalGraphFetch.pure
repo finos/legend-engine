@@ -769,7 +769,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
    let pureToSqlState = defaultState($mapping, $inScopeVars);
    let base           = $setImpls->buildBaseQueryForChild($pureToSqlState, $mc, $extensions, $debug);
 
-   let res = if ($isQualified,
+   let swc = if ($isQualified,
                 {|
                    let newVars      = newVarsForMilestoningContext($propTree, $inScopeVars);
                    let updatedState = ^$pureToSqlState(inGetterFlow = true, milestoningUseOtherwise = true, qualifierBase=^OperationWithParentPropertyMapping(element = $base), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
@@ -778,9 +778,17 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
                 {|
                    processPropertyMapping($propTree.propertyMapping, $parentTree->typeFromGraphFetchTree().rawType->toOne()->cast(@Class<Any>), $base, ^$pureToSqlState(inGetterFlow = true), JoinType.LEFT_OUTER, '_gftp', ^List<ColumnGroup>(), $debug, $extensions)->cast(@SelectWithCursor)
                 }
-             ).select;
+             );
 
-  ^$res(distinct = true)->pushFilters($extensions);
+   let res = $swc.select;
+   let resWithMilestoneFilters = if ($swc.milestoningContext->isNotEmpty(),
+                                     | let milestoningStrategy = $swc.milestoningContext.currentMilestoningStrategy->toOne();
+                                       let tableFilter         = $milestoningStrategy->getAllMilestonedTableFilter($res, $swc.milestoningContext->toOne(), $pureToSqlState.inScopeVars, $extensions);
+                                       $res->applyMilestoningFilters($tableFilter, getTableToTableIdentifyFunction(), true, $extensions)->cast(@SelectSQLQuery);,
+                                     | $res
+                                    );
+
+  ^$resWithMilestoneFilters(distinct = true)->pushFilters($extensions);
 }
 
 function meta::relational::graphFetch::executionPlan::generateNonPrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping: Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], propertiesToFetch: Property<Nil,Any|*>[*], debug: DebugContext[1], extensions:Extension[*]): SelectSQLQuery[1]
