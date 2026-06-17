@@ -39,13 +39,8 @@ public class Test_Relational_Oracle_UnclassifiedFunctions_PCT extends PCTReportC
             //char
             one("meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_", "\"\nexpected: [0]\nactual:   []\""),
 
-            //base64
-
-
             // hash
             one("meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_", "java.sql.SQLSyntaxErrorException: ORA-00904: \"MD5\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"),
-            one("meta::pure::functions::hash::tests::testSHA1Hash_Function_1__Boolean_1_", "Failed to parse input: null"),
-            one("meta::pure::functions::hash::tests::testSHA256Hash_Function_1__Boolean_1_", "Failed to parse input: null"),
 
             // left
             one("meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_", "\"\nexpected: ['']\nactual:   []\""),

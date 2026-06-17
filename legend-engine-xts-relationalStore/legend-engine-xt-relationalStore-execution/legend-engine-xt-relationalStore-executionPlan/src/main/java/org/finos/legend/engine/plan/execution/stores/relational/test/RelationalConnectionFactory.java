@@ -66,13 +66,13 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             connection.element = relationalInputData.database;
             connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
             LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
-            localH2DatasourceSpecification.disableDatabaseToUpper = true;
             if (relationalInputData.inputType == RelationalInputType.SQL)
             {
                 localH2DatasourceSpecification.testDataSetupSqls = Lists.mutable.of(relationalInputData.data.split("(?<!\\\\);")).collect(r -> r.replace("\\;", ";") + ";");
             }
             else if (relationalInputData.inputType == RelationalInputType.CSV)
             {
+                localH2DatasourceSpecification.disableDatabaseToUpper = true;
                 localH2DatasourceSpecification.testDataSetupCsv = relationalInputData.data;
             }
             else

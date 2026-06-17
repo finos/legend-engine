@@ -26,6 +26,7 @@ import org.finos.legend.engine.test.emit.EMITTasks.ParseResult;
 import org.finos.legend.engine.test.emit.EMITTasks.TestCandidate;
 import org.finos.legend.engine.test.emit.error.EMITAssertionError;
 import org.finos.legend.engine.testable.extension.TestSuiteSession;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -39,22 +40,36 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * JUnit 5 integration for EMIT. Discovers {@code *.emit.yaml} files on the
- * classpath under a given root, eagerly runs load + parse + compile + model
- * generation on each model, then yields one {@link DynamicTest} per granular
- * operation: an Initialization task, a Parsing task, a Compilation task, and
- * a Model Generation task that report the outcome of the eager phases,
- * followed by one task per file-generation spec, artifact-generation
- * candidate, individual test, and service. If an eager phase fails, its task
- * is failing and no subsequent tasks are emitted for that model. Discovery
- * operates on the model-generation-enriched PMCD, so any element produced by
- * a {@code GenerationSpecification} is eligible for the downstream tasks
- * just like a hand-authored element.
+ * classpath under a given root and yields one {@link DynamicTest} per granular
+ * operation on each model: a Load Model Descriptor task, then an Initialization
+ * group (Parsing, Compilation, Model Generation), followed by one task per
+ * file-generation spec, artifact-generation candidate, individual test, and
+ * service, with each test suite's tasks framed by an Open Test Suite and a Close
+ * Session task. Discovery operates on the model-generation-enriched PMCD, so
+ * any element produced by a {@code GenerationSpecification} is eligible for
+ * the downstream tasks just like a hand-authored element.
+ *
+ * <p>Only the descriptor load is eager (the model's container is named after
+ * the descriptor). Parsing, compilation, and model generation run inside their
+ * own tasks: JUnit consumes dynamic-node streams lazily, executing each node
+ * before pulling the next, so each Initialization task's reported duration is
+ * the real cost of that phase, and downstream tasks — which can only be
+ * discovered from the compiled, enriched model — are produced by deferred
+ * stream segments evaluated after the Initialization tasks have run. If a
+ * phase fails, its task fails and no subsequent tasks are emitted for that
+ * model (model-generation failure still emits downstream tasks against the
+ * un-enriched model). The per-phase results are memoized, so a consumer that
+ * materializes the stream without executing the tasks (or executes a single
+ * task out of context, e.g. an IDE re-running one atomic test) triggers the
+ * same work on demand and sees the same tasks; the tasks then simply replay
+ * the memoized outcome.
  *
  * <p>Each dynamic test calls into {@link EMITTasks} for its body, so that
  * the standalone {@code EMITRunner} and this JUnit integration share a single
@@ -316,64 +331,193 @@ public final class EMITTestSuiteBuilder
         }
         String label = (sourceSet.getDescriptor() != null && sourceSet.getDescriptor().getName() != null) ? sourceSet.getDescriptor().getName() : fallbackLabel;
 
-        Stream.Builder<DynamicNode> builder = Stream.builder();
-        builder.add(passingTask(verboseNames, label, "Load Model Descriptor"));
-
-        EMITModel model = initializationTasks(verboseNames, label, sourceSet, builder);
-        if (model != null)
-        {
-            fileArtifactGenTasks(verboseNames, label, model, builder);
-            testTasks(verboseNames, label, model, builder);
-            servicePlanTasks(verboseNames, label, model, builder);
-        }
-        return DynamicContainer.dynamicContainer(label, builder.build());
+        ModelState state = new ModelState(sourceSet);
+        Stream<DynamicNode> children = Stream.concat(
+                Stream.of(passingTask(verboseNames, label, "Load Model Descriptor"), initializationContainer(verboseNames, label, state)),
+                deferred(() -> downstreamNodes(verboseNames, label, state)));
+        return DynamicContainer.dynamicContainer(label, children);
     }
 
-    private static EMITModel initializationTasks(boolean verboseNames, String label, EMITSourceSet sourceSet, Consumer<? super DynamicContainer> containerConsumer)
+    private static DynamicContainer initializationContainer(boolean verboseNames, String label, ModelState state)
     {
         String containerName = "Initialization";
+        Stream<DynamicNode> tasks = Stream.concat(
+                Stream.of(test(state::runParse, verboseNames, label, containerName, "Parsing")),
+                deferred(() -> !state.ensureParsed() ? Stream.<DynamicNode>empty() : Stream.concat(
+                        Stream.of(test(state::runCompile, verboseNames, label, containerName, "Compilation")),
+                        deferred(() -> !state.ensureCompiled()
+                                       ? Stream.<DynamicNode>empty()
+                                       : Stream.<DynamicNode>of(test(state::runModelGeneration, verboseNames, label, containerName, "Model Generation"))))));
+        return DynamicContainer.dynamicContainer(containerName, tasks);
+    }
+
+    private static Stream<DynamicNode> downstreamNodes(boolean verboseNames, String label, ModelState state)
+    {
+        EMITModel model = state.modelForDownstreamDiscovery();
+        if (model == null)
+        {
+            return Stream.empty();
+        }
         Stream.Builder<DynamicNode> builder = Stream.builder();
+        fileArtifactGenTasks(verboseNames, label, model, builder);
+        testTasks(verboseNames, label, model, builder);
+        servicePlanTasks(verboseNames, label, model, builder);
+        return builder.build();
+    }
 
-        ParseResult parseResult;
-        try
+    /**
+     * A lazily built stream segment: the supplier is invoked only when the
+     * returned stream is consumed past the elements preceding it. JUnit
+     * executes each dynamic node as it pulls it from the stream, so a deferred
+     * segment is built only after the tasks before it have executed — which is
+     * what lets downstream task discovery read state the Initialization tasks
+     * produced while running.
+     */
+    private static Stream<DynamicNode> deferred(Supplier<? extends Stream<? extends DynamicNode>> supplier)
+    {
+        return Stream.of(supplier).flatMap(Supplier::get);
+    }
+
+    /**
+     * Memoized parse → compile → model-generation pipeline state for one
+     * model. Each {@code run*} method is the body of the corresponding
+     * Initialization task: the first call performs the work — so the task's
+     * reported duration is the phase's real cost and its failure is the
+     * phase's real failure — and caches the outcome; later calls replay it.
+     * The {@code ensure*} methods drive the same memoized steps without
+     * throwing, so deferred stream segments can decide which downstream tasks
+     * to emit, and so a task executed out of context (e.g. one atomic test
+     * re-run from an IDE without its predecessors) still computes whatever it
+     * needs on demand.
+     *
+     * <p>All state transitions are synchronized, so concurrent access (e.g.
+     * JUnit's parallel execution mode) cannot run a phase twice or observe a
+     * torn outcome: whichever thread arrives first performs the work, and
+     * everyone else blocks and replays the memoized result. Note that under
+     * parallel execution the per-task timing attribution is still degraded —
+     * a deferred segment may end up paying for a phase before that phase's
+     * task runs — so ordered same-thread execution (the JUnit default)
+     * remains the intended mode.
+     */
+    private static final class ModelState
+    {
+        private final EMITSourceSet sourceSet;
+        private boolean parseAttempted;
+        private ParseResult parseResult;
+        private Throwable parseFailure;
+        private boolean compileAttempted;
+        private Throwable compileFailure;
+        private boolean modelGenAttempted;
+        private Throwable modelGenFailure;
+        private EMITModel model;
+
+        private ModelState(EMITSourceSet sourceSet)
         {
-            parseResult = EMITTasks.parse(sourceSet);
-            builder.add(passingTask(verboseNames, label, containerName, "Parsing"));
-        }
-        catch (EMITAssertionError | Exception e)
-        {
-            builder.add(failingTask(e, verboseNames, label, containerName, "Parsing"));
-            containerConsumer.accept(DynamicContainer.dynamicContainer(containerName, builder.build()));
-            return null;
+            this.sourceSet = sourceSet;
         }
 
-        PureModel pureModel;
-        try
+        synchronized void runParse() throws Throwable
         {
-            pureModel = EMITTasks.compile(parseResult.getPmcd());
-            builder.add(passingTask(verboseNames, label, containerName, "Compilation"));
-        }
-        catch (EMITAssertionError | Exception e)
-        {
-            builder.add(failingTask(e, verboseNames, label, containerName, "Compilation"));
-            containerConsumer.accept(DynamicContainer.dynamicContainer(containerName, builder.build()));
-            return null;
+            if (!ensureParsed())
+            {
+                throw this.parseFailure;
+            }
         }
 
-        EMITModel model = new EMITModel(sourceSet, parseResult.getPmcd(), pureModel, parseResult.getPrimarySourceIds());
-        EMITTasks.ModelGenResult modelGenResult;
-        try
+        synchronized boolean ensureParsed()
         {
-            modelGenResult = EMITTasks.runModelGeneration(model);
-            builder.add(passingTask(verboseNames, label, containerName, "Model Generation"));
+            if (!this.parseAttempted)
+            {
+                this.parseAttempted = true;
+                try
+                {
+                    this.parseResult = EMITTasks.parse(this.sourceSet);
+                }
+                catch (EMITAssertionError | Exception e)
+                {
+                    this.parseFailure = e;
+                }
+            }
+            return this.parseFailure == null;
         }
-        catch (EMITAssertionError | Exception e)
+
+        synchronized void runCompile() throws Throwable
         {
-            modelGenResult = null;
-            builder.add(failingTask(e, verboseNames, label, containerName, "Model Generation"));
+            if (!ensureCompiled())
+            {
+                throw (this.compileFailure != null) ? this.compileFailure : this.parseFailure;
+            }
         }
-        containerConsumer.accept(DynamicContainer.dynamicContainer(containerName, builder.build()));
-        return ((modelGenResult == null) || (modelGenResult.getNewModel() == null)) ? model : modelGenResult.getNewModel();
+
+        synchronized boolean ensureCompiled()
+        {
+            if (!this.compileAttempted)
+            {
+                this.compileAttempted = true;
+                if (ensureParsed())
+                {
+                    try
+                    {
+                        PureModel pureModel = EMITTasks.compile(this.parseResult.getPmcd());
+                        this.model = new EMITModel(this.sourceSet, this.parseResult.getPmcd(), pureModel, this.parseResult.getPrimarySourceIds());
+                    }
+                    catch (EMITAssertionError | Exception e)
+                    {
+                        this.compileFailure = e;
+                    }
+                }
+            }
+            return this.model != null;
+        }
+
+        synchronized void runModelGeneration() throws Throwable
+        {
+            if (!ensureCompiled())
+            {
+                throw (this.compileFailure != null) ? this.compileFailure : this.parseFailure;
+            }
+            ensureModelGenerated();
+            if (this.modelGenFailure != null)
+            {
+                throw this.modelGenFailure;
+            }
+        }
+
+        private synchronized void ensureModelGenerated()
+        {
+            if (!this.modelGenAttempted)
+            {
+                this.modelGenAttempted = true;
+                if (ensureCompiled())
+                {
+                    try
+                    {
+                        EMITTasks.ModelGenResult modelGenResult = EMITTasks.runModelGeneration(this.model);
+                        if (modelGenResult.getNewModel() != null)
+                        {
+                            this.model = modelGenResult.getNewModel();
+                        }
+                    }
+                    catch (EMITAssertionError | Exception e)
+                    {
+                        this.modelGenFailure = e;
+                    }
+                }
+            }
+        }
+
+        /**
+         * The model downstream task discovery operates on: the
+         * model-generation-enriched model when generation succeeded, the base
+         * compiled model when generation failed or was not applicable, or
+         * {@code null} when the model never compiled (in which case no
+         * downstream tasks are emitted). Triggers any step not yet run.
+         */
+        synchronized EMITModel modelForDownstreamDiscovery()
+        {
+            ensureModelGenerated();
+            return this.model;
+        }
     }
 
     private static void fileArtifactGenTasks(boolean verboseNames, String label, EMITModel model, Consumer<? super DynamicContainer> containerConsumer)
@@ -420,12 +564,17 @@ public final class EMITTestSuiteBuilder
      *       per-suite setup to amortize and no {@link TestSuiteSession} to
      *       open.</li>
      *   <li><b>Suite members</b> are grouped by {@code (testablePath, suiteId)};
-     *       each group opens a single {@link TestSuiteSession} lazily (so
-     *       empty/filtered groups pay no setup) and closes it when its sub-stream
-     *       is exhausted (so every runtime / connection resource the session held
-     *       is released regardless of test outcome). Suite-level setup — plan
-     *       generation, runtime build — is therefore paid once per suite instead
-     *       of once per atomic test.</li>
+     *       each group shares a single {@link TestSuiteSession}, framed by an
+     *       explicit Open Test Suite task — whose reported duration is the suite's
+     *       real setup cost (plan generation, runtime build) and whose failure
+     *       is the suite's setup failure — and a Close Test Suite task that reports
+     *       the cost and outcome of releasing the session's runtime / connection
+     *       resources. Suite-level setup is therefore paid once per suite instead
+     *       of once per atomic test. The open is memoized and on-demand, so an
+     *       atomic test executed without its Open Test Suite predecessor (e.g. a
+     *       single test re-run from an IDE) still opens the session itself; a
+     *       close handler on the group's sub-stream remains as a safety net that
+     *       releases the session if the Close Test Suite task never executes.</li>
      * </ul>
      * Standalone atomic tests are emitted before suite tests.
      */
@@ -455,12 +604,14 @@ public final class EMITTestSuiteBuilder
     {
         TestCandidate head = group.get(0);
         LazyTestSession lazy = new LazyTestSession(head.testablePath, head.suiteId, model);
-        return group.stream()
-                .<DynamicNode>map(candidate -> test(
-                        () -> EMITTasks.assertTestPassed(lazy.get().runAtomicTest(candidate.atomicTestId)),
-                        verboseNames, label, containerName,
-                        candidate.testablePath + " / " + candidate.suiteId + " / " + candidate.atomicTestId))
-                .onClose(lazy::close);
+        String suitePrefix = head.testablePath + " / " + head.suiteId + " / ";
+        Stream<DynamicNode> openTask = Stream.of(test(lazy::open, verboseNames, label, containerName, suitePrefix + "Open Test Suite"));
+        Stream<DynamicNode> atomicTestTasks = group.stream().map(candidate -> test(
+                () -> EMITTasks.assertTestPassed(lazy.get().runAtomicTest(candidate.atomicTestId)),
+                verboseNames, label, containerName,
+                suitePrefix + candidate.atomicTestId));
+        Stream<DynamicNode> closeTask = Stream.of(test(lazy::closeReporting, verboseNames, label, containerName, suitePrefix + "Close Test Suite"));
+        return Stream.concat(openTask, Stream.concat(atomicTestTasks, closeTask)).onClose(lazy::close);
     }
 
     /**
@@ -470,6 +621,13 @@ public final class EMITTestSuiteBuilder
      * outcome rather than retrying. {@link #close} releases the live
      * session if there is one, and is a no-op otherwise so it is safe to
      * register on stream close handlers even when no test ever runs.
+     *
+     * <p>Open and close are synchronized, so concurrent access (e.g. JUnit's
+     * parallel execution mode) cannot double-open (and thus leak) a session
+     * or tear an open against a close. Ordering is still the stream's
+     * responsibility, though: under parallel execution the Close Test Suite
+     * task could run while atomic tests are in flight, so ordered same-thread
+     * execution (the JUnit default) remains the intended mode.
      */
     private static class LazyTestSession
     {
@@ -487,7 +645,7 @@ public final class EMITTestSuiteBuilder
             this.model = model;
         }
 
-        TestSuiteSession<TestResult> get()
+        synchronized TestSuiteSession<TestResult> get()
         {
             if (!this.opened)
             {
@@ -512,7 +670,36 @@ public final class EMITTestSuiteBuilder
             return this.session;
         }
 
-        void close()
+        /**
+         * Task body for the suite's Open Test Suite task: performs (or, if an
+         * atomic test already triggered the on-demand open, replays) the
+         * memoized open, so the task reports the session setup cost and
+         * surfaces any setup failure.
+         */
+        void open()
+        {
+            get();
+        }
+
+        /**
+         * Task body for the suite's Close Test Suite task: closes the session,
+         * reporting the close cost and letting any close failure fail the
+         * task. Aborted (reported as skipped) when there is no live session
+         * to close — because the open failed, or never ran.
+         */
+        synchronized void closeReporting()
+        {
+            TestSuiteSession<TestResult> current = this.session;
+            if (current == null)
+            {
+                Assumptions.abort((this.openError != null) ? "No test session to close (open failed)" : "No test session to close (session was never opened)");
+                return;
+            }
+            this.session = null;
+            current.close();
+        }
+
+        synchronized void close()
         {
             if (this.session != null)
             {
@@ -522,7 +709,7 @@ public final class EMITTestSuiteBuilder
                 }
                 catch (Exception ignored)
                 {
-                    // Best-effort cleanup; surfacing close failures past test completion has no useful destination.
+                    // Best-effort safety net when the Close Test Suite task never executed; failures of a real close are reported by that task.
                 }
                 this.session = null;
             }

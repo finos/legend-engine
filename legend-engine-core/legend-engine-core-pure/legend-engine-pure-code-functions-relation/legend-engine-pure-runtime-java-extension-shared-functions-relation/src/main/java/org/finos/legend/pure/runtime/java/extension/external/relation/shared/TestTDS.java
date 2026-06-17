@@ -353,6 +353,19 @@ public abstract class TestTDS
             }
             return result;
         }
+        else if (processorSupport.instance_instanceOf(type, M3Paths.Enumeration))
+        {
+            // Enumeration values are stored in the DB as strings (the name of the enum value, e.g. "CONTRACT", "FULL_TIME").
+            // The CSV parser surfaces them as DataType.STRING.
+            if (c.dataType() == DataType.STRING)
+            {
+                return data;
+            }
+            else
+            {
+                throw new RuntimeException("Not supported data type :'" + c.dataType() + "' for Pure type: '" + PackageableElement.getUserPathForPackageableElement(type) + "'");
+            }
+        }
         throw new RuntimeException("ERROR. Pure Type: '" + PackageableElement.getUserPathForPackageableElement(type) + "' is not supported yet.");
     }
 

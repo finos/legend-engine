@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-emit</artifactId>
-        <version>4.131.2-SNAPSHOT</version>
+        <version>4.131.4-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-emit-junit</artifactId>
@@ -105,6 +105,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opentest4j</groupId>
+            <artifactId>opentest4j</artifactId>
             <scope>test</scope>
         </dependency>
 

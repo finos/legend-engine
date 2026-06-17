@@ -502,6 +502,8 @@ function <<access.private>> meta::protocols::generation::java::conventionsCorePr
     ->addProvidedType(meta::pure::data::EmbeddedData,'org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData')
     ->addProvidedType(meta::pure::data::DataResolver,'org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver')
     ->addProvidedType(meta::pure::test::assertion::TestAssertion,'org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion')
+	->addProvidedType(meta::pure::data::RelationElementsData,'org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData')
+    ->addProvidedType(meta::pure::data::RelationElement,'org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement')
     ->addProvidedType(meta::pure::functions::io::http::URL, 'java.net.URI')
   ;
 }

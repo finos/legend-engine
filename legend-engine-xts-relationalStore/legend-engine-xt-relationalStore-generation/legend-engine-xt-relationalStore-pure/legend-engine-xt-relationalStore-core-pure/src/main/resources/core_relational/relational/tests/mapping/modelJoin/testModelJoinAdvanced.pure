@@ -83,12 +83,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".CITY = "firmtable_0".CITY and "persontable_0".COUNTRY = "firmtable_0".COUNTRY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -161,12 +162,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".CITY = "headquarterstable_0".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -228,14 +230,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("departmenttable_0".ID = "projecttable_0".DEPTID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Project Name\'\n' +
-            '   Apple,TDSNull\n' +
-            '   Apple,ProjectY\n' +
-            '   Apple,ProjectX\n' +
-            '   Google,ProjectZ\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Project Name'->descending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Project Name'
+       Apple, TDSNull
+       Apple, ProjectY
+       Apple, ProjectX
+       Google, ProjectZ
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Project Name'->descending()])->toString());
 }
 
 // =============================================================================
@@ -285,13 +288,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".ID = "addresstable_0".PERSONID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'First Name\',City\n' +
-            '   Alice,NYC\n' +
-            '   Bob,London\n' +
-            '   Charlie,TDSNull\n' +
-            '#',
-            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'First Name', City
+       Alice, NYC
+       Bob, London
+       Charlie, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -343,11 +347,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "headquarterstable_0".CITY = \'NYC\'';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\'\n' +
-            '   Apple\n' +
-            '#',
-            $result.values->at(0)->toString());
+  assertEquals(
+    #TDS
+       'Legal Name'
+       Apple
+    #->toString(),
+    $result.values->at(0)->toString());
 }
 
 // =============================================================================
@@ -407,12 +412,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".CITY = "root".CITY and "persontable_0".COUNTRY = "root".COUNTRY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -479,12 +485,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".CITY = "headquarterstable_0".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -531,11 +538,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "headquarterstable_0".CITY = \'NYC\'';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\'\n' +
-            '   Apple\n' +
-            '#',
-            $result.values->at(0)->toString());
+  assertEquals(
+    #TDS
+       'Legal Name'
+       Apple
+    #->toString(),
+    $result.values->at(0)->toString());
 }
 
 // =============================================================================
@@ -585,12 +593,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".FIRMID = "root".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -649,12 +658,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".CITY = "root".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -704,13 +714,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".FIRMID = "root".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Bob\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Apple, Bob
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -759,12 +770,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'where "root".AGE > 25';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'First Name\',\'Firm Name\'\n' +
-            '   Alice,Apple\n' +
-            '   Charlie,Google\n' +
-            '#',
-            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'First Name', 'Firm Name'
+       Alice, Apple
+       Charlie, Google
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -826,12 +838,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".FIRMID = "root".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -895,13 +908,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0"."CITY" = "firmtable_0".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -958,13 +972,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("root".ID = "addresstable_0".PERSONID)) as "persontable_0" on ("persontable_0".CITY = "firmtable_0".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1020,13 +1035,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("addresstable_0".CITY = "firmtable_0".CITY)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'First Name\',\'Firm Name\'\n' +
-            '   Alice,Apple\n' +
-            '   Bob,Google\n' +
-            '   Charlie,Google\n' +
-            '#',
-            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'First Name', 'Firm Name'
+       Alice, Apple
+       Bob, Google
+       Charlie, Google
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1075,12 +1091,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("persontable_0".FIRMID = "firmtable_0".ID and "persontable_0".LASTNAME in (\'Smith\', \'Brown\'))';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Charlie\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Charlie
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1142,12 +1159,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'on ("addresstable_0".CITY = "firmtable_0".CITY and "addresstable_0".COUNTRY = "firmtable_0".CITY_1)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'First Name\',\'Firm Name\'\n' +
-            '   Alice,Apple\n' +
-            '   Bob,Google\n' +
-            '#',
-            $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'First Name', 'Firm Name'
+       Alice, Apple
+       Bob, Google
+    #->toString(),
+    $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1208,12 +1226,13 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee First Name\'\n' +
-            '   Apple,Alice\n' +
-            '   Google,Bob\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee First Name'
+       Apple, Alice
+       Google, Bob
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1260,13 +1279,14 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'NYC Employee\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Charlie\n' +
-            '   Google,TDSNull\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'NYC Employee'
+       Apple, Alice
+       Apple, Charlie
+       Google, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
 }
 
 // =============================================================================
@@ -1305,12 +1325,13 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee Count\'\n' +
-            '   Apple,2\n' +
-            '   Google,1\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee Count'
+       Apple, 2
+       Google, 1
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1357,13 +1378,14 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee In NYC\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Charlie\n' +
-            '   Google,TDSNull\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee In NYC'->descending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee In NYC'
+       Apple, Alice
+       Apple, Charlie
+       Google, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee In NYC'->descending()])->toString());
 }
 
 // =============================================================================
@@ -1410,14 +1432,16 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     meta::relational::extension::relationalExtensions()
   );
   
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'NYC Employee\'\n' +
-            '   Apple,Alice\n' +
-            '   Apple,Charlie\n' +
-            '   Google,TDSNull\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'NYC Employee'
+       Apple, Alice
+       Apple, Charlie
+       Google, TDSNull
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
 }
+
 // =============================================================================
 // ToFix: Sub-aggregation (Relational class mappings)
 // =============================================================================
@@ -1462,10 +1486,11 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     'on ("root".ID = "firmtable_1".ID)';
   assertEquals($expectedSql, $result->sql());
 
-  assertEquals( '#TDS\n' +
-            '   \'Legal Name\',\'Employee Count\'\n' +
-            '   Apple,2\n' +
-            '   Google,1\n' +
-            '#',
-            $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
+  assertEquals(
+    #TDS
+       'Legal Name', 'Employee Count'
+       Apple, 2
+       Google, 1
+    #->toString(),
+    $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }

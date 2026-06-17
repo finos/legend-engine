@@ -1789,6 +1789,25 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
    assertSize($resultConnection.testDataSetupSqls, 58);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testTDSRenameExpression():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstName'), col(p|$p.employerID, 'eID')])
+            ->renameColumns([
+                ^Pair<String, String>(first='firstName', second = 'first_name'),
+                ^Pair<String, String>(first='eID', second = 'employer_id')
+            ])
+    }, testJoinTDSMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Relational\n' +
+                  '(\n' +
+                  '  type = TDS[(first_name, String, VARCHAR(200), ""), (employer_id, Integer, INT, "")]\n' +
+                  '  resultColumns = [("first_name", VARCHAR(200)), ("employer_id", INT)]\n' +
+                  '  sql = select "persontable_0"."firstName" as "first_name", "persontable_0"."eID" as "employer_id" from (select "root".FIRSTNAME as "firstName", "root".FIRMID as "eID" from personTable as "root") as "persontable_0"\n' +
+                  '  connection = TestDatabaseConnection(type = "H2")\n' +
+                  ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinOneDBOneExpression():Boolean[1]
 {
     let result = executionPlan({|

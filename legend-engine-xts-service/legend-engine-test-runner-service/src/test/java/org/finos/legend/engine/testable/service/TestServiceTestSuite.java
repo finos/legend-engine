@@ -3207,6 +3207,20 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testRelationalServiceWithBinaryAndVarbinaryTypes()
+    {
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational/", "legend-testable-relational-binary-type-model.pure", "legend-testable-relational-service-binary-type.pure", "service::RelationalServiceWithBinaryTypes");
+        Assert.assertEquals(1, relationalTestResult.size());
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithBinaryTypes");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passedResult = (TestExecuted) testResult;
+        Assert.assertEquals(passedResult.atomicTestId, "test1");
+        Assert.assertEquals(passedResult.testSuiteId, "testSuite1");
+    }
+
+    @Test
     public void testFailingRelationalLegacyServiceSuite()
     {
         // setup

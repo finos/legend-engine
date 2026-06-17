@@ -32,6 +32,7 @@ public class SQLResultDBColumnsMetaData
     private final boolean[] dateColumns;
     private final boolean[] variantColumns;
     private final boolean[] arrayColumns;
+    private final boolean[] binaryColumns;
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
@@ -42,6 +43,7 @@ public class SQLResultDBColumnsMetaData
         this.dateColumns = new boolean[size];
         this.variantColumns = new boolean[size];
         this.arrayColumns = new boolean[size];
+        this.binaryColumns = new boolean[size];
 
         for (int i = 1; i <= size; i++)
         {
@@ -60,6 +62,13 @@ public class SQLResultDBColumnsMetaData
             else if (columnIsOfType(i, Types.ARRAY, "ARRAY"))
             {
                 arrayColumns[i - 1] = true;
+            }
+            else if (columnIsOfType(i, Types.BINARY, "BINARY")
+                   || columnIsOfType(i, Types.VARBINARY, "VARBINARY")
+                   || columnIsOfType(i, Types.LONGVARBINARY, "LONGVARBINARY")
+                   || columnIsOfType(i, Types.BLOB, "BLOB"))
+            {
+                binaryColumns[i - 1] = true;
             }
             // Variant types are not standardized across databases, so we check for common types
             else if (columnIsOfType(i, "JSON", "SEMISTRUCTURED") // duckdb
@@ -86,6 +95,11 @@ public class SQLResultDBColumnsMetaData
     boolean isArrayColumn(int index)
     {
         return arrayColumns[index - 1];
+    }
+
+    boolean isBinaryColumn(int index)
+    {
+        return binaryColumns[index - 1];
     }
 
     boolean isVariantColumn(int index)

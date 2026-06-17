@@ -245,10 +245,13 @@ With the default `testContainers(...)` wiring (see §8), the IDE shows a tree
 per model: a `my-feature-name` container holding a `Load Model Descriptor`
 task, an `Initialization` group (`Parsing`, `Compilation`, `Model
 Generation`), and — as applicable — `Test` (one entry per atomic test, e.g.
-`demo::MyMapping / suite_1 / test_1`), `File/Artifact Generation`, and
-`Service Plan Generation` groups. Each leaf is a real JUnit test, so passes,
-failures, and durations are reported per phase. If something fails, the
-failure message includes the per-phase summary from `EMITResult.getSummary()`.
+`demo::MyMapping / suite_1 / test_1`, with each suite's entries framed by
+`… / Open Test Suite` and `… / Close Test Suite` tasks covering the suite's setup
+and teardown), `File/Artifact Generation`, and `Service Plan Generation`
+groups. Each leaf is a real JUnit test that performs its phase's work when it
+runs, so passes, failures, and durations are reported per phase. If something
+fails, the failure message includes the per-phase summary from
+`EMITResult.getSummary()`.
 
 If the module does not yet have a `*EMITTests` class, see §9.
 
@@ -409,8 +412,10 @@ descriptor is purely a matter of dropping the YAML in.
 
 `testContainers(...)` returns one `DynamicContainer` per model, named after
 the model, with its tasks grouped by phase: a `Load Model Descriptor` task,
-an `Initialization` container (`Parsing`, `Compilation`, `Model Generation`),
-then `File/Artifact Generation`, `Test`, and `Service Plan Generation`
+an `Initialization` container (`Parsing`, `Compilation`, `Model Generation` —
+each phase runs inside its task, so its reported duration is the phase's real
+cost), then `File/Artifact Generation`, `Test` (suite entries framed by
+`Open Test Suite` / `Close Test Suite` tasks), and `Service Plan Generation`
 containers as applicable. IDEs and Surefire render this as a nested tree,
 which reads far better than a flat list once a module has more than a handful
 of models. **This is the recommended entry point.**
