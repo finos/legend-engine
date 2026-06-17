@@ -341,16 +341,7 @@ function <<access.private>> meta::pure::router::store::routing::processClass(c:C
 
 function <<access.private>> meta::pure::router::store::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-   let rawResults = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
-   // processCollection can wrap an ExtendedRoutedValueSpecification inside an InstanceValue
-   // during sub-aggregation state accumulation with relation function class mappings.
-   // Unwrap so downstream code sees the routing artifact directly.
-   let results = $rawResults->map(r |
-       if($r.value->instanceOf(InstanceValue) && $r.value->cast(@InstanceValue).values->size() == 1 && $r.value->cast(@InstanceValue).values->toOne()->instanceOf(ExtendedRoutedValueSpecification),
-          | ^$r(value = $r.value->cast(@InstanceValue).values->toOne()->cast(@ValueSpecification)),
-          | $r
-       )
-   );
+   let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
    let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
    let preLast = $results->last()->toOne();
 
