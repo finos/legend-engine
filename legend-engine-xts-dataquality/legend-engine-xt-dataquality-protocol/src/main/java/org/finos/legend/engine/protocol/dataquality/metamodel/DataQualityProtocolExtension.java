@@ -55,6 +55,8 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(DataQualityRelationComparison.class, "dataQualityRelationComparison")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(DataQualityPersistenceStrategy.class)
                         .build()
         ));
     }

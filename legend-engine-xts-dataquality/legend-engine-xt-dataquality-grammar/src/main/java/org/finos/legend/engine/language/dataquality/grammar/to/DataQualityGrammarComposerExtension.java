@@ -96,7 +96,17 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "{\n" +
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
+                renderPersistenceStrategy(dataqualityRelationValidation, context) +
                 "}";
+    }
+
+    private static String renderPersistenceStrategy(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
+    {
+        if (Objects.isNull(dataqualityRelationValidation.persistenceStrategy))
+        {
+            return "";
+        }
+        return "   persistenceStrategy: " + IDataQualityGrammarComposerExtension.renderPersistenceStrategy(dataqualityRelationValidation.persistenceStrategy, 1, context) + ";\n";
     }
 
     private static String renderDataQualityRelationComparison(DataQualityRelationComparison relationComparison, PureGrammarComposerContext context)

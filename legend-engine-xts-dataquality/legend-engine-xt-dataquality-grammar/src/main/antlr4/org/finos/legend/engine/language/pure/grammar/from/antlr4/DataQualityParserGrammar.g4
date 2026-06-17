@@ -37,6 +37,7 @@ identifier:                             VALID_STRING | STRING
                                         | RECON_TARGET_HASH_COLUMN
                                         | RECON_AGGREGATED_HASH
                                         | RECON_EXPECTED_MATCH
+                                        | PERSISTENCE_STRATEGY
 ;
 
 
@@ -126,6 +127,7 @@ relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotype
                                              (
                                                  relationFunc
                                                  | validations
+                                                 | persistenceStrategy
                                              )*
                                         BRACE_CLOSE
 ;
@@ -154,6 +156,9 @@ validationType:                        VALIDATION_TYPE COLON validationTypeVal S
 validationTypeVal:                     VALIDATION_TYPE_ROW | VALIDATION_TYPE_AGG
 ;
 
+// --------------------------- Persistence Strategy ----------------------------------------------------------
+persistenceStrategy:                   PERSISTENCE_STRATEGY COLON islandDefinition SEMI_COLON
+;
 
 // -------------------- Relation Comparison Definition ------------------------------------
 relationComparisonDefinition:   DATAQUALITYRELATIONCOMPARISON qualifiedName
