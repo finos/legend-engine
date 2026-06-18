@@ -378,7 +378,7 @@ public class MappingTestRunner implements TestRunner
             this.hints = TestReturnTypeHelper.isRelationReturnType(this.context.getMetamodelTestSuite()._query(), pureModel)
                          ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build()
                          : TestConnectionBuildParameters.NONE;
-            this.sharedPlan = computeSharedPlan(closeableConsumer);
+            this.sharedPlan = computeSharedPlan();
         }
 
         /**
@@ -393,7 +393,7 @@ public class MappingTestRunner implements TestRunner
          * ModelStore's singleton connections satisfy it; freshly-built service-store / MongoDB
          * connections, which carry a dynamically allocated local server address, do not.
          */
-        private GeneratedPlan computeSharedPlan(Consumer<? super AutoCloseable> closeableConsumer)
+        private GeneratedPlan computeSharedPlan()
         {
             Collection<String> atomicTestIds = getAtomicTestIds();
             if (atomicTestIds.isEmpty())
@@ -425,7 +425,7 @@ public class MappingTestRunner implements TestRunner
                 GeneratedPlan plan = generatePlan(buildRuntime(planConnections.getOne(), this.context), this.context, this.debug);
                 if (planCloseables != null)
                 {
-                    planCloseables.forEach(closeableConsumer);
+                    registerCloseables(planCloseables);
                     planCloseables = null;
                 }
                 return plan;
