@@ -25,23 +25,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 
 // Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
-// Analogous to meta::relational::tests::projection::aggregation::testSubAggregation
-// but with a relation (~func) class mapping as the root.
-//
-// Lives under meta::relational::tests::mapping::relation::aggregation so that the
-// parent package's <<BeforePackage>> setUp() (relationMappingSetup.pure) runs and
-// creates the personTable / firmTable schema this suite expects ("FIRST NAME"
-// column, no ADDRESSID, etc.). Do NOT move these tests under
-// meta::relational::tests::projection::aggregation — that package's existing
-// BeforePackage installs an incompatible schema (FIRSTNAME / LASTNAME / ADDRESSID)
-// and the two would clobber each other in the shared H2 instance.
-//
-// IMPORTANT: We use the testTds-style helper that runs `execute` AND asserts inside
-// the same function. Returning the TDS to the caller (and asserting in the test
-// body) caused the Pure interpreter's <<test.Test>> runner to fail with
-// "Error during dynamic function evaluation. The type InstanceValue is not
-// compatible with the type Firm" — the runner pre-evaluates lambdas before
-// routing converts them to SQL.
+// Uses testFirmAgg helper to execute+assert in one call (avoids runner pre-evaluation issues).
 function <<access.private>> meta::relational::tests::mapping::relation::aggregation::testFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1], expectedRows:String[*]):Boolean[1]
 {
    let result = execute(
@@ -53,7 +37,6 @@ function <<access.private>> meta::relational::tests::mapping::relation::aggregat
    assertSameElements($expectedRows, $result.rows->map(r|$r.values->makeString(' | ')));
 }
 
-// (1) Average — basic single sub-aggregation.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -62,7 +45,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Average + simple property (kept for explicitness; same shape as test 1).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
 {
    testFirmAgg(
@@ -71,7 +53,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Two sub-aggregations on the same root (count + average).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -80,7 +61,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Sum (NULL for empty groups via LEFT OUTER JOIN).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -89,7 +69,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Max.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -98,12 +77,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Sub-aggregation with a filter inside the collection navigation.
-// TODO(relation-function-subagg): real engine bug — processColumnsInRelationalOperationElements
-// fails to bind the AGE column when the navigation contains a filter, with error
-//   "Found 0 relations that could support the column AGE in the nested SQL select <firmTable subselect>"
-// Resolution requires threading the inner-relation wrapper through the column-lookup path so
-// AGE resolves against personTable rather than the outer firmTable subselect.
+// TODO: filter inside collection navigation — AGE column fails to resolve against inner relation.
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -112,7 +86,6 @@ function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::
    );
 }
 
-// Min.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -121,7 +94,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Count only — single aggregation column with no extra projected properties.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -130,7 +102,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// Top-level if wrapping a sub-aggregation (exercises CASE/WHEN wrapping path).
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -139,13 +110,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-// map + arithmetic then sum (validates expression wrapping inside aggregate).
-// TODO(relation-function-subagg): real engine bug — the inner lambda `$a * 2` is dropped during
-// sub-aggregation processing on the relation-function path: the engine generates `sum(2)` (a
-// constant) instead of `sum(age * 2)`, so each firm's result equals `count(rows) * 2` rather
-// than the true sum. Same query works on the equivalent RootRelationalInstanceSet mapping;
-// bug is specific to processMap/processAggregation when the source is a
-// RelationFunctionInstanceSetImplementation.
+// TODO: map+arithmetic — inner lambda dropped during relation-function sub-aggregation.
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
@@ -154,9 +119,6 @@ function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::
    );
 }
 
-// joinStrings (listagg SQL path). sortBy makes the per-group order deterministic.
-// Empty groups (Firm A, Firm B — no employees with AGE > 25 because of personFunction's filter)
-// surface as TDSNull from H2's LISTAGG over the LEFT OUTER JOIN, not as empty strings.
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
