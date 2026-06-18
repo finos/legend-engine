@@ -3878,16 +3878,11 @@ function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:Func
              |if($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->instanceOf(RelationFunctionInstanceSetImplementation),
                  |let rs = $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@RelationFunctionInstanceSetImplementation)->meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved($extensions);
                   let pk = $rs->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
-                  // addPkForAggregation is called speculatively from processProject for *every* project,
-                  // not just aggregation ones (multi-flatten, primitive-flatten, etc. all hit this).
-                  // If the relation function mapping has no PK (none specified, none inferable),
-                  // skip PK injection and fall through unchanged. Genuine sub-aggregation paths get a
-                  // clear error from addSelfJoin's assertion downstream.
+                  // No PK available — skip PK injection; addSelfJoin will assert downstream if needed.
                   if($pk->isEmpty(),
                      |$existingQuery,
                      |let existingSelect = $existingQuery.select;
-                      // processRelationFunctionClassMapping returns SelectWithCursor with currentTreeNode=[];
-                      // processColumnsInRelationalOperationElements requires it to be the root join tree node.
+                      // Ensure currentTreeNode is set (processRelationFunctionClassMapping may leave it empty).
                       let queryWithTreeNode = if($existingQuery.currentTreeNode->isEmpty(),
                                                   | ^$existingQuery(currentTreeNode = $existingQuery.select.data),
                                                   | $existingQuery);
@@ -4347,12 +4342,7 @@ function meta::relational::functions::pureToSqlQuery::getPksFromAlias(r:Relation
    ^List<Column>(values=$r->cast(@Alias)->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) && $mt.primaryKey->contains($a.relationalElement->cast(@TableAliasColumn).column))->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name=$a.name);));
 }
 
-// Walks down through nested SelectSQLQuery wrappings to find the underlying
-// "leaf" relational element (Table, RelationFunction, Union, etc.). Used by
-// addSelfJoin where the alias's relationalElement may have been wrapped one
-// or more times by moveSelectQueryToSubSelect (e.g. for relation function
-// mappings, where processRelationFunctionClassMapping wraps once and
-// addPkForAggregation may wrap again).
+// Unwraps nested SelectSQLQuery layers to find the leaf relational element (Table, Union, etc.).
 function <<access.private>> meta::relational::functions::pureToSqlQuery::unwrapNestedSelect(elem:RelationalOperationElement[1]):RelationalOperationElement[1]
 {
    $elem->match([
@@ -4373,24 +4363,17 @@ function meta::relational::functions::pureToSqlQuery::addSelfJoin(s:SelectSQLQue
                                                                     t:Table[1]| pair($t.schema.database, ^List<Column>(values=$t.primaryKey)),
                                                                     u:Union[1]| let mt = $u.queries.data.alias.relationalElement->cast(@Table);
                                                                                 pair($mt.schema.database->at(0), getPksFromAlias($u.queries.columns, $mt));,
-                                                                    select:SelectSQLQuery[1]| // The alias's relationalElement may be a nested SelectSQLQuery (possibly multiple
-                                                                                              // layers deep) produced by moveSelectQueryToSubSelect — e.g. a relation
-                                                                                              // function class mapping is wrapped once by processRelationFunctionClassMapping
-                                                                                              // and may be re-wrapped again by addPkForAggregation. Walk down to find the leaf.
+                                                                    select:SelectSQLQuery[1]| // Walk down nested sub-selects to find the leaf Table.
                                                                                               let inner = $select.data.alias.relationalElement->toOne()->meta::relational::functions::pureToSqlQuery::unwrapNestedSelect();
                                                                                               assert($inner->instanceOf(Table), 'Add self Join is supported with SelectSQLQuery only when main relationalElement (after unwrapping nested sub-selects) is Table');
                                                                                               let mt = $inner->cast(@Table);
-                                                                                              // Name-based PK matching - moveSelectQueryToSubSelect creates new Column instances
-                                                                                              // in the wrapped sub-select, so an identity compare against $mt.primaryKey is empty.
-                                                                                              // Match by inner column name OR outer alias name (alias-rename safe).
+                                                                                              // Name-based PK matching (identity compare fails across sub-select boundaries).
                                                                                               let pkNames = $mt.primaryKey.name;
                                                                                               let pkCols = $select.columns->cast(@Alias)
                                                                                                              ->filter(a|$a.relationalElement->instanceOf(TableAliasColumn) &&
                                                                                                                         ($pkNames->contains($a.relationalElement->cast(@TableAliasColumn).column.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes()) || $pkNames->contains($a.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes())))
                                                                                                              ->map(a|let col = $a.relationalElement->cast(@TableAliasColumn).column; ^$col(name = $a.name););
-                                                                                              // Fallback: if the relation function's select() excluded the table's PK column
-                                                                                              // (e.g. flatten::personFunction selects FIRSTNAME, LASTNAME, FIRM_DETAILS but not the
-                                                                                              // ID PK), use ALL exposed TableAliasColumn columns as the join key instead.
+                                                                                              // Fallback: use all exposed columns if PK not in the subselect.
                                                                                               let effectivePkCols = if($pkCols->isEmpty(),
                                                                                                                        | $select.columns->cast(@Alias)
                                                                                                                            ->filter(a|$a.relationalElement->instanceOf(TableAliasColumn))
@@ -7361,7 +7344,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(ex
                                        relationalElement = ^TableAliasColumn(
                                                                   alias=$newAlias,
                                                                   columnName = $newNamePair.second,
-                                                                  column=^Column(name=$newNamePair.first, type=$c->extractColumnTypeDefaultToInt())
+                                                                  column=^Column(name=$newNamePair.first, type=$newAlias->extractColumnTypeDefaultToInt())
                                                          )
                                        );
                                  ),
