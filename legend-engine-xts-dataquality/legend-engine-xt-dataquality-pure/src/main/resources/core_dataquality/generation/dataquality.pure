@@ -1077,6 +1077,32 @@ function meta::external::dataquality::buildRelationFilterExpressionForRowLevelVa
    )->evaluateAndDeactivate();
 }
 
+function meta::external::dataquality::extendLambdaWithLimit(lambda: LambdaFunction<Any>[1], queryLimit: Integer[0..1]): LambdaFunction<Any>[1]
+{
+   if ($queryLimit->isEmpty(),
+       | $lambda,
+       | let hasFrom = $lambda->isEndingWithFromFunction();
+         let lastExpr = $lambda.expressionSequence->evaluateAndDeactivate()->last()->toOne();
+         if ($hasFrom,
+             | let fromExpr = $lastExpr->cast(@SimpleFunctionExpression);
+               let innerExpr = $fromExpr.parametersValues->evaluateAndDeactivate()->at(0)->evaluateAndDeactivate();
+               let isRelation = $innerExpr.genericType.rawType->toOne()->subTypeOf(Relation);
+               let withLimit = if ($isRelation,
+                   | $innerExpr->buildRelationLimitFilterExpression($queryLimit->toOne(), $innerExpr.genericType),
+                   | $innerExpr->buildLimitFilterExpression($queryLimit->toOne(), $innerExpr.genericType)
+               );
+               let newFromExpr = ^$fromExpr(parametersValues = $withLimit->concatenate($fromExpr.parametersValues->evaluateAndDeactivate()->tail()))->evaluateAndDeactivate();
+               ^$lambda(expressionSequence = $lambda.expressionSequence->evaluateAndDeactivate()->init()->concatenate($newFromExpr)->toOneMany());,
+             | let isRelation = $lastExpr.genericType.rawType->toOne()->subTypeOf(Relation);
+               let withLimit = if ($isRelation,
+                   | $lastExpr->buildRelationLimitFilterExpression($queryLimit->toOne(), $lastExpr.genericType),
+                   | $lastExpr->buildLimitFilterExpression($queryLimit->toOne(), $lastExpr.genericType)
+               );
+               ^$lambda(expressionSequence = $lambda.expressionSequence->evaluateAndDeactivate()->init()->concatenate($withLimit)->toOneMany());
+         );
+   );
+}
+
 function meta::external::dataquality::buildLimitFilterExpression(f: ValueSpecification[1], limit: Integer[1], returnType:GenericType[1]):FunctionExpression[1]
 {
   ^SimpleFunctionExpression(func=take_T_MANY__Integer_1__T_MANY_,

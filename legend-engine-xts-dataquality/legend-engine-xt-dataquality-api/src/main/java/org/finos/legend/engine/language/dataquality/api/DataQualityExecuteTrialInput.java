@@ -33,7 +33,8 @@ public class DataQualityExecuteTrialInput
     public PureModelContext model;
     @JsonProperty
     public String packagePath;
-    public Integer defectsLimit;
+    public Long defectsLimit;
+    public Long queryLimit;
     public boolean includeTotalDefectCount = false;
     public List<ParameterValue> lambdaParameterValues;
     @Deprecated
