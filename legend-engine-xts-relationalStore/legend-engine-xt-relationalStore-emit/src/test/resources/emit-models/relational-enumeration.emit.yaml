@@ -16,16 +16,16 @@ modelSources:
       - mapping/employeeMapping.pure
 
 features:
-  - class
-  - enumeration
-  - relational-store
-  - relational-mapping
-  - enumeration-mapping
-  - data-element
-  - test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - execution:data-element
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - enumeration-mapping

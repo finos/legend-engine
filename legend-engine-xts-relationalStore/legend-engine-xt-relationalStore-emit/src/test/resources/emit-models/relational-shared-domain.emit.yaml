@@ -18,9 +18,9 @@ modelSources:
       - model/employment.pure
 
 features:
-  - class
-  - association
-  - derived-property
+  - scaffolding:class
+  - grammar:association
+  - grammar:derived-property
 stores: []
 complexity: basic
 tags:

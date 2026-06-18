@@ -562,17 +562,17 @@ modelSources:
       excludes:
         - emit-models/core-api/**/*_experimental.pure
 
-# Features exercised by this model.
-# Uses a controlled taxonomy (see §7.2).
+# Features exercised by this model — domain:capability pairs.
+# Uses a controlled taxonomy (see §6.2).
 features:
-  - class
-  - association
-  - relational-mapping
-  - relational-store
-  - relational-connection
-  - service
-  - service-test
-  - file-generation
+  - execution:file-generation
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
 
 # Store types involved.
 stores:
@@ -590,22 +590,150 @@ tags:
 
 ### 6.2 Feature Taxonomy
 
-The `features` field uses values from a controlled vocabulary. The taxonomy is extensible;
-new features can be added as the catalog grows. The initial set:
+Each value in the `features` list uses the format **`domain:capability`**, where
+*domain* identifies the pipeline stage or concern area and *capability* names the
+specific code path being exercised. This makes the exact coverage of every test
+immediately visible — you can tell at a glance which domains interact and which
+capabilities are novel.
 
-| Category | Feature Tags |
+The taxonomy is extensible; add new entries as the catalog grows (and document them
+here in the same PR). Features are sorted alphabetically by domain, then capability.
+
+#### Scaffolding (always present — excluded from complexity scoring)
+
+These features appear in virtually every EMIT test and represent baseline
+infrastructure rather than the feature under test:
+
+| Feature | Description |
 |---|---|
-| **Types** | `class`, `enumeration`, `association`, `profile`, `measure`, `function` |
-| **Constraints** | `constraint`, `derived-property`, `qualified-property` |
-| **Mapping** | `mapping`, `m2m-mapping`, `relational-mapping`, `enumeration-mapping`, `aggregation-aware-mapping`, `operation-mapping` |
-| **Store** | `relational-store`, `service-store`, `flat-data-store` |
-| **Connection** | `relational-connection`, `model-connection`, `service-store-connection` |
-| **Runtime** | `runtime`, `embedded-runtime` |
-| **Service** | `service`, `service-test`, `multi-execution-service`, `post-validation` |
-| **Generation** | `file-generation`, `model-generation`, `generation-specification` |
-| **Data** | `data-element`, `test-data`, `shared-test-data` |
-| **External Format** | `external-format`, `binding`, `schema-set` |
-| **Function Activator** | `hosted-service`, `snowflake-app`, `bigquery-function` |
+| `scaffolding:class` | At least one Pure class definition |
+| `scaffolding:relational-store` | A relational store definition (typically H2) |
+| `scaffolding:relational-connection` | A relational database connection |
+| `scaffolding:relational-mapping` | Base relational class mapping (no special features) |
+| `scaffolding:m2m-mapping` | Base model-to-model mapping |
+| `scaffolding:runtime` | A runtime definition |
+| `scaffolding:model-connection` | A model connection (M2M tests) |
+
+#### Grammar — Pure language constructs
+
+| Feature | Description |
+|---|---|
+| `grammar:association` | Association (1:1, 1:N, N:M) |
+| `grammar:class-inheritance` | Class inheritance hierarchy |
+| `grammar:constraint` | Class-level constraint |
+| `grammar:derived-property` | Derived (computed) property |
+| `grammar:enumeration` | Enumeration type definition |
+| `grammar:function` | Standalone Pure function |
+| `grammar:measure` | Measure / unit definition |
+| `grammar:nested-association` | Multi-level association traversal |
+| `grammar:profile` | Profile / stereotype / tag definition |
+| `grammar:qualified-property` | Qualified (parameterised) property |
+
+#### Mapping — transform and mapping-level features
+
+| Feature | Description |
+|---|---|
+| `mapping:aggregation-aware-mapping` | Aggregation-aware mapping |
+| `mapping:cross-store` | Cross-store mapping (M2M ↔ relational) |
+| `mapping:enumeration-mapping` | Enumeration value mapping / transform |
+| `mapping:m2m-derived-source-property` | Derived property on M2M source class |
+| `mapping:m2m-local-property` | Local property in M2M mapping |
+| `mapping:m2m-transform` | Model-to-model transform expression |
+| `mapping:mapping` | Generic mapping (legacy tag) |
+| `mapping:mapping-include` | Mapping include composition |
+| `mapping:operation-mapping` | Operation mapping (inheritance dispatch) |
+| `mapping:operation-mapping-merge` | Merge operation mapping |
+| `mapping:operation-mapping-merge-validation` | Merge with cross-set validation |
+| `mapping:relational-association-implementation` | Association implementation in relational mapping |
+| `mapping:relational-distinct` | DISTINCT projection |
+| `mapping:relational-embedded` | Embedded relational mapping |
+| `mapping:relational-group-by` | GROUP BY projection |
+| `mapping:relational-inline-embedded` | Inline embedded mapping |
+| `mapping:relational-joined-table-inheritance` | Joined-table inheritance strategy |
+| `mapping:relational-literal` | Literal value in mapping |
+| `mapping:relational-literal-list` | Literal list in mapping |
+| `mapping:relational-main-table-alias` | Main table alias override |
+| `mapping:relational-otherwise-embedded` | Otherwise-embedded mapping |
+| `mapping:relational-polymorphic-query` | Polymorphic query dispatch |
+| `mapping:relational-primary-key` | Explicit primary key specification |
+| `mapping:relational-single-table-inheritance` | Single-table inheritance strategy |
+| `mapping:relational-table-alias-column` | Table-alias column reference |
+| `mapping:router-union` | Router union mapping |
+| `mapping:store-union` | Store union mapping |
+
+#### Store — relational store-level features
+
+| Feature | Description |
+|---|---|
+| `store:relational-cross-schema` | Cross-schema table reference |
+| `store:relational-cross-table-filter` | Cross-table filter |
+| `store:relational-dyna-function` | Dynamic function in store definition |
+| `store:relational-filter` | Table-level filter |
+| `store:relational-inline-view` | Inline view (subquery) |
+| `store:relational-inner-join` | Inner join |
+| `store:relational-left-outer-join` | Left outer join |
+| `store:relational-multi-table` | Multi-table store definition |
+| `store:relational-nested-join` | Nested (chained) join |
+| `store:relational-outer-join` | Full outer join |
+| `store:relational-right-outer-join` | Right outer join |
+| `store:service-store` | Service store |
+| `store:flat-data-store` | Flat-data store |
+
+#### Milestoning — temporal features
+
+| Feature | Description |
+|---|---|
+| `milestoning:all-versions-in-range-query` | All-versions-in-range temporal query |
+| `milestoning:all-versions-query` | All-versions temporal query |
+| `milestoning:bi-temporal` | Bi-temporal milestoning (business + processing) |
+| `milestoning:business-temporal` | Business-temporal milestoning |
+| `milestoning:milestoning` | Generic milestoning marker |
+| `milestoning:point-in-time-query` | Point-in-time temporal query |
+| `milestoning:processing-temporal` | Processing-temporal milestoning |
+
+#### Execution — service, generation, and test infrastructure
+
+| Feature | Description |
+|---|---|
+| `execution:bigquery-function` | BigQuery function activator |
+| `execution:binding` | External format binding |
+| `execution:data-element` | Data element definition |
+| `execution:external-format` | External format specification |
+| `execution:external-format-binding` | External format binding |
+| `execution:file-generation` | File generation specification |
+| `execution:hosted-service` | Hosted service function activator |
+| `execution:model-generation` | Model generation specification |
+| `execution:multi-execution-service` | Multi-execution service |
+| `execution:plan-generation` | Execution plan generation |
+| `execution:post-validation` | Service post-validation |
+| `execution:schema-set` | Schema set definition |
+| `execution:service` | Service definition |
+| `execution:service-test` | Service test suite |
+| `execution:shared-test-data` | Shared test data element |
+| `execution:snowflake-app` | Snowflake app function activator |
+| `execution:test-data` | Test data definition |
+
+#### Complexity
+
+Complexity is determined by **domain-crossing depth** — how many distinct pipeline
+domains are exercised by non-scaffolding features:
+
+| Complexity | Criteria | EMIT value proposition |
+|---|---|---|
+| **basic** | 1–2 domains | Single capability or simple two-domain interaction through the full pipeline |
+| **intermediate** | 3–4 domains | Capabilities from multiple domains interacting |
+| **advanced** | 5+ domains | Broad multi-domain composition or cross-store scenarios |
+
+#### Evolving the Taxonomy
+
+When harvesting models from a new Studio project or adding a test for a new engine
+feature, you may encounter capabilities that do not map to any existing entry. In
+that case:
+
+1. Add the new `domain:capability` entry to the appropriate table above.
+2. Include the taxonomy update in the same PR as the new EMIT test.
+3. If a new *domain* is needed (e.g., `persistence`, `data-quality`), add a new
+   subsection and update the complexity-scoring guidance accordingly.
 
 ### 6.3 Catalog Index
 
@@ -648,11 +776,11 @@ modelSources:
     - source: emit-models/basic/base-types.emit.yaml
 
 features:
-  - class
-  - derived-property
-  - mapping
-  - service
-  - service-test
+  - execution:service
+  - execution:service-test
+  - grammar:derived-property
+  - mapping:mapping
+  - scaffolding:class
 complexity: basic
 tags:
   - m2m

@@ -15,4 +15,7 @@ modelSources:
     - source: clash-a.emit.yaml
     - source: clash-b.emit.yaml
 
+features:
+  - scaffolding:class
+
 complexity: basic

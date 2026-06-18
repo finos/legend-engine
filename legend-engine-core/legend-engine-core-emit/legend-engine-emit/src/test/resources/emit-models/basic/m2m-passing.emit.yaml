@@ -15,10 +15,10 @@ modelSources:
       - mapping/personMapping.pure
 
 features:
-  - class
-  - m2m-mapping
-  - mapping
-  - data-element
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - execution:data-element
+  - mapping:mapping
 complexity: basic
 tags:
   - m2m

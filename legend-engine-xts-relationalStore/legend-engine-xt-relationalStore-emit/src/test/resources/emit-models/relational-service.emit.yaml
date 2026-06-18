@@ -21,13 +21,13 @@ modelSources:
     - source: relational-shared-domain.emit.yaml
 
 features:
-  - class
-  - relational-store
-  - relational-mapping
-  - relational-connection
-  - runtime
-  - service
-  - service-test
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - execution:service
+  - execution:service-test
 stores:
   - relational
 complexity: basic

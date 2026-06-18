@@ -10,7 +10,7 @@ modelSources:
       - model.pure
 
 features:
-  - class
+  - scaffolding:class
 complexity: basic
 tags:
   - getting-started

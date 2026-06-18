@@ -14,9 +14,8 @@ modelSources:
       - model.pure
 
 features:
-  - class
-  - model-generation
-  - generation-specification
+  - scaffolding:class
+  - execution:model-generation
 complexity: basic
 tags:
   - model-generation
