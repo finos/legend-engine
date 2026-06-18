@@ -718,6 +718,9 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    adjustDate: DateTime[1];
    toBoolean: Boolean[1];
    convertTimeZone: String[1];
+
+   extractedLegalName: String[1];
+   extractedEmployeeCount: Integer[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -750,7 +753,8 @@ Database meta::relational::tests::mapping::sqlFunction::model::store::myDB
         float1 Float,
         stringUserDefinedDateFormat VARCHAR(7),
         stringToInt VARCHAR(5),
-        alphaNumericString VARCHAR(15)
+        alphaNumericString VARCHAR(15),
+        semiStructuredCol SEMISTRUCTURED
     )
 )
 
@@ -834,7 +838,10 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           dateTime: dateTime,
           adjustDate: adjust(dateTime, -7, 'DAYS'),
           toBoolean: parseBoolean('true'),
-          convertTimeZone: convertTimeZone( dateTime,'EST','yyyy-MM-dd HH:mm:ss')
+          convertTimeZone: convertTimeZone( dateTime,'EST','yyyy-MM-dd HH:mm:ss'),
+
+          extractedLegalName: extractFromSemiStructured(semiStructuredCol, 'legalName', 'VARCHAR'),
+          extractedEmployeeCount: extractFromSemiStructured(semiStructuredCol, 'employeeCount', 'INTEGER')
        )
 
     }

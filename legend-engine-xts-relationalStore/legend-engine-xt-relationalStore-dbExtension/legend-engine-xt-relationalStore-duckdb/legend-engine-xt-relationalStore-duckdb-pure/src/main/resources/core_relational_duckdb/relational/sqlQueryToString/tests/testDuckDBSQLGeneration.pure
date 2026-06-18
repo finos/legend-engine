@@ -75,3 +75,11 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testTo
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat2], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
    assertEquals('select strptime("root".stringUserDefinedDateFormat, \'%Y/%m/%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
+
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringExtractFromSemiStructuredVarcharInDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.extractedLegalName], ['Legal Name']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   print('Succeeded');
+   assertEquals('select json_extract_string("root".semiStructuredCol, \'$.legalName\') as "Legal Name" from dataTable as "root"', $s);
+}
+
