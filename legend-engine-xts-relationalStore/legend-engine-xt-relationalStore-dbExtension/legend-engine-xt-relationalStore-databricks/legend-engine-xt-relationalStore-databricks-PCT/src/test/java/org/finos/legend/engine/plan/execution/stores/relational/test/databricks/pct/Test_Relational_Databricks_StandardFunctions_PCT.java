@@ -84,7 +84,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""),
 
             //maxBy
-            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires 2 parameters but the actual number is 4."),
+            one("meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires [2, 3] parameters but the actual number is 4."),
 
             //min
             one("meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"),
@@ -98,7 +98,7 @@ public class Test_Relational_Databricks_StandardFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_", "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""),
 
             //minBy
-            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires 2 parameters but the actual number is 4."),
+            one("meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_", "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires [2, 3] parameters but the actual number is 4."),
 
             //percentile
             one("meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_", "[unsupported-api] relational lambda processing not supported for Database Type:"),
