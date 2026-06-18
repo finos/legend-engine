@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
 
@@ -49,7 +49,7 @@ jobs:
           git config --global user.name "FINOS Administrator"
 
       - name: Set up Maven Central
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "zulu"
           java-version: "11"
@@ -77,7 +77,7 @@ jobs:
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Checkout Release Tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: 'target/checkout'
           ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
@@ -91,18 +91,25 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx36g
 
-      - name: Store build output artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload build output
+        uses: actions/upload-artifact@v7
         with:
           name: build-output
-          # upload the target directory as it is the output of the build
-          # upload also the m2 repo to store the state of the install step
           path: |
             ~/**/target/
-            ~/.m2/repository/org/finos/legend/engine/
+            !~/**/target/*.jar
           retention-days: 1
           overwrite: true
           include-hidden-files: true
+          if-no-files-found: error
+
+      - name: Upload m2 repository
+        uses: actions/upload-artifact@v7
+        with:
+          name: m2-repo
+          path: ~/.m2/repository/org/finos/legend/engine/
+          retention-days: 1
+          overwrite: true
           if-no-files-found: error
 
       - name: Set Test Matrix
@@ -111,7 +118,7 @@ jobs:
 
       - name: Upload CI Event
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: event-file
           path: ${{ github.event_path }}
@@ -124,7 +131,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
@@ -143,7 +150,7 @@ jobs:
           mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
@@ -160,7 +167,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
@@ -182,7 +189,7 @@ jobs:
           mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
@@ -196,11 +203,14 @@ jobs:
       - test-modules
     steps:
 
-      - name: Restore build output artifacts
-        uses: actions/download-artifact@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download m2 repository for publishing
+        uses: actions/download-artifact@v8
         with:
-          name: build-output
-          path: ~/
+          name: m2-repo
+          path: ~/.m2/repository/org/finos/legend/engine
 
       - name: Create bundle to publish
         working-directory: target/checkout
