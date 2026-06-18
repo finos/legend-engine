@@ -57,7 +57,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::aggregat
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees.age->average()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees.age->average()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
    );
 }
@@ -66,7 +66,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees.age->average()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees.age->average()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
    );
 }
@@ -75,7 +75,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, b:f|$f.employees.firstName->count(), a:f|$f.employees.age->average()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, b:x|$x.employees.firstName->count(), a:x|$x.employees.age->average()])->cast(@TabularDataSet),
       ['Firm A | 0 | TDSNull', 'Firm B | 0 | TDSNull', 'Firm C | 2 | 35.5', 'Firm D | 1 | 52.0', 'Firm X | 1 | 30.0']
    );
 }
@@ -84,7 +84,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->sum()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, s:x|$x.employees.age->sum()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 71', 'Firm D | 52', 'Firm X | 30']
    );
 }
@@ -93,7 +93,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->max()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, m:x|$x.employees.age->max()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45', 'Firm D | 52', 'Firm X | 30']
    );
 }
@@ -107,7 +107,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, a:f|$f.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45.0', 'Firm D | 52.0', 'Firm X | TDSNull']
    );
 }
@@ -116,7 +116,7 @@ function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, m:f|$f.employees.age->min()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, m:x|$x.employees.age->min()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 26', 'Firm D | 52', 'Firm X | 30']
    );
 }
@@ -125,7 +125,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, c:f|$f.employees.firstName->count()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, c:x|$x.employees.firstName->count()])->cast(@TabularDataSet),
       ['Firm A | 0', 'Firm B | 0', 'Firm C | 2', 'Firm D | 1', 'Firm X | 1']
    );
 }
@@ -134,7 +134,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, a:f|if($f.legalName == 'Firm X', |1.0, |$f.employees.age->average())])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|if($x.legalName == 'Firm X', |1.0, |$x.employees.age->average())])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 1.0']
    );
 }
@@ -149,7 +149,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
 function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, s:f|$f.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, s:x|$x.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 142', 'Firm D | 104', 'Firm X | 60']
    );
 }
@@ -160,7 +160,7 @@ function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
 {
    testFirmAgg(
-      |Firm.all()->project(~[name:f|$f.legalName, e:f|$f.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet),
+      |Firm.all()->project(~[name:x|$x.legalName, e:x|$x.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet),
       ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice^Oliver', 'Firm D | David', 'Firm X | John']
    );
 }
