@@ -112,16 +112,16 @@ public class Test_Relational_Databricks_GrammarFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_", "\nexpected: -4.0D\nactual:   -4.0"),
             one("meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_", "[PARSE_SYNTAX_ERROR] org.apache.spark.sql.catalyst.parser.ParseException: \n[PARSE_SYNTAX_ERROR] Syntax error at or near end of input. SQLSTATE: 42601 (line 1, pos 10)"),
-            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_subtract' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error."),
+            one("meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] overflow. Use 'try_subtract' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error."),
 
             //plus
             one("meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_", "\nexpected: 6.0D\nactual:   6.0"),
-            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_add' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error"),
+            one("meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] overflow. Use 'try_add' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error."),
             one("meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_", "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'.", AdapterQualifier.unsupportedFeature),
 
             //times
             one("meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_", "\nexpected: 353791.470D\nactual:   353791.47"),
-            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] long overflow. Use 'try_multiply' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error"),
+            one("meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_", "[ARITHMETIC_OVERFLOW] overflow. Use 'try_multiply' to tolerate overflow and return NULL instead. If necessary set \"ansi_mode\" to \"false\" to bypass this error."),
 
             //string-plus
             one("meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_", "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"),
