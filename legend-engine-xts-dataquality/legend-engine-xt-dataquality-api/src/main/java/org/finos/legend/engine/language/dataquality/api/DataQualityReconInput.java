@@ -42,6 +42,7 @@ public class DataQualityReconInput
     public boolean runSourceQuery = false;
     public boolean runTargetQuery = false;
     public Long defectLimit; //optional limit on the number of defect rows returned
+    public Long queryLimit; //optional limit on the number of rows fetched from source and target queries
     public List<ParameterValue> sourceLambdaParameterValues; //parameter values for the source lambda
     public List<ParameterValue> targetLambdaParameterValues; //parameter values for the target lambda
 

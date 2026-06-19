@@ -395,8 +395,9 @@ public class DataQualityExecute
 
         if (input.runSourceQuery)
         {
-            // return source query results directly
-            dqLambdaFunction = sourceLambdaFunction;
+            // return source query results directly, with optional limit
+            Long queryLimit = input.queryLimit == null ? null : input.queryLimit.longValue();
+            dqLambdaFunction = DataQualityLambdaGenerator.extendLambdaWithLimit(pureModel, sourceLambdaFunction, queryLimit);
             if (input.sourceLambdaParameterValues != null)
             {
                 input.sourceLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
@@ -404,8 +405,9 @@ public class DataQualityExecute
         }
         else if (input.runTargetQuery)
         {
-            // return target query results directly
-            dqLambdaFunction = targetLambdaFunction;
+            // return target query results directly, with optional limit
+            Long queryLimit = input.queryLimit == null ? null : input.queryLimit.longValue();
+            dqLambdaFunction = DataQualityLambdaGenerator.extendLambdaWithLimit(pureModel, targetLambdaFunction, queryLimit);
             if (input.targetLambdaParameterValues != null)
             {
                 input.targetLambdaParameterValues.forEach(p -> lambdaParameterMap.put(p.name, p.value.accept(new PrimitiveValueSpecificationToObjectVisitor())));
@@ -520,7 +522,12 @@ public class DataQualityExecute
         {
             return DataQualityLambdaGenerator.generateRelationValidationMainQueryRowCount(pureModel, dataQualityExecuteInput.packagePath);
         }
-        return DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, queryType);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, dataQualityExecuteInput.packagePath, dataQualityExecuteInput.getValidationNames(), dataQualityExecuteInput.runQuery, dataQualityExecuteInput.defectsLimit, dataQualityExecuteInput.enrichDQColumns, dataQualityExecuteInput.includeTotalDefectCount, queryType);
+        if (Boolean.TRUE.equals(dataQualityExecuteInput.runQuery))
+        {
+            return DataQualityLambdaGenerator.extendLambdaWithLimit(pureModel, dqLambdaFunction, dataQualityExecuteInput.queryLimit);
+        }
+        return dqLambdaFunction;
     }
 
     @POST

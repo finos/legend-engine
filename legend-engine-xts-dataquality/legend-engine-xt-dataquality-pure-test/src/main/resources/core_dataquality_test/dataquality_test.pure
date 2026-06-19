@@ -1023,3 +1023,78 @@ function <<test.Test>> meta::external::dataquality::tests::testFromFunctionListI
 
   assertEmpty($missingFuncs->map(pe|$pe->elementToPath()));
 }
+
+// Tests for extendLambdaWithLimit
+
+function <<test.Test>> meta::external::dataquality::tests::testExtendLambdaWithLimit_noLimit_returnsUnchanged():Boolean[1]
+{
+   let dqDef = '###DataQualityValidation' +
+      '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+      '      {' +
+      '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+      '        validations: [' +
+      '          {' +
+      '             name: \'validFirstName\';' +
+      '             description: \'first name should not be empty\';' +
+      '             assertion: row|$row.FIRSTNAME->isNotEmpty();' +
+      '             type: ROW_LEVEL;' +
+      '          }' +
+      '         ];' +
+      '      }';
+   let dqRelVal = $dqDef->loadDataQualityRelationValidation();
+   let originalLambda = $dqRelVal.query;
+   let result = meta::external::dataquality::extendLambdaWithLimit($originalLambda, []);
+   let config = grammarConfig();
+   assertEquals(
+      $originalLambda->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space='')),
+      $result->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, ^meta::pure::metamodel::serialization::grammar::GContext(space=''))
+   );
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testExtendLambdaWithLimit_relationWithFrom_appliesLimit():Boolean[1]
+{
+   let dqDef = '###DataQualityValidation' +
+      '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+      '      {' +
+      '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+      '        validations: [' +
+      '          {' +
+      '             name: \'validFirstName\';' +
+      '             description: \'first name should not be empty\';' +
+      '             assertion: row|$row.FIRSTNAME->isNotEmpty();' +
+      '             type: ROW_LEVEL;' +
+      '          }' +
+      '         ];' +
+      '      }';
+   let dqRelVal = $dqDef->loadDataQualityRelationValidation();
+   let originalLambda = $dqRelVal.query;
+   let result = meta::external::dataquality::extendLambdaWithLimit($originalLambda, 50);
+   let config = grammarConfig();
+   let ctx = ^meta::pure::metamodel::serialization::grammar::GContext(space='');
+   let originalStr = $originalLambda->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, $ctx);
+   let resultStr = $result->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, $ctx);
+   // limit should be injected inside the from (on the relation expression), not after it
+   let expectedStr = $originalStr->replace('->meta::pure::mapping::from', '->meta::pure::functions::relation::limit(50)->meta::pure::mapping::from');
+   assertEquals($expectedStr, $resultStr);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testExtendLambdaWithLimit_classBasedWithFrom_appliesTake():Boolean[1]
+{
+   let dataQuality = loadDataQuality(
+      '$[' +
+      '      meta::external::dataquality::tests::domain::Person<mustBeOfLegalAge>{' +
+      '        name,' +
+      '        age' +
+      '      }' +
+      ']$'
+   );
+   let lambdaWithFrom = meta::external::dataquality::generateDataQualityQuery($dataQuality, [], true);
+   let result = meta::external::dataquality::extendLambdaWithLimit($lambdaWithFrom, 25);
+   let config = grammarConfig();
+   let ctx = ^meta::pure::metamodel::serialization::grammar::GContext(space='');
+   let originalStr = $lambdaWithFrom->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, $ctx);
+   let resultStr = $result->meta::pure::metamodel::serialization::grammar::printFunctionDefinition($config, $ctx);
+   // take should be injected inside the from (on the class expression), not after it
+   let expectedStr = $originalStr->replace('->meta::pure::mapping::from', '->meta::pure::functions::collection::take(25)->meta::pure::mapping::from');
+   assertEquals($expectedStr, $resultStr);
+}
