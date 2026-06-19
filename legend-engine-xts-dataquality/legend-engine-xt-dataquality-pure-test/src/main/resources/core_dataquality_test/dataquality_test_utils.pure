@@ -107,7 +107,7 @@ function meta::external::dataquality::tests::doRelationTestWithoutDQColumns(dq:S
   let actual = $dataqualityRelationValidation->meta::external::dataquality::generateDataqualityRelationValidationLambda($validationName, [], false);
 
   assertLambdaEquals($expected, $actual->cast(@LambdaFunction<Any>), $packageableRuntimeAsString);
-}                             
+}
 
 function meta::external::dataquality::tests::doRelationTestWithTotalDefectCountAndLimit(dq:String[1], validationNames:String[*], expected:FunctionDefinition<Any>[1], resultLimit: Integer[1], packageableRuntimeAsString: String[1]):Boolean[1]
 {

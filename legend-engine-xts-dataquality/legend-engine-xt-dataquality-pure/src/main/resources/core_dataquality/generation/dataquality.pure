@@ -526,7 +526,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
         | [buildLetExpression('sourceQuery', $query), $validationsUnion],
         | $validationsUnion
       );
-      if (!$removeFrom && $multipleValidations && $containsFrom, 
+      if (!$removeFrom && $multipleValidations && $containsFrom,
         | let from = $dqRelationValidation.query.expressionSequence->evaluateAndDeactivate()->last()->cast(@SimpleFunctionExpression)->toOne();
           ^$lambda(expressionSequence = $expressionSequence)->wrapWithEvalOnFrom($from);, //need to wrap in eval on from so that let expression works correctly (correct sql can be generated)
         | ^$lambda(expressionSequence = $expressionSequence)
