@@ -56,11 +56,18 @@ Class meta::relational::metamodel::ObjectQuery extends SQLQuery
   copyGrants : Boolean[1] = false;
 }
 
-Class meta::relational::metamodel::ParameterizedQuery extends ObjectQuery
-{
-  parameters: String[1];
-  return : String[1];
-
+Class meta::relational::metamodel::SQLParameter  
+{  
+  name: String[1];  
+  type: meta::relational::metamodel::datatype::DataType[1];  
+}  
+  
+Class meta::relational::metamodel::ParameterizedQuery extends ObjectQuery  
+{  
+  <<doc.deprecated>> {doc.doc = 'Use typedParameters instead'} parameters: String[0..1];  
+  <<doc.deprecated>> {doc.doc = 'Use typedReturn instead'} return : String[0..1];  
+  typedParameters: meta::relational::metamodel::SQLParameter[*];  
+  typedReturn: meta::relational::metamodel::SQLParameter[*];  
 }
 
 Class meta::relational::metamodel::CreateViewSQL extends ObjectQuery

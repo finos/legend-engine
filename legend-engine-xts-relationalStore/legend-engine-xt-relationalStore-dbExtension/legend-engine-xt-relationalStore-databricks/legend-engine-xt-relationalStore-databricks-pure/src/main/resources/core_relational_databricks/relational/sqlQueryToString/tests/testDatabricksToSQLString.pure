@@ -102,3 +102,77 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
    assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateFunctionForDatabricks(): Boolean[*]            
+{            
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);            
+   let extensions = meta::relational::extension::relationalExtensions();            
+            
+   // Test basic create function with schema and params            
+   let basicFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
+      name = 'my_func',            
+      schemaName = 'test_schema',            
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
+      typedReturn = [    
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
+         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
+      ],     
+      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name',            
+      secure = false,            
+      copyGrants = false            
+   );            
+   let basicResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($basicFunc, $dbConfig, $extensions);            
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(name STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT name AS param_name) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);      
+      
+   // Test without schema            
+   let noSchemaFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
+      name = 'my_func',            
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='batchId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))],    
+      typedReturn = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
+      generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId',            
+      secure = false,            
+      copyGrants = false            
+   );            
+   let noSchemaResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($noSchemaFunc, $dbConfig, $extensions);            
+   assertEquals('CREATE OR REPLACE FUNCTION `my_func`(batchId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT batchId AS param_batchId) \nSELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);      
+      
+   // Test with copyGrants = true (should still generate CREATE OR REPLACE)      
+   let copyGrantsFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
+      name = 'my_func',            
+      schemaName = 'test_schema',            
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='currentWatermark', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
+      typedReturn = [    
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
+         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
+      ],    
+      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\'',            
+      secure = false,            
+      copyGrants = true            
+   );            
+   let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($copyGrantsFunc, $dbConfig, $extensions);            
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(currentWatermark STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT currentWatermark AS param_currentWatermark) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\';', $copyGrantsResult);      
+      
+   // Test with multiple parameters            
+   let multiParamFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
+      name = 'my_func_multi',            
+      schemaName = 'test_schema',            
+      typedParameters = [    
+         ^meta::relational::metamodel::SQLParameter(name='startId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
+         ^meta::relational::metamodel::SQLParameter(name='endId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
+      ],    
+      typedReturn = [    
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
+      ],    
+      generatedSQL = 'SELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId',            
+      secure = false,            
+      copyGrants = false            
+   );            
+   let multiParamResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($multiParamFunc, $dbConfig, $extensions);            
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func_multi`(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT startId AS param_startId, endId AS param_endId) \nSELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);      
+}

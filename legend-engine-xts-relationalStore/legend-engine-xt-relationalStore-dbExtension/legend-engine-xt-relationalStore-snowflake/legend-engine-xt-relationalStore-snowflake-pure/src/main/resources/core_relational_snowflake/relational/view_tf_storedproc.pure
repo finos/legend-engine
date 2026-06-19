@@ -54,8 +54,8 @@ function meta::relational::functions::sqlQueryToString::snowflake::createProcedu
     'PROCEDURE ' +
     if($createProc.schemaName->isEmpty(),|'',|$createProc.schemaName->toOne() + '.') +
     $createProc.name +
-    +'('+ $createProc.parameters+ ')'+ 
-    +'\nRETURNS TABLE('+ $createProc.return+ ')\nLANGUAGE SQL'+
+    +'('+ $createProc.parameters->toOne()+ ')'+ 
+    +'\nRETURNS TABLE('+ $createProc.return->toOne()+ ')\nLANGUAGE SQL'+
     if($createProc.copyGrants, |' COPY GRANTS',|'') +
     '\nEXECUTE AS CALLER'+
     '\nAS $$\n' +
@@ -77,9 +77,9 @@ function meta::relational::functions::sqlQueryToString::snowflake::createFunctio
     'Function ' +
     if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
     $createFunc.name +
-    +'('+ $createFunc.parameters+ ')\n'+ 
+    +'('+ $createFunc.parameters->toOne()+ ')\n'+ 
     if($createFunc.copyGrants, |'COPY GRANTS',|'') +
-    +'\nRETURNS TABLE('+ $createFunc.return+ ')\n'+
+    +'\nRETURNS TABLE('+ $createFunc.return->toOne()+ ')\n'+
     'LANGUAGE SQL'+
     '\nAS $$\n' +
      $createFunc.generatedSQL+

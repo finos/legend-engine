@@ -46,6 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumnForDatabricks_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -145,7 +146,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()}))
+    dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()})),
+    dynaFnToSql('extractFromSemiStructured', $allStates, ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForDatabricks()}))
   ];
 }
 
@@ -383,6 +385,7 @@ function meta::relational::functions::sqlQueryToString::databricks::getDDLComman
         dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
         createTable = translateCreateTableStatementForDatabricks_CreateTableSQL_1__DbConfig_1__String_1_,
         createView = createView_CreateViewSQL_1__DbConfig_1__Extension_MANY__String_1_,
+        createFunction = createFunction_CreateFunctionSQL_1__DbConfig_1__Extension_MANY__String_1_,
         dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
         loadTable =  loadValuesToDbTableForDatabricks_LoadTableSQL_1__DbConfig_1__String_MANY_
     );
@@ -407,4 +410,43 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   // Concat the original create table statement with the column mapping table properties
   let combinedStatement = $updatedCreateStatement + $tableProps;
   [$combinedStatement];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processExtractFromSemiStructuredParamsForDatabricks(params:String[3]):String[1]
+{
+  let baseRelationalOp = $params->at(0);
+  let pathNavigation = $params->at(1);
+  let returnType = $params->at(2);
+
+  let elementAccess = format('get_json_object(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]);
+
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | $elementAccess, |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
+  if ($returnType == 'DATE', | 'cast(' + $elementAccess + ' as DATE)', |
+  if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
+  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
+  if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + ' as INT)', |
+  if ($returnType == 'DECIMAL', | 'cast(' + $elementAccess + ' as DECIMAL)', |
+  $elementAccess)))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $r->match([
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc),
+    t: ProcedureVariablePlaceHolder[1] | $t.var->replaceProcedurevariable($sgc),
+    r: RelationalOperationElement[1] | 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for databricks'
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::replaceProcedurevariable(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]  
+{  
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');  
+  ':'+$v.name;  
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]  
+{  
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');  
+  '(SELECT param_' + $v.name + ' FROM func_param_table)';  
 }

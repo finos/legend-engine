@@ -41,16 +41,23 @@ function meta::relational::functions::sqlQueryToString::duckDB::createView(creat
     ';'
 }
 
-function meta::relational::functions::sqlQueryToString::duckDB::createFunction(createFunc:CreateFunctionSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]
-{
-    // Secure is not supported
-    // Copy Grants is not supported
-    'CREATE MACRO ' +
-    if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +
-    $createFunc.name +
-    +'('+ $createFunc.parameters->meta::relational::functions::sqlQueryToString::duckDB::fixInputParams()+ ')'+ 
-    +' AS TABLE\n'+
-    '   '+$createFunc.generatedSQL
+function meta::relational::functions::sqlQueryToString::duckDB::createFunction(createFunc:CreateFunctionSQL[1], dbConfig:DbConfig[1], extensions:Extension[*]):String[1]  
+{  
+    // Secure is not supported  
+    // Copy Grants is not supported  
+      
+    // Enforce use of typed fields — deprecated string fields are not supported  
+    assert($createFunc.typedParameters->isNotEmpty(), 'DuckDB createFunction requires typedParameters (SQLParameter[*]). The deprecated string-based parameters field is not supported.');  
+  
+    // DuckDB MACROs only need parameter names, not types  
+    let paramNames = $createFunc.typedParameters.name->joinStrings(' ');  
+  
+    'CREATE MACRO ' +  
+    if($createFunc.schemaName->isEmpty(),|'',|$createFunc.schemaName->toOne() + '.') +  
+    $createFunc.name +  
+    +'('+ $paramNames + ')'+   
+    +' AS TABLE\n'+  
+    '   '+$createFunc.generatedSQL;  
 }
 
 //TODO: change metamodel for param to relational operation element
