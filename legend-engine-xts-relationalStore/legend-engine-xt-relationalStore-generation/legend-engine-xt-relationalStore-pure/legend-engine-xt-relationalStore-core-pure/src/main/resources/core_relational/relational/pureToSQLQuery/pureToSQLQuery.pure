@@ -7344,7 +7344,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsRenameColumns(ex
                                        relationalElement = ^TableAliasColumn(
                                                                   alias=$newAlias,
                                                                   columnName = $newNamePair.second,
-                                                                  column=^Column(name=$newNamePair.first, type=$newAlias->extractColumnTypeDefaultToInt())
+                                                                  column=^Column(name=$newNamePair.first, type=$c->extractColumnTypeDefaultToInt())
                                                          )
                                        );
                                  ),
