@@ -79,7 +79,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
 import java.io.Closeable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -355,13 +354,13 @@ public class ServiceTestRunner implements TestRunner
             {
                 Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(this.execution.runtime, this.protocolSuite.testData, this.pmcd, hints);
                 testPureSingleExecution.runtime = runtimeWithCloseables.getOne();
-                runtimeWithCloseables.getTwo().forEach(closeableConsumer);
+                registerCloseables(runtimeWithCloseables.getTwo());
             }
             else
             {
                 MutableList<Closeable> closeables = Lists.mutable.empty();
                 testPureSingleExecution.func.body.forEach(func -> func.accept(new TestValueSpecificationBuilder(closeables, this.protocolSuite.testData, this.pmcd)));
-                closeables.forEach(closeableConsumer);
+                registerCloseables(closeables);
             }
             ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
@@ -428,7 +427,7 @@ public class ServiceTestRunner implements TestRunner
                     Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, this.protocolSuite.testData, this.pmcd, hints);
                     pureSingleExecution.runtime = runtimeWithCloseables.getOne();
                     pureSingleExecution.executionOptions = param.executionOptions;
-                    runtimeWithCloseables.getTwo().forEach(closeableConsumer);
+                    registerCloseables(runtimeWithCloseables.getTwo());
                     ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
                     SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
                     JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
@@ -487,9 +486,12 @@ public class ServiceTestRunner implements TestRunner
             List<String> allTestIds = this.protocolSuite.tests.stream().map(t -> t.id).collect(Collectors.toList());
             this.validKeyMap = getAllValidKeysForExecEnv(execKey, this.protocolSuite, allTestIds);
             PureMultiExecution multiExecution = shallowCopyMultiExecution(this.execution);
-            List<Closeable> tempCloseables = Lists.mutable.empty();
-            multiExecution.func.body.forEach(valSpec -> valSpec.accept(new TestValueSpecificationBuilder(new ArrayList<>(this.validKeyMap.values()), tempCloseables, this.protocolSuite.testData, this.pmcd)));
-            tempCloseables.forEach(closeableConsumer);
+            MutableList<Closeable> tempCloseables = Lists.mutable.empty();
+            multiExecution.func.body.forEach(valSpec -> valSpec.accept(new TestValueSpecificationBuilder(Lists.mutable.withAll(this.validKeyMap.values()), tempCloseables, this.protocolSuite.testData, this.pmcd)));
+            if (tempCloseables.notEmpty())
+            {
+                registerCloseables(tempCloseables);
+            }
             this.compositePlan = ServicePlanGenerator.generateCompositeExecutionPlan(multiExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             for (String key : Sets.mutable.withAll(this.validKeyMap.values()))
             {

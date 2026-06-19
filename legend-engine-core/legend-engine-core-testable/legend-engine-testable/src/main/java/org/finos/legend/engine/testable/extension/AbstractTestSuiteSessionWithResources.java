@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -75,15 +76,19 @@ public abstract class AbstractTestSuiteSessionWithResources<S, T, R> extends Abs
             MutableList<Exception> exceptions = Lists.mutable.empty();
             this.closeables.forEach(c ->
             {
-                try
+                if (c != null)
                 {
-                    c.close();
-                }
-                catch (Exception e)
-                {
-                    exceptions.add(e);
+                    try
+                    {
+                        c.close();
+                    }
+                    catch (Exception e)
+                    {
+                        exceptions.add(e);
+                    }
                 }
             });
+            this.closeables.clear();
             this.state = CLOSED;
             if ((exceptions.size() == 1) && (exceptions.get(0) instanceof RuntimeException))
             {
@@ -106,7 +111,7 @@ public abstract class AbstractTestSuiteSessionWithResources<S, T, R> extends Abs
             {
                 try
                 {
-                    initialize(this.closeables::add);
+                    initialize(this::registerCloseable);
                     this.state = INITIALIZED;
                 }
                 catch (Throwable t)
@@ -138,6 +143,33 @@ public abstract class AbstractTestSuiteSessionWithResources<S, T, R> extends Abs
             }
         }
         return this.state;
+    }
+
+    protected synchronized void registerCloseable(AutoCloseable closeable)
+    {
+        if (this.state == CLOSED)
+        {
+            throw new IllegalStateException("Session is closed");
+        }
+        this.closeables.add(closeable);
+    }
+
+    protected synchronized void registerCloseables(Collection<? extends AutoCloseable> closeables)
+    {
+        if (this.state == CLOSED)
+        {
+            throw new IllegalStateException("Session is closed");
+        }
+        this.closeables.addAll(closeables);
+    }
+
+    protected synchronized void registerCloseables(Iterable<? extends AutoCloseable> closeables)
+    {
+        if (this.state == CLOSED)
+        {
+            throw new IllegalStateException("Session is closed");
+        }
+        this.closeables.addAllIterable(closeables);
     }
 
     protected abstract void initialize(Consumer<? super AutoCloseable> closeableConsumer) throws Exception;
