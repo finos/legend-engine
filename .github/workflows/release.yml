@@ -79,14 +79,27 @@ jobs:
       - name: Checkout Release Tag
         uses: actions/checkout@v6
         with:
-          path: 'target/checkout'
           ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
           fetch-depth: 1
           persist-credentials: true
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Download deps and plugins
+        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
       - name: Build Release Tag
-        working-directory: target/checkout
         run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
         env:
           MAVEN_OPTS: -Xmx36g
@@ -95,6 +108,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: build-output
+          # Upload per-module target/ directories produced by the release-tag
+          # build. Test jobs re-checkout the release tag from git.
           path: |
             ~/**/target/
             !~/**/target/*.jar
@@ -130,8 +145,12 @@ jobs:
       - build
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Release Tag
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
@@ -141,7 +160,6 @@ jobs:
         run: echo EXCLUSION_MODULES=`jq -c '.include | map(.modules) | flatten | map("!org.finos.legend.engine:" + .) | join(",")' ./.github/workflows/resources/modulesToTest.json` >> $GITHUB_OUTPUT
 
       - name: Test
-        working-directory: target/checkout
         env:
           MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -166,8 +184,12 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.testMatrix)}}
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Release Tag
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Before Test
         uses: ./.github/workflows/actions/before-test
@@ -180,11 +202,10 @@ jobs:
           echo INCLUSION_MODULES=`jq -c 'map("org.finos.legend.engine:" + .) | join(",")' <<< $MODULES` >> $GITHUB_OUTPUT
 
       - name: Test
-        working-directory: target/checkout
         env:
           MAVEN_OPTS: "-Xmx1g"
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
@@ -203,8 +224,12 @@ jobs:
       - test-modules
     steps:
 
-      - name: Checkout repo
+      - name: Checkout Release Tag
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Download m2 repository for publishing
         uses: actions/download-artifact@v8
@@ -213,7 +238,6 @@ jobs:
           path: ~/.m2/repository/org/finos/legend/engine
 
       - name: Create bundle to publish
-        working-directory: target/checkout
         run: |
           mkdir -p central-staging/org/finos/legend
           cp -R ~/.m2/repository/org/finos/legend/engine central-staging/org/finos/legend
@@ -229,7 +253,7 @@ jobs:
           cd central-staging && zip -r ../central-publishing/central-bundle.zip org
 
       - name: Publish bundle
-        working-directory: target/checkout/central-publishing
+        working-directory: central-publishing
         run: |
           token=$(printf "$CI_DEPLOY_USERNAME:$CI_DEPLOY_PASSWORD" | base64)
           httpCode=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Authorization: Bearer $token" --form bundle=@central-bundle.zip https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC)
