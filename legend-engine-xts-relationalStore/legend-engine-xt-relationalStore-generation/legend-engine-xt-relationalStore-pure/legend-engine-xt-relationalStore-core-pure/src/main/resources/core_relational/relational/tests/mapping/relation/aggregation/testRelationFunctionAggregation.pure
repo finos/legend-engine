@@ -1,0 +1,128 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::tds::*;
+import meta::pure::mapping::*;
+import meta::pure::router::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::aggregation::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+
+// Sub-aggregation tests for RelationFunctionInstanceSetImplementation.
+// Uses testFirmAgg helper to execute+assert in one call (avoids runner pre-evaluation issues).
+function <<access.private>> meta::relational::tests::mapping::relation::aggregation::testFirmAgg(query:FunctionDefinition<{->TabularDataSet[1]}>[1], expectedRows:String[*]):Boolean[1]
+{
+   let result = execute(
+      $query,
+      meta::relational::tests::mapping::relation::SimpleMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+   assertSameElements($expectedRows, $result.rows->map(r|$r.values->makeString(' | ')));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees.age->average()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees.age->average()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, b:x|$x.employees.firstName->count(), a:x|$x.employees.age->average()])->cast(@TabularDataSet),
+      ['Firm A | 0 | TDSNull', 'Firm B | 0 | TDSNull', 'Firm C | 2 | 35.5', 'Firm D | 1 | 52.0', 'Firm X | 1 | 30.0']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationSumOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, s:x|$x.employees.age->sum()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 71', 'Firm D | 52', 'Firm X | 30']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMaxOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, m:x|$x.employees.age->max()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45', 'Firm D | 52', 'Firm X | 30']
+   );
+}
+
+// TODO: filter inside collection navigation — AGE column fails to resolve against inner relation.
+function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithFilterOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees->filter(e|$e.age > 30).age->average()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 45.0', 'Firm D | 52.0', 'Firm X | TDSNull']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMinOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, m:x|$x.employees.age->min()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 26', 'Firm D | 52', 'Firm X | 30']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationCountOnlyOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, c:x|$x.employees.firstName->count()])->cast(@TabularDataSet),
+      ['Firm A | 0', 'Firm B | 0', 'Firm C | 2', 'Firm D | 1', 'Firm X | 1']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationWithIfOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, a:x|if($x.legalName == 'Firm X', |1.0, |$x.employees.age->average())])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 1.0']
+   );
+}
+
+// TODO: map+arithmetic — inner lambda dropped during relation-function sub-aggregation.
+function <<meta::pure::profiles::test.ToFix>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationMapArithmeticOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, s:x|$x.employees.age->map(a|$a * 2)->sum()])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 142', 'Firm D | 104', 'Firm X | 60']
+   );
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationJoinStringsOnRelationMapping():Boolean[1]
+{
+   testFirmAgg(
+      |Firm.all()->project(~[name:x|$x.legalName, e:x|$x.employees->sortBy(p|$p.firstName).firstName->joinStrings('^')])->cast(@TabularDataSet),
+      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | Fabrice^Oliver', 'Firm D | David', 'Firm X | John']
+   );
+}
