@@ -878,7 +878,11 @@ function <<access.private>>
                                                      );
                                       meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
                                  );,
-         clz : Class<Any>[1] | if($clz == $owner || $clz->isStrictSubType($owner),
+         clz : Class<Any>[1] | if($clz == $owner || $clz->isStrictSubType($owner) || $owner->isStrictSubType($clz),
+                                  // Same inheritance case as the PropertyPathNode arm above: owner can
+                                  // reach a class that is a supertype of itself via inheritance (e.g. a
+                                  // `$src->typeName()` transform on _S_PersonC puts a _S_Person Class
+                                  // node in the property tree; _S_PersonC instances inherit access).
                                   | $pTree,
                                   | let candidates = $t->get($clz)->orElse(list([])).values;
                                     assert($candidates->isNotEmpty(),
