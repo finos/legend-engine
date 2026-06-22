@@ -90,7 +90,7 @@ function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality:
   $rel->filter(row | eval($col,$row)->isNotEmpty());
 }
 
-function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithValueOutsideRange<T>(rel:Relation<T>[1], col:ColSpec<(?:Number)⊆T>[1], min:Integer[1], max:Integer[1]):Relation<T>[1]
+function <<functionType.NormalizeRequiredFunction>> meta::external::dataquality::rowsWithValueOutsideRange<T>(rel:Relation<T>[1], col:ColSpec<(?:Number)⊆T>[1], min:Number[1], max:Number[1]):Relation<T>[1]
 {
   $rel->filter(row | (eval($col,$row)->toOne() < $min) || (eval($col,$row)->toOne() > $max));
 }

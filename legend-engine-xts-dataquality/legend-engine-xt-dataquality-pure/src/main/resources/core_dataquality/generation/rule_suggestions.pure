@@ -43,8 +43,8 @@ function meta::external::dataquality::rule_suggestions::ruleSuggestions(values:M
     let countNull = int($v, ProfileColumn.COUNT_NULL);    
 
     let typeSpecificRules = if ([
-      pair(|$type->subTypeOf(Integer), | [
-        expectColumnToBeBetween($gt, $name, int($v, ProfileColumn.NUMBER_MIN), int($v, ProfileColumn.NUMBER_MAX))
+      pair(|$type->subTypeOf(Number), | [
+        expectColumnToBeBetween($gt, $name, number($v, ProfileColumn.NUMBER_MIN), number($v, ProfileColumn.NUMBER_MAX))
       ])
     ], 
     | []);
@@ -95,9 +95,9 @@ function meta::external::dataquality::rule_suggestions::expectRowsToBeNull(rel:G
 }
 
 
-function meta::external::dataquality::rule_suggestions::expectColumnToBeBetween(rel:GenericType[1], column:String[1], min:Integer[1], max:Integer[1]):RelationValidation[1]
+function meta::external::dataquality::rule_suggestions::expectColumnToBeBetween(rel:GenericType[1], column:String[1], min:Number[1], max:Number[1]):RelationValidation[1]
 {
-  let expression = sfe(rowsWithValueOutsideRange_Relation_1__ColSpec_1__Integer_1__Integer_1__Relation_1_, [
+  let expression = sfe(rowsWithValueOutsideRange_Relation_1__ColSpec_1__Number_1__Number_1__Relation_1_, [
                         var('rel', PureOne, []), iv(colSpec($column)), iv($min), iv($max)
                       ]);
 
@@ -154,4 +154,9 @@ function meta::external::dataquality::rule_suggestions::str(m:Map<String, Any>[1
 function meta::external::dataquality::rule_suggestions::int(m:Map<String, Any>[1], col:ProfileColumn[1]):Integer[1]
 {
   parseInteger($m->get(name($col))->toOne()->cast(@Number)->toString());
+}
+
+function meta::external::dataquality::rule_suggestions::number(m:Map<String, Any>[1], col:ProfileColumn[1]):Number[1]
+{
+  $m->get(name($col))->toOne()->cast(@Number);
 }
