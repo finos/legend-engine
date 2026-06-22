@@ -18,7 +18,7 @@ import meta::external::dataquality::rule_suggestions::*;
 
 function <<test.Test>> meta::external::dataquality::tests::testRuleSuggestions():Boolean[1]
 {
-  let lambda = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, AGE, DOB])};
+  let lambda = {|#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, AGE, DOB, COUPOUN])};
 
   let values = [
     newMap([
@@ -37,15 +37,23 @@ function <<test.Test>> meta::external::dataquality::tests::testRuleSuggestions()
       p(ProfileColumn.COLUMN_NAME, 'DOB'),
       p(ProfileColumn.COUNT, 3),
       p(ProfileColumn.COUNT_NULL, 3)
-    ])    
+    ]),
+    newMap([
+      p(ProfileColumn.COLUMN_NAME, 'COUPOUN'),
+      p(ProfileColumn.COUNT, 3),
+      p(ProfileColumn.COUNT_NULL, 1),
+      p(ProfileColumn.NUMBER_MIN, 1.45),
+      p(ProfileColumn.NUMBER_MAX, 10.78)
+    ])
   ];
 
   let results = ruleSuggestions($values, $lambda);
 
   let expected = [
-    ^RuleSuggestion(name = 'FIRSTNAMENonNull', assertion = 'rel|$rel->rowsWithEmptyColumn(~FIRSTNAME)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])'),
-    ^RuleSuggestion(name = 'AGEBetweenValues', assertion = 'rel|$rel->rowsWithValueOutsideRange(~AGE, 1, 10)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])'),
-    ^RuleSuggestion(name = 'DOBNull', assertion = 'rel|$rel->rowsWithNonEmptyColumn(~DOB)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB])')
+    ^RuleSuggestion(name = 'FIRSTNAMENonNull', assertion = 'rel|$rel->rowsWithEmptyColumn(~FIRSTNAME)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB,COUPOUN])'),
+    ^RuleSuggestion(name = 'AGEBetweenValues', assertion = 'rel|$rel->rowsWithValueOutsideRange(~AGE, 1, 10)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB,COUPOUN])'),
+    ^RuleSuggestion(name = 'DOBNull', assertion = 'rel|$rel->rowsWithNonEmptyColumn(~DOB)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB,COUPOUN])'),
+    ^RuleSuggestion(name = 'COUPOUNBetweenValues', assertion = 'rel|$rel->rowsWithValueOutsideRange(~COUPOUN, 1.45, 10.78)->assertRelationEmpty(~[FIRSTNAME,AGE,DOB,COUPOUN])')
   ];
 
   assertEquals($expected, $results);

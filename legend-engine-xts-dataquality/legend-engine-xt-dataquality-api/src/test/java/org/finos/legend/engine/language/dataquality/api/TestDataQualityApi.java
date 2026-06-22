@@ -148,11 +148,12 @@ public class TestDataQualityApi
 
         List<RelationValidation> expected = FastList.newListWith(
                 new RelationValidation()._name("idNonNull")._assertion(lambda("rel|$rel->rowsWithEmptyColumn(\n  ~id\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
-                new RelationValidation()._name("idBetweenValues")._assertion(lambda("rel|$rel->rowsWithValueOutsideRange(\n  ~id,\n  -1,\n  5\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
+                new RelationValidation()._name("idBetweenValues")._assertion(lambda("rel|$rel->rowsWithValueOutsideRange(\n  ~id,\n  -1d,\n  5d\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
                 new RelationValidation()._name("fullNameNonNull")._assertion(lambda("rel|$rel->rowsWithEmptyColumn(\n  ~fullName\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
-                new RelationValidation()._name("ageBetweenValues")._assertion(lambda("rel|$rel->rowsWithValueOutsideRange(\n  ~age,\n  25,\n  35\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
-                new RelationValidation()._name("annualSalaryNonNull")._assertion(lambda("rel|$rel->rowsWithEmptyColumn(\n  ~annualSalary\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)"))
-        );
+                new RelationValidation()._name("ageBetweenValues")._assertion(lambda("rel|$rel->rowsWithValueOutsideRange(\n  ~age,\n  25d,\n  35d\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
+                new RelationValidation()._name("annualSalaryNonNull")._assertion(lambda("rel|$rel->rowsWithEmptyColumn(\n  ~annualSalary\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)")),
+                new RelationValidation()._name("annualSalaryBetweenValues")._assertion(lambda("rel|$rel->rowsWithValueOutsideRange(\n  ~annualSalary,\n  30000.0d,\n  75000.75d\n)->assertRelationEmpty(\n  ~[\n     id,\n     fullName,\n     age,\n     emailAddress,\n     annualSalary,\n     dateOfBirth\n   ]\n)"))
+                );
 
         ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
