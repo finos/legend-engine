@@ -47,11 +47,14 @@ runs:
         cache-name: cache-mvn-deps
       with:
         path: ~/.m2/repository
+        # Must match release.yml/build.yml/code-quality.yml so test jobs
+        # restore the deps cache produced by the build job. Restore-only —
+        # this action never saves the cache, so no purge step is needed; the
+        # subsequent `Download m2 repository` step overwrites the engine
+        # subtree with the freshly built artifacts.
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
 
     - name: Download deps and plugins
       shell: bash

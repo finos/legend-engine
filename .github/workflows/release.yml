@@ -73,6 +73,20 @@ jobs:
           developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2/repository
+          # Keep the restore-keys list narrow on purpose.
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: Download deps and plugins
+        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
       - name: Prepare release
         run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
@@ -84,20 +98,8 @@ jobs:
           fetch-depth: 1
           persist-credentials: true
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v5
-        env:
-          cache-name: cache-mvn-deps
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
-      - name: Download deps and plugins
-        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+      - name: Purge stale legend-engine artifacts from local Maven repo
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
       - name: Build Release Tag
         run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
@@ -126,6 +128,13 @@ jobs:
           retention-days: 1
           overwrite: true
           if-no-files-found: error
+
+      - name: Purge engine artifacts before cache save
+        # actions/cache's post-job save snapshots ~/.m2/repository at the
+        # end of the job. We don't want the just-built engine jars in that
+        # snapshot.
+        if: always()
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
       - name: Set Test Matrix
         id: testMatrix
@@ -238,7 +247,19 @@ jobs:
           path: ~/.m2/repository/org/finos/legend/engine
 
       - name: Create bundle to publish
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
+          # Defensive guard: keep only directories whose name is exactly the
+          # release version under each artifact path. Should be a no-op when
+          # the build job already purged stale artifacts, but protects the
+          # publish step against any future regression that lets prior-release
+          # jars slip into ~/.m2/repository/org/finos/legend/engine.
+          find ~/.m2/repository/org/finos/legend/engine -mindepth 2 -type d \
+            -regextype posix-extended \
+            -regex '.*/[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.+-]+)?$' \
+            ! -name "$RELEASE_VERSION" -prune -exec rm -rf {} +
+
           mkdir -p central-staging/org/finos/legend
           cp -R ~/.m2/repository/org/finos/legend/engine central-staging/org/finos/legend
           find central-staging -type f \( -name "*.xml" -o -name "*.repositories" \) -delete

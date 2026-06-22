@@ -80,7 +80,6 @@ jobs:
           key: ${{ runner.os }}-pure-${{ env.cache-name }}-${{ hashFiles('legend-pure/**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-pure-${{ env.cache-name }}-
-            ${{ runner.os }}-pure-
 
       - name: Extract legend-pure version
         id: extract-version
@@ -130,8 +129,6 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -181,6 +178,12 @@ jobs:
         if: (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'finos/legend-engine') || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: echo PROFILES='-P pct-cloud-test' >> $GITHUB_OUTPUT
 
+      - name: Purge stale legend-engine artifacts from local Maven repo
+        # The Maven cache restore (via restore-keys fall-through) brings in
+        # org/finos/legend/engine/* jars accumulated by prior build/release
+        # runs that share this cache key prefix.
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
+
       - name: Build (PR)
         if: github.ref != 'refs/heads/master'
         env:
@@ -216,6 +219,13 @@ jobs:
           retention-days: 1
           overwrite: true
           if-no-files-found: error
+
+      - name: Purge engine artifacts before cache save
+        # actions/cache's post-job save snapshots ~/.m2/repository at the
+        # end of the job. We don't want the just-built engine jars in that
+        # snapshot.
+        if: always()
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
       - name: Set Test Matrix
         id: testMatrix
