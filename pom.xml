@@ -300,6 +300,7 @@
                         <source>8</source>
                         <doclint>none</doclint>
                         <quiet>true</quiet>
+                        <excludePackageNames>org.finos.legend.pure.generated</excludePackageNames>
                     </configuration>
                 </plugin>
                 <plugin>
