@@ -56,6 +56,7 @@
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
+                        <excludePackageNames>org.finos.legend.pure.generated.*</excludePackageNames>
                         <sourcepath>
                             ${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations
                         </sourcepath>
