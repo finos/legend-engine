@@ -333,6 +333,27 @@ $employees->aggregate(~[
 ])
 ```
 
+> **No direct class-collection `groupBy`.**
+> Unlike TDS 1.0, which has a `groupBy(set:K[*], functions, aggValues, ids)` overload that
+> accepts a class collection directly, the Relation API has **no** such overload. Every
+> `groupBy` signature requires a `Relation<T>[1]` as its first argument. When starting from a
+> class collection you must `project` it into a `Relation<T>` first:
+>
+> ```pure
+> // TDS 1.0 — groupBy directly on a class collection (no project required)
+> Employee.all()->from(mapping, runtime)
+>   ->groupBy(
+>       [x|$x.dept],
+>       [agg('headcount', x|$x.id, vals|$vals->count())],
+>       ['dept', 'headcount']
+>     )
+>
+> // Relation — project first, then groupBy
+> Employee.all()->from(mapping, runtime)
+>   ->project(~[dept:x|$x.dept, id:x|$x.id])
+>   ->groupBy(~dept, ~headcount:x|$x.id:y|$y->count())
+> ```
+
 #### Joins
 
 | Function | Signature | Description |
@@ -475,6 +496,7 @@ Relation functions.
 | `concatenate(tds1, tds2)` | `concatenate(tds1, tds2)` |
 | `join(tds1, tds2, type, cols)` | `join(tds1, tds2, JoinKind, f)` |
 | `groupBy(tds, cols, aggs)` | `groupBy(tds, ~[…], ~[…])` |
+| `groupBy(set, functions, aggValues, ids)` *(class-collection overload)* | `project(set, ~[…])->groupBy(~[…], ~[…])` — `project` is required; the Relation API has no class-collection `groupBy` overload |
 | `olapGroupBy(tds, cols, sort, op, name)` | `extend(tds, over(…), ~name:…)` |
 
 ---
