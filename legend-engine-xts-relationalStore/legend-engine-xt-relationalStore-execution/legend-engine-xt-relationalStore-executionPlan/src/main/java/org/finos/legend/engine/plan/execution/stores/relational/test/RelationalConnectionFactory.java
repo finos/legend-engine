@@ -224,6 +224,10 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     {
         if (testStore instanceof Database)
         {
+            if (data instanceof RelationElementsData)
+            {
+                data = buildRelationCSVDataFromRelationElementData(Collections.singletonList((RelationElementsData) data));
+            }
             RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
             connection.element = testStore.getPath();
             return this.tryBuildTestConnection(connection, Lists.mutable.of(data), hints);

@@ -27,7 +27,14 @@ Class meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test:
 
 Class  meta::pure::mapping::metamodel::MappingTest extends meta::pure::test::AtomicTest
 {
-  storeTestData: meta::pure::data::StoreTestData[*];
+  storeTestData: meta::pure::mapping::metamodel::MappingTestData[*];
+}
+
+Class meta::pure::mapping::metamodel::MappingTestData
+{
+    doc: String[0..1];
+    data: meta::pure::data::EmbeddedData[1];
+    element: PackageableElement[1];
 }
 
 ###Diagram
@@ -96,7 +103,7 @@ Diagram meta::pure::mapping::metamodel::diagram::MappingMetamodel(width=0.0, hei
         lineWidth=1.0)
 
     TypeView cview_8(
-        type=meta::pure::data::StoreTestData,
+        type=meta::pure::mapping::metamodel::MappingTestData,
         position=(1547.18066, 616.00000),
         width=144.69531,
         height=72.00000,
