@@ -184,7 +184,8 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:String[
 
 function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:String[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
 {
-  assert(($fromExpected && $actual->contains($packageableRuntimeAsString)) || (!$fromExpected && !$actual->contains($packageableRuntimeAsString)));  
+  // When packageableRuntimeAsString is empty, the query has no 'from' to check for, so skip the contains assertion.
+  assert($packageableRuntimeAsString == '' || ($fromExpected && $actual->contains($packageableRuntimeAsString)) || (!$fromExpected && !$actual->contains($packageableRuntimeAsString)));
   assertLambdaEquals($expected, $actual->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
 }
 

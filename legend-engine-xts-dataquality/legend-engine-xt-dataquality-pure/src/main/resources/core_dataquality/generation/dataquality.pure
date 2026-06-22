@@ -506,7 +506,7 @@ function meta::external::dataquality::generateDataqualityRelationValidationLambd
   );
   let containsFrom = $dqRelationValidation.query->isEndingWithFromFunction();
   let multipleValidations = $selectedValidations->size() > 1;
-  let lambda = if (($removeFrom || $containsFrom),
+  let lambda = if (($removeFrom && $containsFrom),
     | $dqRelationValidation.query->popTerminalFunctionExpression(), 
     | $dqRelationValidation.query
   );
