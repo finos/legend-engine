@@ -189,7 +189,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true -Dmaven.shade.skip=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true -DskipShade=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
