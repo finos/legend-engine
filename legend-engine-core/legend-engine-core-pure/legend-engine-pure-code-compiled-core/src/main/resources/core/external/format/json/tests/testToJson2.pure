@@ -17,7 +17,7 @@ import meta::json::tests::toJson::*;
 
 function <<access.private>> meta::json::tests::toJson::deserializeBackAndCompare<T>(json: String[1], clazz: Class<T>[1], originalInstance: Any[1]):Boolean[1]
 {
-   $json->fromJson($clazz)->propertyComparator($originalInstance, []);
+   $json->fromJsonNative($clazz)->propertyComparator($originalInstance, []);
 }
 
 

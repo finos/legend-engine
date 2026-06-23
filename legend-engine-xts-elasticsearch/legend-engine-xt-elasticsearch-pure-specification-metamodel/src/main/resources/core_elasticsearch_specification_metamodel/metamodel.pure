@@ -534,5 +534,5 @@ function meta::external::store::elasticsearch::specification::metamodel::parse(s
       ]
     );
 
-    $specAsJson->fromJson(Model, $jsonDeserializationConfig);
+    $specAsJson->fromJsonNative(Model, $jsonDeserializationConfig);
 }

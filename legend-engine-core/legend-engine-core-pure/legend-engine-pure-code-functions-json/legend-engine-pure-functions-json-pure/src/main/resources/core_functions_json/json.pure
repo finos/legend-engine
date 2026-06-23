@@ -18,7 +18,7 @@ native function meta::json::escape(string:String[1]):String[1];
 
 native function meta::json::parseJSON(string:String[1]):meta::json::JSONElement[1];
 
-native function meta::json::fromJson<T>(string:String[1], clazz:Class<T>[1], config:JSONDeserializationConfig[1]):T[1];
+native function meta::json::fromJsonNative<T>(string:String[1], clazz:Class<T>[1], config:JSONDeserializationConfig[1]):T[1];
 
 native function meta::json::fromJsonDeprecated<T>(string:String[1], clazz:Class<T>[1], config:JSONDeserializationConfig[1]):T[1];
 

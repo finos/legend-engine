@@ -25,7 +25,7 @@ public class FromJson extends AbstractNativeFunctionGeneric
     {
         super("org.finos.legend.pure.generated.JsonGen.fromJson",
                 new Object[]{String.class, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, "org.finos.legend.pure.generated.Root_meta_json_JSONDeserializationConfig", SourceInformation.class, ExecutionSupport.class},
-                true, true, false, "fromJson_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
+                true, true, false, "fromJsonNative_String_1__Class_1__JSONDeserializationConfig_1__T_1_");
     }
 
     @Override

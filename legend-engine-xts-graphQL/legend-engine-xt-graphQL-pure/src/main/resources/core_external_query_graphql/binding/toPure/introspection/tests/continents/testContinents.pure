@@ -5,7 +5,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testCountriesFromIntrospection():Boolean[1]
 {
     let str = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/continents/continents.json')->toOne();
-    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    let res = $str->meta::json::fromJsonNative(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
     assertEquals( 'Enum CacheControlScope\n' +
                   '{\n' +
                   '  PUBLIC,\n' +
