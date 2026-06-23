@@ -51,11 +51,14 @@ jobs:
           cache-name: cache-mvn-deps
         with:
           path: ~/.m2/repository
+          # Keep aligned with release.yml/build.yml/before-test. Sonar
+          # shares the deps cache with the build/release workflows so they
+          # must use the same key shape. Restore-keys narrow on purpose:
+          # the previous catch-all fallbacks matched unrelated caches and
+          # wasted restore time.
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -68,6 +71,23 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
+      - name: Purge stale legend-engine artifacts from local Maven repo
+        # Sonar runs `mvn install -P sonar` which would inherit any stale
+        # engine jars accumulated in the shared cache namespace from prior
+        # build/release runs. Remove them so the install starts from a
+        # known-clean engine state.
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
+
       - name: Check Code Quality
         run: |
           mvn -B -e -DskipTests=true install -P sonar
+
+      - name: Purge engine artifacts before cache save
+        # Symmetric with release.yml/build.yml: strip the just-built engine
+        # jars from the cache snapshot taken by actions/cache's post-job
+        # save, so this workflow doesn't pollute the shared cache namespace
+        # with engine artifacts that subsequent build/release runs would
+        # just throw away.
+        if: always()
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
+
