@@ -1,0 +1,38 @@
+name: persistence-snapshot-unitemporal
+title: "Persistence unitemporal snapshot (batch-id milestoning)"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  as a unitemporal snapshot milestoned on processing batch id (`BATCH_IN` /
+  `BATCH_OUT`). The second batch demonstrates the milestoning behaviour: rows
+  absent from the incoming snapshot are closed out (their `BATCH_OUT` is set)
+  rather than deleted, while re-appearing rows are re-opened in a new batch.
+
+modelSources:
+  model:
+    root: persistence-snapshot-unitemporal
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-snapshot-unitemporal
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:persistence
+  - persistence:service-output-target
+  - persistence:snapshot
+  - persistence:unitemporal
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - unitemporal-snapshot
+  - batch-id-milestoning
+  - h2

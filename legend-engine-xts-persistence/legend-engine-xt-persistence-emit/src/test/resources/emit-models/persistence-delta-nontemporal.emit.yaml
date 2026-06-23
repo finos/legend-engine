@@ -1,0 +1,41 @@
+name: persistence-delta-nontemporal
+title: "Persistence non-temporal delta with delete indicator"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  as a non-temporal delta keyed on `ID`. Incoming rows are upserted, and rows
+  whose `DELETED` field matches one of the configured delete values
+  ('1' / 'YES' / 'true') are removed from the target — exercising the Delta
+  `DeleteIndicator` action end-to-end. A date-time audit column is also written.
+
+modelSources:
+  model:
+    root: persistence-delta-nontemporal
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-delta-nontemporal
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:auditing
+  - persistence:delete-indicator
+  - persistence:delta
+  - persistence:nontemporal
+  - persistence:persistence
+  - persistence:service-output-target
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - non-temporal-delta
+  - delete-indicator
+  - auditing
+  - h2

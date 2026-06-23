@@ -1,0 +1,44 @@
+name: persistence-graphfetch-output
+title: "Persistence with graph-fetch service output and multiple targets"
+description: |
+  A Persistence driven by a graph-fetch service (M2M-backed `Firm`/`Person`
+  model) whose output is fanned out to two relational targets via two
+  serviceOutputTargets: the `employees` collection into one bitemporal table
+  (with a delete indicator) and the `legalName` into another. Each test pins a
+  `graphFetchPath` to the property it asserts on. This is the catalog's example
+  of graph-fetch service output (vs. the flat TDS output the other persistence
+  examples use) and of a multi-target Persistence.
+
+modelSources:
+  model:
+    root: persistence-graphfetch-output
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-graphfetch-output
+      files:
+        - support.pure
+
+features:
+  - execution:service
+  - persistence:bitemporal
+  - persistence:delete-indicator
+  - persistence:delta
+  - persistence:graph-fetch-service-output
+  - persistence:persistence
+  - persistence:service-output-target
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - graph-fetch-output
+  - multi-target
+  - bitemporal-delta
+  - m2m
+  - h2

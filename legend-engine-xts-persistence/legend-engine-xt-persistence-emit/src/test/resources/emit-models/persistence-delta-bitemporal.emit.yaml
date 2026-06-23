@@ -1,0 +1,40 @@
+name: persistence-delta-bitemporal
+title: "Persistence bitemporal delta (batch-id + source-derived validity)"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  as a bitemporal delta: processing time is milestoned on batch id
+  (`BATCH_IN` / `BATCH_OUT`) while the validity (source) dimension is derived
+  from the incoming `SOURCE_FROM` / `SOURCE_THROUGH` fields and written to the
+  `FROM_Z` / `THRU_Z` columns. Exercises both temporal dimensions of a
+  bitemporal target through EMIT's Testable execution.
+
+modelSources:
+  model:
+    root: persistence-delta-bitemporal
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-delta-bitemporal
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:bitemporal
+  - persistence:delta
+  - persistence:persistence
+  - persistence:service-output-target
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - bitemporal-delta
+  - batch-id-milestoning
+  - source-derived-validity
+  - h2

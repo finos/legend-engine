@@ -1,0 +1,40 @@
+name: persistence-snapshot-audit
+title: "Persistence non-temporal snapshot with date-time auditing"
+description: |
+  A Persistence that ingests a service's TDS output into a relational H2 table
+  as a non-temporal snapshot, stamping each row with a batch date-time audit
+  column (`auditing: DateTime`). Complements `persistence-snapshot` (which has
+  no auditing) — it exists to prove the audit-column target option survives the
+  full pipeline and that the persistence Testable's batch comparison correctly
+  excludes the non-deterministic audit timestamp from its assertions.
+
+modelSources:
+  model:
+    root: persistence-snapshot-audit
+    files:
+      - persistence.pure
+  dependencies:
+    - root: persistence-shared
+      files:
+        - source.pure
+    - root: persistence-snapshot-audit
+      files:
+        - db.pure
+
+features:
+  - execution:service
+  - persistence:auditing
+  - persistence:nontemporal
+  - persistence:persistence
+  - persistence:service-output-target
+  - persistence:snapshot
+  - scaffolding:class
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - persistence
+  - non-temporal-snapshot
+  - auditing
+  - h2

@@ -713,6 +713,23 @@ infrastructure rather than the feature under test:
 | `execution:snowflake-app` | Snowflake app function activator |
 | `execution:test-data` | Test data definition |
 
+#### Persistence — service-driven dataset ingestion
+
+| Feature | Description |
+|---|---|
+| `persistence:append-only` | Append-only updates handling on a non-temporal target |
+| `persistence:auditing` | Audit column (e.g. batch date-time) written to the target |
+| `persistence:bitemporal` | Bitemporal target milestoning (processing + source-derived dimensions) |
+| `persistence:delete-indicator` | Delta delete-indicator action (soft deletes) |
+| `persistence:delta` | Delta dataset type |
+| `persistence:graph-fetch-service-output` | Graph-fetch service output (vs. TDS) |
+| `persistence:nontemporal` | Non-temporal target (no milestoning) |
+| `persistence:notifier` | Persistence notifier (email / PagerDuty notifyees) |
+| `persistence:persistence` | Persistence element (service-driven dataset ingestion) |
+| `persistence:service-output-target` | Service-output target (`serviceOutputTargets` block) |
+| `persistence:snapshot` | Snapshot dataset type |
+| `persistence:unitemporal` | Unitemporal (processing-time) target milestoning |
+
 #### Complexity
 
 Complexity is determined by **domain-crossing depth** — how many distinct pipeline
@@ -732,7 +749,7 @@ that case:
 
 1. Add the new `domain:capability` entry to the appropriate table above.
 2. Include the taxonomy update in the same PR as the new EMIT test.
-3. If a new *domain* is needed (e.g., `persistence`, `data-quality`), add a new
+3. If a new *domain* is needed (e.g., `data-quality`), add a new
    subsection and update the complexity-scoring guidance accordingly.
 
 ### 6.3 Catalog Index
