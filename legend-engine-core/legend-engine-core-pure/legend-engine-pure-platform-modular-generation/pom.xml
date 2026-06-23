@@ -37,4 +37,24 @@
         <module>legend-engine-pure-platform-precisePrimitives-java</module>
         <module>legend-engine-pure-platform-store-relational-java</module>
     </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!--
+                    The sub-modules under this aggregator have no hand-written Java sources, all
+                    under the package org.finos.legend.pure.generated. The root pom globally excludes
+                    that package from javadoc generation to keep build artifacts small. Overriding
+                    here to satisfy Sonatype publishing.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <excludePackageNames combine.self="override"/>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
