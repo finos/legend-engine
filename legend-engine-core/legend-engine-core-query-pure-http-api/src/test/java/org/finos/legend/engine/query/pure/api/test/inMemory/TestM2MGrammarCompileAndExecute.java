@@ -308,6 +308,51 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"enum\":\"Target Enum@$#_*[]{}()\"}}", jsonResult2);
     }
 
+    @Test
+    public void testM2MIndexOfMapsToInteger() throws IOException
+    {
+        // Regression test for the M2M Java code-generation bug where the Pure j_invoke return
+        // type declared for indexOf was the element type of the collection (e.g. String) instead
+        // of an integer. Mapping the result into an Integer-typed property failed to compile the
+        // generated Java. See essential/collection.pure (indexOf fc2).
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::S_Item\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Item\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "   idx  : Integer[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::itemMapping\n" +
+                "(\n" +
+                "   *test::Item : Pure\n" +
+                "   {\n" +
+                "     ~src test::S_Item\n" +
+                "     name : $src.name,\n" +
+                "     idx  : ['a', 'b', 'c']->indexOf($src.name)\n" +
+                "   }\n" +
+                ")\n"
+        );
+
+        ClassInstance fetchTree = rootGFT("test::Item", propertyGFT("name"), propertyGFT("idx"));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Item")), fetchTree), fetchTree));
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::itemMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(jsonModelConnection("test::S_Item", "{\"name\":\"b\"}"));
+        input.context = context();
+        String json = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"b\",\"idx\":1}}", json);
+    }
+
     private Response runTest(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
