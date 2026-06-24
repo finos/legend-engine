@@ -263,6 +263,18 @@ public class TestFunctionTestSuite
     }
 
     @Test
+    public void testRelationFunctionWithSemiStructuredExtract()
+    {
+        List<TestResult> varcharResults = executeFunctionTest("legend-testable-function-test-relation-semistructured.pure", "model::FirmLegalNameQuery__Relation_1_");
+        Assert.assertEquals(1, varcharResults.size());
+        Assert.assertTrue(hasTestPassed(findTestById(varcharResults, "test_extractVarcharIsUnquoted")));
+
+        List<TestResult> intResults = executeFunctionTest("legend-testable-function-test-relation-semistructured.pure", "model::FirmEmployeeCountQuery__Relation_1_");
+        Assert.assertEquals(1, intResults.size());
+        Assert.assertTrue(hasTestPassed(findTestById(intResults, "test_extractIntegerCast")));
+    }
+
+    @Test
     public void testRelationFunctionWithDateFilterParameter()
     {
         List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-relation-date-filter.pure", "model::getOrders_Date_1__Relation_1_");

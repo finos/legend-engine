@@ -1,0 +1,125 @@
+###Relational
+Database store::SemiStructuredTestDB
+(
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+)
+
+
+###Pure
+import meta::pure::precisePrimitives::*;
+
+Class model::SemiStructuredFirm
+{
+  id: Integer[1];
+  legalName: String[1];
+  employeeCount: Integer[1];
+}
+
+function model::FirmLegalNameQuery(): meta::pure::metamodel::relation::Relation<('LegalName':String)>[1]
+{
+  model::SemiStructuredFirm.all()
+    ->project(~['LegalName': f | $f.legalName])
+    ->from(
+       execution::SemiStructuredMapping,
+       execution::SemiStructuredRuntime
+    )
+}
+{
+  testSuite_1
+  (
+    store::SemiStructuredTestDB:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,FIRM_DETAILS
+            1,"{""legalName"":""Firm X"",""employeeCount"":4}"
+            2,"{""legalName"":""Firm A"",""employeeCount"":1}";
+        }#;
+    test_extractVarcharIsUnquoted | FirmLegalNameQuery() => Relation
+                                                                                                                          #{
+                                                                                                                              LegalName
+                                                                                                                              Firm A
+                                                                                                                              Firm X;
+                                                                                                                          }#;
+  )
+}
+
+function model::FirmEmployeeCountQuery(): meta::pure::metamodel::relation::Relation<('Employee Count':Integer)>[1]
+{
+  model::SemiStructuredFirm.all()
+    ->project(~['Employee Count': f | $f.employeeCount])
+    ->from(
+       execution::SemiStructuredMapping,
+       execution::SemiStructuredRuntime
+    )
+}
+{
+  testSuite_1
+  (
+    store::SemiStructuredTestDB:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,FIRM_DETAILS
+            1,"{""legalName"":""Firm X"",""employeeCount"":4}"
+            2,"{""legalName"":""Firm A"",""employeeCount"":1}";
+        }#;
+    test_extractIntegerCast | FirmEmployeeCountQuery() => Relation
+                                                              #{
+                                                                  Employee Count
+                                                                  1
+                                                                  4;
+                                                              }#;
+  )
+}
+
+
+###Mapping
+Mapping execution::SemiStructuredMapping
+(
+  *model::SemiStructuredFirm: Relational
+  {
+    ~primaryKey
+    (
+      [store::SemiStructuredTestDB]FIRM_TABLE.ID
+    )
+    ~mainTable [store::SemiStructuredTestDB]FIRM_TABLE
+    id: [store::SemiStructuredTestDB]FIRM_TABLE.ID,
+    legalName: extractFromSemiStructured([store::SemiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
+    employeeCount: extractFromSemiStructured([store::SemiStructuredTestDB]FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER')
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::SemiStructuredConnection
+{
+  store: store::SemiStructuredTestDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::SemiStructuredRuntime
+{
+  mappings:
+  [
+    execution::SemiStructuredMapping
+  ];
+  connections:
+  [
+    store::SemiStructuredTestDB:
+    [
+      connection_1: model::SemiStructuredConnection
+    ]
+  ];
+}
+
