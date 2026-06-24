@@ -8715,7 +8715,13 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
                                               |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$leftVal])]),
                                               |if($leftVal->hasOptionalVarPlaceHolderValue(),
                                                   |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])]),
-                                                  |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]));
+                                                  |if(!$state.inFilter && $leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
+                                                      |^DynaFunction(name = 'group', parameters = [^DynaFunction(name = 'or', parameters = [
+                                                          ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]),
+                                                          ^DynaFunction(name = 'group', parameters = [^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'isNull', parameters = [$leftVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])])])
+                                                      ])]),
+                                                      |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal])
+                                                  ));
                                               );
                                           );
                                      );
