@@ -144,7 +144,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,12),[17,18)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
         <project.build.outputTimestamp>1782737646</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>

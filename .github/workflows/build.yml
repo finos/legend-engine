@@ -68,7 +68,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'zulu'
 
       - name: Cache Maven dependencies (pure)
@@ -133,7 +133,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'zulu'
           server-id: central
           server-username: CI_DEPLOY_USERNAME
