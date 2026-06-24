@@ -25,3 +25,4 @@
 **/legend-engine-language-pure-grammar/src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/core/gen/
 /welcome.pure
 /legend-engine-core/legend-engine-core-shared/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json
+strip-ai-coauthors.sh
