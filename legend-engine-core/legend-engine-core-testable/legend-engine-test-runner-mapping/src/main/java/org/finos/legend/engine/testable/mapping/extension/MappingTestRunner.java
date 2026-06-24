@@ -16,6 +16,7 @@ package org.finos.legend.engine.testable.mapping.extension;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.SetIterable;
 import org.eclipse.collections.api.tuple.Pair;
@@ -28,6 +29,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirs
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.RelationAccessorTestConnectionFactory;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
@@ -39,12 +42,15 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.TestConnectionBuildParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
@@ -70,6 +76,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingT
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +86,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
@@ -120,6 +130,7 @@ public class MappingTestRunner implements TestRunner
     private final PlanExecutor executor;
     private final String pureVersion;
     private final MutableList<ConnectionFactoryExtension> factories;
+    private final MutableList<RelationAccessorTestConnectionFactory> connectionAndDatabaseBuilders;
 
     public MappingTestRunner(Mapping pureMapping, String pureVersion)
     {
@@ -128,6 +139,7 @@ public class MappingTestRunner implements TestRunner
         this.executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
         this.extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         this.factories = Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+        this.connectionAndDatabaseBuilders = Lists.mutable.withAll(ServiceLoader.load(RelationAccessorTestConnectionFactory.class));
     }
 
     @Override
@@ -175,6 +187,13 @@ public class MappingTestRunner implements TestRunner
 
     private TestResult executeMappingTest(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
     {
+        return containsStoreTestData(mappingTest, context)
+                ? executeMappingTestWithStoreTestData(mappingTest, context, hints, sharedPlan)
+                : executeMappingTestWithNonStoreElementsTestData(mappingTest, context);
+    }
+
+    private TestResult executeMappingTestWithStoreTestData(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
+    {
         MutableList<Closeable> testOwnedCloseables = null;
         try
         {
@@ -207,7 +226,133 @@ public class MappingTestRunner implements TestRunner
         }
     }
 
+    private boolean containsStoreTestData(MappingTest mappingTest, MappingTestRunnerContext context)
+    {
+        boolean foundStoreTestData = false;
+        boolean foundNonStoreElementTestData = false;
+        // TODO: should maybe rename StoreTestData to MappingTestData
+        for (StoreTestData testData : mappingTest.storeTestData)
+        {
+            try
+            {
+                HelperRuntimeBuilder.getStore(testData.store.path, testData.store.sourceInformation, context.getPureModel().getContext());
+                foundStoreTestData = true;
+                if (foundNonStoreElementTestData)
+                {
+                    break;
+                }
+            }
+            catch (Exception e)
+            {
+                foundNonStoreElementTestData = true;
+                if (foundStoreTestData)
+                {
+                    break;
+                }
+            }
+        }
+        if (foundStoreTestData && foundNonStoreElementTestData)
+        {
+            throw new IllegalStateException("Error in mapping test " + mappingTest.id + ". The combination of store and non-store elements' test data is not supported");
+        }
+        if (!foundStoreTestData && !foundNonStoreElementTestData)
+        {
+            throw new IllegalStateException("Error in mapping test " + mappingTest.id + ". No test data provided");
+        }
+        return foundStoreTestData;
+    }
+
+    private TestResult executeMappingTestWithNonStoreElementsTestData(MappingTest mappingTest, MappingTestRunnerContext context)
+    {
+        MutableList<Closeable> testOwnedCloseables = null;
+        try
+        {
+            Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> modifiedFunctionForTestExecution = this.modifyFunctionForTestExecution(context, mappingTest.storeTestData);
+            testOwnedCloseables = Lists.mutable.withAll(modifiedFunctionForTestExecution.getTwo().getTwo());
+            SingleExecutionPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, false).plan;
+            TestAssertion assertion = mappingTest.assertions.get(0);
+            Result result = this.executor.executeWithArgs(PlanExecutor.withArgs().withPlan(plan).build());
+            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+            TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
+            testResult.atomicTestId = mappingTest.id;
+            return testResult;
+        }
+        catch (Exception e)
+        {
+            return TestResultHelper.newTestError(mappingTest.id, e);
+        }
+        finally
+        {
+            closeAll(testOwnedCloseables);
+        }
+    }
+
+    private TestDebug debugMappingTestWithNonStoreElementsTestData(MappingTest mappingTest, MappingTestRunnerContext context)
+    {
+        MutableList<Closeable> testOwnedCloseables = null;
+        try
+        {
+            Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> modifiedFunctionForTestExecution = this.modifyFunctionForTestExecution(context, mappingTest.storeTestData);
+            testOwnedCloseables = Lists.mutable.withAll(modifiedFunctionForTestExecution.getTwo().getTwo());
+            GeneratedPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, true);
+            TestExecutionPlanDebug executionPlanDebug = new TestExecutionPlanDebug();
+            executionPlanDebug.executionPlan = plan.plan;
+            executionPlanDebug.debug = plan.debug;
+            executionPlanDebug.atomicTestId = mappingTest.id;
+            return executionPlanDebug;
+        }
+        catch (Exception e)
+        {
+            return TestResultHelper.newTestExecutionPlanDebugError(mappingTest.id, e);
+        }
+        finally
+        {
+            closeAll(testOwnedCloseables);
+        }
+    }
+
+    private Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> modifyFunctionForTestExecution(MappingTestRunnerContext context, List<StoreTestData> nonStoreElementsTestData)
+    {
+        Map<PackageableElement, RelationElementsData> relationData = buildRelationData(context, nonStoreElementsTestData);
+        List<Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>>> modifiedFunctions = this.connectionAndDatabaseBuilders
+                .collect(f -> f.rewriteFunctionForTestDataExecutionWithMapping(context.getMetamodelTestSuite()._query(), this.pureMapping, relationData, context.getPureModel()))
+                .select(p -> (p != null) && (p.getTwo() != null));
+        if (modifiedFunctions.size() > 1)
+        {
+            throw new IllegalStateException("Error in mapping testSuite " + context.getMetamodelTestSuite()._id() + ". The combination of accessors used is not supported");
+        }
+        if (modifiedFunctions.isEmpty())
+        {
+            throw new IllegalStateException("Error in mapping testSuite " + context.getMetamodelTestSuite()._id() + ". Unsupported accessors type");
+        }
+        return modifiedFunctions.get(0);
+    }
+
+    private Map<PackageableElement, RelationElementsData> buildRelationData(MappingTestRunnerContext context, List<StoreTestData> nonStoreElementsTestData)
+    {
+        Map<PackageableElement, RelationElementsData> relationData = Maps.mutable.empty();
+        nonStoreElementsTestData.forEach(testData ->
+        {
+            PackageableElement element = context.getPureModel().getPackageableElement(testData.store.path, testData.store.sourceInformation);
+            EmbeddedData data = (testData.data instanceof DataElementReference)
+                    ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) testData.data, context.getPureModelContextData())
+                    : testData.data;
+            if (data instanceof RelationElementsData)
+            {
+                relationData.put(element, (RelationElementsData) data);
+            }
+        });
+        return relationData;
+    }
+
     private TestDebug debugMappingTest(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
+    {
+        return containsStoreTestData(mappingTest, context)
+                ? debugMappingTestWithStoreTestData(mappingTest, context, hints, sharedPlan)
+                : debugMappingTestWithNonStoreElementsTestData(mappingTest, context);
+    }
+
+    private TestDebug debugMappingTestWithStoreTestData(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
     {
         MutableList<Closeable> testOwnedCloseables = null;
         try
@@ -291,14 +436,19 @@ public class MappingTestRunner implements TestRunner
 
     private GeneratedPlan generatePlan(Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, boolean debug)
     {
+        return generatePlan(context.getMetamodelTestSuite()._query(), this.pureMapping, runtime, context, debug);
+    }
+
+    private GeneratedPlan generatePlan(FunctionDefinition<?> query, Mapping mapping, Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, boolean debug)
+    {
         // The context's router extensions are safe to share across concurrent generations
         // because buildMappingContext pre-warmed their per-version serializer extensions.
         if (debug)
         {
-            PlanWithDebug plan = PlanGenerator.generateExecutionPlanDebug(context.getMetamodelTestSuite()._query(), this.pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+            PlanWithDebug plan = PlanGenerator.generateExecutionPlanDebug(query, mapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
             return new GeneratedPlan(plan.plan, Arrays.asList(plan.debug));
         }
-        return new GeneratedPlan(PlanGenerator.generateExecutionPlan(context.getMetamodelTestSuite()._query(), this.pureMapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers()), null);
+        return new GeneratedPlan(PlanGenerator.generateExecutionPlan(query, mapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers()), null);
     }
 
     private MappingTestSuite getProtocolSuite(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
@@ -397,6 +547,14 @@ public class MappingTestRunner implements TestRunner
         {
             Collection<String> atomicTestIds = getAtomicTestIds();
             if (atomicTestIds.isEmpty())
+            {
+                return null;
+            }
+
+            // we are assuming here that if the first test contains store test data, so do the others, and vice-versa
+            // existing non-store (and relational store flows) fail the identity connection equality
+            boolean doTestsContainStoreTestData = containsStoreTestData(getAtomicTest(Iterate.getFirst(atomicTestIds)), this.context);
+            if (!doTestsContainStoreTestData)
             {
                 return null;
             }

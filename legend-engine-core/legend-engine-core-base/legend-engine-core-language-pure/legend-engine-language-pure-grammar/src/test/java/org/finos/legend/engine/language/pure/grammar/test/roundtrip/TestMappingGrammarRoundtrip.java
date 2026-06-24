@@ -222,6 +222,53 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testTestSuiteWithRelationTestDataAndAssertion()
+    {
+        test("###Mapping\n" +
+                "Mapping testing::mapping\n" +
+                "(\n" +
+                "  *testing::Person[testing_Person]: Pure\n" +
+                "  {\n" +
+                "    ~src testing::other::NPerson\n" +
+                "    fullName: $src.firstName + ' ' + $src.lastName\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      function: |testing::Person.all()->graphFetch(#{testing::Person{fullName}}#);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            store::TestDB:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                default.PersonTable:\n" +
+                "                    id, firstName\n" +
+                "                    1 , John;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                  fullName\n" +
+                "                  john;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
     public void testMappingWithTestSuites()
     {
         test("###Mapping\n" +

@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.RelationElementsEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
@@ -45,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
@@ -214,9 +217,34 @@ public class MappingParseTreeWalker
 
     private TestAssertion visitMappingTestAsserts(MappingParserGrammar.MappingTestAssertContext ctx)
     {
-        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        MappingParserGrammar.TestAssertionContext testAssertionCtx = ctx.testAssertion();
+        String assertionType = PureGrammarParserUtility.fromIdentifier(testAssertionCtx.identifier());
+        TestAssertion testAssertion;
+        if (RelationElementsEmbeddedDataParser.TYPE.equals(assertionType))
+        {
+            // only EqualToRelation is parsed differently (parsed as in function tests for example)
+            testAssertion = parseRelationTestAssertion(testAssertionCtx);
+        }
+        else
+        {
+            testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(testAssertionCtx, this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        }
         testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         return testAssertion;
+    }
+
+    private EqualToRelation parseRelationTestAssertion(MappingParserGrammar.TestAssertionContext testAssertionCtx)
+    {
+        String content = HelperTestAssertionGrammarParser.extractIslandContent(testAssertionCtx.testAssertionContent());
+        ParseTreeWalkerSourceInformation innerWalkerSourceInformation = HelperTestAssertionGrammarParser.buildIslandSourceInformation(testAssertionCtx.ISLAND_OPEN(), this.walkerSourceInformation);
+        SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(testAssertionCtx);
+
+        RelationElement element = HelperTestAssertionGrammarParser.parseRelationElement(content, innerWalkerSourceInformation, sourceInformation);
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.expected = element;
+        equalToRelation.sourceInformation = sourceInformation;
+        return equalToRelation;
     }
 
     private LambdaFunction visitMappingTreeLambda(MappingParserGrammar.CombinedExpressionContext ctx, Mapping mapping)

@@ -15,21 +15,33 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
+import java.io.Closeable;
+import java.util.List;
 import java.util.Map;
 
 public interface RelationAccessorTestConnectionFactory extends ConnectionFactoryExtension
 {
     default FunctionDefinition<?> rewriteFunctionForTestDataExecution(FunctionDefinition<?> functionDefinition, Map<PackageableElement, RelationElementsData> relationData, PureModel pureModel)
     {
-        return functionDefinition;
+        return rewriteFunctionForTestDataExecutionWithMapping(functionDefinition, null, relationData, pureModel).getOne();
     }
+
+    default Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> rewriteFunctionForTestDataExecutionWithMapping(FunctionDefinition<?> functionDefinition, Mapping mapping, Map<PackageableElement, RelationElementsData> relationData, PureModel pureModel)
+    {
+        return Tuples.pair(functionDefinition, null);
+    }
+
 
     default FunctionDefinition<?> rewriteFunctionForTestDataExecutionFromMetamodel(
             FunctionDefinition<?> functionDefinition,

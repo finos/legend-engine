@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Inclu
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.MappingIncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -39,11 +40,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.Da
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
@@ -177,5 +181,18 @@ public class CoreCompilerExtension extends FunctionDispatchExtension implements 
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::wtd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true),
                         new FunctionHandlerDispatchBuilderInfo("meta::pure::functions::date::calendar::ytd_Date_$0_1$__String_1__Date_1__Number_$0_1$__Number_$0_1$_", (List<ValueSpecification> ps) -> true)
                 ));
+    }
+
+    @Override
+    public List<Function5<PackageableElement, Root_meta_pure_data_EmbeddedData, CompileContext, Boolean, SourceInformation, Root_meta_pure_data_EmbeddedData>> getPackageableElementToEmbeddedDataProcessors()
+    {
+        return Collections.singletonList((packageableElement, metamodelData, context, isReferenceAllowed, sourceInformation) ->
+        {
+            if (packageableElement instanceof Root_meta_external_store_model_ModelStore)
+            {
+                return metamodelData;
+            }
+            return null;
+        });
     }
 }

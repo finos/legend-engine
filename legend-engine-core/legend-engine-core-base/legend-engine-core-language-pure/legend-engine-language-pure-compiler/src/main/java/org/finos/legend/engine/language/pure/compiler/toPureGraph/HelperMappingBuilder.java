@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 
 import java.util.Collections;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -58,6 +59,7 @@ import org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_StoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_EnumValueMapping_Impl;
@@ -67,6 +69,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregateSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_AggregationFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTest;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestData;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelJoin_ModelJoinAssociationImplementation_Impl;
@@ -725,21 +730,28 @@ public class HelperMappingBuilder
         }
     }
 
-    static Root_meta_pure_data_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
+    static Root_meta_pure_mapping_metamodel_MappingTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::data::StoreTestData"));
-        mappingStoreTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
+        Root_meta_pure_mapping_metamodel_MappingTestData mappingStoreTestData = new Root_meta_pure_mapping_metamodel_MappingTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTestData"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element;
+        try
+        {
+            element = StoreProviderCompilerHelper.getStoreFromPackageableElementPointer(testData.store, context);
+        }
+        catch (Exception e)
+        {
+            element = context.resolvePackageableElement(testData.store);
+        }
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement resolvedElement = element;
+        Root_meta_pure_data_EmbeddedData metamodelData = context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
                 .filter(Objects::nonNull)
                 .findFirst()
-                .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
-        if (testData.store.path.equals("ModelStore"))
-        {
-            mappingStoreTestData._store(new Root_meta_external_store_model_ModelStore_Impl(""));
-        }
-        else
-        {
-            mappingStoreTestData._store(context.resolveStore(testData.store.path, testData.store.sourceInformation));
-        }
+                .orElseThrow(() -> new UnsupportedOperationException("Unsupported data"));
+        Root_meta_pure_data_EmbeddedData resolvedData = context.getCompilerExtensions().getPackageableElementToEmbeddedDataProcessors().stream().map(processor -> processor.value(resolvedElement, metamodelData, context, true, testData.sourceInformation))
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new EngineException("Unsupported relation accessor"));
+        mappingStoreTestData._element(resolvedElement)._data(resolvedData);
         return mappingStoreTestData;
     }
 
