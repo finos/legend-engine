@@ -1,4 +1,5 @@
 import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
 import meta::pure::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::sqlQueryToString::default::*;
@@ -171,6 +172,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
    $s->processSelectSQLQueryForClickHouse($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(data:RelationalTreeNode[0..1]):Boolean[1]
+{
+   if($data->isEmpty(),
+      | false,
+      | $data->toOne()->match([
+           r:RootJoinTreeNode[1] | $r->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree()),
+           j:JoinTreeNode[1]     | $j.joinType == JoinType.FULL_OUTER || $j.joinType == JoinType.RIGHT_OUTER || $j->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree()),
+           a:Any[1]              | false
+        ])
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(j:JoinTreeNode[1]):Boolean[1]
+{
+   $j.joinType == JoinType.FULL_OUTER || $j.joinType == JoinType.RIGHT_OUTER || $j->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree());
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSelectSQLQueryForClickHouse(s:SelectSQLQuery[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($s.pivot, 'pivot is not supported for ClickHouse');
@@ -179,6 +197,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
+  let needsJoinUseNulls = hasNullableJoinInTree($s.data);
+
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
@@ -186,7 +206,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForClickHouse_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+  processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForClickHouse_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_) +
+  if($needsJoinUseNulls, | ' SETTINGS join_use_nulls = 1', | '');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSliceOrDropForClickHouse(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]

@@ -1910,7 +1910,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
 
       meta::pure::functions::relation::tests::join::testFullJoin_Function_1__Boolean_1_->testRev(
         [
-          rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.FULL, {x: (id:Integer[0..1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2})', 
+          rev('|$tds->meta::pure::functions::relation::join($tds2, meta::pure::functions::relation::JoinKind.FULL, {x: (id:Integer[1], name:String[0..1])[1], y: (id2:Integer[0..1], col:String[0..1], other:Integer[0..1])[1]|$x.id == $y.id2})', 
                '(lambda frame:' +
                '  frame.join(csv_frame("id2,col,other\\n1,More George 1,1\\n1,More George 2,2\\n4,More David,1\\n6,John,3"), (lambda x , y : x.id == y.id2), "FULL")' +
                ')(csv_frame("id,name\\n1,George\\n2,Pierre\\n3,Sachin\\n4,David\\n5,James"))')

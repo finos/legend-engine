@@ -438,14 +438,14 @@ Mapping meta::relational::tests::mapping::modelJoin::advanced::ComplexRelationFu
     lastName: LASTNAME,
     age: AGE,
     +firmId: Integer[1]: FIRMID,
-    +city: String[0..1]: CITY
+    +city: String[1]: CITY
   }
   *meta::relational::tests::mapping::modelJoin::domain::Firm[firm]: Relation
   {
     ~func meta::relational::tests::mapping::modelJoin::function::firmTable():Relation<Any>[1]
     legalName: LEGALNAME,
     +id: Integer[1]: ID,
-    +city: String[0..1]: CITY
+    +city: String[1]: CITY
   }
 
   Person_Firm: ModelJoin

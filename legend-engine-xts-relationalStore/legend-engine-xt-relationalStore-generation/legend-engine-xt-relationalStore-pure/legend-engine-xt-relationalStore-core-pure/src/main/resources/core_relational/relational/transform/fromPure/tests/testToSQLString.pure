@@ -767,3 +767,19 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlst
           + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'|\'))) as "tds_digest" from personTable as "root"', $result);
 
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNullSafeEqualityForOptionalProperties():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->project([
+         col(p | $p.firstName, 'name'),
+         col(p | $p.age == $p.manager.age, 'match')
+      ]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name", "root".AGE = "personTable_d#5_d#2_m1_d_m2".AGE '
+      + 'or ("root".AGE is null and "personTable_d#5_d#2_m1_d_m2".AGE is null) as "match" '
+      + 'from personTable as "root" left outer join personTable as "personTable_d#5_d#2_m1_d_m2" '
+      + 'on ("root".MANAGERID = "personTable_d#5_d#2_m1_d_m2".ID)', $s);
+}
+
