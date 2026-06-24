@@ -45,11 +45,12 @@ function <<access.private>> meta::external::format::yaml::serialization::toYAMLS
                   n:YAMLNull[1] | 'null',
                   a:YAMLArray[1] | '\n'+$a.values->map(v |if(!$v->instanceOf(YAMLObject),|$offset + '- ',|'')+ $v->toYAMLString($offset,$a,$style))->joinStrings( '\n' ),
                   o:YAMLObject[1] | let init = $o.keyValuePairs->first();
+                                    let valueIndent = if($arrayChild,|$indent+$tab,|$indent);
                                     if($init->isNotEmpty(),
-                                       |let firstElement = if($arrayChild,|$offset+'- ',|$offset) + $init->toOne().key.value->toString() + ': ' +  $init->toOne().value->toYAMLString($indent,$o,$style);
+                                       |let firstElement = if($arrayChild,|$offset+'- ',|$offset) + $init->toOne().key.value->toString() + ': ' +  $init->toOne().value->toYAMLString($valueIndent,$o,$style);
                                          $firstElement->concatenate(
-                                       $o.keyValuePairs->tail()->map(kv |if($arrayChild,|$offset+'  ',|$offset) + $kv.key.value->toString() + ': ' + $kv.value->toYAMLString($indent,$o,$style)))
-                                                               ->joinStrings(if($arrayChild || $parentElement->isEmpty()  ,|'',|'\n'),'\n' ,'' );,
+                                       $o.keyValuePairs->tail()->map(kv |if($arrayChild,|$offset+'  ',|$offset) + $kv.key.value->toString() + ': ' + $kv.value->toYAMLString($valueIndent,$o,$style)))
+                                                                ->joinStrings(if($arrayChild || $parentElement->isEmpty()  ,|'',|'\n'),'\n' ,'' );,
                                        |'');
                  ]);
 }

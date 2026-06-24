@@ -138,6 +138,27 @@ Class  meta::external::format::json::schema::tests::Road
    vehicles:meta::external::format::json::schema::tests::Vehicle[*];
  }
 
+Class <<typemodifiers.abstract>> meta::external::format::json::schema::tests::Pet
+{
+   name:String[1];
+}
+
+Class meta::external::format::json::schema::tests::CatPet extends meta::external::format::json::schema::tests::Pet
+{
+   indoor:Boolean[1];
+}
+
+Class meta::external::format::json::schema::tests::DogPet extends meta::external::format::json::schema::tests::Pet
+{
+   breed:String[1];
+}
+
+Class meta::external::format::json::schema::tests::PetOwner
+{
+   ownerName:String[1];
+   pets:meta::external::format::json::schema::tests::Pet[*];
+}
+
 function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::typeInclusionForConstraintFunctions():Boolean[1]
 {
      let generatedJSON = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::ClassWithFunctionReferences,meta::external::format::json::schema::tests::functionWithStringType_String_$0_1$__Boolean_1_],
@@ -1479,6 +1500,566 @@ function <<test.Test>>  { meta::pure::executionPlan::profiles::serverVersion.sta
 
       assert(jsonEquivalent($includeAny2019Exepected->parseJSON(),$includeAny2019.content->toOne()->parseJSON()));
       assert(jsonEquivalent($includeAny07expected->parseJSON(),$includeAny07.content->toOne()->parseJSON()));
+}
 
-   
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollectionPolymorphicYAML():Boolean[1]
+{
+     let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::PetOwner,meta::external::format::json::schema::tests::Pet,meta::external::format::json::schema::tests::CatPet,meta::external::format::json::schema::tests::DogPet],
+                                                           createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML ));
+
+     let expectedYAML = 'components: \n' +
+                        '  schemas: \n' +
+                        '    meta::external::format::json::schema::tests::CatPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        indoor: \n' +
+                        '          type: "boolean"\n' +
+                        '      required: \n' +
+                        '        - "indoor"\n' +
+                        '    meta::external::format::json::schema::tests::DogPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        breed: \n' +
+                        '          type: "string"\n' +
+                        '      required: \n' +
+                        '        - "breed"\n' +
+                        '    meta::external::format::json::schema::tests::Pet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        name: \n' +
+                        '          type: "string"\n' +
+                        '      required: \n' +
+                        '        - "name"\n' +
+                        '    meta::external::format::json::schema::tests::PetOwner: \n' +
+                        '      title: "meta::external::format::json::schema::tests::PetOwner"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        ownerName: \n' +
+                        '          type: "string"\n' +
+                        '        pets: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            oneOf: \n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::CatPet"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::DogPet"\n' +
+                        '      required: \n' +
+                        '        - "ownerName"';
+
+     assertEquals($expectedYAML, $collectOpenAPIYAML.content->toOne());
+}
+
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollectionPolymorphicYAMLWithAnyOf():Boolean[1]
+{
+     let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::PetOwner,meta::external::format::json::schema::tests::Pet,meta::external::format::json::schema::tests::CatPet,meta::external::format::json::schema::tests::DogPet],
+                                                           createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML,generateAnyOfSubType=true ));
+
+     let expectedYAML = 'components: \n' +
+                        '  schemas: \n' +
+                        '    meta::external::format::json::schema::tests::CatPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        indoor: \n' +
+                        '          type: "boolean"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            indoor: \n' +
+                        '              type: "boolean"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "indoor"\n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "indoor"\n' +
+                        '    meta::external::format::json::schema::tests::DogPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        breed: \n' +
+                        '          type: "string"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            breed: \n' +
+                        '              type: "string"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "breed"\n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "breed"\n' +
+                        '    meta::external::format::json::schema::tests::Pet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        name: \n' +
+                        '          type: "string"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            indoor: \n' +
+                        '              type: "boolean"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "indoor"\n' +
+                        '            - "name"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            breed: \n' +
+                        '              type: "string"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "breed"\n' +
+                        '            - "name"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Pet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "name"\n' +
+                        '    meta::external::format::json::schema::tests::PetOwner: \n' +
+                        '      title: "meta::external::format::json::schema::tests::PetOwner"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        ownerName: \n' +
+                        '          type: "string"\n' +
+                        '        pets: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::PetOwner"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            ownerName: \n' +
+                        '              type: "string"\n' +
+                        '            pets: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '          required: \n' +
+                        '            - "ownerName"\n' +
+                        '      required: \n' +
+                        '        - "ownerName"';
+
+     assertEquals($expectedYAML, $collectOpenAPIYAML.content->toOne());
+}
+
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollectionVehicleHierarchyYAML():Boolean[1]
+{
+     let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::Road,meta::external::format::json::schema::tests::Vehicle,meta::external::format::json::schema::tests::WheeledVehicle,meta::external::format::json::schema::tests::Car,meta::external::format::json::schema::tests::Truck],
+                                                           createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML ));
+
+     let expectedYAML = 'components: \n' +
+                        '  schemas: \n' +
+                        '    meta::external::format::json::schema::tests::Car: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Car"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        driver: \n' +
+                        '          type: "string"\n' +
+                        '      required: \n' +
+                        '        - "driver"\n' +
+                        '    meta::external::format::json::schema::tests::Road: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Road"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        vehicles: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            oneOf: \n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Car"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Truck"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '    meta::external::format::json::schema::tests::Truck: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Truck"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        weight: \n' +
+                        '          type: "integer"\n' +
+                        '      required: \n' +
+                        '        - "weight"\n' +
+                        '    meta::external::format::json::schema::tests::Vehicle: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        id: \n' +
+                        '          type: "integer"\n' +
+                        '        similarVehiciles: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            oneOf: \n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Car"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Truck"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '              - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      required: \n' +
+                        '        - "id"\n' +
+                        '    meta::external::format::json::schema::tests::WheeledVehicle: \n' +
+                        '      title: "meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        wheels: \n' +
+                        '          type: "integer"\n' +
+                        '      required: \n' +
+                        '        - "wheels"';
+
+     assertEquals($expectedYAML, $collectOpenAPIYAML.content->toOne());
+}
+
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollectionPolymorphicYAMLWithFullConfig():Boolean[1]
+{
+     let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::PetOwner],
+                                                           createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML,generateAnyOfSubType=true,includeAllRelatedTypes=true,useConstraints=true ));
+
+     let expectedYAML = 'components: \n' +
+                        '  schemas: \n' +
+                        '    meta::external::format::json::schema::tests::CatPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        indoor: \n' +
+                        '          type: "boolean"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            indoor: \n' +
+                        '              type: "boolean"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "indoor"\n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "indoor"\n' +
+                        '    meta::external::format::json::schema::tests::DogPet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        breed: \n' +
+                        '          type: "string"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            breed: \n' +
+                        '              type: "string"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "breed"\n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "breed"\n' +
+                        '    meta::external::format::json::schema::tests::Pet: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Pet"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        name: \n' +
+                        '          type: "string"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::CatPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            indoor: \n' +
+                        '              type: "boolean"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "indoor"\n' +
+                        '            - "name"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::DogPet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            breed: \n' +
+                        '              type: "string"\n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "breed"\n' +
+                        '            - "name"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Pet"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            name: \n' +
+                        '              type: "string"\n' +
+                        '          required: \n' +
+                        '            - "name"\n' +
+                        '      required: \n' +
+                        '        - "name"\n' +
+                        '    meta::external::format::json::schema::tests::PetOwner: \n' +
+                        '      title: "meta::external::format::json::schema::tests::PetOwner"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        ownerName: \n' +
+                        '          type: "string"\n' +
+                        '        pets: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::PetOwner"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            ownerName: \n' +
+                        '              type: "string"\n' +
+                        '            pets: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Pet"\n' +
+                        '          required: \n' +
+                        '            - "ownerName"\n' +
+                        '      required: \n' +
+                        '        - "ownerName"';
+
+     assertEquals($expectedYAML, $collectOpenAPIYAML.content->toOne());
+}
+
+function <<test.Test>>   { meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0'}  meta::external::format::json::schema::tests::roundTrip::testSchemaCollectionVehicleHierarchyYAMLWithAnyOf():Boolean[1]
+{
+     let collectOpenAPIYAML = generateJsonSchemaFromPureWithScope(^JSONSchemaConfig(scopeElements=[meta::external::format::json::schema::tests::Road],
+                                                           createSchemaCollection=true,schemaSpecification=JSONSchemaSpecification.OPEN_API_V3_0_3_YAML,generateAnyOfSubType=true,includeAllRelatedTypes=true ));
+
+     let expectedYAML = 'components: \n' +
+                        '  schemas: \n' +
+                        '    meta::external::format::json::schema::tests::Car: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Car"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        driver: \n' +
+                        '          type: "string"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::Car"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            driver: \n' +
+                        '              type: "string"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "driver"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '      required: \n' +
+                        '        - "driver"\n' +
+                        '    meta::external::format::json::schema::tests::Road: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Road"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        vehicles: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::Road"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            vehicles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '    meta::external::format::json::schema::tests::Truck: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Truck"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        weight: \n' +
+                        '          type: "integer"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::Truck"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            weight: \n' +
+                        '              type: "integer"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "weight"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '      required: \n' +
+                        '        - "weight"\n' +
+                        '    meta::external::format::json::schema::tests::Vehicle: \n' +
+                        '      title: "meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        id: \n' +
+                        '          type: "integer"\n' +
+                        '        similarVehiciles: \n' +
+                        '          type: "array"\n' +
+                        '          items: \n' +
+                        '            $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Car"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            driver: \n' +
+                        '              type: "string"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "driver"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Truck"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            weight: \n' +
+                        '              type: "integer"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "weight"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "id"\n' +
+                        '      required: \n' +
+                        '        - "id"\n' +
+                        '    meta::external::format::json::schema::tests::WheeledVehicle: \n' +
+                        '      title: "meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '      allOf: \n' +
+                        '        - $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '      type: "object"\n' +
+                        '      properties: \n' +
+                        '        wheels: \n' +
+                        '          type: "integer"\n' +
+                        '      anyOf: \n' +
+                        '        - title: "meta::external::format::json::schema::tests::Car"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            driver: \n' +
+                        '              type: "string"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "driver"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::Truck"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            weight: \n' +
+                        '              type: "integer"\n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "weight"\n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '        - title: "meta::external::format::json::schema::tests::WheeledVehicle"\n' +
+                        '          type: "object"\n' +
+                        '          properties: \n' +
+                        '            wheels: \n' +
+                        '              type: "integer"\n' +
+                        '            id: \n' +
+                        '              type: "integer"\n' +
+                        '            similarVehiciles: \n' +
+                        '              type: "array"\n' +
+                        '              items: \n' +
+                        '                $ref: "#/components/schemas/meta::external::format::json::schema::tests::Vehicle"\n' +
+                        '          required: \n' +
+                        '            - "wheels"\n' +
+                        '            - "id"\n' +
+                        '      required: \n' +
+                        '        - "wheels"';
+
+     assertEquals($expectedYAML, $collectOpenAPIYAML.content->toOne());
 }
