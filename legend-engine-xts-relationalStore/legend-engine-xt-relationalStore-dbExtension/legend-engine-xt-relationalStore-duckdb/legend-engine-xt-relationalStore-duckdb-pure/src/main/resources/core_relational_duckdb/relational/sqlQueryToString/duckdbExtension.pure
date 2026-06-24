@@ -351,7 +351,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   let elementAccess = format('json_extract(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]);
 
-  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'cast(' + $elementAccess + ' as VARCHAR)', |
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | format('json_extract_string(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]), |
   if ($returnType->in(['DATE','DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
   if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
   if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
