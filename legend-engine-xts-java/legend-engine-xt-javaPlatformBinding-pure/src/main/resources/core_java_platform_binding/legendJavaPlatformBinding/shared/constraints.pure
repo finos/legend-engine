@@ -155,7 +155,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let enfLevelCode   = $enfLevelClass->j_field(if($constraint.enforcementLevel->isEmpty(), |'Error', |$constraint.enforcementLevel->toOne()), $enfLevelClass);
    let returnDefect   = j_return($optionalDefect.rawType->j_invoke('of', $conventions->className(DataQualityBasicDefectClass)->j_invoke('newConstraintDefect', [j_string($info.id), $externalIdCode, $messageVar, $enfLevelCode, j_string($class->elementToPath())]), $optionalDefect));
 
-   let method = javaMethod('public',  $optionalDefect, constraintMethodName($info), [],
+   let method = javaMethod('public', $optionalDefect, constraintMethodName($info), [],
       j_try(
          [
             j_if(j_not($testExpr),
@@ -166,9 +166,15 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
             ),
             j_return($optionalDefect.rawType->j_invoke('empty', [], $optionalDefect))
          ],
+         j_catch(j_parameter(javaNullPointerException(), 'e'),
+            [
+               $messageVar->j_declare(j_string('Unable to evaluate constraint ['+$info.id+']: data not available - check your mappings')),
+               $returnDefect
+            ]
+         ),
          j_catch($ex,
             [
-               $messageVar->j_declare(j_string('Unable to evaluate constraint ['+$info.id+']: ')->j_plus(j_conditional(j_eq($ex->j_invoke('getMessage', []), j_null()), j_string('data not available - check your mappings')  , $ex->j_invoke('getMessage', [])))),
+               $messageVar->j_declare(j_string('Unable to evaluate constraint ['+$info.id+']: ')->j_plus(j_conditional(j_eq($ex->j_invoke('getMessage', []), j_null()), j_string('data not available - check your mappings'), $ex->j_invoke('getMessage', [])))),
                $returnDefect
             ]
          )
