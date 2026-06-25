@@ -42,7 +42,7 @@ function meta::external::language::java::generation::essential::collection::regi
          fc3(contains_Z_MANY__Z_1__Function_1__Boolean_1_,                       {ctx,collection,obj,eqlf      | $library->j_invoke('contains', [$collection, $obj, $eqlf], javaBoolean())}),
 
          fc2(at_T_MANY__Integer_1__T_1_,                                         {ctx,collection,index         | $library->j_invoke('at', [$collection, $index], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),
-         fc2(indexOf_T_MANY__T_1__Integer_1_,                                    {ctx,collection,obj           | $library->j_invoke('indexOf', [$collection, $obj], if($collection.type->isJavaList(), |$collection.type->elementTypeOfJavaList(), |$collection.type))}),
+         fc2(indexOf_T_MANY__T_1__Integer_1_,                                    {ctx,collection,obj           | $library->j_invoke('indexOf', [$collection, $obj], javaIntBoxed())->j_invoke('longValue', [], javaLong())}),
 
          fc3(fold_T_MANY__Function_1__V_m__V_m_,                                 {ctx,collection,acc,identity  | javaFold($ctx, $collection, $acc, $identity, $library) }),
 
