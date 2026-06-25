@@ -28,12 +28,15 @@ import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class EMITModelLoader
@@ -43,7 +46,7 @@ public class EMITModelLoader
     public EMITModelDescriptor parseDescriptor(Path emitYaml) throws IOException
     {
         EMITModelDescriptor descriptor = YAML.readValue(emitYaml.toFile(), EMITModelDescriptor.class);
-        descriptor.setSource(emitYaml.toAbsolutePath().normalize());
+        descriptor.setSource(toFileUrl(emitYaml));
         return descriptor;
     }
 
@@ -51,7 +54,9 @@ public class EMITModelLoader
     {
         try (InputStream in = url.openStream())
         {
-            return YAML.readValue(in, EMITModelDescriptor.class);
+            EMITModelDescriptor descriptor = YAML.readValue(in, EMITModelDescriptor.class);
+            descriptor.setSource(url);
+            return descriptor;
         }
     }
 
@@ -64,14 +69,14 @@ public class EMITModelLoader
     {
         if (descriptor.getSource() == null)
         {
-            throw new IllegalArgumentException("Descriptor has no source path; load it via parseDescriptor or set descriptor source explicitly");
+            throw new IllegalArgumentException("Descriptor has no source URL; load it via parseDescriptor or set descriptor source explicitly");
         }
         if (descriptor.getModelSources() == null || descriptor.getModelSources().getModel() == null)
         {
             throw new IllegalArgumentException("Descriptor at " + descriptor.getSource() + " has no modelSources.model section");
         }
 
-        Path baseDir = descriptor.getSource().getParent();
+        Path baseDir = toLocalPath(descriptor.getSource()).getParent();
         MutableList<EMITSourceFile> modelFiles = resolveSource(baseDir, descriptor.getModelSources().getModel(), true);
 
         MutableMap<String, Path> seen = Maps.mutable.empty();
@@ -199,6 +204,35 @@ public class EMITModelLoader
         catch (IllegalArgumentException ignore)
         {
             return null;
+        }
+    }
+
+    private static URL toFileUrl(Path path)
+    {
+        try
+        {
+            return path.toAbsolutePath().normalize().toUri().toURL();
+        }
+        catch (MalformedURLException e)
+        {
+            throw new IllegalArgumentException("Cannot convert path to file: URL: " + path, e);
+        }
+    }
+
+    private static Path toLocalPath(URL url)
+    {
+        if (!"file".equals(url.getProtocol()))
+        {
+            throw new IllegalArgumentException("Cannot resolve sibling source files against non-file: URL: " + url
+                    + " — EMITModelLoader.load only supports descriptors discovered on the local file system");
+        }
+        try
+        {
+            return Paths.get(url.toURI());
+        }
+        catch (URISyntaxException e)
+        {
+            throw new IllegalArgumentException("Invalid file: URL: " + url, e);
         }
     }
 }

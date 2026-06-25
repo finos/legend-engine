@@ -95,7 +95,7 @@ public class EMIT_to_HTML
 
     public static void main(String[] args) throws Exception
     {
-        List<EMITModelDescriptor> descriptors = EMITModelDiscovery.findDescriptorsViaSPI();
+        List<EMITModelDescriptor> descriptors = EMITModelDiscovery.fromFileSystem(EMITModelDiscovery.findRepoRoot());
         String html = buildHTML(descriptors);
         Path output = Paths.get("./target/emit-coverage.html").toAbsolutePath().normalize();
         Files.createDirectories(output.getParent());

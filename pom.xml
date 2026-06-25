@@ -242,7 +242,9 @@
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
-        <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
+        <maven.plugin.annotations.version>3.9.0</maven.plugin.annotations.version>
+        <maven.plugin.api.version>3.9.2</maven.plugin.api.version>
+        <maven.plugin.plugin.version>3.9.0</maven.plugin.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
@@ -357,6 +359,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>${maven.jar.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${maven.plugin.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
@@ -4442,6 +4449,17 @@
                 <groupId>org.jline</groupId>
                 <artifactId>jline-terminal-jna</artifactId>
                 <version>${jline.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-plugin-api</artifactId>
+                <version>${maven.plugin.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugin-tools</groupId>
+                <artifactId>maven-plugin-annotations</artifactId>
+                <version>${maven.plugin.annotations.version}</version>
             </dependency>
 
             <!-- Override transitive dependencies to force same version everywhere -->

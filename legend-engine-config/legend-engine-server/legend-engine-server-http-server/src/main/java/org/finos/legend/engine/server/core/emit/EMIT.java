@@ -38,7 +38,7 @@ public class EMIT
     {
         try
         {
-            List<EMITModelDescriptor> descriptors = EMITModelDiscovery.findDescriptorsViaSPI();
+            List<EMITModelDescriptor> descriptors = EMITModelDiscovery.fromClasspath(EMIT.class.getClassLoader());
             String html = EMIT_to_HTML.buildHTML(descriptors);
             return Response.status(200).type(MediaType.TEXT_HTML).entity(html).build();
         }
