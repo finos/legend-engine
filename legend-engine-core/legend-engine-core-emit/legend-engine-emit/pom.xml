@@ -25,7 +25,6 @@
     <artifactId>legend-engine-emit</artifactId>
     <name>Legend Engine - Testing - EMIT (Engine Model Integration Test) Framework</name>
 
-
     <dependencies>
         <!-- PURE -->
         <dependency>
