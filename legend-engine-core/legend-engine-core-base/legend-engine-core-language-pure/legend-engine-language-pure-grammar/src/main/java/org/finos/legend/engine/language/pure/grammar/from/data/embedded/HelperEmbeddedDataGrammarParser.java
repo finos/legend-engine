@@ -14,6 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.data.embedded;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -30,6 +35,10 @@ import java.util.List;
 
 public class HelperEmbeddedDataGrammarParser
 {
+    public static final String JSON_EMBEDDED_DATA_TYPE = "JSON";
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
      * Helper for parsing embedded data values.  To use your grammar should include the definitions from
      * DataParserGrammar.g4:
@@ -89,5 +98,67 @@ public class HelperEmbeddedDataGrammarParser
         }
 
         return parser.parse(text, walkerSourceInformation, sourceInformation, extensions);
+    }
+
+    public static String prettyPrintJson(String rawJson)
+    {
+        try
+        {
+            JsonNode node = objectMapper.readTree(rawJson);
+            return objectMapper.writer(buildJsonPrettyPrinter()).writeValueAsString(node);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalArgumentException("Invalid JSON: " + e.getOriginalMessage(), e);
+        }
+    }
+
+    public static String parseAndNormaliseEmbeddedJson(String identifier, String rawJson, SourceInformation sourceInformation)
+    {
+        if (!JSON_EMBEDDED_DATA_TYPE.equals(identifier))
+        {
+            throw new EngineException(
+                    "Unsupported identifier type '" + identifier + "'. Only '" + JSON_EMBEDDED_DATA_TYPE + "' is supported",
+                    sourceInformation,
+                    EngineErrorType.PARSER);
+        }
+        String trimmed = rawJson == null ? "" : rawJson.trim();
+        if (trimmed.isEmpty())
+        {
+            throw new EngineException(
+                    "Embedded JSON must not be empty",
+                    sourceInformation,
+                    EngineErrorType.PARSER);
+        }
+        try
+        {
+            return prettyPrintJson(trimmed);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new EngineException(e.getMessage(), sourceInformation, EngineErrorType.PARSER);
+        }
+    }
+
+    // The (non-static) instance initialiser is required
+    // because _objectFieldValueSeparatorWithSpaces is protected
+    private static DefaultPrettyPrinter buildJsonPrettyPrinter()
+    {
+        DefaultIndenter indenter = new DefaultIndenter("  ", "\n");
+        DefaultPrettyPrinter printer = new DefaultPrettyPrinter()
+        {
+            {
+                _objectFieldValueSeparatorWithSpaces = ": ";
+            }
+
+            @Override
+            public DefaultPrettyPrinter createInstance()
+            {
+                return this;
+            }
+        };
+        printer.indentObjectsWith(indenter);
+        printer.indentArraysWith(indenter);
+        return printer;
     }
 }
