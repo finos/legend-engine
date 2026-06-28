@@ -1,0 +1,140 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::router::tests::*;
+
+function <<test.Test>> meta::pure::router::tests::testRouterScopeCorrectlyFunctionParameters():Boolean[1]
+{
+  let ctx = ^GContext(space='');
+
+  let cfg = ^Configuration(fullPath=false, extensions = ^GrammarExtension(
+    extraInstanceValueHandlers = [
+      {x:PlanVarPlaceHolder[1] | '$' + $x.name}
+    ]
+  ));
+
+  let expected = 'businessDate: Date[1]|let prevBusinessDate = $businessDate->adjust(-1, meta::pure::functions::date::DurationUnit.DAYS);\n' + 
+                 '                      $businessDate->dayOfMonth() - $prevBusinessDate->dayOfMonth();\n';
+
+  let a = routeFunction(topLevelFunctionToTestWithoutClashingParameters_Date_1__Any_1_, []);
+  let grammar = $a->evaluateAndDeactivate()->printFunctionDefinition($cfg, $ctx);
+  assertEquals($expected, $grammar);
+
+  let a2 = routeFunction(topLevelFunctionToTestWithClashingParameters_Date_1__Any_1_, []);
+  let grammar2 = $a2->evaluateAndDeactivate()->printFunctionDefinition($cfg, $ctx);
+  assertEquals($expected, $grammar2);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithoutClashingParameters(businessDate: Date[1]): Any[1]
+{
+    let prevBusinessDate = $businessDate->adjust(-1, DurationUnit.DAYS);
+    $businessDate->topLevelFunctionToTestWithoutClashingParametersProcessingFunc($prevBusinessDate);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithoutClashingParametersProcessingFunc(businessDate: Date[1], prevBusinessDate: Date[1]): Any[1]
+{
+    $businessDate->getDay_distinctParameterName() - $prevBusinessDate->getDay_distinctParameterName();
+}
+
+function <<access.private>> meta::pure::router::tests::getDay_distinctParameterName(d: Date[1]): Integer[1]
+{
+    $d->dayOfMonth();
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithClashingParameters(businessDate: Date[1]): Any[1]
+{
+    let prevBusinessDate = $businessDate->adjust(-1, DurationUnit.DAYS);
+    $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithClashingParametersProcessingFunc(businessDate: Date[1], prevBusinessDate: Date[1]): Any[1]
+{
+    $businessDate->getDay_clashingParameterName() - $prevBusinessDate->getDay_clashingParameterName();
+}
+
+function <<access.private>> meta::pure::router::tests::getDay_clashingParameterName(businessDate: Date[1]): Integer[1]
+{
+    $businessDate->dayOfMonth();
+}
+
+// Regression: a nested call passes arguments in swapped order against same-named parameters.
+// The inlined function's own parameter bindings must shadow the enclosing scope, otherwise the
+// name-keyed scope silently un-swaps the arguments.
+function <<test.Test>> meta::pure::router::tests::testRouterScopeCorrectlyWithSwappedFunctionParameters():Boolean[1]
+{
+  let ctx = ^GContext(space='');
+
+  let cfg = ^Configuration(fullPath=false, extensions = ^GrammarExtension(
+    extraInstanceValueHandlers = [
+      {x:PlanVarPlaceHolder[1] | '$' + $x.name}
+    ]
+  ));
+
+  let expected = 'businessDate: Date[1]|let prevBusinessDate = $businessDate->adjust(-1, meta::pure::functions::date::DurationUnit.DAYS);\n' +
+                 '                      $prevBusinessDate->dayOfMonth() - $businessDate->dayOfMonth();\n';
+
+  let a = routeFunction(topLevelFunctionToTestWithSwappedParameters_Date_1__Any_1_, []);
+  let grammar = $a->evaluateAndDeactivate()->printFunctionDefinition($cfg, $ctx);
+  assertEquals($expected, $grammar);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithSwappedParameters(businessDate: Date[1]): Any[1]
+{
+    let prevBusinessDate = $businessDate->adjust(-1, DurationUnit.DAYS);
+    $businessDate->topLevelFunctionToTestWithSwappedParametersProcessingFunc($prevBusinessDate);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithSwappedParametersProcessingFunc(businessDate: Date[1], prevBusinessDate: Date[1]): Any[1]
+{
+    // pass prevBusinessDate into the businessDate parameter and vice versa
+    topLevelFunctionToTestWithSwappedParametersDiff($prevBusinessDate, $businessDate);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithSwappedParametersDiff(businessDate: Date[1], prevBusinessDate: Date[1]): Integer[1]
+{
+    $businessDate->dayOfMonth() - $prevBusinessDate->dayOfMonth();
+}
+
+// Regression: confirms the inlining scope is correctly scoped per expression. The merged variable
+// map is a local argument to routeValueSpecification and is never stored back into the RoutingState
+// threaded across expressions, so one expression's inlining cannot corrupt a later one. The clashing
+// call is made twice - once in a middle let, once as the return expression - and both must
+// independently resolve $businessDate and $prevBusinessDate to the correct values.
+function <<test.Test>> meta::pure::router::tests::testRouterScopeDoesNotLeakAcrossExpressions():Boolean[1]
+{
+  let ctx = ^GContext(space='');
+
+  let cfg = ^Configuration(fullPath=false, extensions = ^GrammarExtension(
+    extraInstanceValueHandlers = [
+      {x:PlanVarPlaceHolder[1] | '$' + $x.name}
+    ]
+  ));
+
+  let expected = 'businessDate: Date[1]|let prevBusinessDate = $businessDate->adjust(-1, meta::pure::functions::date::DurationUnit.DAYS);\n' +
+                 '                      let firstResult = $businessDate->dayOfMonth() - $prevBusinessDate->dayOfMonth();\n' +
+                 '                      $businessDate->dayOfMonth() - $prevBusinessDate->dayOfMonth();\n';
+
+  let a = routeFunction(topLevelFunctionToTestWithClashingParametersAcrossExpressions_Date_1__Any_1_, []);
+  let grammar = $a->evaluateAndDeactivate()->printFunctionDefinition($cfg, $ctx);
+  assertEquals($expected, $grammar);
+}
+
+function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWithClashingParametersAcrossExpressions(businessDate: Date[1]): Any[1]
+{
+    let prevBusinessDate = $businessDate->adjust(-1, DurationUnit.DAYS);
+    let firstResult = $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
+    $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
+}
