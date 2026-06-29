@@ -192,7 +192,7 @@ legend-engine-core/
           EMITPhase.java                  ← Phase enum
           EMITPhaseResult.java            ← Per-phase result
           EMITModelLoader.java            ← .pure file loading utility
-          EMITModelDiscovery.java         ← Three-flow descriptor discovery
+          EMITModelDiscovery.java         ← Filesystem + classpath descriptor discovery
           EMITSourceFile.java             ← Resolved source file
           EMITSourceSet.java              ← Collection of source files
           catalog/
@@ -216,29 +216,34 @@ legend-engine-core/
       src/
         main/java/.../emit/junit/
           EMITTestSuiteBuilder.java       ← @TestFactory task builder
-    legend-engine-emit-maven-plugin/      ← Build-time catalog plugin
+    legend-engine-emit-maven-plugin/      ← Build-time HTML coverage report renderer
       pom.xml
       src/
         main/java/.../emit/maven/
-          BuildCatalogMojo.java           ← @Mojo("build-catalog"), generate-resources phase
-          EmitCatalogBuilder.java         ← Walks repo, writes META-INF/emit-catalog/
+          EMITCoverageReportGenerationMojo.java   ← @Mojo("generate-EMIT-coverage-report"), generate-resources phase
 ```
 
 - **`legend-engine-emit`** contains the core pipeline (runner, result models,
   model loader, catalog infrastructure) plus `EMITModelDiscovery` — the
-  three-flow descriptor discovery API used at runtime by the server (jar /
-  catalog flow), by `EMIT_to_HTML#main` (live file-system flow), and by the
-  JUnit binding (`@TestFactory` flow). It has no JUnit dependency and can be
-  used standalone in scripts or CI pipelines.
+  descriptor-discovery API used by `EMIT_to_HTML#main` (filesystem walk
+  from the repo root) and by the JUnit binding (`@TestFactory` classpath
+  enumeration). It has no JUnit dependency and can be used standalone in
+  scripts or CI pipelines.
 - **`legend-engine-emit-junit`** depends on `legend-engine-emit` and adds the
   JUnit 5 integration layer (`EMITTestSuiteBuilder`). Test modules that want
   `@TestFactory`-based EMIT execution depend on this module.
 - **`legend-engine-emit-maven-plugin`** is the build-time tool used by the
-  server pom: its `build-catalog` goal (bound to `generate-resources`) walks
-  the multi-module repo for every `src/test/resources/emit-models/**/*.emit.yaml`
-  and bundles them — plus a sorted `index.txt` manifest — under
-  `META-INF/emit-catalog/` in the consuming jar. This is what makes the HTML
-  coverage report's server flow work. See §5.4 and the authoring guide §10.
+  server pom: its `generate-EMIT-coverage-report` goal (bound to
+  `generate-resources`) walks the legend-engine multi-module tree by
+  parsing each pom's `<modules>` declarations directly with
+  `MavenXpp3Reader` (so it sees the full module tree regardless of the
+  current Maven reactor scope), discovers every non-excluded module's
+  `src/test/resources/emit-models/`, parses each `*.emit.yaml`, and
+  pre-renders the HTML coverage report to
+  `${project.build.outputDirectory}/emit/emit-coverage.html`. Maven's
+  normal jar packaging bundles that resource into the consuming jar so the
+  server's `EMIT` JAX-RS handler can stream it at runtime — no runtime
+  discovery is performed. See §5.4.
 
 The parent aggregator sits directly under `legend-engine-core/` (as a sibling of
 `legend-engine-core-testable`, `legend-engine-core-pure`, etc.) because EMIT spans the full engine
@@ -283,11 +288,13 @@ This distribution model has several advantages:
 - **Dependencies**: Each test module has the right classpath for its feature (e.g., a relational
   EMIT test module naturally has relational store dependencies on its classpath).
 - **Parallelism**: Tests run as part of each module's build, not as a single bottleneck module.
-- **Catalog aggregation**: At server build time, `legend-engine-emit-maven-plugin`
-  walks the multi-module repo and bundles every yaml into
-  `META-INF/emit-catalog/` of the server jar; at runtime,
-  `EMITModelDiscovery.fromClasspath(...)` reads that catalog to feed the HTML
-  coverage report. No per-module configuration is required — dropping a yaml
+- **Build-time HTML aggregation**: At server build time,
+  `legend-engine-emit-maven-plugin` walks the legend-engine multi-module
+  tree, discovers every module's `emit-models/`, parses each `*.emit.yaml`,
+  and writes the rendered HTML coverage report to
+  `target/classes/emit/emit-coverage.html` of the server jar. At runtime
+  the server's `EMIT` JAX-RS handler simply streams that pre-rendered
+  resource. No per-module configuration is required — dropping a yaml
   under any module's `src/test/resources/emit-models/` is enough. See §5.4.
 
 ### 3.3 Core API
@@ -551,47 +558,56 @@ with a catalog-wide one — feature combinations, a heatmap of
 descriptor-to-feature coverage, and a list of taxonomy features that no
 model currently covers (the "coverage gaps" tab).
 
-The dashboard ships in two interchangeable forms, both backed by the
-same renderer:
+The same HTML is produced two ways, sharing the renderer in
+`EMIT_to_HTML#buildHTML`:
 
 | Form | How to access | Entry point | Discovery |
 |---|---|---|---|
-| **REST endpoint** | `GET /api/emit/html` on a running server | `EMIT.java` JAX-RS handler | `EMITModelDiscovery.fromClasspath(...)` |
-| **CLI** | Writes `./target/emit-coverage.html` | `EMIT_to_HTML#main(String[])` | `EMITModelDiscovery.fromFileSystem(findRepoRoot())` |
+| **REST endpoint** | `GET /api/emit/html` on a running server | `EMIT.java` JAX-RS handler | None at runtime — streams the pre-rendered `/emit/emit-coverage.html` classpath resource |
+| **CLI** | Writes `<repoRoot>/legend-engine-core/legend-engine-core-emit/legend-engine-emit/target/emit-coverage.html` | `EMIT_to_HTML#main(String[])` | Live filesystem walk from the discovered repo root |
 
-Both forms produce the same HTML for the same yamls; only the discovery
-strategy differs:
+The two forms differ in **when** discovery happens:
 
-```
-Server (jar) flow:
-  EMITModelDiscovery.fromClasspath(EMIT.class.getClassLoader())
-      └─ reads META-INF/emit-catalog/index.txt from every contributing jar
-      └─ opens each listed entry as a jar: URL via ClassLoader.getResource
-                              ↓
-CLI / local flow:
-  EMITModelDiscovery.fromFileSystem(EMITModelDiscovery.findRepoRoot())
-      └─ walks the repo tree for **/src/test/resources/emit-models/**/*.emit.yaml
-      └─ opens each as a file: URL
-                              ↓
-EMIT_to_HTML.buildHTML(descriptors)              ← deterministic HTML render
-```
+- The REST endpoint serves a **pre-built** HTML. Generation runs at the
+  server module's build time via
+  `legend-engine-emit-maven-plugin`'s `generate-EMIT-coverage-report`
+  goal (bound to `generate-resources`). The mojo locates the legend-engine
+  repo root by walking up `MavenProject.getParent()` from the consuming
+  project, then parses pom.xml files starting at that root and recurses
+  through each pom's `<modules>` declarations via `MavenXpp3Reader` —
+  independent of the current Maven reactor, so it always sees the full
+  multi-module tree. For every non-excluded module it probes
+  `src/test/resources/emit-models/`, feeds the discovered directories to
+  `EMIT_to_HTML.generateFromEmitModelsDirs(...)`, and writes the rendered
+  HTML to `${project.build.outputDirectory}/emit/emit-coverage.html`.
+  Maven's normal jar packaging bundles the resource into the server jar,
+  and the runtime `EMIT` handler simply streams it — so the runtime has
+  no dependency on `EMITModelDiscovery`, no catalog manifest, and nothing
+  that could drift between build and serve. If the resource is missing
+  (e.g., the server was assembled without the plugin in its build), the
+  endpoint returns `503 Service Unavailable` with an instruction to
+  rebuild the server module.
 
-The "YAML Path" column shows each yaml's **repo-relative source path** —
-for the server flow it comes verbatim from the catalog `index.txt`; for
-the CLI flow it is derived from `repoRoot.relativize(yaml)`. Both produce
-the same string so the report renders identically in either flow.
+- The CLI walks the **live filesystem**. `EMIT_to_HTML#main` locates the
+  repo root by walking up from `user.dir` looking for the
+  `<artifactId>legend-engine</artifactId>` pom, then calls
+  `generateFromRepoRoot(repoRoot, outputFile)`. That method enumerates
+  every `*.emit.yaml` under the repo (excluding `target/`, `build/`,
+  `node_modules/`, `.git/`, `.idea/`, and `legend-engine-emit-junit/`)
+  via `EMITModelDiscovery.findEmitYamls(repoRoot, exclude)`, parses each
+  descriptor, and feeds them to the same `buildHTML` renderer. The
+  output path is anchored at the `legend-engine-emit` module's
+  `target/` directory regardless of the JVM's working directory.
 
-Catalog generation runs at the server module's build time via
-`legend-engine-emit-maven-plugin` (`build-catalog` goal, bound to
-`generate-resources`). The plugin writes the yamls plus a sorted
-`index.txt` manifest under `target/classes/META-INF/emit-catalog/`, which
-`maven-shade-plugin` then bundles into the server jar. As a result the
-deployed server is self-contained — there is no
-runtime classpath scan beyond `getResources("META-INF/emit-catalog/index.txt")`,
-and no per-contributing-module wiring. Adding a new yaml is just dropping
-it under any module's `src/test/resources/emit-models/`; the next clean
-build of the server picks it up automatically. See the authoring guide §10
-for the developer workflow.
+The "YAML Path" column in the report shows each yaml's repo-relative
+source path — derived by relativising the descriptor's absolute path
+against the repo root — so the report renders identically in either flow.
+
+Adding a new yaml is just dropping it under any module's
+`src/test/resources/emit-models/`; the next clean build of the server
+picks it up automatically. The mojo silently skips any module whose pom
+declares a customized `<build><testResources>`, since the report only
+supports the conventional `src/test/resources` layout.
 
 ---
 
@@ -830,15 +846,24 @@ Today the catalog metadata is captured by `EMITModelDescriptor` (under
 `*.emit.yaml` and carries the descriptor fields plus the resolved primary /
 dependency file paths.
 
-The classpath scan that discovers descriptors is implemented in
-`EMITModelDiscovery` (in `legend-engine-emit`), which exposes three
-flows: `fromClasspath(ClassLoader)` for the deployed-server jar (reads
-the catalog written by `legend-engine-emit-maven-plugin` at build
-time — see §5.4), `fromFileSystem(Path)` for CLI tools running from a
-checkout, and `findEmitYaml` / `findEmitYamls` for the JUnit
-`@TestFactory` flow. All three return the same `EMITModelDescriptor`
-shape, so any catalog query layer can be written against that one
-type regardless of how the descriptor was discovered.
+Descriptor discovery is implemented in `EMITModelDiscovery` (in
+`legend-engine-emit`), which exposes two parallel families of `find…`
+methods:
+
+- **Filesystem** — `findEmitYamls(Path)` and
+  `findEmitYamls(Path, Predicate<? super Path>)` walk a single directory
+  tree (with optional path-level exclusion) for `*.emit.yaml`. Used by
+  `EMIT_to_HTML#generateFromRepoRoot` (the CLI form of the HTML
+  dashboard, with a predicate that prunes `target/`, `.git/`, etc.) and
+  by any tool that already knows which directory to scan.
+- **Classpath** — `findEmitYamls(String)` /
+  `findEmitYamls(ClassLoader, String)` enumerate every yaml under the
+  given classpath root across all loaded jars; `findEmitYaml(String,
+  String)` / `findEmitYaml(ClassLoader, String, String)` resolve a single
+  yaml by name. Used by `EMITTestSuiteBuilder` so that the JUnit
+  `@TestFactory` picks up models from a module's own
+  `src/test/resources/emit-models/` and from any test-scoped jar that
+  contains the same layout.
 
 A dedicated catalog index — querying models by feature, store, complexity,
 and free-text search over titles/descriptions/tags — is **not yet
