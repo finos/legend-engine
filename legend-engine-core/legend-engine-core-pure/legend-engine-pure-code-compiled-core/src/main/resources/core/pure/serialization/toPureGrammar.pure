@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::utils::*;
+import meta::pure::router::metamodel::clustering::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
 import meta::pure::metamodel::relation::*;
@@ -118,6 +120,7 @@ function meta::pure::metamodel::serialization::grammar::printValueSpecification(
                     f:Float[1] | $f->toRepresentation(),
                     s:String[1] | $s->toRepresentation(),
                     b:Boolean[1] | $b->toRepresentation(),
+                    c:ClusteredValueSpecification[1] | $c->byPassValueSpecificationWrapper()->printValueSpecification($configuration, $context),
                     a:Any[1] | 'UNKNOWN: ' + $a->type()->toOne()->id()
                 ]
              );

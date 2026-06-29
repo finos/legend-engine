@@ -548,7 +548,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                     ^$lastSecondPass(shouldBeRouted = $shouldBeRouted, value=$possiblyWrapperd, pathPrefix=$state.pathPrefix);,
                   | let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
                     assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
-                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $newVars->putAll($vars), $inScopeVars, $extensions, $debug);
+                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
               );
         );
   );
