@@ -16,35 +16,44 @@ package org.finos.legend.engine.server.core.emit;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.finos.legend.engine.test.emit.EMITModelDiscovery;
-import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
+import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.InputStream;
+import java.util.Objects;
 
 @Api(tags = "EMIT")
 @Path("emit")
 public class EMIT
 {
+    private static final String COVERAGE_REPORT_RESOURCE = "/emit/emit-coverage.html";
+
     @GET
     @Path("html")
     @ApiOperation(value = "EMIT coverage report in HTML")
     @Produces(MediaType.TEXT_HTML)
     public Response htmlEMIT()
     {
-        try
+        if (EMIT.class.getResource(COVERAGE_REPORT_RESOURCE) == null)
         {
-            List<EMITModelDescriptor> descriptors = EMITModelDiscovery.fromClasspath(EMIT.class.getClassLoader());
-            String html = EMIT_to_HTML.buildHTML(descriptors);
-            return Response.status(200).type(MediaType.TEXT_HTML).entity(html).build();
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                    .type(MediaType.TEXT_PLAIN)
+                    .entity("EMIT coverage report is not bundled in this server build. Rebuild the legend-engine-server-http-server module to (re)generate it.")
+                    .build();
         }
-        catch (Exception e)
+        return Response.status(Response.Status.OK).type(MediaType.TEXT_HTML).entity((StreamingOutput) out ->
         {
-            return Response.status(500).entity("Failed to generate EMIT report: " + e.getMessage()).build();
-        }
+            try (InputStream in = Objects.requireNonNull(
+                    EMIT.class.getResourceAsStream(COVERAGE_REPORT_RESOURCE),
+                    COVERAGE_REPORT_RESOURCE))
+            {
+                IOUtils.copy(in, out);
+            }
+        }).build();
     }
 }

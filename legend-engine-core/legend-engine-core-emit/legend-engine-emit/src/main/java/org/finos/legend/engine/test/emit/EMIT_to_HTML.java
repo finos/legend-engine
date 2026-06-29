@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.server.core.emit;
+package org.finos.legend.engine.test.emit;
 
-import org.finos.legend.engine.test.emit.EMITModelDiscovery;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,10 +31,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EMIT_to_HTML
 {
+    private static final String EMIT_MODELS_MARKER = "/src/test/resources/emit-models/";
+
+    private static final Pattern EXCLUDED_DIR_SEGMENTS = Pattern.compile(
+            ".*/(target|node_modules|\\.git|\\.idea|build)/.*");
+
+    private static final Pattern EXCLUDED_MODULES = Pattern.compile(
+            ".*/(legend-engine-emit-junit)/.*");
+
+    private static final Pattern LEGEND_ENGINE_ROOT_POM = Pattern.compile(
+            "<artifactId>\\s*legend-engine\\s*</artifactId>");
+
+    private static final int POM_SNIFF_BYTES = 4096;
+
     private static final List<String> FULL_TAXONOMY = Arrays.asList(
             // grammar
             "grammar:association", "grammar:class-inheritance", "grammar:constraint",
@@ -95,12 +111,143 @@ public class EMIT_to_HTML
 
     public static void main(String[] args) throws Exception
     {
-        List<EMITModelDescriptor> descriptors = EMITModelDiscovery.fromFileSystem(EMITModelDiscovery.findRepoRoot());
-        String html = buildHTML(descriptors);
-        Path output = Paths.get("./target/emit-coverage.html").toAbsolutePath().normalize();
-        Files.createDirectories(output.getParent());
-        Files.write(output, html.getBytes(StandardCharsets.UTF_8));
+        Path repoRoot = findLegendEngineRoot(Paths.get(System.getProperty("user.dir")));
+        Path output = repoRoot.resolve("legend-engine-core/legend-engine-core-emit/legend-engine-emit/target/emit-coverage.html");
+        generateFromRepoRoot(repoRoot, output);
         System.out.println("EMIT coverage report written to: " + output);
+    }
+
+    public static String generateFromEmitModelsDirs(Path repoRoot, List<Path> emitModelsDirs) throws IOException
+    {
+        if (repoRoot == null)
+        {
+            throw new IllegalArgumentException("repoRoot is required");
+        }
+        if (emitModelsDirs == null)
+        {
+            throw new IllegalArgumentException("emitModelsDirs is required");
+        }
+        List<EMITModelDescriptor> all = new ArrayList<>();
+        EMITModelLoader loader = new EMITModelLoader();
+        for (Path dir : emitModelsDirs)
+        {
+            if (dir == null || !Files.isDirectory(dir))
+            {
+                continue;
+            }
+            for (Path yamlPath : EMITModelDiscovery.findEmitYamls(dir))
+            {
+                EMITModelDescriptor d = loader.parseDescriptor(yamlPath);
+                String rel = repoRoot.relativize(yamlPath).toString().replace(File.separatorChar, '/');
+                d.setResourcePath(rel);
+                d.setModule(deriveModule(rel));
+                all.add(d);
+            }
+        }
+        all.sort(Comparator.comparing(EMITModelDescriptor::getResourcePath,
+                Comparator.nullsLast(Comparator.naturalOrder())));
+        return buildHTML(all);
+    }
+    
+    public static void generateFromEmitModelsDirs(Path repoRoot, List<Path> emitModelsDirs, Path outputFile) throws IOException
+    {
+        if (outputFile == null)
+        {
+            throw new IllegalArgumentException("outputFile is required");
+        }
+        String html = generateFromEmitModelsDirs(repoRoot, emitModelsDirs);
+        Path parent = outputFile.getParent();
+        if (parent != null)
+        {
+            Files.createDirectories(parent);
+        }
+        Files.write(outputFile, html.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String generateFromRepoRoot(Path repoRoot) throws IOException
+    {
+        if (repoRoot == null || !Files.isDirectory(repoRoot))
+        {
+            throw new IllegalArgumentException("Repo root is not a directory: " + repoRoot);
+        }
+        Predicate<Path> exclude = p ->
+        {
+            String rel = "/" + repoRoot.relativize(p).toString().replace(File.separatorChar, '/');
+            return !rel.contains(EMIT_MODELS_MARKER)
+                    || EXCLUDED_DIR_SEGMENTS.matcher(rel).matches()
+                    || EXCLUDED_MODULES.matcher(rel).matches();
+        };
+        List<Path> yamls = EMITModelDiscovery.findEmitYamls(repoRoot, exclude);
+        EMITModelLoader loader = new EMITModelLoader();
+        List<EMITModelDescriptor> descriptors = new ArrayList<>(yamls.size());
+        for (Path yaml : yamls)
+        {
+            EMITModelDescriptor d = loader.parseDescriptor(yaml);
+            String rel = repoRoot.relativize(yaml).toString().replace(File.separatorChar, '/');
+            d.setResourcePath(rel);
+            d.setModule(deriveModule(rel));
+            descriptors.add(d);
+        }
+        return buildHTML(descriptors);
+    }
+    
+    public static void generateFromRepoRoot(Path repoRoot, Path outputFile) throws IOException
+    {
+        if (outputFile == null)
+        {
+            throw new IllegalArgumentException("outputFile is required");
+        }
+        String html = generateFromRepoRoot(repoRoot);
+        Path parent = outputFile.getParent();
+        if (parent != null)
+        {
+            Files.createDirectories(parent);
+        }
+        Files.write(outputFile, html.getBytes(StandardCharsets.UTF_8));
+    }
+
+
+    private static Path findLegendEngineRoot(Path startDir) throws IOException
+    {
+        Path start = startDir.toAbsolutePath().normalize();
+        for (Path candidate = start; candidate != null; candidate = candidate.getParent())
+        {
+            Path pom = candidate.resolve("pom.xml");
+            if (Files.isRegularFile(pom) && isLegendEngineRootPom(pom))
+            {
+                return candidate;
+            }
+        }
+        throw new IOException("Could not locate legend-engine repo root walking up from " + start + " (no ancestor pom.xml declares <artifactId>legend-engine</artifactId>)");
+    }
+
+    private static boolean isLegendEngineRootPom(Path pom)
+    {
+        try
+        {
+            byte[] bytes = Files.readAllBytes(pom);
+            String head = new String(bytes, 0, Math.min(bytes.length, POM_SNIFF_BYTES), StandardCharsets.UTF_8);
+            return LEGEND_ENGINE_ROOT_POM.matcher(head).find();
+        }
+        catch (IOException e)
+        {
+            return false;
+        }
+    }
+
+    private static String deriveModule(String resourcePath)
+    {
+        if (resourcePath == null)
+        {
+            return null;
+        }
+        int idx = resourcePath.indexOf("/src/test/resources/");
+        if (idx <= 0)
+        {
+            return null;
+        }
+        int prev = resourcePath.lastIndexOf('/', idx - 1);
+        return (prev < 0) ? resourcePath.substring(0, idx) : resourcePath.substring(prev + 1, idx);
     }
 
     public static String buildHTML(List<EMITModelDescriptor> descriptors)

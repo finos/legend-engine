@@ -26,31 +26,12 @@
     <packaging>maven-plugin</packaging>
     <name>Legend Engine - Testing - EMIT Maven Plugin</name>
     <description>
-        Maven plugin that walks the repo for every src/test/resources/emit-models/**/*.emit.yaml
-        and bundles a catalog (yamls + index) under META-INF/emit-catalog/ in the consuming jar.
-        Used by the legend-engine server to expose its EMIT coverage report.
+        Maven plugin that pre-renders the EMIT coverage report at build time.
+        Walks the legend-engine repo (located via MavenProject.getParent()) for every
+        src/test/resources/emit-models/**/*.emit.yaml and writes a self-contained HTML
+        report under the consuming module's target/classes/emit/emit-coverage.html,
+        which the legend-engine server then streams at GET /api/emit/html.
     </description>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <configuration>
-                    <goalPrefix>legend-emit</goalPrefix>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>default-descriptor</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>descriptor</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -69,6 +50,36 @@
             <artifactId>maven-plugin-annotations</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.sisu</groupId>
+                    <artifactId>org.eclipse.sisu.plexus</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.maven</groupId>
+                    <artifactId>maven-settings-builder</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-emit</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -78,6 +89,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

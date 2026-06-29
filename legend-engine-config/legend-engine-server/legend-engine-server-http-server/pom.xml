@@ -35,10 +35,10 @@
                 <version>${project.version}</version>
                 <executions>
                     <execution>
-                        <id>build-emit-catalog</id>
+                        <id>generate-emit-coverage-report</id>
                         <phase>generate-resources</phase>
                         <goals>
-                            <goal>build-catalog</goal>
+                            <goal>generate-EMIT-coverage-report</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -142,10 +142,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-emit</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
