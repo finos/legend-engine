@@ -439,6 +439,48 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 ")\n", "COMPILATION error at [27:5-34]: The set implementation 'addressSet' referenced in the inline embedded mapping for property 'address' does not exist in the mapping my::testMapping");
     }
 
+    @Test
+    public void testRelationFunctionEmbeddedMappingCompiles()
+    {
+        test(RELATION_MAPPING_EMBEDDED_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address\n" +
+                "    (\n" +
+                "      street: STREET,\n" +
+                "      city: CITY\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionInlineEmbeddedMappingCompiles()
+    {
+        test(RELATION_MAPPING_EMBEDDED_PURE_SOURCE + "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address () Inline [addressSet]\n" +
+                "  }\n" +
+                "  *my::FullAddress[addressSet]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    street: STREET,\n" +
+                "    city: CITY\n" +
+                "  }\n" +
+                ")\n");
+    }
+
 
     @Override
     public String getDuplicatedElementTestCode()

@@ -633,10 +633,9 @@ public class HelperMappingBuilder
         {
             prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
         }
-        else
+        else if (propertyMapping.property._class != null)
         {
             prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property._class, propertyMapping.property.sourceInformation));
-            prerequisiteElements.add(new PackageableElementPointer(null, propertyMapping.property.property, propertyMapping.property.sourceInformation));
         }
     }
 

@@ -1245,20 +1245,28 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
 
         RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
         org.junit.Assert.assertEquals("firstName", propertyMapping1.property.property);
+        org.junit.Assert.assertEquals("my::Person", propertyMapping1.property._class);
+        org.junit.Assert.assertEquals("person", propertyMapping1.source);
         org.junit.Assert.assertEquals("firstName", propertyMapping1.column);
 
         org.junit.Assert.assertTrue(classMapping.propertyMappings.get(1) instanceof RelationFunctionEmbeddedPropertyMapping);
         RelationFunctionEmbeddedPropertyMapping embeddedMapping = (RelationFunctionEmbeddedPropertyMapping) classMapping.propertyMappings.get(1);
         org.junit.Assert.assertEquals("address", embeddedMapping.property.property);
+        org.junit.Assert.assertEquals("my::Person", embeddedMapping.property._class);
+        org.junit.Assert.assertEquals("person", embeddedMapping.source);
         org.junit.Assert.assertEquals(2, embeddedMapping.propertyMappings.size());
 
         RelationFunctionPropertyMapping streetMapping = (RelationFunctionPropertyMapping) embeddedMapping.propertyMappings.get(0);
         org.junit.Assert.assertEquals("street", streetMapping.property.property);
         org.junit.Assert.assertEquals("STREET", streetMapping.column);
+        org.junit.Assert.assertNull(streetMapping.property._class);
+        org.junit.Assert.assertNull(streetMapping.source);
 
         RelationFunctionPropertyMapping cityMapping = (RelationFunctionPropertyMapping) embeddedMapping.propertyMappings.get(1);
         org.junit.Assert.assertEquals("city", cityMapping.property.property);
         org.junit.Assert.assertEquals("CITY", cityMapping.column);
+        org.junit.Assert.assertNull(cityMapping.property._class);
+        org.junit.Assert.assertNull(cityMapping.source);
     }
 
     @Test
@@ -1290,9 +1298,16 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
 
         org.junit.Assert.assertEquals(2, classMapping.propertyMappings.size());
 
+        RelationFunctionPropertyMapping propertyMapping1 = (RelationFunctionPropertyMapping) classMapping.propertyMappings.get(0);
+        org.junit.Assert.assertEquals("firstName", propertyMapping1.property.property);
+        org.junit.Assert.assertEquals("my::Person", propertyMapping1.property._class);
+        org.junit.Assert.assertEquals("person", propertyMapping1.source);
+
         org.junit.Assert.assertTrue(classMapping.propertyMappings.get(1) instanceof RelationFunctionEmbeddedPropertyMapping);
         RelationFunctionEmbeddedPropertyMapping inlineMapping = (RelationFunctionEmbeddedPropertyMapping) classMapping.propertyMappings.get(1);
         org.junit.Assert.assertEquals("address", inlineMapping.property.property);
+        org.junit.Assert.assertEquals("my::Person", inlineMapping.property._class);
+        org.junit.Assert.assertEquals("person", inlineMapping.source);
         org.junit.Assert.assertEquals("addressSet", inlineMapping.id);
         org.junit.Assert.assertTrue(inlineMapping.propertyMappings.isEmpty());
 
