@@ -406,7 +406,6 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
 function meta::external::query::sql::transformation::queryToPure::processRootQuery(query: Query[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processRootQuery', $_context.debug);
-  let start = now();
 
   let context = ^$_context(debug = $_context.debug->indent());
 
