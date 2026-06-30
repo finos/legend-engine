@@ -3461,6 +3461,124 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 ")\n");
     }
 
+    @Test
+    public void testRelationFunctionEmbeddedMappingCompiles()
+    {
+        test("###Pure\n" +
+                "Class my::PersonWithAddress\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  address: my::FullAddress[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class my::FullAddress\n" +
+                "{\n" +
+                "  street: String[1];\n" +
+                "  city: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address\n" +
+                "    (\n" +
+                "      street: STREET,\n" +
+                "      city: CITY\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionInlineEmbeddedMappingCompiles()
+    {
+        test("###Pure\n" +
+                "Class my::PersonWithAddress\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  address: my::FullAddress[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class my::FullAddress\n" +
+                "{\n" +
+                "  street: String[1];\n" +
+                "  city: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address () Inline [addressSet]\n" +
+                "  }\n" +
+                "\n" +
+                "  *my::FullAddress[addressSet]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    street: STREET,\n" +
+                "    city: CITY\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionNestedEmbeddedMappingSourceId()
+    {
+        test("###Pure\n" +
+                "Class my::PersonWithAddress\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  address: my::FullAddress[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class my::FullAddress\n" +
+                "{\n" +
+                "  street: String[1];\n" +
+                "  city: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::PersonWithAddress[personWithAddr]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personWithAddressFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE,\n" +
+                "    address\n" +
+                "    (\n" +
+                "      street: STREET,\n" +
+                "      city: CITY\n" +
+                "    )\n" +
+                "  }\n" +
+                ")\n");
+    }
+
 
     @Test
     public void testModelJoinAssociationMapping()
