@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.application.query.model.DataCubeQuery;
+import org.finos.legend.engine.application.query.model.PaginatedQuerySearchSpecification;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
@@ -58,11 +59,32 @@ public class ApplicationQuery
         return profile != null ? profile.getId() : null;
     }
 
+    @Deprecated
     @POST
     @Path("search")
     @ApiOperation(value = "Search queries")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response searchQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try
+        {
+            return Response.ok().entity(this.queryStoreManager.searchQueries(searchSpecification, getCurrentUser(profileManager)).queries).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.SEARCH_QUERIES_ERROR, null);
+        }
+    }
+
+    @POST
+    @Path("search/paginated")
+    @ApiOperation(value = "Search queries with pagination")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response searchQueriesPaginated(PaginatedQuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         try
         {
@@ -97,6 +119,7 @@ public class ApplicationQuery
             return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, null);
         }
     }
+
 
     @GET
     @Path("{queryId}")

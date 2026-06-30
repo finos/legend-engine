@@ -39,7 +39,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,6 +53,7 @@ public class QueryStoreManager
     private static final int MAX_NUMBER_OF_QUERIES = 100;
     private static final int MAX_NUMBER_OF_EVENTS = 1000;
     private static final int QUERY_BATCH_SIZE = 1000;
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
@@ -213,7 +216,7 @@ public class QueryStoreManager
         // TODO: we can potentially create a pattern check for version
     }
 
-    public List<Query> searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
+    public PaginatedResult searchQueries(QuerySearchSpecification searchSpecification, String currentUser)
     {
         List<Bson> filters = new ArrayList<>();
         if (searchSpecification.searchTermSpecification != null)
@@ -309,17 +312,58 @@ public class QueryStoreManager
         {
             builder.sortDesc(getSortByField(searchSpecification.sortByOption));
         }
-        builder.withExcludeFields(EXCLUDED_PROJECTION_FIELDS);
-        if (searchSpecification.limit != null && searchSpecification.limit <= 0)
+        else
         {
-            throw new ApplicationQueryException("Limit should be greater than 0", Response.Status.BAD_REQUEST);
+            builder.sortDesc(getSortByField(QuerySearchSortBy.SORT_BY_VIEW));
         }
-        builder.withLimit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit));
+        builder.withExcludeFields(EXCLUDED_PROJECTION_FIELDS);
 
-        return getQueryDao().find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
-                .map(this::convertFromStoredQuery)
-                .sorted(Comparator.comparing(query -> query.owner != null && query.owner.equals(currentUser) ? 0 : 1))
-                .collect(Collectors.toList());
+        // Check if pagination is requested (spec is a PaginatedQuerySearchSpecification with pageSize specified)
+        boolean isPaginated = searchSpecification instanceof PaginatedQuerySearchSpecification
+                && ((PaginatedQuerySearchSpecification) searchSpecification).pageSize != null;
+
+        if (isPaginated)
+        {
+            PaginatedQuerySearchSpecification paginatedSpec = (PaginatedQuerySearchSpecification) searchSpecification;
+            int pageSize = Math.min(paginatedSpec.pageSize, MAX_PAGE_SIZE);
+            int offset = paginatedSpec.cursor != null ? paginatedSpec.cursor : 0;
+            int pageNumber = (offset / pageSize) + 1;
+
+            builder.withSkip(offset);
+            // Fetch one extra to determine if there's a next page
+            builder.withLimit(pageSize + 1);
+
+            List<Query> queries = getQueryDao().find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
+                    .map(this::convertFromStoredQuery)
+                    .sorted(Comparator.comparing(query -> query.owner != null && query.owner.equals(currentUser) ? 0 : 1))
+                    .collect(Collectors.toList());
+
+            boolean hasNextPage = queries.size() > pageSize;
+            if (hasNextPage)
+            {
+                queries = queries.subList(0, pageSize);
+            }
+
+            Integer cursor = hasNextPage ? offset + pageSize : null;
+
+            return new PaginatedResult(queries, hasNextPage, cursor, pageNumber);
+        }
+        else
+        {
+            // Non-paginated: use limit parameter (backward compatible behavior)
+            if (searchSpecification.limit != null && searchSpecification.limit <= 0)
+            {
+                throw new ApplicationQueryException("Limit should be greater than 0", Response.Status.BAD_REQUEST);
+            }
+            builder.withLimit(Math.min(MAX_NUMBER_OF_QUERIES, searchSpecification.limit == null ? Integer.MAX_VALUE : searchSpecification.limit));
+
+            List<Query> queries = getQueryDao().find(filters.isEmpty() ? EMPTY_FILTER : Filters.and(filters), false, builder.build())
+                    .map(this::convertFromStoredQuery)
+                    .sorted(Comparator.comparing(query -> query.owner != null && query.owner.equals(currentUser) ? 0 : 1))
+                    .collect(Collectors.toList());
+
+            return new PaginatedResult(queries, false, null, 1);
+        }
     }
 
     public String getSortByField(QuerySearchSortBy sortBy)
@@ -565,4 +609,5 @@ public class QueryStoreManager
                 .countDocuments(dataSpaceFilter));
         return storeStats;
     }
+
 }

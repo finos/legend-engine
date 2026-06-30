@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.application.query.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.application.query.model.*;
@@ -453,9 +454,9 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().withGroupId("test.group").withArtifactId("test-artifact").build();
         store.createQuery(newQuery, currentUser);
-        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
-        Assert.assertEquals(1, queries.size());
-        Query lightQuery = queries.get(0);
+        PaginatedResult queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(1, queries.queries.size());
+        Query lightQuery = queries.queries.get(0);
         Assert.assertEquals("test-artifact", lightQuery.artifactId);
         Assert.assertEquals("test.group", lightQuery.groupId);
         Assert.assertEquals("1", lightQuery.id);
@@ -568,10 +569,10 @@ public class TestQueryStoreManager
         store.createQuery(newQuery, currentUser);
         store.createQuery(newQueryTwo, currentUser);
         store.createQuery(newQueryThree, currentUser);
-        List<Query> queriesGeneralSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").build(), currentUser);
-        Assert.assertEquals(3, queriesGeneralSearch.size());
-        List<Query> queriesExactSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").withExactNameSearch(true).build(), currentUser);
-        Assert.assertEquals(1, queriesExactSearch.size());
+        PaginatedResult queriesGeneralSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").build(), currentUser);
+        Assert.assertEquals(3, queriesGeneralSearch.queries.size());
+        PaginatedResult queriesExactSearch = store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("Test Query 1").withExactNameSearch(true).build(), currentUser);
+        Assert.assertEquals(1, queriesExactSearch.queries.size());
     }
 
     @Test
@@ -601,8 +602,8 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(1).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(1).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
         Assert.assertThrows(ApplicationQueryException.class, () -> store.searchQueries(new TestQuerySearchSpecificationBuilder().withLimit(0).build(), currentUser));
     }
 
@@ -620,22 +621,22 @@ public class TestQueryStoreManager
         store.createQuery(testQuery4, currentUser);
 
         // When no projects specified, return all queries
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
 
         QueryProjectCoordinates coordinate1 = createTestQueryProjectCoordinate("notfound", "notfound", null);
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1)).build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1)).build(), currentUser).queries.size());
 
         QueryProjectCoordinates coordinate2 = createTestQueryProjectCoordinate("test", "test", null);
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate2)).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate2)).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2)).build(), currentUser).queries.size());
 
         QueryProjectCoordinates coordinate3 = createTestQueryProjectCoordinate("something", "something", null);
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate3)).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3)).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate3)).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3)).build(), currentUser).queries.size());
 
         QueryProjectCoordinates coordinate4 = createTestQueryProjectCoordinate("something.another", "something-another", "1.0.0");
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate4)).build(), currentUser).size());
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3, coordinate4)).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate4)).build(), currentUser).queries.size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withProjectCoordinates(Lists.fixedSize.of(coordinate1, coordinate2, coordinate3, coordinate4)).build(), currentUser).queries.size());
     }
 
     @Test
@@ -656,15 +657,15 @@ public class TestQueryStoreManager
         Thread.sleep(100);
         store.createQuery(testQuery3, currentUser);
 
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).size());
-        Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).queries.size());
+        Assert.assertEquals(Arrays.asList("3", "2", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_CREATE).build(), currentUser).queries.stream().map(q -> q.id).collect(Collectors.toList()));
 
         testQuery2Created.name = "query2NewlyUpdated";
         store.updateQuery("2", testQuery2Created, currentUser);
-        Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("2", "3", "4", "1"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_UPDATE).build(), currentUser).queries.stream().map(q -> q.id).collect(Collectors.toList()));
 
         store.getQuery("1");
-        Assert.assertEquals(Arrays.asList("1", "2", "3", "4"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_VIEW).build(), currentUser).stream().map(q -> q.id).collect(Collectors.toList()));
+        Assert.assertEquals(Arrays.asList("1", "2", "3", "4"), store.searchQueries(new TestQuerySearchSpecificationBuilder().withSortByOption(QuerySearchSortBy.SORT_BY_VIEW).build(), currentUser).queries.stream().map(q -> q.id).collect(Collectors.toList()));
     }
 
     @Test
@@ -684,12 +685,12 @@ public class TestQueryStoreManager
         store.createQuery(testQuery4, currentUser);
 
         // When no stereotype provided, return all queries
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype3)).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1)).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype2)).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2, stereotype3)).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype3)).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1)).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype2)).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2)).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withStereotypes(Lists.fixedSize.of(stereotype1, stereotype2, stereotype3)).build(), currentUser).queries.size());
     }
 
     @Test
@@ -901,12 +902,12 @@ public class TestQueryStoreManager
         store.createQuery(testQuery4, currentUser);
 
         // When no tagged value provided, return all queries
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).build(), currentUser).queries.size());
     }
 
     @Test
@@ -920,8 +921,8 @@ public class TestQueryStoreManager
         store.createQuery(testQuery1, currentUser);
         store.createQuery(testQuery2, currentUser);
 
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue)).build(), currentUser).queries.size());
     }
 
     @Test
@@ -956,10 +957,10 @@ public class TestQueryStoreManager
         store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("3", "query2", currentUser).withExplicitExecution().build(), currentUser);
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).queries.size());
     }
 
 
@@ -971,11 +972,11 @@ public class TestQueryStoreManager
         store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("3", "query3", user2).withExplicitExecution().build(), user2);
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).queries.size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).queries.size());
     }
 
     @Test
@@ -984,9 +985,9 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), "testUser1");
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).size());
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(false).build(), currentUser).queries.size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withShowCurrentUserQueriesOnly(true).build(), currentUser).queries.size());
     }
 
     @Test
@@ -1115,7 +1116,7 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
         store.deleteQuery("1", currentUser);
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
     }
 
     @Test
@@ -1131,7 +1132,7 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         store.createQuery(TestQueryBuilder.create("1", "query1", null).withExplicitExecution().build(), null);
         store.deleteQuery("1", currentUser);
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
     }
 
     @Test
@@ -1158,9 +1159,9 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         Query newQuery = TestQueryBuilder.create("1", "query1", currentUser).withGroupId("test.group").withArtifactId("test-artifact").withExplicitExecution().build();
         store.createQuery(newQuery, currentUser);
-        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
-        Assert.assertEquals(1, queries.size());
-        Query lightQuery = queries.get(0);
+        PaginatedResult queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(1, queries.queries.size());
+        Query lightQuery = queries.queries.get(0);
         Assert.assertNotNull(lightQuery.lastUpdatedAt);
         Assert.assertNotNull(lightQuery.createdAt);
     }
@@ -1172,9 +1173,9 @@ public class TestQueryStoreManager
         store.createQuery(TestQueryBuilder.create("26929514-237c-11ed-861d-0242ac120002", "query_a", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("26929515-237c-11bd-851d-0243ac120002", "query_b", currentUser).withExplicitExecution().build(), currentUser);
         store.createQuery(TestQueryBuilder.create("23929515-235c-11ad-851d-0143ac120002", "query_c", currentUser).withExplicitExecution().build(), currentUser);
-        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad-851d-0143ac120002").build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad").build(), currentUser).size());
+        Assert.assertEquals(3, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad-851d-0143ac120002").build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("23929515-235c-11ad").build(), currentUser).queries.size());
     }
 
     @Test
@@ -1183,9 +1184,9 @@ public class TestQueryStoreManager
         String currentUser = "testUser";
         store.createQuery(TestQueryBuilder.create("1", "query1", "testUser1").withExplicitExecution().build(), "testUser1");
         store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
-        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
-        Assert.assertEquals(2, queries.size());
-        Assert.assertEquals(currentUser, queries.get(0).owner);
+        PaginatedResult queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        Assert.assertEquals(2, queries.queries.size());
+        Assert.assertEquals(currentUser, queries.queries.get(0).owner);
     }
 
     @Test
@@ -1205,12 +1206,12 @@ public class TestQueryStoreManager
         store.createQuery(testQuery4, currentUser);
 
         // When no tagged value provided, return all queries
-        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).size());
+        Assert.assertEquals(4, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1)).withCombineTaggedValuesCondition(true).build(), currentUser).queries.size());
+        Assert.assertEquals(2, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).queries.size());
+        Assert.assertEquals(1, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2)).withCombineTaggedValuesCondition(true).build(), currentUser).queries.size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().withTaggedValues(Lists.fixedSize.of(taggedValue1, taggedValue2, taggedValue3)).withCombineTaggedValuesCondition(true).build(), currentUser).queries.size());
     }
 
     @Test
@@ -1392,7 +1393,7 @@ public class TestQueryStoreManager
 
         // Deleted query must no longer be live
         Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1"));
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
 
         // Both old versions must still be visible in history
         List<Query> history = store.getQueryHistory("1");
@@ -1636,7 +1637,7 @@ public class TestQueryStoreManager
         store.updateQuery("1", createdQuery, currentUser);
 
         // Search should only return the latest version, not historical versions
-        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser);
+        List<Query> queries = store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries;
         Assert.assertEquals(1, queries.size());
         Assert.assertEquals("query1_v2", queries.get(0).name);
     }
@@ -1677,7 +1678,7 @@ public class TestQueryStoreManager
 
         // Verify the query is gone
         Assert.assertEquals("Can't find query with ID '1'", Assert.assertThrows(ApplicationQueryException.class, () -> store.getQuery("1")).getMessage());
-        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).size());
+        Assert.assertEquals(0, store.searchQueries(new TestQuerySearchSpecificationBuilder().build(), currentUser).queries.size());
     }
 
     @Test
@@ -1856,5 +1857,204 @@ public class TestQueryStoreManager
         QueryEvent event2 = store.getQueryEvents("2", QueryEvent.QueryEventType.CREATED, null, null, null).get(0);
         Assert.assertEquals(3, store.getQueryEvents(null, null, event2.timestamp, null, null).size());
         Assert.assertEquals(4, store.getQueryEvents(null, null, null, event2.timestamp, null).size());
+    }
+
+    // ----------------------------------------
+    // PAGINATION TESTS
+    // ----------------------------------------
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private QuerySearchSpecification createPaginatedSpec(QuerySearchSpecification searchSpec, Integer cursor, Integer pageSize)
+    {
+        PaginatedQuerySearchSpecification spec;
+        try
+        {
+            spec = searchSpec != null
+                    ? OBJECT_MAPPER.convertValue(searchSpec, PaginatedQuerySearchSpecification.class)
+                    : new PaginatedQuerySearchSpecification();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        spec.cursor = cursor;
+        spec.pageSize = pageSize;
+        return spec;
+    }
+
+    @Test
+    public void testPaginationWithMultiplePages() throws Exception
+    {
+        String currentUser = "testUser";
+        int totalQueries = 14;
+        int pageSize = 4;
+
+        for (int i = 0; i < totalQueries; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        // Page 1: should have 4 queries and hasNextPage = true
+        PaginatedResult page1 = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, pageSize), currentUser);
+        Assert.assertEquals(pageSize, page1.queries.size());
+        Assert.assertTrue(page1.hasNextPage);
+        Assert.assertNotNull(page1.cursor);
+
+        // Page 2: should have 4 queries and hasNextPage = true
+        PaginatedResult page2 = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), page1.cursor, pageSize), currentUser);
+        Assert.assertEquals(pageSize, page2.queries.size());
+        Assert.assertTrue(page2.hasNextPage);
+        Assert.assertNotNull(page2.cursor);
+
+        // Page 3: should have 4 queries and hasNextPage = true
+        PaginatedResult page3 = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), page2.cursor, pageSize), currentUser);
+        Assert.assertEquals(pageSize, page3.queries.size());
+        Assert.assertTrue(page3.hasNextPage);
+        Assert.assertNotNull(page3.cursor);
+
+        // Page 4 (last page): should have 2 queries and hasNextPage = false
+        PaginatedResult page4 = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), page3.cursor, pageSize), currentUser);
+        Assert.assertEquals(2, page4.queries.size());
+        Assert.assertFalse(page4.hasNextPage);
+        Assert.assertNull(page4.cursor);
+
+        // Verify total count across all pages
+        int totalFetched = page1.queries.size() + page2.queries.size() + page3.queries.size() + page4.queries.size();
+        Assert.assertEquals(totalQueries, totalFetched);
+    }
+
+    @Test
+    public void testPaginationWithNoQueries() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        PaginatedResult result = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, pageSize), currentUser);
+        Assert.assertEquals(0, result.queries.size());
+        Assert.assertFalse(result.hasNextPage);
+        Assert.assertNull(result.cursor);
+    }
+
+    @Test
+    public void testPaginationWithSearchFilter() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        // Create 10 queries, 6 with "alpha" in name, 4 with "beta"
+        for (int i = 0; i < 6; i++)
+        {
+            store.createQuery(TestQueryBuilder.create("alpha" + i, "alpha_query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            store.createQuery(TestQueryBuilder.create("beta" + i, "beta_query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        // Search for "alpha" queries with pagination
+        PaginatedResult page1 = store.searchQueries(
+                createPaginatedSpec(new TestQuerySearchSpecificationBuilder().withSearchTerm("alpha").build(), null, pageSize), currentUser);
+        Assert.assertEquals(pageSize, page1.queries.size());
+        Assert.assertTrue(page1.hasNextPage);
+        // Verify all queries contain "alpha"
+        for (Query q : page1.queries)
+        {
+            Assert.assertTrue(q.name.contains("alpha"));
+        }
+
+        // Get second page
+        PaginatedResult page2 = store.searchQueries(
+                createPaginatedSpec(new TestQuerySearchSpecificationBuilder().withSearchTerm("alpha").build(), page1.cursor, pageSize), currentUser);
+        Assert.assertEquals(2, page2.queries.size());
+        Assert.assertFalse(page2.hasNextPage);
+        for (Query q : page2.queries)
+        {
+            Assert.assertTrue(q.name.contains("alpha"));
+        }
+    }
+
+    @Test
+    public void testPaginationFewerQueriesThanPageSize() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+        store.createQuery(TestQueryBuilder.create("2", "query2", currentUser).withExplicitExecution().build(), currentUser);
+
+        PaginatedResult result = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, pageSize), currentUser);
+        Assert.assertEquals(2, result.queries.size());
+        Assert.assertFalse(result.hasNextPage);
+        Assert.assertNull(result.cursor);
+    }
+
+    @Test
+    public void testPaginationWithNullPageSize() throws Exception
+    {
+        String currentUser = "testUser";
+
+        for (int i = 0; i < 5; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        PaginatedResult result = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, null), currentUser);
+        Assert.assertEquals(5, result.queries.size());
+        Assert.assertFalse(result.hasNextPage);
+    }
+
+    @Test
+    public void testPaginationWithNullSearchSpecification() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        for (int i = 0; i < 3; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        PaginatedQuerySearchSpecification paginatedSpec = new PaginatedQuerySearchSpecification();
+        paginatedSpec.pageSize = pageSize;
+
+        PaginatedResult result = store.searchQueries(paginatedSpec, currentUser);
+        Assert.assertEquals(3, result.queries.size());
+        Assert.assertFalse(result.hasNextPage);
+    }
+
+    @Test
+    public void testPaginationExactPageSize() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        for (int i = 0; i < pageSize; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        PaginatedResult result = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, pageSize), currentUser);
+        Assert.assertEquals(pageSize, result.queries.size());
+        Assert.assertFalse(result.hasNextPage);
+        Assert.assertNull(result.cursor);
+    }
+
+    @Test
+    public void testPaginationWithEmptyCursor() throws Exception
+    {
+        String currentUser = "testUser";
+        int pageSize = 4;
+
+        for (int i = 0; i < 6; i++)
+        {
+            store.createQuery(TestQueryBuilder.create(String.valueOf(i), "query" + i, currentUser).withExplicitExecution().build(), currentUser);
+        }
+
+        PaginatedResult resultWithNullCursor = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), null, pageSize), currentUser);
+        PaginatedResult resultWithZeroCursor = store.searchQueries(createPaginatedSpec(new TestQuerySearchSpecificationBuilder().build(), 0, pageSize), currentUser);
+
+        Assert.assertEquals(resultWithNullCursor.queries.size(), resultWithZeroCursor.queries.size());
+        Assert.assertEquals(resultWithNullCursor.hasNextPage, resultWithZeroCursor.hasNextPage);
     }
 }

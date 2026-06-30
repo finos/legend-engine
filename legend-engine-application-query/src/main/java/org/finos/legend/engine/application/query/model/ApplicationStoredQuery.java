@@ -41,6 +41,7 @@ public class ApplicationStoredQuery implements StoredVersionedAssetContent<Strin
     public List<StereotypePtr> stereotypes;
     public List<QueryParameterValue> defaultParameterValues;
     public Map<String, ?> gridConfig;
+    public List<AttributeMetadata> attributeMetadata;
     public Long lastOpenAt;
     public StoredAuditInformation audit;
 
