@@ -228,20 +228,25 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 {
-  {l:LambdaFunction<Any>[1]| $compiler->eval($l->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')))}
+  {l:LambdaFunction<Any>[1]| 
+    let code = $l->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
+    $compiler->eval($code);
+  }
 }
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
 {
-  let extensions = meta::relational::extension::relationalExtensions();
-  let _context = rootContext($sources, $compiler, $extensions);
-  let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
-  let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
-  let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
-  let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
-//  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
-  // SQL to Pure ---
-  $pureFunc;
+  trace({|
+    let extensions = meta::relational::extension::relationalExtensions();
+    let _context = rootContext($sources, $compiler, $extensions);
+    let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
+    let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
+    let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
+    let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
+  //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
+    // SQL to Pure ---
+    $pureFunc;
+  }, 'sql to pure');
 }
 
 function meta::external::query::sql::transformation::queryToPure::getPlanResultFromSQL(
@@ -401,6 +406,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
 function meta::external::query::sql::transformation::queryToPure::processRootQuery(query: Query[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processRootQuery', $_context.debug);
+  let start = now();
 
   let context = ^$_context(debug = $_context.debug->indent());
 
@@ -411,7 +417,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
   trace({|
     let newQuery = $query->cast(@Query)->processQuery($context);
     let processed = wrapWithFrom($newQuery);
-    let variables = $processed.lambda(false)->extractPositionals($positionals.index->map(i | positionalName($i)));
+    let variables = $processed.lambda(false, false)->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
   }, 'converting query', | newMap(pair('relation', $_context.relation->isTrue()->toString())));
@@ -449,7 +455,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let newContext = $query.query->processQuery($_context);
 
-  let genericType = ^GenericType(rawType = if ($_context.relation->isTrue(), | Relation, | TabularDataSet));
+  let genericType = if ($_context.relation->isTrue(), | $newContext.expression->evaluateAndDeactivate()->last().genericType->toOne(), | ^GenericType(rawType = TabularDataSet));
 
   let letFunction = sfe(letFunction_String_1__T_m__T_m_, $genericType, [], PureOne, [$query.name->iv(), $newContext.expression->toOne()]);
 
@@ -491,7 +497,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
 
-  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue());
+  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicates()));
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
@@ -580,6 +586,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       );
 
       let currentSchema = $query.columns.name;
+
 
       let restrict = clone(^$query(expression = processRestrict($expectedWithRealias.actual, $query)), $query);
 
@@ -865,7 +872,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let aggReturnType = $aggExpression.genericType.rawType->toOne();
 
-  let aggFunctionType = functionType('y', ^GenericType(rawType = $type), ZeroMany, $aggExpression.genericType, PureOne);
+  let aggFunctionType = functionType('y', ^GenericType(rawType = $type), ZeroMany, $aggExpression.genericType, $aggExpression.multiplicity);
   lambda($aggFunctionType, $aggExpression);
 }
 
@@ -878,7 +885,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->map(e | ^SingleColumn(expression = $e));
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWindowSingleColumn(s:SingleColumn[1], tds:ValueSpecification[1], context: SqlTransformContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWindowSingleColumn(s:SingleColumn[1], input:ValueSpecification[1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
   let name = extractNameFromSingleColumn($s, $context);
   assert($s.expression->instanceOf(FunctionCall), | 'expression must be function call');
@@ -928,7 +935,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
               )
             );
 
-            appendTdsFunc($tds, extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_, [list($over), list($aggregations)]);,
+            let relationColumns = resolveRelationColumns($input);
+            let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
+
+            sfe(extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_, buildRelationType($columns), [$input, iv($over), iv($aggregations)]);,
         |
           assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
 
@@ -940,8 +950,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           let mapColumn = $context.columnByNameParts($map.parts, true).name;
           let func = sfe(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_, [iv($mapColumn), iv($aggregation)]);
 
-          appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
-              list(iv($partitions)), list(iv($sorts)), list($func), list(iv($name))
+          sfe(olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
+              $input, iv($partitions), iv($sorts), $func, iv($name)
           ]);
       );,
     |
@@ -961,12 +971,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                     funcSpecs = ^meta::pure::metamodel::relation::FuncColSpec<Any, Any>(name = $name, function = $aggregation)
           ));
 
-          appendTdsFunc($tds, extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_, [list($over), list($aggregations)]);,
+          let relationColumns = resolveRelationColumns($input);
+          let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
+
+
+          sfe(extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_, buildRelationType($columns), [$input, iv($over), iv($aggregations)]);,
         |
           let func = sfe(func_FunctionDefinition_1__TdsOlapRank_1_, iv(processAggregationLambda(^$functionCall(window = []), TDSRow, $context)));
 
-          appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
-              list(iv($partitions)), list(iv($sorts)), list($func), list(iv($name))
+          sfe(olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
+              $input, iv($partitions), iv($sorts), $func, iv($name)
           ]);
       );
     );
@@ -1268,7 +1282,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let column = $context.columns->at(0).name;
 
-  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $column))]);
+  let commonType = $table.genericType.rawType->bestCommonType();
+  let type = buildRelationType(newRelationColumn($column, $commonType, ZeroOne));
+
+  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $type, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $column))]);
 
   clone(^$context(expression = $flatten), $context);
 }
@@ -1565,13 +1582,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 
-        ^$context
-        (
-          columns = $columns->map(c | ^QueryColumn(
+
+        let queryColumns = $columns->map(c | ^QueryColumn(
                                           name = $c.name->toOne(),
                                           type = $c.classifierGenericType.typeArguments->last().rawType->cast(@Type),
                                           multiplicity = $c.classifierGenericType.multiplicityArguments->first());
-                              ),
+                              );
+
+        ^$context
+        (
+          columns = $queryColumns,
           expression = ^InstanceValue
                        (
                         genericType=$vs->genericType(),
@@ -1841,7 +1861,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         $columns->map(c |
           //set doCastNonPrimitiveColumnAccessor to ensure correct column type for enums
           let expression = createTdsColumn($c.actual, $expContext.var, ^$expContext(doCastNonPrimitiveColumnAccessor = true), $context);
-          let functionType = ^FunctionType(parameters = $expContext.defaultVar, returnMultiplicity = PureOne, returnType = $expression.genericType->toOne());
+          let functionType = ^FunctionType(parameters = $expContext.defaultVar, returnMultiplicity = $expression.multiplicity, returnType = $expression.genericType->toOne());
           let lambda = lambda($functionType, $expression);
           pair($lambda, $c.expected);
         );,
@@ -1861,7 +1881,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
         ])->evaluateAndDeactivate();
 
-        let functionType = ^FunctionType(parameters = $expContext.defaultVar, returnMultiplicity = PureOne, returnType = $expression.genericType);
+        let functionType = ^FunctionType(parameters = $expContext.defaultVar, returnMultiplicity = $expression.multiplicity, returnType = $expression.genericType);
         let lambda = lambda($functionType, $expression);
         pair($lambda, $name);,
       s:SelectItem[1] |
@@ -3127,7 +3147,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   createMinus($value.genericType.rawType, false, $value);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::getLiteralType(literal:Literal[1]):Type[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::getLiteralType(literal:Literal[1], context:SqlTransformContext[1]):Type[1]
 {
   $literal->match([
     l:LongLiteral[1] | Integer,
@@ -3135,7 +3155,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     d:DoubleLiteral[1] | Float,
     i:IntegerLiteral[1] | Integer,
     s:StringLiteral[1] | String,
-    a:ArrayLiteral[1] | Any,
+    a:ArrayLiteral[1] | $a.values->map(v | $v->getExpressionType($context))->bestCommonType(),
     n:NullLiteral[1] | Nil,
     i:IntervalLiteral[1] | Date,
     l:Literal[1] | Any
@@ -3170,7 +3190,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     i:InPredicate[1] | Boolean,
     n:IsNotNullPredicate[1] | Boolean,
     n:IsNullPredicate[1] | Boolean,
-    l:Literal[1] | getLiteralType($l),
+    l:Literal[1] | getLiteralType($l, $context),
     l:LikePredicate[1] | Boolean,
     l:LogicalBinaryExpression[1] | Boolean,
     n:NegativeExpression[1] | getExpressionType($n.value, $context),
@@ -3680,7 +3700,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   nullOrSfe($func, [$left, $right]);
 }
 
-
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::walk<T|m>(nodes:meta::external::query::sql::metamodel::Node[*], accumulator:Function<{T[*]->T[m]}>[1], extras:Function<{Nil[1]->T[m]}>[1]):T[*]
 {
   $nodes->map(e | $e->walk($accumulator, $extras));
@@ -3825,6 +3844,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     e:meta::external::query::sql::metamodel::Expression[0..1] | $e
   ])->toOneMany());
 }
+
 
 function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(lambda:LambdaFunction<Any>[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): LambdaFunction<Any>[1]
 {
@@ -4052,18 +4072,21 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   }:SQLColumnAlias[0..1];
 
   lambda(wrapWithFromIfRequired:Boolean[1]){
+    $this.lambda($wrapWithFromIfRequired, true)
+  }: LambdaFunction<Any>[1];
+
+  lambda(wrapWithFromIfRequired:Boolean[1], compile:Boolean[1]){
 
     let scoped = $this.scopeVariables->values()->filter(v | $v->instanceOf(VariableExpression))->cast(@VariableExpression)->evaluateAndDeactivate();
 
     let lambda = lambda(
-                    functionType($this.parametersRecursive.variable->concatenate($this.positionals)->concatenate($scoped), ^GenericType(rawType = TabularDataSet), PureOne),
+                    functionType($this.parametersRecursive.variable->concatenate($this.positionals)->concatenate($scoped), ^GenericType(rawType = if($this.relation->isTrue(), | meta::pure::metamodel::relation::Relation, | TabularDataSet)), PureOne),
                     $this.cteAssignments->concatenate($this.assignmentsRecursive)->concatenate($this.expression)->evaluateAndDeactivate()
                  );
 
-    let compiled = if ($this.relation->isTrue(),
-      | // TO FIX. Lambda is called far too many times. In clone. In ProcessRootQuery. in SQL to Pure.
-        // One simple translation seems to call it minimum 4 times, which is excessive.
-        $this.compiler->eval($lambda),
+    //we only compile if explicitly asked for. This is mainly at the end after all processing is complete to fully compile the lambda
+    let compiled = if ($compile && $this.relation->isTrue(),
+      | $this.compiler->eval($lambda),
       | $lambda
     );
 
@@ -4129,7 +4152,7 @@ Class meta::external::query::sql::transformation::queryToPure::QueryColumn exten
 
 function meta::external::query::sql::transformation::queryToPure::resolveSchema(f : FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]) : QueryColumn[*]
 {
-   let returnType = $f->functionReturnType().rawType->toOne();
+  let returnType = $f->functionReturnType().rawType->toOne();
 
    if ($returnType->toOne()->subTypeOf(TabularDataSet),
     | meta::pure::tds::schema::resolveSchema($f, $extensions)->map(t | ^QueryColumn(name = $t.name, type = $t.type, multiplicity = PureOne)),
@@ -4144,15 +4167,49 @@ function meta::external::query::sql::transformation::queryToPure::resolveSchema(
        | fail('unknown type'); [];));
 }
 
-//resolve schema especially in the relation (compileViaProtocol) flow is expensive so we store the columns on the context and only re-resolve when required
+function meta::external::query::sql::transformation::queryToPure::resolveRelationColumns(v:ValueSpecification[1]) : meta::pure::metamodel::relation::Column<Nil,Any|*>[*]
+{
+  $v->evaluateAndDeactivate()->last().genericType.typeArguments.rawType
+          ->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
+}
+
+//resolve schema is expensive so we store the columns on the context and only re-resolve when required
 //any time we modify the expression in the context we need to ensure to clone.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::clone(cloned:SqlTransformContext[1], oldContext:SqlTransformContext[1]):SqlTransformContext[1]
 {
   if ($cloned.expression != $oldContext.expression,
     |
-      let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(false), $cloned.extensions);
+      let columns = meta::external::query::sql::transformation::queryToPure::resolveSchema($cloned.lambda(false, false), $cloned.extensions);
       ^$cloned(columns = $columns);,
     | $cloned);
+}
+
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::buildRelationType(columns:QueryColumn[*]):GenericType[1]
+{
+  let relColumns = $columns->map(c | newRelationColumn($c.name, $c.type, $c.multiplicity));
+  buildRelationType($relColumns);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::buildRelationType(columns:meta::pure::metamodel::relation::Column<Nil,Any|*>[*]):GenericType[1]
+{
+  ^GenericType(rawType=meta::pure::metamodel::relation::Relation, typeArguments = ^GenericType(rawType=^meta::pure::metamodel::relation::RelationType<Nil>(columns = $columns)));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::newRelationColumn(name:String[1], type:Type[0..1], multiplicity:Multiplicity[0..1]):meta::pure::metamodel::relation::Column<Nil,Any|*>[1]
+{
+  let col = ^meta::pure::metamodel::relation::Column<Nil,Any|*>(name = $name, nameWildCard = false);
+  let gt = ^GenericType(rawType = meta::pure::metamodel::relation::Column, typeArguments = [ ^GenericType(rawType = Nil), ^GenericType(rawType = $type)], multiplicityArguments = $multiplicity);
+  ^$col(classifierGenericType = $gt);  
+}
+
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::modifyRelation(v:ValueSpecification[1], f:Function<{meta::pure::metamodel::relation::RelationType<Nil>[1]->meta::pure::metamodel::relation::RelationType<Nil>[1]}>[1]):GenericType[1]
+{
+  let relation = $v->evaluateAndDeactivate().genericType;
+  let relationType = $relation.typeArguments.rawType;
+
+  ^$relation(typeArguments = ^GenericType(rawType = $f->eval($relationType)));
 }
 
 Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
@@ -4162,11 +4219,11 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     lambda:LambdaFunction<Any>[1],
     relation: Boolean[1]
   ){
-    let args = list($lambda);
+    let args = [$func, $lambda->iv()];
 
     if ($relation,
-      | appendTdsFunc($func, filter_Relation_1__Function_1__Relation_1_, $args),
-      | appendTdsFunc($func, filter_TabularDataSet_1__Function_1__TabularDataSet_1_, $args));
+      | sfe(filter_Relation_1__Function_1__Relation_1_, $func->evaluateAndDeactivate().genericType, $args),
+      | sfe(filter_TabularDataSet_1__Function_1__TabularDataSet_1_, $args));
   }:ValueSpecification[1];
 
   restrict(
@@ -4177,21 +4234,25 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     let distinct = $columns->removeDuplicates();
 
     if ($relation,
-      | appendTdsFunc($func, select_Relation_1__ColSpecArray_1__Relation_1_, list(iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $distinct)))),
-      | appendTdsFunc($func, restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, list(iv($distinct))));
+      | 
+        let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
+        let relationType = buildRelationType($distinct->map(d | $relationColumns->get($d).values));
+        sfe(select_Relation_1__ColSpecArray_1__Relation_1_, $relationType, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $distinct))]);,
+      | sfe(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, [$func, iv($distinct)]));
   }:ValueSpecification[1];
 
   concatenate(
     left: ValueSpecification[1],
     right: ValueSpecification[1],
-    relation: Boolean[1]
+    relation: Boolean[1],
+    context:SqlTransformContext[1]
   ){
 
-    let args = list($right);
+    let args = [$left, $right];
 
     if ($relation,
-      | appendTdsFunc($left, concatenate_Relation_1__Relation_1__Relation_1_, $args),
-      | appendTdsFunc($left, concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args));
+      | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
+      | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args));
   }:ValueSpecification[1];
 
   distinct(
@@ -4200,8 +4261,8 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
   ){
 
     if ($relation,
-      | appendTdsFunc($func, distinct_Relation_1__Relation_1_, []),
-      | appendTdsFunc($func, distinct_TabularDataSet_1__TabularDataSet_1_, []));
+      | sfe(distinct_Relation_1__Relation_1_, $func->evaluateAndDeactivate().genericType, [$func]),
+      | sfe(distinct_TabularDataSet_1__TabularDataSet_1_, [$func]));
   }:ValueSpecification[1];
 
   limit(
@@ -4210,11 +4271,11 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation: Boolean[1]
   ){
 
-    let args = list($amount);
+    let args = [$func, $amount];
 
     if ($relation,
-      | appendTdsFunc($func, limit_Relation_1__Integer_1__Relation_1_, $args),
-      | appendTdsFunc($func, limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, $args));
+      | sfe(limit_Relation_1__Integer_1__Relation_1_, $func->evaluateAndDeactivate().genericType, $args),
+      | sfe(limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, $args));
   }:ValueSpecification[1];
 
   drop(
@@ -4223,11 +4284,11 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation: Boolean[1]
   ){
 
-    let args = list($amount);
+    let args = [$func, $amount];
 
     if ($relation,
-      | appendTdsFunc($func, drop_Relation_1__Integer_1__Relation_1_, $args),
-      | appendTdsFunc($func, drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, $args));
+      | sfe(drop_Relation_1__Integer_1__Relation_1_, $func->evaluateAndDeactivate().genericType, $args),
+      | sfe(drop_TabularDataSet_1__Integer_1__TabularDataSet_1_, $args));
   }:ValueSpecification[1];
 
   slice(
@@ -4237,11 +4298,11 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation: Boolean[1]
   ){
 
-    let args = [list($start), list($stop)];
+    let args = [$func, $start, $stop];
 
     if ($relation,
-      | appendTdsFunc($func, slice_Relation_1__Integer_1__Integer_1__Relation_1_, $args),
-      | appendTdsFunc($func, slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, $args));
+      | sfe(slice_Relation_1__Integer_1__Integer_1__Relation_1_, $func->evaluateAndDeactivate().genericType, $args),
+      | sfe(slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_, $args));
   }:ValueSpecification[1];
 
   rename(
@@ -4253,12 +4314,12 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
       | $func,
       | if ($relation,
               | $mappings->fold({m, acc |
-                  appendTdsFunc($acc, rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_, [list(iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $m.first))), list(iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $m.second)))])}, $func),
-              | appendTdsFunc($func, renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_,
-                  list($mappings->map(m |
+                  let type = buildRelationType($acc->resolveRelationColumns()->map(c | ^$c(name = if ($c.name == $m.first, | $m.second, | $c.name))));
+                  sfe(rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_, $type, [$acc, iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $m.first)), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $m.second))]);}, $func),
+              | sfe(renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_, [$func, $mappings->map(m |
                     let typeArguments = [^GenericType(rawType = String), ^GenericType(rawType = String)];
                     sfe(pair_U_1__V_1__Pair_1_, ^GenericType(rawType = Pair, typeArguments = $typeArguments), $typeArguments, [iv($m.first), iv($m.second)]);
-                  ))))
+                  )->iv()]))
       );
   }:ValueSpecification[1];
 
@@ -4268,13 +4329,13 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation: Boolean[1]
   ){
 
-    let args = list($items);
+    let args = [$func, $items->iv()];
 
     if ($items->isEmpty(),
       | $func,
       | if ($relation,
-          | appendTdsFunc($func, sort_Relation_1__SortInfo_MANY__Relation_1_, $args),
-          | appendTdsFunc($func, sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, $args)));
+          | sfe(sort_Relation_1__SortInfo_MANY__Relation_1_, $func->evaluateAndDeactivate().genericType, $args),
+          | sfe(sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, $args)));
   }:ValueSpecification[1];
 
   sortItem(
@@ -4330,11 +4391,15 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation:Boolean[1]
   ){
 
-    let args = list($this.cols($items, $relation));
+    let columns = $this.cols($items, $relation);
+    let args = [$func, $columns->iv()];
 
     if ($relation,
-      | appendTdsFunc($func, extend_Relation_1__FuncColSpecArray_1__Relation_1_, $args),
-      | appendTdsFunc($func, extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_, $args));
+      | let columns = $func->resolveRelationColumns()->concatenate($items->map(i | newRelationColumn($i.first, $i.second->functionReturnType().rawType, $i.second->functionReturnMultiplicity())));
+        let type = buildRelationType($columns);
+
+        sfe(extend_Relation_1__FuncColSpecArray_1__Relation_1_, $type, $args);,
+      | sfe(extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_, $args));
 
   }:ValueSpecification[1];
 
@@ -4344,11 +4409,13 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     relation:Boolean[1]
   ){
 
-    let args = list($this.cols($items, $relation));
+    let cols = $this.cols($items, $relation);
+    let args = [$func, $cols->iv()];
 
     if ($relation,
-      | appendTdsFunc($func, project_Relation_1__FuncColSpecArray_1__Relation_1_, $args),
-      | appendTdsFunc($func, project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, $args));
+      | let type = buildRelationType($items->map(i | newRelationColumn($i.first, $i.second->functionReturnType().rawType, $i.second->functionReturnMultiplicity())));
+        sfe(project_Relation_1__FuncColSpecArray_1__Relation_1_, $type, $args);,
+      | sfe(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, $args));
 
   }:ValueSpecification[1];
 
@@ -4390,10 +4457,20 @@ aggregation(
     let aggs = $this.aggregations($aggregates);
 
     if ($relation,
-      | if ($groupByColumns->isEmpty(),
-          | appendTdsFunc($func, aggregate_Relation_1__AggColSpecArray_1__Relation_1_, [list($aggs)]),
-          | appendTdsFunc($func, groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, [list(iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns))), list($aggs)])),
-      | appendTdsFunc($func, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list(iv($groupByColumns)), list($aggs)]));
+      | 
+        let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
+
+        let columns = $groupByColumns->map(c | $relationColumns->get($c).values)->concatenate($aggregates->map(a | 
+          let agg = $a->cast(@meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>);
+          newRelationColumn($agg.name, $agg.reduce->functionReturnType().rawType, $agg.reduce->functionReturnMultiplicity());
+        ));
+
+        let gt = buildRelationType($columns);
+      
+        if ($groupByColumns->isEmpty(),
+          | sfe(aggregate_Relation_1__AggColSpecArray_1__Relation_1_, $gt, [$func, iv($aggs)]),
+          | sfe(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, $gt, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns)), iv($aggs)]));,
+      | sfe(groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [$func, iv($groupByColumns), iv($aggs)]));
 
   }:ValueSpecification[1];
 
@@ -4456,7 +4533,9 @@ aggregation(
 
       if ($relation,
         |
-          sfe(join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_, $parameters),
+
+          let type = buildRelationType($left->resolveRelationColumns()->concatenate($right->resolveRelationColumns()));
+          sfe(join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_, $type, $parameters);,
         |
           let func = $join.criteria->match([
               o:JoinOn[1] | join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,

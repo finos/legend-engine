@@ -74,6 +74,11 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
   sfe($func, [], $pvs);
 }
 
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  sfe($func, $genericType, [], $pvs);
+}
+
 function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], resolvedTypeParameters:GenericType[*], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
   sfe($func, $func->functionReturnType(), $resolvedTypeParameters, $pvs);
@@ -86,12 +91,9 @@ function meta::external::query::sql::transformation::compile::utils::sfe(func: m
 
 function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
-
   let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
 
-  let parameters = $zipped->map(p |
-
-    [
+  let parameters = $zipped->map(p | [
       pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | createToOne($p.second)),
       pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | createToOneMany($p.second))
     ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();

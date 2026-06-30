@@ -22,7 +22,10 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
         e:meta::external::query::sql::metamodel::Expression[1] | 'unnest only currently supports simple array literals'
       ]);
 
-      sfe(flatten_T_MANY__ColSpec_1__Relation_1_, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.name->toOne()))]);
+      let commonType = $args.genericType.rawType->bestCommonType();
+      let relationType = buildRelationType(newRelationColumn($ctx.name->toOne(), $commonType, ZeroOne));
+
+      sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $relationType, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.name->toOne()))]);
     }),
 
     misc('var', Relation, {args, fc, expCtx, ctx |
