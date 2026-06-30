@@ -18,6 +18,7 @@ import meta::relational::extension::*;
 import meta::pure::profiles::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
 
 Class meta::relational::tests::query::average::Average
 {
@@ -45,15 +46,11 @@ function meta::relational::tests::query::average::createTablesAndFillDb():Boolea
    true;
 }
 
-function <<test.ToFix>> meta::relational::tests::query::average::testAverageDerivedProperty():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::average::testAverageDerivedProperty():Boolean[1]
 {
-   let result = execute(
-      |Average.all()->project([a | $a.myaverage], ['avg']),
-      averageMapping,
-      meta::external::store::relational::tests::testRuntime(averageDb),
-      meta::relational::extension::relationalExtensions()
-   );
-   assert(true);
+   let result = execute(|Average.all()->project([a | $a.myaverage], ['avg']), averageMapping, meta::external::store::relational::tests::testRuntime(averageDb), meta::relational::extension::relationalExtensions());
+   assertEquals(7.5, $result.values->at(0).rows->at(0).values->at(0));
+   assertSameSQL('select "average_1".aggCol as "avg" from Average as "root" left outer join (select "average_2".id as id, avg(1.0 * "unionalias_0"."one_two") as aggCol from Average as "average_2" left outer join (select "average2_0".one as "one_two", "average2_0".id as id from Average2 as "average2_0" union all select "average2_0".two as "one_two", "average2_0".id as id from Average2 as "average2_0") as "unionalias_0" on ("average_2".id = "unionalias_0".id) group by "average_2".id) as "average_1" on ("root".id = "average_1".id)', $result);
 }
 
 ###Relational
