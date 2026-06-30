@@ -166,7 +166,7 @@ public class Test_JAVA_EssentialFunction_PCT extends PCTReportConfiguration
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'"),
             one("meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_", "Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'"),
             one("meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_", "Function does not exist 'deactivate(Any[1])'"),
-            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 8 errors compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:"),
+            one("meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_", "org.finos.legend.engine.shared.javaCompiler.JavaCompileException:"),
 
             // Error-case tests: Java bytecode execution raises a different (or no) error than the one the Pure test expects
             one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "Unexpected error executing function with params [Anonymous_Lambda]"),

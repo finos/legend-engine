@@ -63,7 +63,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Check Java version
         run: java -version
@@ -90,4 +90,3 @@ jobs:
         # just throw away.
         if: always()
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
-
