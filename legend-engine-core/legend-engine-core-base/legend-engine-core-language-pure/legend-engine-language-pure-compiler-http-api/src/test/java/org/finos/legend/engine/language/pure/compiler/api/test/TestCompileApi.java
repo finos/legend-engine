@@ -19,11 +19,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Span;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
+import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesInput;
+import org.finos.legend.engine.language.pure.compiler.api.LambdaRelationTypesResult;
 import org.finos.legend.engine.language.pure.compiler.api.LambdaReturnTypeInput;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCombination;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -36,12 +39,15 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 
@@ -196,6 +202,146 @@ public class TestCompileApi
         Assert.assertEquals("test::SampleProfile", ageColumn.taggedValues.get(0).tag.profile);
         Assert.assertEquals("doc", ageColumn.taggedValues.get(0).tag.value);
         Assert.assertEquals("age documentation", ageColumn.taggedValues.get(0).value);
+    }
+
+    @Test
+    public void testRelationTypeBatchHappyPath() throws JsonProcessingException
+    {
+        String model = "Class model::Person {\n" +
+                "name: String[1];\n" +
+                "age: Integer[1];\n" +
+                "}\n";
+        PureModelContextText text = new PureModelContextText();
+        text.code = model;
+
+        LambdaFunction projectName = PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Name':x|$x.name])", "", 0, 0, false);
+        LambdaFunction projectAge = PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Age':x|$x.age])", "", 0, 0, false);
+
+        LambdaRelationTypesInput input = new LambdaRelationTypesInput();
+        input.model = text;
+        input.lambdas = new LinkedHashMap<>();
+        input.lambdas.put("byName", projectName);
+        input.lambdas.put("byAge", projectAge);
+
+        LambdaRelationTypesResult batch = readBatchResult(compileApi.lambdaRelationTypeBatch(input, null, null).getEntity());
+
+        Assert.assertNotNull(batch.errors);
+        Assert.assertTrue("expected no per-key errors, got: " + batch.errors, batch.errors.isEmpty());
+        Assert.assertEquals(2, batch.result.size());
+
+        RelationType nameRel = batch.result.get("byName");
+        Assert.assertEquals(1, nameRel.columns.size());
+        Column nameCol = nameRel.columns.get(0);
+        Assert.assertEquals("Person Name", nameCol.name);
+        Assert.assertEquals("String", ((PackageableType) nameCol.genericType.rawType).fullPath);
+
+        RelationType ageRel = batch.result.get("byAge");
+        Assert.assertEquals(1, ageRel.columns.size());
+        Column ageCol = ageRel.columns.get(0);
+        Assert.assertEquals("Person Age", ageCol.name);
+        Assert.assertEquals("Integer", ((PackageableType) ageCol.genericType.rawType).fullPath);
+    }
+
+    @Test
+    public void testRelationTypeBatchPartialFailureDoesNotFailOthers() throws JsonProcessingException
+    {
+        String model = "Class model::Person {\n" +
+                "name: String[1];\n" +
+                "}\n";
+        PureModelContextText text = new PureModelContextText();
+        text.code = model;
+
+        LambdaFunction good = PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Name':x|$x.name])", "", 0, 0, false);
+        LambdaFunction bad = PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Missing':x|$x.doesNotExist])", "", 0, 0, false);
+
+        LambdaRelationTypesInput input = new LambdaRelationTypesInput();
+        input.model = text;
+        input.lambdas = new LinkedHashMap<>();
+        input.lambdas.put("ok", good);
+        input.lambdas.put("broken", bad);
+
+        LambdaRelationTypesResult batch = readBatchResult(compileApi.lambdaRelationTypeBatch(input, null, null).getEntity());
+
+        Assert.assertEquals("good lambda should still produce a result", 1, batch.result.size());
+        Assert.assertNotNull(batch.result.get("ok"));
+
+        Assert.assertEquals("bad lambda should appear in errors", 1, batch.errors.size());
+        ExceptionError err = batch.errors.get("broken");
+        Assert.assertNotNull(err);
+        Assert.assertNotNull("error message should be populated", err.getMessage());
+        Assert.assertEquals(EngineErrorType.COMPILATION, err.getErrorType());
+    }
+
+    @Test
+    public void testRelationTypeBatchCompilesModelOnlyOnce() throws JsonProcessingException
+    {
+        AtomicInteger loadCount = new AtomicInteger(0);
+        ModelLoader loader = new ModelLoader()
+        {
+            @Override
+            public boolean supports(PureModelContext context)
+            {
+                return context instanceof PureModelContextPointer;
+            }
+
+            @Override
+            public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
+            {
+                loadCount.incrementAndGet();
+                return PureGrammarParser.newInstance().parseModel("Class model::Person { name: String[1]; age: Integer[1]; }");
+            }
+
+            @Override
+            public void setModelManager(ModelManager modelManager)
+            {
+            }
+
+            @Override
+            public boolean shouldCache(PureModelContext context)
+            {
+                return false;
+            }
+
+            @Override
+            public PureModelContext cacheKey(PureModelContext context, Identity identity)
+            {
+                return context;
+            }
+        };
+
+        AlloySDLC sdlc = new AlloySDLC();
+        sdlc.groupId = "org.example";
+        sdlc.artifactId = "some-published-model";
+        sdlc.version = "1.0.0";
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlc;
+
+        LambdaRelationTypesInput input = new LambdaRelationTypesInput();
+        input.model = pointer;
+        input.lambdas = new LinkedHashMap<>();
+        input.lambdas.put("a", PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Name':x|$x.name])", "", 0, 0, false));
+        input.lambdas.put("b", PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Age':x|$x.age])", "", 0, 0, false));
+        input.lambdas.put("c", PureGrammarParser.newInstance().parseLambda(
+                "|model::Person.all()->project(~['Person Name 2':x|$x.name, 'Person Age 2':x|$x.age])", "", 0, 0, false));
+
+        Compile api = new Compile(new ModelManager(DeploymentMode.TEST, loader));
+        LambdaRelationTypesResult batch = readBatchResult(api.lambdaRelationTypeBatch(input, null, null).getEntity());
+
+        Assert.assertEquals("model should have been loaded exactly once for the whole batch", 1, loadCount.get());
+        Assert.assertTrue("no per-key errors expected, got: " + batch.errors, batch.errors.isEmpty());
+        Assert.assertEquals(3, batch.result.size());
+    }
+
+    private LambdaRelationTypesResult readBatchResult(Object entity) throws JsonProcessingException
+    {
+        String json = objectMapper.writeValueAsString(entity);
+        return objectMapper.readValue(json, LambdaRelationTypesResult.class);
     }
 
     @Test
