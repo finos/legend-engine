@@ -234,16 +234,25 @@ legend-engine-core/
   `@TestFactory`-based EMIT execution depend on this module.
 - **`legend-engine-emit-maven-plugin`** is the build-time tool used by the
   server pom: its `generate-EMIT-coverage-report` goal (bound to
-  `generate-resources`) walks the legend-engine multi-module tree by
-  parsing each pom's `<modules>` declarations directly with
-  `MavenXpp3Reader` (so it sees the full module tree regardless of the
-  current Maven reactor scope), discovers every non-excluded module's
-  `src/test/resources/emit-models/`, parses each `*.emit.yaml`, and
-  pre-renders the HTML coverage report to
+  `generate-resources`) locates the multi-module repo root by walking up
+  `MavenProject.getParent()`, then traverses that root's directory tree
+  with `Files.walkFileTree`. Every check happens uniformly in
+  `preVisitDirectory`: directories matching any configured exclusion
+  (defaults: `target/`, `src/main/`, dirs whose name starts with `.`,
+  and the JUnit binding module `legend-engine-emit-junit`) are pruned
+  with `SKIP_SUBTREE`; directories whose repo-relative path matches the
+  configured inclusion subpath (default `src/test/resources/emit-models`)
+  are recorded as emit-models dirs and also pruned (no need to descend —
+  `EMIT_to_HTML.generateFromEmitModelsDirs` walks each recorded dir for
+  `*.emit.yaml` itself). The resulting yamls are parsed and pre-rendered
+  into a self-contained HTML coverage report at
   `${project.build.outputDirectory}/emit/emit-coverage.html`. Maven's
   normal jar packaging bundles that resource into the consuming jar so the
   server's `EMIT` JAX-RS handler can stream it at runtime — no runtime
-  discovery is performed. See §5.4.
+  discovery is performed. All exclusion sets and the inclusion subpath
+  are mojo `@Parameter` fields so a consuming pom can tweak them via
+  `<configuration>` without forking the plugin. See §5.4.
+  `<configuration>` without forking the plugin. See §5.4.
 
 The parent aggregator sits directly under `legend-engine-core/` (as a sibling of
 `legend-engine-core-testable`, `legend-engine-core-pure`, etc.) because EMIT spans the full engine
@@ -571,22 +580,36 @@ The two forms differ in **when** discovery happens:
 - The REST endpoint serves a **pre-built** HTML. Generation runs at the
   server module's build time via
   `legend-engine-emit-maven-plugin`'s `generate-EMIT-coverage-report`
-  goal (bound to `generate-resources`). The mojo locates the legend-engine
+  goal (bound to `generate-resources`). The mojo locates the multi-module
   repo root by walking up `MavenProject.getParent()` from the consuming
-  project, then parses pom.xml files starting at that root and recurses
-  through each pom's `<modules>` declarations via `MavenXpp3Reader` —
-  independent of the current Maven reactor, so it always sees the full
-  multi-module tree. For every non-excluded module it probes
-  `src/test/resources/emit-models/`, feeds the discovered directories to
-  `EMIT_to_HTML.generateFromEmitModelsDirs(...)`, and writes the rendered
-  HTML to `${project.build.outputDirectory}/emit/emit-coverage.html`.
-  Maven's normal jar packaging bundles the resource into the server jar,
-  and the runtime `EMIT` handler simply streams it — so the runtime has
-  no dependency on `EMITModelDiscovery`, no catalog manifest, and nothing
-  that could drift between build and serve. If the resource is missing
-  (e.g., the server was assembled without the plugin in its build), the
-  endpoint returns `503 Service Unavailable` with an instruction to
-  rebuild the server module.
+  project, stopping at the topmost ancestor that still has a
+  `getBasedir()` on disk (so externally-resolved parent POMs from a Maven
+  repository are not crossed and no specific groupId/artifactId is
+  hardcoded). It then traverses that repo's directory tree with
+  `Files.walkFileTree`. Every check happens in `preVisitDirectory`:
+  directories matching any configured exclusion (by default `src/main/`,
+  any directory whose name starts with `.` — `.git`, `.idea`, `.mvn`,
+  … — or any directory whose simple name is `target` or
+  `legend-engine-emit-junit`; the default `excludedDirectoryNames`
+  covers both infrastructure dirs and the JUnit binding module, since by
+  legend-engine convention a module's directory name equals its
+  artifactId) are pruned with `SKIP_SUBTREE`; directories whose
+  repo-relative path matches the inclusion subpath (default
+  `src/test/resources/emit-models`) are recorded as emit-models dirs and
+  also pruned (no need to descend — `EMIT_to_HTML.generateFromEmitModelsDirs`
+  walks each recorded dir for `*.emit.yaml` itself). The recorded dirs
+  are fed to `EMIT_to_HTML.generateFromEmitModelsDirs(...)`, which writes
+  the rendered HTML to
+  `${project.build.outputDirectory}/emit/emit-coverage.html`. All
+  exclusion sets and the inclusion subpath are mojo `@Parameter` fields,
+  so a downstream pom can tweak them via `<configuration>` without
+  forking the plugin. Maven's normal jar packaging bundles the resource
+  into the server jar, and the runtime `EMIT` handler simply streams
+  it — so the runtime has no dependency on `EMITModelDiscovery`, no
+  catalog manifest, and nothing that could drift between build and serve.
+  If the resource is missing (e.g., the server was assembled without the
+  plugin in its build), the endpoint returns `503 Service Unavailable`
+  with an instruction to rebuild the server module.
 
 - The CLI walks the **live filesystem**. `EMIT_to_HTML#main` locates the
   repo root by walking up from `user.dir` looking for the

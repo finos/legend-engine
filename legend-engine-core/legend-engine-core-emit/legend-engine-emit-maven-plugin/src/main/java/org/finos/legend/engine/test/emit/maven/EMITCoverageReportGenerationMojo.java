@@ -14,25 +14,25 @@
 
 package org.finos.legend.engine.test.emit.maven;
 
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.test.emit.EMIT_to_HTML;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -43,36 +43,40 @@ import java.util.Set;
 )
 public class EMITCoverageReportGenerationMojo extends AbstractMojo
 {
-    private static final String LEGEND_ENGINE_GROUP_ID = "org.finos.legend.engine";
-    private static final String LEGEND_ENGINE_ARTIFACT_ID = "legend-engine";
-
-    private static final Set<String> EXCLUDED_MODULE_ARTIFACT_IDS = Collections.singleton("legend-engine-emit-junit");
-
-    private static final String EMIT_MODELS_SUBPATH = "emit-models";
-
-    private static final String DEFAULT_TEST_RESOURCES_DIR = "src/test/resources";
-
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
     @Parameter(defaultValue = "${project.build.outputDirectory}/emit/emit-coverage.html", required = true)
     private Path outputFilePath;
 
+    @Parameter
+    private Set<String> includedRelativeSubpaths = Sets.fixedSize.with("src/test/resources/emit-models");
+
+    @Parameter
+    private Set<String> excludedDirectoryNames = Sets.fixedSize.with("target", "legend-engine-emit-junit");
+
+    @Parameter
+    private Set<String> excludedDirectoryNamePrefixes = Sets.fixedSize.with(".");
+
+    @Parameter
+    private Set<String> excludedRelativeSubpaths = Sets.fixedSize.with("src/main");
+
     @Override
     public void execute() throws MojoExecutionException
     {
-        MavenProject root = findLegendEngineRoot(project);
-        Path repoRoot = root.getBasedir().toPath();
+        Path repoRoot = findRepoRoot(project).getBasedir().toPath();
         List<Path> emitModelsDirs;
         try
         {
-            emitModelsDirs = collectEmitModelsDirs(repoRoot);
+            emitModelsDirs = collectEmitModelsDirs(
+                    repoRoot, includedRelativeSubpaths, excludedDirectoryNames,
+                    excludedDirectoryNamePrefixes, excludedRelativeSubpaths);
         }
-        catch (IOException | XmlPullParserException e)
+        catch (IOException e)
         {
-            throw new MojoExecutionException("Failed to walk module hierarchy under " + repoRoot, e);
+            throw new MojoExecutionException("Failed to walk directory tree under " + repoRoot, e);
         }
-        getLog().info("EMIT coverage report: " + emitModelsDirs.size() + " emit-models directories discovered across the legend-engine multi-module tree (root " + repoRoot + ")");
+        getLog().info("EMIT coverage report: " + emitModelsDirs.size() + " emit-models directories discovered under " + repoRoot);
         try
         {
             EMIT_to_HTML.generateFromEmitModelsDirs(repoRoot, emitModelsDirs, outputFilePath);
@@ -84,61 +88,87 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
         getLog().info("EMIT coverage report: written to " + outputFilePath);
     }
 
-    static List<Path> collectEmitModelsDirs(Path repoRoot) throws IOException, XmlPullParserException
+    static List<Path> collectEmitModelsDirs(
+            Path repoRoot,
+            Set<String> includedRelativeSubpaths,
+            Set<String> excludedDirectoryNames,
+            Set<String> excludedDirectoryNamePrefixes,
+            Set<String> excludedRelativeSubpaths) throws IOException
     {
-        List<Path> result = new ArrayList<>();
-        collectEmitModelsDirsRecursive(repoRoot, result);
-        return result;
-    }
+        if (repoRoot == null)
+        {
+            throw new IllegalArgumentException("repoRoot is required");
+        }
+        if (includedRelativeSubpaths == null || includedRelativeSubpaths.isEmpty())
+        {
+            throw new IllegalArgumentException("includedRelativeSubpaths must be non-null and non-empty");
+        }
+        Set<String> dirNames = (excludedDirectoryNames == null) ? Collections.emptySet() : excludedDirectoryNames;
+        Set<String> dirNamePrefixes = (excludedDirectoryNamePrefixes == null) ? Collections.emptySet() : excludedDirectoryNamePrefixes;
+        Set<String> relativeSubpaths = (excludedRelativeSubpaths == null) ? Collections.emptySet() : excludedRelativeSubpaths;
 
-    private static void collectEmitModelsDirsRecursive(Path moduleDir, List<Path> result) throws IOException, XmlPullParserException
-    {
-        Path pomXml = moduleDir.resolve("pom.xml");
-        if (!Files.isRegularFile(pomXml))
+        Set<Path> emitModelsDirs = new LinkedHashSet<>();
+        Files.walkFileTree(repoRoot, new SimpleFileVisitor<Path>()
         {
-            return;
-        }
-        Model model;
-        try (Reader reader = Files.newBufferedReader(pomXml, StandardCharsets.UTF_8))
-        {
-            model = new MavenXpp3Reader().read(reader);
-        }
-        if (!EXCLUDED_MODULE_ARTIFACT_IDS.contains(model.getArtifactId()))
-        {
-            for (Path testResourceDir : effectiveTestResourceDirs(moduleDir, model))
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
             {
-                Path emitModelsDir = testResourceDir.resolve(EMIT_MODELS_SUBPATH);
-                if (Files.isDirectory(emitModelsDir))
+                if (dir.equals(repoRoot))
                 {
-                    result.add(emitModelsDir);
+                    return FileVisitResult.CONTINUE;
                 }
+                String name = dir.getFileName().toString();
+                for (String prefix : dirNamePrefixes)
+                {
+                    if (!prefix.isEmpty() && name.startsWith(prefix))
+                    {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+                if (dirNames.contains(name))
+                {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                String rel = relativize(repoRoot, dir);
+                for (String subpath : relativeSubpaths)
+                {
+                    if (rel.equals(subpath) || rel.endsWith("/" + subpath))
+                    {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+                for (String subpath : includedRelativeSubpaths)
+                {
+                    if (rel.equals(subpath) || rel.endsWith("/" + subpath))
+                    {
+                        emitModelsDirs.add(dir);
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                }
+                return FileVisitResult.CONTINUE;
             }
-        }
-        for (String submodule : model.getModules())
-        {
-            collectEmitModelsDirsRecursive(moduleDir.resolve(submodule), result);
-        }
+        });
+        List<Path> sorted = new ArrayList<>(emitModelsDirs);
+        sorted.sort(null);
+        return sorted;
     }
 
-    private static List<Path> effectiveTestResourceDirs(Path moduleDir, Model model)
+    private static String relativize(Path repoRoot, Path dir)
     {
-        Build build = model.getBuild();
-        if (build == null || build.getTestResources() == null || build.getTestResources().isEmpty())
-        {
-            return Collections.singletonList(moduleDir.resolve(DEFAULT_TEST_RESOURCES_DIR));
-        }
-        return Collections.emptyList();
+        return repoRoot.relativize(dir).toString().replace(File.separatorChar, '/');
     }
 
-    static MavenProject findLegendEngineRoot(MavenProject project) throws MojoExecutionException
+    static MavenProject findRepoRoot(MavenProject project)
     {
-        for (MavenProject p = project; p != null; p = p.getParent())
+        if (project == null)
         {
-            if (LEGEND_ENGINE_GROUP_ID.equals(p.getGroupId()) && LEGEND_ENGINE_ARTIFACT_ID.equals(p.getArtifactId()))
-            {
-                return p;
-            }
+            throw new IllegalArgumentException("project must not be null");
         }
-        throw new MojoExecutionException("Could not find " + LEGEND_ENGINE_GROUP_ID + ":" + LEGEND_ENGINE_ARTIFACT_ID + " in the parent chain of " + (project == null ? "<null project>" : (project.getGroupId() + ":" + project.getArtifactId())));
+        MavenProject current = project;
+        while (current.getParent() != null && current.getParent().getBasedir() != null)
+        {
+            current = current.getParent();
+        }
+        return current;
     }
 }

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-emit</artifactId>
-        <version>4.132.1-SNAPSHOT</version>
+        <version>4.132.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-emit-maven-plugin</artifactId>
@@ -27,10 +27,14 @@
     <name>Legend Engine - Testing - EMIT Maven Plugin</name>
     <description>
         Maven plugin that pre-renders the EMIT coverage report at build time.
-        Walks the legend-engine repo (located via MavenProject.getParent()) for every
-        src/test/resources/emit-models/**/*.emit.yaml and writes a self-contained HTML
-        report under the consuming module's target/classes/emit/emit-coverage.html,
-        which the legend-engine server then streams at GET /api/emit/html.
+        Walks the consuming module's multi-module ancestry (via
+        MavenProject.getParent() up to the topmost on-disk project) and then
+        traverses that repo's directory tree with Files.walkFileTree, pruning
+        configured subtrees (target, src/main, hidden dirs, the JUnit binding
+        module, ...) and collecting every src/test/resources/emit-models/**/*.emit.yaml.
+        The rendered self-contained HTML report is written to the consuming
+        module's target/classes/emit/emit-coverage.html, which the
+        legend-engine server then streams at GET /api/emit/html.
     </description>
 
     <dependencies>
@@ -66,18 +70,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-emit</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
         </dependency>
 
         <!-- TEST -->

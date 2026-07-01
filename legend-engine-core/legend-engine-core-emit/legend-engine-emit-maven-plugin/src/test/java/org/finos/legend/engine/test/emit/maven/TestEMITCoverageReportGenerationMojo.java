@@ -14,250 +14,303 @@
 
 package org.finos.legend.engine.test.emit.maven;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TestEMITCoverageReportGenerationMojo
 {
-    private static final String LEGEND_ENGINE_GROUP_ID = "org.finos.legend.engine";
-    private static final String LEGEND_ENGINE_ARTIFACT_ID = "legend-engine";
+    private static final Set<String> DEFAULT_EXCLUDED_NAMES = setOf("target", "legend-engine-emit-junit");
+    private static final Set<String> DEFAULT_EXCLUDED_PREFIXES = setOf(".");
+    private static final Set<String> DEFAULT_EXCLUDED_SUBPATHS = setOf("src/main");
+    private static final Set<String> DEFAULT_INCLUDED_SUBPATHS = setOf("src/test/resources/emit-models");
 
     @Test
-    public void findLegendEngineRootReturnsProjectWhenItIsTheLegendEngineRoot() throws MojoExecutionException
+    public void findRepoRootReturnsProjectWhenItHasNoParent()
     {
-        MavenProject root = projectOf(LEGEND_ENGINE_GROUP_ID, LEGEND_ENGINE_ARTIFACT_ID);
+        MavenProject project = projectOnDisk();
 
-        MavenProject found = EMITCoverageReportGenerationMojo.findLegendEngineRoot(root);
+        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(project);
 
-        Assertions.assertSame(root, found,
-                "A project that IS the legend-engine root must be returned as-is");
+        Assertions.assertSame(project, found,
+                "A project with no parent is itself the repo root");
     }
 
     @Test
-    public void findLegendEngineRootWalksParentChainToFindRoot() throws MojoExecutionException
+    public void findRepoRootWalksParentChainToTopmostOnDiskProject()
     {
-        MavenProject root = projectOf(LEGEND_ENGINE_GROUP_ID, LEGEND_ENGINE_ARTIFACT_ID);
-        MavenProject child = projectOf(LEGEND_ENGINE_GROUP_ID, "legend-engine-emit-maven-plugin");
-        Mockito.when(child.getParent()).thenReturn(root);
-
-        MavenProject found = EMITCoverageReportGenerationMojo.findLegendEngineRoot(child);
-
-        Assertions.assertSame(root, found,
-                "findLegendEngineRoot must walk getParent() from the consuming module up to the legend-engine root");
-    }
-
-    @Test
-    public void findLegendEngineRootWalksMultipleAncestors() throws MojoExecutionException
-    {
-        MavenProject root = projectOf(LEGEND_ENGINE_GROUP_ID, LEGEND_ENGINE_ARTIFACT_ID);
-        MavenProject parent = projectOf(LEGEND_ENGINE_GROUP_ID, "legend-engine-core-emit");
-        MavenProject grandchild = projectOf(LEGEND_ENGINE_GROUP_ID, "legend-engine-emit-maven-plugin");
+        MavenProject root = projectOnDisk();
+        MavenProject parent = projectOnDisk();
+        MavenProject child = projectOnDisk();
         Mockito.when(parent.getParent()).thenReturn(root);
-        Mockito.when(grandchild.getParent()).thenReturn(parent);
+        Mockito.when(child.getParent()).thenReturn(parent);
 
-        MavenProject found = EMITCoverageReportGenerationMojo.findLegendEngineRoot(grandchild);
+        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(child);
 
         Assertions.assertSame(root, found,
-                "findLegendEngineRoot must traverse the full parent chain, not just one level");
+                "findRepoRoot must walk all the way to the topmost on-disk ancestor");
     }
 
     @Test
-    public void findLegendEngineRootThrowsWhenNoLegendEngineInChain()
+    public void findRepoRootStopsAtTheFirstParentWithoutBasedir()
     {
-        MavenProject parent = projectOf("com.example.fork", "some-parent");
-        MavenProject standalone = projectOf("com.example.fork", "some-module");
-        Mockito.when(standalone.getParent()).thenReturn(parent);
+        MavenProject externalParent = projectWithoutBasedir();
+        MavenProject root = projectOnDisk();
+        Mockito.when(root.getParent()).thenReturn(externalParent);
 
-        MojoExecutionException ex = Assertions.assertThrows(MojoExecutionException.class,
-                () -> EMITCoverageReportGenerationMojo.findLegendEngineRoot(standalone));
+        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(root);
 
-        Assertions.assertTrue(ex.getMessage().contains("com.example.fork:some-module"),
-                "Error message should identify the starting project. Was: " + ex.getMessage());
-        Assertions.assertTrue(ex.getMessage().contains(LEGEND_ENGINE_GROUP_ID + ":" + LEGEND_ENGINE_ARTIFACT_ID),
-                "Error message should mention the expected legend-engine coordinates. Was: " + ex.getMessage());
+        Assertions.assertSame(root, found,
+                "Walking must stop at the first parent that has no basedir");
     }
 
     @Test
-    public void findLegendEngineRootRequiresBothGroupAndArtifactIdToMatch()
+    public void findRepoRootDoesNotCrossExternalParentInDeeperChain()
     {
-        MavenProject foreign = projectOf("com.example.fork", LEGEND_ENGINE_ARTIFACT_ID);
+        MavenProject externalParent = projectWithoutBasedir();
+        MavenProject onDiskRoot = projectOnDisk();
+        MavenProject onDiskChild = projectOnDisk();
+        Mockito.when(onDiskRoot.getParent()).thenReturn(externalParent);
+        Mockito.when(onDiskChild.getParent()).thenReturn(onDiskRoot);
 
-        MojoExecutionException ex = Assertions.assertThrows(MojoExecutionException.class,
-                () -> EMITCoverageReportGenerationMojo.findLegendEngineRoot(foreign));
+        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(onDiskChild);
 
-        Assertions.assertTrue(ex.getMessage().contains("com.example.fork"),
-                "Error message should mention the actual groupId. Was: " + ex.getMessage());
+        Assertions.assertSame(onDiskRoot, found,
+                "Even with several on-disk descendants, the walk must still stop at the on-disk root");
     }
 
     @Test
-    public void findLegendEngineRootThrowsOnNull()
+    public void findRepoRootThrowsOnNull()
     {
-        MojoExecutionException ex = Assertions.assertThrows(MojoExecutionException.class,
-                () -> EMITCoverageReportGenerationMojo.findLegendEngineRoot(null));
-
-        Assertions.assertTrue(ex.getMessage().contains("<null"),
-                "Error message should call out the null starting project. Was: " + ex.getMessage());
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> EMITCoverageReportGenerationMojo.findRepoRoot(null));
     }
 
     @Test
-    public void collectEmitModelsDirsWalksTopLevelModulesAndFindsTheirEmitModels(@TempDir Path repo) throws Exception
+    public void walksTopLevelModulesAndReturnsTheirEmitModelsDirs(@TempDir Path repo) throws IOException
     {
-        writePom(repo, "legend-engine", Arrays.asList("moduleA", "moduleB"));
-        writePom(repo.resolve("moduleA"), "moduleA-art", Collections.emptyList());
-        writePom(repo.resolve("moduleB"), "moduleB-art", Collections.emptyList());
-        Path emitA = Files.createDirectories(repo.resolve("moduleA/src/test/resources/emit-models"));
-        Path emitB = Files.createDirectories(repo.resolve("moduleB/src/test/resources/emit-models"));
+        Path moduleA = touchYaml(repo, "legend-engine-xt-a/src/test/resources/emit-models/a.emit.yaml");
+        Path moduleB = touchYaml(repo, "legend-engine-xt-b/src/test/resources/emit-models/b.emit.yaml");
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(2, dirs.size(), "Both modules' emit-models dirs should be returned. Got " + dirs);
+        Assertions.assertTrue(dirs.contains(moduleA.getParent()));
+        Assertions.assertTrue(dirs.contains(moduleB.getParent()));
+    }
+
+    @Test
+    public void deduplicatesMultipleYamlsInTheSameEmitModelsDir(@TempDir Path repo) throws IOException
+    {
+        Path emitModels = touchYaml(repo, "m/src/test/resources/emit-models/a.emit.yaml").getParent();
+        Files.write(emitModels.resolve("b.emit.yaml"), new byte[0]);
+        Files.createDirectories(emitModels.resolve("nested"));
+        Files.write(emitModels.resolve("nested/c.emit.yaml"), new byte[0]);
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(emitModels), dirs,
+                "The emit-models directory is recorded once (SKIP_SUBTREE prevents descent), regardless of how many yamls it contains or how deeply they are nested");
+    }
+
+    @Test
+    public void prunesTargetSubtrees(@TempDir Path repo) throws IOException
+    {
+        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
+        touchYaml(repo, "m/target/leftover/src/test/resources/emit-models/leaked.emit.yaml");
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "target/ subtrees are pruned by preVisitDirectory SKIP_SUBTREE");
+    }
+
+    @Test
+    public void prunesHiddenDirectoriesByNamePrefix(@TempDir Path repo) throws IOException
+    {
+        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
+        touchYaml(repo, ".git/objects/src/test/resources/emit-models/leaked.emit.yaml");
+        touchYaml(repo, ".idea/cache/src/test/resources/emit-models/leaked2.emit.yaml");
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "Any directory whose simple name starts with '.' is pruned");
+    }
+
+    @Test
+    public void prunesSrcMainSubtrees(@TempDir Path repo) throws IOException
+    {
+        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
+        touchYaml(repo, "m/src/main/resources/emit-models/leaked.emit.yaml");
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "Yamls under src/main must not leak into the report");
+    }
+
+    @Test
+    public void prunesExcludedModuleArtifactIdDirectories(@TempDir Path repo) throws IOException
+    {
+        Path good = touchYaml(repo, "real-module/src/test/resources/emit-models/good.emit.yaml").getParent();
+        touchYaml(repo, "legend-engine-emit-junit/src/test/resources/emit-models/leaked.emit.yaml");
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "Modules whose dir name matches an excluded artifactId must be skipped");
+    }
+
+    @Test
+    public void requiresYamlsToLiveUnderTheIncludedSubpath(@TempDir Path repo) throws IOException
+    {
+        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
+        touchYaml(repo, "m/src/test/resources/other/nope.emit.yaml");
+        touchYaml(repo, "m/random-place/nope.emit.yaml");
+
+        List<Path> dirs = collectWithDefaults(repo);
+
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "preVisitDirectory only records dirs whose relative path matches the inclusion subpath; non-matching dirs are not recorded, even if they contain *.emit.yaml files");
+    }
+
+    @Test
+    public void parameterizedInclusionSubpathsChangeWhereYamlsAreLookedFor(@TempDir Path repo) throws IOException
+    {
+        Path customDir = touchYaml(repo, "m/some/custom/place/foo.emit.yaml").getParent();
+
+        Assertions.assertTrue(collectWithDefaults(repo).isEmpty(),
+                "Default inclusion is src/test/resources/emit-models — custom location must be ignored");
+
+        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                repo, setOf("some/custom/place"), DEFAULT_EXCLUDED_NAMES,
+                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
+
+        Assertions.assertEquals(Collections.singletonList(customDir), dirs,
+                "A custom inclusion subpath should pick up yamls under it");
+    }
+
+    @Test
+    public void matchesDirsAgainstAnyOfTheConfiguredInclusionSubpaths(@TempDir Path repo) throws IOException
+    {
+        Path unit = touchYaml(repo, "m/src/test/resources/emit-models/a.emit.yaml").getParent();
+        Path integration = touchYaml(repo, "m/src/it/resources/emit-models/b.emit.yaml").getParent();
+
+        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                repo,
+                setOf("src/test/resources/emit-models", "src/it/resources/emit-models"),
+                DEFAULT_EXCLUDED_NAMES, DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
 
         Assertions.assertEquals(2, dirs.size(),
-                "Each declared module's emit-models/ should be discovered. Got " + dirs);
-        Assertions.assertTrue(dirs.contains(emitA));
-        Assertions.assertTrue(dirs.contains(emitB));
+                "Directories matching any of the configured inclusion subpaths must all be recorded. Got " + dirs);
+        Assertions.assertTrue(dirs.contains(unit));
+        Assertions.assertTrue(dirs.contains(integration));
     }
 
     @Test
-    public void collectEmitModelsDirsRecursesIntoNestedModuleHierarchies(@TempDir Path repo) throws Exception
+    public void parameterizedExclusionsCanBeRelaxedToIncludeOtherwiseHiddenSubtrees(@TempDir Path repo) throws IOException
     {
-        writePom(repo, "legend-engine", Collections.singletonList("level1"));
-        writePom(repo.resolve("level1"), "level1-art", Collections.singletonList("level2"));
-        writePom(repo.resolve("level1/level2"), "level2-art", Collections.emptyList());
-        Path emit = Files.createDirectories(repo.resolve("level1/level2/src/test/resources/emit-models"));
+        Path under_target = touchYaml(repo, "target/foo/src/test/resources/emit-models/a.emit.yaml").getParent();
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
+        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                repo, DEFAULT_INCLUDED_SUBPATHS, Collections.emptySet(),
+                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
 
-        Assertions.assertEquals(Collections.singletonList(emit), dirs,
-                "Discovery must descend through multi-level <modules> trees");
+        Assertions.assertEquals(Collections.singletonList(under_target), dirs,
+                "Clearing excludedDirectoryNames should allow target/ subtrees to surface");
     }
 
     @Test
-    public void collectEmitModelsDirsSkipsExcludedModuleArtifactIds(@TempDir Path repo) throws Exception
+    public void returnsSortedListOfEmitModelsDirs(@TempDir Path repo) throws IOException
     {
-        writePom(repo, "legend-engine", Arrays.asList("real", "legend-engine-emit-junit"));
-        writePom(repo.resolve("real"), "real-art", Collections.emptyList());
-        writePom(repo.resolve("legend-engine-emit-junit"), "legend-engine-emit-junit", Collections.emptyList());
-        Path realEmit = Files.createDirectories(repo.resolve("real/src/test/resources/emit-models"));
-        Files.createDirectories(repo.resolve("legend-engine-emit-junit/src/test/resources/emit-models"));
+        Path z = touchYaml(repo, "zzz-module/src/test/resources/emit-models/z.emit.yaml").getParent();
+        Path a = touchYaml(repo, "aaa-module/src/test/resources/emit-models/a.emit.yaml").getParent();
+        Path m = touchYaml(repo, "mmm-module/src/test/resources/emit-models/m.emit.yaml").getParent();
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
+        List<Path> dirs = collectWithDefaults(repo);
 
-        Assertions.assertEquals(Collections.singletonList(realEmit), dirs,
-                "legend-engine-emit-junit must be skipped even though its emit-models/ exists.");
+        Assertions.assertEquals(Arrays.asList(a, m, z), dirs,
+                "Result must be in natural Path order");
     }
 
     @Test
-    public void collectEmitModelsDirsSilentlySkipsModulesWithCustomTestResources(@TempDir Path repo) throws Exception
+    public void rejectsNullRepoRoot()
     {
-        writePom(repo, "legend-engine", Arrays.asList("real", "custom"));
-        writePom(repo.resolve("real"), "real-art", Collections.emptyList());
-        writePomWithTestResources(repo.resolve("custom"), "custom-art",
-                Collections.singletonList("custom/path"));
-        Path realEmit = Files.createDirectories(repo.resolve("real/src/test/resources/emit-models"));
-        Files.createDirectories(repo.resolve("custom/src/test/resources/emit-models"));
-        Files.createDirectories(repo.resolve("custom/custom/path/emit-models"));
-
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
-
-        Assertions.assertEquals(Collections.singletonList(realEmit), dirs,
-                "Only the conventional module should be reported; the module with custom <testResources> is silently skipped");
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                        null, DEFAULT_INCLUDED_SUBPATHS, DEFAULT_EXCLUDED_NAMES,
+                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS));
     }
 
     @Test
-    public void collectEmitModelsDirsReturnsEmptyListWhenNoModuleHasEmitModels(@TempDir Path repo) throws Exception
+    public void rejectsNullOrEmptyInclusionSubpaths(@TempDir Path repo)
     {
-        writePom(repo, "legend-engine", Arrays.asList("a", "b"));
-        writePom(repo.resolve("a"), "a-art", Collections.emptyList());
-        writePom(repo.resolve("b"), "b-art", Collections.emptyList());
-
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
-
-        Assertions.assertTrue(dirs.isEmpty(),
-                "No emit-models/ anywhere → empty result, not an error. Got " + dirs);
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                        repo, null, DEFAULT_EXCLUDED_NAMES,
+                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS),
+                "null inclusion set must be rejected");
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                        repo, Collections.emptySet(), DEFAULT_EXCLUDED_NAMES,
+                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS),
+                "empty inclusion set must be rejected (nothing could ever match)");
     }
 
     @Test
-    public void collectEmitModelsDirsSilentlySkipsDeclaredModulesWithoutAPom(@TempDir Path repo) throws Exception
+    public void tolerantOfNullExclusionSets(@TempDir Path repo) throws IOException
     {
-        writePom(repo, "legend-engine", Arrays.asList("real", "phantom"));
-        writePom(repo.resolve("real"), "real-art", Collections.emptyList());
-        Files.createDirectories(repo.resolve("phantom"));
-        Path realEmit = Files.createDirectories(repo.resolve("real/src/test/resources/emit-models"));
+        Path good = touchYaml(repo, "m/src/test/resources/emit-models/g.emit.yaml").getParent();
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
+        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                repo, DEFAULT_INCLUDED_SUBPATHS, null, null, null);
 
-        Assertions.assertEquals(Collections.singletonList(realEmit), dirs,
-                "Modules without an on-disk pom.xml must be skipped silently");
+        Assertions.assertEquals(Collections.singletonList(good), dirs,
+                "Null exclusion sets are treated as empty (no pruning beyond the inclusion filter)");
     }
 
-    @Test
-    public void collectEmitModelsDirsReturnsEmptyWhenRepoRootHasNoPom(@TempDir Path repo) throws Exception
-    {
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repo);
-
-        Assertions.assertTrue(dirs.isEmpty(), "Repo root with no pom.xml must produce an empty result");
-    }
-
-    private static MavenProject projectOf(String groupId, String artifactId)
+    private static MavenProject projectOnDisk()
     {
         MavenProject p = Mockito.mock(MavenProject.class);
-        Mockito.when(p.getGroupId()).thenReturn(groupId);
-        Mockito.when(p.getArtifactId()).thenReturn(artifactId);
+        Mockito.when(p.getBasedir()).thenReturn(new File("/tmp"));
         return p;
     }
 
-    private static void writePom(Path moduleDir, String artifactId, List<String> submodules) throws IOException
+    private static MavenProject projectWithoutBasedir()
     {
-        Files.createDirectories(moduleDir);
-        StringBuilder sb = new StringBuilder();
-        sb.append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\">\n");
-        sb.append("  <modelVersion>4.0.0</modelVersion>\n");
-        sb.append("  <groupId>test</groupId>\n");
-        sb.append("  <artifactId>").append(artifactId).append("</artifactId>\n");
-        sb.append("  <version>1.0</version>\n");
-        if (!submodules.isEmpty())
-        {
-            sb.append("  <packaging>pom</packaging>\n");
-            sb.append("  <modules>\n");
-            for (String m : submodules)
-            {
-                sb.append("    <module>").append(m).append("</module>\n");
-            }
-            sb.append("  </modules>\n");
-        }
-        sb.append("</project>\n");
-        Files.write(moduleDir.resolve("pom.xml"), sb.toString().getBytes(StandardCharsets.UTF_8));
+        return Mockito.mock(MavenProject.class);
     }
 
-    private static void writePomWithTestResources(Path moduleDir, String artifactId, List<String> testResourceDirs) throws IOException
+    private static List<Path> collectWithDefaults(Path repo) throws IOException
     {
-        Files.createDirectories(moduleDir);
-        StringBuilder sb = new StringBuilder();
-        sb.append("<project xmlns=\"http://maven.apache.org/POM/4.0.0\">\n");
-        sb.append("  <modelVersion>4.0.0</modelVersion>\n");
-        sb.append("  <groupId>test</groupId>\n");
-        sb.append("  <artifactId>").append(artifactId).append("</artifactId>\n");
-        sb.append("  <version>1.0</version>\n");
-        sb.append("  <build>\n");
-        sb.append("    <testResources>\n");
-        for (String dir : testResourceDirs)
-        {
-            sb.append("      <testResource><directory>").append(dir).append("</directory></testResource>\n");
-        }
-        sb.append("    </testResources>\n");
-        sb.append("  </build>\n");
-        sb.append("</project>\n");
-        Files.write(moduleDir.resolve("pom.xml"), sb.toString().getBytes(StandardCharsets.UTF_8));
+        return EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
+                repo, DEFAULT_INCLUDED_SUBPATHS, DEFAULT_EXCLUDED_NAMES,
+                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
+    }
+
+    private static Path touchYaml(Path repo, String relativePath) throws IOException
+    {
+        Path target = repo.resolve(relativePath);
+        Files.createDirectories(target.getParent());
+        Files.write(target, new byte[0]);
+        return target;
+    }
+
+    private static Set<String> setOf(String... values)
+    {
+        return new HashSet<>(Arrays.asList(values));
     }
 }
