@@ -75,6 +75,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.List;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static org.finos.legend.pure.generated.platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
@@ -373,13 +374,27 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         return apm;
     }
 
+    private Property<?, ?> resolveRelationFunctionMappedProperty(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping)
+    {
+        if (propertyMapping.localMappingProperty != null || propertyMapping.property._class != null)
+        {
+            return HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
+        }
+        if (this.immediateParent instanceof InstanceSetImplementation)
+        {
+            Class<?> ownerClass = ((InstanceSetImplementation) this.immediateParent)._class();
+            return HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(this.context, ownerClass, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
+        }
+        throw new EngineException("Can't find property owner class for property '" + propertyMapping.property.property + "'", propertyMapping.property.sourceInformation, EngineErrorType.COMPILATION);
+    }
+
     @Override
     public PropertyMapping visit(RelationFunctionPropertyMapping propertyMapping)
     {
         SourceInformation sourceInfo = SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation);
         ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
-        Property<?, ?> property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
+        Property<?, ?> property = resolveRelationFunctionMappedProperty(propertyMapping);
         Multiplicity propertyMultiplicity = property._multiplicity();
         if (!org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(propertyMultiplicity) && !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isZeroToOne(propertyMultiplicity))
         {
@@ -453,7 +468,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     public PropertyMapping visit(RelationFunctionEmbeddedPropertyMapping propertyMapping)
     {
         SourceInformation sourceInfo = SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation);
-        Property<?, ?> property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
+        Property<?, ?> property = resolveRelationFunctionMappedProperty(propertyMapping);
         String sourceId = propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source;
 
         boolean isInline = propertyMapping.propertyMappings == null || propertyMapping.propertyMappings.isEmpty();
