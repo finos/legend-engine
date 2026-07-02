@@ -1,0 +1,60 @@
+import meta::pure::precisePrimitives::*;
+import meta::pure::functions::meta::tests::generalizations::*;
+import meta::external::query::sql::transformation::utils::*;
+
+// Rule 1 ? all inputs equal
+function <<test.Test>> meta::external::query::sql::transformation::utils::testAllSame():Boolean[1]
+{
+    assertEquals(G_A,    [G_A]->bestCommonType());
+    assertEquals(G_D,    [G_D, G_D, G_D]->bestCommonType());
+    assertEquals(String, [String, String]->bestCommonType());
+    assertEquals(Any,    [Any, Any]->bestCommonType());
+}
+
+// Rule 2 ? nearest common supertype (user-defined hierarchy reused from generalizations.pure)
+function <<test.Test>> meta::external::query::sql::transformation::utils::testNearestCommonSupertype():Boolean[1]
+{
+    // G_B:[G_B,G_A,Any]  G_C:[G_C,G_A,Any]                              -> G_A
+    assertEquals(G_A, [G_B, G_C]->bestCommonType());
+    // G_D:[G_D,G_B,G_A,Any]  G_E:[G_E,G_D,G_B,G_C,G_A,Any]              -> G_D
+    assertEquals(G_D, [G_D, G_E]->bestCommonType());
+    // G_E and G_F diverge through G_D                                    -> G_D
+    assertEquals(G_D, [G_E, G_F]->bestCommonType());
+    // G_E vs G_H ? H extends E so the answer is E                        -> G_E
+    assertEquals(G_E, [G_E, G_H]->bestCommonType());
+    // Three-way fan-out                                                  -> G_A
+    assertEquals(G_A, [G_B, G_C, G_D]->bestCommonType());
+    // Duplicates are coalesced
+    assertEquals(G_A, [G_B, G_C, G_C, G_B]->bestCommonType());
+}
+
+// Rule 2 ? primitives
+function <<test.Test>> meta::external::query::sql::transformation::utils::testPrimitives():Boolean[1]
+{
+    assertEquals(Number, [Integer, Float]->bestCommonType());
+    assertEquals(Number, [Integer, Integer, Float]->bestCommonType());
+    assertEquals(Number, [Number, Integer]->bestCommonType());
+    assertEquals(String, [Varchar, String]->bestCommonType());
+    assertEquals(Integer, [UInt, BigInt]->bestCommonType());
+}
+
+// Rule 3 ? no common supertype other than Any
+function <<test.Test>> meta::external::query::sql::transformation::utils::testFallbackToAny():Boolean[1]
+{
+    assertEquals(Any, [Integer, String]->bestCommonType());
+    assertEquals(Any, [Boolean, Date, String]->bestCommonType());
+    assertEquals(Any, [G_A, String]->bestCommonType());
+    // Any is its own answer
+    assertEquals(Any, [Any, G_B]->bestCommonType());
+}
+
+// Rule 4 ? Nil handling
+function <<test.Test>> meta::external::query::sql::transformation::utils::testNil():Boolean[1]
+{
+    // All Nil -> Any (Nil-only common supertype is treated as no common supertype)
+    assertEquals(Any, [Nil]->bestCommonType());
+    assertEquals(Any, [Nil, Nil, Nil]->bestCommonType());
+    // Empty input ? degenerate Nil-only case
+    assertEquals(Any, []->cast(@Type)->bestCommonType());
+    assertEquals(Number, [Nil, Integer, Float]->bestCommonType());
+}

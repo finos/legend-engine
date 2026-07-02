@@ -74,3 +74,30 @@ function meta::external::query::sql::transformation::utils::debug(f:FunctionDefi
 {
   if ($debug.debug, | println($debug.space + $f->eval()), | []);
 }
+
+
+function
+    {doc.doc = 'Find the best (most specific) common supertype of a collection of types. Returns the type itself when all inputs are equal, the nearest shared supertype when one exists, and Any otherwise. Nil is treated as a wildcard subtype and is ignored: if every input is Nil, Any is returned.'}
+    meta::external::query::sql::transformation::utils::bestCommonType(types:Type[*]):Type[1]
+{
+    // Nil is a subtype of every other type, so on its own it carries no useful
+    // information about a *common supertype*. Drop Nil inputs first; if nothing
+    // is left, the only "common supertype" would be Nil, which rule 4 maps to Any.
+    let nonNil = $types->filter(t | $t != Nil);
+    if ($nonNil->isEmpty(),
+        | Any,
+        | let distinct = $nonNil->removeDuplicates();
+          if ($distinct->size() == 1,
+              // Rule 1: every input was the same type
+              | $distinct->toOne(),
+              // Rules 2 & 3: walk the first type's generalisations from most specific
+              // to most general. The first one that every other input shares is the
+              // nearest common supertype. `generalizations()` always ends with Any,
+              // so the filter is guaranteed to be non-empty.
+              | let first  = $distinct->at(0);
+                let shared = $first->generalizations()
+                                   ->filter(g | $distinct->forAll(t | $t->generalizations()->contains($g)));
+                $shared->at(0);
+          );
+    );
+}
