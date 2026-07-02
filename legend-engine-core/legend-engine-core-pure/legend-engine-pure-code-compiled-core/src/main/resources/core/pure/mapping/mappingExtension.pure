@@ -177,6 +177,7 @@ function meta::pure::router::clustering::resolveInstanceSetImplementations(o:Ope
    let sets = $o.operation->eval($o);
    $sets->map(s | $s->match([
                               o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations(),
+                              erf:EmbeddedRelationFunctionSetImplementation[1] | $erf,
                               e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded(),
                               i:InstanceSetImplementation[1] | $i
                             ]));

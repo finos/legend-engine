@@ -325,8 +325,8 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
         let tgtPermSet = $routingStrategy.sets->filter(ps| $ps.id->toString() == $propertyRoutedVS.id)->first()->toOne();
 
         // For the target side, resolve to the specific sub-impl that this ModelJoinPropertyMapping targets.
-        let srcSetImpl = $srcPermSet.sets->map(s|$s->resolveOperation($sourceRoutedVS.mapping))->filter(s|$s.id == $m.sourceSetImplementationId)->toOne();
-        let tgtSetImpl = $tgtPermSet.sets->map(s|$s->resolveOperation($sourceRoutedVS.mapping))->filter(s|$s.id == $m.targetSetImplementationId)->toOne();
+        let srcSetImpl = $srcPermSet.sets->map(s|$s->resolveOperationPreservingRouting($sourceRoutedVS.mapping))->filter(s|$s.id == $m.sourceSetImplementationId)->toOne();
+        let tgtSetImpl = $tgtPermSet.sets->map(s|$s->resolveOperationPreservingRouting($sourceRoutedVS.mapping))->filter(s|$s.id == $m.targetSetImplementationId)->toOne();
         let resolvedSrcPermSet = ^$srcPermSet(sets = $srcSetImpl);
         let resolvedTgtPermSet = ^$tgtPermSet(sets = $tgtSetImpl);
 

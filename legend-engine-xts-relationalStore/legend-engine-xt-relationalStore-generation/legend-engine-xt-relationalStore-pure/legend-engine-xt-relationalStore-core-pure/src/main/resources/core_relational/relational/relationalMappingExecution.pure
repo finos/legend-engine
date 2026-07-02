@@ -486,7 +486,7 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                      $setImplementation->match(
                                        [
                                           r:RelationalInstanceSetImplementation[1]|buildClasses($r, $res, $m, $connection, $runtime, [], $exeCtx, $extensions, $debug),
-                                          o:OperationSetImplementation[1]|buildClasses($o->resolveOperation($m)->cast(@RelationalInstanceSetImplementation), $res, $m, $connection, $runtime, [], $exeCtx, $extensions, $debug)
+                                          o:OperationSetImplementation[1]|buildClasses($o->resolveOperation($m)->match([r:RelationalInstanceSetImplementation[*]|$r->cast(@RelationalInstanceSetImplementation), rf:RelationFunctionInstanceSetImplementation[*]|$rf->cast(@RelationFunctionInstanceSetImplementation)]), $res, $m, $connection, $runtime, [], $exeCtx, $extensions, $debug)
                                        ]
                                     );
               ]);
@@ -580,7 +580,7 @@ function <<access.private>> meta::relational::mapping::buildExecutionResultInRel
    );
 }
 
-function meta::relational::mapping::buildClasses(setImplementations:RelationalInstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], propLookUpIndices:Integer[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Any[*]
+function meta::relational::mapping::buildClasses(setImplementations:InstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], propLookUpIndices:Integer[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Any[*]
 {
    let builders =  buildBuilders($setImplementations, $res, $mapping, $connection, $runtime, [], $exeCtx, $extensions, $debug);
    $res.rows->map(r|let buildInder = if ($setImplementations->size() == 1,|$builders->at(0),
@@ -590,13 +590,14 @@ function meta::relational::mapping::buildClasses(setImplementations:RelationalIn
                );
 }
 
-function meta::relational::mapping::buildBuilders(setImplementations:RelationalInstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], overridePropLookUpIndices:Integer[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):BuilderInfo[*]
+function meta::relational::mapping::buildBuilders(setImplementations:InstanceSetImplementation[*], res:ResultSet[1], mapping:Mapping[1], connection:Connection[1], runtime: Runtime[1], overridePropLookUpIndices:Integer[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):BuilderInfo[*]
 {
    let builders = $setImplementations->removeDuplicates()
                                      ->fold({setImplementation,a|
                                                 let classForNew = $setImplementation->match([
                                                                      r:RootRelationalInstanceSetImplementation[1] | $setImplementation.class;,
-                                                                     e:EmbeddedRelationalInstanceSetImplementation[1] | $e.property->genericType().typeArguments->at(1).rawType->toOne()->cast(@Class<Any>)
+                                                                     e:EmbeddedRelationalInstanceSetImplementation[1] | $e.property->genericType().typeArguments->at(1).rawType->toOne()->cast(@Class<Any>),
+                                                                     rf:RelationFunctionInstanceSetImplementation[1] | $setImplementation.class
                                                                      ]);
                                                 let propertyMappings = $setImplementation->allPropertyMappings()
                                                                        ->filter(pm|$pm.localMappingProperty==false &&
@@ -620,7 +621,8 @@ function meta::relational::mapping::buildBuilders(setImplementations:RelationalI
 
                                                 let primaryKeyColumns = $setImplementation->match([
                                                         r:RootRelationalInstanceSetImplementation[1] | $r->resolvePrimaryKey();,
-                                                        e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->resolvePrimaryKey()
+                                                        e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->resolvePrimaryKey(),
+                                                        rf:RelationFunctionInstanceSetImplementation[1] | $rf->resolvePrimaryKey()
                                                         ]);
 
                                                 assert(!$primaryKeyColumns->isEmpty(), 'Must have a valid primary key to allow gettor to work');

@@ -1253,7 +1253,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                      let remap = $filtersPartition.first->extractTableAliasColumns()->concatenate($child->children()->extractTableAliasColumns())
                                                                                         ->filter(e|$e.alias.name == $targetAlias.name)//extra cols are added to SelectSqlQuery, relationalElements are not reprocessed
                                                                                         ->distinct()
-                                                                                         ->map(c|pair($c, $nestedSelect.columns->cast(@Alias)->filter(a|$a.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes() == $c.column.name->meta::relational::functions::pureToSqlQuery::stripMatchingQuotes())->toOne().relationalElement->cast(@TableAliasColumn)));
+                                                                                        ->map(c|pair($c, $nestedSelect.columns->cast(@Alias)->filter(a|$a.name->stripMatchingQuotes() == $c.column.name->stripMatchingQuotes())->toOne().relationalElement->cast(@TableAliasColumn)));
 
                                                      let data = $nestedSelect.data->toOne();
                                                      let newData=$child->children()->fold({c,root|let join = $c.join;
@@ -1604,21 +1604,53 @@ function meta::relational::functions::pureToSqlQuery::processPropertyMapping(pro
             | $context.space+'*>Process Property: \''+$propertyMapping.property->at(0).name->toOne()+'\' ('+$propertyMapping->map(p|$p.owner->toOne().id+'->'+$p.targetSetImplementationId)->joinStrings(',')+') '+$nodeId+ ',inFilter:' + $state.inFilter->toString() + '\n'+
 
               $context.space+'   (Q)Source Operation>  '+$srcOperation->cast(@SelectWithCursor).select->printDebugQuery($context.space, $extensions)));
-   let res = $propertyMapping->match([
-               s:SemiStructuredRelationalPropertyMapping[*] | processSemiStructuredRelationalPropertyMapping($s, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
-               r:RelationalPropertyMapping[*] | processRelationalPropertyMapping($r, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
-               r:RelationFunctionPropertyMapping[*] | processRelationFunctionPropertyMapping($r, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
-               r:CrossSetImplementationPropertyMapping[*] | processCrossPropertyMapping($r, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
-               m:ModelJoinPropertyMapping[*] | processModelJoinPropertyMapping($m, $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
-               e:EmbeddedRelationalInstanceSetImplementation[*] | if(($state.inGetterFlow == true || $state.milestoningUseOtherwise == true) && $e->size() == 1 && $e->toOne()->instanceOf(OtherwiseEmbeddedRelationalInstanceSetImplementation),
-                                                                     | processRelationalPropertyMapping($e->toOne()->cast(@OtherwiseEmbeddedRelationalInstanceSetImplementation).otherwisePropertyMapping->cast(@RelationalPropertyMapping), $propertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+
+   // Partition the input by kind so RFPM and MJPM normalization can be expressed as
+   // independent operations. RFPM transformation is per-element (1:1); MJPM compilation
+   // is per (sourceId, targetId) pair after dedup, so it operates on the collection.
+   let mjpms    = $propertyMapping->filter(pm | $pm->instanceOf(ModelJoinPropertyMapping))->cast(@ModelJoinPropertyMapping);
+   let nonMjpms = $propertyMapping->filter(pm | !$pm->instanceOf(ModelJoinPropertyMapping));
+
+   // Normalize RelationFunctionPropertyMapping into RelationalPropertyMapping
+   // (transformRelationPropertyMappingsToRelational is just constructor calls — no caching needed).
+   let rfpmNormalized = $nonMjpms->map(pm | $pm->match([
+                                         rf: RelationFunctionPropertyMapping[1] | $rf->meta::relational::mapping::transformRelationPropertyMappingsToRelational($state->getClassMappingById($rf.sourceSetImplementationId)->toOne()->cast(@RelationFunctionInstanceSetImplementation))->cast(@PropertyMapping),
+                                         pm: PropertyMapping[1] | $pm
+                                    ]));
+
+   // Normalize ModelJoinPropertyMapping into synthetic RelationalPropertyMapping by
+   // compiling the join condition once per unique (source, target) pair.
+   let mjpmNormalized = if($mjpms->isEmpty(),
+      | [],
+      | let pairs = $mjpms
+           ->map(m | pair($m.sourceSetImplementationId, $m.targetSetImplementationId))
+           ->removeDuplicates({a,b | $a.first == $b.first && $a.second == $b.second});
+        $pairs->map({p |
+           let mjpm = $mjpms->filter(m | $m.sourceSetImplementationId == $p.first && $m.targetSetImplementationId == $p.second)->at(0);
+           compileModelJoinForBranch($mjpm, $mjpm.property->cast(@AbstractProperty<Any>), $srcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@PropertyMapping);
+        });
+   );
+
+   let normalizedPropertyMapping = $rfpmNormalized->concatenate($mjpmNormalized);
+
+   let normalizedState = if($propertyMapping->exists(pm | $pm->match([rf: RelationFunctionPropertyMapping[1] | $rf.transformer->isNotEmpty() && $rf.transformer->toOne()->instanceOf(EnumerationMapping), pm: PropertyMapping[1] | false])),
+       | ^$state(pushDownEnumTransformations=true),
+       | $state
+   );
+
+   let res = $normalizedPropertyMapping->match([
+               s:SemiStructuredRelationalPropertyMapping[*] | processSemiStructuredRelationalPropertyMapping($s, $normalizedPropertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $normalizedState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
+               r:RelationalPropertyMapping[*] | processRelationalPropertyMapping($r, $normalizedPropertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $normalizedState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
+               r:CrossSetImplementationPropertyMapping[*] | processCrossPropertyMapping($r, $normalizedPropertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $normalizedState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions),
+               e:EmbeddedRelationalInstanceSetImplementation[*] | if(($normalizedState.inGetterFlow == true || $normalizedState.milestoningUseOtherwise == true) && $e->size() == 1 && $e->toOne()->instanceOf(OtherwiseEmbeddedRelationalInstanceSetImplementation),
+                                                                     | processRelationalPropertyMapping($e->toOne()->cast(@OtherwiseEmbeddedRelationalInstanceSetImplementation).otherwisePropertyMapping->cast(@RelationalPropertyMapping), $normalizedPropertyMapping.property->at(0), $propertyOwnerClass, $srcOperation, $normalizedState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
                                                                      | $srcOperation;
                                                                   ),
                e:EmbeddedSetImplementation[*] | $srcOperation;
              ]);
 
    print(if(!$context.debug, |'',
-            | $context.space+'<*Process Property Result: \''+$propertyMapping.property->at(0).name->toOne()+'\' ('+$propertyMapping->map(p|$p.owner->toOne().id+'->'+$p.targetSetImplementationId)->joinStrings(',')+') '+$nodeId+ ',inFilter:' + $state.inFilter->toString() + '\n'+
+            | $context.space+'<*Process Property Result: \''+$normalizedPropertyMapping.property->at(0).name->toOne()+'\' ('+$normalizedPropertyMapping->map(p|$p.owner->toOne().id+'->'+$p.targetSetImplementationId)->joinStrings(',')+') '+$nodeId+ ',inFilter:' + $state.inFilter->toString() + '\n'+
               $context.space+'            '+$res->cast(@SelectWithCursor).select->printDebugQuery($context.space, $extensions)));
 
    $res;
@@ -1797,7 +1829,12 @@ function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(u
    let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation)->allPropertyMappings().sourceSetImplementationId->distinct();
    if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
        | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation)->_propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
-       | let propMappings = $relationalPropertyMappings->filter(r|$state->getClassMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds));
+       | let propMappings = $relationalPropertyMappings->filter(r|$state->getClassMappingById($r.sourceSetImplementationId)->match([
+                                                                                                                                      r:RootRelationalInstanceSetImplementation[1]|$r,
+                                                                                                                                      e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner,
+                                                                                                                                      erf:EmbeddedRelationFunctionSetImplementation[1]|$erf.owner->toOne()->cast(@RelationFunctionInstanceSetImplementation),
+                                                                                                                                      rf:RelationFunctionInstanceSetImplementation[1]|$rf
+                                                                                                                                  ])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds));
          // Filtering overriden property mappings
          let propertyMappingToSuperSetIdsMap = $propMappings->map({pm |
             let pmSourceSetId = $pm.sourceSetImplementationId;
@@ -1905,14 +1942,6 @@ function meta::relational::functions::pureToSqlQuery::processRelationalOperation
 
  }
 
-function meta::relational::functions::pureToSqlQuery::processRelationFunctionPropertyMapping(propertyMappings:RelationFunctionPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
-{
-  let propertyMapping = $propertyMappings->toOne('Unions not supported with Relation Expression mappings yet!');
-  let transformedRelationalPropertyMapping = $propertyMapping->transformRelationPropertyMappingsToRelational($state->getClassMappingById($propertyMapping.sourceSetImplementationId)->toOne()->cast(@RelationFunctionInstanceSetImplementation));
-  let updatedState = if($propertyMapping.transformer->isNotEmpty(), |^$state(pushDownEnumTransformations=true), |$state);
-  processPropertyMapping($transformedRelationalPropertyMapping, $propertyOwnerClass, $oldSrcOperation, $updatedState, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-}
-
 function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
@@ -1955,7 +1984,9 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                       let extractParentMappingId = {rpm: RelationalPropertyMapping[1] |
                                                          $state->getClassMappingById($rpm.sourceSetImplementationId)->match([
                                                             r:RootRelationalInstanceSetImplementation[1]     | $r.id,
-                                                            e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.id
+                                                            e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.id,
+                                                            erf:EmbeddedRelationFunctionSetImplementation[1] | $erf.owner->toOne()->cast(@RelationFunctionInstanceSetImplementation),
+                                                            rf:RelationFunctionInstanceSetImplementation[1]  | $rf.id
                                                          ])
                                                       };
 
@@ -2170,45 +2201,6 @@ function meta::relational::functions::pureToSqlQuery::processCrossPropertyMappin
 
 }
 
-// Model join property mapping: compiles a Pure lambda join condition into SQL.
-//
-// For each unique (source, target) pair, compiles the condition against a branch-specific
-// SWC (rooted at the raw table), packages as a synthetic RelationalPropertyMapping, then
-// delegates to processRelationalPropertyMapping which handles single-pair (doJoinToClass)
-// and multi-pair (buildSQLQueryOutManySetImplementations) flows unchanged.
-function meta::relational::functions::pureToSqlQuery::processModelJoinPropertyMapping(modelJoinPropertyMappings:ModelJoinPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
-{
-  print(if(!$context.debug, |'',
-          | $context.space+'>>> processModelJoinPropertyMapping START property='+$property.name->toOne()+' nodeId='+$nodeId+' mjpmCount='+$modelJoinPropertyMappings->size()->toString()+'\n'+
-            $context.space+'   srcOperation query> '+$oldSrcOperation.select->printDebugQuery($context.space, $extensions)));
-
-  // Collect distinct (source, target) pairs
-  let pairs = $modelJoinPropertyMappings
-     ->map(m | pair($m.sourceSetImplementationId, $m.targetSetImplementationId))
-     ->removeDuplicates({a,b | $a.first == $b.first && $a.second == $b.second});
-
-  print(if(!$context.debug, |'',
-          | $context.space+'   pairs: ['+$pairs->map(p | $p.first+'->'+$p.second)->joinStrings(', ')+']\n'));
-
-  // Compile each pair into a synthetic RelationalPropertyMapping
-  let syntheticRPMs = $pairs->map({p |
-     let mjpm = $modelJoinPropertyMappings
-        ->filter(m | $m.sourceSetImplementationId == $p.first && $m.targetSetImplementationId == $p.second)
-        ->at(0);
-     compileModelJoinForBranch($mjpm, $property, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-  });
-
-  print(if(!$context.debug, |'',
-          | $context.space+'   syntheticRPMs: '+$syntheticRPMs->size()->toString()+'\n'));
-
-  let result = processRelationalPropertyMapping($syntheticRPMs, $property, $propertyOwnerClass, $oldSrcOperation, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-
-  print(if(!$context.debug, |'',
-          | $context.space+'<<< processModelJoinPropertyMapping END\n'+
-            $context.space+'   result query> '+$result->cast(@SelectWithCursor).select->printDebugQuery($context.space, $extensions)));
-  $result;
-}
-
 // Compiles a single (source, target) pair's ModelJoin condition against branch-specific SWCs
 // (rooted at raw tables) and returns a synthetic RelationalPropertyMapping.
 // This ensures TableAliasColumns in the compiled condition reference raw Table objects,
@@ -2260,9 +2252,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
     | $branchSrcAlias,
     | getDeepestLeafAlias($sourceIntermediates->toOne()->cast(@JoinTreeNode))
   );
+  let sourceAliasReconciliation = ^OldAliasToNewAlias(first = $branchSrcAlias.name, second = $parentOfTargetAlias);
+  let reconciledCompiledCondition = $compiledCondition->reprocessAliases([$sourceAliasReconciliation]);
   let realJoin = ^Join(
     name      = $mjpm.sourceSetImplementationId + '_' + $mjpm.targetSetImplementationId + '_ModelJoin',
-    operation = $compiledCondition->cast(@Operation),
+    operation = $reconciledCompiledCondition->cast(@Operation),
     target    = $compiledTgtAlias,
     aliases   = [pair($parentOfTargetAlias, $compiledTgtAlias), pair($compiledTgtAlias, $parentOfTargetAlias)]
   );
@@ -5451,17 +5445,23 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression:F
 
 function meta::relational::functions::pureToSqlQuery::processGetAll(expression: FunctionExpression[1], setImplementation:SetImplementation[1], parameters:ValueSpecification[*], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let processRootSetImpl = {r:RootRelationalInstanceSetImplementation[1] |let milestoningContext = getMilestoningContextForAll($expression,$r, $parameters, $state, $vars, $context, $extensions);
-                                                                           processGetAll($r, $r.class, $joinType, $nodeId, true, -1, !$state.inProject, $milestoningContext, $state, $context, $extensions);};
+   let processSetImpl = {r:InstanceSetImplementation[1] |
+        $r->match([
+          rr:RootRelationalInstanceSetImplementation[1] | let milestoningContext = getMilestoningContextForAll($expression, $rr, $parameters, $state, $vars, $context, $extensions);
+                                                          processGetAll($rr, $rr.class, $joinType, $nodeId, true, -1, !$state.inProject, $milestoningContext, $state, $context, $extensions);,
+          rf:RelationFunctionInstanceSetImplementation[1] | let mc = getMilestoningContextForAll($expression, $rf, $parameters, $state, $vars, $context, $extensions);
+                                                            processRelationFunctionClassMapping($rf, $vars, $state, $mc, $joinType, $nodeId, $context, $extensions);
+        ])
+   };
 
-   $setImplementation->match([r:RootRelationalInstanceSetImplementation[1]| $processRootSetImpl->eval($r),
+   $setImplementation->match([r:RootRelationalInstanceSetImplementation[1]| $processSetImpl->eval($r),
                               r:RelationFunctionInstanceSetImplementation[1]| let milestoningContext = getMilestoningContextForAll($expression,$r, $parameters, $state, $vars, $context, $extensions);
                                                                               processRelationFunctionClassMapping($r, $vars, $state, $milestoningContext, $joinType, $nodeId, $context, $extensions);,
                               r:meta::pure::router::clustering::CrossSetImplementation[1]| let newTable = ^VarCrossSetPlaceHolder(varName=$r.varName, name=$r.varName, schema=^Schema(name='default', database=^Database()), crossSetImplementation = $r);
                                                                                            let treeNode = ^RootJoinTreeNode(alias = ^TableAlias(name = 'root', relationalElement = $newTable));
                                                                                            ^SelectWithCursor(select = ^SelectSQLQuery(data = $treeNode), currentTreeNode = $treeNode);,
-                              o:OperationSetImplementation[1]|let setImpls = $o->resolveOperation($state.mapping->toOne())->cast(@RootRelationalInstanceSetImplementation);
-                                                              if($setImpls->size()==1,| $processRootSetImpl->eval($setImpls->at(0))
+                              o:OperationSetImplementation[1]|let setImpls = $o->resolveOperation($state.mapping->toOne())->cast(@InstanceSetImplementation);
+                                                              if($setImpls->size()==1,| $processSetImpl->eval($setImpls->at(0))
                                                                                      ,| let milestoningContext = getMilestoningContextForAll($expression,$o, $parameters, $state, $vars, $context, $extensions);
                                                                                         let union = buildUnion($setImpls, [], $joinType, false, $state.inProject, $milestoningContext, $nodeId, $state, $context, $extensions);
                                                                                         let newRoot = ^RootJoinTreeNode(alias = ^TableAlias(name='unionBase', relationalElement=$union));
@@ -8566,6 +8566,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          d:FilterRelationalLambda[1] | 'filter(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
          d:FoldRelationalLambda[1] | 'fold(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
          d:MapRelationalLambda[1] | 'map(' + $d.parameters.name->joinStrings('_') + '_' + $d.body->buildUniqueName($alias, $selectColumns, $extensions) + ')',
+         rf:RelationFunction[1] | 'rf(' + $rf.owner.id + ')',
          a: Any[1]|fail($a->type()->elementToPath() + ' not supported'); '';
       ])->toOneMany()
    ))->joinStrings('_');
@@ -8842,7 +8843,7 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumPropMappingTransformer(enumPropMapping: PropertyMapping[*]): ValueTransformer<Any>[0..1]
 {
-  $enumPropMapping->toOne()->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
+  $enumPropMapping->toOne()->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
 }
 
 
@@ -8874,7 +8875,7 @@ function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapp
                           pair(|$enumPropMapping->isEmpty(), |$enum->id()->toString()),
                           pair(|$enumPropMapping->toOne()->instanceOf(SemiStructuredRelationalPropertyMapping), |$enum->id())
                         ],
-                        | let transformer = $enumPropMapping->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
+                        | let transformer = $enumPropMapping->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
                           assert($transformer->isNotEmpty(), | 'Missing an EnumerationMapping for the enum property \'' + $enumPropMapping.property.name->toOne() + '\'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.');
                           $transformer->toOne()->cast(@EnumerationMapping<Any> )->toSourceValues($enum);
                     );
@@ -8928,7 +8929,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::mapEnum
    ) : Any[1]
 {
 
-    let hasPropertyMapping = $currentPropertyMapping->size() == 1 && ($currentPropertyMapping->toOne()->instanceOf(RelationalPropertyMapping) || $currentPropertyMapping->toOne()->instanceOf(meta::pure::mapping::relation::RelationFunctionPropertyMapping));
+    let hasPropertyMapping = $currentPropertyMapping->size() == 1 && ($currentPropertyMapping->toOne()->instanceOf(RelationalPropertyMapping) || $currentPropertyMapping->toOne()->instanceOf(RelationFunctionPropertyMapping));
 
     print(if(!$context.debug, |'',
             | $context.space+ '  Has property mapping: '+$hasPropertyMapping->toString()+'\n'));
@@ -9782,6 +9783,26 @@ function meta::relational::functions::pureToSqlQuery::findMainNamedRelation(rela
                      r:RelationalOperationElement[1]|$r->findMainTable()]);
 }
 
+// Like findMainNamedRelation but tolerates RelationFunction inputs and unwraps
+// SelectSQLQuery subselects whose inner element is a RelationFunction (the shape
+// produced for RelationFunctionInstanceSetImplementation sources via
+// processRelationFunctionClassMapping). Returns either a NamedRelation or a
+// RelationFunction so union/join helpers can compare RelationFunction sources by
+// their underlying RFISI owner without needing to cast to NamedRelation.
+function meta::relational::functions::pureToSqlQuery::findMainRelation(relation : RelationalOperationElement[1]):Relation[1]
+{
+   $relation->match([
+      rf:RelationFunction[1] | $rf,
+      v:View[1]               | $v,
+      tf:TabularFunction[1]   | $tf,
+      s:SelectSQLQuery[1]     | if($s.preIsolationCurrentTreeNode->isEmpty(),
+                                      |$s.data->toOne()->findLastJoinTreeNode(),
+                                      |$s.preIsolationCurrentTreeNode->toOne();
+                                ).alias.relation->findMainRelation();,
+      r:RelationalOperationElement[1] | $r->findMainTable()
+   ]);
+}
+
 /*
 * finds the target relational element to do the join with from the source
 */
@@ -10117,7 +10138,32 @@ function meta::relational::functions::pureToSqlQuery::getClassMapping(setId:Stri
 function meta::relational::functions::pureToSqlQuery::getRelation(setId:String[1], mapping:Mapping[1], state: State[0..1]):Relation[1]
 {
    let classMappings = getClassMapping($setId, $mapping, $state);
-   $classMappings->match([r:RootRelationalInstanceSetImplementation[1] | $r, e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner])->toOne()->mainRelation();
+   $classMappings->toOne()->match([
+      r:RootRelationalInstanceSetImplementation[1]     | $r->mainRelation(),
+      e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner->mainRelation(),
+      rf:RelationFunctionInstanceSetImplementation[1] | ^RelationFunction(owner = $rf)
+   ]);
+}
+
+// Like Join.otherTable(NamedRelation) but tolerates RelationFunction-backed sides.
+// For NamedRelation thisSide delegates to the platform-native otherTable.
+// For RelationFunction thisSide matches alias pairs whose first.relation is a
+// RelationFunction with the same RFISI owner, returning the corresponding
+// other-side alias. Returns [] when no match can be made (e.g. when the join's
+// aliases wrap the RFISI in a SelectSQLQuery rather than expose the
+// RelationFunction directly); callers should handle the empty case.
+function meta::relational::functions::pureToSqlQuery::otherSideAlias(join:Join[1], thisSide:Relation[1]):TableAlias[0..1]
+{
+   $thisSide->match([
+      nr:NamedRelation[1]    | $join->otherTable($nr),
+      rf:RelationFunction[1] | let matching = $join.aliases->filter(t |
+                                  $t.first.relation->match([
+                                     r:RelationFunction[1]            | $r.owner == $rf.owner,
+                                     _:RelationalOperationElement[1]  | false
+                                  ])
+                               );
+                               if($matching->isEmpty(), | [], | $matching->at(0).second);
+   ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::isOrderedSubsetOf(aliases1:Pair<String, RelationalOperationElement>[*], aliases2:Pair<String, RelationalOperationElement>[*]):Boolean[1]
@@ -10158,8 +10204,9 @@ function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(j:Jo
                  );
 
    let source = $sourceRelation->match([
-      v:View[1] | $v,
-      nr:NamedRelation[1] | $nr->findMainTable()
+      v:View[1]              | $v,
+      nr:NamedRelation[1]    | $nr->findMainTable(),
+      rf:RelationFunction[1] | $rf
    ]);
 
    ^$j
@@ -10167,12 +10214,12 @@ function meta::relational::functions::pureToSqlQuery::reprocessJoinTreeNode(j:Jo
       alias = if($j.childrenData->isEmpty(),
                  |$fakeAlias,
                  |
-                   let otherTable = $join->otherTable($source);
-                   assertNotEmpty($otherTable, | 'Unable to find other table from ' + $source.name + ' on join ' + $join.name);
-                   $otherTable->toOne();
+                   let otherSide = $join->otherSideAlias($source);
+                   assertNotEmpty($otherSide, | 'Unable to find other side from source on join ' + $join.name);
+                   $otherSide->toOne();
                  ),
       join = $newJoin,
-      childrenData = $j.childrenData->cast(@JoinTreeNode)->map(c|$c->reprocessJoinTreeNode($curried, false, findMainTable($join->otherTable($source)->toOne().relationalElement)->cast(@Table), $fakeAlias))
+      childrenData = $j.childrenData->cast(@JoinTreeNode)->map(c|$c->reprocessJoinTreeNode($curried, false, $join->otherSideAlias($source)->toOne().relationalElement->findMainRelation(), $fakeAlias))
    );
 }
 
