@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.api;
 
 import io.opentracing.Scope;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -173,13 +174,14 @@ public class Compile
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         Identity identity = Identity.makeIdentity(profiles);
         long start = System.currentTimeMillis();
-        try
+        try (Scope scope = GlobalTracer.get().buildSpan("Service: lambdaRelationType/batch").startActive(true))
         {
             PureModelContext model = lambdaRelationTypesInput.model;
             Map<String, LambdaFunction> lambdas = lambdaRelationTypesInput.lambdas == null
                     ? Collections.emptyMap()
                     : lambdaRelationTypesInput.lambdas;
-            
+            scope.span().setTag("lambdaCount", lambdas.size());
+
             PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
 
             Map<String, RelationType> results = new LinkedHashMap<>();
@@ -187,14 +189,20 @@ public class Compile
             for (Map.Entry<String, LambdaFunction> entry : lambdas.entrySet())
             {
                 String key = entry.getKey();
-                try
+                try (Scope childScope = GlobalTracer.get().buildSpan("Service: lambdaRelationType").startActive(true))
                 {
-                    results.put(key, org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(entry.getValue(), pureModel));
-                }
-                catch (Exception ex)
-                {
-                    MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
-                    errors.put(key, new ExceptionError(-1, ex));
+                    childScope.span().setTag("lambdaKey", key);
+                    try
+                    {
+                        results.put(key, org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(entry.getValue(), pureModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        Tags.ERROR.set(childScope.span(), true);
+                        childScope.span().setTag("error.message", ex.getMessage());
+                        MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
+                        errors.put(key, new ExceptionError(-1, ex));
+                    }
                 }
             }
             return Response.ok(new LambdaRelationTypesResult(results, errors), MediaType.APPLICATION_JSON_TYPE).build();
