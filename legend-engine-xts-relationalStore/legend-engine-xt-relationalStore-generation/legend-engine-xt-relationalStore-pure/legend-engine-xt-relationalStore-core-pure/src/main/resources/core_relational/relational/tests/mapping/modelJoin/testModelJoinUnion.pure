@@ -346,6 +346,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 
 // =============================================================================
 // Union-mapped properties in condition (all unions)
+// Cast exception: UnionAll cannot be cast to NamedRelation
 // =============================================================================
 function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionPropertyInCondition():Boolean[1]
 {
@@ -480,6 +481,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
 
 // =============================================================================
 // ToFix: Union on BOTH sides of model join (Relation-function)
+// Cast exception: RelationFunction cannot be cast to NamedRelation
 // =============================================================================
 function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testUnionBothSides():Boolean[1]
 {

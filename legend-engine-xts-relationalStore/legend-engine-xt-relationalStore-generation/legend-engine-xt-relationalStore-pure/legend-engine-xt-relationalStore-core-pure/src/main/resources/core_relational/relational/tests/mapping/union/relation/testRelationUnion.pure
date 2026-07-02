@@ -1,0 +1,360 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::relation::mapping::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::mapping::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_SimpleProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Roberts
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionOfTwoRelationMappings_FilterAcrossSets():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.lastName->in(['Scott', 'Taylor']))->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Scott
+        Taylor
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_FilterWithStartsWith():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.lastName->startsWith('S'))->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Scott
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_FilterInRelationFunc():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithFilterInFunc,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   // Roberts is excluded because personSet1FirmXOnlyFunc filters to FirmID = 1.
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionOfRelationAndRelational_SimpleProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfRelationAndRelationalMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Roberts
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionOfRelationAndRelational_FilterAcrossSets():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.lastName->in(['Anand', 'Wright']))->project(~[name:p|$p.lastName]),
+      unionOfRelationAndRelationalMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionOfRelationAndRelational_FilterWithStartsWith():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.lastName->startsWith('W'))->project(~[name:p|$p.lastName]),
+      unionOfRelationAndRelationalMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Wright
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_FunctionInMappingProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithFunctionInProject,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        1Anand
+        1Roberts
+        1Scott
+        2Taylor
+        2Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_FunctionInMappingQuery():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->filter(p|$p.lastName->startsWith('2T') || $p.lastName->startsWith('1A'))
+         ->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithFunctionInProject,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        1Anand
+        2Taylor
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_ConstantInMappingProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[first:p|$p.firstName]),
+      unionOfTwoRelationMappingsWithConstantInProject,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        first
+        Bob
+        Bob
+        Bob
+        George
+        George
+     #->toString(),
+     $result.values->at(0)->sort([~first->ascending()])->toString());
+}
+
+// =============================================================================
+// ToFix: importDataFlow plan generation currently fails with
+//   NullPointerException: Column 'U_TYPE' (case sensitive? true) not found among: [name]
+// The union plan injects a U_TYPE discriminator column that the Relation set
+// implementations do not surface, so the PK propagation step cannot resolve it.
+// =============================================================================
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_PksWithImportDataFlow():Boolean[1]
+{
+   let execCtx = ^RelationalExecutionContext(importDataFlow = true, importDataFlowAddFks = true);
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappings,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      $execCtx,
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+   // PersonSet1 rows carry inferred PK as ID_0 (ID_1 = 0 for non-PersonSet2 rows).
+   // PersonSet2 rows carry inferred PK as ID_1 (ID_0 = 0 for non-PersonSet1 rows).
+   assertEquals(
+     #TDS
+        name, ID_0, ID_1
+        Anand, 2, 0
+        Roberts, 3, 0
+        Scott, 1, 0
+        Taylor, 0, 1
+        Wright, 0, 2
+     #->toString(),
+     $result->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[lastName:p|$p.lastName, legalName:p|$p.firm.legalName]),
+      unionOfTwoRelationMappingsWithEmbeddedFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+   assertEquals(
+     #TDS
+        lastName, legalName
+        Anand, Firm X
+        Roberts, Firm A
+        Scott, Firm X
+        Taylor, Firm X
+        Wright, Firm X
+     #->toString(),
+     $result->sort([~lastName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmFilter():Boolean[1]
+{
+   let resultFirmX = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithEmbeddedFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $resultFirmX.values->at(0)->sort([~name->ascending()])->toString());
+
+   let resultFirmA = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithEmbeddedFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $resultFirmA.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EnumFilter():Boolean[1]
+{
+   let resultCity = execute(
+      |Address.all()->filter(a|$a.type == GeographicEntityType.CITY)->project(~[name:a|$a.name]),
+      unionOfTwoRelationMappingsWithEnumFilter,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        New York
+     #->toString(),
+     $resultCity.values->at(0)->toString());
+
+   let resultRegion = execute(
+      |Address.all()->filter(a|$a.type == GeographicEntityType.REGION)->project(~[name:a|$a.name]),
+      unionOfTwoRelationMappingsWithEnumFilter,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Hoboken
+     #->toString(),
+     $resultRegion.values->at(0)->toString());
+}
+
+function <<access.private>> meta::relational::tests::mapping::union::relation::testTds(func: FunctionDefinition<{->TabularDataSet[1]}>[1], mapping: Mapping[1], db: Database[1], expectedRows: String[*]): Boolean[1]
+{
+   let result = execute(
+      $func,
+      $mapping,
+      meta::external::store::relational::tests::testRuntime($db),
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+   assertSameElements($expectedRows, $result.rows->map(r | $r.values->makeString(' | ')));
+}
+
+// =============================================================================
+// testTds-based variants of the embedded firm tests above, mirroring the style
+// of meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter
+// in tests.pure.
+// =============================================================================
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmProject_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::testTds(|Person.all()->project(~[lastName:p|$p.lastName, legalName:p|$p.firm.legalName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithEmbeddedFirm,
+           myDB,
+           ['Anand | Firm X', 'Roberts | Firm A', 'Scott | Firm X', 'Taylor | Firm X', 'Wright | Firm X']
+         );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmFilter_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithEmbeddedFirm,
+           myDB,
+           ['Anand', 'Scott', 'Taylor', 'Wright']
+         );
+   meta::relational::tests::mapping::union::relation::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithEmbeddedFirm,
+           myDB,
+           ['Roberts']
+         );
+}

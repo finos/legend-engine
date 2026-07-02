@@ -95,17 +95,18 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 
 ### Architecture
 
-| Section | What it covers |
-|---------|---------------|
-| [Architecture Overview](architecture/overview.md) | What Legend Engine is, the 5 core pipelines, extension model, module dependency layers |
-| [Domain & Key Concepts](architecture/domain-concepts.md) | Class/Mapping/Runtime/Store model, execution concepts, glossary, design patterns |
-| [Key Java Areas](architecture/key-java-areas.md) | Grammar layer, PureModel compiler, PlanGenerator, PlanExecutor, Relational executor, Auth, Server assembly |
-| [Key Pure Areas](architecture/key-pure-areas.md) | Router, ExecutionPlan metamodel, GraphFetch, Milestoning, TDS/Relation, M2M chain, Service metamodel, Binding, PCT |
-| [Alloy Compiler](architecture/alloy-compiler.md) | Deep-dive on the Alloy (Legend Engine) compiler: compilation phases, type/function resolution, extension points, and testing |
-| [Execution Plans](architecture/execution-plans.md) | What execution plans are, the planning/execution split, node catalogue, caching, versioning |
-| [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension |
-| [ModelJoin](architecture/model-join.md) | Store-agnostic model-level associations: parser, compiler, router, and Relational SQL translation |
-| [Pre-Evaluation (preeval)](architecture/preeval.md) | AST simplification pass that runs before the router: constant folding, let inlining, short-circuiting |
+| Section                                                       | What it covers                                                                                                                  |
+|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| [Architecture Overview](architecture/overview.md)             | What Legend Engine is, the 5 core pipelines, extension model, module dependency layers                                          |
+| [Domain & Key Concepts](architecture/domain-concepts.md)      | Class/Mapping/Runtime/Store model, execution concepts, glossary, design patterns                                                |
+| [Key Java Areas](architecture/key-java-areas.md)              | Grammar layer, PureModel compiler, PlanGenerator, PlanExecutor, Relational executor, Auth, Server assembly                      |
+| [Key Pure Areas](architecture/key-pure-areas.md)              | Router, ExecutionPlan metamodel, GraphFetch, Milestoning, TDS/Relation, M2M chain, Service metamodel, Binding, PCT              |
+| [Alloy Compiler](architecture/alloy-compiler.md)              | Deep-dive on the Alloy (Legend Engine) compiler: compilation phases, type/function resolution, extension points, and testing    |
+| [Execution Plans](architecture/execution-plans.md)            | What execution plans are, the planning/execution split, node catalogue, caching, versioning                                     |
+| [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension                                                      |
+| [ModelJoin](architecture/model-join.md)                       | Store-agnostic model-level associations: parser, compiler, router, and Relational SQL translation                               |
+| [Relation Mappings](architecture/relation-mapping.md)         | End-to-end guide for class-to-Relation (`~func`) mappings: grammar, compiler passes, transformation, routing, and SQL generation |
+| [Pre-Evaluation (preeval)](architecture/preeval.md)           | AST simplification pass that runs before the router: constant folding, let inlining, short-circuiting                           |
 
 ### Guides
 

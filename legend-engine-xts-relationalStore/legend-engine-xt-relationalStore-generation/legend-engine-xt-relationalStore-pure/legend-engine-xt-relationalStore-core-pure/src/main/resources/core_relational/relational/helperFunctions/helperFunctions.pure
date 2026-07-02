@@ -471,6 +471,14 @@ function meta::relational::mapping::resolvePrimaryKey(rsi: RelationFunctionInsta
    $rsi->meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns();
 }
 
+function meta::relational::mapping::resolvePrimaryKey(isi: InstanceSetImplementation[1]):RelationalOperationElement[*]
+{
+   $isi->match([
+      rsi: RelationalInstanceSetImplementation[1]         | $rsi->resolvePrimaryKey(),
+      rfi: RelationFunctionInstanceSetImplementation[1]   | $rfi->resolvePrimaryKey()
+   ])
+}
+
 function meta::relational::mapping::resolveMainTable(rsi: RelationalInstanceSetImplementation[1]):Table[1]
 {
    $rsi->match([

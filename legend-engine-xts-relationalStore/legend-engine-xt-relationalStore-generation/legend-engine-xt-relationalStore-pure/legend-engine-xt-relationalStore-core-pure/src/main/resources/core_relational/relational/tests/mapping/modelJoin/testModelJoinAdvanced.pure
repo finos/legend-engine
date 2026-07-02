@@ -1168,10 +1168,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     $result.values->at(0)->sort([~'First Name'->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: Nested model join with compound inner condition
-// =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testNestedModelJoinCompoundInnerCondition():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testNestedModelJoinCompoundInnerCondition():Boolean[1]
 {
   let firmCsv =
     'default\n' +
@@ -1235,10 +1232,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: Sub-filter within project
-// ============================================================================= 
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubFilter():Boolean[1]
 {
   let firmCsv =
     'default\n' +
@@ -1286,13 +1280,10 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
        Apple, Charlie
        Google, TDSNull
     #->toString(),
-    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: Sub-aggregation within project — count employees
-// =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregation():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregation():Boolean[1]
 {
   let firmCsv =
     'default\n' +
@@ -1334,10 +1325,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
     $result.values->at(0)->sort([~'Legal Name'->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: Qualified property in query
-// =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testQualifiedPropertyInQuery():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testQualifiedPropertyInQuery():Boolean[1]
 {
   let firmCsv =
     'default\n' +
@@ -1385,7 +1373,7 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
        Apple, Charlie
        Google, TDSNull
     #->toString(),
-    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee In NYC'->descending()])->toString());
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'Employee In NYC'->ascending()])->toString());
 }
 
 // =============================================================================
@@ -1439,13 +1427,10 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJ
        Apple, Charlie
        Google, TDSNull
     #->toString(),
-    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->descending()])->toString());
+    $result.values->at(0)->sort([~'Legal Name'->ascending(), ~'NYC Employee'->ascending()])->toString());
 }
 
-// =============================================================================
-// ToFix: Sub-aggregation (Relational class mappings)
-// =============================================================================
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregationRelational():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJoin::advanced::testSubAggregationRelational():Boolean[1]
 {
   let firmCsv =
     'default\n' +

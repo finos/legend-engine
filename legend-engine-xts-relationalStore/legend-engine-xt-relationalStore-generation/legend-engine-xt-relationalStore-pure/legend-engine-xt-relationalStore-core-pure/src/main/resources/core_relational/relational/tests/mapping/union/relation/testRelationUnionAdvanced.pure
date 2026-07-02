@@ -1,0 +1,541 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::mapping::union::relation::mapping::*;
+import meta::relational::tests::mapping::union::relation::advanced::mapping::*;
+import meta::relational::tests::mapping::union::*;
+import meta::relational::tests::mapping::union::advanced::*;
+import meta::relational::tests::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::mapping::*;
+
+// ToFix: Union on both sides of model join — filtering Person.firm navigates the model join during SQL generation
+// but the SQL query builder expects a NamedRelation and instead finds a RelationFunction.
+// Error: 'Cast exception: RelationFunction cannot be cast to NamedRelation' (pureToSQLQuery.pure:10133).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterFromFirm():Boolean[1]
+{
+   let resultFirmX = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $resultFirmX.values->at(0)->sort([~name->ascending()])->toString());
+
+   let resultFirmA = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// ToFix: Union on both sides of model join — filtering from Firm navigating to Person (reverse model join) causes
+// the union SQL generator to fail resolving the join relation, returning an empty collection.
+// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterToFirm():Boolean[1]
+{
+   let resultWright = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
+      unionOfTwoRelationMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm X
+     #->toString(),
+     $resultWright.values->at(0)->sort([~legalName->ascending()])->toString());
+
+   let resultRoberts = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName]),
+      unionOfTwoRelationMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+     #->toString(),
+     $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
+}
+
+// ToFix: Union on both sides of model join — projecting through Firm.employees (reverse model join) causes
+// the union SQL generator to fail resolving the join relation, returning an empty collection.
+// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_ProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      unionOfTwoRelationMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Anand
+        Firm X, Scott
+        Firm X, Taylor
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — filtering from
+// Person.firm through the model join causes the SQL composer to encounter a TdsSelectSqlQuery where a NamedRelation
+// is required. Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterFromFirm():Boolean[1]
+{
+   let resultFirmX = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
+      unionOfRelationAndRelationalMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Anand
+        Scott
+        Taylor
+        Wright
+     #->toString(),
+     $resultFirmX.values->at(0)->sort([~name->ascending()])->toString());
+
+   let resultFirmA = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName]),
+      unionOfRelationAndRelationalMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — filtering from
+// Firm to Person (reverse model join) hits the same cast failure as FilterFromFirm.
+// Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterToFirm():Boolean[1]
+{
+   let resultWright = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
+      unionOfRelationAndRelationalMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm X
+     #->toString(),
+     $resultWright.values->at(0)->sort([~legalName->ascending()])->toString());
+
+   let resultRoberts = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName]),
+      unionOfRelationAndRelationalMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+     #->toString(),
+     $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
+}
+
+// ToFix: Mixed union (one relation mapping leg + one standard relational/table mapping leg) — projecting through
+// Firm.employees (reverse model join) hits the same cast failure as the Filter variants above.
+// Error: 'Cast exception: TdsSelectSqlQuery cannot be cast to NamedRelation' (functions.pure:308)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_ProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      unionOfRelationAndRelationalMappingsWithFirm,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Anand
+        Firm X, Scott
+        Firm X, Taylor
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+// =============================================================================
+// Sub-aggregation tests: each leg of the union mapping is sourced from a
+// Pure Relation that already applies a groupBy aggregation. The mapping then
+// unions those pre-aggregated rows. These exercise that the union plan
+// correctly threads aggregated subqueries through projections, filters and
+// the ModelJoin to Firm.
+//
+// Underlying per-set sub-aggregations (groupBy FirmID, max(lastName_s*)):
+//    PersonSet1 -> (FirmID=1,'Scott'), (FirmID=2,'Roberts')
+//    PersonSet2 -> (FirmID=1,'Wright')
+// Unioned Person.all() therefore produces three rows.
+// =============================================================================
+
+// ToFix: Union of sub-aggregated relation mappings — SQL generation double-quotes FirmID in the GROUP BY clause
+// (case-sensitive in H2) while the outer query references it without quotes, causing a SQL syntax error
+// Error: 'Column "FirmID" not found' (H2 JdbcSQLSyntaxErrorException).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_SimpleProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+        Scott
+        Wright
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// ToFix: Union of sub-aggregated relation mappings — filtering from Person.firm through the model join causes
+// the SQL query builder to encounter a RelationFunction where a NamedRelation is expected.
+// Error: 'Cast exception: RelationFunction cannot be cast to NamedRelation' (pureToSQLQuery.pure:10133).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterFromFirm():Boolean[1]
+{
+   let resultFirmX = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Scott
+        Wright
+     #->toString(),
+     $resultFirmX.values->at(0)->sort([~name->ascending()])->toString());
+
+   let resultFirmA = execute(
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        Roberts
+     #->toString(),
+     $resultFirmA.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// ToFix: Union of sub-aggregated relation mappings — filtering from Firm to Person (reverse model join) causes
+// the union SQL generator to fail resolving the join relation, returning an empty collection.
+// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterToFirm():Boolean[1]
+{
+   let resultWright = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm X
+     #->toString(),
+     $resultWright.values->at(0)->sort([~legalName->ascending()])->toString());
+
+   let resultRoberts = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+     #->toString(),
+     $resultRoberts.values->at(0)->sort([~legalName->ascending()])->toString());
+}
+
+// ToFix: Union of sub-aggregated relation mappings — projecting through Firm.employees (reverse model join) causes
+// the union SQL generator to fail resolving the join relation, returning an empty collection.
+// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_ProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName]),
+      unionOfTwoRelationMappingsWithSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, name
+        Firm A, Roberts
+        Firm X, Scott
+        Firm X, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~name->ascending()])->toString());
+}
+
+// =============================================================================
+// Multi-column sub-aggregation tests: each leg's Relation function emits two
+// aggregated columns per group (min and max of lastName, mapped to firstName
+// and lastName respectively). Verifies projection, model-join traversal and
+// row pairing across multiple aggregate outputs under a relation union.
+//
+// Underlying per-set sub-aggregations (groupBy FirmID):
+//    PersonSet1 -> (FirmID=1,'Anand','Scott'), (FirmID=2,'Roberts','Roberts')
+//    PersonSet2 -> (FirmID=1,'Taylor','Wright')
+// =============================================================================
+
+// ToFix: Union of multi-column sub-aggregated relation mappings — SQL generation double-quotes FirmID in the
+// GROUP BY clause (case-sensitive in H2) while the outer query references it without quotes, causing a SQL
+// syntax error. Same root cause as the single-column sub-aggregation SimpleProject variant.
+// Error: 'Column "FirmID" not found' (H2 JdbcSQLSyntaxErrorException)
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_SimpleProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[first:p|$p.firstName, last:p|$p.lastName]),
+      unionOfTwoRelationMappingsWithMultiColumnSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        first, last
+        Roberts, Roberts
+        Anand, Scott
+        Taylor, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~last->ascending(), ~first->ascending()])->toString());
+}
+
+// ToFix: Union of multi-column sub-aggregated relation mappings — projecting through Firm.employees (reverse
+// model join) causes the union SQL generator to fail resolving the join relation, returning an empty collection.
+// Same root cause as the single-column sub-aggregation ProjectThroughFirm variant.
+// Error: 'Cannot cast a collection of size 0 to multiplicity [1]' (pureToSQLQuery_union.pure:747).
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_ProjectThroughFirm():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName, first:f|$f.employees.firstName, last:f|$f.employees.lastName]),
+      unionOfTwoRelationMappingsWithMultiColumnSubAggregation,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName, first, last
+        Firm A, Roberts, Roberts
+        Firm X, Anand, Scott
+        Firm X, Taylor, Wright
+     #->toString(),
+     $result.values->at(0)->sort([~legalName->ascending(), ~last->ascending(), ~first->ascending()])->toString());
+}
+
+// =============================================================================
+// testTds helper and testTds-based variants of the tests above, mirroring the
+// style used in testRelationUnion.pure.
+// =============================================================================
+
+function <<access.private>> meta::relational::tests::mapping::union::relation::advanced::testTds(func: FunctionDefinition<{->TabularDataSet[1]}>[1], mapping: Mapping[1], db: Database[1], expectedRows: String[*]): Boolean[1]
+{
+   let result = execute(
+      $func,
+      $mapping,
+      meta::external::store::relational::tests::testRuntime($db),
+      meta::relational::extension::relationalExtensions()
+   ).values->at(0);
+   assertSameElements($expectedRows, $result.rows->map(r | $r.values->makeString(' | ')));
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterFromFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithFirm,
+           myDB,
+           ['Anand', 'Scott', 'Taylor', 'Wright']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithFirm,
+           myDB,
+           ['Roberts']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_FilterToFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithFirm,
+           myDB,
+           ['Firm X']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithFirm,
+           myDB,
+           ['Firm A']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionTwoRelationMappings_ProjectThroughFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithFirm,
+           myDB,
+           ['Firm A | Roberts', 'Firm X | Anand', 'Firm X | Scott', 'Firm X | Taylor', 'Firm X | Wright']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterFromFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfRelationAndRelationalMappingsWithFirm,
+           myDB,
+           ['Anand', 'Scott', 'Taylor', 'Wright']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfRelationAndRelationalMappingsWithFirm,
+           myDB,
+           ['Roberts']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_FilterToFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfRelationAndRelationalMappingsWithFirm,
+           myDB,
+           ['Firm X']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfRelationAndRelationalMappingsWithFirm,
+           myDB,
+           ['Firm A']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionRelationAndRelational_ProjectThroughFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName])->cast(@TabularDataSet),
+           unionOfRelationAndRelationalMappingsWithFirm,
+           myDB,
+           ['Firm A | Roberts', 'Firm X | Anand', 'Firm X | Scott', 'Firm X | Taylor', 'Firm X | Wright']
+         );
+}
+
+// =============================================================================
+// testTds variants for the sub-aggregation tests above.
+// =============================================================================
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_SimpleProject_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Roberts', 'Scott', 'Wright']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterFromFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Scott', 'Wright']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->filter(p|$p.firm.legalName == 'Firm A')->project(~[name:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Roberts']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_FilterToFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Firm X']
+         );
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts'))->project(~[legalName:f|$f.legalName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Firm A']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfSubAggregations_ProjectThroughFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->project(~[legalName:f|$f.legalName, name:f|$f.employees.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithSubAggregation,
+           myDB,
+           ['Firm A | Roberts', 'Firm X | Scott', 'Firm X | Wright']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_SimpleProject_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Person.all()->project(~[first:p|$p.firstName, last:p|$p.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithMultiColumnSubAggregation,
+           myDB,
+           ['Anand | Scott', 'Roberts | Roberts', 'Taylor | Wright']
+         );
+}
+
+function meta::relational::tests::mapping::union::relation::advanced::testUnionOfMultiColumnSubAggregations_ProjectThroughFirm_Tds():Boolean[1]
+{
+   meta::relational::tests::mapping::union::relation::advanced::testTds(|Firm.all()->project(~[legalName:f|$f.legalName, first:f|$f.employees.firstName, last:f|$f.employees.lastName])->cast(@TabularDataSet),
+           unionOfTwoRelationMappingsWithMultiColumnSubAggregation,
+           myDB,
+           ['Firm A | Roberts | Roberts', 'Firm X | Anand | Scott', 'Firm X | Taylor | Wright']
+         );
+}
+

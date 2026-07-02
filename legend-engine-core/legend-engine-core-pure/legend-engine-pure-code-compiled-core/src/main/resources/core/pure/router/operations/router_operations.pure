@@ -104,3 +104,18 @@ function meta::pure::router::routing::resolveOperation(s:SetImplementation[*], m
                           ]))
    );
 }
+
+function meta::pure::router::routing::resolveOperationPreservingRouting(s:SetImplementation[*], mapping:Mapping[1]):InstanceSetImplementation[*]
+{
+   if($s->isEmpty(),
+      |[],
+      |$s->map(o|$o->match([
+                            s:OperationSetImplementation[1]| let opToEval = if($s.parameters.setImplementation->isEmpty(),
+                                                                               | $s->reprocessOperationForAssociationMapping($mapping),
+                                                                               | $s
+                                                                            );
+                                                             $opToEval.operation->eval($opToEval)->resolveOperationPreservingRouting($mapping);,
+                            r:InstanceSetImplementation[1]| $r
+                          ]))
+   );
+}
