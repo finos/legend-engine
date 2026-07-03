@@ -1233,34 +1233,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::union::nullSafeEquals(tac1: TableAliasColumn[1], tac2: TableAliasColumn[1]): DynaFunction[1]
 {
-  ^DynaFunction(
-    name = 'or',
-    parameters = [
-      ^DynaFunction(
-        name = 'group',
-        parameters = ^DynaFunction(
-          name = 'equal',
-          parameters = [$tac1, $tac2]
-        )
-      ),
-      ^DynaFunction(
-        name = 'group',
-        parameters = ^DynaFunction(
-          name = 'and',
-          parameters = [
-            ^DynaFunction(
-              name ='isNull',
-              parameters = $tac1
-            ),
-            ^DynaFunction(
-              name ='isNull',
-              parameters = $tac2
-            )
-          ]
-        )
-      )
-    ]
-  )
+  ^DynaFunction(name = 'nullSafeEqual', parameters = [$tac1, $tac2])
 }
 
 
