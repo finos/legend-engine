@@ -109,6 +109,16 @@ function test::fetchOptionalAge(optionalAge:Integer[0..1]):Any[*]
     test::Person.all()->filter(p|$p.age==$optionalAge)->graphFetch(#{test::Person{firstName,lastName,age}}#)->serialize(#{test::Person{firstName,lastName,age}}#)
 }
 
+function test::fetchNotEqualOptionalCity(optionalCity:String[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$p.city!=$optionalCity)->graphFetch(#{test::Person{firstName,lastName,city}}#)->serialize(#{test::Person{firstName,lastName,city}}#)
+}
+
+function test::fetchTwoOptionalParamsEqual(optionalCity:String[0..1], otherCity:String[0..1]):Any[*]
+{
+    test::Person.all()->filter(p|$optionalCity==$otherCity)->graphFetch(#{test::Person{firstName,lastName,city}}#)->serialize(#{test::Person{firstName,lastName,city}}#)
+}
+
 function test::fetchOptionalSalary(optionalSalary:Float[0..1]):Any[*]
 {
     test::Person.all()->filter(p|$p.salary==$optionalSalary)->graphFetch(#{test::Person{firstName,lastName,salary}}#)->serialize(#{test::Person{firstName,lastName,salary}}#)
