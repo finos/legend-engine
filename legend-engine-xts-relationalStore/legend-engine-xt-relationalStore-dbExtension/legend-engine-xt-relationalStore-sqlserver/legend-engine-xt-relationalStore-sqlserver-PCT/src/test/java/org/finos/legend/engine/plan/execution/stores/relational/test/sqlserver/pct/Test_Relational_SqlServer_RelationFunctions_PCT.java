@@ -38,6 +38,8 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
     private static final Adapter adapter = CoreRelationalSqlServerCodeRepositoryProvider.sqlserverAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
+            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
             // Simple Agg
             one("meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_", "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_", "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"),
