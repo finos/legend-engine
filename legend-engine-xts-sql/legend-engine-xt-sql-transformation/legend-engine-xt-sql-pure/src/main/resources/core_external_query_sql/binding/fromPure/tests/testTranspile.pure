@@ -1124,8 +1124,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
   test('SELECT ' +
-          'count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
-          'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
+          'count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", string_agg(DISTINCT String, \',\') AS "distinctStringAgg", ' + 
+          'SUM(Integer) AS "sum", avg(Integer) AS "avg", stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
           'var_pop(Integer) AS "variancePop", var_samp(Integer) AS "varianceSamp", variance(Integer) AS "variance", ' +
           'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
           'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
@@ -1141,6 +1141,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         )->groupBy('String', [
           agg('count', row | $row.getInteger('Integer'), y | $y->count()),
           agg('distinctCount', row | $row.getInteger('Integer'), y | $y->distinct()->count()),
+          agg('distinctStringAgg', row | $row.getString('String'), y | $y->distinct()->joinStrings(',')),
           agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
           agg('avg', row | $row.getInteger('Integer'), y | $y->average()),
           agg('stdDevPop', row | $row.getInteger('Integer'), y | $y->stdDevPopulation()),
@@ -1161,7 +1162,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('boolAndExp', row | $row.getInteger('Integer') > 1, y | $y->and()),
           agg('every', row | $row.getBoolean('Boolean'), y | $y->and()),
           agg('everyExp', row | $row.getInteger('Integer') > 1, y | $y->and())
-        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString',
+        ])->restrict(['count', 'distinctCount', 'distinctStringAgg', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString',
                       'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2', 'boolAnd', 'boolAndExp', 'every', 'everyExp'])
       }, true, false),
 
@@ -1172,6 +1173,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ~[
                 count : x|$x.Integer : y|$y->count(),
                 distinctCount : x|$x.Integer : y|$y->distinct()->count(),
+                distinctStringAgg: x|$x.String : y|$y->distinct()->joinStrings(','),
                 sum : x|$x.Integer : y|$y->sum(),
                 avg : x|$x.Integer : y|$y->average(),
                 stdDevPop : x|$x.Integer : y|$y->stdDevPopulation(),
@@ -1194,7 +1196,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 everyExp : x|$x.Integer > 1 : y|$y->and()
               ]
             )
-            ->select(~[count, distinctCount, sum, avg, stdDevPop, stdDevSamp, stdDev, variancePop, varianceSamp, variance, minInt, minDate, minString,
+            ->select(~[count, distinctCount, distinctStringAgg, sum, avg, stdDevPop, stdDevSamp, stdDev, variancePop, varianceSamp, variance, minInt, minDate, minString,
                       maxInt, maxDate, maxString, stringAgg, stringAgg2, boolAnd, boolAndExp, every, everyExp])}, true, false)
     ]
   )

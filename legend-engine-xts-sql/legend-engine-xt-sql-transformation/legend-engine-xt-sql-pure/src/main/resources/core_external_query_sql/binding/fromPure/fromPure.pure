@@ -2833,7 +2833,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let args = $f.arguments->map(a | $a->processExpression($expContext, $context));
 
   if ($f.distinct,
-    | processFunctionCallAsFunction(^$f(distinct = false, arguments = ^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $f.arguments, distinct = false)), $expContext, $context),
+    | processFunctionCallAsFunction(^$f(distinct = false, arguments = [^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $f.arguments->first(), distinct = false)]->concatenate($f.arguments->tail())), $expContext, $context),
     | functionCall($f.name, $args, $f, $expContext, $context));
 }
 
