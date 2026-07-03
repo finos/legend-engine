@@ -317,7 +317,6 @@ public class PostgresServer
             memory.total = Runtime.getRuntime().totalMemory();
             memory.max = Runtime.getRuntime().maxMemory();
             memory.free = Runtime.getRuntime().freeMemory();
-            this.threadCount = java.lang.management.ManagementFactory.getThreadMXBean().getThreadCount();
         }
 
         public Info(Date date, List<SessionStats> history, List<SessionStats> openSessions)
@@ -349,8 +348,6 @@ public class PostgresServer
         public String hostAddress;
 
         public String timeZone;
-
-        public int threadCount;
 
         public Memory memory = new Memory();
     }
