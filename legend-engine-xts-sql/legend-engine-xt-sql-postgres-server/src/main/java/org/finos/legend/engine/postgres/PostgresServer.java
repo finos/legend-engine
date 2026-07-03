@@ -25,9 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.exporter.servlet.javax.PrometheusMetricsServlet;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -53,8 +50,14 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -93,13 +96,16 @@ public class PostgresServer
     private EventLoopGroup workerGroup;
     private final Messages messages;
     private final SQLManager sqlManager;
-    private final MutableSet<PostgresWireProtocol> liveConnections = Sets.mutable.empty();
-    private final List<SessionStats> connectionsHistory = Lists.mutable.empty();
+    private final ExecutorService sessionExecutor = Executors.newCachedThreadPool();
+    private static final int MAX_HISTORY = 1000;
+    private final Set<PostgresWireProtocol> liveConnections = ConcurrentHashMap.newKeySet();
+    private final List<SessionStats> connectionsHistory = Collections.synchronizedList(new ArrayList<>());
     // Prometheus state ---------
     private PrometheusRegistry registry;
     private Gauge connectionCount;
     private PrometheusUserMetrics userMetrics;
     // Prometheus state ---------
+    private Server httpServer;
 
     public PostgresServer(ServerConfig serverConfig, SQLManager sqlManager, Function2<String, ConnectionProperties, AuthenticationMethod> authenticationProvider, Messages messages)
     {
@@ -119,14 +125,20 @@ public class PostgresServer
 
     public void close(PostgresWireProtocol postgresWireProtocol)
     {
-        if (liveConnections.contains(postgresWireProtocol))
+        if (liveConnections.remove(postgresWireProtocol))
         {
             if (!"Unknown".equals(postgresWireProtocol.getSessionStats().name))
             {
-                connectionsHistory.add(postgresWireProtocol.getSessionStats());
+                synchronized (connectionsHistory)
+                {
+                    if (connectionsHistory.size() >= MAX_HISTORY)
+                    {
+                        connectionsHistory.remove(0);
+                    }
+                    connectionsHistory.add(postgresWireProtocol.getSessionStats());
+                }
             }
             this.connectionCount.dec();
-            liveConnections.remove(postgresWireProtocol);
         }
     }
 
@@ -217,9 +229,24 @@ public class PostgresServer
         return workerGroup;
     }
 
+    public ExecutorService getSessionExecutor()
+    {
+        return sessionExecutor;
+    }
+
+    public int getActualHttpPort()
+    {
+        if (httpServer == null)
+        {
+            return httpPort;
+        }
+        return ((ServerConnector) httpServer.getConnectors()[0]).getLocalPort();
+    }
+
     public void startHttp() throws Exception
     {
         Server server = new Server();
+        this.httpServer = server;
 
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(this.httpPort);
@@ -241,7 +268,7 @@ public class PostgresServer
                 response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().println(MAPPER.writeValueAsString(
-                        new Info(startTime, connectionsHistory, liveConnections.collect(PostgresWireProtocol::getSessionStats).toList())
+                        new Info(startTime, connectionsHistory, collectOpenSessionStats())
                 ));
                 baseRequest.setHandled(true);
             }
@@ -273,6 +300,16 @@ public class PostgresServer
         return userMetrics;
     }
 
+    private List<SessionStats> collectOpenSessionStats()
+    {
+        List<SessionStats> snapshot = new ArrayList<>();
+        for (PostgresWireProtocol conn : liveConnections)
+        {
+            snapshot.add(conn.getSessionStats());
+        }
+        return snapshot;
+    }
+
     private static class Info
     {
         public Info()
@@ -280,6 +317,7 @@ public class PostgresServer
             memory.total = Runtime.getRuntime().totalMemory();
             memory.max = Runtime.getRuntime().maxMemory();
             memory.free = Runtime.getRuntime().freeMemory();
+            this.threadCount = java.lang.management.ManagementFactory.getThreadMXBean().getThreadCount();
         }
 
         public Info(Date date, List<SessionStats> history, List<SessionStats> openSessions)
@@ -311,6 +349,8 @@ public class PostgresServer
         public String hostAddress;
 
         public String timeZone;
+
+        public int threadCount;
 
         public Memory memory = new Memory();
     }

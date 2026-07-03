@@ -76,4 +76,9 @@ public class TestPostgresServer extends PostgresServer
     {
         return (InetSocketAddress) this.getChannel().localAddress();
     }
+
+    public int getHttpPort()
+    {
+        return this.getActualHttpPort();
+    }
 }

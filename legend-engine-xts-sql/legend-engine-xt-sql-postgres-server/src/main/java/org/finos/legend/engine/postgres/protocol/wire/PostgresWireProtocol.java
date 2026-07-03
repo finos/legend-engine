@@ -81,14 +81,12 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.ParameterMetaData;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -493,15 +491,16 @@ public class PostgresWireProtocol
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
         {
-            if (cause instanceof SocketException && cause.getMessage().equals("Connection reset"))
+            if (cause instanceof SocketException && "Connection reset".equals(cause.getMessage()))
             {
                 LOGGER.info("Connection reset. Client likely terminated connection");
-                closeSession();
             }
             else
             {
-                LOGGER.error("Uncaught exception: ", cause);
+                LOGGER.error("Uncaught exception, closing channel: ", cause);
             }
+            closeSession();
+            ctx.close();
         }
 
         @Override
@@ -627,7 +626,7 @@ public class PostgresWireProtocol
 
     private void handleAuthSuccess(Channel channel, Identity authenticatedUser) throws Exception
     {
-        this.session = new Session(Executors.newCachedThreadPool(), authenticatedUser, properties);
+        this.session = new Session(server.getSessionExecutor(), authenticatedUser, properties);
 
         sessionStats.name = authenticatedUser.getName();
         PrometheusUserMetrics prometheusUserMetrics = server.getUserMetrics();
@@ -800,66 +799,79 @@ public class PostgresWireProtocol
         FormatCodes.FormatCode[] formatCodes = FormatCodes.fromBuffer(buffer);
 
         short numParams = buffer.readShort();
-        List<Object> params = createList(numParams);
+
+        // Read raw parameter bytes eagerly on the Netty I/O thread.
+        // The ByteBuf is consumed once and cannot be deferred.
+        List<byte[]> rawParamBytes = new ArrayList<>(numParams);
+        List<FormatCodes.FormatCode> paramFormatCodes = new ArrayList<>(numParams);
         for (int i = 0; i < numParams; i++)
         {
             int valueLength = buffer.readInt();
             if (valueLength == -1)
             {
-                params.add(null);
+                rawParamBytes.add(null);
+                paramFormatCodes.add(FormatCodes.FormatCode.TEXT);
             }
             else
             {
-                this.activeExecution.join();
-                int paramType = session.getParamType(statementName, i);
-                PGType pgType = PGTypes.get(paramType, null, 0);
-                FormatCodes.FormatCode formatCode = getFormatCode(formatCodes, i);
-                switch (formatCode)
-                {
-                    case TEXT:
-                        params.add(pgType.readTextValue(buffer, valueLength));
-                        break;
-
-                    case BINARY:
-                        params.add(pgType.readBinaryValue(buffer, valueLength));
-                        break;
-
-                    default:
-                       /* messages.sendErrorResponse(
-                            channel,
-                            getAccessControl.apply(session.sessionSettings()),
-                            new UnsupportedOperationException(String.format(
-                                Locale.ENGLISH,
-                                "Unsupported format code '%d' for param '%s'",
-                                formatCode.ordinal(),
-                                paramType.getName())
-                            )
-                        );*/
-                        messages.sendErrorResponse(
-                                channel,
-                                new UnsupportedOperationException(String.format(
-                                        Locale.ENGLISH,
-                                        "Unsupported format code '%d' for param '%s'",
-                                        formatCode.ordinal(),
-                                        paramType)
-                                )
-                        );
-                        return;
-                }
+                byte[] bytes = new byte[valueLength];
+                buffer.readBytes(bytes);
+                rawParamBytes.add(bytes);
+                paramFormatCodes.add(getFormatCode(formatCodes, i));
             }
         }
 
         FormatCodes.FormatCode[] resultFormatCodes = FormatCodes.fromBuffer(buffer);
+
+        // Decode parameters and bind asynchronously ? never blocks the Netty I/O thread
         this.addTaskToQueue(() ->
         {
+            List<Object> params = new ArrayList<>(numParams);
+            for (int i = 0; i < rawParamBytes.size(); i++)
+            {
+                byte[] raw = rawParamBytes.get(i);
+                if (raw == null)
+                {
+                    params.add(null);
+                }
+                else
+                {
+                    int paramType = session.getParamType(statementName, i);
+                    PGType pgType = PGTypes.get(paramType, null, 0);
+                    ByteBuf wrapped = io.netty.buffer.Unpooled.wrappedBuffer(raw);
+                    try
+                    {
+                        FormatCodes.FormatCode formatCode = paramFormatCodes.get(i);
+                        switch (formatCode)
+                        {
+                            case TEXT:
+                                params.add(pgType.readTextValue(wrapped, raw.length));
+                                break;
+                            case BINARY:
+                                params.add(pgType.readBinaryValue(wrapped, raw.length));
+                                break;
+                            default:
+                                messages.sendErrorResponse(
+                                        channel,
+                                        new UnsupportedOperationException(String.format(
+                                                Locale.ENGLISH,
+                                                "Unsupported format code '%d' for param '%s'",
+                                                formatCode.ordinal(),
+                                                paramType)
+                                        )
+                                );
+                                return;
+                        }
+                    }
+                    finally
+                    {
+                        wrapped.release();
+                    }
+                }
+            }
             session.bind(portalName, statementName, params, resultFormatCodes);
             messages.sendBindComplete(channel);
         });
-    }
-
-    private <T> List<T> createList(short size)
-    {
-        return size == 0 ? Collections.emptyList() : new ArrayList<T>(size);
     }
 
 
@@ -1152,14 +1164,29 @@ public class PostgresWireProtocol
         }
     }
 
+    private java.util.concurrent.Executor getTaskExecutor()
+    {
+        if (session != null)
+        {
+            return session.getExecutorService();
+        }
+        // Before authentication completes, session is null.
+        // Fall back to the channel's event loop for the small pre-auth tasks.
+        if (channel != null)
+        {
+            return channel.eventLoop();
+        }
+        return java.util.concurrent.ForkJoinPool.commonPool();
+    }
+
     private void addTaskToQueue(Runnable action)
     {
-        this.activeExecution = this.activeExecution.thenRunAsync(action);
+        this.activeExecution = this.activeExecution.thenRunAsync(action, getTaskExecutor());
     }
 
     private void composeTaskInQueue(Supplier<CompletableFuture<Void>> action)
     {
-        this.activeExecution = this.activeExecution.thenComposeAsync(ignored -> action.get());
+        this.activeExecution = this.activeExecution.thenComposeAsync(ignored -> action.get(), getTaskExecutor());
     }
 
     private void handleRfq()
