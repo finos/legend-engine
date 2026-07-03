@@ -694,22 +694,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertEqualFromFilter(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
 {
-  let params = $d.parameters->map(p|$p->convertElementToExpression($state));
-  let left = $params->at(0);
-  let right = $params->at(1);
-  binaryExpression(
-    LogicalBinaryType.OR,
-    [
-      comparisonExpression(ComparisonOperator.EQUAL, $left, $right),
-      binaryExpression(
-        LogicalBinaryType.AND,
-        [
-          ^IsNullPredicate(value = $left),
-          ^IsNullPredicate(value = $right)
-        ]
-      )
-    ]
-  );
+  // store-authored (non-router) filters emit plain 'equal'; redirect nullable-column comparisons to the central null-safe rendering
+  ^$d(name = 'nullSafeEqual')->convertElementToExpression($state);
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertNot(func:DynaFunction[1], state:ModelConversionState[1]):Node[1]

@@ -373,7 +373,7 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testConsis
 
    let eqr = execute(|Address.all()->filter(a | $a.street == $a.street), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   assertEquals('select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where "root".STREET = "root".STREET or ("root".STREET is null and "root".STREET is null)', $eqr->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where "root".STREET is not distinct from "root".STREET', $eqr->sqlRemoveFormatting());
 
    let equalResult  = $eqr.values;
 
