@@ -97,7 +97,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalStringNotEqual()
     {
-        this.testOptionalParameter("test::fetchNotEqualOptionalCity_String_$0_1$__Any_MANY_", "optionalCity", "New York", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}", "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]");
+        this.testOptionalParameter("test::fetchNotEqualOptionalCity_String_$0_1$__Any_MANY_", "optionalCity", "New York", "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]", "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]");
     }
 
     @Test

@@ -302,17 +302,17 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         //assert that sql string contains placeholders that we need to process conditionally
         ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
         String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
-        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}' and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"TIMESTAMP\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')})";
+        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}' and \"root\".birthTime is not distinct from ${varPlaceHolderToString(birthTime![] \"TIMESTAMP'\" \"'\" {} \"null\")}";
 
         int h2MajorVersion = H2Manager.getMajorVersion();
         if (h2MajorVersion == LEGACY_H2_VERSION)
         {
-            expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))";
+            expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and \"root\".birthTime is not distinct from ${varPlaceHolderToString(birthTime![] \"'\" \"'\" {} \"null\")})";
         }
         Assert.assertEquals(expectedSQL, sql);
 
         //executePlan with freemarker placeholders in sql Query
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg' and (\\\"root\\\".birthTime is null)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg' and \\\"root\\\".birthTime is not distinct from null\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
     }
 
