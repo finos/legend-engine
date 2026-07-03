@@ -8716,16 +8716,20 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
                                               |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$leftVal])]),
                                               |if($leftVal->hasOptionalVarPlaceHolderValue(),
                                                   |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])]),
-                                                  |if(!$state.inFilter && $leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
-                                                      |^DynaFunction(name = 'group', parameters = [^DynaFunction(name = 'or', parameters = [
-                                                          ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]),
-                                                          ^DynaFunction(name = 'group', parameters = [^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'isNull', parameters = [$leftVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])])])
-                                                      ])]),
-                                                      |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal])
-                                                  ));
+                                                  |let leftIsEmptyLiteral  = $leftParam.multiplicity->hasUpperBound() && ($leftParam.multiplicity->getUpperBound() == 0);
+                                                   let rightIsEmptyLiteral = $rightParam.multiplicity->hasUpperBound() && ($rightParam.multiplicity->getUpperBound() == 0);
+                                                   // a literal empty ([]) operand degenerates to a null check on the other side ([] == [] is statically true)
+                                                   if([
+                                                        pair(|$leftIsEmptyLiteral && $rightIsEmptyLiteral, |^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])),
+                                                        pair(|$leftIsEmptyLiteral,                         |^DynaFunction(name = 'isNull', parameters = [$rightVal])),
+                                                        pair(|$rightIsEmptyLiteral,                        |^DynaFunction(name = 'isNull', parameters = [$leftVal])),
+                                                        pair(|!$state.inFilter && $leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
+                                                                                                           |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal]))
+                                                      ],
+                                                      |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]));
                                               );
                                           );
-                                     );
+                                     ));
 
          let selectWithCursor = $left.element->extractSelectWithCursor($operation);
 

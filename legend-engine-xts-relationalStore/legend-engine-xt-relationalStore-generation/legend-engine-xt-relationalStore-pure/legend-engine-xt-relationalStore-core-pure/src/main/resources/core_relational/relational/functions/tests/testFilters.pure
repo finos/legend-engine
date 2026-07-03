@@ -203,7 +203,7 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testBuildF
    let result = execute(buildQuery([]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Elena', $result.values->toOne().firstName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME = null)', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 
    let result2 = execute(buildQuery('Peter'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 0);

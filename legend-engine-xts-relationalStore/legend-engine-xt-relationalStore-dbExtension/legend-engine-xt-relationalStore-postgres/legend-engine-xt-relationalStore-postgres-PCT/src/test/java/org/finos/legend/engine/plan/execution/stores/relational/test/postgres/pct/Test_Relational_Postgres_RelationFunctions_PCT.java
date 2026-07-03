@@ -37,8 +37,6 @@ public class Test_Relational_Postgres_RelationFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreRelationalPostgresPCTCodeRepositoryProvider.postgresAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,false\n   RightNull,false\n#'\nactual:   '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,null\n   RightNull,null\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,true\n   RightNull,true\n#'\nactual:   '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,null\n   RightNull,null\n#'\""),
             // Pivot
             pack("meta::pure::functions::relation::tests::pivot", "pivot is not supported"),
             one("meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_", "pivot is not supported"),

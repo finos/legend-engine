@@ -37,7 +37,6 @@ public class Test_Relational_Oracle_RelationFunctions_PCT extends PCTReportConfi
     private static final Adapter adapter = CoreRelationalOraclePCTCodeRepositoryProvider.oracleAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,true\n   RightNull,true\n#'\nactual:   '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,false\n   RightNull,false\n#'\""),
 
             // Pivot
             pack("meta::pure::functions::relation::tests::pivot", "\"pivot is not supported\""),

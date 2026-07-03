@@ -37,8 +37,6 @@ public class Test_Relational_Trino_RelationFunctions_PCT extends PCTReportConfig
     private static final Adapter adapter = CoreRelationalTrinoPCTCodeRepositoryProvider.trinoAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,false\n   RightNull,false\n#'\nactual:   '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,null\n   RightNull,null\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,true\n   RightNull,true\n#'\nactual:   '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,null\n   RightNull,null\n#'\""),
 
             // Aggregate
             one("meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_", "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"),

@@ -800,7 +800,7 @@ function meta::relational::functions::sqlQueryToString::wrapAsBooleanCaseOperati
 function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:Extension[*]):Boolean[1]
 {
    $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
-      d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])
+      d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'nullSafeEqual', 'nullSafeNotEqual', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])
                                        || ($d.name == 'group' && $d.parameters->toOne()->isBooleanOperation($extensions));,
       f:FreeMarkerOperationHolder[1] | $f.name->in(['optionalVarPlaceHolderOpSelector']);,
       a:Any[1] | false
@@ -953,12 +953,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    $parameter->match([
                        dynaFunction:DynaFunction[1] |  let functionName = $dynaFunction.name;
                                                        if($functionName == 'equal', | $dynaFunction->processNotEqual($sgc),
+                                                                                    | if($functionName == 'nullSafeEqual', | ^$dynaFunction(name = 'nullSafeNotEqual')->processOperation($sgc),
+                                                                                    | if($functionName == 'nullSafeNotEqual', | ^$dynaFunction(name = 'nullSafeEqual')->processOperation($sgc),
                                                                                     | if($functionName == 'in', | $dynaFunction->processNotIn($sgc),
                                                                                                                 | if($dynaFunction->isAndOr() || $dynaFunction->isNot(), | 'not ('+$dynaFunction->processOperation($sgc) +')';,
                                                                                                                                                                          | 'not ' + $dynaFunction->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc);
                                                                                                                      );
                                                                                          );
-                                                          );,
+                                                          )));,
                        rOp: RelationalOperationElement[1] | if($rOp->instanceOf(FreeMarkerOperationHolder) && $rOp->cast(@FreeMarkerOperationHolder).name == 'equalEnumOpSelector',
                                                                 | let params = $rOp->cast(@FreeMarkerOperationHolder).parameters;
                                                                   '${equalEnumOperationSelector(' + $params->at(0)->cast(@FreeMarkerOperationHolder).name + '(' + $params->at(0)->cast(@FreeMarkerOperationHolder).parameters->cast(@Literal).value->cast(@VarPlaceHolder).name->toOne() + '), \'' + processNotIn($params->at(1)->cast(@DynaFunction), $sgc) + '\', \'' + processNotEqual($params->at(2)->cast(@DynaFunction), $sgc) + '\')}';,
@@ -1230,6 +1232,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   now,
   nth,
   ntile,
+  nullSafeEqual,
+  nullSafeNotEqual,
   objectReferenceIn,
   or,
   parseDate,

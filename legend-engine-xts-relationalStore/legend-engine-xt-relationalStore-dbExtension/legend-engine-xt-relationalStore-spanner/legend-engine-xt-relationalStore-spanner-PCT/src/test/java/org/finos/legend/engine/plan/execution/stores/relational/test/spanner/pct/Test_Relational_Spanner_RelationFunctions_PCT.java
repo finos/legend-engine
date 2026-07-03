@@ -39,8 +39,6 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
     private static final Adapter adapter = CoreRelationalSpannerCodeRepositoryProvider.spannerAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,false\n   RightNull,false\n#'\nactual:   '#TDS\n   name,eq\n   BothNull,true\n   BothOne,true\n   Diff,false\n   LeftNull,null\n   RightNull,null\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,true\n   RightNull,true\n#'\nactual:   '#TDS\n   name,neq\n   BothNull,false\n   BothOne,false\n   Diff,true\n   LeftNull,null\n   RightNull,null\n#'\""),
             // ListAgg
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
