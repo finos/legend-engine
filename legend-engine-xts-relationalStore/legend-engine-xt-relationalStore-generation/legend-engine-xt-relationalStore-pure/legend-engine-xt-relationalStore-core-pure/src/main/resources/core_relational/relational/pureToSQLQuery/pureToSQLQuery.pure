@@ -8718,7 +8718,7 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
                                             pair(|$rightIsEmptyLiteral,                        |^DynaFunction(name = 'isNull', parameters = [$leftVal])),
                                             pair(|$leftVal->hasOptionalVarPlaceHolderValue() || $rightVal->hasOptionalVarPlaceHolderValue(),
                                                                                                |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal])),
-                                            pair(|!$state.inFilter && $leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
+                                            pair(|$leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
                                                                                                |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal]))
                                           ],
                                           |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal])););

@@ -788,7 +788,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testEquali
       |Person.all()->filter(p | $p.age == $p.manager.age)->project([col(p | $p.firstName, 'name')]),
       simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where "root".AGE = "personTable_d#6_d#3_m1_d#2_m1".AGE or ("root".AGE is null and "personTable_d#6_d#3_m1_d#2_m1".AGE is null)', $s);
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where "root".AGE is not distinct from "personTable_d#6_d#3_m1_d#2_m1".AGE', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testEqualityInFilterOnOptionalPropertiesLegacy():Boolean[1]
@@ -797,7 +797,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testEquali
       |Person.all()->filter(p | $p.age == $p.manager.age)->project([col(p | $p.firstName, 'name')]),
       simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where ("root".AGE = "personTable_d#6_d#3_m1_d#2_m1".AGE OR ("root".AGE is null AND "personTable_d#6_d#3_m1_d#2_m1".AGE is null))', $s);
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where ("root".AGE = "personTable_d#6_d#3_m1_d#2_m1".AGE or ("root".AGE is null and "personTable_d#6_d#3_m1_d#2_m1".AGE is null))', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityForOptionalProperties():Boolean[1]
@@ -818,7 +818,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqu
       |Person.all()->filter(p | $p.age != $p.manager.age)->project([col(p | $p.firstName, 'name')]),
       simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where "root".AGE <> "personTable_d#7_d#4_m1_d#2_m1".AGE or ("root".AGE is null and "personTable_d#7_d#4_m1_d#2_m1".AGE is not null) or ("root".AGE is not null and "personTable_d#7_d#4_m1_d#2_m1".AGE is null)', $s);
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where "root".AGE is distinct from "personTable_d#7_d#4_m1_d#2_m1".AGE', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityInFilterOnOptionalPropertiesLegacy():Boolean[1]
@@ -827,7 +827,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqu
       |Person.all()->filter(p | $p.age != $p.manager.age)->project([col(p | $p.firstName, 'name')]),
       simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where ("root".AGE <> "personTable_d#7_d#4_m1_d#2_m1".AGE OR "root".AGE is null AND "personTable_d#7_d#4_m1_d#2_m1".AGE is not null OR "root".AGE is not null AND "personTable_d#7_d#4_m1_d#2_m1".AGE is null)', $s);
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where (not ("root".AGE = "personTable_d#7_d#4_m1_d#2_m1".AGE) or ("root".AGE is null and "personTable_d#7_d#4_m1_d#2_m1".AGE is not null) or ("root".AGE is not null and "personTable_d#7_d#4_m1_d#2_m1".AGE is null))', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testEnumPropertyEqualityIsNotNullSafe():Boolean[1]

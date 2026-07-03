@@ -941,10 +941,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::isNot
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processEqualFromFilter(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
-   let params = $func.parameters->map(p | $p->processOperation($sgc));
-   let left = $params->at(0);
-   let right = $params->at(1);
-   '(' + $left + ' = ' + $right + ' OR (' + $left + ' is null AND ' + $right + ' is null))';
+   // store-authored (non-router) filters emit plain 'equal'; redirect nullable-column comparisons to the central null-safe rendering
+   ^$func(name = 'nullSafeEqual')->processOperation($sgc);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processNot(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
