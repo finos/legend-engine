@@ -777,8 +777,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testNullSa
       ]),
       simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name", "root".AGE = "personTable_d#5_d#2_m1_d_m2".AGE '
-      + 'or ("root".AGE is null and "personTable_d#5_d#2_m1_d_m2".AGE is null) as "match" '
+   assertEquals('select "root".FIRSTNAME as "name", "root".AGE is not distinct from "personTable_d#5_d#2_m1_d_m2".AGE as "match" '
       + 'from personTable as "root" left outer join personTable as "personTable_d#5_d#2_m1_d_m2" '
       + 'on ("root".MANAGERID = "personTable_d#5_d#2_m1_d_m2".ID)', $s);
 }
@@ -810,7 +809,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqu
       ]),
       simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "root".FIRSTNAME as "name", not ("root".AGE = "personTable_d#6_d#3_m1_d_m2".AGE or ("root".AGE is null and "personTable_d#6_d#3_m1_d_m2".AGE is null)) as "notmatch" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d_m2" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d_m2".ID)', $s);
+   assertEquals('select "root".FIRSTNAME as "name", "root".AGE is distinct from "personTable_d#6_d#3_m1_d_m2".AGE as "notmatch" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d_m2" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d_m2".ID)', $s);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityInFilterOnOptionalProperties():Boolean[1]

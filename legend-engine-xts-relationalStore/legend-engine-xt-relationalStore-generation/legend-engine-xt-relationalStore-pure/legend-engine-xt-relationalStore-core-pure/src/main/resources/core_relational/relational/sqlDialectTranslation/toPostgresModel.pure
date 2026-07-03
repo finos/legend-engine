@@ -273,6 +273,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('equal',                     comparisonExpression(ComparisonOperator.EQUAL)),
     pair('notEqual',                  comparisonExpression(ComparisonOperator.NOT_EQUAL)),
     pair('notEqualAnsi',              comparisonExpression(ComparisonOperator.NOT_EQUAL)),
+    pair('nullSafeEqual',             comparisonExpression(ComparisonOperator.IS_NOT_DISTINCT_FROM)),
+    pair('nullSafeNotEqual',          comparisonExpression(ComparisonOperator.IS_DISTINCT_FROM)),
     pair('lessThan',                  comparisonExpression(ComparisonOperator.LESS_THAN)),
     pair('lessThanEqual',             comparisonExpression(ComparisonOperator.LESS_THAN_OR_EQUAL)),
     pair('greaterThan',               comparisonExpression(ComparisonOperator.GREATER_THAN)),
@@ -716,13 +718,19 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   $parameter->match([
     d: DynaFunction[1]| 
       let functionName = $d.name;
-      if($functionName == 'equal', 
+      if($functionName == 'equal',
         | $d->processNotEqual($state),
-        | if($functionName == 'in', 
-            | $d->processNotIn($state),
-            | if($d->isAndOr() || $d->isNot(), 
-                | ^NotExpression(value = $d->convertElementToExpression($state)),
-                | ^NotExpression(value = $d->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+        | if($functionName == 'nullSafeEqual',
+            | ^$d(name = 'nullSafeNotEqual')->convertElementToExpression($state),
+            | if($functionName == 'nullSafeNotEqual',
+                | ^$d(name = 'nullSafeEqual')->convertElementToExpression($state),
+                | if($functionName == 'in',
+                    | $d->processNotIn($state),
+                    | if($d->isAndOr() || $d->isNot(),
+                        | ^NotExpression(value = $d->convertElementToExpression($state)),
+                        | ^NotExpression(value = $d->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+                      );
+                  );
               );
           );
       );,
