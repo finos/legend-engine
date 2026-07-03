@@ -113,6 +113,8 @@ public class Test_Deephaven_RelationFunctions_PCT extends PCTReportConfiguration
             one("meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
             one("meta::pure::functions::relation::tests::composition::testJoinOnNullKey_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""),
+            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""),
 
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_", "\"function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_\""),
             one("meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_", "\"Match failure: LambdaFunctionObject instanceOf LambdaFunction\""),
