@@ -560,8 +560,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsJoinOnColumns(f:
    let leftQueryWithFilter = $query1.select->pushExtraFilteringOperation($extensions);
 
 
-   let rightAlias = ^TableAlias(name='"joinright_"'+$nodeId, relationalElement=$query2.select);
-   let leftAlias = ^TableAlias(name='"joinleft_"'+$nodeId, relationalElement=$query1.select);
+   let rightAlias = ^TableAlias(name='"joinright_"'+$nodeId, relationalElement=$query2.select->pushExtraFilteringOperation($extensions));
+   let leftAlias = ^TableAlias(name='"joinleft_"'+$nodeId, relationalElement=$query1.select->pushExtraFilteringOperation($extensions));
 
    let leftQueryProcessed =  if($Q1isVarSetPlaceHolder,| $leftQueryWithFilter.data.alias.relationalElement->cast(@VarSetPlaceHolder)->toOne(),|   $leftQueryWithFilter);
 
