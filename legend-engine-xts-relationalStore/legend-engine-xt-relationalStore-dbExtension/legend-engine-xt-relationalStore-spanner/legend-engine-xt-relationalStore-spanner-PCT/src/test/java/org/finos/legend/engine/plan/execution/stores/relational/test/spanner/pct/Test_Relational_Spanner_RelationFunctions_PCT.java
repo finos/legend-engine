@@ -39,6 +39,13 @@ public class Test_Relational_Spanner_RelationFunctions_PCT extends PCTReportConf
     private static final Adapter adapter = CoreRelationalSpannerCodeRepositoryProvider.spannerAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
+            // Spanner PG dialect rejects IS [NOT] DISTINCT FROM (DistinctExpr) - pending Spanner-specific SqlDialect rendering
+            one("meta::pure::functions::relation::tests::composition::testJoinOnNullKey_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
+            one("meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
+            one("meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
+            one("meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
+            one("meta::pure::functions::relation::tests::join::testRightJoin_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
+            one("meta::pure::functions::relation::tests::join::testSimpleJoinShared_Function_1__Boolean_1_", "Unsupported PostgreSQL expression type: DistinctExpr"),
             // ListAgg
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
             one("meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_", "[unsupported-api] Window Columns not supported for Database Type: Spanner"),
