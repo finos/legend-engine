@@ -79,6 +79,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('array_max',              $allStates,            ^ToSql(format='arrayMax(%s)')),
     dynaFnToSql('array_min',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 0, | '[]', | format('arrayMin(%s)', $p->joinStrings(',')))})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    // Projected null-safe comparisons need coalesce to stay two-valued (ClickHouse NULL boolean logic is version-inconsistent),
+    // but the join planner only recognises the plain expansion as an equi-join condition (INVALID_JOIN_ON_EXPRESSION otherwise)
+    dynaFnToSql('nullSafeEqual',          selectOutsideWhenGenerationState(),      ^ToSql(format='(coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeEqual',          notSelectOutsideWhenGenerationStates(),  ^ToSql(format='(%s = %s or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       selectOutsideWhenGenerationState(),      ^ToSql(format='not (coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       notSelectOutsideWhenGenerationStates(),  ^ToSql(format='(not (%s = %s) or (%s is null and %s is not null) or (%s is not null and %s is null))', transform={p:String[2]|$p->concatenate($p)->concatenate($p)})),
     dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cos(%s)/sin(%s)', transform={p:String[1] | $p->concatenate($p)})),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForClickHouse()})),
