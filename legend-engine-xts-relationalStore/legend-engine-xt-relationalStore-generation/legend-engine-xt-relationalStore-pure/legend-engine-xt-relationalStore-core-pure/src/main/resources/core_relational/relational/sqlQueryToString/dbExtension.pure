@@ -968,22 +968,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processNotEqual(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
-   let processedParams = $func.parameters->map(p | $p->processOperation($sgc));
-   let left = $func.parameters->at(0);
-   let right = $func.parameters->at(1);
-   let processedLeft = $processedParams->at(0);
-   let processedRight = $processedParams->at(1);
-   let orNull =   if($left->instanceOf(Literal) && $right->instanceOf(Literal),
-                     | '',
-                     | if(!$left->instanceOf(Literal) && ($right->instanceOf(Literal) || $right->instanceOf(FreeMarkerOperationHolder)),
-                          |' OR ' + $processedLeft + ' is null',
-                          |if (($left->instanceOf(Literal) || $left->instanceOf(FreeMarkerOperationHolder)) && !$right->instanceOf(Literal),
-                               |' OR ' + $processedRight + ' is null',
-                               | ' OR ' + $processedLeft + ' is null' + ' AND ' + $processedRight + ' is not null' + ' OR ' + $processedLeft + ' is not null' + ' AND ' + $processedRight + ' is null'
-                              )
-                         )
-                   );
-   '(' + $processedLeft + ' <> ' + $processedRight + $orNull + ')';
+   if($func.parameters->at(0)->instanceOf(Literal) && $func.parameters->at(1)->instanceOf(Literal),
+      | let processedParams = $func.parameters->map(p | $p->processOperation($sgc));
+        '(' + $processedParams->at(0) + ' <> ' + $processedParams->at(1) + ')';,
+      // null-compensated cases: redirect to the central null-safe rendering
+      | ^$func(name = 'nullSafeNotEqual')->processOperation($sgc));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processNotIn(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]

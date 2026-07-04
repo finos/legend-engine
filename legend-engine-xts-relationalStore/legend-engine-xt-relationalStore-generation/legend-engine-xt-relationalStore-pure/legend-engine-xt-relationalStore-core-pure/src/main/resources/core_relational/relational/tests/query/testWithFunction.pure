@@ -489,7 +489,7 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekFu
                                    ->project([t | $t.date->dayOfWeek()],['Day Of Week Name']),
                                    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals('Day Of Week Name\n'+'Tuesday\n'+'Tuesday\n'+'Wednesday\n'+'Wednesday\n'+'Thursday\n'+'Thursday\n'+'Thursday\n'+'Friday\n',$result.values->meta::relational::tests::csv::toCSV());
-  assertEquals('select formatdatetime("root".tradeDate, \'EEEE\') as "Day Of Week Name" from tradeTable as "root" where formatdatetime("root".tradeDate, \'EEEE\') <> \'Monday\' or formatdatetime("root".tradeDate, \'EEEE\') is null', $result->sqlRemoveFormatting(0));
+  assertEquals('select formatdatetime("root".tradeDate, \'EEEE\') as "Day Of Week Name" from tradeTable as "root" where formatdatetime("root".tradeDate, \'EEEE\') is distinct from \'Monday\'', $result->sqlRemoveFormatting(0));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNumberFunction():Boolean[1]
@@ -498,6 +498,6 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNu
                                    ->project([t | $t.date->dayOfWeekNumber(DayOfWeek.Sunday)],['Day Of Week Number']),
                                    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals('Day Of Week Number\n'+'2\n'+ '2\n'+'2\n'+'4\n'+'4\n'+'5\n'+'5\n'+'5\n'+'6\n',$result.values->meta::relational::tests::csv::toCSV());
-  assertEquals('select extract(dow from "root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where extract(isodow from "root".tradeDate) <> \'2\' or extract(isodow from "root".tradeDate) is null', $result->sqlRemoveFormatting(0));
+  assertEquals('select extract(dow from "root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where extract(isodow from "root".tradeDate) is distinct from \'2\'', $result->sqlRemoveFormatting(0));
 }
 
