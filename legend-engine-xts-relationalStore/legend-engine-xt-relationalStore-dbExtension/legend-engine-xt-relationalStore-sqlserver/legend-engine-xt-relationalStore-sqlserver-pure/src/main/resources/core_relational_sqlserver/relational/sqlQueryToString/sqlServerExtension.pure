@@ -36,7 +36,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
      getDynaFunctionToSqlForSqlServer()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = true,
+      // T-SQL has no boolean values in select lists; project predicates via the case-when wrap (as Oracle does)
+      isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -61,7 +62,7 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::sqlS
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), $dbConfig.dbExtension.isBooleanLiteralSupported, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
