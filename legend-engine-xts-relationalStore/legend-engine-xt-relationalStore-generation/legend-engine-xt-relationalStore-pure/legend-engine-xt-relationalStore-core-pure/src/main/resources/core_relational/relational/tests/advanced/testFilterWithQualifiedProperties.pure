@@ -187,7 +187,7 @@ function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filt
                          ->filter(f| $f->conditionRightTable('Firm B').firstName == 'Elena' && $f.employees.firstName != '123')  , simpleRelationalMapping,  meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result1.values,2);
    assertSameElements($result1.values.legalName,['Firm B','Firm B']);
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Firm B\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where "persontable_0".FIRSTNAME = \'Elena\' and ("persontable_1".FIRSTNAME <> \'123\' or "persontable_1".FIRSTNAME is null)', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID and "persontable_0".LASTNAME = \'Firm B\') left outer join personTable as "persontable_1" on ("root".ID = "persontable_1".FIRMID) where "persontable_0".FIRSTNAME = \'Elena\' and "persontable_1".FIRSTNAME is distinct from \'123\'', $result1);
 }
 
 function <<test.Test>> meta::relational::tests::query::qualifier::advanced::filterFunctionExpressionWithAndConditionOnRightTable():Boolean[1]
