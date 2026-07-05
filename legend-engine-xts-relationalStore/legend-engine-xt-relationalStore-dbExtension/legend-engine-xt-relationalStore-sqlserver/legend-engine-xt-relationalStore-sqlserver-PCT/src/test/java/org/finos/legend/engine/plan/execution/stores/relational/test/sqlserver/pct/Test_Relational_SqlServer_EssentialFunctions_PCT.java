@@ -305,8 +305,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
 
 
-            // MultiIf
-            one("meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: An expression of non-boolean type specified in a context where a condition is expected, near 'then'."),
 
             // Match
             one("meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_", "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""),
