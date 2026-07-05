@@ -62,7 +62,7 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::sqlS
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumns($s.columns, $dbConfig, $format->indent(), $dbConfig.dbExtension.isBooleanLiteralSupported, $extensions) +
+  processSelectColumnsSQLServer($s.columns, $dbConfig, $format->indent(), ^Config(), ', ', $dbConfig.dbExtension.isBooleanLiteralSupported, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
@@ -71,9 +71,32 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::sqlS
   + processLimit($s, $dbConfig, $format, $extensions, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
 }
 
+// mirrors oracle's processSelectColumnsOracle: wraps BOTH Alias and bare boolean operations as case-when
+// (T-SQL has no boolean values in select lists) - see oracle's TODO about porting this to the defaults
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processSelectColumnsSQLServer(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+
+                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then cast(1 as bit) else cast(0 as bit) end as ' + $a.name,
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                                                           );,
+                                                      z:RelationalOperationElement[1]   |
+                                                          let shouldWrapWithCase = ($z->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+                                                          $shouldWrapWithCase->if(|'case when (' + $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then cast(1 as bit) else cast(0 as bit) end',
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                                                           );
+                                                      ])
+                                      )->joinStrings($separator + $format.separator);
+  );
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::getDynaFunctionToSqlForSqlServer(): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
+  let selectOutsideWhen = selectOutsideWhenGenerationState();
+  let notSelectOutsideWhen = notSelectOutsideWhenGenerationStates();
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + maybeConvertToDateTime2($p->at(0), $p->at(2)->mapToDBUnitType())})),
@@ -81,6 +104,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, true)})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, false)})),    
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
+    dynaFnToSql('isEmpty',                $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then cast(1 as bit) else cast(0 as bit) end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isEmpty',                $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then cast(1 as bit) else cast(0 as bit) end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotEmpty',             $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then cast(1 as bit) else cast(0 as bit) end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotNull',              $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then cast(1 as bit) else cast(0 as bit) end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNull',                 $notSelectOutsideWhen, ^ToSql(format='%s is null')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSqlServer(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
