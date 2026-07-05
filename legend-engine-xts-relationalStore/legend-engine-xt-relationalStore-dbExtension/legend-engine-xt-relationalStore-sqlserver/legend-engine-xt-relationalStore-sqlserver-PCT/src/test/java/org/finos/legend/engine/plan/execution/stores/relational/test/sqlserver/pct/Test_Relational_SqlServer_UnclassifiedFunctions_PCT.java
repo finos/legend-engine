@@ -63,8 +63,8 @@ public class Test_Relational_SqlServer_UnclassifiedFunctions_PCT extends PCTRepo
 
             //matches
             pack("meta::pure::functions::string::tests::matches", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""),
-            one("meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_", "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assertEq.pure line:34 column:5), \"[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet\""),
+            one("meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assertEq.pure line:34 column:5), \"[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet\""),
 
             // lpad
             one("meta::pure::functions::string::tests::lpad::testLpadStringLongerThanLength_Function_1__Boolean_1_", "\"\nexpected: ['abc']\nactual:   []\""),

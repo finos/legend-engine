@@ -160,7 +160,6 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
 
             //size
-            one("meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_", "Incorrect syntax near '>'."),
             one("meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
             one("meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
             one("meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
