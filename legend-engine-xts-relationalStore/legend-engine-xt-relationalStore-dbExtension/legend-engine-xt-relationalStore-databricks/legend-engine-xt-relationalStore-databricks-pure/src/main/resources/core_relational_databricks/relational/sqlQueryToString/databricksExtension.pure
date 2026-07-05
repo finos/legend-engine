@@ -46,6 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      isDecodeSupported = true,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,

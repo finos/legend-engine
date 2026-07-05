@@ -24,6 +24,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
    ^DbExtension(
       isBooleanLiteralSupported = false,
+      isDecodeSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,

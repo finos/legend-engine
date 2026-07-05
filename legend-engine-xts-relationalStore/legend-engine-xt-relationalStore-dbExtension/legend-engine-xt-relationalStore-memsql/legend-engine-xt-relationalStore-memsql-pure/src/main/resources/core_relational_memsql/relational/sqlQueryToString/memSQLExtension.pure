@@ -26,6 +26,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      isDecodeSupported = true,
       collectionThresholdLimit = 1048576,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},

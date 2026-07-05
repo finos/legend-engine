@@ -266,6 +266,9 @@ function meta::relational::functions::sqlQueryToString::createDbConfig( dbType:D
 Class meta::relational::functions::sqlQueryToString::DbExtension
 {
    isBooleanLiteralSupported: Boolean[1];
+   // whether this database supports the DECODE function; when set, it drives the CASE -> DECODE conversion, i.e.
+   // an equality-based 'case' (or if/multi-if) switch on a single expression is rendered as the terser DECODE(...)
+   isDecodeSupported: Boolean[0..1];
    collectionThresholdLimit: Integer[0..1];
    <<doc.deprecated>> extraTempTableCreationLogicSupplierForIn: meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[0..1];
    aliasLimit: Integer[0..1];
@@ -864,7 +867,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
       | processEqualFromFilter($func,$sgc),
       |
    if ($func.name == 'case',
-      | processCase($func,$sgc),
+      | if ($func->shouldConvertCaseToDecode($sgc),
+           | processDecode($func,$sgc),
+           | processCase($func,$sgc)),
+      |
+   if ($func.name == 'if' && $func->shouldConvertIfToDecode($sgc),
+      | processDecode($func->ifToCaseDynaFunction(),$sgc),
       |
    if ($func.name == 'not',
       | processNot($func,$sgc),
@@ -887,7 +895,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
         let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
         $result->toOne().toSql($params, $paramWiseSgcs);
-   ))));
+   )))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processExtractFromSemiStructured(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
@@ -921,6 +929,143 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let generationState = $sgc.generationState;
    let sgcWithinWhen = ^$sgcNoConfig(generationState=^$generationState(withinWhenClause = true));
    'case '+ $range->map(o| $sgc.format.separator + 'when '+$params->at($o)->processOperation($sgcWithinWhen)+ ' ' + $sgc.format.separator + 'then '+$params->at($o+1)->processOperation($sgcNoConfig))->makeString(' ')+ ' ' + $sgc.format.separator + 'else '+$params->at($params->size()-1)->processOperation($sgcNoConfig)+' end';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::shouldConvertCaseToDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
+{
+   let flag = $sgc.dbConfig.dbExtension.isDecodeSupported;
+   $flag->isNotEmpty() && $flag->toOne() && $func->isDecodeConvertible($sgc);
+}
+
+// A Pure 'if'/multi-if lowers to nested 3-arg 'if' dynaFunctions (if(cond, then, else)) which otherwise render
+// via the 'case when %s then %s else %s end' template. Flattening the else-chain into a single flat 'case'
+// dynaFunction lets the same isDecodeConvertible / processDecode path apply: a chain of if branches switching
+// on one expression against literal searches becomes a single DECODE.
+function <<access.private>> meta::relational::functions::sqlQueryToString::ifToCaseDynaFunction(func:DynaFunction[1]):DynaFunction[1]
+{
+   let cond = $func.parameters->at(0);
+   let thenValue = $func.parameters->at(1);
+   let elseValue = $func.parameters->at(2);
+   if($elseValue->instanceOf(DynaFunction) && $elseValue->cast(@DynaFunction).name == 'if',
+      | let rest = $elseValue->cast(@DynaFunction)->ifToCaseDynaFunction();
+        ^DynaFunction(name = 'case', parameters = [$cond, $thenValue]->concatenate($rest.parameters));,
+      | ^DynaFunction(name = 'case', parameters = [$cond, $thenValue, $elseValue]));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::shouldConvertIfToDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
+{
+   let flag = $sgc.dbConfig.dbExtension.isDecodeSupported;
+   $flag->isNotEmpty() && $flag->toOne() && $func->ifToCaseDynaFunction()->isDecodeConvertible($sgc);
+}
+
+// A 'case' is DECODE-convertible when every WHEN branch is an equal/nullSafeEqual/in test on the *same*
+// switch expression against non-null literal search values. DECODE(expr, search, result, ..., else) is then
+// equivalent to the CASE (including NULL: a NULL expr matches no non-null search, so it falls to the
+// default, exactly as `case ... else`). This is not enum-specific -- any such equality switch qualifies
+// (e.g. buildPossibleEnumMappingPushDown / processEqualsForEnum, or a boolean-value coercion). Branches
+// whose conditions are not equal/nullSafeEqual/in on a single literal-compared expression (e.g.
+// match-dispatch's instanceOf tests, or boolean and/or conditions) are excluded and fall through to CASE.
+function <<access.private>> meta::relational::functions::sqlQueryToString::isDecodeConvertible(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
+{
+   let params = $func.parameters;
+   let size = $params->size();
+   let numPairs = (($size - 1) / 2)->floor();
+   if($size < 3 || ($numPairs * 2) != ($size - 1),
+      | false,
+      | let conditions = range(0, $size - 1, 2)->map(o | $params->at($o));
+        if(!$conditions->forAll(c | $c->instanceOf(DynaFunction) && $c->cast(@DynaFunction)->isDecodableCondition()),
+           | false,
+           | let sgcNoConfig = ^$sgc(config=^Config());
+             let exprSqls = $conditions->map(c | $c->cast(@DynaFunction)->decodeConditionExpr()->processOperation($sgcNoConfig));
+             $exprSqls->forAll(s | $s == $exprSqls->at(0));
+        );
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isSqlNull(op:RelationalOperationElement[1]):Boolean[1]
+{
+   $op->instanceOf(SQLNull) || ($op->instanceOf(DynaFunction) && $op->cast(@DynaFunction).name == 'sqlNull');
+}
+
+// A branch is decodable when it is an 'equal'/'nullSafeEqual' with exactly one non-null literal search operand
+// (the other being the non-literal switch expression), an 'in' of the switch expression against a list of
+// non-null literal searches, or an 'isNull'/'isEmpty' null-check on the switch expression -- which becomes a
+// NULL search value (DECODE's NULL=NULL matching is exactly a null-check), i.e. decode(expr, NULL, result).
+//
+// Why this is NULL-safe. DECODE differs from CASE's '=' only on a row where the switch expression IS NULL and
+// the search IS NULL simultaneously (DECODE matches NULL=NULL; '=' yields UNKNOWN). That requires the search
+// itself to be nullable, and a search can be null in only two ways:
+//   - a compile-time SQL null -> excluded here (isNonNullSearchLiteral).
+//   - a runtime null, i.e. an optional bind parameter -> the router emits nullSafeEqual (not equal) for any
+//     optional-valued comparison (pureToSQLQuery::processEquals), and DECODE's NULL=NULL matching *is*
+//     nullSafeEqual's semantics, so that path converts equivalently.
+// A plain 'equal' therefore only ever carries a non-nullable search (a constant or a mandatory [1] parameter):
+// if the switch column is nullable the comparison was already routed through nullSafeEqual, and if it is not
+// nullable there are no NULL rows for DECODE and '=' to disagree on. We rely on the Pure model's nullability
+// here -- a column declared non-null but holding NULLs in the database is a model error, out of scope.
+function <<access.private>> meta::relational::functions::sqlQueryToString::isDecodableCondition(cond:DynaFunction[1]):Boolean[1]
+{
+   if($cond.name == 'equal' || $cond.name == 'nullSafeEqual',
+      | $cond.parameters->size() == 2
+           && (($cond.parameters->at(0)->isNonNullSearchLiteral() && !$cond.parameters->at(1)->instanceOf(Literal))
+               || (!$cond.parameters->at(0)->instanceOf(Literal) && $cond.parameters->at(1)->isNonNullSearchLiteral())),
+      | if($cond.name == 'in',
+           | $cond.parameters->size() == 2 && $cond.parameters->at(1)->instanceOf(LiteralList)
+                && $cond.parameters->at(1)->cast(@LiteralList).values->forAll(v | $v->isNonNullSearchLiteral()),
+           | ($cond.name == 'isNull' || $cond.name == 'isEmpty') && $cond.parameters->size() == 1
+        )
+   );
+}
+
+// A search literal that is not a compile-time SQL null. A bind-parameter placeholder is allowed: a runtime-null
+// search reaches DECODE only via nullSafeEqual (see isDecodableCondition), so any bind parameter carried by a
+// plain 'equal' is a mandatory, non-null value.
+function <<access.private>> meta::relational::functions::sqlQueryToString::isNonNullSearchLiteral(op:RelationalOperationElement[1]):Boolean[1]
+{
+   $op->instanceOf(Literal) && $op->cast(@Literal).value->size() == 1 && !$op->cast(@Literal).value->toOne()->instanceOf(SQLNull);
+}
+
+// The switch expression of a decodable branch: for 'in' it is the tested operand; for 'equal' it is the
+// non-literal operand (equality may be written in either order).
+function <<access.private>> meta::relational::functions::sqlQueryToString::decodeConditionExpr(cond:DynaFunction[1]):RelationalOperationElement[1]
+{
+   if($cond.name->in(['in', 'isNull', 'isEmpty']),
+      | $cond.parameters->at(0),
+      | if($cond.parameters->at(0)->isNonNullSearchLiteral(), | $cond.parameters->at(1), | $cond.parameters->at(0))
+   );
+}
+
+// The search value(s) of a decodable branch: for 'in' the list members; for 'isNull'/'isEmpty' a synthesized
+// SQL null (DECODE matches NULL=NULL); for 'equal'/'nullSafeEqual' the single literal operand.
+function <<access.private>> meta::relational::functions::sqlQueryToString::decodeConditionSearches(cond:DynaFunction[1]):RelationalOperationElement[*]
+{
+   if($cond.name->in(['isNull', 'isEmpty']),
+      | ^DynaFunction(name = 'sqlNull'),
+      | if($cond.name == 'in',
+           | $cond.parameters->at(1)->cast(@LiteralList).values,
+           | if($cond.parameters->at(0)->isNonNullSearchLiteral(), | $cond.parameters->at(0), | $cond.parameters->at(1)))
+   );
+}
+
+// Renders a convertible 'case' as DECODE(expr, search, result, ..., [else]). Each equal branch contributes
+// one search/result pair; an in(...) branch expands to one pair per member sharing the result. A trailing
+// sql-null else is omitted (DECODE returns NULL when nothing matches); any other else becomes the default.
+// Guarded by isDecodeConvertible.
+function <<access.private>> meta::relational::functions::sqlQueryToString::processDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let params = $func.parameters;
+   let size = $params->size();
+   let numPairs = (($size - 1) / 2)->floor();
+   let sgcNoConfig = ^$sgc(config=^Config());
+   let expr = $params->at(0)->cast(@DynaFunction)->decodeConditionExpr()->processOperation($sgcNoConfig);
+   let pairsSql = range(0, $numPairs, 1)->map(i |
+      let cond = $params->at($i * 2)->cast(@DynaFunction);
+      let resultSql = $params->at(($i * 2) + 1)->processOperation($sgcNoConfig);
+      $cond->decodeConditionSearches()->map(s | $s->processOperation($sgcNoConfig) + ', ' + $resultSql)->makeString(', ');
+   );
+   let elseOp = $params->at($size - 1);
+   let defaultSql = if($elseOp->isSqlNull(), | '', | ', ' + $elseOp->processOperation($sgcNoConfig));
+   'decode(' + $expr + ', ' + $pairsSql->makeString(', ') + $defaultSql + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isEqualsFromFilter(func:DynaFunction[1], config: Config[1]):Boolean[1]
