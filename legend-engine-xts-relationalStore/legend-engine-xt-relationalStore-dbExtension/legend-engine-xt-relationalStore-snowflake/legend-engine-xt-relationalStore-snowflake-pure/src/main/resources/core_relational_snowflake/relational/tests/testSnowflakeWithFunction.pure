@@ -44,6 +44,24 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testMultiIfWit
    assertEquals('select decode("root".AGE, null, \'unknown\', 1, \'one\', \'other\') as "label" from personTable as "root"', $s);
 }
 
+// Negative: branches on DIFFERENT columns are not one switch, so age and firstName must NOT be merged into a
+// single DECODE. The mixed-column outer stays as CASE; only the same-column (firstName) sub-switch in the else
+// converts on its own -- so we get a decode nested in a case, never a cross-column decode.
+function <<test.Test>> meta::relational::tests::query::snowflake::testMultiIfDifferentColumnsStaysCaseSnowflake():Boolean[1]
+{
+   let fn = {|Person.all()->project(col(p | if([pair(|$p.age == 1, |'a'), pair(|$p.firstName == 'x', |'b')], |'c'), 'label'))};
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select case when "root".AGE = 1 then \'a\' else decode("root".FIRSTNAME, \'x\', \'b\', \'c\') end as "label" from personTable as "root"', $s);
+}
+
+// Negative: a non-equality condition (greaterThan) is not a decodable branch, so it must stay as CASE.
+function <<test.Test>> meta::relational::tests::query::snowflake::testMultiIfNonEqualityStaysCaseSnowflake():Boolean[1]
+{
+   let fn = {|Person.all()->project(col(p | if([pair(|$p.age > 5, |'big')], |'small'), 'label'))};
+   let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select case when ("root".AGE is not null and "root".AGE > 5) then \'big\' else \'small\' end as "label" from personTable as "root"', $s);
+}
+
 function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsingMatchesFunctionSnowflake():Boolean[1]
 {
 
