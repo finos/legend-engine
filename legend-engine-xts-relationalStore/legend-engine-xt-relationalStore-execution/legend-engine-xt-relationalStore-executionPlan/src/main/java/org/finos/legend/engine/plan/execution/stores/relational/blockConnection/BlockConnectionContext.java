@@ -46,20 +46,34 @@ public class BlockConnectionContext
         return getBlockConnection(executionState, databaseConnection, identity, java.util.Collections.emptyMap());
     }
 
+    /**
+     * Returns (creating if necessary) the {@link BlockConnection} keyed by the supplied
+     * {@link DatabaseConnection}.
+     * <p>
+     * <b>Contract:</b> callers MUST supply a {@code DatabaseConnection} that has already been
+     * through {@link ConnectionManagerSelector#preprocessConnection(DatabaseConnection, Identity, Map)}.
+     * Under the current architecture every relational plan-node execution funnels through
+     * {@code RelationalExecutionNodeExecutor.visit(ExecutionNode)}, which invokes the
+     * preprocessor exactly once at the top of the method and forwards the (possibly cloned)
+     * enriched node downstream. This method therefore does NOT preprocess on the caller's behalf
+     * and passes {@code skipPreprocessing = true} to
+     * {@link ConnectionManagerSelector#getDatabaseConnection(Identity, DatabaseConnection, Map,
+     * org.finos.legend.engine.plan.execution.stores.StoreExecutionState.RuntimeContext, boolean)}.
+     * <p>
+     */
     public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, Identity identity, Map<String, Result> allocationResults)
     {
         ConnectionManagerSelector connectionManager = executionState.getRelationalExecutor().getConnectionManager();
 
-        // Preprocess the connection BEFORE key generation so that the key is correct
-        DatabaseConnection resolvedConnection = connectionManager.preprocessConnection(databaseConnection, identity, allocationResults);
-
-        BlockConnection requiredBlockConnection = this.blockConnectionMap.get(connectionManager.generateKeyFromDatabaseConnection(resolvedConnection));
+        // The connection has already been preprocessed at the top of RelationalExecutionNodeExecutor.visit(ExecutionNode).
+        // Use it directly for both key generation and pool acquisition.
+        BlockConnection requiredBlockConnection = this.blockConnectionMap.get(connectionManager.generateKeyFromDatabaseConnection(databaseConnection));
         if (requiredBlockConnection == null)
         {
             // Already preprocessed – pass skipPreprocessing = true to avoid running preprocessors again
             requiredBlockConnection = setBlockConnection(connectionManager,
-                    resolvedConnection,
-                    new BlockConnection(connectionManager.getDatabaseConnection(identity, resolvedConnection, allocationResults, executionState.getRuntimeContext(), true)));
+                    databaseConnection,
+                    new BlockConnection(connectionManager.getDatabaseConnection(identity, databaseConnection, allocationResults, executionState.getRuntimeContext(), true)));
         }
         if (!requiredBlockConnection.blockConnectionState.isConnectionAvailable())
         {
