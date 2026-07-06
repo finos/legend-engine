@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+import meta::json::*;
+import meta::pure::executionPlan::profiles::*;
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Example to test that M2M allows the use of new operator to instantiate the target of a Pure mapping'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiation() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::Source\n'+
+    '{\n'+
+    '  i: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::Target\n'+
+    '{\n'+
+    '  j: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::instantiate(i: Integer[1]): test::model::Target[1]\n'+
+    '{\n'+
+    '  ^test::model::Target(j=$i);' +
+    '}\n'+
+    '\n'+
+    'function test::query::getResolved(): String[1]\n'+
+    '{\n'+
+    '  test::model::Target.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        j\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::Target {\n'+
+    '        j\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MUseMap, test::runtime::testRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MUseMap\n'+
+    '(\n'+
+    '  *test::model::Target: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Source\n'+
+    '    j: test::model::instantiate($src.i).j\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::testConnection\n'+
+    '{\n'+
+    '  class: test::model::Source;\n'+
+    '  url: \'data:application/json,{"i":1}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::testRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MUseMap\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::testConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getResolved__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"j": 1}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
