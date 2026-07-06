@@ -67,4 +67,33 @@ public class RelationalSaveNode extends ExecutionNode
     {
         return this.columnValueGenerators;
     }
+
+    /**
+     * Returns a shallow copy of this node with the {@code connection} field replaced by
+     * the supplied value. All other fields (including inherited {@link ExecutionNode}
+     * fields) are copied by reference. Used by the relational executor to enrich a
+     * plan-level connection with identity/allocation-derived state without mutating
+     * the shared, cached plan.
+     */
+    @JsonIgnore
+    public RelationalSaveNode shallowCopyWithConnection(DatabaseConnection newConnection)
+    {
+        RelationalSaveNode copy = new RelationalSaveNode();
+        // ExecutionNode fields
+        copy.resultType = this.resultType;
+        copy.executionNodes = this.executionNodes;
+        copy.resultSizeRange = this.resultSizeRange;
+        copy.requiredVariableInputs = this.requiredVariableInputs;
+        copy.implementation = this.implementation;
+        copy.authDependent = this.authDependent;
+        // RelationalSaveNode fields
+        copy.sqlComment = this.sqlComment;
+        copy.sqlQuery = this.sqlQuery;
+        copy.onConnectionCloseCommitQuery = this.onConnectionCloseCommitQuery;
+        copy.onConnectionCloseRollbackQuery = this.onConnectionCloseRollbackQuery;
+        copy.connection = newConnection;
+        copy.generatedVariableName = this.generatedVariableName;
+        copy.columnValueGenerators = this.columnValueGenerators;
+        return copy;
+    }
 }

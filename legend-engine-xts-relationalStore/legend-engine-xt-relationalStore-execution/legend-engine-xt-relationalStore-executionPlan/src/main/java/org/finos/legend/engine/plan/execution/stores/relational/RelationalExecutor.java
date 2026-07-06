@@ -413,7 +413,10 @@ public class RelationalExecutor
             }
             return blockConnection;
         }
-        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults, relationalExecutionState.getRuntimeContext());
+        // The connection carried by the node has already been preprocessed at the top of
+        // RelationalExecutionNodeExecutor.visit(ExecutionNode); skip the redundant preprocess pass
+        // inside ConnectionManagerSelector.getDatabaseConnection.
+        return relationalExecutionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, allocationResults, relationalExecutionState.getRuntimeContext(), true);
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)

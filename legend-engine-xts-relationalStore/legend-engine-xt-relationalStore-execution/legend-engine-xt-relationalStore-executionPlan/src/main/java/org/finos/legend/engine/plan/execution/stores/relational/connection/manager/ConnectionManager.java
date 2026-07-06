@@ -37,6 +37,18 @@ public interface ConnectionManager
      * and/or allocation variables from the execution state.
      * <p>
      * The default implementation returns the connection unchanged.
+     * <p>
+     * <b>Contract:</b>
+     * <ul>
+     *   <li>Implementations SHOULD be pure — no external side effects — because the plan
+     *       executor may in rare cases (e.g. defensive paths outside of node dispatch) invoke
+     *       preprocessing more than once for the same {@code (connection, identity,
+     *       allocationResults)} triple.</li>
+     *   <li>When there is nothing to enrich, implementations SHOULD return the input
+     *       reference unchanged (rather than a structurally-equal new instance). This lets the
+     *       plan executor short-circuit and avoid cloning the enclosing execution node on the
+     *       hot path.</li>
+     * </ul>
      *
      * @param connection       the database connection to preprocess
      * @param identity         the identity of the executing user
