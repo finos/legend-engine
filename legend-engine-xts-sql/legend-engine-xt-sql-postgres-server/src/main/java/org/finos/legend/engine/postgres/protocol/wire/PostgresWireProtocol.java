@@ -491,16 +491,22 @@ public class PostgresWireProtocol
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
         {
-            if (cause instanceof SocketException && "Connection reset".equals(cause.getMessage()))
+            try
             {
-                LOGGER.info("Connection reset. Client likely terminated connection");
+                if (cause instanceof SocketException && "Connection reset".equals(cause.getMessage()))
+                {
+                    LOGGER.info("Connection reset. Client likely terminated connection");
+                }
+                else
+                {
+                    LOGGER.error("Uncaught exception, closing channel: ", cause);
+                }
             }
-            else
+            finally
             {
-                LOGGER.error("Uncaught exception, closing channel: ", cause);
+                closeSession();
+                ctx.close();
             }
-            closeSession();
-            ctx.close();
         }
 
         @Override

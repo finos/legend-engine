@@ -58,6 +58,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.jetty.server.handler.ContextHandler;
@@ -96,7 +98,18 @@ public class PostgresServer
     private EventLoopGroup workerGroup;
     private final Messages messages;
     private final SQLManager sqlManager;
-    private final ExecutorService sessionExecutor = Executors.newCachedThreadPool();
+    private final ExecutorService sessionExecutor = Executors.newCachedThreadPool(new ThreadFactory()
+    {
+        private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+        @Override
+        public Thread newThread(Runnable r)
+        {
+            Thread t = new Thread(r, "postgres-session-" + threadNumber.getAndIncrement());
+            t.setDaemon(true);
+            return t;
+        }
+    });
     private static final int MAX_HISTORY = 1000;
     private final Set<PostgresWireProtocol> liveConnections = ConcurrentHashMap.newKeySet();
     private final List<SessionStats> connectionsHistory = Collections.synchronizedList(new ArrayList<>());
@@ -139,6 +152,10 @@ public class PostgresServer
                 }
             }
             this.connectionCount.dec();
+        }
+        else
+        {
+            LOGGER.warn("no live connection to remove on session close");
         }
     }
 
