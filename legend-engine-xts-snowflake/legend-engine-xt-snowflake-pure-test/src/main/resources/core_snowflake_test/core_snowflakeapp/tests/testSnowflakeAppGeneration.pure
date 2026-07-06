@@ -82,7 +82,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumPushDownWithFilter():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR,"GENDERFROMINT" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end as "Gender", case when "root".GENDER2 = 1 then \'M\' when "root".GENDER2 = 2 then \'F\' else null end as "GenderFromInt" from personTable as "root" where "root".GENDER = \'male\' $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"GENDER" VARCHAR,"GENDERFROMINT" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", decode("root".GENDER, \'male\', \'M\', \'female\', \'F\', \'Female\', \'F\') as "Gender", decode("root".GENDER2, 1, \'M\', 2, \'F\') as "GenderFromInt" from personTable as "root" where "root".GENDER = \'male\' $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumPushDown():TabularDataSet[1];\n';
 
@@ -378,7 +378,7 @@ function <<test.Test>> {doc.doc = 'Test for the case with nested functions where
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithEnumParams():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = case when "root".GENDER = \'male\' then \'M\' when "root".GENDER in (\'female\', \'Female\') then \'F\' else null end $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("gender" VARCHAR) RETURNS TABLE ("FIRSTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName" from personTable as "root" where gender = decode("root".GENDER, \'male\', \'M\', \'female\', \'F\', \'Female\', \'F\') $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionEnumParam(Gender[1]):TabularDataSet[1];\n';
 
@@ -387,7 +387,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testInputDataTypes():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("str" VARCHAR,"int" INTEGER,"bool" BOOLEAN,"dt" TIMESTAMP) RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", decode("root".boolean, null, null, 1, true, false) as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::testReturnType(String[1], Integer[1], Boolean[1], DateTime[1]):TabularDataSet[1];\n';
 
@@ -396,7 +396,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testReturnDataTypes():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", case when "root".boolean is null then null else case when "root".boolean = 1 then true else false end end as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("BIG INT" INTEGER,"BOOLEAN" BOOLEAN,"DATE" DATE,"DATE TIME" TIMESTAMP,"DECIMAL" DECIMAL(20, 8),"INTEGER" INTEGER,"STRING" VARCHAR) LANGUAGE SQL AS $$ select "root".bigInt as "Big Int", decode("root".boolean, null, null, 1, true, false) as "Boolean", "root".date as "Date", cast("root".dateTime as TIMESTAMP) as "Date Time", "root".decimal as "Decimal", "root".integer as "Integer", "root".string as "String" from dataTypeTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::testDataType():TabularDataSet[1];\n';
 
@@ -432,7 +432,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumInIfPredicateInsideProjectWithNonEnumReturn():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select case when "root".GENDER = \'male\' then \'val1\' else \'val2\' end as "conditionalVal" from personTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select decode("root".GENDER, \'male\', \'val1\', \'val2\') as "conditionalVal" from personTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithNonEnumReturn():TabularDataSet[1];\n';
 
@@ -441,7 +441,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testEnumInIfPredicateInsideProjectWithEnumReturn():Boolean[1]
 {
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select case when "root".GENDER = \'male\' then \'M\' else \'F\' end as "conditionalVal" from personTable as "root" $$;';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("CONDITIONALVAL" VARCHAR) LANGUAGE SQL AS $$ select decode("root".GENDER, \'male\', \'M\', \'F\') as "conditionalVal" from personTable as "root" $$;';
 
   let function = 'function : meta::external::function::activator::snowflakeApp::tests::enumInIfPredicateInsideProjectWithEnumReturn():TabularDataSet[1];\n';
 

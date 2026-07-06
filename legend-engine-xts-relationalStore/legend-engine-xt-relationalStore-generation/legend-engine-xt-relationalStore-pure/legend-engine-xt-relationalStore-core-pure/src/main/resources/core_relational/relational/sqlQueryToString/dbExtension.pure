@@ -867,12 +867,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
       | processEqualFromFilter($func,$sgc),
       |
    if ($func.name == 'case',
-      | if ($func->shouldConvertCaseToDecode($sgc),
-           | processDecode($func,$sgc),
+      | if ($func->shouldConvertToDecode($sgc),
+           | processDecode($func->flattenSwitchToCase(),$sgc),
            | processCase($func,$sgc)),
       |
-   if ($func.name == 'if' && $func->shouldConvertIfToDecode($sgc),
-      | processDecode($func->ifToCaseDynaFunction(),$sgc),
+   if ($func.name == 'if' && $func->shouldConvertToDecode($sgc),
+      | processDecode($func->flattenSwitchToCase(),$sgc),
       |
    if ($func.name == 'not',
       | processNot($func,$sgc),
@@ -931,31 +931,35 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    'case '+ $range->map(o| $sgc.format.separator + 'when '+$params->at($o)->processOperation($sgcWithinWhen)+ ' ' + $sgc.format.separator + 'then '+$params->at($o+1)->processOperation($sgcNoConfig))->makeString(' ')+ ' ' + $sgc.format.separator + 'else '+$params->at($params->size()-1)->processOperation($sgcNoConfig)+' end';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::shouldConvertCaseToDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::shouldConvertToDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
 {
    let flag = $sgc.dbConfig.dbExtension.isDecodeSupported;
-   $flag->isNotEmpty() && $flag->toOne() && $func->isDecodeConvertible($sgc);
+   $flag->isNotEmpty() && $flag->toOne() && $func->flattenSwitchToCase()->isDecodeConvertible($sgc);
 }
 
-// A Pure 'if'/multi-if lowers to nested 3-arg 'if' dynaFunctions (if(cond, then, else)) which otherwise render
-// via the 'case when %s then %s else %s end' template. Flattening the else-chain into a single flat 'case'
-// dynaFunction lets the same isDecodeConvertible / processDecode path apply: a chain of if branches switching
-// on one expression against literal searches becomes a single DECODE.
-function <<access.private>> meta::relational::functions::sqlQueryToString::ifToCaseDynaFunction(func:DynaFunction[1]):DynaFunction[1]
+// A Pure 'if'/multi-if lowers to nested 3-arg 'if' dynaFunctions, and a null-guarded boolean value nests a
+// 'case' inside an 'if' else, e.g. if(isNull(x), null, case when x=1 then true else false end). Flattening the
+// whole else-chain -- descending through both nested 'if' and nested 'case' nodes -- into one flat 'case' lets
+// isDecodeConvertible / processDecode collapse it into a single flat DECODE (decode(x, null, null, 1, true,
+// false)), rather than a DECODE whose else is itself a DECODE. Only the else-chain is descended; a branch
+// *result* that is itself a switch is left intact (no generator produces that, and it would be correct anyway).
+function <<access.private>> meta::relational::functions::sqlQueryToString::flattenSwitchToCase(func:DynaFunction[1]):DynaFunction[1]
 {
-   let cond = $func.parameters->at(0);
-   let thenValue = $func.parameters->at(1);
-   let elseValue = $func.parameters->at(2);
-   if($elseValue->instanceOf(DynaFunction) && $elseValue->cast(@DynaFunction).name == 'if',
-      | let rest = $elseValue->cast(@DynaFunction)->ifToCaseDynaFunction();
-        ^DynaFunction(name = 'case', parameters = [$cond, $thenValue]->concatenate($rest.parameters));,
-      | ^DynaFunction(name = 'case', parameters = [$cond, $thenValue, $elseValue]));
+   ^DynaFunction(name = 'case', parameters = $func->flattenSwitchParams());
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::shouldConvertIfToDecode(func:DynaFunction[1], sgc:SqlGenerationContext[1]):Boolean[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::flattenSwitchParams(node:RelationalOperationElement[1]):RelationalOperationElement[*]
 {
-   let flag = $sgc.dbConfig.dbExtension.isDecodeSupported;
-   $flag->isNotEmpty() && $flag->toOne() && $func->ifToCaseDynaFunction()->isDecodeConvertible($sgc);
+   if($node->instanceOf(DynaFunction) && $node->cast(@DynaFunction).name == 'if',
+      | let ifFunc = $node->cast(@DynaFunction);
+        [$ifFunc.parameters->at(0), $ifFunc.parameters->at(1)]->concatenate($ifFunc.parameters->at(2)->flattenSwitchParams());,
+      | if($node->instanceOf(DynaFunction) && $node->cast(@DynaFunction).name == 'case',
+           | let caseFunc = $node->cast(@DynaFunction);
+             let n = $caseFunc.parameters->size();
+             $caseFunc.parameters->take($n - 1)->concatenate($caseFunc.parameters->at($n - 1)->flattenSwitchParams());,
+           | $node
+        )
+   );
 }
 
 // A 'case' is DECODE-convertible when every WHEN branch is an equal/nullSafeEqual/in test on the *same*
