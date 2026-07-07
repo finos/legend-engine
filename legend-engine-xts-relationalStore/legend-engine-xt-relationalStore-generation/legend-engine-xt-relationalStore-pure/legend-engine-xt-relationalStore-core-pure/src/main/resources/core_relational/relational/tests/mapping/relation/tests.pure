@@ -164,6 +164,31 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedCaseMappingThroughAssociationChain():Boolean[1]
+{
+  let result = execute(
+    |Person.all()
+       ->filter(p | $p.group.groupName == 'Group C')
+       ->project(~[
+          memberName: p | $p.firstName,
+          groupName : p | $p.group.groupName,
+          firmName  : p | $p.firm.legalName
+       ]),
+    meta::relational::tests::mapping::relation::MixedCaseAssociationChainMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       memberName, groupName, firmName
+       Anthony, Group C, Firm B
+       Fabrice, Group C, Firm C
+       Oliver, Group C, Firm C
+    #->toString(),
+    $result.values->at(0)->sort(~memberName->ascending())->toString()
+  );
+}
+
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
 {
   let result = execute(
@@ -185,8 +210,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// SQL Gen fails during isolation when adding a self join, need to investigate further
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testMixedMappingWithFilterInProject():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithFilterInProject():Boolean[1]
 {
   let result = execute(
     |Person.all()->project(~[name1:x|$x.firstName, name2:x|$x.firm.employees->filter(e|$e.age < 35).firstName]),
@@ -484,8 +508,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// Generates incorrect SQL due to incorrect milestoning filter in self join condition added due to isolation
-function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange1():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedTemporalMappingWithAllVersionsInRange1():Boolean[1]
 {
   let result = execute(
     |BusinessTemporalPerson.all(%2025-01-01)->project(~[name:x|$x.firstName, legalName:x|$x.biztFirmAllVersionsInRange(%2024-01-01, %2025-01-01).legalName]),
