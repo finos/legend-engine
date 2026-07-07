@@ -127,8 +127,6 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_path_Path_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
@@ -223,9 +221,10 @@ import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.ArrayDeque;
@@ -295,11 +294,10 @@ public class HelperPersistenceBuilder
         return IPersistenceCompilerExtension.process(persistenceTarget, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraPersistenceTargetProcessors), context);
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path buildPath(Path path, CompileContext ctx)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path<?, ?> buildPath(Path path, CompileContext ctx)
     {
-        Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) new ValueSpecificationBuilder(ctx, org.eclipse.collections.impl.factory.Lists.mutable.empty(), new ProcessingContext("")).processClassInstance(path);
-
-        return (Root_meta_pure_metamodel_path_Path_Impl) instanceValue._values.getOnly();
+        InstanceValue instanceValue = (InstanceValue) new ValueSpecificationBuilder(ctx, Lists.mutable.empty(), new ProcessingContext("")).processClassInstance(path);
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.Path<?, ?>) instanceValue._values().getOnly();
     }
 
     private static class ServiceOutputBuilder implements ServiceOutputVisitor<Root_meta_pure_persistence_metamodel_service_ServiceOutput>
@@ -517,7 +515,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBased visitFieldBasedForGraphFetch(FieldBasedForGraphFetch val)
         {
             return new Root_meta_pure_persistence_metamodel_dataset_partitioning_FieldBasedForGraphFetch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::dataset::partitioning::FieldBasedForGraphFetch"))
-                ._partitionFieldPaths((ListIterate.collect(val.partitionFieldPaths, p -> buildPath(p, context))));
+                ._partitionFieldPaths(ListIterate.collect(val.partitionFieldPaths, p -> buildPath(p, context)));
         }
 
         @Override
