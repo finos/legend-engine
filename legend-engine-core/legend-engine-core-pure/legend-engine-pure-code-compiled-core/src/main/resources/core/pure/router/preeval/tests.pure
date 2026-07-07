@@ -1638,6 +1638,16 @@ function <<test.Test>> meta::pure::router::preeval::tests::testFromWith():Boolea
   assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->with(emptyMapping, $runtime) });    
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testFromStopFunctions():Boolean[1]
+{
+  let funcs = meta::pure::mapping->packageFunctionsRecursive()->filter(f | $f.functionName->in(['from', 'to']));
+  let stopped = fromFunctionsToStop();
+
+  let difference = $funcs->filter(f | !($f->hasStereotype('NotImplementedFunction', functionType) || $f->in($stopped)));
+
+  assert($difference->isEmpty(), | 'from/with functions missing from preval stop functions ' + $difference->map(d | $d->elementToPath())->joinStrings(', '));
+}
+
 function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDoesEval<P>(value:P[1]):Boolean[1]
 {
   meta::pure::router::preeval::tests::myTestFuncThatDoesSomething_P_1__Boolean_1_->eval($value)
