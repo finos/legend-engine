@@ -48,6 +48,8 @@ Database meta::relational::tests::mapping::relation::testDB
     CITY VARCHAR(100),
     FIRMID INTEGER
   )
+
+  Join GroupMembership_Person(groupMembershipTable.PERSONID = personTable.ID)
 )
 
 ###Relational
@@ -325,6 +327,18 @@ Association meta::relational::tests::mapping::relation::BusinessTemporalPerson_P
   ptFirm: meta::relational::tests::mapping::relation::BusinessTemporalFirm[1];
 }
 
+Class meta::relational::tests::mapping::relation::Group
+{
+  groupId: Integer[1];
+  groupName: String[1];
+}
+
+Association meta::relational::tests::mapping::relation::Person_Group
+{
+  members: meta::relational::tests::mapping::relation::Person[*];
+  group: meta::relational::tests::mapping::relation::Group[1];
+}
+
 ###Mapping
 import meta::relational::tests::mapping::relation::*;
 Mapping meta::relational::tests::mapping::relation::SimpleMapping
@@ -337,7 +351,7 @@ Mapping meta::relational::tests::mapping::relation::SimpleMapping
     +firmId: Integer[1]: FIRMID
   }
 
-  *Firm[firm]: Relation 
+  *Firm[firm]: Relation
   {
     ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
     legalName: legalName,
@@ -361,7 +375,7 @@ Mapping meta::relational::tests::mapping::relation::MixedMapping
     +firmId: Integer[1]: FIRMID
   }
 
-  *PersonWithFirmId: Relational 
+  *PersonWithFirmId: Relational
   {
     firstName: [meta::relational::tests::mapping::relation::testDB]personTable."FIRST NAME",
     age: [meta::relational::tests::mapping::relation::testDB]personTable.AGE,
@@ -405,28 +419,28 @@ Mapping meta::relational::tests::mapping::relation::GroupByMapping
 
 Mapping meta::relational::tests::mapping::relation::SnapshotMilestonedMapping
 (
-  *ProcessingTemporalPerson[ptPerson]: Relation 
+  *ProcessingTemporalPerson[ptPerson]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunctionWithProcessingSnapshotMilestoning():Relation<Any>[1]
     firstName: FIRSTNAME,
     +firmId: Integer[1]: FIRMID
   }
 
-  *BusinessTemporalPerson[biztPerson]: Relation 
+  *BusinessTemporalPerson[biztPerson]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunctionWithBusinessSnapshotMilestoning():Relation<Any>[1]
     firstName: FIRSTNAME,
     +firmId: Integer[1]: FIRMID
   }
 
-  *BiTemporalPerson[btPerson]: Relation 
+  *BiTemporalPerson[btPerson]: Relation
   {
     ~func meta::relational::tests::mapping::relation::personFunctionWithBiTemporalMilestoning():Relation<Any>[1]
     firstName: FIRSTNAME,
     +firmId: Integer[1]: FIRMID
   }
 
-  *ProcessingTemporalFirm[ptFirm]: Relation 
+  *ProcessingTemporalFirm[ptFirm]: Relation
   {
     ~func meta::relational::tests::mapping::relation::firmFunctionWithProcessingSnapshotMilestoning():Relation<Any>[1]
     legalName: LEGALNAME,
@@ -686,6 +700,52 @@ Mapping meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociatio
   }
 )
 
+Mapping meta::relational::tests::mapping::relation::MixedCaseAssociationChainMapping
+(
+  *Group[group]: Relational
+  {
+    ~primaryKey
+    (
+      [meta::relational::tests::mapping::relation::testDB]groupMembershipTable.GROUPID,
+      [meta::relational::tests::mapping::relation::testDB]groupMembershipTable.PERSONID
+    )
+    ~mainTable [meta::relational::tests::mapping::relation::testDB]groupMembershipTable
+    groupId  : [meta::relational::tests::mapping::relation::testDB]groupMembershipTable.GROUPID,
+    groupName: [meta::relational::tests::mapping::relation::testDB]groupMembershipTable.GROUPNAME
+  }
+
+  *Person[person]: Relational
+  {
+    ~primaryKey ([meta::relational::tests::mapping::relation::testDB]personTable.ID)
+    ~mainTable [meta::relational::tests::mapping::relation::testDB]personTable
+    firstName: [meta::relational::tests::mapping::relation::testDB]personTable."FIRST NAME",
+    age: [meta::relational::tests::mapping::relation::testDB]personTable.AGE,
+    +firmId: Integer[1]: [meta::relational::tests::mapping::relation::testDB]personTable.FIRMID
+  }
+
+  *Firm[firm]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::firmFunctionMixedCase__Relation_1_
+    legalName: legalName,
+    +id: Integer[1]: firmId
+  }
+
+  Person_Group: Relational
+  {
+    AssociationMapping
+    (
+      members[group, person]: [meta::relational::tests::mapping::relation::testDB]@GroupMembership_Person,
+      group[person, group]: [meta::relational::tests::mapping::relation::testDB]@GroupMembership_Person
+    )
+  }
+
+  Person_Firm: XStore
+  {
+    employees[firm, person]: $this.id == $that.firmId,
+    firm[person, firm]:      $this.firmId == $that.id
+  }
+)
+
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -712,7 +772,6 @@ function meta::relational::tests::mapping::relation::personFunctionWithProject()
         FIRMID:x|$x.firmId
       ]
     )
-    ->select(~['FIRST NAME', AGE, FIRMID])
 }
 
 function meta::relational::tests::mapping::relation::firmFunction(): Relation<Any>[1]
@@ -720,6 +779,11 @@ function meta::relational::tests::mapping::relation::firmFunction(): Relation<An
   #>{meta::relational::tests::mapping::relation::testDB.firmTable}#
     ->limit(10)
     ->select(~[ID, legalName])
+}
+
+function meta::relational::tests::mapping::relation::firmFunctionMixedCase(): Relation<Any>[1]
+{
+  #>{meta::relational::tests::mapping::relation::testDB.firmTable}#->project(~[firmId : x | $x.ID, legalName: x | $x.legalName])
 }
 
 function meta::relational::tests::mapping::relation::personFunctionWithJoinAndWindowColumn(): Relation<Any>[1]
