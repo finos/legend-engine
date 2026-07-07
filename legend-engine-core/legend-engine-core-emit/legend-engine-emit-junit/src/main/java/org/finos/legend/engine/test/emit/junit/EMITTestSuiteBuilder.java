@@ -279,6 +279,7 @@ public final class EMITTestSuiteBuilder
     private static Stream<DynamicContainer> testContainers(String classpathRoot, boolean verboseNames)
     {
         List<Path> yamls = EMITModelDiscovery.findEmitYamls(classpathRoot);
+        yamls.sort(null);
         EMITModelLoader loader = new EMITModelLoader();
         return yamls.stream().map(yaml -> containerFor(yaml, loader, verboseNames));
     }

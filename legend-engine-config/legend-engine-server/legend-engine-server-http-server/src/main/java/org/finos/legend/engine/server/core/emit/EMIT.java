@@ -49,7 +49,7 @@ public class EMIT
         return Response.status(Response.Status.OK).type(MediaType.TEXT_HTML).entity((StreamingOutput) out ->
         {
             try (InputStream in = Objects.requireNonNull(
-                    EMIT.class.getResourceAsStream(COVERAGE_REPORT_RESOURCE),
+                    Thread.currentThread().getContextClassLoader().getResourceAsStream(COVERAGE_REPORT_RESOURCE),
                     COVERAGE_REPORT_RESOURCE))
             {
                 IOUtils.copy(in, out);

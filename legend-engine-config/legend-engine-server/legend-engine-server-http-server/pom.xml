@@ -40,6 +40,13 @@
                         <goals>
                             <goal>generate-EMIT-coverage-report</goal>
                         </goals>
+                        <configuration>
+                            <outputFilePath>${project.build.outputDirectory}/emit/emit-coverage.html</outputFilePath>
+                            <excludedDirectoryNames>
+                                <name>target</name>
+                                <name>legend-engine-emit-junit</name>
+                            </excludedDirectoryNames>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

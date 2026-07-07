@@ -30,6 +30,7 @@
     <modules>
         <module>legend-engine-emit</module>
         <module>legend-engine-emit-junit</module>
+        <module>legend-engine-emit-report</module>
         <module>legend-engine-emit-maven-plugin</module>
     </modules>
 </project>

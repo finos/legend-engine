@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.test.emit;
+package org.finos.legend.engine.test.emit.report;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,25 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EMIT_to_HTML
 {
-    private static final String EMIT_MODELS_MARKER = "/src/test/resources/emit-models/";
-
-    private static final Pattern EXCLUDED_DIR_SEGMENTS = Pattern.compile(
-            ".*/(target|node_modules|\\.git|\\.idea|build)/.*");
-
-    private static final Pattern EXCLUDED_MODULES = Pattern.compile(
-            ".*/(legend-engine-emit-junit)/.*");
-
-    private static final Pattern LEGEND_ENGINE_ROOT_POM = Pattern.compile(
-            "<artifactId>\\s*legend-engine\\s*</artifactId>");
-
-    private static final int POM_SNIFF_BYTES = 4096;
-
     private static final List<String> FULL_TAXONOMY = Arrays.asList(
             // grammar
             "grammar:association", "grammar:class-inheritance", "grammar:constraint",
@@ -97,162 +86,26 @@ public class EMIT_to_HTML
             "scaffolding:relational-store", "scaffolding:runtime"
     );
 
-    private static final Map<String, String> DOMAIN_COLORS = new LinkedHashMap<>();
+    private static final ImmutableMap<String, String> DOMAIN_COLORS = Maps.mutable.with(
+            "grammar", "#4A90D9",
+            "mapping", "#E67E22",
+            "store", "#27AE60",
+            "milestoning", "#8E44AD")
+            .withKeyValue("execution", "#C0392B")
+            .withKeyValue("scaffolding", "#95A5A6")
+            .toImmutable();
 
-    static
+    private EMIT_to_HTML()
     {
-        DOMAIN_COLORS.put("grammar", "#4A90D9");
-        DOMAIN_COLORS.put("mapping", "#E67E22");
-        DOMAIN_COLORS.put("store", "#27AE60");
-        DOMAIN_COLORS.put("milestoning", "#8E44AD");
-        DOMAIN_COLORS.put("execution", "#C0392B");
-        DOMAIN_COLORS.put("scaffolding", "#95A5A6");
     }
 
-    public static void main(String[] args) throws Exception
+    public static String buildHTML(List<EMITModelDescriptor> descriptors, Path repoRoot)
     {
-        Path repoRoot = findLegendEngineRoot(Paths.get(System.getProperty("user.dir")));
-        Path output = repoRoot.resolve("legend-engine-core/legend-engine-core-emit/legend-engine-emit/target/emit-coverage.html");
-        generateFromRepoRoot(repoRoot, output);
-        System.out.println("EMIT coverage report written to: " + output);
-    }
+        if (descriptors == null)
+        {
+            throw new IllegalArgumentException("descriptors is required");
+        }
 
-    public static String generateFromEmitModelsDirs(Path repoRoot, List<Path> emitModelsDirs) throws IOException
-    {
-        if (repoRoot == null)
-        {
-            throw new IllegalArgumentException("repoRoot is required");
-        }
-        if (emitModelsDirs == null)
-        {
-            throw new IllegalArgumentException("emitModelsDirs is required");
-        }
-        List<EMITModelDescriptor> all = new ArrayList<>();
-        EMITModelLoader loader = new EMITModelLoader();
-        for (Path dir : emitModelsDirs)
-        {
-            if (dir == null || !Files.isDirectory(dir))
-            {
-                continue;
-            }
-            for (Path yamlPath : EMITModelDiscovery.findEmitYamls(dir))
-            {
-                EMITModelDescriptor d = loader.parseDescriptor(yamlPath);
-                String rel = repoRoot.relativize(yamlPath).toString().replace(File.separatorChar, '/');
-                d.setResourcePath(rel);
-                d.setModule(deriveModule(rel));
-                all.add(d);
-            }
-        }
-        all.sort(Comparator.comparing(EMITModelDescriptor::getResourcePath,
-                Comparator.nullsLast(Comparator.naturalOrder())));
-        return buildHTML(all);
-    }
-    
-    public static void generateFromEmitModelsDirs(Path repoRoot, List<Path> emitModelsDirs, Path outputFile) throws IOException
-    {
-        if (outputFile == null)
-        {
-            throw new IllegalArgumentException("outputFile is required");
-        }
-        String html = generateFromEmitModelsDirs(repoRoot, emitModelsDirs);
-        Path parent = outputFile.getParent();
-        if (parent != null)
-        {
-            Files.createDirectories(parent);
-        }
-        Files.write(outputFile, html.getBytes(StandardCharsets.UTF_8));
-    }
-
-    public static String generateFromRepoRoot(Path repoRoot) throws IOException
-    {
-        if (repoRoot == null || !Files.isDirectory(repoRoot))
-        {
-            throw new IllegalArgumentException("Repo root is not a directory: " + repoRoot);
-        }
-        Predicate<Path> exclude = p ->
-        {
-            String rel = "/" + repoRoot.relativize(p).toString().replace(File.separatorChar, '/');
-            return !rel.contains(EMIT_MODELS_MARKER)
-                    || EXCLUDED_DIR_SEGMENTS.matcher(rel).matches()
-                    || EXCLUDED_MODULES.matcher(rel).matches();
-        };
-        List<Path> yamls = EMITModelDiscovery.findEmitYamls(repoRoot, exclude);
-        EMITModelLoader loader = new EMITModelLoader();
-        List<EMITModelDescriptor> descriptors = new ArrayList<>(yamls.size());
-        for (Path yaml : yamls)
-        {
-            EMITModelDescriptor d = loader.parseDescriptor(yaml);
-            String rel = repoRoot.relativize(yaml).toString().replace(File.separatorChar, '/');
-            d.setResourcePath(rel);
-            d.setModule(deriveModule(rel));
-            descriptors.add(d);
-        }
-        return buildHTML(descriptors);
-    }
-    
-    public static void generateFromRepoRoot(Path repoRoot, Path outputFile) throws IOException
-    {
-        if (outputFile == null)
-        {
-            throw new IllegalArgumentException("outputFile is required");
-        }
-        String html = generateFromRepoRoot(repoRoot);
-        Path parent = outputFile.getParent();
-        if (parent != null)
-        {
-            Files.createDirectories(parent);
-        }
-        Files.write(outputFile, html.getBytes(StandardCharsets.UTF_8));
-    }
-
-
-    private static Path findLegendEngineRoot(Path startDir) throws IOException
-    {
-        Path start = startDir.toAbsolutePath().normalize();
-        for (Path candidate = start; candidate != null; candidate = candidate.getParent())
-        {
-            Path pom = candidate.resolve("pom.xml");
-            if (Files.isRegularFile(pom) && isLegendEngineRootPom(pom))
-            {
-                return candidate;
-            }
-        }
-        throw new IOException("Could not locate legend-engine repo root walking up from " + start + " (no ancestor pom.xml declares <artifactId>legend-engine</artifactId>)");
-    }
-
-    private static boolean isLegendEngineRootPom(Path pom)
-    {
-        try
-        {
-            byte[] bytes = Files.readAllBytes(pom);
-            String head = new String(bytes, 0, Math.min(bytes.length, POM_SNIFF_BYTES), StandardCharsets.UTF_8);
-            return LEGEND_ENGINE_ROOT_POM.matcher(head).find();
-        }
-        catch (IOException e)
-        {
-            return false;
-        }
-    }
-
-    private static String deriveModule(String resourcePath)
-    {
-        if (resourcePath == null)
-        {
-            return null;
-        }
-        int idx = resourcePath.indexOf("/src/test/resources/");
-        if (idx <= 0)
-        {
-            return null;
-        }
-        int prev = resourcePath.lastIndexOf('/', idx - 1);
-        return (prev < 0) ? resourcePath.substring(0, idx) : resourcePath.substring(prev + 1, idx);
-    }
-
-    public static String buildHTML(List<EMITModelDescriptor> descriptors)
-    {
-        // Compute data structures
         Map<String, List<EMITModelDescriptor>> combinationMap = buildCombinationMap(descriptors);
         Map<String, Integer> featureHeatmap = buildFeatureHeatmap(descriptors);
         Set<String> allFeatures = new TreeSet<>();
@@ -262,7 +115,6 @@ public class EMIT_to_HTML
                 .filter(f -> !coveredFeatures.contains(f))
                 .collect(Collectors.toList());
 
-        // Group features by domain
         Map<String, List<String>> featuresByDomain = new LinkedHashMap<>();
         for (String feature : allFeatures)
         {
@@ -270,13 +122,11 @@ public class EMIT_to_HTML
             featuresByDomain.computeIfAbsent(domain, k -> new ArrayList<>()).add(feature);
         }
 
-        // Build HTML
         StringBuilder sb = new StringBuilder();
         sb.append(HTML_HEAD);
         sb.append("<body>\n");
         sb.append("<div class=\"container\">\n");
 
-        // Header
         sb.append("<header>\n");
         sb.append("  <h1>EMIT Coverage Report</h1>\n");
         sb.append("  <p class=\"subtitle\">Engine Model Integration Test — Feature Coverage Dashboard</p>\n");
@@ -288,7 +138,6 @@ public class EMIT_to_HTML
         sb.append("  </div>\n");
         sb.append("</header>\n\n");
 
-        // Filter bar
         sb.append("<div class=\"filter-bar\">\n");
         sb.append("  <input type=\"text\" id=\"searchInput\" placeholder=\"Search features, models, tags...\" oninput=\"filterAll()\">\n");
         sb.append("  <select id=\"complexityFilter\" onchange=\"filterAll()\">\n");
@@ -315,7 +164,6 @@ public class EMIT_to_HTML
         sb.append("  </select>\n");
         sb.append("</div>\n\n");
 
-        // Tab navigation
         sb.append("<div class=\"tabs\">\n");
         sb.append("  <button class=\"tab active\" onclick=\"showTab('combinations')\">Feature Combinations</button>\n");
         sb.append("  <button class=\"tab\" onclick=\"showTab('heatmap')\">Feature Heatmap</button>\n");
@@ -323,7 +171,6 @@ public class EMIT_to_HTML
         sb.append("  <button class=\"tab\" onclick=\"showTab('models')\">All Models</button>\n");
         sb.append("</div>\n\n");
 
-        // Tab 1: Feature Combinations
         sb.append("<div id=\"combinations\" class=\"tab-content active\">\n");
         sb.append("<h2>Feature Combinations</h2>\n");
         sb.append("<p class=\"section-desc\">Each row represents a unique set of features covered by one or more EMIT models. Click a model name to view its YAML descriptor.</p>\n");
@@ -343,7 +190,7 @@ public class EMIT_to_HTML
                     .collect(Collectors.joining(", "));
             String complexity = first.getComplexity() != null ? first.getComplexity() : "—";
             String stores = first.getStores().isEmpty() ? "—" : String.join(", ", first.getStores());
-            String module = models.stream().map(EMIT_to_HTML::displayModule).distinct().collect(Collectors.joining(", "));
+            String module = models.stream().map(m -> displayModule(m, repoRoot)).distinct().collect(Collectors.joining(", "));
             String dataFeatures = String.join(",", first.getFeatures());
             String dataTags = models.stream().flatMap(m -> m.getTags().stream()).distinct().collect(Collectors.joining(","));
             sb.append("<tr data-features=\"").append(escapeHtml(dataFeatures))
@@ -362,14 +209,13 @@ public class EMIT_to_HTML
         sb.append("</tbody></table>\n");
         sb.append("</div>\n\n");
 
-        // Tab 2: Feature Heatmap
         sb.append("<div id=\"heatmap\" class=\"tab-content\">\n");
         sb.append("<h2>Feature Heatmap</h2>\n");
         sb.append("<p class=\"section-desc\">Each feature shown with the number of models covering it. Darker = more coverage.</p>\n");
         for (Map.Entry<String, List<String>> domainEntry : featuresByDomain.entrySet())
         {
             String domain = domainEntry.getKey();
-            String color = DOMAIN_COLORS.getOrDefault(domain, "#7F8C8D");
+            String color = DOMAIN_COLORS.getIfAbsentValue(domain, "#7F8C8D");
             sb.append("<div class=\"domain-group\">\n");
             sb.append("  <h3 style=\"color: ").append(color).append("\">").append(escapeHtml(domain)).append("</h3>\n");
             sb.append("  <div class=\"heatmap-grid\">\n");
@@ -392,7 +238,6 @@ public class EMIT_to_HTML
         }
         sb.append("</div>\n\n");
 
-        // Tab 3: Coverage Gaps
         sb.append("<div id=\"gaps\" class=\"tab-content\">\n");
         sb.append("<h2>Coverage Gaps</h2>\n");
         sb.append("<p class=\"section-desc\">Features from the full EMIT taxonomy (domain:capability format) with zero EMIT coverage. These represent untested pipeline paths.</p>\n");
@@ -411,7 +256,7 @@ public class EMIT_to_HTML
             for (Map.Entry<String, List<String>> gapEntry : gapsByDomain.entrySet())
             {
                 String domain = gapEntry.getKey();
-                String color = DOMAIN_COLORS.getOrDefault(domain, "#7F8C8D");
+                String color = DOMAIN_COLORS.getIfAbsentValue(domain, "#7F8C8D");
                 sb.append("<div class=\"domain-group\">\n");
                 sb.append("  <h3 style=\"color: ").append(color).append("\">").append(escapeHtml(domain))
                         .append(" <span class=\"gap-count\">(").append(gapEntry.getValue().size()).append(" uncovered)</span></h3>\n");
@@ -427,7 +272,6 @@ public class EMIT_to_HTML
         }
         sb.append("</div>\n\n");
 
-        // Tab 4: All Models
         sb.append("<div id=\"models\" class=\"tab-content\">\n");
         sb.append("<h2>All Models</h2>\n");
         sb.append("<p class=\"section-desc\">Complete list of all EMIT models with their metadata.</p>\n");
@@ -438,8 +282,8 @@ public class EMIT_to_HTML
         {
             String dataFeatures = String.join(",", d.getFeatures());
             String dataTags = String.join(",", d.getTags());
-            String displayPath = displayPath(d);
-            String module = displayModule(d);
+            String displayPath = displayPath(d, repoRoot);
+            String module = displayModule(d, repoRoot);
             sb.append("<tr data-features=\"").append(escapeHtml(dataFeatures))
                     .append("\" data-complexity=\"").append(escapeHtml(d.getComplexity() != null ? d.getComplexity() : ""))
                     .append("\" data-stores=\"").append(escapeHtml(String.join(",", d.getStores())))
@@ -459,7 +303,6 @@ public class EMIT_to_HTML
         sb.append("</tbody></table>\n");
         sb.append("</div>\n\n");
 
-        // Model detail modal
         sb.append("<div id=\"modelModal\" class=\"modal\" onclick=\"if(event.target===this)closeModal()\">\n");
         sb.append("  <div class=\"modal-content\">\n");
         sb.append("    <span class=\"close\" onclick=\"closeModal()\">&times;</span>\n");
@@ -467,17 +310,31 @@ public class EMIT_to_HTML
         sb.append("  </div>\n");
         sb.append("</div>\n\n");
 
-        // Embed model data as JSON for client-side interactions
         sb.append("<script>\n");
         sb.append("const modelData = ");
-        sb.append(buildModelJson(descriptors));
+        sb.append(buildModelJson(descriptors, repoRoot));
         sb.append(";\n");
         sb.append(CLIENT_JS);
         sb.append("</script>\n");
 
-        sb.append("</div>\n"); // container
+        sb.append("</div>\n");
         sb.append("</body></html>\n");
         return sb.toString();
+    }
+
+    public static void writeHTML(List<EMITModelDescriptor> descriptors, Path outputFile, Path repoRoot) throws IOException
+    {
+        if (outputFile == null)
+        {
+            throw new IllegalArgumentException("outputFile is required");
+        }
+        String html = buildHTML(descriptors, repoRoot);
+        Path parent = outputFile.getParent();
+        if (parent != null)
+        {
+            Files.createDirectories(parent);
+        }
+        Files.write(outputFile, html.getBytes(StandardCharsets.UTF_8));
     }
 
     private static Map<String, List<EMITModelDescriptor>> buildCombinationMap(List<EMITModelDescriptor> descriptors)
@@ -517,7 +374,7 @@ public class EMIT_to_HTML
                 {
                     String domain = f.contains(":") ? f.substring(0, f.indexOf(':')) : "uncategorized";
                     String capability = f.contains(":") ? f.substring(f.indexOf(':') + 1) : f;
-                    String color = DOMAIN_COLORS.getOrDefault(domain, "#7F8C8D");
+                    String color = DOMAIN_COLORS.getIfAbsentValue(domain, "#7F8C8D");
                     return "<span class=\"feature-tag\" style=\"border-color: " + color + "; color: " + color + "\" title=\"" + escapeHtml(f) + "\">" + escapeHtml(capability) + "</span>";
                 })
                 .collect(Collectors.joining(" "));
@@ -543,19 +400,52 @@ public class EMIT_to_HTML
         return String.format("rgba(%d, %d, %d, %.2f)", r, g, b, alpha);
     }
 
-    private static String displayModule(EMITModelDescriptor d)
+    private static String displayPath(EMITModelDescriptor d, Path repoRoot)
     {
-        String module = d.getModule();
-        return module != null ? module : "";
+        Path source = toLocalPath(d.getSource());
+        if (source == null || repoRoot == null)
+        {
+            return "";
+        }
+        try
+        {
+            return repoRoot.relativize(source).toString().replace(File.separatorChar, '/');
+        }
+        catch (IllegalArgumentException e)
+        {
+            return "";
+        }
     }
 
-    private static String displayPath(EMITModelDescriptor d)
+    private static String displayModule(EMITModelDescriptor d, Path repoRoot)
     {
-        String resourcePath = d.getResourcePath();
-        return resourcePath != null ? resourcePath : "";
+        String path = displayPath(d, repoRoot);
+        int idx = path.indexOf("/src/test/resources/");
+        if (idx <= 0)
+        {
+            return "";
+        }
+        int prev = path.lastIndexOf('/', idx - 1);
+        return (prev < 0) ? path.substring(0, idx) : path.substring(prev + 1, idx);
     }
 
-    private static String buildModelJson(List<EMITModelDescriptor> descriptors)
+    private static Path toLocalPath(URL url)
+    {
+        if (url == null || !"file".equals(url.getProtocol()))
+        {
+            return null;
+        }
+        try
+        {
+            return Paths.get(url.toURI());
+        }
+        catch (URISyntaxException e)
+        {
+            return null;
+        }
+    }
+
+    private static String buildModelJson(List<EMITModelDescriptor> descriptors, Path repoRoot)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -575,8 +465,8 @@ public class EMIT_to_HTML
             sb.append("\"stores\":").append(jsonList(d.getStores())).append(",");
             sb.append("\"complexity\":\"").append(escapeJs(d.getComplexity() != null ? d.getComplexity() : "")).append("\",");
             sb.append("\"tags\":").append(jsonList(d.getTags())).append(",");
-            sb.append("\"module\":\"").append(escapeJs(displayModule(d))).append("\",");
-            sb.append("\"path\":\"").append(escapeJs(displayPath(d))).append("\"");
+            sb.append("\"module\":\"").append(escapeJs(displayModule(d, repoRoot))).append("\",");
+            sb.append("\"path\":\"").append(escapeJs(displayPath(d, repoRoot))).append("\"");
             sb.append("}");
         }
         sb.append("}");

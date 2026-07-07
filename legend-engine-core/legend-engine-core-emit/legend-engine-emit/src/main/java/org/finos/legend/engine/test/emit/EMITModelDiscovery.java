@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class EMITModelDiscovery
@@ -38,33 +38,20 @@ public final class EMITModelDiscovery
 
     public static List<Path> findEmitYamls(Path directory)
     {
-        return findEmitYamls(directory, p -> false);
-    }
-
-    public static List<Path> findEmitYamls(Path directory, Predicate<? super Path> exclude)
-    {
         if (directory == null || !Files.isDirectory(directory))
         {
             throw new IllegalArgumentException("Not a directory: " + directory);
         }
-        if (exclude == null)
-        {
-            throw new IllegalArgumentException("exclude predicate is required");
-        }
-        List<Path> yamls = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(directory))
         {
-            walk.filter(Files::isRegularFile)
+            return walk.filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().endsWith(EMIT_YAML_SUFFIX))
-                    .filter(p -> !exclude.test(p))
-                    .forEach(yamls::add);
+                    .collect(Collectors.toList());
         }
         catch (IOException e)
         {
             throw new UncheckedIOException("Failed to walk directory '" + directory + "'", e);
         }
-        yamls.sort(null);
-        return yamls;
     }
 
     public static Path findEmitYaml(String classpathRoot, String name)
@@ -106,7 +93,6 @@ public final class EMITModelDiscovery
             {
                 walkRoot(urls.nextElement(), result::add);
             }
-            result.sort(null);
             return result;
         }
         catch (IOException e)

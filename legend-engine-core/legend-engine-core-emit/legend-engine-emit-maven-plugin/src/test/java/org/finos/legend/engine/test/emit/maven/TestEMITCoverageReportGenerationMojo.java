@@ -14,303 +14,465 @@
 
 package org.finos.legend.engine.test.emit.maven;
 
+import org.apache.maven.model.Build;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.plugin.testing.MojoRule;
 import org.apache.maven.project.MavenProject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
+import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestEMITCoverageReportGenerationMojo
 {
-    private static final Set<String> DEFAULT_EXCLUDED_NAMES = setOf("target", "legend-engine-emit-junit");
-    private static final Set<String> DEFAULT_EXCLUDED_PREFIXES = setOf(".");
-    private static final Set<String> DEFAULT_EXCLUDED_SUBPATHS = setOf("src/main");
-    private static final Set<String> DEFAULT_INCLUDED_SUBPATHS = setOf("src/test/resources/emit-models");
+    private static final String GOAL = "generate-EMIT-coverage-report";
+    private static final String PLUGIN_GROUP_ID = "org.finos.legend.engine";
+    private static final String PLUGIN_ARTIFACT_ID = "legend-engine-emit-maven-plugin";
+    private static final String DEFAULT_INCLUDED_SUBPATH = "src/test/resources/emit-models";
+
+    @ClassRule
+    public static TemporaryFolder TMP_FOLDER = new TemporaryFolder();
+
+    @Rule
+    public MojoRule mojoRule = new MojoRule();
 
     @Test
-    public void findRepoRootReturnsProjectWhenItHasNoParent()
+    public void mojoIsRegisteredWithPluginDescriptor() throws Exception
     {
-        MavenProject project = projectOnDisk();
+        File projectDir = buildSingleModuleProject(
+                "project", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
 
-        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(project);
-
-        Assertions.assertSame(project, found,
-                "A project with no parent is itself the repo root");
-    }
-
-    @Test
-    public void findRepoRootWalksParentChainToTopmostOnDiskProject()
-    {
-        MavenProject root = projectOnDisk();
-        MavenProject parent = projectOnDisk();
-        MavenProject child = projectOnDisk();
-        Mockito.when(parent.getParent()).thenReturn(root);
-        Mockito.when(child.getParent()).thenReturn(parent);
-
-        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(child);
-
-        Assertions.assertSame(root, found,
-                "findRepoRoot must walk all the way to the topmost on-disk ancestor");
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        Object mojo = this.mojoRule.lookupConfiguredMojo(mavenProject, GOAL);
+        Assert.assertNotNull("Mojo should be discoverable via the generated plugin descriptor", mojo);
+        Assert.assertTrue(
+                "Expected an EMITCoverageReportGenerationMojo, got " + mojo.getClass().getName(),
+                mojo instanceof EMITCoverageReportGenerationMojo);
     }
 
     @Test
-    public void findRepoRootStopsAtTheFirstParentWithoutBasedir()
+    public void producesReportWhenNoEmitModelsExist() throws Exception
     {
-        MavenProject externalParent = projectWithoutBasedir();
-        MavenProject root = projectOnDisk();
-        Mockito.when(root.getParent()).thenReturn(externalParent);
+        File projectDir = buildSingleModuleProject(
+                "empty", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
 
-        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(root);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertSame(root, found,
-                "Walking must stop at the first parent that has no basedir");
+        Assert.assertTrue("Report file should be written even when no models are found",
+                getExpectedOutputFile(mavenProject).exists());
+        Assert.assertTrue("No descriptors should be discovered when the project is empty",
+                discoverDescriptors(mojo, projectDir).isEmpty());
     }
 
     @Test
-    public void findRepoRootDoesNotCrossExternalParentInDeeperChain()
+    public void discoversSingleEmitModelInDefaultLocation() throws Exception
     {
-        MavenProject externalParent = projectWithoutBasedir();
-        MavenProject onDiskRoot = projectOnDisk();
-        MavenProject onDiskChild = projectOnDisk();
-        Mockito.when(onDiskRoot.getParent()).thenReturn(externalParent);
-        Mockito.when(onDiskChild.getParent()).thenReturn(onDiskRoot);
+        File projectDir = buildSingleModuleProject(
+                "single-model", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/alpha.emit.yaml", "alpha-model");
 
-        MavenProject found = EMITCoverageReportGenerationMojo.findRepoRoot(onDiskChild);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertSame(onDiskRoot, found,
-                "Even with several on-disk descendants, the walk must still stop at the on-disk root");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "alpha-model");
     }
 
     @Test
-    public void findRepoRootThrowsOnNull()
+    public void discoversMultipleModelsAcrossSiblingModules() throws Exception
     {
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> EMITCoverageReportGenerationMojo.findRepoRoot(null));
+        File projectDir = buildSingleModuleProject(
+                "multi-module", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/alpha.emit.yaml", "alpha-model");
+        touchYaml(projectDir, "moduleB/" + DEFAULT_INCLUDED_SUBPATH + "/beta.emit.yaml", "beta-model");
+        touchYaml(projectDir, "moduleC/nested/" + DEFAULT_INCLUDED_SUBPATH + "/gamma.emit.yaml", "gamma-model");
+
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
+
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir),
+                "alpha-model", "beta-model", "gamma-model");
     }
 
     @Test
-    public void walksTopLevelModulesAndReturnsTheirEmitModelsDirs(@TempDir Path repo) throws IOException
+    public void discoversAllYamlsInsideSameEmitModelsDir() throws Exception
     {
-        Path moduleA = touchYaml(repo, "legend-engine-xt-a/src/test/resources/emit-models/a.emit.yaml");
-        Path moduleB = touchYaml(repo, "legend-engine-xt-b/src/test/resources/emit-models/b.emit.yaml");
+        File projectDir = buildSingleModuleProject(
+                "multi-yaml", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
+        String base = "moduleA/" + DEFAULT_INCLUDED_SUBPATH;
+        touchYaml(projectDir, base + "/first.emit.yaml", "first-model");
+        touchYaml(projectDir, base + "/nested/second.emit.yaml", "second-model");
+        touchYaml(projectDir, base + "/nested/deeper/third.emit.yaml", "third-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(2, dirs.size(), "Both modules' emit-models dirs should be returned. Got " + dirs);
-        Assertions.assertTrue(dirs.contains(moduleA.getParent()));
-        Assertions.assertTrue(dirs.contains(moduleB.getParent()));
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir),
+                "first-model", "second-model", "third-model");
     }
 
     @Test
-    public void deduplicatesMultipleYamlsInTheSameEmitModelsDir(@TempDir Path repo) throws IOException
+    public void defaultExclusionsPruneTargetSubtrees() throws Exception
     {
-        Path emitModels = touchYaml(repo, "m/src/test/resources/emit-models/a.emit.yaml").getParent();
-        Files.write(emitModels.resolve("b.emit.yaml"), new byte[0]);
-        Files.createDirectories(emitModels.resolve("nested"));
-        Files.write(emitModels.resolve("nested/c.emit.yaml"), new byte[0]);
+        File projectDir = buildSingleModuleProject(
+                "target-pruned", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, "moduleA/target/" + DEFAULT_INCLUDED_SUBPATH + "/dropped.emit.yaml", "dropped-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(emitModels), dirs,
-                "The emit-models directory is recorded once (SKIP_SUBTREE prevents descent), regardless of how many yamls it contains or how deeply they are nested");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void prunesTargetSubtrees(@TempDir Path repo) throws IOException
+    public void defaultExclusionsPruneHiddenDirectories() throws Exception
     {
-        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
-        touchYaml(repo, "m/target/leftover/src/test/resources/emit-models/leaked.emit.yaml");
+        File projectDir = buildSingleModuleProject(
+                "hidden-pruned", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, ".git/" + DEFAULT_INCLUDED_SUBPATH + "/dropped.emit.yaml", "dropped-model");
+        touchYaml(projectDir, ".idea/nested/" + DEFAULT_INCLUDED_SUBPATH + "/also-dropped.emit.yaml", "also-dropped-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "target/ subtrees are pruned by preVisitDirectory SKIP_SUBTREE");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void prunesHiddenDirectoriesByNamePrefix(@TempDir Path repo) throws IOException
+    public void defaultExclusionsPruneSrcMainSubtrees() throws Exception
     {
-        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
-        touchYaml(repo, ".git/objects/src/test/resources/emit-models/leaked.emit.yaml");
-        touchYaml(repo, ".idea/cache/src/test/resources/emit-models/leaked2.emit.yaml");
+        List<String> included = Lists.fixedSize.with("emit-models");
+        File projectDir = buildSingleModuleProject(
+                "srcmain-pruned", "org.finos.test", "test-project", "1.0.0",
+                null, included, null, null, null);
+        touchYaml(projectDir, "moduleA/src/test/emit-models/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, "moduleA/src/main/emit-models/dropped.emit.yaml", "dropped-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "Any directory whose simple name starts with '.' is pruned");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void prunesSrcMainSubtrees(@TempDir Path repo) throws IOException
+    public void customIncludedRelativeSubpathsChangeDiscoveryLocation() throws Exception
     {
-        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
-        touchYaml(repo, "m/src/main/resources/emit-models/leaked.emit.yaml");
+        List<String> included = Lists.fixedSize.with("shared/emit-catalogue");
+        File projectDir = buildSingleModuleProject(
+                "custom-inclusion", "org.finos.test", "test-project", "1.0.0",
+                null, included, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/default-loc.emit.yaml", "default-loc-model");
+        touchYaml(projectDir, "moduleA/shared/emit-catalogue/custom.emit.yaml", "custom-loc-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "Yamls under src/main must not leak into the report");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "custom-loc-model");
     }
 
     @Test
-    public void prunesExcludedModuleArtifactIdDirectories(@TempDir Path repo) throws IOException
+    public void customExcludedDirectoryNamesArePruned() throws Exception
     {
-        Path good = touchYaml(repo, "real-module/src/test/resources/emit-models/good.emit.yaml").getParent();
-        touchYaml(repo, "legend-engine-emit-junit/src/test/resources/emit-models/leaked.emit.yaml");
+        List<String> excludedNames = Lists.fixedSize.with("target", "generated-sources", "vendored");
+        File projectDir = buildSingleModuleProject(
+                "custom-name-excl", "org.finos.test", "test-project", "1.0.0",
+                null, null, excludedNames, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, "moduleA/vendored/" + DEFAULT_INCLUDED_SUBPATH + "/dropped.emit.yaml", "dropped-model");
+        touchYaml(projectDir, "moduleB/generated-sources/deep/" + DEFAULT_INCLUDED_SUBPATH + "/also-dropped.emit.yaml", "also-dropped-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "Modules whose dir name matches an excluded artifactId must be skipped");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void requiresYamlsToLiveUnderTheIncludedSubpath(@TempDir Path repo) throws IOException
+    public void customExcludedDirectoryNamePrefixesArePruned() throws Exception
     {
-        Path good = touchYaml(repo, "m/src/test/resources/emit-models/good.emit.yaml").getParent();
-        touchYaml(repo, "m/src/test/resources/other/nope.emit.yaml");
-        touchYaml(repo, "m/random-place/nope.emit.yaml");
+        List<String> excludedPrefixes = Lists.fixedSize.with(".", "_");
+        File projectDir = buildSingleModuleProject(
+                "custom-prefix-excl", "org.finos.test", "test-project", "1.0.0",
+                null, null, null, excludedPrefixes, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, ".hidden/" + DEFAULT_INCLUDED_SUBPATH + "/dropped-dot.emit.yaml", "dropped-dot-model");
+        touchYaml(projectDir, "_scratch/" + DEFAULT_INCLUDED_SUBPATH + "/dropped-underscore.emit.yaml", "dropped-underscore-model");
 
-        List<Path> dirs = collectWithDefaults(repo);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "preVisitDirectory only records dirs whose relative path matches the inclusion subpath; non-matching dirs are not recorded, even if they contain *.emit.yaml files");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void parameterizedInclusionSubpathsChangeWhereYamlsAreLookedFor(@TempDir Path repo) throws IOException
+    public void customExcludedRelativeSubpathsArePruned() throws Exception
     {
-        Path customDir = touchYaml(repo, "m/some/custom/place/foo.emit.yaml").getParent();
+        List<String> included = Lists.fixedSize.with("emit-models");
+        List<String> excludedSubpaths = Lists.fixedSize.with("legacy/deprecated");
+        File projectDir = buildSingleModuleProject(
+                "custom-subpath-excl", "org.finos.test", "test-project", "1.0.0",
+                null, included, null, null, excludedSubpaths);
+        touchYaml(projectDir, "moduleA/emit-models/kept.emit.yaml", "kept-model");
+        touchYaml(projectDir, "moduleA/legacy/deprecated/emit-models/dropped.emit.yaml", "dropped-model");
 
-        Assertions.assertTrue(collectWithDefaults(repo).isEmpty(),
-                "Default inclusion is src/test/resources/emit-models — custom location must be ignored");
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                repo, setOf("some/custom/place"), DEFAULT_EXCLUDED_NAMES,
-                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
-
-        Assertions.assertEquals(Collections.singletonList(customDir), dirs,
-                "A custom inclusion subpath should pick up yamls under it");
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "kept-model");
     }
 
     @Test
-    public void matchesDirsAgainstAnyOfTheConfiguredInclusionSubpaths(@TempDir Path repo) throws IOException
+    public void relaxingDefaultExclusionsAllowsPreviouslyHiddenModels() throws Exception
     {
-        Path unit = touchYaml(repo, "m/src/test/resources/emit-models/a.emit.yaml").getParent();
-        Path integration = touchYaml(repo, "m/src/it/resources/emit-models/b.emit.yaml").getParent();
+        File projectDir = buildSingleModuleProject(
+                "relaxed-excl", "org.finos.test", "test-project", "1.0.0",
+                null, null, Lists.fixedSize.empty(), null, null);
+        touchYaml(projectDir, "moduleA/target/" + DEFAULT_INCLUDED_SUBPATH + "/nowKept.emit.yaml", "now-kept-model");
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                repo,
-                setOf("src/test/resources/emit-models", "src/it/resources/emit-models"),
-                DEFAULT_EXCLUDED_NAMES, DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(2, dirs.size(),
-                "Directories matching any of the configured inclusion subpaths must all be recorded. Got " + dirs);
-        Assertions.assertTrue(dirs.contains(unit));
-        Assertions.assertTrue(dirs.contains(integration));
+        Assert.assertTrue(getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "now-kept-model");
     }
 
     @Test
-    public void parameterizedExclusionsCanBeRelaxedToIncludeOtherwiseHiddenSubtrees(@TempDir Path repo) throws IOException
+    public void customOutputFilePathIsHonored() throws Exception
     {
-        Path under_target = touchYaml(repo, "target/foo/src/test/resources/emit-models/a.emit.yaml").getParent();
+        File customOutputFile = new File(TMP_FOLDER.newFolder(), "custom/dir/coverage.html");
+        File projectDir = buildSingleModuleProject(
+                "custom-output", "org.finos.test", "test-project", "1.0.0",
+                customOutputFile, null, null, null, null);
+        touchYaml(projectDir, "moduleA/" + DEFAULT_INCLUDED_SUBPATH + "/alpha.emit.yaml", "alpha-model");
 
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                repo, DEFAULT_INCLUDED_SUBPATHS, Collections.emptySet(),
-                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
+        MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
+        EMITCoverageReportGenerationMojo mojo = executeMojo(mavenProject);
 
-        Assertions.assertEquals(Collections.singletonList(under_target), dirs,
-                "Clearing excludedDirectoryNames should allow target/ subtrees to surface");
+        Assert.assertTrue("Report should be written to the explicitly-configured outputFilePath",
+                customOutputFile.exists());
+        Assert.assertFalse("Default output location should not be used when overridden",
+                getExpectedOutputFile(mavenProject).exists());
+        assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "alpha-model");
     }
 
-    @Test
-    public void returnsSortedListOfEmitModelsDirs(@TempDir Path repo) throws IOException
+    private EMITCoverageReportGenerationMojo executeMojo(MavenProject mavenProject) throws Exception
     {
-        Path z = touchYaml(repo, "zzz-module/src/test/resources/emit-models/z.emit.yaml").getParent();
-        Path a = touchYaml(repo, "aaa-module/src/test/resources/emit-models/a.emit.yaml").getParent();
-        Path m = touchYaml(repo, "mmm-module/src/test/resources/emit-models/m.emit.yaml").getParent();
-
-        List<Path> dirs = collectWithDefaults(repo);
-
-        Assertions.assertEquals(Arrays.asList(a, m, z), dirs,
-                "Result must be in natural Path order");
+        EMITCoverageReportGenerationMojo mojo = (EMITCoverageReportGenerationMojo) this.mojoRule.lookupConfiguredMojo(mavenProject, GOAL);
+        mojo.execute();
+        return mojo;
     }
 
-    @Test
-    public void rejectsNullRepoRoot()
+    private List<EMITModelDescriptor> discoverDescriptors(EMITCoverageReportGenerationMojo mojo, File projectDir) throws Exception
     {
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                        null, DEFAULT_INCLUDED_SUBPATHS, DEFAULT_EXCLUDED_NAMES,
-                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS));
+        List<String> included = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "includedRelativeSubpaths");
+        List<String> excludedNames = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedDirectoryNames");
+        List<String> excludedPrefixes = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedDirectoryNamePrefixes");
+        List<String> excludedSubpaths = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedRelativeSubpaths");
+
+        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(projectDir.toPath(), included, excludedNames, excludedPrefixes, excludedSubpaths);
+        return EMITCoverageReportGenerationMojo.parseDescriptorsUnder(dirs);
     }
 
-    @Test
-    public void rejectsNullOrEmptyInclusionSubpaths(@TempDir Path repo)
+    private static void assertDescriptorNamesEqual(List<EMITModelDescriptor> descriptors, String... expectedNames)
     {
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                        repo, null, DEFAULT_EXCLUDED_NAMES,
-                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS),
-                "null inclusion set must be rejected");
-        Assertions.assertThrows(IllegalArgumentException.class,
-                () -> EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                        repo, Collections.emptySet(), DEFAULT_EXCLUDED_NAMES,
-                        DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS),
-                "empty inclusion set must be rejected (nothing could ever match)");
+        Set<String> actualNames = descriptors.stream()
+                .map(EMITModelDescriptor::getName)
+                .collect(Collectors.toSet());
+        Assert.assertEquals("Descriptor count mismatch", expectedNames.length, actualNames.size());
+        for (String expectedName : expectedNames)
+        {
+            Assert.assertTrue(
+                    "Expected descriptor '" + expectedName + "' but got " + actualNames,
+                    actualNames.contains(expectedName));
+        }
     }
 
-    @Test
-    public void tolerantOfNullExclusionSets(@TempDir Path repo) throws IOException
+    private File getExpectedOutputFile(MavenProject mavenProject)
     {
-        Path good = touchYaml(repo, "m/src/test/resources/emit-models/g.emit.yaml").getParent();
-
-        List<Path> dirs = EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                repo, DEFAULT_INCLUDED_SUBPATHS, null, null, null);
-
-        Assertions.assertEquals(Collections.singletonList(good), dirs,
-                "Null exclusion sets are treated as empty (no pruning beyond the inclusion filter)");
+        return new File(mavenProject.getBuild().getDirectory(), "emit/emit-coverage.html");
     }
 
-    private static MavenProject projectOnDisk()
+    private Path touchYaml(File projectDir, String relativePath, String modelName) throws IOException
     {
-        MavenProject p = Mockito.mock(MavenProject.class);
-        Mockito.when(p.getBasedir()).thenReturn(new File("/tmp"));
-        return p;
+        Path yaml = projectDir.toPath().resolve(relativePath);
+        Files.createDirectories(yaml.getParent());
+        String yamlBody = "name: " + modelName + "\n";
+        Files.write(yaml, yamlBody.getBytes(StandardCharsets.UTF_8));
+        return yaml;
     }
 
-    private static MavenProject projectWithoutBasedir()
+    private File buildSingleModuleProject(
+            String projectDirName,
+            String groupId,
+            String artifactId,
+            String version,
+            File outputFile,
+            List<String> includedRelativeSubpaths,
+            List<String> excludedDirectoryNames,
+            List<String> excludedDirectoryNamePrefixes,
+            List<String> excludedRelativeSubpaths) throws IOException
     {
-        return Mockito.mock(MavenProject.class);
+        Model model = buildMavenModelWithPlugin(
+                groupId, artifactId, version,
+                outputFile,
+                includedRelativeSubpaths,
+                excludedDirectoryNames,
+                excludedDirectoryNamePrefixes,
+                excludedRelativeSubpaths);
+        return buildProject(projectDirName, model);
     }
 
-    private static List<Path> collectWithDefaults(Path repo) throws IOException
+    private File buildProject(String projectDirName, Model model) throws IOException
     {
-        return EMITCoverageReportGenerationMojo.collectEmitModelsDirs(
-                repo, DEFAULT_INCLUDED_SUBPATHS, DEFAULT_EXCLUDED_NAMES,
-                DEFAULT_EXCLUDED_PREFIXES, DEFAULT_EXCLUDED_SUBPATHS);
+        File projectParentDir = TMP_FOLDER.newFolder();
+        File projectDir = new File(projectParentDir, projectDirName);
+        if (!projectDir.mkdirs())
+        {
+            throw new IOException("Could not create project directory " + projectDir);
+        }
+        serializeMavenModel(projectDir, model);
+        return projectDir;
     }
 
-    private static Path touchYaml(Path repo, String relativePath) throws IOException
+    private void serializeMavenModel(File projectDir, Model model) throws IOException
     {
-        Path target = repo.resolve(relativePath);
-        Files.createDirectories(target.getParent());
-        Files.write(target, new byte[0]);
-        return target;
+        serializeMavenModel(projectDir.toPath(), model);
     }
 
-    private static Set<String> setOf(String... values)
+    private void serializeMavenModel(Path projectDir, Model model) throws IOException
     {
-        return new HashSet<>(Arrays.asList(values));
+        Files.createDirectories(projectDir);
+        try (Writer writer = Files.newBufferedWriter(projectDir.resolve("pom.xml"), StandardCharsets.UTF_8))
+        {
+            new MavenXpp3Writer().write(writer, model);
+        }
+    }
+
+    private Model buildMavenModelWithPlugin(
+            String groupId,
+            String artifactId,
+            String version,
+            File outputFile,
+            List<String> includedRelativeSubpaths,
+            List<String> excludedDirectoryNames,
+            List<String> excludedDirectoryNamePrefixes,
+            List<String> excludedRelativeSubpaths)
+    {
+        Model model = buildMavenModel(groupId, artifactId, version, null);
+        Build build = new Build();
+        build.addPlugin(buildPlugin(
+                outputFile,
+                includedRelativeSubpaths,
+                excludedDirectoryNames,
+                excludedDirectoryNamePrefixes,
+                excludedRelativeSubpaths));
+        model.setBuild(build);
+        return model;
+    }
+
+    private Model buildMavenModel(String groupId, String artifactId, String version, String packaging)
+    {
+        Model model = new Model();
+        model.setModelVersion("4.0.0");
+        model.setModelEncoding(StandardCharsets.UTF_8.name());
+        model.setGroupId(groupId);
+        model.setArtifactId(artifactId);
+        model.setVersion(version);
+        model.setPackaging(packaging);
+        return model;
+    }
+
+    private Plugin buildPlugin(
+            File outputFile,
+            List<String> includedRelativeSubpaths,
+            List<String> excludedDirectoryNames,
+            List<String> excludedDirectoryNamePrefixes,
+            List<String> excludedRelativeSubpaths)
+    {
+        Plugin plugin = new Plugin();
+        plugin.setGroupId(PLUGIN_GROUP_ID);
+        plugin.setArtifactId(PLUGIN_ARTIFACT_ID);
+
+        Xpp3Dom configuration = newXpp3Dom("configuration", null, null);
+        plugin.setConfiguration(configuration);
+
+        if (outputFile != null)
+        {
+            newXpp3Dom("outputFilePath", outputFile.getAbsolutePath(), configuration);
+        }
+        appendStringList(configuration, "includedRelativeSubpaths", "includedRelativeSubpath", includedRelativeSubpaths);
+        appendStringList(configuration, "excludedDirectoryNames", "excludedDirectoryName", excludedDirectoryNames);
+        appendStringList(configuration, "excludedDirectoryNamePrefixes", "excludedDirectoryNamePrefix", excludedDirectoryNamePrefixes);
+        appendStringList(configuration, "excludedRelativeSubpaths", "excludedRelativeSubpath", excludedRelativeSubpaths);
+
+        PluginExecution execution = new PluginExecution();
+        plugin.addExecution(execution);
+        execution.setPhase("generate-resources");
+        execution.getGoals().add(GOAL);
+
+        return plugin;
+    }
+
+    private void appendStringList(Xpp3Dom parent, String parentName, String childName, List<String> values)
+    {
+        if (values == null)
+        {
+            return;
+        }
+        Xpp3Dom container = newXpp3Dom(parentName, null, parent);
+        for (String v : values)
+        {
+            newXpp3Dom(childName, v, container);
+        }
+    }
+
+    private Xpp3Dom newXpp3Dom(String name, String value, Xpp3Dom parent)
+    {
+        Xpp3Dom element = new Xpp3Dom(name);
+        if (value != null)
+        {
+            element.setValue(value);
+        }
+        if (parent != null)
+        {
+            parent.addChild(element);
+        }
+        return element;
     }
 }

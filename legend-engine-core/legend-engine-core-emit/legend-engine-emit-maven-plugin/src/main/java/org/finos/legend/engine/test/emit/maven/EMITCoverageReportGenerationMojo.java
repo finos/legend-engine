@@ -20,21 +20,22 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.engine.test.emit.EMIT_to_HTML;
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.test.emit.EMITModelDiscovery;
+import org.finos.legend.engine.test.emit.EMITModelLoader;
+import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
+import org.finos.legend.engine.test.emit.report.EMIT_to_HTML;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 @Mojo(
         name = "generate-EMIT-coverage-report",
@@ -46,20 +47,20 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
-    @Parameter(defaultValue = "${project.build.outputDirectory}/emit/emit-coverage.html", required = true)
-    private Path outputFilePath;
+    @Parameter(defaultValue = "${project.build.directory}/emit/emit-coverage.html", required = true)
+    private File outputFilePath;
 
     @Parameter
-    private Set<String> includedRelativeSubpaths = Sets.fixedSize.with("src/test/resources/emit-models");
+    private List<String> includedRelativeSubpaths = Lists.fixedSize.with("src/test/resources/emit-models");
 
     @Parameter
-    private Set<String> excludedDirectoryNames = Sets.fixedSize.with("target", "legend-engine-emit-junit");
+    private List<String> excludedDirectoryNames = Lists.fixedSize.with("target");
 
     @Parameter
-    private Set<String> excludedDirectoryNamePrefixes = Sets.fixedSize.with(".");
+    private List<String> excludedDirectoryNamePrefixes = Lists.fixedSize.with(".");
 
     @Parameter
-    private Set<String> excludedRelativeSubpaths = Sets.fixedSize.with("src/main");
+    private List<String> excludedRelativeSubpaths = Lists.fixedSize.with("src/main");
 
     @Override
     public void execute() throws MojoExecutionException
@@ -77,23 +78,32 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
             throw new MojoExecutionException("Failed to walk directory tree under " + repoRoot, e);
         }
         getLog().info("EMIT coverage report: " + emitModelsDirs.size() + " emit-models directories discovered under " + repoRoot);
+        List<EMITModelDescriptor> descriptors;
         try
         {
-            EMIT_to_HTML.generateFromEmitModelsDirs(repoRoot, emitModelsDirs, outputFilePath);
+            descriptors = parseDescriptorsUnder(emitModelsDirs);
+        }
+        catch (IOException e)
+        {
+            throw new MojoExecutionException("Failed to parse EMIT descriptors under " + repoRoot, e);
+        }
+        try
+        {
+            EMIT_to_HTML.writeHTML(descriptors, outputFilePath.toPath(), repoRoot);
         }
         catch (IOException e)
         {
             throw new MojoExecutionException("Failed to generate EMIT coverage report", e);
         }
-        getLog().info("EMIT coverage report: written to " + outputFilePath);
+        getLog().info("EMIT coverage report: " + descriptors.size() + " model(s) rendered to " + outputFilePath);
     }
 
     static List<Path> collectEmitModelsDirs(
             Path repoRoot,
-            Set<String> includedRelativeSubpaths,
-            Set<String> excludedDirectoryNames,
-            Set<String> excludedDirectoryNamePrefixes,
-            Set<String> excludedRelativeSubpaths) throws IOException
+            List<String> includedRelativeSubpaths,
+            List<String> excludedDirectoryNames,
+            List<String> excludedDirectoryNamePrefixes,
+            List<String> excludedRelativeSubpaths) throws IOException
     {
         if (repoRoot == null)
         {
@@ -103,11 +113,12 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
         {
             throw new IllegalArgumentException("includedRelativeSubpaths must be non-null and non-empty");
         }
-        Set<String> dirNames = (excludedDirectoryNames == null) ? Collections.emptySet() : excludedDirectoryNames;
-        Set<String> dirNamePrefixes = (excludedDirectoryNamePrefixes == null) ? Collections.emptySet() : excludedDirectoryNamePrefixes;
-        Set<String> relativeSubpaths = (excludedRelativeSubpaths == null) ? Collections.emptySet() : excludedRelativeSubpaths;
+        List<String> directoryNameExclusions = (excludedDirectoryNames == null) ? Collections.emptyList() : excludedDirectoryNames;
+        List<String> directoryNamePrefixExclusions = (excludedDirectoryNamePrefixes == null) ? Collections.emptyList() : excludedDirectoryNamePrefixes;
+        List<String> relativeSubpathExclusions = (excludedRelativeSubpaths == null) ? Collections.emptyList() : excludedRelativeSubpaths;
+        FileSystem fs = repoRoot.getFileSystem();
 
-        Set<Path> emitModelsDirs = new LinkedHashSet<>();
+        List<Path> emitModelsDirs = Lists.mutable.empty();
         Files.walkFileTree(repoRoot, new SimpleFileVisitor<Path>()
         {
             @Override
@@ -118,45 +129,53 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
                     return FileVisitResult.CONTINUE;
                 }
                 String name = dir.getFileName().toString();
-                for (String prefix : dirNamePrefixes)
-                {
-                    if (!prefix.isEmpty() && name.startsWith(prefix))
-                    {
-                        return FileVisitResult.SKIP_SUBTREE;
-                    }
-                }
-                if (dirNames.contains(name))
+                if (directoryNamePrefixExclusions.stream().anyMatch(prefix -> !prefix.isEmpty() && name.startsWith(prefix)))
                 {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                String rel = relativize(repoRoot, dir);
-                for (String subpath : relativeSubpaths)
+                if (directoryNameExclusions.stream().anyMatch(name::equals))
                 {
-                    if (rel.equals(subpath) || rel.endsWith("/" + subpath))
-                    {
-                        return FileVisitResult.SKIP_SUBTREE;
-                    }
+                    return FileVisitResult.SKIP_SUBTREE;
                 }
-                for (String subpath : includedRelativeSubpaths)
+                Path rel = repoRoot.relativize(dir);
+                if (relativeSubpathExclusions.stream().anyMatch(subpath -> rel.endsWith(fs.getPath(subpath))))
                 {
-                    if (rel.equals(subpath) || rel.endsWith("/" + subpath))
-                    {
-                        emitModelsDirs.add(dir);
-                        return FileVisitResult.SKIP_SUBTREE;
-                    }
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                if (includedRelativeSubpaths.stream().anyMatch(subpath -> rel.endsWith(fs.getPath(subpath))))
+                {
+                    emitModelsDirs.add(dir);
+                    return FileVisitResult.SKIP_SUBTREE;
                 }
                 return FileVisitResult.CONTINUE;
             }
         });
-        List<Path> sorted = new ArrayList<>(emitModelsDirs);
-        sorted.sort(null);
-        return sorted;
+        emitModelsDirs.sort(null);
+        return emitModelsDirs;
     }
 
-    private static String relativize(Path repoRoot, Path dir)
+    static List<EMITModelDescriptor> parseDescriptorsUnder(List<Path> emitModelsDirs) throws IOException
     {
-        return repoRoot.relativize(dir).toString().replace(File.separatorChar, '/');
+        if (emitModelsDirs == null)
+        {
+            throw new IllegalArgumentException("emitModelsDirs is required");
+        }
+        List<EMITModelDescriptor> descriptors = Lists.mutable.empty();
+        EMITModelLoader loader = new EMITModelLoader();
+        for (Path dir : emitModelsDirs)
+        {
+            if (dir == null || !Files.isDirectory(dir))
+            {
+                continue;
+            }
+            for (Path yaml : EMITModelDiscovery.findEmitYamls(dir))
+            {
+                descriptors.add(loader.parseDescriptor(yaml));
+            }
+        }
+        return descriptors;
     }
+
 
     static MavenProject findRepoRoot(MavenProject project)
     {
