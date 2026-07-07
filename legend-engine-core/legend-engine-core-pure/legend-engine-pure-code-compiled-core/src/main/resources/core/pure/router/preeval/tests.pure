@@ -1640,7 +1640,7 @@ function <<test.Test>> meta::pure::router::preeval::tests::testFromWith():Boolea
 
 function <<test.Test>> meta::pure::router::preeval::tests::testFromStopFunctions():Boolean[1]
 {
-  let funcs = meta::pure::mapping->packageFunctionsRecursive()->filter(f | $f.functionName->in(['from', 'to']));
+  let funcs = meta::pure::mapping->packageFunctionsRecursive()->filter(f | $f.functionName->in(['from', 'with']));
   let stopped = fromFunctionsToStop();
 
   let difference = $funcs->filter(f | !($f->hasStereotype('NotImplementedFunction', functionType) || $f->in($stopped)));
