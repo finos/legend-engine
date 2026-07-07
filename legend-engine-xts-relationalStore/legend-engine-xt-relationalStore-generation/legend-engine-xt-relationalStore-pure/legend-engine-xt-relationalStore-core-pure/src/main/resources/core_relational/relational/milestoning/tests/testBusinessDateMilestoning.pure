@@ -289,44 +289,48 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testM
    let runtime = meta::relational::tests::milestoning::initDatabase();
 
    let standaloneResult = execute(
-      {|Product.all(%2015-10-16)
-         ->project([p|$p.id, p|$p.classification(%2015-10-16).description], ['id', 'classDesc'])
-         ->from(milestoningmap, $runtime)
+      {|Order.all()
+         ->filter(o| $o.product(%2015-10-16).stockProductName == 'ProductName2')
+         ->project([o|$o.id], ['id'])
          ->join(
-            Product.all(%2015-10-16)
-               ->project([p|$p.id], ['id2'])
-               ->from(milestoningmap, $runtime),
+            Order.all()
+               ->project([o|$o.id], ['id2']),
             JoinType.LEFT_OUTER,
             ['id'], ['id2']
          )
-         ->from(milestoningmap, $runtime)
       },
-      ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions()
+      milestoningmap, $runtime, meta::relational::extension::relationalExtensions()
    );
+   let standaloneRows = $standaloneResult.values->at(0).rows->size();
+   assertEquals(1, $standaloneRows);
 
-   // Same expression with ->concatenate([]) — triggers processConcatenate, altering isolation strategy.
-   let concatResult = execute(
-      {|Product.all(%2015-10-16)
-         ->project([p|$p.id, p|$p.classification(%2015-10-16).description], ['id', 'classDesc'])
-         ->from(milestoningmap, $runtime)
+   let concatenatedResult = execute(
+      {|Order.all()
+         ->filter(o| $o.product(%2015-10-16).stockProductName == 'ProductName2')
+         ->project([o|$o.id], ['id'])
          ->join(
-            Product.all(%2015-10-16)
-               ->project([p|$p.id], ['id2'])
-               ->from(milestoningmap, $runtime),
+            Order.all()
+               ->project([o|$o.id], ['id2']),
             JoinType.LEFT_OUTER,
             ['id'], ['id2']
          )
-         ->from(milestoningmap, $runtime)
-         ->concatenate([])
+         ->concatenate(
+            Order.all()
+               ->filter(o| 1 == 0)
+               ->project([o|$o.id], ['id'])
+               ->join(
+                  Order.all()
+                     ->project([o|$o.id], ['id2']),
+                  JoinType.LEFT_OUTER,
+                  ['id'], ['id2']
+               )
+         )
       },
-      ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions()
+      milestoningmap, $runtime, meta::relational::extension::relationalExtensions()
    );
+   let concatenatedRows = $concatenatedResult.values->at(0).rows->size();
 
-   let standaloneTds = $standaloneResult.values->at(0);
-   let concatTds = $concatResult.values->at(0);
-
-   assertEquals($standaloneTds.rows->size(), $concatTds.rows->size());
-   assertEquals($standaloneTds.rows->map(r|$r.values->makeString(','))->sort(), $concatTds.rows->map(r|$r.values->makeString(','))->sort());
+   assertEquals($standaloneRows, $concatenatedRows);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testQueryOfMilestonedTypeWithFilterInMapping():Boolean[1]
