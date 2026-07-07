@@ -1269,7 +1269,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                                                                let reprocessJoin=^$join(operation=$reprocessOp, aliases=$reprocessOpAliasesPairs);
                                                                                                let reprocessC = ^$c(join=$reprocessJoin);
                                                                                                let newSourceAlias = $reprocessOpAliases->filter(a|$a!=$c.alias);
-                                                                                               let newParent = $root->getAllNodes()->cast(@RelationalTreeNode)->filter(n|$n.alias==$newSourceAlias)->toOne();
+                                                                                               let newParent = $root->getAllNodes()->cast(@RelationalTreeNode)->filter(n|$newSourceAlias.name->contains($n.alias.name))->toOne();
                                                                                                let newParentWithIsolatedChild = ^$newParent(childrenData+=$reprocessC);
                                                                                                $root->replaceTreeNode($newParent, $newParentWithIsolatedChild)->cast(@RootJoinTreeNode);},$data);
 
