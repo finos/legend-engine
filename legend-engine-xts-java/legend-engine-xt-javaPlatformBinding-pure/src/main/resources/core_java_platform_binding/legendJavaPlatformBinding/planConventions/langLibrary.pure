@@ -165,7 +165,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
 
    let cls = $args->at(0).genericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
-   assert($conventions.newFunctionProhibitedList->filter(c|$c == $cls)->size()==0, 'Cannot create new instance for class used in mapping: ' + $cls->elementToPath());
 
    let kv = $args->at(2)->cast(@InstanceValue).values->cast(@KeyExpression);
 
