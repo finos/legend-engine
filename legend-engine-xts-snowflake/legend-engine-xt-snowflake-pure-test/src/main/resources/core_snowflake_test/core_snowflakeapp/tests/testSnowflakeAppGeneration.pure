@@ -337,6 +337,24 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
   checkSnowflakeAppGrammar($function, $expected);
 }
 
+function <<test.Test>> {doc.doc = 'Mapping-level add() without collection params must render as arithmetic +, not array_append'}
+meta::external::function::activator::snowflakeApp::tests::testMappingAddWithoutCollectionParams():Boolean[1]
+{
+  // Mapping uses nested add(add(AGE, FIRMID), ADDRESSID) — must stay as arithmetic +
+  let expected = '';
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMappingNestedAdd():TabularDataSet[1];\n';
+  checkSnowflakeAppGrammar($function, $expected);
+}
+
+function <<test.Test>> {doc.doc = 'Nested collection add() must render as nested array_append, not arithmetic +'}
+meta::external::function::activator::snowflakeApp::tests::testNestedCollectionAddRendersAsArrayAppend():Boolean[1]
+{
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1("myValues" ARRAY) RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR,"AGE" INTEGER,"NEWCOL" INTEGER) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", array_min(array_append(array_append(array_append(myValues, "root".AGE), 100), 50)) as "newCol" from personTable as "root" $$;';
+
+  let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithNestedCollectionAdd(Integer[*]):TabularDataSet[1];\n';
+
+  checkSnowflakeAppGrammar($function, $expected);
+}
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testSimpleRelationalfunctionWithMultipleCollectionParamsInFilter():Boolean[1]
 {
@@ -618,8 +636,15 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParamsUsingAddInExtend(myValues: Integer[*]):TabularDataSet[1]
 {
-  PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
-  ->extend(col(x:TDSRow[1] | $myValues->add($x.getInteger('age')->toOne())->least(), 'newCol'))
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->extend(col(x:TDSRow[1] | $myValues->add($x.getInteger('age')->toOne())->least(), 'newCol'))
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithNestedCollectionAdd(myValues: Integer[*]):TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->extend(col(x:TDSRow[1] | add(add(add($myValues, $x.getInteger('age')->toOne()), 100), 50)->least(), 'newCol'))
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 
@@ -676,6 +701,12 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithCollectionParams_NestedFunctionWithCollectionParams(myValues: Integer[*]):TabularDataSet[1]
 {
     PersonX.all()->filter(p| $p.age->toOne() > least(sort($myValues))->toOne())->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMappingNestedAdd():TabularDataSet[1]
+{
+    PersonX.all()->project([col(p|$p.ageSum, 'ageSum')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 
