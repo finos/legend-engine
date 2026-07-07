@@ -502,7 +502,7 @@ Mapping meta::relational::tests::mapping::modelJoin::advanced::MixedMappingNeste
 // in() in join condition
 //   employees.firmId == firm.id && employees.lastName->in(['Smith', 'Brown'])
 // =========================================================================
-Mapping meta::relational::tests::mapping::modelJoin::advanced::InConditionMapping
+Mapping meta::relational::tests::mapping::modelJoin::advanced::AdvancedInConditionMapping
 (
   *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relation
   {
