@@ -16,11 +16,15 @@
 package org.finos.legend.engine.query.sql.api;
 
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Join;
+import org.finos.legend.engine.protocol.sql.metamodel.Literal;
+import org.finos.legend.engine.protocol.sql.metamodel.NamedArgumentExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
 import org.finos.legend.engine.protocol.sql.metamodel.SetOperation;
 import org.finos.legend.engine.protocol.sql.metamodel.TableFunction;
+import org.finos.legend.engine.protocol.sql.metamodel.Union;
 import org.finos.legend.engine.protocol.sql.visitors.BaseNodeCollectorVisitor;
 
 /**
@@ -29,10 +33,10 @@ import org.finos.legend.engine.protocol.sql.visitors.BaseNodeCollectorVisitor;
  * A query qualifies as SELECT * if:
  * - It selects all columns (SELECT *)                                                    
  * - It has exactly one service/table function source (no JOINs, no multiple tables)
- * - The table function has exactly one argument (the service name, no parameters) [Version 1]
  * - It has no WHERE, ORDER BY, GROUP BY, HAVING, LIMIT, or OFFSET clauses
  * - It's not a UNION/INTERSECT/EXCEPT operation
  */
+
 public class SelectStarQueryDetector extends BaseNodeCollectorVisitor<Boolean>
 {
     private SelectStarQueryDetector()
@@ -63,8 +67,7 @@ public class SelectStarQueryDetector extends BaseNodeCollectorVisitor<Boolean>
             return false;
         }
 
-        // Must have exactly one source in FROM clause
-        if (spec.from == null || spec.from.size() != 1)
+        if (spec.from == null || spec.from.size() != 1 || spec.from.get(0) == null)
         {
             return false;
         }
@@ -94,12 +97,36 @@ public class SelectStarQueryDetector extends BaseNodeCollectorVisitor<Boolean>
     @Override
     public Boolean visit(TableFunction val)
     {
-        // For iteration 1, only optimize when the table function has exactly one argument
-        // (the service name), e.g. service('/myService'). Parameterized services like
-        // service('/myService', businessDate => '2015-01-01') go through the standard path.
-        return val.functionCall != null
-                && val.functionCall.arguments != null
-                && val.functionCall.arguments.size() == 1;
+        if (val.functionCall == null || val.functionCall.arguments == null || val.functionCall.arguments.isEmpty())
+        {
+            return false;
+        }
+
+        // All arguments must be literals or named arguments wrapping literals.
+        // This rejects complex expressions (CURRENT_DATE, subqueries, function calls, etc.)
+        // that cannot be safely passed to a pre-generated plan.
+        for (Expression arg : val.functionCall.arguments)
+        {
+            if (!isLiteralArgument(arg))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isLiteralArgument(Expression arg)
+    {
+        if (arg instanceof Literal)
+        {
+            return true;
+        }
+        if (arg instanceof NamedArgumentExpression)
+        {
+            Expression value = ((NamedArgumentExpression) arg).expression;
+            return value instanceof Literal;
+        }
+        return false;
     }
 
     @Override
@@ -110,6 +137,12 @@ public class SelectStarQueryDetector extends BaseNodeCollectorVisitor<Boolean>
 
     @Override
     public Boolean visit(SetOperation val)
+    {
+        return false;
+    }
+
+    @Override
+    public Boolean visit(Union val)
     {
         return false;
     }

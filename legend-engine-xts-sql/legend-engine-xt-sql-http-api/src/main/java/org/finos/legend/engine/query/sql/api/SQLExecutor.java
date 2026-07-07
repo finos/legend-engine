@@ -104,6 +104,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
 
@@ -111,6 +112,7 @@ public class SQLExecutor
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutor.class);
     private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final PureModel CORE_PURE_MODEL = PureModel.getCorePureModel();
     private static final Map<Class<? extends Literal>, String> LITERAL_TO_PURE_TYPES = UnifiedMap.newMapWith(
             Tuples.pair(IntegerLiteral.class, "Integer"),
             Tuples.pair(StringLiteral.class, "String"),
@@ -151,57 +153,78 @@ public class SQLExecutor
 
         if (isSelectStar)
         {
-            return executeWithPreGeneratedPlan(query, user, context, identity);
+            // Resolve upfront — get both sources and model context in a single resolution call
+            Pair<RichIterable<SQLSource>, PureModelContext> resolved = getSourcesAndModel(query, context, identity);
+            return executeWithPreGeneratedPlan(query, resolved.getOne(), resolved.getTwo(), user, identity);
         }
 
         return executeStandard(query, positionalArguments, user, context, identity);
     }
 
-    private Result executeWithPreGeneratedPlan(Query query, String user, SQLContext context, Identity identity)
+    private Result executeWithPreGeneratedPlan(Query query, RichIterable<SQLSource> sources, PureModelContext modelContext, String user, Identity identity)
     {
         return TraceUtils.trace("execute-select-star", span ->
         {
             long start = System.currentTimeMillis();
-            LOGGER.info("Executing query using pre-generated plan path");
 
-            Pair<RichIterable<SQLSource>, PureModelContext> sqlSourcesAndPureModel = getSourcesAndModel(query, context, identity);
-            RichIterable<SQLSource> sources = sqlSourcesAndPureModel.getOne();
-
-            // SELECT * optimization requires exactly one source with a pre-generated plan
             if (sources.size() != 1 || sources.getFirst().getPreGeneratedPlan() == null)
             {
-                LOGGER.info("No pre-generated plan available, falling back to standard execution path");
-                return executeStandard(query, FastList.newList(), user, context, identity);
+                LOGGER.debug("No pre-generated plan available, falling back to standard execution path");
+                return executeWithCompilation(query, sources, modelContext, user, identity, span);
             }
 
             ExecutionPlan preGeneratedPlan = sources.getFirst().getPreGeneratedPlan();
-            span.setTag("selectStar", true);
+            SQLSource source = sources.getFirst();
 
-            if (!(preGeneratedPlan instanceof SingleExecutionPlan))
-            {
-                LOGGER.info("Pre-generated plan is not a SingleExecutionPlan, falling back to standard execution path");
-                return executeStandard(query, FastList.newList(), user, context, identity);
-            }
-
-            SingleExecutionPlan plan = (SingleExecutionPlan) preGeneratedPlan;
             Result result;
             try
             {
-                result = planExecutor.execute(plan, Maps.mutable.empty(), user, identity);
+                SingleExecutionPlan plan = preGeneratedPlan.getSingleExecutionPlan(source.getResolvedArguments() != null ? source.getResolvedArguments() : Maps.mutable.empty());
+                Map<String, Result> arguments = buildPlanArguments(source.getResolvedArguments(), user, identity);
+                result = planExecutor.execute(plan, arguments, user, identity);
             }
             catch (Exception e)
             {
                 LOGGER.warn("Pre-generated plan execution failed, falling back to standard path", e);
-                return executeStandard(query, FastList.newList(), user, context, identity);
+                return executeWithCompilation(query, sources, modelContext, user, identity, span);
             }
 
             long elapsed = System.currentTimeMillis() - start;
+            span.setTag("totalMs", elapsed);
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
+            MetricsHandler.observe("execute_select_star", start, System.currentTimeMillis());
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) elapsed).toString());
-            LOGGER.debug("SELECT * query executed in {}ms (used pre-generated plan)", elapsed);
 
             return result;
         });
+    }
+
+    private Result executeWithCompilation(Query query, RichIterable<SQLSource> sources, PureModelContext modelContext,
+                                          String user, Identity identity, Span span)
+    {
+        return compileModelAndTransformQuery(sources, modelContext, query, FastList.newList(),
+            (transformedContext, pureModel, compiledSources, positionals, s) ->
+            {
+                long start = System.currentTimeMillis();
+
+                Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult plans = planResult(transformedContext, pureModel, compiledSources);
+
+                Map<String, Result> arguments = getPlanArguments(plans._arguments(), pureModel, user, identity);
+
+                SingleExecutionPlan transformedPlan = transformExecutionPlan(plans._plan(), pureModel, PureClientVersions.production, identity, routerExtensions.apply(pureModel), transformers);
+
+                Result result = planExecutor.execute(transformedPlan, arguments, user, identity);
+
+                long elapsed = System.currentTimeMillis() - start;
+                span.setTag("totalMs", elapsed);
+                MetricsHandler.observe("execute", start, System.currentTimeMillis());
+                MetricsHandler.observe("execute_standard", start, System.currentTimeMillis());
+                LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) elapsed).toString());
+
+                return result;
+            },
+            (compiledSources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Function_1__Extension_MANY__SqlTransformContext_1_(compiledSources, getCompiler(pureModel), extensions, pureModel.getExecutionSupport()),
+            identity, span);
     }
 
     private Result executeStandard(Query query, List<Object> positionalArguments, String user, SQLContext context, Identity identity)
@@ -220,9 +243,11 @@ public class SQLExecutor
             SingleExecutionPlan transformedPlan = transformExecutionPlan(plans._plan(), pureModel, PureClientVersions.production, identity, routerExtensions.apply(pureModel), transformers);
 
             arguments.putAll(positionalArgumentPlans);
+
             Result result = planExecutor.execute(transformedPlan, arguments, user, identity);
 
             long elapsed = System.currentTimeMillis() - start;
+            span.setTag("totalMs", elapsed);
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
             MetricsHandler.observe("execute_standard", start, System.currentTimeMillis());
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) elapsed).toString());
@@ -253,6 +278,39 @@ public class SQLExecutor
 
             return Tuples.pair(p._name(), result);
         }));
+    }
+
+
+    private Map<String, Result> buildPlanArguments(Map<String, Object> namedArgs, String user, Identity identity)
+    {
+        if (namedArgs == null || namedArgs.isEmpty())
+        {
+            return Maps.mutable.empty();
+        }
+
+        List<SQLQueryParameter> parameters = namedArgs.entrySet().stream()
+            .map(entry -> createSQLQueryParameter(entry.getKey(), entry.getValue()))
+            .collect(Collectors.toList());
+
+        RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter> placeholders = new SQLSourceTranslator().translate(parameters, SQLExecutor.CORE_PURE_MODEL);
+        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_PlanParameter> planParams = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanParameters_SQLPlaceholderParameter_MANY__Extension_MANY__PlanParameter_MANY_(placeholders, routerExtensions.apply(SQLExecutor.CORE_PURE_MODEL), SQLExecutor.CORE_PURE_MODEL.getExecutionSupport());
+        return getPlanArguments(planParams, SQLExecutor.CORE_PURE_MODEL, user, identity);
+    }
+
+    private List<SQLQueryParameter> buildSQLQueryParameters(List<Object> positionalArguments)
+    {
+        return ListIterate.collectWithIndex(positionalArguments, (argument, index) ->
+            createSQLQueryParameter("_" + (index + 1), argument));
+    }
+
+    private SQLQueryParameter createSQLQueryParameter(String name, Object value)
+    {
+        Expression expression = createParameterValueExpression(value);
+        Variable variable = new Variable();
+        variable.name = name;
+        variable.multiplicity = Multiplicity.PURE_ONE;
+        variable.genericType = new GenericType(new PackageableType(LITERAL_TO_PURE_TYPES.get(expression.getClass())));
+        return new SQLQueryParameter(variable, expression);
     }
 
     public LambdaFunction lambda(Query query, SQLContext context, Identity identity)
@@ -313,8 +371,6 @@ public class SQLExecutor
 
     private Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult planResult(Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext, PureModel pureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources)
     {
-        long startTime = System.currentTimeMillis();
-
         Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult result = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanResult_SqlTransformContext_1__SQLSource_MANY__Extension_MANY__PlanGenerationResult_1_(transformedContext, sources, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
         if (result._plan() == null)
@@ -329,11 +385,9 @@ public class SQLExecutor
         }
         else
         {
-            LOGGER.debug("Binding plan from Pure (TDS path)");
             result._plan(PlanPlatform.JAVA.bindPlan(result._plan(), null, pureModel, routerExtensions.apply(pureModel)));
         }
 
-        LOGGER.debug("Plan generation took {}ms", System.currentTimeMillis() - startTime);
         return result;
     }
 
@@ -358,39 +412,36 @@ public class SQLExecutor
             RichIterable<SQLSource> sources = sqlSourcesAndPureModel.getOne();
             PureModelContext pureModelContext = sqlSourcesAndPureModel.getTwo();
 
-            PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, identity, "");
-
-            List<SQLQueryParameter> parameters = ListIterate.collectWithIndex(positionalArguments, (argument, index) ->
-            {
-                Expression expression = createParameterValueExpression(argument);
-                Variable variable = new Variable();
-                variable.name = "_" + (index + 1);
-                variable.multiplicity = Multiplicity.PURE_ONE;
-                variable.genericType = new GenericType(new PackageableType(LITERAL_TO_PURE_TYPES.get(expression.getClass())));
-
-                return new SQLQueryParameter(variable, expression);
-            });
-
-            Query finalQuery = QueryRealiaser.realias(query);
-            span.setTag("re-aliasedQueryHash", hash(finalQuery));
-
-            Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(finalQuery, pureModel);
-
-            RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
-            LOGGER.info("{}", new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_START));
-
-            Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformContext = transformContextFunc.value(compiledSources, routerExtensions.apply(pureModel), pureModel);
-            RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter> positionals = new SQLSourceTranslator().translate(parameters, pureModel);
-
-            transformContext._positionals(IterableIterate.collect(positionals, Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter::_variable));
-
-            Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_processRootQuery_Query_1__SqlTransformContext_1__SqlTransformContext_1_(
-                    compiledQuery, transformContext, pureModel.getExecutionSupport());
-
-            return func.value(transformedContext, pureModel, compiledSources, positionals, span);
+            return compileModelAndTransformQuery(sources, pureModelContext, query, positionalArguments, func, transformContextFunc, identity, span);
         });
     }
 
+    private <T> T compileModelAndTransformQuery(RichIterable<SQLSource> sources,
+                                    PureModelContext pureModelContext,
+                                    Query query,
+                                    List<Object> positionalArguments,
+                                    Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func,
+                                    Function3<RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<? extends Root_meta_pure_extension_Extension>, PureModel, Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext> transformContextFunc,
+                                    Identity identity,
+                                    Span span)
+    {
+        PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, identity, "");
+
+        List<SQLQueryParameter> parameters = buildSQLQueryParameters(positionalArguments);
+        Query finalQuery = QueryRealiaser.realias(query);
+
+        Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(finalQuery, pureModel);
+        RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
+
+        Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformContext = transformContextFunc.value(compiledSources, routerExtensions.apply(pureModel), pureModel);
+        RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter> positionals = new SQLSourceTranslator().translate(parameters, pureModel);
+
+        transformContext._positionals(IterableIterate.collect(positionals, Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter::_variable));
+        Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_processRootQuery_Query_1__SqlTransformContext_1__SqlTransformContext_1_(
+                compiledQuery, transformContext, pureModel.getExecutionSupport());
+
+        return func.value(transformedContext, pureModel, compiledSources, positionals, span);
+    }
 
     private Expression createParameterValueExpression(Object o)
     {

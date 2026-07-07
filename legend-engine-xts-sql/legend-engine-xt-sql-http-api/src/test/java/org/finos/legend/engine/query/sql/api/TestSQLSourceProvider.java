@@ -33,8 +33,11 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
@@ -55,6 +58,7 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +128,22 @@ public class TestSQLSourceProvider implements SQLSourceProvider
                         LOGGER.warn("Failed to generate plan for service {}: {}", service.pattern, e.getMessage());
                     }
                 }
+                else if (service.execution instanceof PureMultiExecution)
+                {
+                    try
+                    {
+                        ExecutionPlan plan = generateCompositePlanForService(service, (PureMultiExecution) service.execution);
+                        if (plan != null)
+                        {
+                            preGeneratedPlans.put(service.pattern, plan);
+                            LOGGER.debug("Pre-generated composite plan for service: {}", service.pattern);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.warn("Failed to generate composite plan for service {}: {}", service.pattern, e.getMessage());
+                    }
+                }
             }
 
             LOGGER.info("Initialized {} pre-generated execution plans", preGeneratedPlans.size());
@@ -154,6 +174,40 @@ public class TestSQLSourceProvider implements SQLSourceProvider
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(pureLambda, mapping, runtime,null, compiledModel, PureClientVersions.production, PlanPlatform.JAVA,null, extensions, transformers);
 
         return plan;
+    }
+
+    private ExecutionPlan generateCompositePlanForService(Service service, PureMultiExecution execution)
+    {
+        LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(execution.func.body, execution.func.parameters, compiledModel.getContext());
+
+        Map<String, SingleExecutionPlan> executionPlans = new HashMap<>();
+        List<String> executionKeys = FastList.newList();
+
+        for (KeyedExecutionParameter kep : execution.executionParameters)
+        {
+            Mapping mapping = compiledModel.getMapping(kep.mapping);
+            Root_meta_core_runtime_Runtime runtime;
+
+            if (kep.runtime instanceof RuntimePointer)
+            {
+                runtime = compiledModel.getRuntime(((RuntimePointer) kep.runtime).runtime);
+            }
+            else
+            {
+                continue;
+            }
+
+            SingleExecutionPlan keyPlan = PlanGenerator.generateExecutionPlan(pureLambda, mapping, runtime, null, compiledModel, PureClientVersions.production, PlanPlatform.JAVA, null, extensions, transformers);
+            executionPlans.put(kep.key, keyPlan);
+            executionKeys.add(kep.key);
+        }
+
+        if (executionPlans.isEmpty())
+        {
+            return null;
+        }
+
+        return new CompositeExecutionPlan(executionPlans, execution.executionKey, executionKeys);
     }
 
     @Override
@@ -200,7 +254,12 @@ public class TestSQLSourceProvider implements SQLSourceProvider
             if (service.execution instanceof PureSingleExecution)
             {
                 ExecutionPlan preGeneratedPlan = enablePreGeneratedPlans ? preGeneratedPlans.get(pattern) : null;
-                sqlSources.add(from((PureSingleExecution) service.execution, keys, preGeneratedPlan));
+                sqlSources.add(from((PureSingleExecution) service.execution, source, keys, preGeneratedPlan));
+            }
+            else if (service.execution instanceof PureMultiExecution)
+            {
+                ExecutionPlan preGeneratedPlan = enablePreGeneratedPlans ? preGeneratedPlans.get(pattern) : null;
+                sqlSources.add(from((PureMultiExecution) service.execution, source, keys, preGeneratedPlan));
             }
         });
         return new SQLSourceResolvedContext(pureModelContextData, sqlSources);
@@ -221,8 +280,36 @@ public class TestSQLSourceProvider implements SQLSourceProvider
         return preGeneratedPlans.size();
     }
 
-    private SQLSource from(PureSingleExecution pse, List<SQLSourceArgument> keys, ExecutionPlan preGeneratedPlan)
+    private SQLSource from(PureSingleExecution pse, TableSource source, List<SQLSourceArgument> keys, ExecutionPlan preGeneratedPlan)
     {
-        return new SQLSource(SERVICE_TYPE, pse.func, pse.mapping, pse.runtime, pse.executionOptions, null, keys, preGeneratedPlan);
+        Map<String, Object> resolvedArguments = resolveArguments(source);
+        return new SQLSource(SERVICE_TYPE, pse.func, pse.mapping, pse.runtime, pse.executionOptions, null, keys, preGeneratedPlan, resolvedArguments);
+    }
+
+    private SQLSource from(PureMultiExecution pme, TableSource source, List<SQLSourceArgument> keys, ExecutionPlan preGeneratedPlan)
+    {
+        String key = (String) source.getArgument(pme.executionKey, -1).getValue();
+        Optional<KeyedExecutionParameter> optional = ListIterate.select(pme.executionParameters, e -> e.key.equals(key)).getFirstOptional();
+
+        KeyedExecutionParameter execution = optional.orElseThrow(() -> new IllegalArgumentException("No execution found for key " + key));
+
+        keys.add(new SQLSourceArgument(pme.executionKey, null, key));
+
+        Map<String, Object> resolvedArguments = resolveArguments(source);
+        return new SQLSource(SERVICE_TYPE, pme.func, execution.mapping, execution.runtime, execution.executionOptions, null, keys, preGeneratedPlan, resolvedArguments);
+    }
+
+    private Map<String, Object> resolveArguments(TableSource source)
+    {
+        Map<String, Object> resolved = new HashMap<>();
+        for (TableSourceArgument arg : source.getArguments())
+        {
+            if (arg.getName() != null && arg.getValue() != null)
+            {
+                resolved.put(arg.getName(), arg.getValue());
+            }
+        }
+
+        return resolved.isEmpty() ? null : resolved;
     }
 }
