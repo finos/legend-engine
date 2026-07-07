@@ -1076,7 +1076,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
         'Employee First Name': x|$x.employees.firstName
        ]
     ),
-    meta::relational::tests::mapping::modelJoin::advanced::InConditionMapping,
+    meta::relational::tests::mapping::modelJoin::advanced::AdvancedInConditionMapping,
     $runtime,
     meta::relational::extension::relationalExtensions()
   );
