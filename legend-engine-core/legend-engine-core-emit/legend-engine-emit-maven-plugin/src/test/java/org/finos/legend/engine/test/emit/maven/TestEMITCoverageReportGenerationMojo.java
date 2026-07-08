@@ -23,6 +23,7 @@ import org.apache.maven.plugin.testing.MojoRule;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -36,6 +37,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -206,7 +208,7 @@ public class TestEMITCoverageReportGenerationMojo
     @Test
     public void customExcludedDirectoryNamesArePruned() throws Exception
     {
-        List<String> excludedNames = Lists.fixedSize.with("target", "generated-sources", "vendored");
+        Set<String> excludedNames = Sets.fixedSize.with("target", "generated-sources", "vendored");
         File projectDir = buildSingleModuleProject(
                 "custom-name-excl", "org.finos.test", "test-project", "1.0.0",
                 null, null, excludedNames, null, null);
@@ -262,7 +264,7 @@ public class TestEMITCoverageReportGenerationMojo
     {
         File projectDir = buildSingleModuleProject(
                 "relaxed-excl", "org.finos.test", "test-project", "1.0.0",
-                null, null, Lists.fixedSize.empty(), null, null);
+                null, null, Sets.fixedSize.empty(), null, null);
         touchYaml(projectDir, "moduleA/target/" + DEFAULT_INCLUDED_SUBPATH + "/nowKept.emit.yaml", "now-kept-model");
 
         MavenProject mavenProject = this.mojoRule.readMavenProject(projectDir);
@@ -301,7 +303,7 @@ public class TestEMITCoverageReportGenerationMojo
     private List<EMITModelDescriptor> discoverDescriptors(EMITCoverageReportGenerationMojo mojo, File projectDir) throws Exception
     {
         List<String> included = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "includedRelativeSubpaths");
-        List<String> excludedNames = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedDirectoryNames");
+        Set<String> excludedNames = (Set<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedDirectoryNames");
         List<String> excludedPrefixes = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedDirectoryNamePrefixes");
         List<String> excludedSubpaths = (List<String>) this.mojoRule.getVariableValueFromObject(mojo, "excludedRelativeSubpaths");
 
@@ -325,7 +327,7 @@ public class TestEMITCoverageReportGenerationMojo
 
     private File getExpectedOutputFile(MavenProject mavenProject)
     {
-        return new File(mavenProject.getBuild().getDirectory(), "emit/emit-coverage.html");
+        return new File(mavenProject.getBuild().getOutputDirectory(), "emit/emit-coverage.html");
     }
 
     private Path touchYaml(File projectDir, String relativePath, String modelName) throws IOException
@@ -344,7 +346,7 @@ public class TestEMITCoverageReportGenerationMojo
             String version,
             File outputFile,
             List<String> includedRelativeSubpaths,
-            List<String> excludedDirectoryNames,
+            Set<String> excludedDirectoryNames,
             List<String> excludedDirectoryNamePrefixes,
             List<String> excludedRelativeSubpaths) throws IOException
     {
@@ -390,7 +392,7 @@ public class TestEMITCoverageReportGenerationMojo
             String version,
             File outputFile,
             List<String> includedRelativeSubpaths,
-            List<String> excludedDirectoryNames,
+            Set<String> excludedDirectoryNames,
             List<String> excludedDirectoryNamePrefixes,
             List<String> excludedRelativeSubpaths)
     {
@@ -421,7 +423,7 @@ public class TestEMITCoverageReportGenerationMojo
     private Plugin buildPlugin(
             File outputFile,
             List<String> includedRelativeSubpaths,
-            List<String> excludedDirectoryNames,
+            Set<String> excludedDirectoryNames,
             List<String> excludedDirectoryNamePrefixes,
             List<String> excludedRelativeSubpaths)
     {
@@ -436,10 +438,10 @@ public class TestEMITCoverageReportGenerationMojo
         {
             newXpp3Dom("outputFilePath", outputFile.getAbsolutePath(), configuration);
         }
-        appendStringList(configuration, "includedRelativeSubpaths", "includedRelativeSubpath", includedRelativeSubpaths);
-        appendStringList(configuration, "excludedDirectoryNames", "excludedDirectoryName", excludedDirectoryNames);
-        appendStringList(configuration, "excludedDirectoryNamePrefixes", "excludedDirectoryNamePrefix", excludedDirectoryNamePrefixes);
-        appendStringList(configuration, "excludedRelativeSubpaths", "excludedRelativeSubpath", excludedRelativeSubpaths);
+        appendStringCollection(configuration, "includedRelativeSubpaths", "includedRelativeSubpath", includedRelativeSubpaths);
+        appendStringCollection(configuration, "excludedDirectoryNames", "excludedDirectoryName", excludedDirectoryNames);
+        appendStringCollection(configuration, "excludedDirectoryNamePrefixes", "excludedDirectoryNamePrefix", excludedDirectoryNamePrefixes);
+        appendStringCollection(configuration, "excludedRelativeSubpaths", "excludedRelativeSubpath", excludedRelativeSubpaths);
 
         PluginExecution execution = new PluginExecution();
         plugin.addExecution(execution);
@@ -449,7 +451,7 @@ public class TestEMITCoverageReportGenerationMojo
         return plugin;
     }
 
-    private void appendStringList(Xpp3Dom parent, String parentName, String childName, List<String> values)
+    private void appendStringCollection(Xpp3Dom parent, String parentName, String childName, Collection<String> values)
     {
         if (values == null)
         {

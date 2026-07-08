@@ -21,6 +21,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.test.emit.EMITModelDiscovery;
 import org.finos.legend.engine.test.emit.EMITModelLoader;
 import org.finos.legend.engine.test.emit.catalog.EMITModelDescriptor;
@@ -36,6 +37,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mojo(
         name = "generate-EMIT-coverage-report",
@@ -47,14 +50,14 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 
-    @Parameter(defaultValue = "${project.build.directory}/emit/emit-coverage.html", required = true)
+    @Parameter(defaultValue = "${project.build.outputDirectory}/emit/emit-coverage.html", required = true)
     private File outputFilePath;
 
     @Parameter
     private List<String> includedRelativeSubpaths = Lists.fixedSize.with("src/test/resources/emit-models");
 
     @Parameter
-    private List<String> excludedDirectoryNames = Lists.fixedSize.with("target");
+    private Set<String> excludedDirectoryNames = Sets.fixedSize.with("target");
 
     @Parameter
     private List<String> excludedDirectoryNamePrefixes = Lists.fixedSize.with(".");
@@ -101,7 +104,7 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
     static List<Path> collectEmitModelsDirs(
             Path repoRoot,
             List<String> includedRelativeSubpaths,
-            List<String> excludedDirectoryNames,
+            Set<String> excludedDirectoryNames,
             List<String> excludedDirectoryNamePrefixes,
             List<String> excludedRelativeSubpaths) throws IOException
     {
@@ -113,10 +116,11 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
         {
             throw new IllegalArgumentException("includedRelativeSubpaths must be non-null and non-empty");
         }
-        List<String> directoryNameExclusions = (excludedDirectoryNames == null) ? Collections.emptyList() : excludedDirectoryNames;
+        Set<String> directoryNameExclusions = (excludedDirectoryNames == null) ? Collections.emptySet() : excludedDirectoryNames;
         List<String> directoryNamePrefixExclusions = (excludedDirectoryNamePrefixes == null) ? Collections.emptyList() : excludedDirectoryNamePrefixes;
-        List<String> relativeSubpathExclusions = (excludedRelativeSubpaths == null) ? Collections.emptyList() : excludedRelativeSubpaths;
         FileSystem fs = repoRoot.getFileSystem();
+        List<Path> relativeSubpathInclusions = includedRelativeSubpaths.stream().map(fs::getPath).collect(Collectors.toList());
+        List<Path> relativeSubpathExclusions = (excludedRelativeSubpaths == null) ? Collections.emptyList() : excludedRelativeSubpaths.stream().map(fs::getPath).collect(Collectors.toList());
 
         List<Path> emitModelsDirs = Lists.mutable.empty();
         Files.walkFileTree(repoRoot, new SimpleFileVisitor<Path>()
@@ -133,16 +137,15 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
                 {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                if (directoryNameExclusions.stream().anyMatch(name::equals))
+                if (directoryNameExclusions.contains(name))
                 {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                Path rel = repoRoot.relativize(dir);
-                if (relativeSubpathExclusions.stream().anyMatch(subpath -> rel.endsWith(fs.getPath(subpath))))
+                if (relativeSubpathExclusions.stream().anyMatch(dir::endsWith))
                 {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                if (includedRelativeSubpaths.stream().anyMatch(subpath -> rel.endsWith(fs.getPath(subpath))))
+                if (relativeSubpathInclusions.stream().anyMatch(dir::endsWith))
                 {
                     emitModelsDirs.add(dir);
                     return FileVisitResult.SKIP_SUBTREE;

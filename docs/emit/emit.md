@@ -216,7 +216,12 @@ legend-engine-core/
       src/
         main/java/.../emit/junit/
           EMITTestSuiteBuilder.java       ← @TestFactory task builder
-    legend-engine-emit-maven-plugin/      ← Build-time HTML coverage report renderer
+    legend-engine-emit-report/            ← HTML coverage renderer (framework-side)
+      pom.xml
+      src/
+        main/java/.../emit/report/
+          EMIT_to_HTML.java               ← buildHTML(descriptors, repoRoot) / writeHTML(...)
+    legend-engine-emit-maven-plugin/      ← Build-time HTML coverage report generator
       pom.xml
       src/
         main/java/.../emit/maven/
@@ -225,34 +230,65 @@ legend-engine-core/
 
 - **`legend-engine-emit`** contains the core pipeline (runner, result models,
   model loader, catalog infrastructure) plus `EMITModelDiscovery` — the
-  descriptor-discovery API used by `EMIT_to_HTML#main` (filesystem walk
-  from the repo root) and by the JUnit binding (`@TestFactory` classpath
-  enumeration). It has no JUnit dependency and can be used standalone in
-  scripts or CI pipelines.
+  descriptor-discovery API used by the JUnit binding
+  (`@TestFactory` classpath enumeration) and by the maven plugin (walking
+  each recorded `emit-models/` directory for `*.emit.yaml`). It has no
+  JUnit dependency and can be used standalone in scripts or CI pipelines.
 - **`legend-engine-emit-junit`** depends on `legend-engine-emit` and adds the
   JUnit 5 integration layer (`EMITTestSuiteBuilder`). Test modules that want
   `@TestFactory`-based EMIT execution depend on this module.
-- **`legend-engine-emit-maven-plugin`** is the build-time tool used by the
-  server pom: its `generate-EMIT-coverage-report` goal (bound to
-  `generate-resources`) locates the multi-module repo root by walking up
-  `MavenProject.getParent()`, then traverses that root's directory tree
-  with `Files.walkFileTree`. Every check happens uniformly in
-  `preVisitDirectory`: directories matching any configured exclusion
-  (defaults: `target/`, `src/main/`, dirs whose name starts with `.`,
-  and the JUnit binding module `legend-engine-emit-junit`) are pruned
-  with `SKIP_SUBTREE`; directories whose repo-relative path matches the
-  configured inclusion subpath (default `src/test/resources/emit-models`)
-  are recorded as emit-models dirs and also pruned (no need to descend —
-  `EMIT_to_HTML.generateFromEmitModelsDirs` walks each recorded dir for
-  `*.emit.yaml` itself). The resulting yamls are parsed and pre-rendered
-  into a self-contained HTML coverage report at
-  `${project.build.outputDirectory}/emit/emit-coverage.html`. Maven's
-  normal jar packaging bundles that resource into the consuming jar so the
-  server's `EMIT` JAX-RS handler can stream it at runtime — no runtime
-  discovery is performed. All exclusion sets and the inclusion subpath
-  are mojo `@Parameter` fields so a consuming pom can tweak them via
-  `<configuration>` without forking the plugin. See §5.4.
-  `<configuration>` without forking the plugin. See §5.4.
+- **`legend-engine-emit-report`** houses `EMIT_to_HTML`, the pure HTML
+  renderer for a set of `EMITModelDescriptor`s. It exposes two static
+  entry points: `buildHTML(descriptors, repoRoot)` returns the HTML as a
+  string; `writeHTML(descriptors, outputFile, repoRoot)` writes it to
+  disk (creating parent directories as needed). The renderer has no
+  awareness of Maven, of the filesystem walk, or of the classpath — those
+  concerns live in the maven plugin and in `EMITModelDiscovery`
+  respectively. Keeping the renderer isolated in its own module means
+  the maven plugin can depend on it without dragging in JUnit, and the
+  runner module (`legend-engine-emit`) can stay JUnit-free.
+- **`legend-engine-emit-maven-plugin`** is the build-time tool the server
+  pom binds into `generate-resources`. Its `generate-EMIT-coverage-report`
+  goal locates the reactor root by walking up `MavenProject.getParent()`
+  from the consuming project (stopping at the topmost ancestor that
+  still has a `getBasedir()` on disk, so externally-resolved parent
+  POMs are not crossed), then traverses that root with
+  `Files.walkFileTree`. Every check happens uniformly in
+  `preVisitDirectory` using `stream().anyMatch(...)`:
+  - `excludedDirectoryNamePrefixes` — `String.startsWith` on the last
+    name component (default `["."]`, prunes `.git`, `.idea`, `.mvn`, …).
+  - `excludedDirectoryNames` — `String.equals` on the last name
+    component (default `["target"]`).
+  - `excludedRelativeSubpaths` — `rel.endsWith(fs.getPath(subpath))`
+    (default `["src/main"]`). `Path.endsWith` is component-wise, so
+    excluding `a/b/c` never accidentally prunes a sibling `a/b/cd`, and
+    everything works cross-platform without manual separator
+    concatenation.
+  - `includedRelativeSubpaths` — same component-wise
+    `rel.endsWith(fs.getPath(subpath))` check (default
+    `["src/test/resources/emit-models"]`). Matches record the dir as an
+    emit-models dir and return `SKIP_SUBTREE` — no need to descend,
+    since the mojo then hands each recorded dir to
+    `EMITModelDiscovery.findEmitYamls(dir)` inside its static
+    `parseDescriptorsUnder` helper to enumerate the `*.emit.yaml`
+    inside.
+
+  The resulting descriptors are passed to
+  `EMIT_to_HTML.writeHTML(descriptors, outputFilePath.toPath(), repoRoot)`.
+  The default `outputFilePath` is
+  `${project.build.outputDirectory}/emit/emit-coverage.html`
+  (i.e. `target/classes/emit/emit-coverage.html`), which lands the
+  rendered report under `target/classes/` — so Maven's jar packaging
+  automatically bundles it into the consuming jar with no extra
+  `<configuration>` needed. `legend-engine-server-http-server` pins
+  `outputFilePath` explicitly to that same value (so the server jar's
+  bundled resource path stays fixed even if the plugin default is ever
+  changed) and extends `excludedDirectoryNames` to include
+  `legend-engine-emit-junit`, so the binding module's bootstrap
+  examples are not double-counted in the server-side report. All four
+  discovery-config fields plus `outputFilePath` are `@Parameter`s, so
+  any consuming pom can tune them via `<configuration>` without forking
+  the plugin. See §5.4.
 
 The parent aggregator sits directly under `legend-engine-core/` (as a sibling of
 `legend-engine-core-testable`, `legend-engine-core-pure`, etc.) because EMIT spans the full engine
@@ -300,11 +336,13 @@ This distribution model has several advantages:
 - **Build-time HTML aggregation**: At server build time,
   `legend-engine-emit-maven-plugin` walks the legend-engine multi-module
   tree, discovers every module's `emit-models/`, parses each `*.emit.yaml`,
-  and writes the rendered HTML coverage report to
-  `target/classes/emit/emit-coverage.html` of the server jar. At runtime
-  the server's `EMIT` JAX-RS handler simply streams that pre-rendered
-  resource. No per-module configuration is required — dropping a yaml
-  under any module's `src/test/resources/emit-models/` is enough. See §5.4.
+  and renders the HTML coverage report to
+  `${project.build.outputDirectory}/emit/emit-coverage.html` — i.e.
+  under `target/classes/`, so Maven's jar packaging automatically
+  bundles it into the server jar. At runtime the server's `EMIT`
+  JAX-RS handler simply streams that pre-rendered resource. No
+  per-module configuration is required — dropping a yaml under any
+  module's `src/test/resources/emit-models/` is enough. See §5.4.
 
 ### 3.3 Core API
 
@@ -493,18 +531,22 @@ To test EMIT models in a module, create a single test class:
 public class MyModuleEMITTestSuite
 {
     @TestFactory
-    Stream<DynamicTest> emit()
+    Stream<DynamicContainer> emit()
     {
-        // Discovers models and returns a flattened stream of granular dynamic
-        // tests covering initialization (parse, compile, model generation),
-        // generation, testing, and plan creation.
-        return EMITTestSuiteBuilder.taskStream("emit-models/");
+        // Discovers models and returns one DynamicContainer per model, with
+        // tasks grouped by phase (parse, compile, generation, test, plan).
+        return EMITTestSuiteBuilder.testContainers("emit-models/");
     }
 }
 ```
 
-`EMITTestSuiteBuilder` also exposes `taskList(String)` for callers that prefer
-a `List<DynamicTest>` (e.g., for fan-out into nested containers).
+`EMITTestSuiteBuilder` also exposes `tests(String)` for callers that
+prefer a flat `Stream<DynamicTest>` (each task carries a `[model-name] …`
+prefix), plus per-model selectors on both entry points: `testContainers(root,
+names…)` / `tests(root, names…)` / `testContainer(root, name)`. The
+single-arg `taskStream(...)` / `taskList(...)` methods are the former names
+for the flat form and are now **deprecated** — prefer `tests(...)` or
+`testContainers(...)`.
 
 When JUnit invokes the factory method, `EMITTestSuiteBuilder` scans for `*.emit.yaml` files and loads each model descriptor (only this load is eager — the model's container is named after the descriptor). Phase 1 (Parse), Phase 2 (Compile), and Phase 3 (Model Generation) each run *inside* their own DynamicTest: JUnit consumes dynamic-test streams lazily, executing each task before pulling the next, so the duration JUnit reports for the Parsing or Compilation task is the real cost of that phase. If a phase fails, its task fails and no subsequent tasks are emitted for that model. Downstream task discovery is deferred until after the initialization tasks have run, and operates on the model-generation-enriched PMCD, so any element produced by a `GenerationSpecification` is eligible for downstream tasks. By inspecting that enriched model the builder identifies every file-generation specification, every artifact-generation candidate, every test (modern Testable plus legacy Mapping/Service tests), and every service.
 
@@ -567,64 +609,54 @@ with a catalog-wide one — feature combinations, a heatmap of
 descriptor-to-feature coverage, and a list of taxonomy features that no
 model currently covers (the "coverage gaps" tab).
 
-The same HTML is produced two ways, sharing the renderer in
-`EMIT_to_HTML#buildHTML`:
+There is a single path to the HTML: it is produced at server build time
+by `legend-engine-emit-maven-plugin` and served at runtime by the
+`EMIT` JAX-RS handler streaming the pre-rendered classpath resource.
 
-| Form | How to access | Entry point | Discovery |
-|---|---|---|---|
-| **REST endpoint** | `GET /api/emit/html` on a running server | `EMIT.java` JAX-RS handler | None at runtime — streams the pre-rendered `/emit/emit-coverage.html` classpath resource |
-| **CLI** | Writes `<repoRoot>/legend-engine-core/legend-engine-core-emit/legend-engine-emit/target/emit-coverage.html` | `EMIT_to_HTML#main(String[])` | Live filesystem walk from the discovered repo root |
+**Build-time generation.** The mojo's `generate-EMIT-coverage-report`
+goal (bound to `generate-resources`) locates the reactor root by walking
+up `MavenProject.getParent()` from the consuming project, stopping at
+the topmost ancestor that still has a `getBasedir()` on disk — so
+externally-resolved parent POMs from a Maven repository are not crossed
+and no specific groupId/artifactId is hardcoded. It then traverses that
+root's directory tree with `Files.walkFileTree`. Every check happens
+inside a single `preVisitDirectory` visitor using `stream().anyMatch(...)`:
+name-prefix exclusion (default `["."]`, prunes `.git`/`.idea`/`.mvn`/…),
+name-equals exclusion (default `["target"]`), relative-subpath exclusion
+(default `["src/main"]`), and relative-subpath **inclusion** (default
+`["src/test/resources/emit-models"]`). The subpath checks use
+`rel.endsWith(fs.getPath(subpath))`, which is component-wise — no manual
+separator gymnastics, and no false hits like `a/b/cd` matching `a/b/c`.
+Any subtree matching an exclusion returns `SKIP_SUBTREE`; a match on
+inclusion also returns `SKIP_SUBTREE` after recording the dir (the mojo
+then enumerates its `*.emit.yaml` files itself via
+`EMITModelDiscovery.findEmitYamls(dir)`). The recorded descriptors are
+handed to `EMIT_to_HTML.writeHTML(descriptors, outputFile, repoRoot)`
+in the `legend-engine-emit-report` module, which delegates to
+`buildHTML(...)` for the rendering and takes care of creating the
+output's parent directories.
 
-The two forms differ in **when** discovery happens:
+**Configuration.** All five parameters are `@Parameter` fields, so a
+consuming pom can tune them via `<configuration>` without forking the
+plugin. Defaults, and the overrides `legend-engine-server-http-server`
+still applies, are:
 
-- The REST endpoint serves a **pre-built** HTML. Generation runs at the
-  server module's build time via
-  `legend-engine-emit-maven-plugin`'s `generate-EMIT-coverage-report`
-  goal (bound to `generate-resources`). The mojo locates the multi-module
-  repo root by walking up `MavenProject.getParent()` from the consuming
-  project, stopping at the topmost ancestor that still has a
-  `getBasedir()` on disk (so externally-resolved parent POMs from a Maven
-  repository are not crossed and no specific groupId/artifactId is
-  hardcoded). It then traverses that repo's directory tree with
-  `Files.walkFileTree`. Every check happens in `preVisitDirectory`:
-  directories matching any configured exclusion (by default `src/main/`,
-  any directory whose name starts with `.` — `.git`, `.idea`, `.mvn`,
-  … — or any directory whose simple name is `target` or
-  `legend-engine-emit-junit`; the default `excludedDirectoryNames`
-  covers both infrastructure dirs and the JUnit binding module, since by
-  legend-engine convention a module's directory name equals its
-  artifactId) are pruned with `SKIP_SUBTREE`; directories whose
-  repo-relative path matches the inclusion subpath (default
-  `src/test/resources/emit-models`) are recorded as emit-models dirs and
-  also pruned (no need to descend — `EMIT_to_HTML.generateFromEmitModelsDirs`
-  walks each recorded dir for `*.emit.yaml` itself). The recorded dirs
-  are fed to `EMIT_to_HTML.generateFromEmitModelsDirs(...)`, which writes
-  the rendered HTML to
-  `${project.build.outputDirectory}/emit/emit-coverage.html`. All
-  exclusion sets and the inclusion subpath are mojo `@Parameter` fields,
-  so a downstream pom can tweak them via `<configuration>` without
-  forking the plugin. Maven's normal jar packaging bundles the resource
-  into the server jar, and the runtime `EMIT` handler simply streams
-  it — so the runtime has no dependency on `EMITModelDiscovery`, no
-  catalog manifest, and nothing that could drift between build and serve.
-  If the resource is missing (e.g., the server was assembled without the
-  plugin in its build), the endpoint returns `503 Service Unavailable`
-  with an instruction to rebuild the server module.
+| Parameter | Default | Server override |
+|---|---|---|
+| `outputFilePath` | `${project.build.outputDirectory}/emit/emit-coverage.html` (i.e. `target/classes/emit/...`, so jar packaging automatically bundles it into the consuming jar) | Pinned explicitly to the default so the server jar's bundled resource path stays fixed if the plugin default ever changes |
+| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | — |
+| `excludedDirectoryNames` | `["target"]` | `["target", "legend-engine-emit-junit"]` (excludes the binding module's bootstrap examples from the server-side report) |
+| `excludedDirectoryNamePrefixes` | `["."]` | — |
+| `excludedRelativeSubpaths` | `["src/main"]` | — |
 
-- The CLI walks the **live filesystem**. `EMIT_to_HTML#main` locates the
-  repo root by walking up from `user.dir` looking for the
-  `<artifactId>legend-engine</artifactId>` pom, then calls
-  `generateFromRepoRoot(repoRoot, outputFile)`. That method enumerates
-  every `*.emit.yaml` under the repo (excluding `target/`, `build/`,
-  `node_modules/`, `.git/`, `.idea/`, and `legend-engine-emit-junit/`)
-  via `EMITModelDiscovery.findEmitYamls(repoRoot, exclude)`, parses each
-  descriptor, and feeds them to the same `buildHTML` renderer. The
-  output path is anchored at the `legend-engine-emit` module's
-  `target/` directory regardless of the JVM's working directory.
-
-The "YAML Path" column in the report shows each yaml's repo-relative
-source path — derived by relativising the descriptor's absolute path
-against the repo root — so the report renders identically in either flow.
+**Runtime serving.** The `EMIT` handler at `GET /api/emit/html` streams
+the `/emit/emit-coverage.html` classpath resource. If the resource is
+missing — e.g. the server was assembled without the mojo bound in its
+pom — the endpoint returns `503 Service Unavailable` with an explicit
+message about rebuilding the server module. The runtime has no
+dependency on `EMITModelDiscovery`, no catalog manifest, and nothing
+that could drift between build and serve — whatever HTML the mojo wrote
+is exactly what is served.
 
 Adding a new yaml is just dropping it under any module's
 `src/test/resources/emit-models/`; the next clean build of the server
@@ -873,12 +905,13 @@ Descriptor discovery is implemented in `EMITModelDiscovery` (in
 `legend-engine-emit`), which exposes two parallel families of `find…`
 methods:
 
-- **Filesystem** — `findEmitYamls(Path)` and
-  `findEmitYamls(Path, Predicate<? super Path>)` walk a single directory
-  tree (with optional path-level exclusion) for `*.emit.yaml`. Used by
-  `EMIT_to_HTML#generateFromRepoRoot` (the CLI form of the HTML
-  dashboard, with a predicate that prunes `target/`, `.git/`, etc.) and
-  by any tool that already knows which directory to scan.
+- **Filesystem** — `findEmitYamls(Path)` walks a single directory tree
+  for `*.emit.yaml`. Used by the maven plugin's
+  `parseDescriptorsUnder(...)` helper: the plugin's own walker
+  (`collectEmitModelsDirs`) applies the exclusion / inclusion rules and
+  hands each recorded `emit-models/` directory to `findEmitYamls(Path)`
+  to enumerate the yamls inside. Also usable directly by any tool that
+  already knows which directory to scan.
 - **Classpath** — `findEmitYamls(String)` /
   `findEmitYamls(ClassLoader, String)` enumerate every yaml under the
   given classpath root across all loaded jars; `findEmitYaml(String,
