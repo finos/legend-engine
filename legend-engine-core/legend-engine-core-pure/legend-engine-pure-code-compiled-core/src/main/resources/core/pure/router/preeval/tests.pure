@@ -1576,6 +1576,16 @@ function meta::pure::router::preeval::tests::getTestRuntimeWithModelConnection(s
   ^Runtime(connectionStores=^ConnectionStore(element = 'DummyStore', connection=^meta::external::store::model::ModelConnection(instances=newMap(pair($sourceClass, list($inputs))))));
 }
 
+function <<access.private>> meta::pure::router::preeval::tests::getDummyPackageableRuntime():meta::pure::runtime::PackageableRuntime[1]
+{
+  ^meta::pure::runtime::PackageableRuntime(runtimeValue = getDummyRuntime());
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::getDummyRuntime():EngineRuntime[1]
+{
+  ^EngineRuntime(connectionStores = ^meta::core::runtime::ConnectionStore(element = '', connection = ^meta::external::store::model::ModelConnection(instances = newMap(pair(ConnectionStore, list(''))))));
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::testGetGenericType():Boolean[1]
 {
   let input    = { |
@@ -1609,6 +1619,35 @@ function <<test.Test>> meta::pure::router::preeval::tests::testInline():Boolean[
   assertRoundTrip($input, $expected);
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::testFromWith():Boolean[1]
+{
+  let packageableRuntime = getDummyPackageableRuntime();
+  let runtime = getDummyRuntime();
+
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->from($packageableRuntime) });
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->from(emptyMapping, $packageableRuntime) });
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->project(x | $x.firstName, 'name')->from(emptyMapping, $packageableRuntime) });
+  assertRoundTrip({| |meta::pure::router::preeval::tests::Person.all()->from($packageableRuntime) });
+  assertRoundTrip({| |meta::pure::router::preeval::tests::Person.all()->from(emptyMapping, $packageableRuntime) });
+  assertRoundTrip({| |meta::pure::router::preeval::tests::Person.all()->from($runtime) });
+  assertRoundTrip({| |meta::pure::router::preeval::tests::Person.all()->from(emptyMapping, $runtime) });  
+
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->with($packageableRuntime) });
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->with(emptyMapping, $packageableRuntime) });  
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->with($runtime) });
+  assertRoundTrip({| meta::pure::router::preeval::tests::Person.all()->with(emptyMapping, $runtime) });    
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::testFromStopFunctions():Boolean[1]
+{
+  let funcs = meta::pure::mapping->packageFunctionsRecursive()->filter(f | $f.functionName->in(['from', 'with']));
+  let stopped = fromFunctionsToStop();
+
+  let difference = $funcs->filter(f | !($f->hasStereotype('NotImplementedFunction', functionType) || $f->in($stopped)));
+
+  assert($difference->isEmpty(), | 'from/with functions missing from preval stop functions ' + $difference->map(d | $d->elementToPath())->joinStrings(', '));
+}
+
 function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDoesEval<P>(value:P[1]):Boolean[1]
 {
   meta::pure::router::preeval::tests::myTestFuncThatDoesSomething_P_1__Boolean_1_->eval($value)
@@ -1622,6 +1661,11 @@ function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDe
 function <<access.private>> meta::pure::router::preeval::tests::myTestFuncThatDoesSomething<P>(k:P[1]):Boolean[1]
 {
   $k == 1;
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1]):Boolean[1]
+{
+  assertRoundTrip($input, $input, noDebug())
 }
 
 function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(input : FunctionDefinition<Any>[1], expectedOrig : FunctionDefinition<Any>[1]):Boolean[1]
@@ -1705,3 +1749,9 @@ function <<access.private>> meta::pure::router::preeval::tests::assertRoundTrip(
 
   true;
 }
+
+
+###Mapping
+
+Mapping meta::pure::router::preeval::tests::emptyMapping
+()

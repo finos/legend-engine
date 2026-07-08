@@ -568,6 +568,13 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                                     runtime = $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime($extensions)
                                 )
                       ),
+
+                  f:meta::pure::runtime::PackageableRuntime[1]|
+                     ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::constant::PackageableElementPtr
+                     (
+                        _type = 'packageableElementPtr',
+                        fullPath = $f->elementToPath()
+                     ),                           
                  l:List<Any>[1]|
                       ^meta::protocols::pure::vX_X_X::metamodel::m3::valuespecification::AppliedFunction
                       (
@@ -856,6 +863,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGra
                                                    ->concatenate([
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_),
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_),
+                                                      pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_),
+                                                      pair(meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_.name->toOne(), meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_->cast(@ConcreteFunctionDefinition<Any>)),
                                                       pair(meta::core::runtime::currentUserId__String_1_.name->toOne(), meta::core::runtime::currentUserId__String_1_),
                                                       pair(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_.name->toOne(), meta::pure::functions::hash::hash_String_1__HashType_1__String_1_)
                                                    ])
