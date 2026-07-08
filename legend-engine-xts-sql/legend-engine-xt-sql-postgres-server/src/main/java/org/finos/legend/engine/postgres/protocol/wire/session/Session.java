@@ -95,6 +95,11 @@ public class Session implements AutoCloseable
         return identity;
     }
 
+    public ExecutorService getExecutorService()
+    {
+        return executorService;
+    }
+
     public void sync()
     {
         //TODO do we need to handle batch requests?
