@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class SQLSource
 {
@@ -34,13 +35,19 @@ public class SQLSource
     private final ExecutionContext executionContext;
     private final List<SQLSourceArgument> key;
     private final ExecutionPlan preGeneratedPlan;
+    private final Map<String, Object> resolvedArguments;
 
     public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key)
     {
-        this(type, func, mapping, runtime, executionOptions, executionContext, key, null);
+        this(type, func, mapping, runtime, executionOptions, executionContext, key, null, null);
     }
 
     public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key, ExecutionPlan preGeneratedPlan)
+    {
+        this(type, func, mapping, runtime, executionOptions, executionContext, key, preGeneratedPlan, null);
+    }
+
+    public SQLSource(String type, LambdaFunction func, String mapping, Runtime runtime, List<ExecutionOption> executionOptions, ExecutionContext executionContext, List<SQLSourceArgument> key, ExecutionPlan preGeneratedPlan, Map<String, Object> resolvedArguments)
     {
         this.type = type;
         this.func = func;
@@ -50,6 +57,7 @@ public class SQLSource
         this.executionContext = executionContext;
         this.key = key == null ? Collections.emptyList() : key;
         this.preGeneratedPlan = preGeneratedPlan;
+        this.resolvedArguments = resolvedArguments;
     }
 
     public String getType()
@@ -90,5 +98,10 @@ public class SQLSource
     public ExecutionPlan getPreGeneratedPlan()
     {
         return preGeneratedPlan;
+    }
+
+    public Map<String, Object> getResolvedArguments()
+    {
+        return resolvedArguments;
     }
 }

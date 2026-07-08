@@ -23,12 +23,14 @@ Database demo::H2DemoDataBase
   Table EmployeeTable
   (
     id INTEGER PRIMARY KEY,
-    ratings DECIMAL(10,2),
+    ratings FLOAT,
+    salary DECIMAL(10,2),
     firm_id INTEGER,
     name VARCHAR(200),
     country_id INTEGER,
     type VARCHAR(25),
-    start_date DATE
+    start_date DATE,
+    created_at TIMESTAMP
   )
   Table CountryTable
   (
@@ -309,6 +311,305 @@ Service demo::H2PersonServiceDateParameterizedRelation
   }
 }
 
+Service demo::H2PersonServiceByIdParameterized
+{
+  pattern: '/personServiceById';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minId:Integer[1]|demo::employee.all()->filter(p | $p.id >= $minId)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceByRatingParameterized
+{
+  pattern: '/personServiceByRating';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minRating:Float[1]|demo::employee.all()->filter(p | $p.ratings >= $minRating)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.ratings
+      ],
+      [
+        'Id',
+        'Name',
+        'Ratings'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceByStrictDateParameterized
+{
+  pattern: '/personServiceByStrictDate';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOfDate:StrictDate[1]|demo::employee.all()->filter(p | $p.startDate >= $asOfDate)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.startDate
+      ],
+      [
+        'Id',
+        'Name',
+        'Start Date'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceMultiParamParameterized
+{
+  pattern: '/personServiceMultiParam';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minId:Integer[1], type:demo::employeeType[1]|demo::employee.all()->filter(p | $p.id >= $minId && $p.type == $type)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceByNameParameterized
+{
+  pattern: '/personServiceByName';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {name:String[1]|demo::employee.all()->filter(p | $p.name == $name)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceByHighRatingParameterized
+{
+  pattern: '/personServiceByHighRating';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {highOnly:Boolean[1]|demo::employee.all()->filter(p | (!$highOnly) || ($p.ratings > 9.2))->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.ratings
+      ],
+      [
+        'Id',
+        'Name',
+        'Ratings'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceBySalaryParameterized
+{
+  pattern: '/personServiceBySalary';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {minSalary:Decimal[1]|demo::employee.all()->filter(p | $p.salary >= $minSalary)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.salary
+      ],
+      [
+        'Id',
+        'Name',
+        'Salary'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceMultiExec
+{
+  pattern: '/personServiceMultiExec/{env}';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {minId:Integer[1]|demo::employee.all()->filter(p | $p.id >= $minId)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.type
+      ],
+      [
+        'Id',
+        'Name',
+        'Employee Type'
+      ]
+    )};
+    key: 'env';
+    executions['env1']:
+    {
+      mapping: demo::DemoRelationalMapping;
+      runtime: demo::H2DemoRuntime;
+    }
+    executions['env2']:
+    {
+      mapping: demo::DemoRelationalMapping;
+      runtime: demo::H2DemoRuntime;
+    }
+  }
+}
+
+Service demo::H2PersonServiceByDateTimeExact
+{
+  pattern: '/personServiceByDateTimeExact';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {dateTime:DateTime[1]|demo::employee.all()->filter(p | $p.createdAt == $dateTime)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.createdAt
+      ],
+      [
+        'Id',
+        'Name',
+        'Created At'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonServiceByDateTimeRange
+{
+  pattern: '/personServiceByDateTimeRange';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {sinceDateTime:DateTime[1]|demo::employee.all()->filter(p | $p.createdAt >= $sinceDateTime)->project(
+      [
+        x|$x.id,
+        x|$x.name,
+        x|$x.createdAt
+      ],
+      [
+        'Id',
+        'Name',
+        'Created At'
+      ]
+    )};
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 
 ###Pure
 Enum demo::employeeType
@@ -320,10 +621,12 @@ Enum demo::employeeType
 Class demo::employee
 {
   id: Integer[1];
-  ratings: Decimal[1];
+  ratings: Float[1];
+  salary: Decimal[1];
   name: String[1];
   type: demo::employeeType[1];
   startDate: Date[1];
+  createdAt: DateTime[1];
   derivedName() {$this.name+'_derived'} : String[1];
 }
 
@@ -340,9 +643,11 @@ Mapping demo::DemoRelationalMapping
     ~mainTable [demo::H2DemoDataBase]EmployeeTable
     id: [demo::H2DemoDataBase]EmployeeTable.id,
     ratings: [demo::H2DemoDataBase]EmployeeTable.ratings,
+    salary: [demo::H2DemoDataBase]EmployeeTable.salary,
     name: [demo::H2DemoDataBase]EmployeeTable.name,
     type: EnumerationMapping EmployeeType: [demo::H2DemoDataBase]EmployeeTable.type,
-    startDate: [demo::H2DemoDataBase]EmployeeTable.start_date
+    startDate: [demo::H2DemoDataBase]EmployeeTable.start_date,
+    createdAt: [demo::H2DemoDataBase]EmployeeTable.created_at
   }
 
    demo::employeeType : EnumerationMapping EmployeeType
@@ -361,7 +666,7 @@ RelationalDatabaseConnection demo::H2DemoConnection
   specification: LocalH2
   {
     testDataSetupSqls: [
-      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,ratings DECIMAL,firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE);\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (101,9.1,202, \'Alice\', 303, \'Type1\', \'2023-08-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (102,9.2,203, \'Bob\', 304, \'Type2\', \'2022-08-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (103,9.3,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\');\nInsert into EmployeeTable (id, ratings, firm_id, name, country_id, type, start_date) values (104,9.4,205, \'Danielle\', 306, \'Type1\', \'2022-07-23\');\n'
+      'Drop table if exists EmployeeTable;\nCreate Table EmployeeTable(id INTEGER PRIMARY KEY,ratings FLOAT,salary DECIMAL(10,2),firm_id INTEGER,name VARCHAR(200),country_id INTEGER, type VARCHAR(25), start_date DATE, created_at TIMESTAMP);\nInsert into EmployeeTable (id, ratings, salary, firm_id, name, country_id, type, start_date, created_at) values (101,9.1,50000.00,202, \'Alice\', 303, \'Type1\', \'2023-08-24\', \'2023-08-24 12:00:00\');\nInsert into EmployeeTable (id, ratings, salary, firm_id, name, country_id, type, start_date, created_at) values (102,9.2,60000.50,203, \'Bob\', 304, \'Type2\', \'2022-08-24\', \'2022-08-24 15:30:00\');\nInsert into EmployeeTable (id, ratings, salary, firm_id, name, country_id, type, start_date, created_at) values (103,9.3,75000.75,204, \'Curtis\', 305, \'Type2\', \'2022-07-24\', \'2022-07-24 09:15:30\');\nInsert into EmployeeTable (id, ratings, salary, firm_id, name, country_id, type, start_date, created_at) values (104,9.4,80000.25,205, \'Danielle\', 306, \'Type1\', \'2022-07-23\', \'2022-07-23 18:45:30\');\n'
       ];
   };
   auth: DefaultH2;
