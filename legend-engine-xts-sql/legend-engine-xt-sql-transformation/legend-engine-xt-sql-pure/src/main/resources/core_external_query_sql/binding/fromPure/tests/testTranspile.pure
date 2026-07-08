@@ -2118,7 +2118,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->rename(~ID, ~ID_table3), JoinKind.LEFT, {row1, row2|$row1.String_table1 == $row2.String})
           ->filter({x|$x.String_table2 == 'ABC'})}
         )
-      ])
+      ], false, true, false)
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoinSelectStarFromLimited():Boolean[1]
@@ -4104,11 +4104,140 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralUnsupported():Boolean[1]
+{
+    error(
+      'select * from lateral (select * from service."/service/service1") as sub',
+      'standalone lateral not supported; lateral must appear within a join or multi-table from clause'
+    );
+
+    error(
+      'SELECT * FROM service."/service/service1" table1 LEFT JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Integer") sub ON true',
+      'LEFT join lateral is not supported; use cross join, inner join, or comma syntax instead'
+    );
+
+    error(
+      'SELECT * FROM service."/service/service1" table1 FULL JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Integer") sub ON true',
+      'FULL join lateral is not supported; use cross join, inner join, or comma syntax instead'
+    );
+
+    error(
+      'SELECT * FROM service."/service/service1" table1 RIGHT JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Integer") sub ON true',
+      'RIGHT join lateral is not supported; use cross join, inner join, or comma syntax instead'
+    );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralRelation():Boolean[1]
 {
-  error(
-    'select * from service."/service/service1", lateral unnest(ARRAY[5,1,2,8,3]) as a',
-    'lateral not yet supported'
+  test(
+    [
+        'SELECT table1."Boolean", sub."ID" FROM service."/service/service1" table1 CROSS JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Decimal") sub',
+        'SELECT table1."Boolean", sub."ID" FROM service."/service/service1" table1, LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Decimal") sub',
+        'SELECT table1."Boolean", sub."ID" FROM service."/service/service1" table1 INNER JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Decimal") sub ON true'
+    ],
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->filter(x | $x.Integer == $r.Decimal)
+                ->select(~[ID])
+          )
+          ->select(~[Boolean, ID])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralInnerJoinWithOnCondition():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean", sub."ID" FROM service."/service/service1" table1 INNER JOIN LATERAL (SELECT t2."ID" FROM service."/service/service2" t2) sub ON sub."ID" = table1."Integer"',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->select(~[ID])
+                ->filter(x | $x.ID == $r.Integer)
+          )
+          ->select(~[Boolean, ID])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralOuterColumnInSelect():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean", sub."outer_str", sub."ID" FROM service."/service/service1" table1, LATERAL (SELECT table1."String" as "outer_str", t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Integer") sub',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->filter(x | $x.Integer == $r.Integer)
+                ->project(~[outer_str : x | $r.String, ID : x | $x.ID])
+          )
+          ->select(~[Boolean, outer_str, ID])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralChained():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean", sub1."ID", sub2."Str" FROM service."/service/service1" table1, ' +
+    'LATERAL (SELECT t2."ID" FROM service."/service/service2" t2 WHERE t2."Integer" = table1."Integer") sub1, ' +
+    'LATERAL (SELECT t3."String" as "Str" FROM service."/service/service2" t3 WHERE t3."ID" = sub1."ID") sub2',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->filter(x | $x.Integer == $r.Integer)
+                ->select(~[ID])
+          )
+          ->lateral(r |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->filter(x | $x.ID == $r.ID)
+                ->select(~[String])
+                ->rename(~String, ~Str)
+          )
+          ->select(~[Boolean, ID, Str])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralTableFunction():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(ARRAY[5,1,2]) AS a',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->lateral(r |
+              [5, 1, 2]->meta::pure::functions::relation::variant::flatten(~a)
+          )
+          ->select(~[Boolean])
+      })
+    ]
   )
 }
 

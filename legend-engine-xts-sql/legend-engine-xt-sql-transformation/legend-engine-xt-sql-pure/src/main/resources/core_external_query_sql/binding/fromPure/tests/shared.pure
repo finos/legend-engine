@@ -134,12 +134,12 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyRu
   );
 }
 
-function meta::external::query::sql::transformation::queryToPure::abc::dummyRuntime(): Runtime[1]
+function meta::external::query::sql::transformation::queryToPure::tests::dummyPackageableRuntime(): meta::pure::runtime::PackageableRuntime[1]
 {
-  ^EngineRuntime(
+  ^meta::pure::runtime::PackageableRuntime(runtimeValue = ^EngineRuntime(
     mappings = dummyMapping,
     connectionStores = dummyConnection()
-  );
+  ));
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::sqlExtensions():Extension[*]

@@ -74,15 +74,15 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 
 function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1]):Boolean[1]
 {
-  test($sqls, $expected, $scopeWithFrom, true)
+  test($sqls, $expected, $scopeWithFrom, true, true)
 }
 
 
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1], checkSchema:Boolean[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1], checkSchema:Boolean[1], failOnUnknownColumns:Boolean[1]):Boolean[1]
 {
   $sqls->forAll(sql |
     $expected->forAll(e |
-      let sqlTransformContext = $sql->processQuery($e.resolveSources(), $scopeWithFrom);
+      let sqlTransformContext = $sql->processQuery($e.resolveSources(), $scopeWithFrom, $failOnUnknownColumns);
       let actual = $sqlTransformContext.lambda($scopeWithFrom);
 
       if ($e.assertLambda, | assertLambdaEquals($e.expectedLambda, $actual), | true);
@@ -166,7 +166,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::relatio
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
-  processQuery($sql, $sources, $scopeWithFrom, false)
+  processQuery($sql, $sources, $scopeWithFrom, true)
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], failOnInvalidColumns:Boolean[1]): SqlTransformContext[1]
