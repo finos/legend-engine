@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.api;
 
 import io.opentracing.Scope;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -53,7 +55,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -152,6 +156,56 @@ public class Compile
             PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
             RelationType relationType = org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(lambda, pureModel);
             return Response.ok(relationType, MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
+            return handleException(uriInfo, identity, start, ex);
+        }
+    }
+
+    @POST
+    @Path("lambdaRelationType/batch")
+    @ApiOperation(value = "Loads a given model and a map of lambdas. Returns the relation type for each lambda.")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "lambda relation type batch")
+    public Response lambdaRelationTypeBatch(LambdaRelationTypesInput lambdaRelationTypesInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        try (Scope scope = GlobalTracer.get().buildSpan("Service: lambdaRelationType/batch").startActive(true))
+        {
+            PureModelContext model = lambdaRelationTypesInput.model;
+            Map<String, LambdaFunction> lambdas = lambdaRelationTypesInput.lambdas == null
+                    ? Collections.emptyMap()
+                    : lambdaRelationTypesInput.lambdas;
+            scope.span().setTag("lambdaCount", lambdas.size());
+
+            PureModel pureModel = this.modelManager.loadModel(model, PureClientVersions.production, identity, null);
+
+            Map<String, RelationType> results = new LinkedHashMap<>();
+            Map<String, ExceptionError> errors = new LinkedHashMap<>();
+            for (Map.Entry<String, LambdaFunction> entry : lambdas.entrySet())
+            {
+                String key = entry.getKey();
+                try (Scope childScope = GlobalTracer.get().buildSpan("Service: lambdaRelationType").startActive(true))
+                {
+                    childScope.span().setTag("lambdaKey", key);
+                    try
+                    {
+                        results.put(key, org.finos.legend.engine.language.pure.compiler.Compiler.getLambdaRelationType(entry.getValue(), pureModel));
+                    }
+                    catch (Exception ex)
+                    {
+                        Tags.ERROR.set(childScope.span(), true);
+                        childScope.span().setTag("error.message", ex.getMessage());
+                        MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
+                        errors.put(key, new ExceptionError(-1, ex));
+                    }
+                }
+            }
+            return Response.ok(new LambdaRelationTypesResult(results, errors), MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
