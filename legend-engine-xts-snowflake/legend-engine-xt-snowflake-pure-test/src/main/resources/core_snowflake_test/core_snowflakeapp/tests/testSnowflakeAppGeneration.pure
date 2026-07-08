@@ -341,7 +341,7 @@ function <<test.Test>> {doc.doc = 'Mapping-level add() without collection params
 meta::external::function::activator::snowflakeApp::tests::testMappingAddWithoutCollectionParams():Boolean[1]
 {
   // Mapping uses nested add(add(AGE, FIRMID), ADDRESSID) — must stay as arithmetic +
-  let expected = '';
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("AGESUM" INTEGER) LANGUAGE SQL AS $$ select ((("root".AGE + "root".FIRMID) + "root".ADDRESSID) + 100) as "ageSum" from personTable as "root" $$;';
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithMappingNestedAdd():TabularDataSet[1];\n';
   checkSnowflakeAppGrammar($function, $expected);
 }
