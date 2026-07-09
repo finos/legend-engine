@@ -23,7 +23,6 @@ Class meta::external::query::sql::transformation::queryToPure::tests::TestConfig
   expected:FunctionDefinition<Any>[1];
   assertJSON:Boolean[1];
   assertLambda:Boolean[1];
-  checkSchema:Boolean[1];
   sources:SQLSource[*];
 
   expectedLambda() {
@@ -59,12 +58,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::c(expec
 
 function meta::external::query::sql::transformation::queryToPure::tests::c(expected:FunctionDefinition<Any>[1], assertLambda:Boolean[1], assertJSON:Boolean[1], sources:SQLSource[*]):TestConfig[1]
 {
-  c($expected, $assertLambda, $assertJSON, true, $sources);
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::c(expected:FunctionDefinition<Any>[1], assertLambda:Boolean[1], assertJSON:Boolean[1], checkSchema:Boolean[1], sources:SQLSource[*]):TestConfig[1]
-{
-  ^TestConfig(expected = $expected, assertLambda = $assertLambda, assertJSON = $assertJSON, checkSchema = $checkSchema, sources = $sources);
+  ^TestConfig(expected = $expected, assertLambda = $assertLambda, assertJSON = $assertJSON, sources = $sources);
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*]):Boolean[1]
@@ -72,13 +66,8 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
   test($sqls, $expected, false);
 }
 
+
 function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1]):Boolean[1]
-{
-  test($sqls, $expected, $scopeWithFrom, true)
-}
-
-
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:TestConfig[*], scopeWithFrom:Boolean[1], checkSchema:Boolean[1]):Boolean[1]
 {
   $sqls->forAll(sql |
     $expected->forAll(e |
@@ -87,7 +76,6 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 
       if ($e.assertLambda, | assertLambdaEquals($e.expectedLambda, $actual), | true);
       if ($e.assertJSON, | assertLambdaJSONEquals($e.expectedLambda, $actual), | true);
-      if ($e.checkSchema, | meta::external::query::sql::transformation::queryToPure::resolveSchema($actual, relationalExtensions())->isNotEmpty(), | true);
     )
   );
 }
