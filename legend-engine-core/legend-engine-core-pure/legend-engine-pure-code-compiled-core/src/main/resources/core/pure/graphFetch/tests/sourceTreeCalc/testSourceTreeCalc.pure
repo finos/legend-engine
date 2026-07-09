@@ -1770,6 +1770,7 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withFilters::UnionMapping
 
 ###Pure
 // Union mapping where sources are a mix between root class and property access
+import meta::pure::graphFetch::tests::sourceTreeCalc::*;
 Class meta::pure::graphFetch::tests::sourceTreeCalc::Asset
 {
   calcTyp: Float[0..1];
@@ -1810,21 +1811,38 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
 {
   let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::Debt{principleRedemptionSchedule{startDate,redempPrice,redempAmount,endDate}}}#;
 
-  let expectedString = 'Asset\n' +
-                        '(\n' +
-                        '  calcTyp\n' +
-                        '  putSch\n' +
-                        '  (\n' +
-                        '    putScheduleDt\n' +
-                        '    putSchedulePct\n' +
-                        '  )\n' +
-                        '  redempVal\n' +
-                        ')';
+  // let expectedString = 'Asset\n' +
+  //                       '(\n' +
+  //                       '  calcTyp\n' +
+  //                       '  putSch\n' +
+  //                       '  (\n' +
+  //                       '    putScheduleDt\n' +
+  //                       '    putSchedulePct\n' +
+  //                       '  )\n' +
+  //                       '  redempVal\n' +
+  //                       ')';
+  let expectedTree = #{
+    Asset 
+    {
+      calcTyp,
+      putSch 
+      {
+        BO 
+        {
+          calcTyp,
+          redempVal
+        },
+        putScheduleDt,
+        putSchedulePct
+      },
+      redempVal
+    }
+  }#;
 
   let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree,
                                                                 meta::pure::graphFetch::tests::sourceTreeCalc::MappingUnionFromRootClassAndProperty,
                                                                 meta::pure::extension::defaultExtensions());
-  assertEquals($expectedString, $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+  assertEquals($expectedTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
 }
 
 
@@ -2791,3 +2809,697 @@ function <<test.Test, test.ToFix>> meta::pure::graphFetch::enrichSourceTeeNode::
 
    assertEquals($expected->sort(), $visitedFunctions->sort());
 }
+
+###Pure 
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::testIntermediateNested():Boolean[1]
+{
+  let tree = #{meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget{employees{division, fullName}}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapping, meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+      Company
+      {
+        employees
+        {
+          division,
+          employees
+          {
+            firstName,
+            lastName
+          }
+        }
+      }
+   }#;
+
+   assertEquals($expected->asString(true), $sourceTree->asString(true));
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Employee 
+{
+  firstName: String[1];
+  lastName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget
+{
+  fullName : String[1];
+  division : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeDetails
+{
+  employees : Employee[*];
+  city : String[1];
+  division : String[1];
+
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Company
+{
+  employees : EmployeeDetails[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget 
+{
+  employees : EmployeeTarget[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyIntermediate
+{
+  company : Company[1];
+  employee : Employee[0..1];
+}
+
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompanyIntermediate(company: Company[1]) : CompanyIntermediate[*]
+{
+  $company.employees.employees->map(e | ^CompanyIntermediate(company = $company, employee = $e));
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::Company
+    employees: $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::getCompanyIntermediate()
+  }
+
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::EmployeeTarget : Pure 
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediate::CompanyIntermediate
+    division : $src.company.employees.division->toOne(),
+    fullName : $src.employee.firstName->toOne() + $src.employee.lastName->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::cyclic::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::cyclic::CyclicA
+{
+  name : String[1];
+  b : CyclicB[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::cyclic::CyclicB
+{
+  label : String[1];
+  a : CyclicA[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::cyclic::testAllNestedPropertiesTerminatesOnCycle():Boolean[1]
+{
+  let propNames = CyclicA->meta::pure::functions::meta::allNestedProperties()
+                         ->map(p | $p.name->toOne())
+                         ->removeDuplicates()
+                         ->sort();
+  assertEquals(['a', 'b', 'label', 'name'], $propNames);
+}
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Company
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Address
+{
+  street : String[1];
+  zip    : String[1];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person_Address
+{
+  resident : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Person[1];
+  address  : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::Address[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployee
+{
+  company : Company[1];
+  employee : Person[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeIntermediate
+{
+  ce : CompanyEmployee[1];
+  person : Person[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeTarget
+{
+  companyName : String[1];
+  employeeStreet : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::wrap(ce:CompanyEmployee[1]) : CompanyEmployeeIntermediate[*]
+{
+  ^CompanyEmployeeIntermediate(ce = $ce, person = $ce.employee)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::testIntermediateOverAssociation():Boolean[1]
+{
+  let tree = #{CompanyEmployeeTarget {companyName, employeeStreet}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAssocMapping,
+                      meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+    CompanyEmployee
+    {
+      company { name },
+      employee
+      {
+        address { street }
+      }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAssocMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployeeTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CompanyEmployee
+    companyName    : $src.company.name,
+    employeeStreet : $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::wrap().person.address.street->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::collide::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::Customer
+{
+  name : String[1];
+  vip  : Boolean[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::Order
+{
+  primaryCustomer   : Customer[1];
+  secondaryCustomer : Customer[0..1];
+  amount            : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderTarget
+{
+  primaryName   : String[1];
+  secondaryName : String[0..1];
+  amount        : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderIntermediate
+{
+  order  : Order[1];
+  pickedCustomer : Customer[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::collide::wrapPrimary(o:Order[1]) : OrderIntermediate[*]
+{
+  ^OrderIntermediate(order = $o, pickedCustomer = $o.primaryCustomer)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::collide::testCollidingReturnTypes():Boolean[1]
+{
+  let tree = #{OrderTarget {primaryName, secondaryName, amount}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderCollideMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{
+    Order
+    {
+      amount,
+      primaryCustomer { name },
+      secondaryCustomer { name }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderCollideMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::collide::OrderTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::collide::Order
+    primaryName   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::collide::wrapPrimary().pickedCustomer.name->toOne(),
+    secondaryName : $src.secondaryCustomer.name,
+    amount        : $src.amount
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::supertype::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Animal
+{
+  species : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Dog extends meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Animal
+{
+  breed : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogTarget
+{
+  species : String[1];
+  breed   : String[1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::supertype::testSourceAccessViaSupertypeProperty():Boolean[1]
+{
+  let tree = #{DogTarget {species, breed}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Dog { breed, species } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::supertype::DogTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::supertype::Dog
+    species : $src.species,
+    breed   : $src.breed
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal
+{
+  species : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog extends meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal
+{
+  breed : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelTarget
+{
+  species : String[1];
+  breed   : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate
+{
+  animal : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Animal[1];
+  dog    : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::wrap(d:meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog[1]) : meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate[*]
+{
+  ^meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelIntermediate(animal = $d, dog = $d)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::testIntermediateOverSubtype():Boolean[1]
+{
+  let tree = #{KennelTarget {species, breed}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Dog { breed, species } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::KennelTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::Dog
+    species : $src->meta::pure::graphFetch::tests::sourceTreeCalc::supertype2::wrap().animal.species->toOne(),
+    breed   : $src.breed
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+{
+  area : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle extends meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+{
+  radius : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCatalog
+{
+  shapes : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape
+{
+  area : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCircle extends meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape
+{
+  radius : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCatalog
+{
+  shapes : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate
+{
+  shape   : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape[1];
+  circle  : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle[0..1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::wrap(c:meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle[1])
+  : meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate[*]
+{
+  ^meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeIntermediate(shape = $c, circle = $c)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::testIntermediateWithSubtypeTarget():Boolean[1]
+{
+  let tree = #{TgtCatalog {shapes {area}, shapes->subType(@TgtCircle) {radius}}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeMapping,
+                      meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('area'),   | 'expected area in source tree, got: ' + $str);
+  assert($str->contains('radius'), | 'expected radius in source tree, got: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::ShapeMapping
+(
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCatalog : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCatalog
+    shapes : $src.shapes
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtShape : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcShape
+    area : $src.area
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::TgtCircle : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::SrcCircle
+    area   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::interSubType::wrap().shape.area->toOne(),
+    radius : $src.radius
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcA
+{
+  v : Float[1];
+  label : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcB
+{
+  v : Float[1];
+  tag : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt
+{
+  v : Float[1];
+  txt : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::WrapA
+{
+  a : SrcA[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::wrapA(a:SrcA[1]) : WrapA[*]
+{
+  ^WrapA(a = $a)
+}
+
+// Note: calculateSourceTree currently has a known TODO for operation sets
+// (see testOnSourceRoot.pure: "TODO - handle operation sets in calculateSourceTree").
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::testUnionWithIntermediateMember():Boolean[1]
+{
+  let tree = #{Tgt {v, txt}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::UnionInterMapping,
+                      meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('label'), | 'expected label (SrcA branch) in source tree: ' + $str);
+  assert($str->contains('tag'),   | 'expected tag (SrcB branch) in source tree: ' + $str);
+  assert($str->contains(' v'),    | 'expected v in source tree: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::UnionInterMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a, b)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt[a] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcA
+    v   : $src->meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::wrapA().a.v->toOne(),
+    txt : $src.label
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::Tgt[b] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInter::SrcB
+    v   : $src.v,
+    txt : $src.tag
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Root
+{
+  leaf : Leaf[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Leaf
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Tgt
+{
+  name : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Hop1
+{
+  root : Root[1];
+  hop2 : Hop2[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Hop2
+{
+  leaf : Leaf[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::wrap(r:Root[1]) : Hop1[*]
+{
+  ^Hop1(root = $r, hop2 = ^Hop2(leaf = $r.leaf))
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::testTwoHopIntermediate():Boolean[1]
+{
+  let tree = #{Tgt {name}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::MultiHopMapping,
+                      meta::pure::extension::defaultExtensions());
+  let expected = #{ Root { leaf { name } } }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::MultiHopMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Tgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::Root
+    name : $src->meta::pure::graphFetch::tests::sourceTreeCalc::multiHop::wrap().hop2.leaf.name->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::functions::asserts::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot
+{
+  x : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Foreign
+{
+  y : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Tgt
+{
+  z : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Wrap
+{
+  foreign : Foreign[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::badWrap(s:SrcRoot[1]) : Wrap[*]
+{
+  ^Wrap(foreign = ^Foreign(y = $s.x))
+}
+
+// Note: in this configuration calculateSourceTree previously took the legacy
+// fallback (isTreeRootOwner returns true on empty treeOwner) and silently
+// dropped the unreachable property. The intermediate-handling branch now
+// surfaces a clear diagnostic up-front.
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::testUnreachableOwnerGivesClearError():Boolean[1]
+{
+  let tree = #{Tgt {z}}#;
+  assertError(
+    | meta::pure::graphFetch::calculateSourceTree(
+        $tree,
+        meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::UnreachableMapping,
+        meta::pure::extension::defaultExtensions());,
+    'No intermediate-class property of meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot returns meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Wrap - cannot build path back to owner.'
+  );
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::UnreachableMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::Tgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::SrcRoot
+    z : $src->meta::pure::graphFetch::tests::sourceTreeCalc::unreachable::badWrap().foreign.y->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::*;
+import meta::pure::graphFetch::*;
+
+// Regression: union mapping where one branch's ~src is a subtype of another's, and the
+// subtype branch's transform reads a property defined on the supertype (an inherited
+// access). Pure's lazy evaluation can hand back a different Class object for the same
+// type when navigated from different roots, so identity-based contains checks in the
+// owner-reachability precondition mistakenly classify the supertype as non-trivial.
+// Mirrors the propertyUnion.pure 'testUnionSubTypeSourceWithType' shape but is
+// runnable in Test_Pure_Core.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPerson
+{
+  fullName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPersonC extends meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPerson
+{
+  cName : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::TgtPerson
+{
+  firstName : String[1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::testUnionSubtypeSourceReadsInheritedProperty():Boolean[1]
+{
+  let tree = #{TgtPerson { firstName } }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::UnionInheritedPropMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('fullName'), | 'expected fullName (inherited) in source tree: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::UnionInheritedPropMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::TgtPerson : Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(r, c)
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::TgtPerson[r] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPerson
+    firstName : $src.fullName
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::TgtPerson[c] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPersonC
+    firstName : $src.fullName + ' ' + $src.cName
+  }
+)
