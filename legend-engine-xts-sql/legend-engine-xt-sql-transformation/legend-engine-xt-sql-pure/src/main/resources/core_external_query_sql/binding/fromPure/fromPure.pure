@@ -534,7 +534,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       ^$context(expression=$wrapped);,
     | let from = $querySpec.from->processFrom($context);
 
-      checkReferencedColumnsAreValid($querySpec, $from, $context.failOnInvalidColumns);
+      checkReferencedColumnsAreValid($querySpec, $from, $context, $context.failOnInvalidColumns);
 
       let withWhere = $querySpec.where->processWhere($from);
 
@@ -604,21 +604,25 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //as part of the query processing we do a lot of renaming of columns, eg a -> a_table1. Whilst this is fine for internal processing, this technically allows a user to reference this column within
 //the sql. This would be invalid sql but would technically work in this flow. This check ensures users are not doing this.
 //the available columns are all columns from the "from" plus all aliases in the current select as postgres allows you to refernce these by alias
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::checkReferencedColumnsAreValid(querySpec: QuerySpecification[1], from:SqlTransformContext[1], failOnInvalidColumns:Boolean[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::checkReferencedColumnsAreValid(querySpec: QuerySpecification[1], from:SqlTransformContext[1], context:SqlTransformContext[1], failOnInvalidColumns:Boolean[1]):Boolean[1]
 {
   if ($failOnInvalidColumns,
     |
         let selectColumnNames = walk($querySpec.select, q | $q, s:SingleColumn[1] | $s.alias)->removeDuplicates();
-        let available = $from.aliases.name->concatenate($selectColumnNames);
+        // When inside a lateral subquery the outer (left) side's columns are also referenceable
+        let outerColumnNames = if ($context.lateralOuterAliases->isNotEmpty(),
+          | $context.contexts->map(c | $c.aliases.name),
+          | []);
+        let available = $from.aliases.name->concatenate($selectColumnNames)->concatenate($outerColumnNames);
         let used = extractUsedColumnNames(^$querySpec(from = [])); //we only care about current query scope, not anything within the from
         let invalidColumns = $used->removeAll($available);
+
         assert($invalidColumns->isEmpty(), 'unknown columns referenced in query ' + $invalidColumns->joinStrings('[', ',', ']'));,
     | true);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
 {
-
   walk($expression,
     t | $t,
     f:FunctionCall[1] | if (isExpressionAggregate($f, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression()))
@@ -1112,9 +1116,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processSelect', $context.debug);
   if (isSelectStar($select, $context),
     | $context.expression->toOne(),
-    | if (allColumnsSimpleSelect($select),
+    | if (allColumnsSimpleSelect($select) && !hasLateralOuterReferences($select, $context),
         | processSelectToRestrictAndRename($select, $restrict, $context),
         | processSelectToProject($select, $context)));
+}
+
+// This guard is only reached when allColumnsSimpleSelect() is true,
+// meaning every selectItem.expression is a QualifiedNameReference.
+// Therefore checking only QualifiedNameReference here is sufficient.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasLateralOuterReferences(select: Select[1], context: SqlTransformContext[1]):Boolean[1]
+{
+  $context.lateralOuterAliases->isNotEmpty() &&
+  $select.selectItems->exists(si |
+    $si->instanceOf(SingleColumn) && $si->cast(@SingleColumn).expression->match([
+      q:QualifiedNameReference[1] | $q.name.parts->size() > 1 && $context.lateralOuterAliases->exists(p | $p.first == $q.name.parts->at(0)),
+      e:meta::external::query::sql::metamodel::Expression[1] | false
+    ])
+  );
 }
 
 
@@ -1298,10 +1316,97 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isLateral(relation: Relation[1]): Boolean[1]
+{
+  $relation->match([
+    a: AliasedRelation[1] | $a.relation->isLateral(),
+    l: LateralRelation[1] | true,
+    r: Relation[1] | false
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::unwrapLateral(relation: Relation[1]): Relation[1]
+{
+  $relation->match([
+    a: AliasedRelation[1] | ^$a(relation = $a.relation->unwrapLateral()),
+    l: LateralRelation[1] | $l.relation,
+    r: Relation[1] | $r
+  ]);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLateralRelation(lateral: LateralRelation[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
-  fail('lateral not yet supported');
+  fail('standalone lateral not supported; lateral must appear within a join or multi-table from clause');
   $_context;
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLateralJoin(join: Join[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  debug(|'processLateralJoin', $_context.debug);
+
+  assertRelation($_context.relation, 'lateral');
+  // Pure lateral has inner join semantics, so CROSS and INNER are both valid.
+  // LEFT/RIGHT/FULL would require a different Pure function.
+  assert($join.type == JoinType.CROSS || $join.type == JoinType.INNER,
+    | $join.type.name + ' join lateral is not supported; use cross join, inner join, or comma syntax instead');
+
+  let context = ^$_context(debug = $_context.debug->indent());
+
+  // 1. Process the left side normally
+  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('join_' + toString($context.id + 2)), root = false, id = $context.id + 2));
+  let left = wrapWithFrom($leftContext);
+
+  // 2. Create lateral lambda variable with the left relation's type
+  let lateralVar = ^VariableExpression(
+    genericType = $left.expression->toOne()->evaluateAndDeactivate().genericType,
+    name = 'r',
+    multiplicity = PureOne
+  )->evaluateAndDeactivate();
+
+  // 3. Collect outer alias mappings so qualified references (e.g. t1.col) resolve to the lateral variable
+  let allNames = $left.name->concatenate($left.contexts->filter(c | $c.name->isNotEmpty()).name);
+  let outerAliases = $allNames->removeDuplicates()->map(n | pair($n, $lateralVar));
+
+  // 4. Unwrap LateralRelation (preserving alias) and process with lateral scope
+  let unwrapped = $join.right->unwrapLateral();
+  let lateralContext = ^$context(
+    name = $context.name->orElse('join_' + toString($context.id + 3)),
+    root = false,
+    id = $context.id + 3,
+    lateralOuterAliases = $outerAliases,
+    contexts = $context.contexts->concatenate($left)->concatenate($left.contexts)
+  );
+
+  let rightContext = processRelation($unwrapped, $lateralContext);
+
+  // 4b. If there is an ON condition (INNER JOIN LATERAL ... ON cond), fold it into
+  //     the lateral body as a filter. The rightContext still carries lateralOuterAliases,
+  //     so outer column references in the ON condition resolve to $r.
+  //     Skip trivial ON true (semantically identical to CROSS JOIN LATERAL).
+  let rightFiltered = $join.criteria->match([
+    o:JoinOn[1] | if ($o.expression->instanceOf(BooleanLiteral) && $o.expression->cast(@BooleanLiteral).value == true,
+                      | $rightContext,
+                      | createFilter($o.expression, $rightContext)),
+    j:JoinCriteria[0..1] | $rightContext
+  ]);
+
+  let right = wrapWithFrom($rightFiltered);
+
+  // 5. Build lateral lambda: r -> rightExpression
+  let lambdaType = ^FunctionType(
+    parameters = $lateralVar,
+    returnMultiplicity = PureOne,
+    returnType = $right.expression->toOne()->evaluateAndDeactivate().genericType
+  );
+  let lateralLambda = lambda($lambdaType, $right.expression->toOne());
+
+  // 6. Build lateral expression
+  let newExp = ^TDSBuilder().lateral($left.expression->toOne(), $lateralLambda, true);
+
+  // 7. Combine aliases and return
+  let allAliases = $left.aliases->concatenate($right.aliases);
+  let newContext = ^$context(contexts = [$left, $right]);
+  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAliasedRelation(aliased: AliasedRelation[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1346,7 +1451,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJoin(join: Join[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processJoin', $_context.debug);
+  
+  if ($join.right->isLateral(), 
+    | processLateralJoin($join, $_context),
+    | processStandardJoin($join, $_context));
+}
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStandardJoin(join: Join[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
+{
   let context = ^$_context(debug = $_context.debug->indent());
 
   let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('join_' + toString($context.id + 2)), root = false, id = $context.id + 2));
@@ -1387,7 +1499,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let allAliases = $left.aliases->concatenate($right.aliases);
 
-  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);
+  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);  
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -1415,7 +1527,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(JoinType.LEFT,  | meta::pure::functions::relation::JoinKind.LEFT),
     pair(JoinType.RIGHT, | meta::pure::functions::relation::JoinKind.RIGHT),
     pair(JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER),
-    pair(JoinType.CROSS, | meta::pure::functions::relation::JoinKind.INNER)
+    pair(JoinType.CROSS, | meta::pure::functions::relation::JoinKind.INNER),
+    pair(JoinType.FULL, | meta::pure::functions::relation::JoinKind.FULL)
   ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
 
@@ -2069,7 +2182,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::rowExpressionContext(context:SqlTransformContext[1]):SqlTransformExpressionContext[1]
 {
   if ($context.relation->isTrue(),
-    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne)->evaluateAndDeactivate(), ^Map<String, VariableExpression>(), $context.relation->isTrue()),
+    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne)->evaluateAndDeactivate(), $context.lateralOuterAliases->newMap(), $context.relation->isTrue()),
     | expressionContext(^VariableExpression(genericType = ^GenericType(rawType = TDSRow),name = 'row', multiplicity = PureOne), ^Map<String, VariableExpression>(), $context.relation->isTrue()))
 
 }
@@ -3965,6 +4078,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   scopeVariables: Map<String, ValueSpecification>[1];
   failOnInvalidColumns: Boolean[1] = false;
   compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1];
+  lateralOuterAliases: Pair<String, VariableExpression>[*];
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);
@@ -4544,6 +4658,19 @@ aggregation(
           sfe($func, $parameters);
         );
     }:ValueSpecification[1];
+
+  lateral(
+    left: ValueSpecification[1],
+    lateralLambda: LambdaFunction<Any>[1],
+    relation: Boolean[1]
+  ){
+    assert($relation, | 'lateral only supported on relation inputs');
+
+    let rightColumns = $lateralLambda.expressionSequence->evaluateAndDeactivate()->last()->toOne()->resolveRelationColumns();
+    let type = buildRelationType($left->resolveRelationColumns()->concatenate($rightColumns));
+
+    sfe(lateral_Relation_1__Function_1__Relation_1_, $type, [$left, iv($lateralLambda)]);
+  }:ValueSpecification[1];
 
 
 }

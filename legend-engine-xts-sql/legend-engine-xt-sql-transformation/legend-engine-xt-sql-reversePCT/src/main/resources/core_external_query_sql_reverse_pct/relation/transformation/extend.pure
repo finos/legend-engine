@@ -14,7 +14,7 @@
 
 import meta::pure::test::pct::reversePCT::framework::*;
 
-function meta::external::query::sql::reversePCT::tests::relation::relation::functions::transformation::extend::reverses():ReversesForSource[1]
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::extend::reverses():ReversesForSource[1]
 {
   ^ReversesForSource(
     source = '/core_functions_relation/relation/functions/transformation/extend.pure',
@@ -841,7 +841,7 @@ function meta::external::query::sql::reversePCT::tests::relation::relation::func
   )
 }
 
-function meta::external::query::sql::reversePCT::tests::relation::relation::functions::transformation::extend::exec():Boolean[1]
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::extend::exec():Boolean[1]
 {
    meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);

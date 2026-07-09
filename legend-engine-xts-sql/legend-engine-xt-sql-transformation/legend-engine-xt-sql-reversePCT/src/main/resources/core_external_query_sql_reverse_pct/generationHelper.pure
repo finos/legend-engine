@@ -50,7 +50,7 @@ function meta::external::query::sql::reversePCT::generator::findTests(funcKind:S
 {
   let pKind =   [
                   p('standard', 'core_functions_standard', ''),
-                  p('relation', 'core_functions_relation', ''),
+                  p('relation', 'core_functions_relation', 'relation/'),
                   p('unclassified', 'core_functions_unclassified', ''),
                   p('grammar', 'platform', 'pure/grammar/functions/'),
                   p('essential', 'platform', 'pure/essential/'),
