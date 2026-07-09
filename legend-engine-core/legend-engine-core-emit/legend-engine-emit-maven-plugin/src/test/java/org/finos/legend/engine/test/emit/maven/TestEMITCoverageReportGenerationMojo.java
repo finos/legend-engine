@@ -36,7 +36,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -291,6 +293,102 @@ public class TestEMITCoverageReportGenerationMojo
         Assert.assertFalse("Default output location should not be used when overridden",
                 getExpectedOutputFile(mavenProject).exists());
         assertDescriptorNamesEqual(discoverDescriptors(mojo, projectDir), "alpha-model");
+    }
+
+    @Test
+    public void invalidPathInIncludedRelativeSubpathsThrowsWithParameterAndValueInMessage() throws Exception
+    {
+        Path repoRoot = TMP_FOLDER.newFolder().toPath();
+        String invalidSubpath = "src/main\u0000/emit-models";
+        List<String> included = Arrays.asList(DEFAULT_INCLUDED_SUBPATH, invalidSubpath);
+        try
+        {
+            EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repoRoot, included, null, null, null);
+            Assert.fail("Expected IllegalArgumentException for an invalid path entry");
+        }
+        catch (IllegalArgumentException e)
+        {
+            String msg = e.getMessage();
+            Assert.assertTrue("Message should name the offending parameter; got: " + msg,
+                    msg.contains("includedRelativeSubpaths"));
+            Assert.assertTrue("Message should reference the offending index; got: " + msg,
+                    msg.contains("index 1"));
+            Assert.assertTrue("Message should include the offending value; got: " + msg,
+                    msg.contains(invalidSubpath));
+            Assert.assertNotNull("Underlying InvalidPathException should be preserved as cause", e.getCause());
+            Assert.assertTrue("Cause should be InvalidPathException; got: " + e.getCause().getClass().getName(),
+                    e.getCause() instanceof InvalidPathException);
+        }
+    }
+
+    @Test
+    public void invalidPathInExcludedRelativeSubpathsThrowsWithParameterAndValueInMessage() throws Exception
+    {
+        Path repoRoot = TMP_FOLDER.newFolder().toPath();
+        String invalidSubpath = "legacy\u0000/deprecated";
+        List<String> excluded = Arrays.asList("legacy/deprecated", invalidSubpath);
+        try
+        {
+            EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repoRoot, Lists.fixedSize.with(DEFAULT_INCLUDED_SUBPATH), null, null, excluded);
+            Assert.fail("Expected IllegalArgumentException for an invalid path entry");
+        }
+        catch (IllegalArgumentException e)
+        {
+            String msg = e.getMessage();
+            Assert.assertTrue("Message should name the offending parameter; got: " + msg,
+                    msg.contains("excludedRelativeSubpaths"));
+            Assert.assertTrue("Message should reference the offending index; got: " + msg,
+                    msg.contains("index 1"));
+            Assert.assertTrue("Message should include the offending value; got: " + msg,
+                    msg.contains(invalidSubpath));
+            Assert.assertNotNull("Underlying InvalidPathException should be preserved as cause", e.getCause());
+            Assert.assertTrue("Cause should be InvalidPathException; got: " + e.getCause().getClass().getName(),
+                    e.getCause() instanceof InvalidPathException);
+        }
+    }
+
+    @Test
+    public void nullEntryInIncludedRelativeSubpathsThrowsWithParameterInMessage() throws Exception
+    {
+        Path repoRoot = TMP_FOLDER.newFolder().toPath();
+        List<String> included = Arrays.asList(DEFAULT_INCLUDED_SUBPATH, null);
+        try
+        {
+            EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repoRoot, included, null, null, null);
+            Assert.fail("Expected IllegalArgumentException for a null path entry");
+        }
+        catch (IllegalArgumentException e)
+        {
+            String msg = e.getMessage();
+            Assert.assertTrue("Message should name the offending parameter; got: " + msg,
+                    msg.contains("includedRelativeSubpaths"));
+            Assert.assertTrue("Message should reference the offending index; got: " + msg,
+                    msg.contains("index 1"));
+            Assert.assertTrue("Message should call out that the value is null; got: " + msg,
+                    msg.contains("null"));
+        }
+    }
+
+    @Test
+    public void nullEntryInExcludedRelativeSubpathsThrowsWithParameterInMessage() throws Exception
+    {
+        Path repoRoot = TMP_FOLDER.newFolder().toPath();
+        List<String> excluded = Arrays.asList("legacy/deprecated", null);
+        try
+        {
+            EMITCoverageReportGenerationMojo.collectEmitModelsDirs(repoRoot, Lists.fixedSize.with(DEFAULT_INCLUDED_SUBPATH), null, null, excluded);
+            Assert.fail("Expected IllegalArgumentException for a null path entry");
+        }
+        catch (IllegalArgumentException e)
+        {
+            String msg = e.getMessage();
+            Assert.assertTrue("Message should name the offending parameter; got: " + msg,
+                    msg.contains("excludedRelativeSubpaths"));
+            Assert.assertTrue("Message should reference the offending index; got: " + msg,
+                    msg.contains("index 1"));
+            Assert.assertTrue("Message should call out that the value is null; got: " + msg,
+                    msg.contains("null"));
+        }
     }
 
     private EMITCoverageReportGenerationMojo executeMojo(MavenProject mavenProject) throws Exception

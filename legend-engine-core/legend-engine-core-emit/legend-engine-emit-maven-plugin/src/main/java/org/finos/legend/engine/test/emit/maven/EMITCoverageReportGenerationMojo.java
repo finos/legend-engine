@@ -32,13 +32,13 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Mojo(
         name = "generate-EMIT-coverage-report",
@@ -75,6 +75,10 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
             emitModelsDirs = collectEmitModelsDirs(
                     repoRoot, includedRelativeSubpaths, excludedDirectoryNames,
                     excludedDirectoryNamePrefixes, excludedRelativeSubpaths);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
         catch (IOException e)
         {
@@ -119,8 +123,8 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
         Set<String> directoryNameExclusions = (excludedDirectoryNames == null) ? Collections.emptySet() : excludedDirectoryNames;
         List<String> directoryNamePrefixExclusions = (excludedDirectoryNamePrefixes == null) ? Collections.emptyList() : excludedDirectoryNamePrefixes;
         FileSystem fs = repoRoot.getFileSystem();
-        List<Path> relativeSubpathInclusions = includedRelativeSubpaths.stream().map(fs::getPath).collect(Collectors.toList());
-        List<Path> relativeSubpathExclusions = (excludedRelativeSubpaths == null) ? Collections.emptyList() : excludedRelativeSubpaths.stream().map(fs::getPath).collect(Collectors.toList());
+        List<Path> relativeSubpathInclusions = toRelativePaths(fs, "includedRelativeSubpaths", includedRelativeSubpaths);
+        List<Path> relativeSubpathExclusions = toRelativePaths(fs, "excludedRelativeSubpaths", excludedRelativeSubpaths);
 
         List<Path> emitModelsDirs = Lists.mutable.empty();
         Files.walkFileTree(repoRoot, new SimpleFileVisitor<Path>()
@@ -177,6 +181,32 @@ public class EMITCoverageReportGenerationMojo extends AbstractMojo
             }
         }
         return descriptors;
+    }
+
+    private static List<Path> toRelativePaths(FileSystem fs, String parameterName, List<String> subpaths)
+    {
+        if (subpaths == null)
+        {
+            return Collections.emptyList();
+        }
+        List<Path> paths = Lists.mutable.withInitialCapacity(subpaths.size());
+        for (int i = 0; i < subpaths.size(); i++)
+        {
+            String subpath = subpaths.get(i);
+            if (subpath == null)
+            {
+                throw new IllegalArgumentException("Invalid entry in '" + parameterName + "' at index " + i + ": value is null");
+            }
+            try
+            {
+                paths.add(fs.getPath(subpath));
+            }
+            catch (InvalidPathException e)
+            {
+                throw new IllegalArgumentException("Invalid entry in '" + parameterName + "' at index " + i + ": '" + subpath + "' cannot be parsed as a relative path (" + e.getMessage() + ")", e);
+            }
+        }
+        return paths;
     }
 
 
