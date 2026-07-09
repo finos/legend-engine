@@ -16,7 +16,6 @@ package org.finos.legend.pure.runtime.java.extension.relation.compiled.pure;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.RelationCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
@@ -28,18 +27,13 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 public class Test_Compiled_RelationFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = RelationCodeRepositoryProvider.relationFunctions;
+    private static final String manifestPath = "/core_functions_relation/pct-manifests/core-compiled/RelationFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,grp,newCol\n   null,0,null\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\nactual:   '#TDS\n   id,grp,newCol\n   null,0,0\n   8,1,8\n   null,1,8\n   null,1,8\n   1,2,6\n   5,2,6\n   3,3,10\n   7,3,10\n   4,4,4\n   9,5,9\n#'\""),
-            one("meta::pure::functions::relation::tests::composition::testExtendFilterOutNull_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,3,30,80\n   200,3,30,80\n   200,1,10,80\n   200,1,10,80\n   100,3,30,60\n   100,2,20,60\n   100,1,10,60\n   0,1,10,20\n   0,1,10,20\n#'\nactual:   '#TDS\n   p,o,i,newCol\n   300,2,20,30\n   300,1,10,30\n   200,3,30,110\n   200,3,30,110\n   200,1,10,110\n   200,1,10,110\n   100,3,30,110\n   100,2,20,110\n   100,1,10,110\n   0,1,10,50\n   0,1,10,50\n#'\""),
-            // empty vs null
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_", "\"\nexpected: '#TDS\n   id,payload,fromRow,toRow,sliced\n   0,\"null\",1,2,\"null\"\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"[]\"\n#'\nactual:   '#TDS\n   id,payload,fromRow,toRow,sliced\n   0,\"null\",1,2,\"null\"\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"null\"\n#'\"")
-    );
 
     public static Test suite()
     {
-        return PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter);
+        return PureTestBuilderCompiled.buildPCTSurveyorSuite(reportScope, manifestPath);
     }
 
     @Override
@@ -51,7 +45,7 @@ public class Test_Compiled_RelationFunctions_PCT extends PCTReportConfiguration
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return expectedFailures;
+        return buildExpectedFailures(manifestPath);
     }
 
     @Override

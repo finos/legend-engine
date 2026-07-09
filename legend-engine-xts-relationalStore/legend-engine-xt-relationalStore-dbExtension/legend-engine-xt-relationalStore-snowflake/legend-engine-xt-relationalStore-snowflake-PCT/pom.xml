@@ -134,25 +134,25 @@
                             <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                             <PCTTestSuites>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_StandardFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$StandardFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_EssentialFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$EssentialFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_GrammarFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$GrammarFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_RelationFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$RelationFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_UnclassifiedFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$UnclassifiedFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_VariantFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$VariantFunctions
                                 </PCTTestSuite>
                                 <PCTTestSuite>
-                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_ScenarioQuantFunctions_PCT
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.pct.Test_Relational_Snowflake_PCT$ScenarioQuantFunctions
                                 </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>

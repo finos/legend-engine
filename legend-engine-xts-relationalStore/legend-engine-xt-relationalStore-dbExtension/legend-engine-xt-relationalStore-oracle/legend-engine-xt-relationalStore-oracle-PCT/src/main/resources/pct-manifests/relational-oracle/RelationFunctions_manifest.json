@@ -1,0 +1,382 @@
+{
+  "adapter" : "meta::relational::tests::pct::oracle::testAdapterForRelationalWithOracleExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_",
+    "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
+    "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '#TDS\n   id,grp,name,newCol\n   2,1,B,16\n   6,1,F,16\n   8,1,H,16\n#'\nactual:   '#TDS\n   id,grp,name,newCol\n   10,0,J,10\n   2,1,B,16\n   6,1,F,16\n   8,1,H,16\n   1,2,A,6\n   5,2,E,6\n   3,3,C,10\n   7,3,G,10\n   4,4,D,4\n   9,5,I,9\n#'\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '#TDS\n   grp,rank,sumId,sumRank\n   A,1,9,3\n   A,2,8,3\n#'\nactual:   '#TDS\n   grp,rank,sumId,sumRank\n   A,1,9,3\n   D,1,10,1\n   A,2,8,3\n   B,2,8,2\n#'\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
+    "expectedError" : "\"pivot is not supported\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "Error while executing: insert into leSchema.tb_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_",
+    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  }, {
+    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
+  } ]
+}

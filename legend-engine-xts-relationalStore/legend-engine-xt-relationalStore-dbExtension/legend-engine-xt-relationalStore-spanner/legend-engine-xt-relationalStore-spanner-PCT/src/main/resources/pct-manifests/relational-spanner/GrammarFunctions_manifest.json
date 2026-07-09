@@ -1,0 +1,196 @@
+{
+  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'false' and ((1.0 * 12) / 0) > 0)'"
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
+    "expectedError" : "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'true' or ((1.0 * 12) / 0) > 0)'"
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
+    "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_",
+    "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone - Statement: 'select Timestamp'2014-02-27 05:01:35.231' = Timestamp'2014-02-27 05:01:35.231''"
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
+  }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_",
+    "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_",
+    "expectedError" : "Expected at most one object, but found many"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::first::testFirstOnOneElement_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::first::testFirstSimple_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_",
+    "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
+    "expectedError" : "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:63cc79-83); error compiling generated Java code:"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_",
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:52cc64-68); error compiling generated Java code:"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
+    "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
+    "expectedError" : "The function 'range' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testCompareMixedTypes_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testDateCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testFloatCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testIntegerCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testNumberCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::compare::testStringCompare_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
+    "expectedError" : "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType"
+  }, {
+    "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
+    "expectedError" : "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+  }, {
+    "test" : "meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."
+  }, {
+    "test" : "meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_",
+    "expectedError" : "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+  }, {
+    "test" : "meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_",
+    "expectedError" : "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_",
+    "expectedError" : "ERROR] function round(numeric, bigint) does not exist"
+  }, {
+    "test" : "meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: -4.0D\nactual:   -4.0\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: -9223372036854775718 - 132 - Statement: 'select (-9223372036854775718 - 132)'"
+  }, {
+    "test" : "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
+  }, {
+    "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Statement must produce at least one output column - Statement: 'select --1'"
+  }, {
+    "test" : "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 6.0D\nactual:   6.0\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 9223372036854775807 + 3 - Statement: 'select (9223372036854775807 + 3 + (4 + 5) + 7)'"
+  }, {
+    "test" : "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
+  }, {
+    "test" : "meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 353791.470D\nactual:   353791.47\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
+    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 2 * 9223372036854775807 - Statement: 'select (2 * 9223372036854775807)'"
+  }, {
+    "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithFunctionExpressions_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
+    "expectedError" : "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"
+  }, {
+    "test" : "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",
+    "expectedError" : "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification"
+  } ]
+}

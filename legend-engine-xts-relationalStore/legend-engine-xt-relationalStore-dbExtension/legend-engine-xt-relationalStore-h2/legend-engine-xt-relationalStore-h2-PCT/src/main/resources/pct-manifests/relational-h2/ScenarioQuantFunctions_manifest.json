@@ -1,0 +1,10 @@
+{
+  "adapter" : "meta::relational::tests::pct::h2::testAdapterForRelationalWithH2Execution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_",
+    "expectedError" : "org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"LAG"
+  }, {
+    "test" : "meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_",
+    "expectedError" : "\"H2 SQL Dialect does not support the function - time_bucket\""
+  } ]
+}

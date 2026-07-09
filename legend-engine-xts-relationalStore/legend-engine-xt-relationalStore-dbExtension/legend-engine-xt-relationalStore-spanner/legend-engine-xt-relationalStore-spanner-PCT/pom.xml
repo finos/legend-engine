@@ -46,13 +46,27 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_StandardFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_EssentialFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_RelationFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_UnclassifiedFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_VariantFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_ScenarioQuantFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$StandardFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$EssentialFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$GrammarFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$RelationFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$UnclassifiedFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$VariantFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.spanner.pct.Test_Relational_Spanner_PCT$ScenarioQuantFunctions
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

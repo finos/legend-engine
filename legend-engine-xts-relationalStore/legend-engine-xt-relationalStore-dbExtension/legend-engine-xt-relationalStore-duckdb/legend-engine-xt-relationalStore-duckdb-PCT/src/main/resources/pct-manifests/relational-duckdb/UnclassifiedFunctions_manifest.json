@@ -1,0 +1,40 @@
+{
+  "adapter" : "meta::relational::tests::pct::duckDB::testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: Conversion Error: Could not decode string \"SGVsbG8sIFdvcmxkIQ\" as base64: length must be a multiple of 4"
+  }, {
+    "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: Invalid Input Error: Insufficient padding in LPAD."
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 3\nactual:   4\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 3\nactual:   4\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: Invalid Input Error: Insufficient padding in RPAD."
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'Hello World'\nactual:   'H'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""
+  } ]
+}

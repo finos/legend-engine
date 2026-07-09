@@ -1,0 +1,141 @@
+{
+  "adapter": "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test" : "meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test" : "meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test" : "meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiDigit_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiLower_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiMultiCharString_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiUpper_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiWhitespace_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::ascii_String_1__Integer_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testCharDigits_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testCharLower_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testCharUpper_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testNewline_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::char::testSpace_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::string::char_Integer_1__String_1_ is not supported yet!"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpIndexOf_String_1__String_1__Integer_1__RegexpParameter_$1_MANY$__Integer_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_ is not supported yet!\""
+    },
+    {
+      "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 1 error compiling /_pure/plan/root/Execute.java\n/_pure/plan/root/Execute.java:14: error: incompatible types: no instance(s) of type variable(s) T exist so that java.util.List<T> conforms to java.lang.String\n            return Library.repeatString(Collections.emptyList(), (int) 2L);\n                          ^\n\n/_pure/plan/root/Execute.java\n0001 package _pure.plan.root;\n0002 \n0003 import java.util.Collections;\n0004 import java.util.List;\n0005 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n0006 import org.finos.legend.engine.plan.dependencies.util.Library;\n0007 \n0008 public class Execute\n0009 {\n0010     public static String execute(IExecutionNodeContext context)\n0011     {\n0012         try\n0013         {\n0014             return Library.repeatString(Collections.emptyList(), (int) 2L);\n0015         }\n0016         catch (Exception e)\n0017         {\n0018             throw new RuntimeException(\"Failed in node: root\", e);\n0019         }\n0020     }"
+    }
+  ]
+}

@@ -1,0 +1,293 @@
+{
+  "adapter": "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test" : "meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Error in function 'test::testFunction__String_$1_MANY$_' - Type error: 'meta::pure::metamodel::type::Any' is not a subtype of 'String'"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_",
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_",
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_",
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find a match for function 'contains(ClassWithoutEquality[*],ClassWithoutEquality[1],ConcreteFunctionDefinition<{ClassWithoutEquality[1], ClassWithoutEquality[1]->Boolean[1]}>[1])'"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_",
+      "expectedError": "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::exists::testExistsInSelect_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find variable class for variable 'p' in the graph"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find variable class for variable 's' in the graph"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::find::testFindLiteral_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find variable class for variable 's' in the graph"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'find(CO_Person[3],LambdaFunction<{CO_Person[1]->Boolean[1]}>[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'copy(FO_Person[1],String[1],KeyExpression[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_",
+      "expectedError": "\"keys_Map_1__U_MANY_ is prohibited!\""
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::putAll::testPutAll_emptyInputMap_Function_1__Boolean_1_",
+      "expectedError": "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::putAll::testPutAll_emptyPutEntries_Function_1__Boolean_1_",
+      "expectedError": "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::putAll::testPutAll_overridesExistingAndAddNew_Function_1__Boolean_1_",
+      "expectedError": "\"putAll_Map_1__Pair_MANY__Map_1_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::metamodel::function::NativeFunction\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_",
+      "expectedError": "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_",
+      "expectedError": "Generics not supported (function: meta::pure::functions::collection::list_U_MANY__List_1_)"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_",
+      "expectedError" : "Failed in node: root"
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_",
+      "expectedError" : "Failed in node: root"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_",
+      "expectedError": "\"values_Map_1__V_MANY_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::zip::testZipBothListsAreOfPairs_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::zip::testZipFirstListsIsOfPairs_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::zip::testZipSecondListsIsOfPairs_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_",
+      "expectedError": "No error was thrown"
+    },
+    {
+      "test": "meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_",
+      "expectedError": "No error was thrown"
+    },
+    {
+      "test": "meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_",
+      "expectedError": "No error was thrown"
+    },
+    {
+      "test": "meta::pure::functions::lang::tests::if::testMultiIf_Function_1__Boolean_1_",
+      "expectedError": "\"Generics not supported (function: meta::pure::functions::lang::if_Pair_MANY__Function_1__T_m_)\""
+    },
+    {
+      "test": "meta::pure::functions::lang::tests::match::testMatchWithExtraParam_Function_1__Boolean_1_",
+      "expectedError": "meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ is not supported yet!"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find a match for function 'match(String[1],LambdaFunction<{Nil[1], String[1]->String[1]}>[*],String[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[*]->Any[*]}>[*])'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Can't find a match for function 'match(Integer[1],LambdaFunction<{Nil[1]->Integer[1..3]}>[*])'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'deactivate(Any[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::math::tests::exp::testNumberExpLowPrecision_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::exp::testNumberExp_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::log10::testNumberLog10_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::log::testNumberLogLowPrecision_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::log::testNumberLog_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_",
+      "expectedError": "\"eval_Function_1__T_n__U_p__V_m_ is prohibited!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 0.14D\nactual:   0.14\""
+    },
+    {
+      "test" : "meta::pure::functions::math::tests::sign::testSign_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test" : "meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_",
+      "expectedError" : "class java.lang.String cannot be cast to class java.lang.Double (java.lang.String and java.lang.Double are in module java.base of loader 'bootstrap')"
+    },
+    {
+      "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
+      "expectedError" : "class java.lang.String cannot be cast to class java.lang.Double (java.lang.String and java.lang.Double are in module java.base of loader 'bootstrap')"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 123.12300D\nactual:   123.123D\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 3.1415900000D\nactual:   3.14159D\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 0.000D\nactual:   0.0D\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::string::reverseString_String_1__String_1_ is not supported yet!\""
+    },
+    {
+      "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: '// Warning: Good for gin -- Sad times no tonic'\nactual:   '_pure.internal.meta.pure.functions.string.tests.toString.ClassWithComplexToString_Impl"
+    },
+    {
+      "test" : "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::Pair\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::trim::testLTrim_Function_1__Boolean_1_",
+      "expectedError": "\"Type not found for method ltrim from String\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::trim::testRTrim_Function_1__Boolean_1_",
+      "expectedError": "\"Type not found for method rtrim from String\""
+    }
+  ]
+}

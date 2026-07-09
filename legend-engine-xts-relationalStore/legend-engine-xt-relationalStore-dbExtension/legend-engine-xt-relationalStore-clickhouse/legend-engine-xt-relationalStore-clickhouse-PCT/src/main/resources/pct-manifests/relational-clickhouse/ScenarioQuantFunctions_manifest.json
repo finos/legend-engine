@@ -1,0 +1,4 @@
+{
+  "adapter" : "meta::relational::tests::pct::clickhouse::testAdapterForRelationalWithClickHouseExecution_Function_1__X_o_",
+  "exclusions" : [ ]
+}

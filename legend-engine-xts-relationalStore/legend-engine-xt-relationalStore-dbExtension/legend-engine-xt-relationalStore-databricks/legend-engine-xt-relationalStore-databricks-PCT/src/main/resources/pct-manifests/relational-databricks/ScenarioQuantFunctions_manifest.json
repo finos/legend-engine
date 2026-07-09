@@ -1,0 +1,10 @@
+{
+  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_",
+    "expectedError" : "Cannot specify window frame for lag function"
+  }, {
+    "test" : "meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+  } ]
+}
