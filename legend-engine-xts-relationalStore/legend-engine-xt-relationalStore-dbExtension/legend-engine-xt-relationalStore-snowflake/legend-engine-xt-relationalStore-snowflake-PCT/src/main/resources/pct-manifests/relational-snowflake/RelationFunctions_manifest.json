@@ -1,0 +1,52 @@
+{
+  "adapter" : "meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\"[1,2,3]\",1,2,3\\n   2,\"[4,5,6]\",4,5,6\\n   3,\"[7,8,9]\",7,8,9\\n   4,\"null\",\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\"[1,2,3]\",1,2,3\\n   2,\"[4,5,6]\",4,5,6\\n   3,\"[7,8,9]\",7,8,9\\n   4,\"null\",null\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
+    "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
+    "expectedError" : "Window frame requires an ORDER BY clause."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
+    "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
+    "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,8\\n   6,1,F,6\\n   2,1,B,2\\n   5,2,E,5\\n   1,2,A,1\\n   7,3,G,7\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,2\\n   6,1,F,2\\n   2,1,B,2\\n   5,2,E,1\\n   1,2,A,1\\n   7,3,G,3\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,null\\n   8,1,H,null\\n   6,1,F,6\\n   2,1,B,6\\n   5,2,E,null\\n   1,2,A,1\\n   7,3,G,null\\n   3,3,C,3\\n   4,4,D,null\\n   9,5,I,null\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,null\\n   8,1,H,6\\n   6,1,F,6\\n   2,1,B,6\\n   5,2,E,1\\n   1,2,A,1\\n   7,3,G,3\\n   3,3,C,3\\n   4,4,D,null\\n   9,5,I,null\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "Window frame requires an ORDER BY clause"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "Window frame requires an ORDER BY clause"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nInvalid RANGE BETWEEN frame 'RANGE BETWEEN CURRENT ROW AND CURRENT ROW': timestamp ORDER BY clause only allows interval window frame boundaries."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "Window frame requires an ORDER BY clause"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
+    "expectedError" : "Window frame requires an ORDER BY clause"
+  } ]
+}

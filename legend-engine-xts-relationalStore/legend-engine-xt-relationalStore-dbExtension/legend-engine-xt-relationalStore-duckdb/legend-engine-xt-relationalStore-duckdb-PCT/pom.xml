@@ -105,25 +105,25 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_StandardFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$StandardFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_EssentialFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$EssentialFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_GrammarFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$GrammarFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_RelationFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$RelationFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_UnclassifiedFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$UnclassifiedFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_VariantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$VariantFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_ScenarioQuantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.duckdb.pct.Test_Relational_DuckDB_PCT$ScenarioQuantFunctions
                         </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>

@@ -1,0 +1,7 @@
+{
+  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+  } ]
+}

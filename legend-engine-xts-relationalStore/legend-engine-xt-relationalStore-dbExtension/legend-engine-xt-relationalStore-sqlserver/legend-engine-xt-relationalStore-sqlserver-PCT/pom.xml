@@ -36,13 +36,27 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_StandardFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_EssentialFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_RelationFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_UnclassifiedFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_VariantFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_ScenarioQuantFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$StandardFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$EssentialFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$GrammarFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$RelationFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$UnclassifiedFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$VariantFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.sqlserver.pct.Test_Relational_SqlServer_PCT$ScenarioQuantFunctions
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

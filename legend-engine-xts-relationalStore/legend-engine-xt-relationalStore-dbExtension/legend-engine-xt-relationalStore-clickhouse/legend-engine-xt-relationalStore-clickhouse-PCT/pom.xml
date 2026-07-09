@@ -105,25 +105,25 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_StandardFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$StandardFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_EssentialFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$EssentialFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_GrammarFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$GrammarFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_RelationFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$RelationFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_UnclassifiedFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$UnclassifiedFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_VariantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$VariantFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_ScenarioQuantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.clickhouse.pct.Test_Relational_ClickHouse_PCT$ScenarioQuantFunctions
                         </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>

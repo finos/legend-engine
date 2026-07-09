@@ -1,0 +1,85 @@
+{
+  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '1isOne'\nactual:   '11isOne'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'xXoXoXoX'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '1isOne'\nactual:   '11isOne'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\""
+  } ]
+}

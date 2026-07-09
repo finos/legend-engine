@@ -1,0 +1,22 @@
+{
+  "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::external::scenario::quant::gap::testGapAnalysis_Function_1__Boolean_1_",
+    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"round(%s::float)\"\""
+  }, {
+    "test" : "meta::external::scenario::quant::maxDrawDown::testMaxDrawDown_Function_1__Boolean_1_",
+    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"round(%s::float)\"\""
+  }, {
+    "test" : "meta::external::scenario::quant::return::logReturn::testMinuteLogReturn_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
+  }, {
+    "test" : "meta::external::scenario::quant::sma::testSimpleMovingAverage5Days_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
+  }, {
+    "test" : "meta::external::scenario::quant::volatility::close::testAnnualizedRolling10DaysVolatility_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
+  }, {
+    "test" : "meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+  } ]
+}

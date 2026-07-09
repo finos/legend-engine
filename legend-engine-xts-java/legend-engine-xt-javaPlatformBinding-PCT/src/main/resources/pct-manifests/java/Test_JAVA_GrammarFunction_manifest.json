@@ -1,0 +1,117 @@
+{
+  "adapter": "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test": "meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""
+    },
+    {
+      "test": "meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""
+    },
+    {
+      "test": "meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::SideClass\""
+    },
+    {
+      "test": "meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::boolean::tests::equalitymodel::BottomClass\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Person\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::model::CO_Firm\""
+    },
+    {
+      "test" : "meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException: 2 errors compiling"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_",
+      "expectedError": "getAll_Class_1__T_MANY_ is prohibited!"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::collection::tests::map::model::M_Person\""
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
+      "expectedError": "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:"
+    },
+    {
+      "test": "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
+      "expectedError": "Unexpected error executing function with params"
+    },
+    {
+      "test": "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::lang::tests::model::LA_Person\""
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'letAsLastStatement()'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::letFn::testLetChainedWithAnotherFunction_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'letChainedWithAnotherFunction(Class<TestClass>[1])'"
+    },
+    {
+      "test" : "meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_",
+      "expectedError" : "Error in 'test::testFunction': Function does not exist 'letWithParam(String[1])'"
+    },
+    {
+      "test": "meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 0.5238095238095238\nactual:   0.5\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: -4.0D\nactual:   -4.0\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""
+    },
+    {
+      "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
+      "expectedError" : "org.finos.legend.engine.shared.javaCompiler.JavaCompileException"
+    },
+    {
+      "test": "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 6.0D\nactual:   6.0\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: -1\nactual:   -9223372036854775790\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::times::testDecimalTimes_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: 353791.470D\nactual:   353791.47\""
+    },
+    {
+      "test": "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
+      "expectedError": "\"\nexpected: -1\nactual:   -2\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""
+    },
+    {
+      "test": "meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_",
+      "expectedError": "\"Unhandled value type: meta::pure::functions::string::tests::plus::model::P_Person\""
+    }
+  ]
+}

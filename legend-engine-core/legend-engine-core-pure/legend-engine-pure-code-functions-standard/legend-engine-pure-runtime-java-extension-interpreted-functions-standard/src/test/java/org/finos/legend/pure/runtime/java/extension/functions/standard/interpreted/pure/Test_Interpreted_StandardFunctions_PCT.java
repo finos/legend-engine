@@ -16,7 +16,6 @@ package org.finos.legend.pure.runtime.java.extension.functions.standard.interpre
 
 import junit.framework.Test;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.CoreStandardFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
@@ -28,16 +27,13 @@ import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilder
 public class Test_Interpreted_StandardFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreStandardFunctionsCodeRepositoryProvider.standardFunctions;
+    private static final String manifestPath = "/core_functions_standard/pct-manifests/core-interpreted/StandardFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "interpreted";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            one("meta::pure::functions::date::tests::max::testExtendMaxDate_Function_1__Boolean_1_", "\"The type Date is not supported yet!\""),
-            one("meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_", "\"The type Date is not supported yet!\"")
-    );
 
     public static Test suite()
     {
-        return PureTestBuilderInterpreted.buildPCTTestSuite(reportScope, expectedFailures, adapter);
+        return PureTestBuilderInterpreted.buildPCTSurveyorSuite(reportScope, manifestPath);
     }
 
     @Override
@@ -49,7 +45,7 @@ public class Test_Interpreted_StandardFunctions_PCT extends PCTReportConfigurati
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return expectedFailures;
+        return buildExpectedFailures(manifestPath);
     }
 
     @Override

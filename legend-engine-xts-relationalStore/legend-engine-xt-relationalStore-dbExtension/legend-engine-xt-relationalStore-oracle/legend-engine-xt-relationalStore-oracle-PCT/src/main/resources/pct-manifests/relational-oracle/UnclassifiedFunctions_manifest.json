@@ -1,0 +1,127 @@
+{
+  "adapter" : "meta::relational::tests::pct::oracle::testAdapterForRelationalWithOracleExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::hash::tests::testMD5Hash_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"MD5\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: [0]\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['abcd']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['???']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatString_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['abcd']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['???']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"SPLIT_PART\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
+  } ]
+}

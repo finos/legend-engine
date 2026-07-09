@@ -16,7 +16,6 @@ package org.finos.legend.pure.runtime.java.compiled.generation.processors.suppor
 
 import junit.framework.Test;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.CoreUnclassifiedFunctionsCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
@@ -25,18 +24,17 @@ import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.pct.shared.model.ReportScope;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
 
-import static org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled.getClassLoaderExecutionSupport;
 
 public class Test_Compiled_UnclassifiedFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = CoreUnclassifiedFunctionsCodeRepositoryProvider.unclassifiedFunctions;
+    private static final String manifestPath = "/core_functions_unclassified/pct-manifests/core-compiled/UnclassifiedFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
 
     public static Test suite()
     {
-        return PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter);
+        return PureTestBuilderCompiled.buildPCTSurveyorSuite(reportScope, manifestPath);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class Test_Compiled_UnclassifiedFunctions_PCT extends PCTReportConfigurat
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return expectedFailures;
+        return buildExpectedFailures(manifestPath);
     }
 
     @Override

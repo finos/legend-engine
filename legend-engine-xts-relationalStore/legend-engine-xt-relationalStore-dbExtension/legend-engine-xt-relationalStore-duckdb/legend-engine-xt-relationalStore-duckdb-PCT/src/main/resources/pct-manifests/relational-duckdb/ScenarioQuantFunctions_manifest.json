@@ -1,0 +1,4 @@
+{
+  "adapter" : "meta::relational::tests::pct::duckDB::testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_",
+  "exclusions" : [ ]
+}
