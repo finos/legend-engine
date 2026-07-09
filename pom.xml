@@ -243,7 +243,7 @@
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
-        <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+        <maven.plugin.puppycrawl.version>8.29</maven.plugin.puppycrawl.version>
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
