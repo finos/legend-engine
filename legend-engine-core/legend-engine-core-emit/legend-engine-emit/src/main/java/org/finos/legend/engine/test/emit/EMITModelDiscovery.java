@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.test.emit.junit;
+package org.finos.legend.engine.test.emit;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -25,19 +25,44 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-final class EMITModelDiscovery
+public final class EMITModelDiscovery
 {
+    private static final String EMIT_YAML_SUFFIX = ".emit.yaml";
+
     private EMITModelDiscovery()
     {
     }
 
-    static Path findEmitYaml(String classpathRoot, String name)
+    public static List<Path> findEmitYamls(Path directory)
+    {
+        if (directory == null || !Files.isDirectory(directory))
+        {
+            throw new IllegalArgumentException("Not a directory: " + directory);
+        }
+        try (Stream<Path> walk = Files.walk(directory))
+        {
+            return walk.filter(Files::isRegularFile)
+                    .filter(p -> p.getFileName().toString().endsWith(EMIT_YAML_SUFFIX))
+                    .collect(Collectors.toList());
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException("Failed to walk directory '" + directory + "'", e);
+        }
+    }
+
+    public static Path findEmitYaml(String classpathRoot, String name)
+    {
+        return findEmitYaml(getClassLoader(), classpathRoot, name);
+    }
+
+    public static Path findEmitYaml(ClassLoader classLoader, String classpathRoot, String name)
     {
         String normalizedRoot = normalizeRoot(classpathRoot);
-        ClassLoader classLoader = getClassLoader();
-        URL url = classLoader.getResource(normalizedRoot + "/" + name + ".emit.yaml");
+        URL url = classLoader.getResource(normalizedRoot + "/" + name + EMIT_YAML_SUFFIX);
         if (url == null)
         {
             return null;
@@ -52,10 +77,14 @@ final class EMITModelDiscovery
         }
     }
 
-    static List<Path> findEmitYamls(String classpathRoot)
+    public static List<Path> findEmitYamls(String classpathRoot)
+    {
+        return findEmitYamls(getClassLoader(), classpathRoot);
+    }
+
+    public static List<Path> findEmitYamls(ClassLoader classLoader, String classpathRoot)
     {
         String normalizedRoot = normalizeRoot(classpathRoot);
-        ClassLoader classLoader = getClassLoader();
         try
         {
             List<Path> result = new ArrayList<>();
@@ -64,28 +93,12 @@ final class EMITModelDiscovery
             {
                 walkRoot(urls.nextElement(), result::add);
             }
-            result.sort(null);
             return result;
         }
         catch (IOException e)
         {
             throw new UncheckedIOException("Failed to enumerate classpath resources under '" + classpathRoot + "'", e);
         }
-    }
-
-    private static String normalizeRoot(String classpathRoot)
-    {
-        if (classpathRoot == null || classpathRoot.isEmpty())
-        {
-            throw new IllegalArgumentException("classpathRoot must be non-empty");
-        }
-        return classpathRoot.endsWith("/") ? classpathRoot.substring(0, classpathRoot.length() - 1) : classpathRoot;
-    }
-
-    private static ClassLoader getClassLoader()
-    {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        return (classLoader == null) ? EMITModelDiscovery.class.getClassLoader() : classLoader;
     }
 
     private static void walkRoot(URL url, Consumer<? super Path> consumer)
@@ -107,12 +120,27 @@ final class EMITModelDiscovery
         {
             try (Stream<Path> walk = Files.walk(root))
             {
-                walk.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().endsWith(".emit.yaml")).forEach(consumer);
+                walk.filter(path -> Files.isRegularFile(path) && path.getFileName().toString().endsWith(EMIT_YAML_SUFFIX)).forEach(consumer);
             }
             catch (IOException e)
             {
                 throw new UncheckedIOException("Failed to walk classpath root '" + root + "'", e);
             }
         }
+    }
+
+    private static String normalizeRoot(String classpathRoot)
+    {
+        if (classpathRoot == null || classpathRoot.isEmpty())
+        {
+            throw new IllegalArgumentException("classpathRoot must be non-empty");
+        }
+        return classpathRoot.endsWith("/") ? classpathRoot.substring(0, classpathRoot.length() - 1) : classpathRoot;
+    }
+
+    private static ClassLoader getClassLoader()
+    {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        return (classLoader == null) ? EMITModelDiscovery.class.getClassLoader() : classLoader;
     }
 }

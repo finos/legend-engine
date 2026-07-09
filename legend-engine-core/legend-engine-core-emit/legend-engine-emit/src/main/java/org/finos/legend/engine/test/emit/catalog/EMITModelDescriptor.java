@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 
-import java.nio.file.Path;
+import java.net.URL;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -35,7 +35,7 @@ public class EMITModelDescriptor
     private final ImmutableList<String> stores;
     private final String complexity;
     private final ImmutableList<String> tags;
-    private Path source;
+    private URL source;
 
     private EMITModelDescriptor(String name,
                                 String title,
@@ -118,12 +118,12 @@ public class EMITModelDescriptor
     }
 
     @JsonIgnore
-    public Path getSource()
+    public URL getSource()
     {
         return this.source;
     }
 
-    public void setSource(Path source)
+    public void setSource(URL source)
     {
         this.source = source;
     }

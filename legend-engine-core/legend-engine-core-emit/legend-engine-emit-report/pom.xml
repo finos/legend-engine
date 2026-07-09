@@ -18,19 +18,35 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-core</artifactId>
+        <artifactId>legend-engine-core-emit</artifactId>
         <version>4.133.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>legend-engine-core-emit</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>legend-engine-emit-report</artifactId>
+    <name>Legend Engine - Testing - EMIT Coverage Report</name>
 
-    <name>Legend Engine - Core - Emit</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-emit</artifactId>
+        </dependency>
 
-    <modules>
-        <module>legend-engine-emit</module>
-        <module>legend-engine-emit-junit</module>
-        <module>legend-engine-emit-report</module>
-        <module>legend-engine-emit-maven-plugin</module>
-    </modules>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
+
