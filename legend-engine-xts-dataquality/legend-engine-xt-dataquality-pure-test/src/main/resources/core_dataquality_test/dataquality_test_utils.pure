@@ -184,6 +184,12 @@ function meta::external::dataquality::tests::assertLambdaEquals(expected:String[
 
 function meta::external::dataquality::tests::assertLambdaEquals(expected:String[1], actual:String[1], packageableRuntimeAsString: String[1], fromExpected: Boolean[1]): Boolean[1]
 {
+  // The actual query should have at most one 'from'
+  let fromMarker = '->meta::pure::mapping::from(';
+  let firstFromIdx = $actual->indexOf($fromMarker);
+  let lastFromIdx = $actual->lastIndexOf($fromMarker);
+  assert($firstFromIdx == $lastFromIdx, | 'Expected at most 1 \'' + $fromMarker + '\' in actual. Actual: ' + $actual);
+
   // When packageableRuntimeAsString is empty, the query has no 'from' to check for, so skip the contains assertion.
   assert($packageableRuntimeAsString == '' || ($fromExpected && $actual->contains($packageableRuntimeAsString)) || (!$fromExpected && !$actual->contains($packageableRuntimeAsString)));
   assertLambdaEquals($expected, $actual->replace(['->meta::pure::mapping::from(', $packageableRuntimeAsString, ')']->joinStrings(), ''));
