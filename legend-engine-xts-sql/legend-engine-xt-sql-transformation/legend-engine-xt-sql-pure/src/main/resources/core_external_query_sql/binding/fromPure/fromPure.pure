@@ -897,26 +897,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let processor = functionProcessor($functionCall.name);
 
-  let expContext = expressionContext(
-    var('r', PureOne, []), //TODO this is needed for referencing any columns within map or aggregation
-    [
-    pair('p', var('p', PureOne, [])),
-    pair('w', var('w', PureOne, [])),
-    pair('r', var('r', PureOne, [])) //TODO r may not be one
-  ]->newMap(), true);
-
-
   if ($processor.isAggregate,
     | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []));
       let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
 
       let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
 
+      let map = $extacted.map->match([
+        q:QualifiedNameReference[1] | $q.name,
+        e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression'); ^QualifiedName();
+      ]);
+
       if($relation,
         |
             let over = createOver($partitions, $sorts, $frame, $window);
+            let expContext = expressionContext([], ^Map<String, VariableExpression>(), true);
 
-            let mapExpression = $extacted.map->toOne()->processExpression($expContext, $context);
+            let mapExpression = createTdsColumn($map, var('r'), $expContext, $context)->evaluateAndDeactivate();
 
             let functionType = functionType([var('p'), var('w'), var('r')], $mapExpression.genericType, ZeroOne);
 
@@ -931,12 +928,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
             appendTdsFunc($tds, extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_, [list($over), list($aggregations)]);,
         |
           assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
-
-          let map = $extacted.map->match([
-            q:QualifiedNameReference[1] | $q.name,
-            e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression'); ^QualifiedName();
-          ]);
-
           let mapColumn = $context.columnByNameParts($map.parts, true).name;
           let func = sfe(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_, [iv($mapColumn), iv($aggregation)]);
 
@@ -949,6 +940,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       if ($relation,
         |
           let over = createOver($partitions, $sorts, $frame, $window);
+
+          let expContext = expressionContext(
+            var('x', PureOne, []), //TODO this should be removed and createTDSColumn made smarter to handle
+            [
+            pair('p', var('p', PureOne, [])),
+            pair('w', var('w', PureOne, [])),
+            pair('r', var('r', PureOne, [])) //TODO r may not be one
+          ]->newMap(), true);
 
           let aggExpression = processExpression(^$functionCall(window = []), $expContext, $context)->evaluateAndDeactivate();
 
@@ -1345,10 +1344,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let leftRealiasName = $leftName->orElse($leftContext.id->toString());
   let rightRealiasName = $rightName->orElse($leftContext.id->toString());
 
-  let duplicates = $leftColumns->filter(l | $rightColumns->contains($l));
-
-  let leftRenamed = if ($join.left->instanceOf(Join), | $leftContext, | processDuplicateRenames($duplicates, $leftRealiasName, $leftContext));
-  let rightRenamed = if ($join.right->instanceOf(Join), | $rightContext, | processDuplicateRenames($duplicates, $rightRealiasName, $rightContext));
+  let leftRenamed = if ($join.left->instanceOf(Join), | $leftContext, | processDuplicateRenames($leftColumns, $leftRealiasName, $leftContext));
+  let rightRenamed = if ($join.right->instanceOf(Join), | $rightContext, | processDuplicateRenames($rightColumns, $rightRealiasName, $rightContext));
 
   let left = wrapWithFrom($leftRenamed);
   let right = wrapWithFrom($rightRenamed);
@@ -2855,8 +2852,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   }, $expression);
 }
 
-//in cases like lead, we reference a column after the lead expression, this takes the already resolved column and replaces the variable with the func
-//e.g col would at this point be $r.abc, needs to change to lead().abc
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindowPropertyArg(args:ValueSpecification[*], func:ValueSpecification[1], name:String[1]):ValueSpecification[1]
 {
   assert($args->size() == 1 && $args->at(0)->instanceOf(SimpleFunctionExpression), 'only column references allowed as argument for ' + $name);
@@ -3820,9 +3815,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       value = $t.value->walk($extras)->toOne(),
       characters = $t.characters->walk($extras)
     ),
-    e:meta::external::query::sql::metamodel::Expression[0..1] | $e
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
   ])->match($extras->concatenate([
-    e:meta::external::query::sql::metamodel::Expression[0..1] | $e
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
   ])->toOneMany());
 }
 
