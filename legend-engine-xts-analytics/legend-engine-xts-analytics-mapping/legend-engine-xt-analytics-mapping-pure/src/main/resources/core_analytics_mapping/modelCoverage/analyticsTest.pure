@@ -127,6 +127,51 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
 }
 
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexSiblingPropertiesShareMappedEntity():Boolean[1]
+{
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  '{\n'+
+  '  tgtId: String[1];\n'+
+  '  sharedA: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  sharedB: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  '{\n'+
+  '  sharedId: String[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '{\n'+
+  '  srcId: String[1];\n'+
+  '  sharedA: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '  sharedB: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::siblingAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    sharedA: $src.sharedA,\n'+
+  '    sharedB: $src.sharedB\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
+
+  assert($result.mappedEntities->size() == 2);
+
+  assert($result.mappedEntities.path->removeDuplicates()->size() == $result.mappedEntities->size());
+
+  let targetEntity = $result.mappedEntities->filter(mp|$mp.path == 'meta::analytics::mapping::modelCoverage::test::Target')->toOne();
+  let sharedAProp = $targetEntity.properties->filter(p|$p.name == 'sharedA')->toOne()->cast(@EntityMappedProperty);
+  let sharedBProp = $targetEntity.properties->filter(p|$p.name == 'sharedB')->toOne()->cast(@EntityMappedProperty);
+  assert($sharedAProp.entityPath == $sharedBProp.entityPath);
+
+  assertContains($result.mappedEntities.path, $sharedAProp.entityPath);
+}
+
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverageWithMappedEntityInfo():Boolean[1]
 {

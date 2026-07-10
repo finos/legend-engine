@@ -24,5 +24,7 @@ public enum MappedPropertyType
     DateTime,
     Enumeration,
     Entity,
-    Number
+    Number,
+    Decimal,
+    Unknown
 }
