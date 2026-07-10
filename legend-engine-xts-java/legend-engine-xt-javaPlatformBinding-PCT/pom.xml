@@ -36,11 +36,11 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$StandardFunction</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$EssentialFunction</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$GrammarFunction</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$RelationFunction</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$UnclassifiedFunction</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$StandardFunctions</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$EssentialFunctions</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$GrammarFunctions</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$RelationFunctions</PCTTestSuite>
+                        <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT.UnclassifiedFunctions</PCTTestSuite>
                         <PCTTestSuite>org.finos.legend.engine.pure.code.core.java.binding.Test_JAVA_PCT$ScenarioQuantFunctions</PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
