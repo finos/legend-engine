@@ -4199,6 +4199,14 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <!-- Pins minio's transitive bcprov-jdk18on (1.81 carries critical CVEs) up to
+                 the fixed line. The engine's own direct BouncyCastle usage is the separate
+                 legacy bcprov-jdk15on artifact, to be migrated to -jdk18on independently. -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.84</version>
+            </dependency>
             <!-- Test Containers -->
 
             <dependency>
