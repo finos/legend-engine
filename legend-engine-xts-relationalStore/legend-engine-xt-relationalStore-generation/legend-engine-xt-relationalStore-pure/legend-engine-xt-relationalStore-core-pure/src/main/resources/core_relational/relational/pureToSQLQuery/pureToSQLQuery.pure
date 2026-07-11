@@ -2593,6 +2593,27 @@ function meta::relational::functions::pureToSqlQuery::processNoOp(f:FunctionExpr
    processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()
 }
 
+function meta::relational::functions::pureToSqlQuery::processContextOnlyFunctionFallback(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   // Final-catchall handler for context-registered functions when no earlier applicability
+   // predicate matched. Registered as the LAST (predicate, handler) pair — guarded by
+   // `{fe, vars, state | true}` — for context-only functions that have no real static
+   // processor of their own (today: `fold`, `isNotEmpty_Any_MANY`, `indexOf`, `instanceOf`).
+   //
+   // Reaching this fallback at PureToSQL plan-generation time is almost always a bug:
+   // either an earlier context predicate should have fired here but a State field it
+   // reads was not propagated to this call site, or the FE shape is unsupported and was
+   // claimed at clustering time in error (via the unconditional-true entry in
+   // `getClusteringContextPredicates`). We fail loudly with a diagnostic so the gap is
+   // visible at plan-gen time rather than producing silently-wrong SQL.
+   fail('No relational processor matched function \'' + $f.functionName->orElse('<unknown>')
+        + '\'. The function is registered in getContextBasedSupportedFunctions as a '
+        + 'context-only entry; reaching this catchall means none of its earlier '
+        + 'applicability predicates matched the current State during plan generation. FE: '
+        + $f->meta::pure::router::printer::asString());
+   $operation;
+}
+
 function meta::relational::functions::pureToSqlQuery::processCast(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   // support casting to relation type, e.g. ->cast(@Relation<someCol:String>)
@@ -2712,11 +2733,12 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::hashTyp
   $name->toOne();
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessAt(f:FunctionExpression[1], vars: Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
+// State-independent applicability predicate for ->at. AST shape only: 2 params, with
+// the receiver either unrouted or wrapped only in a NoSetRoutedValueSpecification
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessAt(f:FunctionExpression[1]):Boolean[1]
 {
-   // Can process 'at' in the context of semi structured mappings (which are not routed)
-   let params = $f.parametersValues->evaluateAndDeactivate();
-   ($params->size() == 2) && (!$params->at(0)->instanceOf(RoutedValueSpecification) || $params->at(0)->instanceOf(NoSetRoutedValueSpecification));
+  let params = $f.parametersValues->evaluateAndDeactivate();
+  ($params->size() == 2) && (!$params->at(0)->instanceOf(RoutedValueSpecification) || $params->at(0)->instanceOf(NoSetRoutedValueSpecification));
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processAt(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -2765,7 +2787,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    ^$processedLeftSide(element = ^$collectionSWC(select = $newSelect));
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessMatch(f:FunctionExpression[1], vars: Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
+// State-independent applicability predicate for ->match. AST shape only: 2 params, with
+// the receiver either unrouted or wrapped only in NoSetRoutedValueSpecification. No
+// State / vars reads — required so this predicate can be evaluated at clustering time
+// (see isFunctionSupportedForCluster).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessMatch(f:FunctionExpression[1]):Boolean[1]
 {
    // Can process 'match' in the context of semi structured mappings (which are not routed).
    let params = $f.parametersValues->evaluateAndDeactivate();
@@ -2825,7 +2851,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   processValueSpecificationReturnPropertyMapping($expression->toOne(),$propMapping, $query, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessTypeName(f:FunctionExpression[1], vars: Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
+// State-independent applicability predicate for ->typeName. AST shape only: 1 param,
+// either unrouted or wrapped only in NoSetRoutedValueSpecification. No State / vars
+// reads — required so this predicate can be evaluated at clustering time.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessTypeName(f:FunctionExpression[1]):Boolean[1]
 {
    // Can process 'typeName' in the context of semi structured mappings (which are not routed).
    let params = $f.parametersValues->evaluateAndDeactivate();
@@ -3621,9 +3650,14 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
    )->toOne();
 }
 
-function meta::relational::functions::pureToSqlQuery::isNewPairFunction(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
+// State-independent applicability predicate for `new(Class, name, [KeyExpression])`.
+// Returns true iff the constructed Class is Pair (the only Class new() the relational
+// store knows how to translate, used by processTo / processToMany / processNewPair).
+// No State / vars reads — the narrower fe-only signature lets this be evaluated at
+// clustering time and keeps the type system from accidentally introducing State reads.
+function meta::relational::functions::pureToSqlQuery::isNewPairFunction(f: FunctionExpression[1]): Boolean[1]
 {
-  $v->instanceOf(FunctionExpression) && $v->cast(@FunctionExpression).parametersValues->at(0).genericType.typeArguments.rawType == Pair;
+  $f.parametersValues->at(0).genericType.typeArguments.rawType == Pair;
 }
 
 function meta::relational::functions::pureToSqlQuery::processNewPair(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4075,7 +4109,7 @@ function meta::relational::functions::pureToSqlQuery::processTo(f:FunctionExpres
 
       // routing does not propagate type arguments properly, hence reactivation is not possible until that is fixed
       let newPairFe = $f.parametersValues->evaluateAndDeactivate()->at(3)->cast(@InstanceValue).values->cast(@SimpleFunctionExpression);
-      $newPairFe->forAll(x | $x->isNewPairFunction($vars, $state))->assert(|'type lookup on to() function should be pair() functions!');
+      $newPairFe->forAll(x | $x->isNewPairFunction())->assert(|'type lookup on to() function should be pair() functions!');
       let typeLookup = $newPairFe->map(p | 
         let ke = $p.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression)->sortBy(x | $x.key->reactivate()->cast(@String)->toOne()); // pair has 2 properties, "first" and "second"... alphabetically "first" goes before "second"... 
         let first = $ke->at(0).expression->reactivate()->toOne()->cast(@String);
@@ -4116,7 +4150,7 @@ function meta::relational::functions::pureToSqlQuery::processToMany(f:FunctionEx
 
       // routing does not propagate type arguments properly, hence reactivation is not possible until that is fixed
       let newPairFe = $f.parametersValues->evaluateAndDeactivate()->at(3)->cast(@InstanceValue).values->cast(@SimpleFunctionExpression);
-      $newPairFe->forAll(x | $x->isNewPairFunction($vars, $state))->assert(|'type lookup on to() function should be pair() functions!');
+      $newPairFe->forAll(x | $x->isNewPairFunction())->assert(|'type lookup on to() function should be pair() functions!');
       let typeLookup = $newPairFe->map(p | 
         let ke = $p.parametersValues->evaluateAndDeactivate()->drop(2)->cast(@InstanceValue).values->cast(@KeyExpression)->sortBy(x | $x.key->reactivate()->cast(@String)->toOne()); // pair has 2 properties, "first" and "second"... alphabetically "first" goes before "second"... 
         let first = $ke->at(0).expression->reactivate()->toOne()->cast(@String);
@@ -8960,11 +8994,54 @@ Class meta::relational::functions::pureToSqlQuery::ProcessingSide
 
 function meta::relational::functions::pureToSqlQuery::findSupportedFunction(fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>[0..1]
 {
-   let supportedFuncIfPairs = $state.contextBasedSupportedFunctions->get($fe.func).values->map(cb | pair(|$cb.first->eval($fe,$vars,$state), |$cb.second));
-   if(
-    $supportedFuncIfPairs,
-    | $state.supportedFunctions->get($fe.func)
-   );
+  // Two-tier dispatch:
+  //   Tier 1: context registry — a single list of (predicate, handler) pairs per FE key
+  //           evaluated in registration order. Predicates take {fe, vars, state}; predicates
+  //           that don't need vars/state simply ignore them (see the four AST-only entries
+  //           for `at`, `match`, `typeName`, `new(Pair)` which delegate to fe-only helpers).
+  //           Context-only functions carry a `{fe, vars, state | true}` catchall at the
+  //           tail of their list pointing at `processContextOnlyFunctionFallback`, so a
+  //           mis-claim at clustering time fails loudly here rather than silently.
+  //   Tier 2: static `supportedFunctions` — real processor for the FE.
+  // Within tier 1 the first matching pair (in registration order) wins.
+  let ctxPairs = $state.contextBasedSupportedFunctions->get($fe.func).values
+                        ->map(cb | pair(|$cb.first->eval($fe, $vars, $state), |$cb.second));
+  if(
+    $ctxPairs,
+    | // Tier 1 missed — fall back to the static map.
+      $state.supportedFunctions->get($fe.func)
+  );
+}
+
+function meta::relational::functions::pureToSqlQuery::isFunctionSupportedForCluster(fe:FunctionExpression[1], state: State[1]):Boolean[1]
+{
+  // Clustering-time membership check used by the relational StoreContract.supports
+  // (see legend-engine-xt-relationalStore-core-pure/.../contract/storeContract.pure).
+  //
+  // The unified `contextBasedSupportedFunctions` map is intentionally NOT consulted
+  // here: its predicates take the full {fe, vars, state} signature and would read an
+  // empty inScopeVars / [] disableAutoFlatten / empty functionReferenceScope from the
+  // defaultState stub, giving wrong answers (with surprising println / fail side-effects).
+  //
+  // Instead, cluster-time claim decisions are made against a dedicated registry
+  // `getClusteringContextPredicates` whose predicates take only the FunctionExpression
+  // — the narrower type statically enforces state-safety at this call site. That
+  // registry carries three flavours of entry:
+  //   1. Fe-only applicability predicates such as `canProcessAt` — the cluster claims
+  //      the FE only when the AST-shape predicate fires true, letting other clusters
+  //      pick up the FE when it fires false. Example: `->at(0)` on an already-routed
+  //      (non-`NoSet`) `RoutedValueSpecification` correctly defers to the platform
+  //      cluster (see test `testPlatformExpressionDependencyOnAFromExpression`).
+  //   2. Unconditional-true predicates for context-only functions whose sole handler
+  //      lives in the unified context registry (today: `fold`, `isNotEmpty_Any_MANY`,
+  //      `indexOf`, `instanceOf`) — these need to be claimed at clustering, and any
+  //      mis-claim then falls through to `processContextOnlyFunctionFallback` at
+  //      PureToSQL time and fails loudly.
+  //   3. (Reserved for future) any other fe-only cluster-claim predicate that must
+  //      not be evaluated against a stub State.
+  $state.supportedFunctions->get($fe.func)->isNotEmpty()
+  || meta::relational::functions::pureToSqlQuery::getClusteringContextPredicates()->get($fe.func).values
+      ->exists(pred | $pred->eval($fe));
 }
 
 function meta::relational::functions::pureToSqlQuery::getGroupBy(viewSpecification:RelationalMappingSpecification[1]):GroupByMapping[0..1]
@@ -9087,7 +9164,7 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
               meta::relational::functions::pureToSqlQuery::processVariantAt_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             ),
             pair(
-              meta::relational::functions::pureToSqlQuery::canProcessAt_FunctionExpression_1__Map_1__State_1__Boolean_1_,
+              {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | $fe->meta::relational::functions::pureToSqlQuery::canProcessAt()},
               meta::relational::functions::pureToSqlQuery::processAt_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             )
           ]->list()
@@ -9095,14 +9172,14 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
       ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
          first = meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_,
          second = pair(
-            meta::relational::functions::pureToSqlQuery::canProcessMatch_FunctionExpression_1__Map_1__State_1__Boolean_1_,
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | $fe->meta::relational::functions::pureToSqlQuery::canProcessMatch()},
             meta::relational::functions::pureToSqlQuery::processMatch_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )->list()
       ),
       ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
          first = meta::pure::functions::meta::typeName_Any_1__String_1_,
          second = pair(
-            meta::relational::functions::pureToSqlQuery::canProcessTypeName_FunctionExpression_1__Map_1__State_1__Boolean_1_,
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | $fe->meta::relational::functions::pureToSqlQuery::canProcessTypeName()},
             meta::relational::functions::pureToSqlQuery::processTypeName_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )->list()
       ),
@@ -9116,6 +9193,13 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
             pair(
               meta::relational::functions::pureToSqlQuery::isVariantInputWithInstanceValue_ValueSpecification_1__Map_1__State_1__Boolean_1_,
               meta::relational::functions::pureToSqlQuery::processVariantFold_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+            ),
+            // Fail-loudly catchall for state-independent (context-only) functions claimed
+            // via isFunctionSupportedForCluster / getClusteringContextPredicates that have
+            // no shape-specific handler above — evaluated last, always fires.
+            pair(
+              {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | true},
+              meta::relational::functions::pureToSqlQuery::processContextOnlyFunctionFallback_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             )
          ]->list()
       ),
@@ -9229,7 +9313,7 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
       ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
          first = new_Class_1__String_1__KeyExpression_MANY__T_1_,
          second = pair(
-            meta::relational::functions::pureToSqlQuery::isNewPairFunction_ValueSpecification_1__Map_1__State_1__Boolean_1_,
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | $fe->meta::relational::functions::pureToSqlQuery::isNewPairFunction()},
             meta::relational::functions::pureToSqlQuery::processNewPair_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
          )->list()
       ),
@@ -9256,6 +9340,13 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
             pair(
               meta::relational::functions::pureToSqlQuery::isVariantInput_ValueSpecification_1__Map_1__State_1__Boolean_1_,
               meta::relational::functions::pureToSqlQuery::processVariantIsNotEmpty_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+            ),
+            // Fail-loudly catchall for state-independent (context-only) functions claimed
+            // via isFunctionSupportedForCluster / getClusteringContextPredicates that have
+            // no shape-specific handler above — evaluated last, always fires.
+            pair(
+              {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | true},
+              meta::relational::functions::pureToSqlQuery::processContextOnlyFunctionFallback_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             )
          ]->list()
       ),
@@ -9340,10 +9431,19 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
       ),
       ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
         first = instanceOf_Any_1__Type_1__Boolean_1_,
-        second = pair(
+        second = [
+          pair(
             meta::relational::functions::pureToSqlQuery::isVariantInputWithInstanceValue_ValueSpecification_1__Map_1__State_1__Boolean_1_,
             meta::relational::functions::pureToSqlQuery::processVariantInstanceOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
-        )->list()
+          ),
+          // Fail-loudly catchall for state-independent (context-only) functions claimed
+          // via isFunctionSupportedForCluster / getClusteringContextPredicates that have
+          // no shape-specific handler above — evaluated last, always fires.
+          pair(
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | true},
+            meta::relational::functions::pureToSqlQuery::processContextOnlyFunctionFallback_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+          )
+        ]->list()
       ),
        ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
          first = meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_,
@@ -9372,6 +9472,67 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
           ]->list()
       )
    ])
+}
+
+// Clustering-time context predicates. Predicates take only the FunctionExpression — no
+// `vars`, no `state` — so they are safe to evaluate at clustering time against the stub
+// `defaultState` that the relational StoreContract passes in. The narrower function type
+// makes this invariant statically enforced: a state-reading predicate cannot be placed
+// here because State is not in scope.
+//
+// Two flavours of entry are registered:
+//   (a) real AST-shape predicates (e.g. `canProcessAt`, `canProcessMatch`,
+//       `canProcessTypeName`, `isNewPairFunction`) — the relational cluster claims the FE
+//       only when the predicate fires true, allowing the FE to fall through to the
+//       platform (or another store's) cluster when it fires false. Example: `->at(0)` on
+//       an already-routed non-`NoSet` `RoutedValueSpecification` correctly defers to
+//       the platform cluster (see test `testPlatformExpressionDependencyOnAFromExpression`).
+//   (b) unconditional-true predicates `{fe | true}` for context-only functions whose
+//       sole handler lives in getContextBasedSupportedFunctions and would otherwise not
+//       be visible to the cluster-membership check. Today the always-claim entries are
+//       `fold`, `isNotEmpty_Any_MANY`, `indexOf`, `instanceOf`. A mis-claim then falls
+//       through to `processContextOnlyFunctionFallback` at PureToSQL time and fails
+//       loudly with a diagnostic message.
+function meta::relational::functions::pureToSqlQuery::getClusteringContextPredicates():Map<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>[1]
+{
+  newMap([
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::collection::at_T_MANY__Integer_1__T_1_,
+      second = meta::relational::functions::pureToSqlQuery::canProcessAt_FunctionExpression_1__Boolean_1_->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_,
+      second = meta::relational::functions::pureToSqlQuery::canProcessMatch_FunctionExpression_1__Boolean_1_->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::meta::typeName_Any_1__String_1_,
+      second = meta::relational::functions::pureToSqlQuery::canProcessTypeName_FunctionExpression_1__Boolean_1_->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = new_Class_1__String_1__KeyExpression_MANY__T_1_,
+      second = meta::relational::functions::pureToSqlQuery::isNewPairFunction_FunctionExpression_1__Boolean_1_->list()
+    ),
+    // Unconditional-true predicates for context-only functions. These need to be claimed
+    // at clustering time because their sole handler lives in getContextBasedSupportedFunctions;
+    // a mis-claim at PureToSQL time falls through to `processContextOnlyFunctionFallback`
+    // and surfaces loudly.
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_,
+      second = {fe:FunctionExpression[1] | true}->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::collection::isNotEmpty_Any_MANY__Boolean_1_,
+      second = {fe:FunctionExpression[1] | true}->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = meta::pure::functions::collection::indexOf_T_MANY__T_1__Integer_1_,
+      second = {fe:FunctionExpression[1] | true}->list()
+    ),
+    ^Pair<meta::pure::metamodel::function::Function<Any>, List<meta::pure::metamodel::function::Function<{FunctionExpression[1]->Boolean[1]}>>>(
+      first = instanceOf_Any_1__Type_1__Boolean_1_,
+      second = {fe:FunctionExpression[1] | true}->list()
+    )
+  ])
 }
 
 function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>[1]

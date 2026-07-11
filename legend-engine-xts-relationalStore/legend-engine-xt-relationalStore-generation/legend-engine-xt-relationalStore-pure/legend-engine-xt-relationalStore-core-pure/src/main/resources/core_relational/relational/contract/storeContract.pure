@@ -196,26 +196,38 @@ function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuer
    execution($sq.store->cast(@Database), $sq.vs, $ext, $m, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug);
 }
 
-// Functions supported by relational execution
+// Functions supported by relational execution.
+//
+// Called from clustering with a stub State (empty inScopeVars/mapping/etc.), so
+// `isFunctionSupportedForCluster` only consults the static `supportedFunctions` map and the
+// fe-only predicates in `getClusteringContextPredicates`. The full `contextBasedSupportedFunctions`
+// registry is NOT used here — its predicates depend on State fields that are empty at this
+// call site. Context-only functions that must be claimed for clustering register either an
+// fe-only AST predicate or an unconditional-true clustering predicate; mis-claims fall
+// through to `processContextOnlyFunctionFallback` at PureToSQL time and fail loudly.
+//
+// `clusteringEscapeFunctions` is a small tail of functions not in either registry that must
+// still be claimed by the relational cluster (router quirks); each entry should eventually
+// migrate into a registry.
 function meta::relational::contract::supports(f:FunctionExpression[1], state: State[1]):Boolean[1]
 {
   if($f->meta::pure::router::utils::isUnionOnGraphFetch(true),
     | false,
-    |
-      meta::relational::functions::pureToSqlQuery::findSupportedFunction(
-                              $f,
-                              newMap([]->cast(@Pair<VariableExpression, ValueSpecification>)),
-                              $state
-                          )->isNotEmpty()
-      //These are here because the router does not go deep enough, should remove
-      || [
-            meta::pure::functions::math::sum_Float_MANY__Float_1_,
-            meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
-            meta::pure::functions::math::sum_Number_MANY__Number_1_,
-            meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_,
-            meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_
-         ]->contains($f.func);
+    | meta::relational::functions::pureToSqlQuery::isFunctionSupportedForCluster($f, $state)
+      || $f.func->in(meta::relational::contract::clusteringEscapeFunctions())
   );
+}
+
+// Escape list — see `supports` above.
+function meta::relational::contract::clusteringEscapeFunctions():meta::pure::metamodel::function::Function<Any>[*]
+{
+  [
+     meta::pure::functions::math::sum_Float_MANY__Float_1_,
+     meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
+     meta::pure::functions::math::sum_Number_MANY__Number_1_,
+     meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_,
+     meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_
+  ];
 }
 
 function meta::relational::contract::supportsStream(f:FunctionExpression[1]):Boolean[1]

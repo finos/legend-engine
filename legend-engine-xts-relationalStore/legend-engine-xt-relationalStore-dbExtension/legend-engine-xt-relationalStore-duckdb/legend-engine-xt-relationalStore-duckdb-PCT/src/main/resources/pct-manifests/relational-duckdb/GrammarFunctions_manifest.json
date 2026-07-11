@@ -175,7 +175,7 @@
     },
     {
       "test": "meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_",
-      "expectedError": "Match failure: StoreMappingClusteredValueSpecificationObject instanceOf StoreMappingClusteredValueSpecification"
+      "expectedError": "No relational processor matched function 'fold'. The function is registered in getContextBasedSupportedFunctions as a context-only entry; reaching this catchall means none of its earlier applicability predicates matched the current State during plan generation."
     }
   ]
 }
