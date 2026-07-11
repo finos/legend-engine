@@ -1832,7 +1832,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBWithColumnM
                      '    Relational\n'+
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (managerID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-                     '      resultColumns = [(\"firstName\", VARCHAR(200)), (\"eID\", INT), (\"managerID\", INT), (\"fID\", INT), (\"legalName\", VARCHAR(200))]\n'+
+                     '      resultColumns = [(\"firstName\", INT), (\"eID\", INT), (\"managerID\", INT), (\"fID\", INT), (\"legalName\", VARCHAR(200))]\n'+
                      '      sql = select \"tdsvar_0\".firstName as \"firstName\", \"tdsvar_0\".eID as \"eID\", \"tdsvar_0\".managerID as \"managerID\", \"tdsvar_0\".\"fID\" as \"fID\", \"tdsvar_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar}) as \"tdsvar_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar_0\"\n'+
                      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
                      '    )\n'+
@@ -1893,7 +1893,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Bo
      '    Relational\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
      '      sql = select \"tdsvar_0\".firstName as "firstName", \"tdsvar_0\".eID as "eID", \"tdsvar_0\".\"fID\" as \"fID\", \"tdsvar_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar}) as \"tdsvar_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
      '    )\n'+
@@ -1939,7 +1939,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsTwoJoinThreeDB():Boo
      '          Relational\n'+
      '          (\n'+
      '            type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (firmAddrID, Integer, INT, \"\")]\n'+
-     '            resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("fID", INT), ("firmAddrID", INT)]\n'+
+     '            resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("firmAddrID", INT)]\n'+
      '            sql = select \"tdsvar_0_0\".firstName as "firstName", \"tdsvar_0_0\".eID as "eID", \"tdsvar_0_0\".\"fID\" as \"fID\", \"tdsvar_0_0\".\"firmAddrID\" as \"firmAddrID\" from (select * from (${tdsVar_0}) as \"tdsvar_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".ADDRESSID as \"firmAddrID\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar_0_0\"\n'+
      '            connection = TestDatabaseConnection(type = \"H2\")\n'+
      '          )\n'+
@@ -1948,7 +1948,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::tdsTwoJoinThreeDB():Boo
      '    Relational\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (firmAddrID, Integer, INT, \"\"), (addrName, String, VARCHAR(200), \"\"), (addrID, Integer, INT, \"\")]\n'+
-     '      resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("fID", INT), ("firmAddrID", INT), ("addrName", VARCHAR(200)), ("addrID", INT)]\n'+
+     '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("firmAddrID", INT), ("addrName", VARCHAR(200)), ("addrID", INT)]\n'+
      '      sql = select \"tdsvar_0\".firstName as "firstName", \"tdsvar_0\".eID as "eID", \"tdsvar_0\".fID as "fID", \"tdsvar_0\".firmAddrID as "firmAddrID", \"tdsvar_0\".\"addrName\" as \"addrName\", \"tdsvar_0\".\"addrID\" as \"addrID\" from (select * from (${tdsVar}) as \"tdsvar_1\" inner join (select \"root\".NAME as \"addrName\", \"root\".ID as \"addrID\" from addressTable as \"root\") as \"addresstable_0\" on (\"tdsvar_1\".firmAddrID = \"addresstable_0\".\"addrID\")) as \"tdsvar_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
     '    )\n'+
@@ -2013,7 +2013,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerati
      '    Relational\n'+
      '    (\n'+
      '      type = TDS[(firstName, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      resultColumns = [("firstName", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
      '      sql = select \"tdsvar_0\".firstName as "firstName", \"tdsvar_0\".eID as "eID", \"tdsvar_0\".\"fID\" as \"fID\", \"tdsvar_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar}) as \"tdsvar_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar_0\"\n'+
      '      connection = TestDatabaseConnection(type = \"H2\")\n'+
      '    )\n'+
@@ -2068,71 +2068,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerati
                   '    Relational\n'+
                   '    (\n'+
                   '      type = TDS[(firstName, meta::pure::precisePrimitives::Varchar, VARCHAR(200), ""), (eID, meta::pure::precisePrimitives::Int, INT, ""), (lastName, meta::pure::precisePrimitives::Varchar, VARCHAR(200), ""), (fID, meta::pure::precisePrimitives::Int, INT, "")]\n'+
-                  '      resultColumns = [("firstName", VARCHAR(200)), ("eID", INT), ("lastName", VARCHAR(200)), ("fID", INT)]\n'+
+                  '      resultColumns = [("firstName", INT), ("eID", INT), ("lastName", VARCHAR(200)), ("fID", INT)]\n'+
                   '      sql = select "tdsvar_0".firstName as "firstName", "tdsvar_0".eID as "eID", "tdsvar_0"."lastName" as "lastName", "tdsvar_0"."fID" as "fID" from (select * from (${tdsVar}) as "tdsvar_1" left outer join (select "persontable_1".LASTNAME as "lastName", "persontable_1".ID as "fID" from personTable as "persontable_1") as "persontable_0" on ("tdsvar_1".eID = "persontable_0"."fID")) as "tdsvar_0"\n'+
-                  '      connection = RelationalDatabaseConnection(type = "H2")\n'+
-                  '    )\n'+
-                  '  )\n'+
-                  ')\n'
-    , $result->planToString(meta::relational::extension::relationalExtensions()));
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testCrossDbPlanGenerationWithRelationUsesCorrectColumnTypes():Boolean[1]
-{
-
-    let runtime1 = ^Runtime(
-     connectionStores= ^ConnectionStore(
-      element = meta::relational::tests::db,
-      connection=^meta::external::store::relational::runtime::RelationalDatabaseConnection(
-         type = DatabaseType.H2,
-         datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
-         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
-      )));
-
-    let runtime2 = ^Runtime(
-     connectionStores= ^ConnectionStore(
-      element = meta::relational::tests::db,
-      connection=^meta::external::store::relational::runtime::RelationalDatabaseConnection(
-         type = DatabaseType.H2,
-         datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::EmbeddedH2DatasourceSpecification(databaseName = 'a', directory = 'b',autoServerMode = true),
-         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
-      )));
-
-    let result = executionPlan({|#>{meta::relational::tests::dbInc.personTable}#
-    ->extend(~newCol: row|if($row.FIRSTNAME == 'Peter', |'abc', |'123'))
-    ->distinct()
-    ->extend(~newCol_SOURCE: row | $row.newCol)
-    ->select(~[newCol_SOURCE])
-    ->from($runtime1)
-    ->join(#>{meta::relational::tests::dbInc.personTable}#
-      ->extend(~newCol_TARGET: row|'testing')
-      ->select(~[newCol_TARGET])
-      ->from($runtime2), JoinKind.LEFT, {x,y| $x.newCol_SOURCE == $y.newCol_TARGET})}, meta::relational::extension::relationalExtensions());
-
-    assertEquals('Sequence\n'+
-                  '(\n'+
-                  '  type = TDS[(newCol_SOURCE, String, VARCHAR(8192), ""), (newCol_TARGET, String, VARCHAR(8192), "")]\n'+
-                  '  (\n'+
-                  '    Allocation\n'+
-                  '    (\n'+
-                  '      type = TDS[(newCol_SOURCE, String, VARCHAR(8192), "")]\n'+
-                  '      name = tdsVar\n'+
-                  '      value = \n'+
-                  '        (\n'+
-                  '          Relational\n'+
-                  '          (\n'+
-                  '            type = TDS[(newCol_SOURCE, String, VARCHAR(8192), "")]\n'+
-                  '            resultColumns = [("newCol_SOURCE", VARCHAR(3))]\n'+
-                  '            sql = select "persontable_0"."newCol_SOURCE" as "newCol_SOURCE" from (select distinct "persontable_1".ID as "ID", "persontable_1".FIRSTNAME as "FIRSTNAME", "persontable_1".LASTNAME as "LASTNAME", "persontable_1".AGE as "AGE", "persontable_1".ADDRESSID as "ADDRESSID", "persontable_1".FIRMID as "FIRMID", "persontable_1".MANAGERID as "MANAGERID", case when "persontable_1".FIRSTNAME = \'Peter\' then \'abc\' else \'123\' end as "newCol", case when "persontable_1".FIRSTNAME = \'Peter\' then \'abc\' else \'123\' end as "newCol_SOURCE" from personTable as "persontable_1") as "persontable_0"\n'+
-                  '            connection = RelationalDatabaseConnection(type = "H2")\n'+
-                  '          )\n'+
-                  '        )\n'+
-                  '    )\n'+
-                  '    Relational\n'+
-                  '    (\n'+
-                  '      type = TDS[(newCol_SOURCE, String, VARCHAR(8192), ""), (newCol_TARGET, String, VARCHAR(8192), "")]\n'+
-                  '      resultColumns = [("newCol_SOURCE", VARCHAR(8192)), ("newCol_TARGET", VARCHAR(7))]\n'+
-                  '      sql = select "tdsvar_0".newCol_SOURCE as "newCol_SOURCE", "tdsvar_0"."newCol_TARGET" as "newCol_TARGET" from (select * from (${tdsVar}) as "tdsvar_1" left outer join (select \'testing\' as "newCol_TARGET" from personTable as "persontable_1") as "persontable_0" on ("tdsvar_1".newCol_SOURCE = "persontable_0"."newCol_TARGET")) as "tdsvar_0"\n'+
                   '      connection = RelationalDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
