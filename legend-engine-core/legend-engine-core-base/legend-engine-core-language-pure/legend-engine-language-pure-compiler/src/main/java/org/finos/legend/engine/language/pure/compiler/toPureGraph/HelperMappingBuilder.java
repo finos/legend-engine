@@ -897,7 +897,8 @@ public class HelperMappingBuilder
         LambdaFunction result = new LambdaFunction();
         String[] resolved = resolveLambdaParamNames(original, srcName, tgtName, thisProp, thatProp, context);
         result.parameters = Collections.emptyList();
-        result.body = ListIterate.collect(original.body, vs -> rewriteValueSpecification(vs, resolved[0], resolved[1]));
+        ModelJoinLambdaRewriteVisitor rewriter = new ModelJoinLambdaRewriteVisitor(resolved[0], resolved[1]);
+        result.body = ListIterate.collect(original.body, vs -> vs.accept(rewriter));
         return result;
     }
 
@@ -1000,105 +1001,6 @@ public class HelperMappingBuilder
         return null;
     }
 
-    private static org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification rewriteValueSpecification(
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification vs,
-            String srcName, String tgtName)
-    {
-        if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection)
-        {
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection collection = (org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection) vs;
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Collection();
-            result.sourceInformation = collection.sourceInformation;
-            result.multiplicity = collection.multiplicity;
-            result.values = collection.values != null ? ListIterate.collect(collection.values, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
-            return result;
-        }
-        if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty)
-        {
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty ap = (org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty) vs;
-            if (ap.parameters != null && !ap.parameters.isEmpty())
-            {
-                String matchedVar = matchBaseToVariable(ap.parameters.get(0), srcName, tgtName);
-                if (matchedVar != null)
-                {
-                    return createPropertyAccessOnVariable(matchedVar, ap.property, ap.sourceInformation);
-                }
-            }
-            // Rewrite parameters recursively
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty();
-            result.property = ap.property;
-            result.sourceInformation = ap.sourceInformation;
-            result.parameters = ap.parameters != null ? ListIterate.collect(ap.parameters, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
-            return result;
-        }
-        else if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction)
-        {
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction af = (org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction) vs;
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedFunction();
-            result.function = af.function;
-            result.fControl = af.fControl;
-            result.sourceInformation = af.sourceInformation;
-            result.parameters = af.parameters != null ? ListIterate.collect(af.parameters, p -> rewriteValueSpecification(p, srcName, tgtName)) : null;
-            return result;
-        }
-        else if (vs instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
-        {
-            org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable var = (org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) vs;
-            String mapped = mapVariableName(var.name, srcName, tgtName);
-            if (mapped != null)
-            {
-                org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable();
-                result.name = mapped;
-                result.sourceInformation = var.sourceInformation;
-                return result;
-            }
-        }
-        return vs;
-    }
-
-    /**
-     * If {@code base} is a variable bound to one of the user's lambda params, returns the
-     * corresponding ModelJoin sentinel ({@link #MODEL_JOIN_SOURCE_VAR} or
-     * {@link #MODEL_JOIN_TARGET_VAR}); otherwise returns {@code null}.
-     */
-    private static String matchBaseToVariable(org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification base, String srcName, String tgtName)
-    {
-        if (base instanceof org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable)
-        {
-            String name = ((org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable) base).name;
-            return mapVariableName(name, srcName, tgtName);
-        }
-        return null;
-    }
-
     public static final String MODEL_JOIN_SOURCE_VAR = "_mj_src";
     public static final String MODEL_JOIN_TARGET_VAR = "_mj_tgt";
-
-    private static String mapVariableName(String name, String srcName, String tgtName)
-    {
-        if (srcName.equals(name))
-        {
-            return MODEL_JOIN_SOURCE_VAR;
-        }
-        else if (tgtName.equals(name))
-        {
-            return MODEL_JOIN_TARGET_VAR;
-        }
-        return null;
-    }
-
-    private static org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty createPropertyAccessOnVariable(
-            String varName, String propertyName,
-            org.finos.legend.engine.protocol.pure.m3.SourceInformation sourceInformation)
-    {
-        org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable variable = new org.finos.legend.engine.protocol.pure.m3.valuespecification.Variable();
-        variable.name = varName;
-        variable.sourceInformation = sourceInformation;
-
-        org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty result = new org.finos.legend.engine.protocol.pure.m3.valuespecification.AppliedProperty();
-        result.property = propertyName;
-        result.sourceInformation = sourceInformation;
-        result.parameters = Lists.mutable.with(variable);
-        return result;
-    }
 }

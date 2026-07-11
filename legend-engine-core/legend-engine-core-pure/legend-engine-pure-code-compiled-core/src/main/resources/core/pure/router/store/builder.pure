@@ -360,12 +360,8 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
           graphFetchFlow = false
         );
 
-        let routed = $m.joinCondition->routeFunction(true, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);
-        let clusters = $routed.expressionSequence->evaluateAndDeactivate();
-        assert($clusters->size() == 1, 'Expected exactly one cluster for routed ModelJoin joinCondition, got ' + $clusters->size()->toString());
-        let cluster = $clusters->toOne()->cast(@ClusteredValueSpecification);
-        let routedJoinCondition = ^$routed(expressionSequence = $cluster.val);
-        ^$m(joinCondition = $routedJoinCondition->cast(@LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>));,
+        let routed = $m.joinCondition->routeFunction(false, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);
+        ^$m(joinCondition = $routed->cast(@LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>));,
       p:PropertyMapping[1] | $p
     ]
   );

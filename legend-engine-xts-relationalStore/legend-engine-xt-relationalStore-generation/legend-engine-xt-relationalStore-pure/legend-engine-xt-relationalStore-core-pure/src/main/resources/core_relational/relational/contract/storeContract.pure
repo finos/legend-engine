@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::relational::mutation::*;
-import meta::pure::mapping::xStore::*;
 import meta::relational::contract::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::systemMapping::tests::*;
@@ -46,12 +45,6 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::relational::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
      planCrossGraphFetchExecution = meta::relational::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
-     localizeXStoreAssociation = {
-      x : XStoreAssociationImplementation[1], setImpl : SetImplementation[*] |
-        [
-          d: Database[*]| meta::external::store::relational::modelJoins::localizeXStoreAssociation($x, $setImpl, $d);
-        ]
-     },
      connectionEquality = { b : Connection [1] |
                                [
                                  d: RelationalDatabaseConnection[1]|
@@ -186,7 +179,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      instance_equals = {a:Any[1], b:Any[1] |
                           $a->getHiddenPayload()->cast(@meta::relational::mapping::KeyInformation).pk == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk;
                        },
-     splitGraphFetchTreeForPropertyUnion = true
+     splitGraphFetchTreeForPropertyUnion = true,
+     canLocalizeXStoreAssociation        = true
    );
 }
 
