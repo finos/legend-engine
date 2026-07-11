@@ -603,7 +603,7 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
 
 function meta::pure::router::store::clustering::areStoreClustersCompatible(cluster1:StoreClusteredValueSpecification[1], cluster2:StoreClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-   ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
+  ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
 }
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1],  parentCluster:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
