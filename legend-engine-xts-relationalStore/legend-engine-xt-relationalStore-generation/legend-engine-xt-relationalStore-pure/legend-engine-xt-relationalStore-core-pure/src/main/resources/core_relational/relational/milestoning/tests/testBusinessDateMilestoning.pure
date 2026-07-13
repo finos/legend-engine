@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::executionPlan::*;
 import meta::relational::validation::*;
@@ -281,6 +282,51 @@ function <<test.Test,test.ToFix>> meta::relational::tests::milestoning::business
    let result = execute(|Product.all($businessDate)->project([p|$p.businessDate],['businessDate']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assert(false);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningFiltersPreservedInTdsJoinWithConcatenate():Boolean[1]
+{
+   let runtime = meta::relational::tests::milestoning::initDatabase();
+   
+   let standaloneResult = execute(
+      {|Product.all(%2015-10-16)
+         ->project([p|$p.id, p|$p.classification(%2015-10-16).description], ['id', 'classDesc'])
+         ->from(milestoningmap, $runtime)
+         ->join(
+            Product.all(%2015-10-16)
+               ->project([p|$p.id], ['id2'])
+               ->from(milestoningmap, $runtime),
+            JoinType.LEFT_OUTER,
+            ['id'], ['id2']
+         )
+         ->from(milestoningmap, $runtime)
+      },
+      ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions()
+   );
+
+   // Same expression with ->concatenate([]) — triggers processConcatenate, altering isolation strategy.
+   let concatResult = execute(
+      {|Product.all(%2015-10-16)
+         ->project([p|$p.id, p|$p.classification(%2015-10-16).description], ['id', 'classDesc'])
+         ->from(milestoningmap, $runtime)
+         ->join(
+            Product.all(%2015-10-16)
+               ->project([p|$p.id], ['id2'])
+               ->from(milestoningmap, $runtime),
+            JoinType.LEFT_OUTER,
+            ['id'], ['id2']
+         )
+         ->from(milestoningmap, $runtime)
+         ->concatenate([])
+      },
+      ^Mapping(name = ''), ^meta::core::runtime::Runtime(), meta::relational::extension::relationalExtensions()
+   );
+
+   let standaloneTds = $standaloneResult.values->at(0);
+   let concatTds = $concatResult.values->at(0);
+   
+   assertEquals($standaloneTds.rows->size(), $concatTds.rows->size());
+   assertEquals($standaloneTds.rows->map(r|$r.values->makeString(','))->sort(), $concatTds.rows->map(r|$r.values->makeString(','))->sort());
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testQueryOfMilestonedTypeWithFilterInMapping():Boolean[1]
