@@ -164,7 +164,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::twoDBTestSpac
      '    Relational\n'+
      '    (\n'+
      '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("first name", VARCHAR(200)), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      resultColumns = [("first name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
      '      sql = select "tdsvar_0_0"."first name" as "first name", "tdsvar_0_0".eID as "eID", "tdsvar_0_0"."fID" as "fID", "tdsvar_0_0"."legalName" as "legalName" from (select * from (${tdsVar_0}) as "tdsvar_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar_0_1".eID = "firmtable_0"."fID")) as "tdsvar_0_0" where ("tdsvar_0_0"."first name" = \'Adam\' and "tdsvar_0_0"."legalName" = \'Firm X\')\n'+
      '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
      '    )\n'+
@@ -202,7 +202,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::sybaseIQ::twoDBTestSlas
      '    Relational\n'+
      '    (\n'+
      '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
-     '      resultColumns = [("first/name", VARCHAR(200)), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      resultColumns = [("first/name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
      '      sql = select "tdsvar_0_0"."first/name" as "first/name", "tdsvar_0_0".eID as "eID", "tdsvar_0_0"."fID" as "fID", "tdsvar_0_0"."legalName" as "legalName" from (select * from (${tdsVar_0}) as "tdsvar_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar_0_1".eID = "firmtable_0"."fID")) as "tdsvar_0_0" where ("tdsvar_0_0"."first/name" = \'Adam\' and "tdsvar_0_0"."legalName" = \'Firm X\')\n'+
      '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
      '    )\n'+
