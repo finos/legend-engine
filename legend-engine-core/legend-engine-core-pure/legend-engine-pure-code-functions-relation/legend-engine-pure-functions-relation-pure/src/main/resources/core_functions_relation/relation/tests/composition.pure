@@ -902,7 +902,7 @@ meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilt
                   '   grp,rank,sumId,sumRank\n'+
                   '   A,1,9,3\n'+
                   '   A,2,8,3\n'+
-                  '#', $res->sort(~rank->ascending())->toString());
+                  '#', $res->sort(~rank->ascending(), ~grp->ascending())->toString());
 }
 
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
