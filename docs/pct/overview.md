@@ -27,7 +27,7 @@ A key feature of Legend is that functions on the platform are cross-compiled, or
 
 ## Finishing Up / Running Database-specific PCT Tests
 The final step involves running PCT Tests against database targets for the functions you've defined/modified. See [this page](expected-failures-howto.md) for information on how
-to run the tests and log expected failures.
+to run the tests and record expected failures in the adapter's JSON manifest file.
 
 -------------
 # References

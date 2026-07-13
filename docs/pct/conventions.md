@@ -17,19 +17,19 @@ It is critical that utmost care is taken when deciding on:
 ### Practices
 #### PCT Tests
 Checklist for writing good PCT Tests:
-- [ ] Test package naming - related tests should belong to the same Pure Package. This will enable expectedFailures or other configs to be done per package.
-Format: ```{pkg prefix}::tests::{function name}::{test name}```
+- [ ] Test package naming - related tests should belong to the same Pure Package. Grouping tests by function keeps the manifest entries readable and makes it easy to spot all exclusions for a given function at a glance.
+  Format: ```{pkg prefix}::tests::{function name}::{test name}```
 ###### E.g.
-```Java
-// Example Good package name: a test package named like so
-meta::pure::functions::date::tests::timeBucket
-
-// can be registered in expectedFailuers with one line for unsupported targets
-pack("meta::pure::functions::date::tests::timeBucket", "\"meta::pure::functions::date::timeBucket_DateTime_1__Integer_1__DurationUnit_1__DateTime_1_ is not supported yet!\"")
-
-// Example Bad package name: a test package named like so can only be registered in expectedFailures one by one
-meta::pure::functions::date::tests
 ```
+// Good package name: all timeBucket tests live under one prefix
+meta::pure::functions::date::tests::timeBucket::testTimeBucketSeconds_Function_1__Boolean_1_
+meta::pure::functions::date::tests::timeBucket::testTimeBucketMinutes_Function_1__Boolean_1_
+
+// Less ideal: mixing unrelated functions under a flat tests:: package makes manifest entries ambiguous
+meta::pure::functions::date::tests::testTimeBucketSeconds_Function_1__Boolean_1_
+```
+  Note: expected failures in manifests are always listed per individual test.
+  Good package naming keeps related exclusions together so they are easy to find and remove once a function is implemented.
 - [ ] Are all your PCT Tests defined in the same *.pure filea s your function signature?
 - [ ] Test organization - tests should be granular such that a failure can be easily isolated. E.g. testing Float inputs should be declared in a separate
 test from one that tests for Integer inputs. That way, the test failure clearly isolates what may be wrong.
