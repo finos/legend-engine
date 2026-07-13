@@ -35,7 +35,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFirstNotNullF
 {
    let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p | meta::pure::tds::extensions::firstNotNull([$p.getString('firstName')->in(['John','Peter','Anthony']), false]) != false),
       simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') <> \'false\' OR coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') is null)', $sql);
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where (not (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') = \'false\') or (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') is null and \'false\' is not null) or (coalesce(case when "root".FIRSTNAME in (\'John\', \'Peter\', \'Anthony\') then \'true\' else \'false\' end, \'false\') is not null and \'false\' is null))', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testFirstNotNullFunctionWithinWhenClause():Boolean[1]

@@ -8688,18 +8688,20 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
                                       |let firstVal  = ^EnumProcessingHolder(param = $leftParam, processedParam = $leftVal, currentPropertyMapping = $left);
                                        let secondVal = ^EnumProcessingHolder(param = $rightParam, processedParam = $rightVal, currentPropertyMapping = $right);
                                        processEqualsForEnum($firstVal, $secondVal, $context, $state);,
-                                      |if($leftVal->hasOptionalVarPlaceHolderValue() && $rightVal->hasOptionalVarPlaceHolderValue(),
-                                          |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal,
-                                                                                                                              ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal,$rightVal]),^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 0)])]),
-                                                                                                                              ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 0)]),^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])])]),
-                                          |if($rightVal->hasOptionalVarPlaceHolderValue(),
-                                              |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$leftVal])]),
-                                              |if($leftVal->hasOptionalVarPlaceHolderValue(),
-                                                  |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])]),
-                                                  |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]));
-                                              );
-                                          );
-                                     );
+                                      |let leftIsEmptyLiteral  = $leftParam.multiplicity->hasUpperBound() && ($leftParam.multiplicity->getUpperBound() == 0);
+                                       let rightIsEmptyLiteral = $rightParam.multiplicity->hasUpperBound() && ($rightParam.multiplicity->getUpperBound() == 0);
+                                       // a literal empty ([]) operand degenerates to a null check on the other side ([] == [] is statically true);
+                                       // optional bind parameters render as a SQL null literal when absent, so null-safe equality applies in any context
+                                       if([
+                                            pair(|$leftIsEmptyLiteral && $rightIsEmptyLiteral, |^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])),
+                                            pair(|$leftIsEmptyLiteral,                         |^DynaFunction(name = 'isNull', parameters = [$rightVal])),
+                                            pair(|$rightIsEmptyLiteral,                        |^DynaFunction(name = 'isNull', parameters = [$leftVal])),
+                                            pair(|$leftVal->hasOptionalVarPlaceHolderValue() || $rightVal->hasOptionalVarPlaceHolderValue(),
+                                                                                               |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal])),
+                                            pair(|$leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
+                                                                                               |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal]))
+                                          ],
+                                          |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal])););
 
          let selectWithCursor = $left.element->extractSelectWithCursor($operation);
 

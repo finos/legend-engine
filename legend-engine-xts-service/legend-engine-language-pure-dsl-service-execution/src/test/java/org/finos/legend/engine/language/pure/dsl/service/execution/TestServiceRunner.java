@@ -95,6 +95,30 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleServiceForOptionalStringNotEqual()
+    {
+        this.testOptionalParameter("test::fetchNotEqualOptionalCity_String_$0_1$__Any_MANY_", "optionalCity", "New York", "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]", "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]");
+    }
+
+    @Test
+    public void testSimpleServiceForTwoOptionalParamsEquality()
+    {
+        TwoOptionalParameterServiceRunner serviceRunner = new TwoOptionalParameterServiceRunner("test::fetchTwoOptionalParamsEqual_String_$0_1$__String_$0_1$__Any_MANY_", "optionalCity", "otherCity");
+
+        String bothBoundEqual = serviceRunner.run(ServiceRunnerInput.newInstance().withArgs(Arrays.asList("New York", "New York")).withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("Result when both optional parameters are bound and equal", "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]", bothBoundEqual);
+
+        String bothBoundDifferent = serviceRunner.run(ServiceRunnerInput.newInstance().withArgs(Arrays.asList("New York", "Paris")).withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("Result when both optional parameters are bound and different", "[]", bothBoundDifferent);
+
+        String oneAbsent = serviceRunner.run(ServiceRunnerInput.newInstance().withArgs(Arrays.asList("New York", Collections.emptyList())).withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("Result when one optional parameter is absent", "[]", oneAbsent);
+
+        String bothAbsent = serviceRunner.run(ServiceRunnerInput.newInstance().withArgs(Arrays.asList(Collections.emptyList(), Collections.emptyList())).withSerializationFormat(SerializationFormat.PURE));
+        Assert.assertEquals("Result when both optional parameters are absent", "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"city\":\"Dallas\"}]", bothAbsent);
+    }
+
+    @Test
     public void testSimpleServiceForOptionalInteger()
     {
         this.testOptionalParameter("test::fetchOptionalAge_Integer_$0_1$__Any_MANY_", "optionalAge", 35, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"age\":35}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"age\":null}");
@@ -927,6 +951,29 @@ public class TestServiceRunner
         {
             newExecutionBuilder()
                     .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class TwoOptionalParameterServiceRunner extends AbstractServicePlanExecutor
+    {
+        private final String argName1;
+        private final String argName2;
+
+        TwoOptionalParameterServiceRunner(String fetchFunction, String argName1, String argName2)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
+            this.argName1 = argName1;
+            this.argName2 = argName2;
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
+                    .withParameter(this.argName1, serviceRunnerInput.getArgs().get(0))
+                    .withParameter(this.argName2, serviceRunnerInput.getArgs().get(1))
                     .withServiceRunnerInput(serviceRunnerInput)
                     .executeToStream(outputStream);
         }

@@ -19,7 +19,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
-import org.finos.legend.engine.pure.runtime.testConnection.CoreExternalTestConnectionCodeRepositoryProvider;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
 import org.finos.legend.pure.code.core.CoreRelationalSqlServerCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
@@ -38,74 +37,27 @@ public class Test_Relational_SqlServer_GrammarFunctions_PCT extends PCTReportCon
     private static final Adapter adapter = CoreRelationalSqlServerCodeRepositoryProvider.sqlserverAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // And
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'and'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'and'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'and'."),
-
             // Not
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotFalseExpression_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotFalse_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotTrueExpression_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
             one("meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_", "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""),
 
-            // Or
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testBinaryExpressions_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'or'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'or'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'or'."),
 
             // Eq
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqBoolean_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqFloat_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqInteger_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"Assert failed\""),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::equality::eq::testEqString_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_", "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type"),
+            one("meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_", "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type"),
             one("meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
 
             // Equal
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualFloat_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualInteger_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualString_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"Assert failed\""),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_", "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_", "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type"),
             one("meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
+            one("meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_", "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type"),
 
-            // GreaterThan
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Date_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Number_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_String_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
 
-            // GreaterThanEqual
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
-            one("meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."),
 
-            // LessThan
-            one("meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Date_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Number_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_String_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
 
-            // LessThanEqual
-            one("meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Date_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Number_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
-            one("meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_String_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '<'."),
 
             // Filter
             one("meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_", "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"),
@@ -119,9 +71,6 @@ public class Test_Relational_SqlServer_GrammarFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""),
             one("meta::pure::functions::collection::tests::first::testFirstOnOneElement_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""),
 
-            // IsEmpty
-            one("meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseMultiple_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseSingle_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
 
             // Map
             one("meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_", "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"),
@@ -178,18 +127,9 @@ public class Test_Relational_SqlServer_GrammarFunctions_PCT extends PCTReportCon
             one("meta::pure::functions::lang::tests::letFn::testLetInsideIf_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
             one("meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\"", AdapterQualifier.unsupportedFeature),
 
-            // isEmpty / isNotEmpty / variant
-            one("meta::pure::functions::collection::tests::isEmpty::testIsEmpty_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyFalse_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyMultiple_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'."),
-            one("meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            // New PCT tests from legend-pure2 migration (mirrored from H2 defaults)
             one("meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_", "The function 'range' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"),
+            one("meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_", "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification")
             // Pure boolean operators rendered as SQL keywords rejected by SQL Server syntax — needs investigation
-            one("meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'and'.", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'not'.", AdapterQualifier.needsInvestigation),
-            one("meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'or'.", AdapterQualifier.needsInvestigation)
     );
 
     public static Test suite()

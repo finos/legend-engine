@@ -297,7 +297,7 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
       ),
       meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_->testRev(
         [
-          revError('|17.3->meta::pure::functions::math::round(0)', 'c(17.3).round(0)', 'cannot be cast to', 'pylegend does integer rounding'),
+          revError('|17.3->meta::pure::functions::math::round(0)', 'c(17.3).round(0)', 'expected: 17.0', 'pylegend does integer rounding'),
           rev('|meta::pure::functions::math::round(-17.36, 1)', 'c(-17.36).round(1)')
         ]
       )
