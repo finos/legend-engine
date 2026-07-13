@@ -216,14 +216,27 @@ Class meta::protocols::pure::vX_X_X::metamodel::mapping::modelToModel::Aggregati
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionClassMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::ClassMapping
 {
-  relationFunction: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[1];
+  // Set when the source form is `~func <descriptor>`.  Mutually exclusive with `sourceLambda`.
+  relationFunction: meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer[0..1];
+  // Set when the source form is `~src <expression>`.  The lambda is a zero-arg wrapper around
+  // the inline expression and must evaluate to a `Relation<...>`.  Mutually exclusive with
+  // `relationFunction`.
+  sourceLambda: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
   propertyMappings : meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping[*];
   primaryKey : String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping extends meta::protocols::pure::vX_X_X::metamodel::mapping::PropertyMapping
 {
-  column: String[1];
+  // Set when the property RHS is the bare-column form (`propName: COL`).  The engine compiler
+  // lowers this to a synthetic lambda `{ $src.COL}` at SecondPass.  Mutually exclusive with
+  // `valueFn`.
+  column: String[0..1];
+  // Set when the property RHS is a Pure expression over `$src`
+  // (`propName: $src.COL1 + $src.COL2`).  The lambda body is the user expression; the engine
+  // compiler injects the `$src` parameter typed at the relation function's row type at
+  // SecondPass.  Mutually exclusive with `column`.
+  valueFn: meta::protocols::pure::vX_X_X::metamodel::m3::function::LambdaFunction[0..1];
   enumMappingId : String[0..1];
 }
 

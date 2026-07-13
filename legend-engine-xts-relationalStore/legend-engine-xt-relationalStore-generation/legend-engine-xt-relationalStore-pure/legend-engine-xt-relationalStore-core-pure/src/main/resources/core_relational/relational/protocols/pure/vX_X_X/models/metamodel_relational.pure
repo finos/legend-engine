@@ -272,6 +272,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Array extends
 {
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::SemiStructured extends meta::protocols::pure::vX_X_X::metamodel::store::relational::DataType
+{
+}
+
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::Join
 {

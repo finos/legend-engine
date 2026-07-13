@@ -272,6 +272,10 @@ Class meta::protocols::pure::v1_33_0::metamodel::store::relational::Array extend
 {
 }
 
+Class meta::protocols::pure::v1_33_0::metamodel::store::relational::SemiStructured extends meta::protocols::pure::v1_33_0::metamodel::store::relational::DataType
+{
+}
+
 
 Class meta::protocols::pure::v1_33_0::metamodel::store::relational::Join
 {

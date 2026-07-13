@@ -48,9 +48,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionInstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
@@ -61,16 +58,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.ProcessorSupport;
-import org.finos.legend.pure.m3.navigation.relation._Column;
-import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.List;
@@ -391,27 +384,26 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(RelationFunctionPropertyMapping propertyMapping)
     {
+        // Protocol invariant: exactly one of `column` (bare-column form) / `valueFn` (inline
+        // expression form) must be set. Enforce here rather than trusting the wire format —
+        // a malformed JSON payload otherwise silently favours one branch in ClassMappingSecondPassBuilder
+        // and drops the other. Absence of both is tolerated at this stage; the missing
+        // definition is surfaced later by MappingValidator.
+        if (propertyMapping.column != null && !propertyMapping.column.isEmpty() && propertyMapping.valueFn != null)
+        {
+            throw new EngineException("Relation property mapping must specify exactly one of a bare column name or an expression, not both.", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
         SourceInformation sourceInfo = SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation);
-        ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
         Property<?, ?> property = resolveRelationFunctionMappedProperty(propertyMapping);
-        Multiplicity propertyMultiplicity = property._multiplicity();
-        if (!org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(propertyMultiplicity) && !org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isZeroToOne(propertyMultiplicity))
-        {
-            throw new EngineException("Properties in relation mappings can only have multiplicity 1 or 0..1, but the property '" + org.finos.legend.pure.m3.navigation.property.Property.getPropertyName(property) + "' has multiplicity " + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(propertyMultiplicity) + ".", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
-        }
 
-        Type propertyType = property._genericType()._rawType();
-        if (!processorSupport.type_isPrimitiveType(propertyType) && propertyMapping.bindingTransformer == null && propertyMapping.enumMappingId == null)
-        {
-            throw new EngineException("Relation mapping is only supported for primitive properties, enumeration properties (which require an EnumerationMapping), or mapping to semi-structured data (which requires a binding), but the property '" + org.finos.legend.pure.m3.navigation.property.Property.getPropertyName(property) + "' has type " + propertyType._name() + " and no binding was specified.", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
-        }
-        String propertyTypeName = processorSupport.type_isPrimitiveType(propertyType) ? propertyType._name() : propertyMapping.enumMappingId != null ? resolveRelationColumnTypeName(this.immediateParent, propertyMapping.column) : M3Paths.Variant;
-        RelationType<?> newRelationType = _RelationType.build(Lists.mutable.with(_Column.getColumnInstance(propertyMapping.column, false, propertyTypeName, property._multiplicity(), property._stereotypes(), property._taggedValues(), sourceInfo, processorSupport)), sourceInfo, processorSupport);
+        // At this point we just build the skeleton property mapping; the
+        // _valueFn slot is filled in ClassMappingSecondPassBuilder.visit(RelationFunctionClassMapping).
+
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.relation.RelationFunctionPropertyMapping relationFunctionPropertyMapping = new Root_meta_pure_mapping_relation_RelationFunctionPropertyMapping_Impl("", sourceInfo, context.pureModel.getClass("meta::pure::mapping::relation::RelationFunctionPropertyMapping"))
             ._property(property)
             ._sourceSetImplementationId(propertyMapping.source == null || propertyMapping.source.isEmpty() ? immediateParent._id() : propertyMapping.source)
-            ._column(newRelationType._columns().toList().get(0))
             ._owner(immediateParent);
 
         if (propertyMapping.localMappingProperty != null)
@@ -420,12 +412,13 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             relationFunctionPropertyMapping._localMappingPropertyType(this.context.resolveType(propertyMapping.localMappingProperty.type, propertyMapping.localMappingProperty.sourceInformation));
             relationFunctionPropertyMapping._localMappingPropertyMultiplicity(this.context.pureModel.getMultiplicity(propertyMapping.localMappingProperty.multiplicity));
         }
-        
+
         if (propertyMapping.bindingTransformer != null)
         {
             Root_meta_external_format_shared_binding_Binding binding = (Root_meta_external_format_shared_binding_Binding) context.resolvePackageableElement(propertyMapping.bindingTransformer.binding, propertyMapping.sourceInformation);
             List<? extends Class<?>> bindingClasses = org.eclipse.collections.api.factory.Lists.mutable.withAll(core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()));
 
+            Type propertyType = property._genericType()._rawType();
             if (!"Class".equals(propertyType._classifierGenericType()._rawType()._name()))
             {
                 throw new EngineException("Binding transformer can be used with complex properties only. Property '" + property._name() + "' return type is '" + propertyType._name() + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
@@ -460,7 +453,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'", propertyMapping.sourceInformation, EngineErrorType.COMPILATION);
             relationFunctionPropertyMapping._transformer(eMap);
         }
-        
+
         return relationFunctionPropertyMapping;
     }
 
@@ -498,7 +491,6 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
                 ._class((Class<?>) property._genericType()._rawType())
                 ._owner(immediateParent)
                 ._parent(immediateParent._parent());
-
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping> compiledPropertyMappings =
                 propertyMapping.propertyMappings == null
                         ? org.eclipse.collections.api.factory.Lists.immutable.empty()
@@ -507,52 +499,5 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         embeddedSet._propertyMappings(compiledPropertyMappings);
 
         return embeddedSet;
-    }
-
-    private static String resolveRelationColumnTypeName(PropertyMappingsImplementation parent, String columnName)
-    {
-        PropertyMappingsImplementation currentImpl = parent;
-        while (currentImpl instanceof EmbeddedSetImplementation)
-        {
-            SetImplementation owner = (SetImplementation) ((EmbeddedSetImplementation) currentImpl)._owner();
-            if (owner == null)
-            {
-                break;
-            }
-            currentImpl = (PropertyMappingsImplementation) owner;
-        }
-        if (currentImpl instanceof RelationFunctionInstanceSetImplementation)
-        {
-            FunctionDefinition<?> rf = ((RelationFunctionInstanceSetImplementation) currentImpl)._relationFunction();
-            if (rf != null)
-            {
-                MutableList<?> exprs = Lists.mutable.withAll(rf._expressionSequence());
-                if (!exprs.isEmpty())
-                {
-                    GenericType last = ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification) exprs.getLast())._genericType();
-                    MutableList<? extends GenericType> typeArgs = Lists.mutable.withAll(last._typeArguments());
-                    if (!typeArgs.isEmpty())
-                    {
-                        Type rawType = typeArgs.get(0)._rawType();
-                        if (rawType instanceof RelationType)
-                        {
-                            RelationType<?> rt = (RelationType<?>) rawType;
-                            for (Column<?, ?> col : rt._columns())
-                            {
-                                if (columnName.equals(col._name()))
-                                {
-                                    Type colRawType = _Column.getColumnType(col)._rawType();
-                                    if (colRawType != null)
-                                    {
-                                        return colRawType._name();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return "String";
     }
 }

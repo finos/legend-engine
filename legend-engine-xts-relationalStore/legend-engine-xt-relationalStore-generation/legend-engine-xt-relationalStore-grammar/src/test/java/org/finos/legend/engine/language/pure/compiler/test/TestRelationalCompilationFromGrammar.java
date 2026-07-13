@@ -283,7 +283,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "}\n" +
             "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, FIRM_DETAILS:Variant)>);\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRM_DETAILS:Variant[1])>);\n" +
             "}\n";
 
     @Test
@@ -331,7 +331,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    age: AGE\n," +
                 "    firm: Binding my::FirmBinding : FOO_DETAILS\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [47:6-48]: The system can't find the column FOO_DETAILS in the Relation (FIRSTNAME:String, AGE:Integer, FIRM_DETAILS:Variant)");
+                ")\n", "COMPILATION error at [47:6-48]: The column 'FOO_DETAILS' can't be found in the relation");
     }
 
     public static final String RELATION_MAPPING_ENUM_PURE_SOURCE = "###Pure\n" +
@@ -348,7 +348,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "}\n" +
             "function my::personWithEnumFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, EMPLOYEE_TYPE:String)>);\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], EMPLOYEE_TYPE:String[1])>);\n" +
             "}\n";
 
     @Test
@@ -383,9 +383,9 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    ~func my::personWithEnumFunction():Relation<Any>[1]\n" +
                 "    firstName: FIRSTNAME,\n" +
                 "    age: AGE,\n" +
-                "    employeeType: EMPLOYEE_TYPE\n" +
+                        "    employeeType: EMPLOYEE_TYPE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [25:5-31]: Relation mapping is only supported for primitive properties, enumeration properties (which require an EnumerationMapping), or mapping to semi-structured data (which requires a binding), but the property 'employeeType' has type EmployeeType and no binding was specified.");
+                ")\n", "COMPILATION error at [25:5-31]: Mismatching property and relation expression types. Property 'employeeType' is of type 'my::EmployeeType', but the expression mapped to it is of type 'String'.");
     }
 
     @Test
@@ -420,7 +420,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "\n" +
             "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
             "}\n";
 
     @Test
@@ -3895,7 +3895,10 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "###Relational\n" +
             "Database my::db\n" +
             "(\n" +
-            "  Table personTable(ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)\n" +
+            // Value columns are NOT NULL so they map to `[1]` in the Relation type, matching the
+            // `[1]` properties on `my::Person`. Without this, the post-RFPM validator's
+            // multiplicity-subsumption check fails (`[1]` does not subsume `[0..1]`).
+            "  Table personTable(ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, AGE INTEGER NOT NULL, FIRMID INTEGER NOT NULL)\n" +
             ")\n";
 
     private static final String RELATION_PK_CLASS =

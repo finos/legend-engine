@@ -1,8 +1,8 @@
 ###Relational
 Database meta::external::query::sql::expression::tests::pk::db
 (
-   Table personTable (ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100), AGE INTEGER, FIRMID INTEGER)
-   Table firmTable (ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100))
+   Table personTable (ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, AGE INTEGER NOT NULL, FIRMID INTEGER NOT NULL)
+   Table firmTable (ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100) NOT NULL)
 )
 
 ###Pure
