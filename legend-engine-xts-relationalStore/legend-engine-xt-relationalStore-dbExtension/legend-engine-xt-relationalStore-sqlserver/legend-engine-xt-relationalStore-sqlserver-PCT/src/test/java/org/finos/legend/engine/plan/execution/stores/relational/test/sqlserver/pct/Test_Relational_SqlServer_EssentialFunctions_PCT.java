@@ -48,7 +48,7 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
 
             // Contains
             one("meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\""),
-            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
+            one("meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_", "Execution error at ??, \"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Conversion failed when converting the varchar value 'c' to data type int.\""),
             one("meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_", "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"),
 
             // Drop
@@ -190,13 +190,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::format::testFormatString_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
             one("meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_", "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."),
 
-            // Contains
-            one("meta::pure::functions::string::tests::contains::testFalseContains_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
-            one("meta::pure::functions::string::tests::contains::testTrueContains_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
-
-            // EndsWith
-            one("meta::pure::functions::string::tests::endswith::testFalseEndsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
-            one("meta::pure::functions::string::tests::endswith::testTrueEndsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
 
             // JoinStrings
             one("meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_", "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""),
@@ -222,7 +215,7 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
             one("meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_", "Cannot cast a collection of size 2 to multiplicity [1]"),
             one("meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_", "\"Cannot cast a collection of size 0 to multiplicity [1]\""),
-            one("meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
+            one("meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"Assert failed\""),
             one("meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_", "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""),
             one("meta::pure::functions::string::tests::toString::testStringToString_Function_1__Boolean_1_", "\"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over'\""),
 
@@ -305,8 +298,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             one("meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_", "\"Ensure the target system understands Year or Year-month semantic.\""),
 
 
-            // MultiIf
-            one("meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: An expression of non-boolean type specified in a context where a condition is expected, near 'then'."),
 
             // Match
             one("meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_", "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""),
@@ -346,9 +337,6 @@ public class Test_Relational_SqlServer_EssentialFunctions_PCT extends PCTReportC
             // ParseInteger
             one("meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_", "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: The conversion of the varchar value '9999999999999992' overflowed an int column.\""),
 
-            // StartsWith
-            one("meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
-            one("meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."),
             // Error-case tests from legend-pure2 migration (mirrored from H2 defaults)
             one("meta::pure::functions::collection::tests::at::testAtError_Function_1__Boolean_1_", "->at(...) function is supported only after direct access of 1->MANY properties"),
             one("meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_", "The function 'array_slice' (state: [Select, false]) is not supported yet"),

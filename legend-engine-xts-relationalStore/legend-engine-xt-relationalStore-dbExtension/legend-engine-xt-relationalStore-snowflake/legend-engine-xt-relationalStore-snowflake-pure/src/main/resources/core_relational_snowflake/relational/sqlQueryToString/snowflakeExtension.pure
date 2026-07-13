@@ -43,6 +43,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      isDecodeSupported = true,
       collectionThresholdLimit = 16348,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       aliasLimit = 255,
@@ -295,6 +296,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='equal_null(%s, %s)')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='not equal_null(%s, %s)')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),

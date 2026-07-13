@@ -46,6 +46,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      isDecodeSupported = true,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
@@ -84,6 +85,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),

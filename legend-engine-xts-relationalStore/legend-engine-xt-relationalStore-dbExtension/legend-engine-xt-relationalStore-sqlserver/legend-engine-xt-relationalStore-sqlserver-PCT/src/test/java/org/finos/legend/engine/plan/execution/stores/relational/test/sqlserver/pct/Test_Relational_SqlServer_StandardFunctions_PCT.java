@@ -38,9 +38,6 @@ public class Test_Relational_SqlServer_StandardFunctions_PCT extends PCTReportCo
     private static final Adapter adapter = CoreRelationalSqlServerCodeRepositoryProvider.sqlserverAdapter;
     private static final String platform = "compiled";
     private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.with(
-            // And
-            one("meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-
             // StD Dev
             one("meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."),
             one("meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."),
@@ -63,19 +60,10 @@ public class Test_Relational_SqlServer_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: 'COVAR_SAMP' is not a recognized built-in function name."),
 
             // In
-            one("meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
-            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
-            one("meta::pure::functions::collection::tests::in::testIn_relation_extend_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
+            one("meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_", "Execution error at ??, \"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Conversion failed when converting the varchar value 'c' to data type int.\""),
             one("meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_", "\"Parameter to IN operation isn't a literal!\"", AdapterQualifier.unsupportedFeature),
-            one("meta::pure::functions::collection::tests::in::testInForDecimal_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."),
 
             one("meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_", "Error while executing: insert into leSchema.tb_"),
-
-            one("meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_", "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-
-            // Xor
-            one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '='."),
-            one("meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'or'."),
 
             // Max
             one("meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_", "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"),
@@ -164,13 +152,7 @@ public class Test_Relational_SqlServer_StandardFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_", "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""),
 
             // Inequalities
-            pack("meta::pure::functions::boolean::tests::inequalities::between", "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberFloat_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberLong_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
-            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_String_Function_1__Boolean_1_", "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."),
+            one("meta::pure::functions::boolean::tests::inequalities::between::testBetween_String_Function_1__Boolean_1_", "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"Assert failed\""),
 
             // Greatest
             pack("meta::pure::functions::collection::tests::greatest", "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."),

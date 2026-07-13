@@ -767,3 +767,78 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::functions::sqlst
           + 'rawtohex(hash(\'MD5\', concat("root".FIRSTNAME, "root".LASTNAME, \'|\'))) as "tds_digest" from personTable as "root"', $result);
 
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNullSafeEqualityForOptionalProperties():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->project([
+         col(p | $p.firstName, 'name'),
+         col(p | $p.age == $p.manager.age, 'match')
+      ]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name", "root".AGE is not distinct from "personTable_d#5_d#2_m1_d_m2".AGE as "match" '
+      + 'from personTable as "root" left outer join personTable as "personTable_d#5_d#2_m1_d_m2" '
+      + 'on ("root".MANAGERID = "personTable_d#5_d#2_m1_d_m2".ID)', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testEqualityInFilterOnOptionalProperties():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->filter(p | $p.age == $p.manager.age)->project([col(p | $p.firstName, 'name')]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where "root".AGE is not distinct from "personTable_d#6_d#3_m1_d#2_m1".AGE', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testEqualityInFilterOnOptionalPropertiesLegacy():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->filter(p | $p.age == $p.manager.age)->project([col(p | $p.firstName, 'name')]),
+      simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d#2_m1".ID) where ("root".AGE = "personTable_d#6_d#3_m1_d#2_m1".AGE or ("root".AGE is null and "personTable_d#6_d#3_m1_d#2_m1".AGE is null))', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityForOptionalProperties():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->project([
+         col(p | $p.firstName, 'name'),
+         col(p | $p.age != $p.manager.age, 'notmatch')
+      ]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name", "root".AGE is distinct from "personTable_d#6_d#3_m1_d_m2".AGE as "notmatch" from personTable as "root" left outer join personTable as "personTable_d#6_d#3_m1_d_m2" on ("root".MANAGERID = "personTable_d#6_d#3_m1_d_m2".ID)', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityInFilterOnOptionalProperties():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->filter(p | $p.age != $p.manager.age)->project([col(p | $p.firstName, 'name')]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where "root".AGE is distinct from "personTable_d#7_d#4_m1_d#2_m1".AGE', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testNotEqualityInFilterOnOptionalPropertiesLegacy():Boolean[1]
+{
+   let s = toSQLString(
+      |Person.all()->filter(p | $p.age != $p.manager.age)->project([col(p | $p.firstName, 'name')]),
+      simpleRelationalMapping, DatabaseType.DB2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" left outer join personTable as "personTable_d#7_d#4_m1_d#2_m1" on ("root".MANAGERID = "personTable_d#7_d#4_m1_d#2_m1".ID) where (not ("root".AGE = "personTable_d#7_d#4_m1_d#2_m1".AGE) or ("root".AGE is null and "personTable_d#7_d#4_m1_d#2_m1".AGE is not null) or ("root".AGE is not null and "personTable_d#7_d#4_m1_d#2_m1".AGE is null))', $s);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testEnumPropertyEqualityIsNotNullSafe():Boolean[1]
+{
+   let s = toSQLString(
+      |meta::relational::tests::model::simple::Address.all()->project([
+         col(a | $a.name, 'name'),
+         col(a | $a.type == meta::relational::tests::model::simple::GeographicEntityType.CITY, 'isCity')
+      ]),
+      simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "root".NAME as "name", "root".TYPE = 1 as "isCity" from addressTable as "root"', $s);
+}
+

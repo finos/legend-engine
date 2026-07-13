@@ -721,6 +721,145 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testP
                 '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testJoinOnNullKey<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, name
+              1, George
+              null, Null Left 1
+              2, Pierre
+              null, Null Left 2
+            #;
+
+  let tds2 = #TDS
+               id2, col
+               1, More George
+               null, Null Right 1
+               null, Null Right 2
+               3, More Sachin
+             #;
+
+  let expr = {|
+    $tds
+      ->join($tds2, JoinKind.INNER, {x,y| $x.id == $y.id2})
+      ->project(~[id : x | $x.id, name : x | $x.name, col : x | $x.col])
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,name,col\n'+
+                '   1,George,More George\n'+
+                '   null,Null Left 1,Null Right 1\n'+
+                '   null,Null Left 1,Null Right 2\n'+
+                '   null,Null Left 2,Null Right 1\n'+
+                '   null,Null Left 2,Null Right 2\n'+
+                '#', $res->sort([~name->ascending(), ~col->ascending()])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterEqualOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, id2, name
+              1, 1, BothOne
+              2, 3, Diff
+              null, null, BothNull
+              4, null, LeftNull
+              null, 5, RightNull
+            #;
+
+  let expr = {|
+    $tds->filter(x | $x.id == $x.id2)
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,id2,name\n'+
+                '   null,null,BothNull\n'+
+                '   1,1,BothOne\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterNotEqualOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, id2, name
+              1, 1, BothOne
+              2, 3, Diff
+              null, null, BothNull
+              4, null, LeftNull
+              null, 5, RightNull
+            #;
+
+  let expr = {|
+    $tds->filter(x | $x.id != $x.id2)
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,id2,name\n'+
+                '   2,3,Diff\n'+
+                '   4,null,LeftNull\n'+
+                '   null,5,RightNull\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, id2, name
+              1, 1, BothOne
+              2, 3, Diff
+              null, null, BothNull
+              4, null, LeftNull
+              null, 5, RightNull
+            #;
+
+  let expr = {|
+    $tds->project(~[name : x | $x.name, eq : x | $x.id == $x.id2])
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   name,eq\n'+
+                '   BothNull,true\n'+
+                '   BothOne,true\n'+
+                '   Diff,false\n'+
+                '   LeftNull,false\n'+
+                '   RightNull,false\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, id2, name
+              1, 1, BothOne
+              2, 3, Diff
+              null, null, BothNull
+              4, null, LeftNull
+              null, 5, RightNull
+            #;
+
+  let expr = {|
+    $tds->project(~[name : x | $x.name, neq : x | $x.id != $x.id2])
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   name,neq\n'+
+                '   BothNull,false\n'+
+                '   BothOne,false\n'+
+                '   Diff,true\n'+
+                '   LeftNull,true\n'+
+                '   RightNull,true\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS

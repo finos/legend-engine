@@ -270,7 +270,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFirstNotNull
    assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where coalesce("root".FIRSTNAME, \'N/A\') <> \'N/A\' or coalesce("root".FIRSTNAME, \'N/A\') is null',
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where coalesce("root".FIRSTNAME, \'N/A\') is distinct from \'N/A\'',
       $result->sqlRemoveFormatting());
 }
 

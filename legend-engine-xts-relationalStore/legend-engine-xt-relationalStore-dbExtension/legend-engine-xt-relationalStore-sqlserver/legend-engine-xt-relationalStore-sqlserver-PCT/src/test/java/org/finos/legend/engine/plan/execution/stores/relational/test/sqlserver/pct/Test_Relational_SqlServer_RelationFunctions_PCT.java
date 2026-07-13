@@ -160,7 +160,6 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
 
             //size
-            one("meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_", "Incorrect syntax near '>'."),
             one("meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
             one("meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
             one("meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_", "Common table expression not supported on DB SqlServer"),
@@ -220,8 +219,8 @@ public class Test_Relational_SqlServer_RelationFunctions_PCT extends PCTReportCo
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_", "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"),
             one("meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_", "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"),
-            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"),
+            one("meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_", "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_", "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_", "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"),
             one("meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_", "Incorrect syntax near 'limit'."),

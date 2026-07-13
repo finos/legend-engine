@@ -26,6 +26,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      isDecodeSupported = true,
       collectionThresholdLimit = 1048576,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
@@ -86,6 +87,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
     dynaFnToSql('char',                      $allStates,            ^ToSql(format='cast(char(%s) as char)')),
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s <=> %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='not (%s <=> %s)')),
     dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
     dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),
     dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(0), $p->at(1), $p->at(2)->replace('\'', '')])})),
