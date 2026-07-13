@@ -16,7 +16,6 @@ package org.finos.legend.pure.runtime.java.extension.variant.compiled.pure;
 
 import junit.framework.Test;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.code.core.VariantCodeRepositoryProvider;
 import org.finos.legend.pure.m3.PlatformCodeRepositoryProvider;
 import org.finos.legend.pure.m3.pct.reports.config.PCTReportConfiguration;
@@ -29,13 +28,13 @@ public class Test_Compiled_VariantFunctions_PCT extends PCTReportConfiguration
 {
     private static final ReportScope reportScope = VariantCodeRepositoryProvider.variantFunctions;
 
+    private static final String manifestPath = "/core_functions_variant/pct-manifests/core-compiled/VariantFunctions_manifest.json";
     private static final Adapter adapter = PlatformCodeRepositoryProvider.nativeAdapter;
     private static final String platform = "compiled";
-    private static final MutableList<ExclusionSpecification> expectedFailures = Lists.mutable.empty();
 
     public static Test suite()
     {
-        return PureTestBuilderCompiled.buildPCTTestSuite(reportScope, expectedFailures, adapter);
+        return PureTestBuilderCompiled.buildPCTSurveyorSuite(reportScope, manifestPath);
     }
 
     @Override
@@ -47,7 +46,7 @@ public class Test_Compiled_VariantFunctions_PCT extends PCTReportConfiguration
     @Override
     public MutableList<ExclusionSpecification> expectedFailures()
     {
-        return expectedFailures;
+        return buildExpectedFailures(manifestPath);
     }
 
     @Override

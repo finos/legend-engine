@@ -1,0 +1,13 @@
+{
+  "adapter": "meta::pure::test::pct::testAdapterForInMemoryExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test": "meta::pure::functions::date::tests::max::testExtendMaxDate_Function_1__Boolean_1_",
+      "expectedError": "\"The type Date is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_",
+      "expectedError": "\"The type Date is not supported yet!\""
+    }
+  ]
+}

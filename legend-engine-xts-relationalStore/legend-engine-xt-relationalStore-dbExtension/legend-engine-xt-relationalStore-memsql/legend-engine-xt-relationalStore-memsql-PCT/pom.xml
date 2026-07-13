@@ -36,13 +36,27 @@
                     <mode>Compiled</mode>
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_StandardFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_EssentialFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_GrammarFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_RelationFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_UnclassifiedFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_VariantFunctions_PCT</PCTTestSuite>
-                        <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_ScenarioQuantFunctions_PCT</PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$StandardFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$EssentialFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$GrammarFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$RelationFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$UnclassifiedFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$VariantFunctions
+                        </PCTTestSuite>
+                        <PCTTestSuite>
+                            org.finos.legend.engine.plan.execution.stores.relational.test.memsql.pct.Test_Relational_MemSQL_PCT$ScenarioQuantFunctions
+                        </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
                 <executions>

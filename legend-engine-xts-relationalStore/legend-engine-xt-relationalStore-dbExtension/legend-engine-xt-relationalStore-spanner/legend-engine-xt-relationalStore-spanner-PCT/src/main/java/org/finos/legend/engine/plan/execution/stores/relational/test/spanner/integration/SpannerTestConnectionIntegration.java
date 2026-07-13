@@ -68,6 +68,11 @@ public class SpannerTestConnectionIntegration implements TestConnectionIntegrati
     @Override
     public void setup()
     {
+        if (spannerContainerEmulator.isRunning())
+        {
+            // Already started (e.g. by an earlier PCT suite sharing this resource in the same JVM)
+            return;
+        }
         this.startSpannerContainer();
     }
 

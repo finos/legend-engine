@@ -64,13 +64,27 @@
                             <mode>Compiled</mode>
                             <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                             <PCTTestSuites>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_StandardFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_EssentialFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_GrammarFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_RelationFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_UnclassifiedFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_VariantFunctions_PCT</PCTTestSuite>
-                                <PCTTestSuite>org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_ScenarioQuantFunctions_PCT</PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$StandardFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$EssentialFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$GrammarFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$RelationFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$UnclassifiedFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$VariantFunctions
+                                </PCTTestSuite>
+                                <PCTTestSuite>
+                                    org.finos.legend.engine.plan.execution.stores.relational.test.databricks.pct.Test_Relational_Databricks_PCT$ScenarioQuantFunctions
+                                </PCTTestSuite>
                             </PCTTestSuites>
                         </configuration>
                         <executions>

@@ -1,0 +1,43 @@
+{
+  "adapter" : "meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_",
+  "exclusions" : [ {
+    "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
+    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: The following string is not a legal base64-encoded value: 'SGVsbG8sIFdvcmxkIQ'"
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 3\nactual:   4\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 3\nactual:   4\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+    "expectedError" : "\"Assert failed\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'xOxOxOx'\nactual:   'xxOxOxOx'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '1isOne'\nactual:   '11isOne'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'xXoXoXoX'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'XoXoXoX'\nactual:   'XXoXoXoX'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: '1isOne'\nactual:   '11isOne'\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'XxOxOxOx'\""
+  } ]
+}

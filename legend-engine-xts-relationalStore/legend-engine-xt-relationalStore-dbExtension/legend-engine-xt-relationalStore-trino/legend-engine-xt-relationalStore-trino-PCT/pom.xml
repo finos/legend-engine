@@ -105,25 +105,25 @@
                     <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
                     <PCTTestSuites>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_StandardFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$StandardFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_EssentialFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$EssentialFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_GrammarFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$GrammarFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_RelationFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$RelationFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_UnclassifiedFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$UnclassifiedFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_VariantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$VariantFunctions
                         </PCTTestSuite>
                         <PCTTestSuite>
-                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_ScenarioQuantFunctions_PCT
+                            org.finos.legend.engine.plan.execution.stores.relational.test.trino.pct.Test_Relational_Trino_PCT$ScenarioQuantFunctions
                         </PCTTestSuite>
                     </PCTTestSuites>
                 </configuration>
