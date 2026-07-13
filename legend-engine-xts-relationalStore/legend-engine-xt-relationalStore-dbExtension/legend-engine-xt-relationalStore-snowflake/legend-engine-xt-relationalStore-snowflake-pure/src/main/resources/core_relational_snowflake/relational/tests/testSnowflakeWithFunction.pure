@@ -71,3 +71,18 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testBooleanPar
    let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "firstName", to_boolean(\'true\') as "bool" from personTable as "root"',$s);
 }
+
+function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsingCurrentOrganizationName():Boolean[1]
+{
+   let sql = toSQLString(|Person.all()->filter(p | $p.firstName == meta::pure::functions::runtime::currentOrganizationName())->project([p | $p.firstName], ['firstName']),
+      simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where "root".FIRSTNAME = CURRENT_ORGANIZATION_NAME()', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsingCurrentAccountName():Boolean[1]
+{
+   let sql = toSQLString(|Person.all()->filter(p | $p.firstName == meta::pure::functions::runtime::currentAccountName())->project([p | $p.firstName], ['firstName']),
+      simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where "root".FIRSTNAME = CURRENT_ACCOUNT_NAME()', $sql);
+}
+
