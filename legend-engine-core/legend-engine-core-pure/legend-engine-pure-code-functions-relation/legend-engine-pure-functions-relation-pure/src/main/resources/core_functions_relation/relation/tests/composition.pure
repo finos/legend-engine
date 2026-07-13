@@ -721,6 +721,42 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testP
                 '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testJoinOnNullKey<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, name
+              1, George
+              null, Null Left 1
+              2, Pierre
+              null, Null Left 2
+            #;
+
+  let tds2 = #TDS
+               id2, col
+               1, More George
+               null, Null Right 1
+               null, Null Right 2
+               3, More Sachin
+             #;
+
+  let expr = {|
+    $tds
+      ->join($tds2, JoinKind.INNER, {x,y| $x.id == $y.id2})
+      ->project(~[id : x | $x.id, name : x | $x.name, col : x | $x.col])
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,name,col\n'+
+                '   1,George,More George\n'+
+                '   null,Null Left 1,Null Right 1\n'+
+                '   null,Null Left 1,Null Right 2\n'+
+                '   null,Null Left 2,Null Right 1\n'+
+                '   null,Null Left 2,Null Right 2\n'+
+                '#', $res->sort([~name->ascending(), ~col->ascending()])->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS

@@ -25,7 +25,7 @@ function <<PCT.adapter>> {PCT.adapterName = 'Python - PandasAPI'} meta::external
   if ($rev.shouldBeSupported,
     | let pythonString = $rev.reverse->toOne();
       let func = getPureLambdaForPandasAPIPythonCodeBlock($pythonString);
-      $func->cast(@Function<{->X[o]}>)->eval();,
+      $func->evaluate([])->toMultiplicity(@[o]);,
     | fail('Should not be supported'); @X->toMultiplicity(@[o]);
   );
 }
