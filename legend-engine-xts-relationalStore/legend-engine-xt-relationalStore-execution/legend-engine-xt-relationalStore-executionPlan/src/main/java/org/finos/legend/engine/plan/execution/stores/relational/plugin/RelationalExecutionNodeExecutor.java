@@ -81,6 +81,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.result.DatabaseIdentifiersCaseSensitiveVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.result.DeferredRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.FunctionHelper;
@@ -192,9 +193,97 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         return !Lists.mutable.withAll(node.childNodes()).select(n -> n instanceof SQLExecutionNode && ((SQLExecutionNode)n).isMutationSQL).isEmpty();
     }
 
+    /**
+     * Preprocess the {@link DatabaseConnection} carried by the given execution node so that all
+     * downstream reads (result objects, thread-pool bucket keys, JSON serialisation for
+     * {@code nodeSpecifics.prepare}, block-connection lookup, etc.) observe the enriched value.
+     * <p>
+     * We <b>must not mutate</b> the input node.  Two independent reasons:
+     * <ol>
+     *   <li><b>Cross-execution sharing.</b> {@code SingleExecutionPlan} instances are handed
+     *       out by {@code ExecutionPlanCache} (Guava-backed, keyed by
+     *       {@code PureExecutionCacheKey} which contains neither identity nor allocation
+     *       payload).  Two concurrent executions with different identities receive the same
+     *       {@code rootExecutionNode} reference, so mutating {@code node.connection} in one
+     *       thread would be observed by the other and by any subsequent cache reader.</li>
+     *   <li><b>Intra-execution capture.</b> Result objects such as
+     *       {@link org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult}
+     *       retain the visited node reference and are read by later stages of the same
+     *       execution, including parallel graph-fetch worker threads that read
+     *       {@code getSQLExecutionNode().connection} after the initial {@code visit} has
+     *       returned.  Mutation would race those readers even within a single execution.</li>
+     * </ol>
+     * Instead, for the four {@code .connection}-bearing node types we invoke the registered
+     * preprocessors via {@link ConnectionManagerSelector} and, if any preprocessor returned a
+     * different reference, return a shallow copy of the node with the enriched connection.  If
+     * no preprocessor was registered (or every preprocessor returned the input unchanged) the
+     * original node is returned by reference — zero allocation on the hot path.
+     * <p>
+     * Once this method has run, callers may rely on the invariant that every
+     * {@code DatabaseConnection} reachable from the returned node has been through
+     * {@code preprocessConnection(dbc, identity, allocationResults)} exactly once.
+     */
+    private ExecutionNode preprocessConnectionIfNeeded(ExecutionNode node)
+    {
+        if (node == null)
+        {
+            return null;
+        }
+        // Only the four .connection-bearing node types need enrichment; passthrough for the rest.
+        if (!(node instanceof SQLExecutionNode
+                || node instanceof RelationalExecutionNode
+                || node instanceof RelationalSaveNode
+                || node instanceof CreateAndPopulateTempTableExecutionNode))
+        {
+            return node;
+        }
+
+        RelationalStoreExecutionState relationalStoreExecutionState =
+                (RelationalStoreExecutionState) this.executionState.getStoreExecutionState(StoreType.Relational);
+        // Defensive: if the relational store isn't wired in this state, there's no way to preprocess.
+        if (relationalStoreExecutionState == null
+                || relationalStoreExecutionState.getRelationalExecutor() == null
+                || relationalStoreExecutionState.getRelationalExecutor().getConnectionManager() == null)
+        {
+            return node;
+        }
+        ConnectionManagerSelector connectionManager =
+                relationalStoreExecutionState.getRelationalExecutor().getConnectionManager();
+        Map<String, Result> allocationResults = this.executionState.getResults();
+
+        if (node instanceof SQLExecutionNode)
+        {
+            SQLExecutionNode n = (SQLExecutionNode) node;
+            DatabaseConnection preprocessed = connectionManager.preprocessConnection(n.connection, this.identity, allocationResults);
+            return (preprocessed == n.connection) ? node : n.shallowCopyWithConnection(preprocessed);
+        }
+        if (node instanceof RelationalExecutionNode)
+        {
+            RelationalExecutionNode n = (RelationalExecutionNode) node;
+            DatabaseConnection preprocessed = connectionManager.preprocessConnection(n.connection, this.identity, allocationResults);
+            return (preprocessed == n.connection) ? node : n.shallowCopyWithConnection(preprocessed);
+        }
+        if (node instanceof RelationalSaveNode)
+        {
+            RelationalSaveNode n = (RelationalSaveNode) node;
+            DatabaseConnection preprocessed = connectionManager.preprocessConnection(n.connection, this.identity, allocationResults);
+            return (preprocessed == n.connection) ? node : n.shallowCopyWithConnection(preprocessed);
+        }
+        // CreateAndPopulateTempTableExecutionNode
+        CreateAndPopulateTempTableExecutionNode n = (CreateAndPopulateTempTableExecutionNode) node;
+        DatabaseConnection preprocessed = connectionManager.preprocessConnection(n.connection, this.identity, allocationResults);
+        return (preprocessed == n.connection) ? node : n.shallowCopyWithConnection(preprocessed);
+    }
+
     @Override
     public Result visit(ExecutionNode executionNode)
     {
+        // Preprocess the connection carried by this node (if any) exactly once, before any
+        // downstream code observes it. The visited (possibly cloned) instance replaces the
+        // parameter reference so every subsequent instanceof/cast operates on the enriched
+        // node.  See preprocessConnectionIfNeeded for the contract and rationale.
+        executionNode = preprocessConnectionIfNeeded(executionNode);
+
         if (executionNode instanceof RelationalBlockExecutionNode)
         {
             RelationalBlockExecutionNode relationalBlockExecutionNode = (RelationalBlockExecutionNode) executionNode;

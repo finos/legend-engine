@@ -66,4 +66,32 @@ public class RelationalExecutionNode extends ExecutionNode
     {
         return ListIterate.collect(this.resultColumns, SQLResultColumn::new);
     }
+
+    /**
+     * Returns a shallow copy of this node with the {@code connection} field replaced by
+     * the supplied value. All other fields (including inherited {@link ExecutionNode}
+     * fields) are copied by reference. Used by the relational executor to enrich a
+     * plan-level connection with identity/allocation-derived state without mutating
+     * the shared, cached plan.
+     */
+    @JsonIgnore
+    public RelationalExecutionNode shallowCopyWithConnection(DatabaseConnection newConnection)
+    {
+        RelationalExecutionNode copy = new RelationalExecutionNode();
+        // ExecutionNode fields
+        copy.resultType = this.resultType;
+        copy.executionNodes = this.executionNodes;
+        copy.resultSizeRange = this.resultSizeRange;
+        copy.requiredVariableInputs = this.requiredVariableInputs;
+        copy.implementation = this.implementation;
+        copy.authDependent = this.authDependent;
+        // RelationalExecutionNode fields
+        copy.sqlComment = this.sqlComment;
+        copy.sqlQuery = this.sqlQuery;
+        copy.onConnectionCloseCommitQuery = this.onConnectionCloseCommitQuery;
+        copy.onConnectionCloseRollbackQuery = this.onConnectionCloseRollbackQuery;
+        copy.connection = newConnection;
+        copy.resultColumns = this.resultColumns;
+        return copy;
+    }
 }
