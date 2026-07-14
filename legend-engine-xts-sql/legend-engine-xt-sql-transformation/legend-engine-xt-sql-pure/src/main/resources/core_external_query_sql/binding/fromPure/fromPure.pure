@@ -575,10 +575,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       )->removeDuplicatesBy(a | $a.actual);
 
       let expected = $expectedWithRealias->map(p |
-              let clash = $expectedWithRealias.expected->filter(f | $f == $p.expected)->size() > 1;
+              let clashing = $expectedWithRealias.expected->filter(f | $f == $p.expected);
+              let clash = $clashing->size() > 1;
 
               //postgres allows duplicate column names, this is not something we support in Pure. We have this check under flag currently as traditional flow has been supporting this.
-              assert(!($context.root && $context.failOnInvalidColumns && $clash), 'query returns duplicate columns, this is not supported');
+              assert(!($context.root && $context.failOnInvalidColumns && $clash), 'query returns duplicate columns, this is not supported. Duplicates: ' + $clashing->joinStrings('[', ',', ']'));
 
               ^SingleColumn(alias = if ($clash, | $p.actual, | $p.expected),
                             expression = ^QualifiedNameReference(name = ^QualifiedName(parts = if ($clash, | $p.expected, | $p.actual))));
@@ -1473,10 +1474,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let leftRealiasName = $leftName->orElse($leftContext.id->toString());
   let rightRealiasName = $rightName->orElse($leftContext.id->toString());
 
-  let duplicates = $leftColumns->filter(l | $rightColumns->contains($l));
-
-  let leftRenamed = if ($join.left->instanceOf(Join), | $leftContext, | processDuplicateRenames($duplicates, $leftRealiasName, $leftContext));
-  let rightRenamed = if ($join.right->instanceOf(Join), | $rightContext, | processDuplicateRenames($duplicates, $rightRealiasName, $rightContext));
+  let leftRenamed = if ($join.left->instanceOf(Join), | $leftContext, | processDuplicateRenames($leftColumns, $leftRealiasName, $leftContext));
+  let rightRenamed = if ($join.right->instanceOf(Join), | $rightContext, | processDuplicateRenames($rightColumns, $rightRealiasName, $rightContext));
 
   let left = wrapWithFrom($leftRenamed);
   let right = wrapWithFrom($rightRenamed);
