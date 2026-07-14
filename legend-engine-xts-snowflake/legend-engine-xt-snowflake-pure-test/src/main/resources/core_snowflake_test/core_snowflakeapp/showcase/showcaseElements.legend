@@ -17,7 +17,8 @@ Class meta::external::function::activator::snowflakeApp::tests::model::simple::P
     gender: Gender[0..1];
     genderFromInt: Gender[0..1];
     age : Integer[0..1];
-    nickName : String[0..1];    
+    ageSum : Integer[0..1];
+    nickName : String[0..1];
     activeEmployment: Boolean[0..1];
     lastUpdated: DateTime[0..1];
     personCode: PersonCode[0..1];
@@ -84,6 +85,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
                 (
                     firstName : personTable.FIRSTNAME,
                     age : personTable.AGE,
+                    ageSum : add(add(add(personTable.AGE, personTable.FIRMID), personTable.ADDRESSID), 100),
                     gender:  EnumerationMapping genderEnum: personTable.GENDER,
                     genderFromInt:  EnumerationMapping genderEnum2: personTable.GENDER2,
                     personCode: EnumerationMapping personCodeEnum: personTable.PERSONCODE

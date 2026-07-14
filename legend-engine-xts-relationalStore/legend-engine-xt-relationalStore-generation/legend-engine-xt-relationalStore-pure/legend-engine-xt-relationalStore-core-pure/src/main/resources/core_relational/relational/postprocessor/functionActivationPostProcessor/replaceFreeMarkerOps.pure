@@ -162,7 +162,11 @@ function <<access.private>> meta::relational::postProcessor::isCollectionReturni
 {
   let collectionFunctionRewrites = multiplicityPreservingDynaFunctionList();
   let collectionFunctionNames = $collectionFunctionRewrites->map(r | [$r.first, $r.second.first]);
-  $d.name->in($collectionFunctionNames);
+
+  // 'add' is the only ambiguous name in multiplicityPreservingDynaFunctionList: scalar addition vs collection append.
+  // All other functions are always collection-returning,so a name-only check suffices for them.
+  // For 'add' we additionally require that at least one parameter actually carries a collection placeholder.
+  $d.name->in($collectionFunctionNames) && ($d.name != 'add' || $d.parameters->exists(p | $p->isOrContainsCollectionPlaceHolder()));
 }
 
 
