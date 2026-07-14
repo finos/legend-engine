@@ -116,10 +116,10 @@
     "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_",
-    "expectedError" : "\\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
+    "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "\\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
+    "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
