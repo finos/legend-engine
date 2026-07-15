@@ -632,7 +632,7 @@ Mapping meta::relational::tests::mapping::modelJoin::advanced::NestedModelJoinWi
 // =========================================================================
 // Relational SimpleEquality: employees.firmId == firm.id
 // =========================================================================
-Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalSimpleEqualityMapping
+Mapping meta::relational::tests::mapping::modelJoin::advanced::RelationalEqualityMapping
 (
   *meta::relational::tests::mapping::modelJoin::domain::Person[person]: Relational
   {

@@ -1458,7 +1458,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
         'Employee Count': x|$x.employees->count()
        ]
     ),
-    meta::relational::tests::mapping::modelJoin::advanced::RelationalSimpleEqualityMapping,
+    meta::relational::tests::mapping::modelJoin::advanced::RelationalEqualityMapping,
     $runtime,
     meta::relational::extension::relationalExtensions()
   );
