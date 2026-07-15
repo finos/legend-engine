@@ -164,7 +164,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedCaseMappingThroughAssociationChain():Boolean[1]
+function <<test.Test, test.AlloyOnly, test.ToFix>> meta::relational::tests::mapping::relation::testMixedCaseMappingThroughAssociationChain():Boolean[1]
 {
   let result = execute(
     |Person.all()
