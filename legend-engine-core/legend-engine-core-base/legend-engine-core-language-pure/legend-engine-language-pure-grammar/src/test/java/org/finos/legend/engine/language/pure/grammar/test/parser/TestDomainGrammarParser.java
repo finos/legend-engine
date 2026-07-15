@@ -219,4 +219,23 @@ public class TestDomainGrammarParser extends TestGrammarParser.TestGrammarParser
                 "  }#;\n" +
                 "}\n", "PARSER error at [6:29-10:4]: Unsupported embedded data type for function test assertion: Unsupported. Only 'Relation' is supported.");
     }
+
+    @Test
+    public void testConstraints()
+    {
+        //tests different whitespacing after the constraint param
+        test("Class my::TestClass\n" +
+                "[\n" +
+                "  myConstraint\n" +
+                "  (\n" +
+                "    ~owner\n: abc\n" +
+                "    ~externalId\t:'abc'\n" +
+                "    ~function: eq($this.var2 / $this.var1, $this.var4 / $this.var3)\n" +
+                "    ~enforcementLevel : Error\n" +
+                "  )\n" +
+                "]\n" +
+                "{\n" +
+                "  var1: Float[1];\n" +
+                "}\n");
+    }
 }
