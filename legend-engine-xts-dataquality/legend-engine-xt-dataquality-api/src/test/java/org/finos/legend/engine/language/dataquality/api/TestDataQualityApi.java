@@ -53,6 +53,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -186,8 +187,8 @@ public class TestDataQualityApi
         input.model = new PureModelContextPointer();
         input.source = lambda("{nameFilter:String[1]|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->filter(x|$x.fullName == $nameFilter)->from(demo::PersonMap, demo::PersonRuntime)}");
         input.target = lambda("{nameFilter:String[1], businessDate:String[1]|demo::Person.all()->project(~[id: x|$x.id, fullName: x|$x.fullName])->filter(x|$x.fullName == $nameFilter)->from(demo::PersonMap, demo::PersonRuntime)}");
-        input.keys = Collections.singleton("id");
-        input.colsForHash = Collections.singleton("fullName");
+        input.keys = new LinkedHashSet<>(Collections.singletonList("id"));
+        input.colsForHash = new LinkedHashSet<>(Collections.singletonList("fullName"));
         input.sourceLambdaParameterValues = Collections.singletonList(createParameterValue("nameFilter", new CString("Alice")));
         input.targetLambdaParameterValues = FastList.newListWith(
             createParameterValue("nameFilter", new CString("Alice")),

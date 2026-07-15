@@ -71,11 +71,43 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
     | $withLimit
   );
 
+  //reorder final output columns:, DQ cols, hash cols, keys (SOURCE/TARGET pairs), then compare cols (SOURCE/TARGET pairs)
+  let currentRelType = getRelType($withDqCols);
+  let currentColNames = $currentRelType.columns->map(c | $c.name->toOne());
+  let orderedCols = buildFinalColumnOrder($currentColNames, $reconInput.keys, $reconInput.colsForHash, $sourceHashCol, $targetHashCol);
+  let withOrderedCols = if ($orderedCols->isEmpty(),
+    | $withDqCols,
+    | let projectedRelType = ^RelationType<Nil>(columns = $orderedCols->map(colName | $currentRelType.columns->filter(col | $col.name->toOne() == $colName)->toOne()));
+      $withDqCols->meta::external::dataquality::buildOrderedSelectExpression($orderedCols, $projectedRelType);
+  );
+
   // Build final lambda - if there are parameters, create new lambda with merged params; otherwise preserve baseLambda structure
   if ($allParams->isEmpty(),
-    | ^$baseLambda(expressionSequence=$withDqCols),
-    | lambda(^FunctionType(returnMultiplicity=$withLimit.multiplicity, returnType=$withLimit.genericType, parameters=$allParams), $withDqCols)
+    | ^$baseLambda(expressionSequence=$withOrderedCols),
+    | lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $withOrderedCols)
   );
+}
+
+function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentColNames: String[*], keys: String[*], compareCols: String[*], sourceHashCol: String[1], targetHashCol: String[1]): String[*]
+{
+  let keyOrder = $keys->fold({k, acc | $acc->concatenate($k + '_SOURCE')->concatenate($k + '_TARGET')}, []->cast(@String));
+  let hashOrder = [$sourceHashCol, $targetHashCol];
+
+  let compareOrder = if ($compareCols->isNotEmpty(),
+    | $compareCols->fold({c, acc | $acc->concatenate($c + '_SOURCE')->concatenate($c + '_TARGET')}, []->cast(@String)),
+    | //derive compare cols from the current relation: every *_SOURCE column that is not a key or hash col
+      let exclusions = $keyOrder->concatenate($hashOrder);
+      $currentColNames
+        ->filter(c | $c->endsWith('_SOURCE') && !$exclusions->contains($c))
+        ->fold({c, acc | let base = $c->substring(0, $c->length() - 7); $acc->concatenate($c)->concatenate($base + '_TARGET');}, []->cast(@String));
+  );
+
+  //hash cols come first (after any non-side cols like DQ enrichment cols), then keys, then compare cols; dedupe as a key/compare col may also be a hash col
+  let nonSideCols = $currentColNames->filter(c | !$c->endsWith('_SOURCE') && !$c->endsWith('_TARGET'));
+  let desired = $nonSideCols->concatenate($hashOrder)->concatenate($keyOrder)->concatenate($compareOrder)->distinct();
+
+  //keep only columns that actually exist in the final relation (e.g. compare cols absent when includeColumnValues=false)
+  $desired->filter(c | $currentColNames->contains($c));
 }
 
 function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): ValueSpecification[1]

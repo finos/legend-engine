@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.eclipse.collections.impl.utility.Iterate.isEmpty;
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
@@ -116,9 +117,10 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "{\n" +
                 "   source: " + renderLambdaValue(relationComparison.source, context) + ";\n" +
                 "   target: " + renderLambdaValue(relationComparison.target, context) + ";\n" +
-                "   keys: [" + String.join(", ", relationComparison.keys) + "];\n" +
-                (Objects.isNull(relationComparison.columnsToCompare) || relationComparison.columnsToCompare.isEmpty() ? "" :
-                    "   columnsToCompare: [" + String.join(", ", relationComparison.columnsToCompare) + "];\n") +
+                (isEmpty(relationComparison.keys) ? "" :
+                "   keys: [" + String.join(", ", relationComparison.keys) + "];\n") +
+                (isEmpty(relationComparison.columnsToCompare) ? "" :
+                "   columnsToCompare: [" + String.join(", ", relationComparison.columnsToCompare) + "];\n") +
                 "   strategy: " + renderReconStrategy(relationComparison.strategy) + ";\n" +
                 (Objects.isNull(relationComparison.expectedMatch) ? "" :
                     "   expectedMatch: " + relationComparison.expectedMatch + ";\n") +

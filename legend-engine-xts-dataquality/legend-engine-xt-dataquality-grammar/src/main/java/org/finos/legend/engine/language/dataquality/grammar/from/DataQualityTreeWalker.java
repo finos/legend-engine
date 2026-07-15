@@ -118,12 +118,15 @@ public class DataQualityTreeWalker
                 ctx.reconTarget(), "target", relationComparison.sourceInformation);
         relationComparison.target = visitLambda(reconTargetContext.combinedExpression());
 
-        // keys
-        DataQualityParserGrammar.ReconKeysContext reconKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(
+        // keys (optional)
+        DataQualityParserGrammar.ReconKeysContext reconKeysContext = PureGrammarParserUtility.validateAndExtractOptionalField(
                 ctx.reconKeys(), "keys", relationComparison.sourceInformation);
-        relationComparison.keys = reconKeysContext.identifier().stream()
-                .map(PureGrammarParserUtility::fromIdentifier)
-                .collect(Collectors.toList());
+        if (Objects.nonNull(reconKeysContext))
+        {
+            relationComparison.keys = reconKeysContext.identifier().stream()
+                    .map(PureGrammarParserUtility::fromIdentifier)
+                    .collect(Collectors.toList());
+        }
 
         // columnsToCompare (optional)
         DataQualityParserGrammar.ColumnsToCompareContext columnsToCompareContext = PureGrammarParserUtility.validateAndExtractOptionalField(

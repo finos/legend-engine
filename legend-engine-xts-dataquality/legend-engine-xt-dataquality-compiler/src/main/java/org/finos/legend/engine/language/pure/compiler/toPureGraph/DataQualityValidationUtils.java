@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Sets;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
@@ -24,10 +26,15 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 
 import java.util.List;
 import java.util.Set;
+
+import static org.eclipse.collections.impl.utility.Iterate.isEmpty;
 
 public class DataQualityValidationUtils
 {
@@ -37,11 +44,43 @@ public class DataQualityValidationUtils
      */
     private static MutableSet<String> extractColumnNamesFromRelationLambda(LambdaFunction<?> compiledLambda)
     {
-        RelationType<?> relationType = (RelationType<?>) compiledLambda
-                ._expressionSequence().getLast()
-                ._genericType()._typeArguments().getOnly()
-                ._rawType();
-        return Sets.mutable.ofAll(relationType._columns().collect(col -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column<?, ?>) col)._name()));
+        RelationType<?> relationType = extractRelationTypeFromLambda(compiledLambda);
+        if (relationType == null)
+        {
+            throw new IllegalStateException("Expected relation lambda to return a RelationType");
+        }
+        return columnsOf(relationType).collect(Column::_name, Sets.mutable.empty());
+    }
+
+    /**
+     * Validates that the given list has no duplicate entries (case-insensitive).
+     */
+    private static void validateNoDuplicates(
+            List<String> values,
+            SourceInformation sourceInformation,
+            String fieldName)
+    {
+        if (values == null || values.isEmpty())
+        {
+            return;
+        }
+        MutableSet<String> seenLowerCased = Sets.mutable.empty();
+        MutableSet<String> duplicates = Sets.mutable.empty();
+        for (String value : values)
+        {
+            String key = value.toLowerCase();
+            if (!seenLowerCased.add(key))
+            {
+                duplicates.add(value);
+            }
+        }
+        if (duplicates.notEmpty())
+        {
+            throw new EngineException(
+                    "Duplicate " + fieldName + " column(s) found: " + duplicates,
+                    sourceInformation,
+                    EngineErrorType.COMPILATION);
+        }
     }
 
     /**
@@ -135,8 +174,91 @@ public class DataQualityValidationUtils
         Set<String> srcCols = extractColumnNamesFromRelationLambda(compiledSource);
         Set<String> tgtCols = extractColumnNamesFromRelationLambda(compiledTarget);
 
+        validateNoDuplicates(comparison.keys, sourceInformation, "keys");
+        validateNoDuplicates(comparison.columnsToCompare, sourceInformation, "columnsToCompare");
         validateKeysExistInBothDatasets(comparison.keys, srcCols, tgtCols, sourceInformation, "keys");
         validateKeysExistInBothDatasets(comparison.columnsToCompare, srcCols, tgtCols, sourceInformation, "columnsToCompare");
         validateHashColumnsIfApplicable(comparison.strategy, srcCols, tgtCols, sourceInformation);
+    }
+
+    public static List<String> findFloatingPointReconColumns(
+            DataQualityRelationComparison comparison,
+            LambdaFunction<?> compiledSource,
+            PureModel pureModel)
+    {
+        RelationType<?> sourceRelationType = extractRelationTypeFromLambda(compiledSource);
+        if (sourceRelationType == null)
+        {
+            return Lists.mutable.empty();
+        }
+
+        Type floatType = pureModel.getType_safe("Float");
+        ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        MutableSet<String> reconColumnNames = resolveReconColumnNames(comparison, sourceRelationType);
+
+        return columnsOf(sourceRelationType)
+                .select(column -> reconColumnNames.contains(column._name()))
+                .select(column -> isFloatingPointColumn(column, floatType, processorSupport))
+                .collect(Column::_name)
+                .toList();
+    }
+
+    /**
+     * Resolves the set of column names to check for floating-point types:
+     * - If columnsToCompare is empty, all source columns are considered.
+     * - Otherwise, the union of columnsToCompare and keys is considered.
+     */
+    private static MutableSet<String> resolveReconColumnNames(
+            DataQualityRelationComparison comparison,
+            RelationType<?> sourceRelationType)
+    {
+        if (isEmpty(comparison.columnsToCompare))
+        {
+            return columnsOf(sourceRelationType).collect(Column::_name, Sets.mutable.empty());
+        }
+        return Sets.mutable
+                .withAll(comparison.columnsToCompare)
+                .withAll(nullToEmpty(comparison.keys));
+    }
+
+    private static boolean isFloatingPointColumn(
+            Column<?, ?> column,
+            Type floatType,
+            ProcessorSupport processorSupport)
+    {
+        Type rawType = columnRawType(column);
+        return rawType != null && isFloatingPointType(rawType, floatType, processorSupport);
+    }
+
+    private static RelationType<?> extractRelationTypeFromLambda(LambdaFunction<?> compiledLambda)
+    {
+        Object rawType = compiledLambda
+                ._expressionSequence().getLast()
+                ._genericType()._typeArguments().getOnly()
+                ._rawType();
+        return (rawType instanceof RelationType) ? (RelationType<?>) rawType : null;
+    }
+
+    private static RichIterable<Column<?, ?>> columnsOf(RelationType<?> relationType)
+    {
+        return relationType._columns().collect(col -> (Column<?, ?>) col);
+    }
+
+    private static Type columnRawType(Column<?, ?> column)
+    {
+        return column._classifierGenericType()._typeArguments().getLast()._rawType();
+    }
+
+    private static boolean isFloatingPointType(
+            Type colType,
+            Type floatType,
+            ProcessorSupport processorSupport)
+    {
+        return floatType != null && org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(colType, floatType, processorSupport);
+    }
+
+    private static List<String> nullToEmpty(List<String> list)
+    {
+        return list == null ? Lists.mutable.empty() : list;
     }
 }

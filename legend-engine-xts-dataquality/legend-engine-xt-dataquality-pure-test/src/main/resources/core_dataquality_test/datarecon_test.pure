@@ -46,6 +46,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -68,6 +69,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $runtime, 'ID', false, [], 'HASH', 'HASH', false);
@@ -98,6 +100,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.FIRMID_SOURCE->isEmpty() && $y.FIRMID_TARGET->isEmpty()) || ($x.FIRMID_SOURCE == $y.FIRMID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,FIRMID_SOURCE,FIRMID_TARGET])
   };
 
   testRecon($lambda, $runtime, 'FIRMID', true, 'FIRMID', 'HASH', 'HASH', false);
@@ -120,6 +123,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| (($x.CREATED_SOURCE->isEmpty() && $y.CREATED_TARGET->isEmpty()) || ($x.CREATED_SOURCE == $y.CREATED_TARGET)) && ((($x.COUPOUN_SOURCE->isEmpty() && $y.COUPOUN_TARGET->isEmpty()) || ($x.COUPOUN_SOURCE == $y.COUPOUN_TARGET)) && ((($x.CODE_SOURCE->isEmpty() && $y.CODE_TARGET->isEmpty()) || ($x.CODE_SOURCE == $y.CODE_TARGET)) && (($x.DOB_SOURCE->isEmpty() && $y.DOB_TARGET->isEmpty()) || ($x.DOB_SOURCE == $y.DOB_TARGET))))}
     )->filter(row | not($row.DOB_SOURCE == $row.DOB_TARGET))
+    ->select(~[DOB_SOURCE,DOB_TARGET,CODE_SOURCE,CODE_TARGET,COUPOUN_SOURCE,COUPOUN_TARGET,CREATED_SOURCE,CREATED_TARGET])
   };
 
   testRecon($lambda, $runtime, ['DOB', 'CODE', 'COUPOUN', 'CREATED'], false, [], 'DOB', 'DOB', false);
@@ -147,6 +151,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $query, $query, 'ID', false, [], [], [], false);
@@ -173,6 +178,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.DIGEST_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.DIGEST_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET])
   };
 
   testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -197,6 +203,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.HASH_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.HASH_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
+    ->select(~[DIGEST_SOURCE,HASH_TARGET])
   };
 
   testRecon($lambda, $runtime, [], false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH', false);
@@ -231,6 +238,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.DIGEST_SOURCE->isEmpty() && $y.DIGEST_TARGET->isEmpty()) || ($x.DIGEST_SOURCE == $y.DIGEST_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET])
   };
 
   testRecon($lambda, $runtime, [], true, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -254,6 +262,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
+    ->select(~[DIGEST_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET,FIRSTNAME_SOURCE,FIRSTNAME_TARGET,LASTNAME_SOURCE,LASTNAME_TARGET])
   };
 
   testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], 'HASH', true);
@@ -281,6 +290,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
     ->limit(100)
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $runtime, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false, 100);
@@ -311,6 +321,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -340,6 +351,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -370,6 +382,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   testRecon($lambda, $source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], false);
@@ -389,6 +402,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   let input = {| #>{meta::external::dataquality::tests::domain::db.personTable}#};
@@ -410,6 +424,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
@@ -436,6 +451,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
@@ -460,6 +476,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
         JoinKind.FULL,
         {x,y| ($x.ID_SOURCE->isEmpty() && $y.ID_TARGET->isEmpty()) || ($x.ID_SOURCE == $y.ID_TARGET)}
     )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET])
   };
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
@@ -487,6 +504,7 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
     )->filter(row | not($row.DIGEST_SOURCE == $row.HASH_TARGET))
     ->extend(~DQ_RULE_NAME: row | 'DQ_RECONCILIATION')
     ->extend(~DQ_LOGICAL_DEFECT_ID: row | hash(if($row.DIGEST_SOURCE->isEmpty(), | '', |$row.DIGEST_SOURCE->toOne()->toString()) + if($row.HASH_TARGET->isEmpty(), | '', |$row.HASH_TARGET->toOne()->toString()), HashType.MD5))
+    ->select(~[DQ_RULE_NAME,DQ_LOGICAL_DEFECT_ID,DIGEST_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET,FIRSTNAME_SOURCE,FIRSTNAME_TARGET,LASTNAME_SOURCE,LASTNAME_TARGET])
   };
 
   let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
