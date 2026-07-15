@@ -562,6 +562,24 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testColSpecsWithPotentialClashes()
+    {
+        test("function withPath::f(s: Integer[1]): String[1]\n" +
+                "{\n" +
+                "  ~owner_abc:String;\n" +
+                "  ~function_abc:String;\n" +
+                "  ~message_abc:String;\n" +
+                "  ~enforcementLevel_abc:String;\n" +
+                "  ~externalId_abc:String;\n" +
+                "  ~owner;\n" +
+                "  ~function;\n" +
+                "  ~message;\n" +
+                "  ~enforcementLevel;\n" +
+                "  ~externalId;\n" +
+                "}\n");
+    }
+
+    @Test
     public void testTypeArgumentsAreBackwardCompatibleForOldProtocolMissingIt() throws JsonProcessingException
     {
         testComposedGrammar("{\n" +
