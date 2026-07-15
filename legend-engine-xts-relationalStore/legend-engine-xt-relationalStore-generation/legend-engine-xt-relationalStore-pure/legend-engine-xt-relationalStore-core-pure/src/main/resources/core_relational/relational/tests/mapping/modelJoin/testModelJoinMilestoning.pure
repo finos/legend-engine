@@ -63,14 +63,17 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   );
 
   let expectedSql =
-    'select "persontable_0".FIRSTNAME as "First Name", "contractlogtable_0".DESCRIPTION as "Contract" ' +
+    'select "persontable_0".FIRSTNAME as "First Name", "contractlogtable_0"."DESCRIPTION" as "Contract" ' +
     'from (select "persontable_1".ID as ID, "persontable_1".FIRSTNAME as FIRSTNAME, "persontable_1".LASTNAME as LASTNAME, ' +
          '"persontable_1".FIRMID as FIRMID, "persontable_1".AGE as AGE from personTable as "persontable_1") as "persontable_0" ' +
-    'left outer join (select "contractlogtable_1".ID as ID, "contractlogtable_1".PERSONID as PERSONID, ' +
-         '"contractlogtable_1".DESCRIPTION as DESCRIPTION, "contractlogtable_1".FROM_Z as FROM_Z, "contractlogtable_1".THRU_Z as THRU_Z ' +
-         'from contractLogTable as "contractlogtable_1" ' +
-         'where "contractlogtable_1".FROM_Z <= DATE\'2024-01-01\' and "contractlogtable_1".THRU_Z > DATE\'2024-01-01\') as "contractlogtable_0" ' +
-    'on ("persontable_0".ID = "contractlogtable_0".PERSONID)';
+    'left outer join (select "contractlogtable_1".ID as "ID", "contractlogtable_1".PERSONID as "PERSONID", ' +
+         '"contractlogtable_1".DESCRIPTION as "DESCRIPTION", "contractlogtable_1".FROM_Z as "FROM_Z", ' +
+         '"contractlogtable_1".THRU_Z as "THRU_Z" ' +
+         'from (select "contractlogtable_2".ID as ID, "contractlogtable_2".PERSONID as PERSONID, ' +
+              '"contractlogtable_2".DESCRIPTION as DESCRIPTION, "contractlogtable_2".FROM_Z as FROM_Z, ' +
+              '"contractlogtable_2".THRU_Z as THRU_Z from contractLogTable as "contractlogtable_2" ' +
+              'where "contractlogtable_2".FROM_Z <= DATE\'2024-01-01\' and "contractlogtable_2".THRU_Z > DATE\'2024-01-01\') as "contractlogtable_1") as "contractlogtable_0" ' +
+    'on ("persontable_0"."ID" = "contractlogtable_0"."PERSONID")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(
@@ -138,20 +141,26 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   );
 
   let expectedSql =
-    'select "warehousetable_0".NAME as "Warehouse", "ordertable_0".DESCRIPTION as "Order" ' +
+    'select "warehousetable_0".NAME as "Warehouse", "ordertable_0"."DESCRIPTION" as "Order" ' +
     'from (select "warehousetable_1".ID as ID, "warehousetable_1".NAME as NAME, "warehousetable_1".SECTIONID as SECTIONID ' +
          'from warehouseTable as "warehousetable_1") as "warehousetable_0" ' +
-    'left outer join (select "producttable_1".ID as ID, "producttable_1".WAREHOUSEID as WAREHOUSEID, "producttable_1".ZONE as ZONE ' +
-         'from sectionTable as "producttable_1") as "sectiontable_0" on ("warehousetable_0".ID = "sectiontable_0".WAREHOUSEID) ' +
-    'left outer join (select "producttable_0".CATEGORY as CATEGORY, "ordertable_1".DESCRIPTION as DESCRIPTION ' +
+    'left outer join (select "producttable_1".ID as "ID", "producttable_1".WAREHOUSEID as "WAREHOUSEID", "producttable_1".ZONE as "ZONE" ' +
+         'from (select "producttable_2".ID as ID, "producttable_2".WAREHOUSEID as WAREHOUSEID, "producttable_2".ZONE as ZONE ' +
+              'from sectionTable as "producttable_2") as "producttable_1") as "sectiontable_0" ' +
+    'on ("warehousetable_0"."ID" = "sectiontable_0"."WAREHOUSEID") ' +
+    'left outer join (select "ordertable_1".ID as "ID", "ordertable_1".PRODUCTID as "PRODUCTID", "ordertable_1".DESCRIPTION as "DESCRIPTION", ' +
+         '"ordertable_1".REFCODE as "REFCODE", "ordertable_1".FROM_Z as "FROM_Z", "ordertable_1".THRU_Z as "THRU_Z", ' +
+         '"producttable_0"."CATEGORY" as "CATEGORY" ' +
          'from (select "ordertable_2".ID as ID, "ordertable_2".PRODUCTID as PRODUCTID, "ordertable_2".DESCRIPTION as DESCRIPTION, ' +
               '"ordertable_2".REFCODE as REFCODE, "ordertable_2".FROM_Z as FROM_Z, "ordertable_2".THRU_Z as THRU_Z ' +
               'from orderTable as "ordertable_2" ' +
               'where "ordertable_2".FROM_Z <= DATE\'2024-01-01\' and "ordertable_2".THRU_Z > DATE\'2024-01-01\') as "ordertable_1" ' +
-         'left outer join (select "producttable_1".ID as ID, "producttable_1".ORDERID as ORDERID, "producttable_1".CODE as CODE, ' +
-              '"producttable_1".CATEGORY as CATEGORY from productTable as "producttable_1") as "producttable_0" ' +
-         'on ("ordertable_1".ID = "producttable_0".ORDERID)) as "ordertable_0" ' +
-    'on ("ordertable_0".CATEGORY = "sectiontable_0".ZONE)';
+         'left outer join (select "producttable_1".ID as "ID", "producttable_1".ORDERID as "ORDERID", "producttable_1".CODE as "CODE", ' +
+              '"producttable_1".CATEGORY as "CATEGORY" ' +
+              'from (select "producttable_2".ID as ID, "producttable_2".ORDERID as ORDERID, "producttable_2".CODE as CODE, ' +
+                   '"producttable_2".CATEGORY as CATEGORY from productTable as "producttable_2") as "producttable_1") as "producttable_0" ' +
+         'on ("ordertable_1"."ID" = "producttable_0"."ORDERID")) as "ordertable_0" ' +
+    'on ("ordertable_0"."CATEGORY" = "sectiontable_0"."ZONE")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(
@@ -218,21 +227,25 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   );
 
   let expectedSql =
-    'select "ordertable_0".DESCRIPTION as "Order", "warehousetable_0".NAME as "Warehouse" ' +
+    'select "ordertable_0".DESCRIPTION as "Order", "warehousetable_0"."NAME" as "Warehouse" ' +
     'from (select "ordertable_1".ID as ID, "ordertable_1".PRODUCTID as PRODUCTID, "ordertable_1".DESCRIPTION as DESCRIPTION, ' +
          '"ordertable_1".REFCODE as REFCODE, "ordertable_1".FROM_Z as FROM_Z, "ordertable_1".THRU_Z as THRU_Z ' +
          'from orderTable as "ordertable_1" ' +
          'where "ordertable_1".FROM_Z <= DATE\'2024-01-01\' and "ordertable_1".THRU_Z > DATE\'2024-01-01\') as "ordertable_0" ' +
-    'left outer join (select "producttable_1".ID as ID, "producttable_1".ORDERID as ORDERID, "producttable_1".CODE as CODE, ' +
-         '"producttable_1".CATEGORY as CATEGORY from productTable as "producttable_1") as "producttable_0" ' +
-    'on ("ordertable_0".ID = "producttable_0".ORDERID) ' +
-    'left outer join (select "sectiontable_0".ZONE as ZONE, "warehousetable_1".NAME as NAME ' +
+    'left outer join (select "producttable_1".ID as "ID", "producttable_1".ORDERID as "ORDERID", "producttable_1".CODE as "CODE", ' +
+         '"producttable_1".CATEGORY as "CATEGORY" ' +
+         'from (select "producttable_2".ID as ID, "producttable_2".ORDERID as ORDERID, "producttable_2".CODE as CODE, ' +
+              '"producttable_2".CATEGORY as CATEGORY from productTable as "producttable_2") as "producttable_1") as "producttable_0" ' +
+    'on ("ordertable_0"."ID" = "producttable_0"."ORDERID") ' +
+    'left outer join (select "warehousetable_1".ID as "ID", "warehousetable_1".NAME as "NAME", "warehousetable_1".SECTIONID as "SECTIONID", ' +
+         '"sectiontable_0"."ZONE" as "ZONE" ' +
          'from (select "warehousetable_2".ID as ID, "warehousetable_2".NAME as NAME, "warehousetable_2".SECTIONID as SECTIONID ' +
               'from warehouseTable as "warehousetable_2") as "warehousetable_1" ' +
-         'left outer join (select "producttable_1".ID as ID, "producttable_1".WAREHOUSEID as WAREHOUSEID, "producttable_1".ZONE as ZONE ' +
-              'from sectionTable as "producttable_1") as "sectiontable_0" ' +
-         'on ("warehousetable_1".ID = "sectiontable_0".WAREHOUSEID)) as "warehousetable_0" ' +
-    'on ("producttable_0".CATEGORY = "warehousetable_0".ZONE)';
+         'left outer join (select "producttable_1".ID as "ID", "producttable_1".WAREHOUSEID as "WAREHOUSEID", "producttable_1".ZONE as "ZONE" ' +
+              'from (select "producttable_2".ID as ID, "producttable_2".WAREHOUSEID as WAREHOUSEID, "producttable_2".ZONE as ZONE ' +
+                   'from sectionTable as "producttable_2") as "producttable_1") as "sectiontable_0" ' +
+         'on ("warehousetable_1"."ID" = "sectiontable_0"."WAREHOUSEID")) as "warehousetable_0" ' +
+    'on ("producttable_0"."CATEGORY" = "warehousetable_0"."ZONE")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(
@@ -301,23 +314,28 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   );
 
   let expectedSql =
-    'select "ordertable_0".DESCRIPTION as "Order", "shipmenttable_0".CARRIER as "Carrier" ' +
+    'select "ordertable_0".DESCRIPTION as "Order", "shipmenttable_0"."CARRIER" as "Carrier" ' +
     'from (select "ordertable_1".ID as ID, "ordertable_1".PRODUCTID as PRODUCTID, "ordertable_1".DESCRIPTION as DESCRIPTION, ' +
          '"ordertable_1".REFCODE as REFCODE, "ordertable_1".FROM_Z as FROM_Z, "ordertable_1".THRU_Z as THRU_Z ' +
          'from orderTable as "ordertable_1" ' +
          'where "ordertable_1".FROM_Z <= DATE\'2024-03-01\' and "ordertable_1".THRU_Z > DATE\'2024-03-01\') as "ordertable_0" ' +
-    'left outer join (select "producttable_1".ID as ID, "producttable_1".ORDERID as ORDERID, "producttable_1".CODE as CODE, ' +
-         '"producttable_1".CATEGORY as CATEGORY from productTable as "producttable_1") as "producttable_0" ' +
-    'on ("ordertable_0".ID = "producttable_0".ORDERID) ' +
-    'left outer join (select "trackingtable_0".PREFIX as PREFIX, "shipmenttable_1".CARRIER as CARRIER ' +
+    'left outer join (select "producttable_1".ID as "ID", "producttable_1".ORDERID as "ORDERID", "producttable_1".CODE as "CODE", ' +
+         '"producttable_1".CATEGORY as "CATEGORY" ' +
+         'from (select "producttable_2".ID as ID, "producttable_2".ORDERID as ORDERID, "producttable_2".CODE as CODE, ' +
+              '"producttable_2".CATEGORY as CATEGORY from productTable as "producttable_2") as "producttable_1") as "producttable_0" ' +
+    'on ("ordertable_0"."ID" = "producttable_0"."ORDERID") ' +
+    'left outer join (select "shipmenttable_1".ID as "ID", "shipmenttable_1".ORDERID as "ORDERID", "shipmenttable_1".CARRIER as "CARRIER", ' +
+         '"shipmenttable_1".TRACKINGID as "TRACKINGID", "shipmenttable_1".FROM_Z as "FROM_Z", "shipmenttable_1".THRU_Z as "THRU_Z", ' +
+         '"trackingtable_0"."PREFIX" as "PREFIX" ' +
          'from (select "shipmenttable_2".ID as ID, "shipmenttable_2".ORDERID as ORDERID, "shipmenttable_2".CARRIER as CARRIER, ' +
               '"shipmenttable_2".TRACKINGID as TRACKINGID, "shipmenttable_2".FROM_Z as FROM_Z, "shipmenttable_2".THRU_Z as THRU_Z ' +
               'from shipmentTable as "shipmenttable_2" ' +
               'where "shipmenttable_2".FROM_Z <= DATE\'2024-07-01\' and "shipmenttable_2".THRU_Z > DATE\'2024-07-01\') as "shipmenttable_1" ' +
-         'left outer join (select "producttable_1".ID as ID, "producttable_1".SHIPMENTID as SHIPMENTID, "producttable_1".PREFIX as PREFIX ' +
-              'from trackingTable as "producttable_1") as "trackingtable_0" ' +
-         'on ("shipmenttable_1".ID = "trackingtable_0".SHIPMENTID)) as "shipmenttable_0" ' +
-    'on ("producttable_0".CODE = "shipmenttable_0".PREFIX)';
+         'left outer join (select "producttable_1".ID as "ID", "producttable_1".SHIPMENTID as "SHIPMENTID", "producttable_1".PREFIX as "PREFIX" ' +
+              'from (select "producttable_2".ID as ID, "producttable_2".SHIPMENTID as SHIPMENTID, "producttable_2".PREFIX as PREFIX ' +
+                   'from trackingTable as "producttable_2") as "producttable_1") as "trackingtable_0" ' +
+         'on ("shipmenttable_1"."ID" = "trackingtable_0"."SHIPMENTID")) as "shipmenttable_0" ' +
+    'on ("producttable_0"."CODE" = "shipmenttable_0"."PREFIX")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(
@@ -377,18 +395,22 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
   );
 
   let expectedSql =
-    'select "ordertable_0".DESCRIPTION as "Order", "audittable_0".MESSAGE as "Audit" ' +
+    'select "ordertable_0".DESCRIPTION as "Order", "audittable_0"."MESSAGE" as "Audit" ' +
     'from (select "ordertable_1".ID as ID, "ordertable_1".PRODUCTID as PRODUCTID, "ordertable_1".DESCRIPTION as DESCRIPTION, ' +
          '"ordertable_1".REFCODE as REFCODE, "ordertable_1".FROM_Z as FROM_Z, "ordertable_1".THRU_Z as THRU_Z ' +
          'from orderTable as "ordertable_1" ' +
          'where "ordertable_1".FROM_Z <= DATE\'2024-01-01\' and "ordertable_1".THRU_Z > DATE\'2024-01-01\') as "ordertable_0" ' +
-    'left outer join (select "producttable_1".ID as ID, "producttable_1".ORDERID as ORDERID, "producttable_1".CODE as CODE, ' +
-         '"producttable_1".CATEGORY as CATEGORY from productTable as "producttable_1") as "producttable_0" ' +
-    'on ("ordertable_0".ID = "producttable_0".ORDERID) ' +
-    'left outer join (select "audittable_1".ID as ID, "audittable_1".ENTITYREF as ENTITYREF, "audittable_1".MESSAGE as MESSAGE, ' +
-         '"audittable_1".IN_Z as IN_Z, "audittable_1".OUT_Z as OUT_Z from auditTable as "audittable_1" ' +
-         'where "audittable_1".IN_Z <= TIMESTAMP\'2024-01-01 10:00:00\' and "audittable_1".OUT_Z > TIMESTAMP\'2024-01-01 10:00:00\') as "audittable_0" ' +
-    'on ("producttable_0".CODE = "audittable_0".ENTITYREF)';
+    'left outer join (select "producttable_1".ID as "ID", "producttable_1".ORDERID as "ORDERID", "producttable_1".CODE as "CODE", ' +
+         '"producttable_1".CATEGORY as "CATEGORY" ' +
+         'from (select "producttable_2".ID as ID, "producttable_2".ORDERID as ORDERID, "producttable_2".CODE as CODE, ' +
+              '"producttable_2".CATEGORY as CATEGORY from productTable as "producttable_2") as "producttable_1") as "producttable_0" ' +
+    'on ("ordertable_0"."ID" = "producttable_0"."ORDERID") ' +
+    'left outer join (select "audittable_1".ID as "ID", "audittable_1".ENTITYREF as "ENTITYREF", "audittable_1".MESSAGE as "MESSAGE", ' +
+         '"audittable_1".IN_Z as "IN_Z", "audittable_1".OUT_Z as "OUT_Z" ' +
+         'from (select "audittable_2".ID as ID, "audittable_2".ENTITYREF as ENTITYREF, "audittable_2".MESSAGE as MESSAGE, ' +
+              '"audittable_2".IN_Z as IN_Z, "audittable_2".OUT_Z as OUT_Z from auditTable as "audittable_2" ' +
+              'where "audittable_2".IN_Z <= TIMESTAMP\'2024-01-01 10:00:00\' and "audittable_2".OUT_Z > TIMESTAMP\'2024-01-01 10:00:00\') as "audittable_1") as "audittable_0" ' +
+    'on ("producttable_0"."CODE" = "audittable_0"."ENTITYREF")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(

@@ -103,10 +103,14 @@ public class ClassMappingPrerequisiteElementsPassBuilder implements ClassMapping
     {
         this.prerequisiteElements.add(new PackageableElementPointer(PackageableElementType.CLASS, classMapping._class, classMapping.classSourceInformation));
         // Ensure the function is compiled before this mapping so expressionSequence is available for PK resolution.
-        this.prerequisiteElements.add(new PackageableElementPointer(
-                PackageableElementType.FUNCTION,
-                classMapping.relationFunction.path,
-                classMapping.relationFunction.sourceInformation));
+        // Only ~func has an external function reference to declare as prerequisite; ~src carries an inline lambda.
+        if (classMapping.relationFunction != null)
+        {
+            this.prerequisiteElements.add(new PackageableElementPointer(
+                    PackageableElementType.FUNCTION,
+                    classMapping.relationFunction.path,
+                    classMapping.relationFunction.sourceInformation));
+        }
         PropertyMappingPrerequisiteElementsBuilder propertyMappingPrerequisiteElementsBuilder = new PropertyMappingPrerequisiteElementsBuilder(this.context, this.prerequisiteElements);
         ListIterate.forEach(classMapping.propertyMappings, pm -> pm.accept(propertyMappingPrerequisiteElementsBuilder));
         return this.prerequisiteElements;

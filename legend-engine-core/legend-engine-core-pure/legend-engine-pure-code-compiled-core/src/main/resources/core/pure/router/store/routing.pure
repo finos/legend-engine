@@ -978,11 +978,25 @@ function meta::pure::router::store::routing::isAutoMappedRelationFunctionPropert
 {
   $set->match([
     r:RelationFunctionInstanceSetImplementation[1] | $r->_propertyMappingsByPropertyName($p.name->toOne())->match([
-      pm: RelationFunctionPropertyMapping[1] | $pm.transformer->isNotEmpty() && $pm.transformer->toOne()->instanceOf(BindingTransformer),
+      pm: RelationFunctionPropertyMapping[1] |
+        // Skip routing (emit NoSetRoutedValueSpecification) so plan-gen owns the embedded
+        // set synthesis for two RFPM cases resolved at plan time, not routing time:
+        //   * BindingTransformer-driven PMs — resolved via the binding's content-type.
+        //   * Class-target PMs (Variant or user-defined Class) — resolved by dynamic
+        //     synthesis of a wrapper PM in the lift router.
+        // Primitive-target RFPMs continue routing — they don't require class-mapping
+        // lookup downstream.
+        ($pm.transformer->isNotEmpty() && $pm.transformer->toOne()->instanceOf(BindingTransformer))
+        || $p->isClassTargetedRelationFunctionProperty(),
       a: Any[*] | false
     ]),
     a: Any[*] | false
   ])
+}
+
+function meta::pure::router::store::routing::isClassTargetedRelationFunctionProperty(p: AbstractProperty<Any>[1]): Boolean[1]
+{
+  $p.genericType.rawType->toOne()->instanceOf(Class)
 }
 
 function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:RoutingState[1]):SetImplementation[*]

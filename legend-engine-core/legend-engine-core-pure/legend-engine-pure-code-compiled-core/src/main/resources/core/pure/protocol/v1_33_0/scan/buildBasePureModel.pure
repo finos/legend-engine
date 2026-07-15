@@ -311,6 +311,17 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::buildBas
 
    let found = ^$foundClasses(classes = $foundClasses.classes->concatenate($associations.properties.genericType.rawType)->removeDuplicates()->cast(@Class<Any>));
 
+   let relationFunctions = $allMappings.classMappings
+                            ->filter(cm|$cm->instanceOf(RelationFunctionInstanceSetImplementation) && !$cm->instanceOf(EmbeddedSetImplementation))
+                            ->cast(@RelationFunctionInstanceSetImplementation)
+                            ->map(r|$r.relationFunction->match(
+                                      [
+                                        c:ConcreteFunctionDefinition<Any>[1]| $c->transformFunction($extensions),
+                                        l:FunctionDefinition<Any>[1]| []
+                                      ]
+                                    )
+                            )->removeDuplicatesBy(f|$f.package->orElse('') + $f.name);
+
    //SecureViews Necessities
 
    // Result ----------------
@@ -325,10 +336,7 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::buildBas
                         ->concatenate($allMappings->map(m|$m->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::mapping::transformMapping($extensions)))
                         ->concatenate($stores->map(store|$store->meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::transformStore($extensions)))
                         ->concatenate($extensions->map(e|$e.serializerExtension('v1_33_0')->cast(@meta::protocols::pure::v1_33_0::extension::SerializerExtension_v1_33_0).scan_buildBasePureModel_getExtraElementsFromStores->map(z|$z->eval($stores,$extensions))))
-                        ->concatenate($allMappings->map(m|$m.classMappings->filter(cm|$cm->instanceOf(RelationFunctionInstanceSetImplementation) && !$cm->instanceOf(EmbeddedSetImplementation))->map(cm|$cm->match([
-                                                                                            r:RelationFunctionInstanceSetImplementation[1]|$r.relationFunction->cast(@ConcreteFunctionDefinition<Any>)->transformFunction($extensions),
-                                                                                            a:Any[1]|[]
-                                                                                          ]))))      
+                        ->concatenate($relationFunctions)      
         )
    );
 }

@@ -381,7 +381,8 @@ function <<access.private>> meta::protocols::pure::v1_33_0::transformation::from
                   d:meta::relational::metamodel::datatype::Float[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::Float(_type='Float'),
                   r:meta::relational::metamodel::datatype::Real[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::Real(_type='Real'),
                   o:meta::relational::metamodel::datatype::Other[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::Other(_type='Other'),
-                  a:meta::relational::metamodel::datatype::Array[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::Array(_type='Array')
+                  a:meta::relational::metamodel::datatype::Array[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::Array(_type='Array'),
+                  s:meta::relational::metamodel::datatype::SemiStructured[1]|^meta::protocols::pure::v1_33_0::metamodel::store::relational::SemiStructured(_type='SemiStructured')
 
                 ]
    )

@@ -71,6 +71,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   extensions:Extension[*]
 ):RelationalPropertyMapping[1]
 {
+  print(if(!$context.debug, |'',
+          | $context.space + '>ModelJoin: ' + $mjpm.sourceSetImplementationId + ' -> ' + $mjpm.targetSetImplementationId
+            + ' via .' + $property.name->toOne() + ' nodeId=' + $nodeId + '\n'));
+
   let sourceSet = $state->getClassMappingById($mjpm.sourceSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
   let targetSet = $state->getClassMappingById($mjpm.targetSetImplementationId)->toOne()->cast(@InstanceSetImplementation);
 
@@ -125,6 +129,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
   ]);
   let needsMaterialization = $hasChildren || $targetHasComplexMapping;
 
+  print(if(!$context.debug, |'',
+          | $context.space + '  ModelJoin materialize=' + $needsMaterialization->toString()
+            + ' (hasChildren=' + $hasChildren->toString()
+            + ', complexTarget=' + $targetHasComplexMapping->toString() + ')\n'));
+
   let targetJTN = if($needsMaterialization,
     | materializeTargetAsSubselect(
         ^$placeholderJTN(join = $realJoin, joinName = $realJoin.name),
@@ -146,6 +155,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::compile
     | $targetJTN,
     | appendAtDeepestLeaf($sourceIntermediates->toOne()->cast(@JoinTreeNode), $targetJTN)
   );
+
+  print(if(!$context.debug, |'',
+          | $context.space + '<End ModelJoin: ' + $mjpm.sourceSetImplementationId + ' -> ' + $mjpm.targetSetImplementationId + '\n'));
 
   // H. Package as synthetic RelationalPropertyMapping
   ^RelationalPropertyMapping(
@@ -173,6 +185,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildBr
 {
   $sourceSet->match([
     r:RootRelationalInstanceSetImplementation[1] |
+      print(if(!$context.debug, |'', | $context.space + '  ModelJoin source [Root]: ' + $r.id + '\n'));
       let srcAlias = $r.mainTableAlias->createJoinTableAlias($joinType, $nodeId, $state, $oldSrcOperation.milestoningContext, $context, $extensions);
       let srcRoot = ^RootJoinTreeNode(alias = $srcAlias);
       ^SelectWithCursor(
@@ -181,11 +194,22 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildBr
         milestoningContext = $oldSrcOperation.milestoningContext
       );,
     r:RelationFunctionInstanceSetImplementation[1] |
+      print(if(!$context.debug, |'', | $context.space + '  ModelJoin source [RFPM]: ' + $r.id + '\n'));
+      // Same rationale as buildModelJoinPlaceholder's RFPM branch: reparent so the source
+      // alias's relationalElement is the RFPM outer select (renamed .columns visible) rather
+      // than the inner un-renamed sub-select.
       let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
-      let swc = processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions);
-      // processRelationFunctionClassMapping sets currentTreeNode=[] after wrapping into subselect.
-      // Restore it from select.data so property resolution can navigate from this node.
-      ^$swc(currentTreeNode = $swc.select.data);
+      let rfpmSwc = processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions);
+      let wrapperAlias = ^TableAlias(
+        name              = $rfpmSwc.select.data->toOne().alias.name,
+        relationalElement = $rfpmSwc.select
+      );
+      let wrapperRoot = ^RootJoinTreeNode(alias = $wrapperAlias);
+      ^SelectWithCursor(
+        select             = ^SelectSQLQuery(data = $wrapperRoot),
+        currentTreeNode    = $wrapperRoot,
+        milestoningContext = $oldSrcOperation.milestoningContext
+      );
   ]);
 }
 
@@ -220,11 +244,25 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildMo
   let vars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
   let targetSWC = $targetSet->match([
     r:RootRelationalInstanceSetImplementation[1] |
+      print(if(!$context.debug, |'', | $context.space + '  ModelJoin target [Root]: ' + $r.id + '\n'));
       let tgtAlias = $r.mainTableAlias->createJoinTableAlias($joinType, $nodeId, $state, $oldSrcOperation.milestoningContext, $context, $extensions);
       let tgtRoot = ^RootJoinTreeNode(alias = $tgtAlias);
       ^SelectWithCursor(select = ^SelectSQLQuery(data = $tgtRoot), currentTreeNode = $tgtRoot, milestoningContext = $oldSrcOperation.milestoningContext);,
     r:RelationFunctionInstanceSetImplementation[1] |
-      processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions)
+      print(if(!$context.debug, |'', | $context.space + '  ModelJoin target [RFPM]: ' + $r.id + '\n'));
+      // Preserve the RFPM ~func's outer projection layer (with potential column renames) at the join
+      // target level.
+      let rfpmSwc = processRelationFunctionClassMapping($r, $vars, $state, $oldSrcOperation.milestoningContext, $joinType, $nodeId, $context, $extensions);
+      let wrapperAlias = ^TableAlias(
+        name              = $rfpmSwc.select.data->toOne().alias.name,
+        relationalElement = $rfpmSwc.select
+      );
+      let wrapperRoot = ^RootJoinTreeNode(alias = $wrapperAlias);
+      ^SelectWithCursor(
+        select             = ^SelectSQLQuery(data = $wrapperRoot),
+        currentTreeNode    = $wrapperRoot,
+        milestoningContext = $oldSrcOperation.milestoningContext
+      );
   ]);
   let tgtAlias = $targetSWC.select.data->toOne().alias;
 
@@ -262,6 +300,14 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
   let tgtAlias = $realTargetJTN.alias;
   let hasChildren = $realTargetJTN->children()->isNotEmpty();
 
+  print(if(!$context.debug, |'',
+          | $context.space + '  >Materialize target: ' + $targetSet->match([
+              r:RootRelationalInstanceSetImplementation[1]     | $r.id + ' [Root]',
+              r:RelationFunctionInstanceSetImplementation[1]   | $r.id + ' [RFPM]',
+              a:InstanceSetImplementation[1]                   | $a.id
+            ])
+            + ', hasChildren=' + $hasChildren->toString() + '\n'));
+
   // Get all TACs from the ON clause that reference target-side aliases
   let targetSubtreeAliasNames = $realTargetJTN->getAllNodes()->cast(@RelationalTreeNode).alias.name;
   let allOpTACs = $realJoin.operation->cast(@RelationalOperationElement)->extractTableAliasColumns();
@@ -279,12 +325,14 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
 
   // Get the base select for the target.
   // RootRelational: processRelationalMappingSpecification to apply milestoning, filter, groupBy, distinct.
-  // RelationFunction: the alias already contains a TdsSelectSqlQuery with everything baked in.
+  // RelationFunction: buildModelJoinPlaceholder wraps the RFPM outer select (with renamed
+  // projections) as the target alias's relationalElement — reuse it here so the materialized
+  // subselect propagates those renames to downstream property navigations.
   let getAllSelect = $targetSet->match([
     r:RootRelationalInstanceSetImplementation[1] |
       processRelationalMappingSpecification($r, $r.class, $joinType, $nodeId, false, -1, true, $milestoningContext, $state, $context, $extensions)->cast(@SelectWithCursor).select,
     r:RelationFunctionInstanceSetImplementation[1] |
-      ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $tgtAlias));
+      $tgtAlias.relationalElement->cast(@SelectSQLQuery);
   ]);
 
   // Merge processGetAll columns with ON-clause columns (ON-clause columns take precedence / are added if missing)
@@ -342,7 +390,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::materia
   );
 
   print(if(!$context.debug, |'',
-          | $context.space+'     [materializeTarget] hasChildren='+$hasChildren->toString()+' exposedCols='+$onClauseColumns->size()->toString()+'\n'));
+          | $context.space + '  <End Materialize target: subselectAlias=' + $tgtSubselectAlias.name
+            + ', exposedCols=' + $innerSelect.columns->size()->toString() + '\n'));
 
   ^JoinTreeNode(
     alias = $tgtSubselectAlias,

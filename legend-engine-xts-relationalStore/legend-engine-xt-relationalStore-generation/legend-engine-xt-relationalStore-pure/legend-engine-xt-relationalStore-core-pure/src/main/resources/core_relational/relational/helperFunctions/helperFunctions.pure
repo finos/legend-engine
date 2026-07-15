@@ -316,8 +316,8 @@ function meta::relational::mapping::resolvePropertyOwner(owner:Any[1]):Any[1]
   );
 }
 
-// Checks whether the property mappings from the router match the given property by name and owner class. 
-// Property may be owned by a different MappingClass (class mapping has local properties), so we resolve 
+// Checks whether the property mappings from the router match the given property by name and owner class.
+// Property may be owned by a different MappingClass (class mapping has local properties), so we resolve
 // through MappingClass to the domain class.
 function meta::relational::mapping::propertyMappingsFromRouterMatchProperty(propertyMappingFromRouter:PropertyMapping[*], property:AbstractProperty<Any>[1]):Boolean[1]
 {
@@ -335,35 +335,18 @@ function meta::relational::mapping::propertyMappingsFromRouterMatchProperty(prop
   );
 }
 
-function meta::relational::mapping::normalizeRelationFunctionEmbeddedMapping(pm:PropertyMapping[1]):PropertyMapping[1]
-{
-  $pm->match([
-    e: EmbeddedSetImplementation[1] |
-        if(!$e->instanceOf(EmbeddedRelationalInstanceSetImplementation)
-            && !$e.owner->isEmpty()
-            && $e.owner->toOne()->instanceOf(RelationFunctionInstanceSetImplementation),
-          | transformRelationFunctionEmbeddedPropertyMapping($e, $e.owner->toOne()->cast(@RelationFunctionInstanceSetImplementation)),
-          | $e
-        ),
-    p: PropertyMapping[1] | $p
-  ])
-}
-
 function meta::relational::mapping::findPropertyMapping(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], mapping:Mapping[1],debug:DebugContext[1]):PropertyMapping[*]
 {
   let propertyName = $property.name->toOne();
-  let resolvedPropertyMapping = $currentPropertyMapping->map(pm | $pm->normalizeRelationFunctionEmbeddedMapping());
-  let resolvedPmFromRouter    = $propertyMappingFromRouter->map(pm | $pm->normalizeRelationFunctionEmbeddedMapping());
-
-  let propertyMappings = if($resolvedPropertyMapping->size() >= 1 && $resolvedPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-    | let embeddedPropertyMapping = $resolvedPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c->match([s:SemiStructuredEmbeddedRelationalInstanceSetImplementation[1]|$property->buildSemiStructuredPropertyMapping($s), a:Any[*]|$c->_propertyMappingsByPropertyName($propertyName)]));
+  let propertyMappings = if($currentPropertyMapping->size() >= 1 && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+    | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c->match([s:SemiStructuredEmbeddedRelationalInstanceSetImplementation[1]|$property->buildSemiStructuredPropertyMapping($s), a:Any[*]|$c->_propertyMappingsByPropertyName($propertyName)]));
 
       let result =  if(!$embeddedPropertyMapping->isEmpty(),
                       | $embeddedPropertyMapping,
-                      | if(!$resolvedPmFromRouter->isEmpty(),
-                        | $resolvedPmFromRouter,
+                      | if(!$propertyMappingFromRouter->isEmpty(),
+                        | $propertyMappingFromRouter,
                         | // this should only been done in the builder but will refactor as part of other fixes;
-                          $resolvedPropertyMapping
+                          $currentPropertyMapping
                             ->filter(c |
                               $c->match([
                                 is: InlineEmbeddedRelationalInstanceSetImplementation[1] | $is.parent->classMappingById($is.inlineSetImplementationId)->toOne().class->_subTypeOf($propertyOwnerClass),
@@ -373,9 +356,9 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
                       );
                     );
       assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+
-            '\' in the mapping \''+$mapping->elementToPath()+ '-> (Embedded)' + $resolvedPropertyMapping->at(0)->cast(@EmbeddedRelationalInstanceSetImplementation).setMappingOwner.class.name->toOne() + '.' + $resolvedPropertyMapping->at(0).property.name->toOne() + '\'');
+            '\' in the mapping \''+$mapping->elementToPath()+ '-> (Embedded)' + $currentPropertyMapping->at(0)->cast(@EmbeddedRelationalInstanceSetImplementation).setMappingOwner.class.name->toOne() + '.' + $currentPropertyMapping->at(0).property.name->toOne() + '\'');
       $result;,
-    | if($resolvedPropertyMapping->size() >= 1 && $resolvedPropertyMapping->at(0)->instanceOf(EmbeddedRelationFunctionSetImplementation),
+    | if($currentPropertyMapping->size() >= 1 && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationFunctionSetImplementation),
     | let originalEmbedded = $currentPropertyMapping->cast(@EmbeddedSetImplementation);
       let directEmbeddedPM = $originalEmbedded->map(c|$c->_propertyMappingsByPropertyName($propertyName));
       let inlineTargetIds = $originalEmbedded.targetSetImplementationId->filter(t | !$t->isEmpty() && $originalEmbedded.id != $t);
@@ -385,21 +368,17 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
                                                                       ->filter(c | !$c->instanceOf(EmbeddedSetImplementation))
                                                                       ->cast(@InstanceSetImplementation)
                                                                       ->map(c | $c->_propertyMappingsByPropertyName($propertyName))
-                                                                      ->map(pm | $pm->match([
-                                                                                      rfpm: RelationFunctionPropertyMapping[1] | $rfpm->transformRelationPropertyMappingsToRelational($rfpm.owner->toOne()->cast(@RelationFunctionInstanceSetImplementation)),
-                                                                                      p: PropertyMapping[1] | $p
-                                                                        ]))
                         ),
-                        pair(|!$resolvedPmFromRouter->isEmpty(), | $resolvedPmFromRouter)
+                        pair(|!$propertyMappingFromRouter->isEmpty(), | $propertyMappingFromRouter)
                       ],
                       | []
       );
 
       assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+
-            '\' in the mapping \''+$mapping->elementToPath()+ '-> (EmbeddedRelationFunction)' + $resolvedPropertyMapping->at(0).property.name->toOne() + '\'');
+            '\' in the mapping \''+$mapping->elementToPath()+ '-> (EmbeddedRelationFunction)' + $currentPropertyMapping->at(0).property.name->toOne() + '\'');
       $result;,
-    | let propMappings = if(propertyMappingsFromRouterMatchProperty($resolvedPmFromRouter, $property),
-        | $resolvedPmFromRouter->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping()),
+    | let propMappings = if(propertyMappingsFromRouterMatchProperty($propertyMappingFromRouter, $property),
+        | $propertyMappingFromRouter->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping()),
         | let rootClassMapping = $mapping->rootClassMappingByClass($propertyOwnerClass)->potentiallyResolveOperation($mapping);
           let classMapping = if($rootClassMapping->isEmpty() && $propertyOwnerClass->instanceOf(MappingClass),
                                 | $mapping->classMappings()->filter(x | $x->instanceOf(InstanceSetImplementation) && $x->cast(@InstanceSetImplementation).mappingClass == $propertyOwnerClass),
@@ -409,8 +388,7 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
           let setImpls = $classMapping->resolveOperation($mapping);
           let result = $setImpls
                           ->map(s|$s->_propertyMappingsByPropertyName($propertyName))
-                          ->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping())
-                          ->map(pm | $pm->transformRelationFunctionSemiStructuredPropertyMapping($classMapping->toOne()));
+                          ->map(pm | $pm->meta::pure::router::routing::reprocessAggregationAwarePropertyMapping());
 
           assert(!$result->isEmpty(), | 'The system can\'t find a mapping for the property \''+$propertyOwnerClass->elementToPath()+'.'+$propertyName+'\' in the mapping \''+$mapping->elementToPath()+'\'');
           $result;
@@ -517,47 +495,6 @@ function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpec
    if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
 }
 
-function meta::relational::mapping::transformRelationFunctionClassMapping(classMapping:RelationFunctionInstanceSetImplementation[1]):RelationFunctionInstanceSetImplementation[1]
-{
-  let transformedPropertyMappings = $classMapping.propertyMappings->map(pm | $pm->match([
-    r: RelationFunctionPropertyMapping[1] | $r->transformRelationPropertyMappingsToRelational($classMapping),
-    e: EmbeddedSetImplementation[1] | transformRelationFunctionEmbeddedPropertyMapping($e, $classMapping),
-    p: PropertyMapping[1] | $p
-  ]));
-  ^$classMapping(propertyMappings=$transformedPropertyMappings);
-}
-
-function meta::relational::mapping::transformRelationFunctionEmbeddedPropertyMapping(embedded:EmbeddedSetImplementation[1], classMapping:RelationFunctionInstanceSetImplementation[1]):EmbeddedRelationFunctionSetImplementation[1]
-{
-  let transformedPms = $embedded.propertyMappings->map(pm | $pm->match([
-    r: RelationFunctionPropertyMapping[1] | $r->transformRelationPropertyMappingsToRelational($classMapping),
-    nested: EmbeddedSetImplementation[1] | transformRelationFunctionEmbeddedPropertyMapping($nested, $classMapping),
-    p: PropertyMapping[1] | $p
-  ]));
-  ^EmbeddedRelationFunctionSetImplementation
-  (
-    id = $embedded.id,
-    root = false,
-    class = $embedded.class,
-    parent = $classMapping.parent,
-    relationFunction = $classMapping.relationFunction,
-    sourceSetImplementationId = $embedded.sourceSetImplementationId,
-    targetSetImplementationId = $embedded.targetSetImplementationId,
-    owner = $embedded.owner,
-    property = $embedded.property->cast(@Property<Nil,Any|*>),
-    propertyMappings = $transformedPms
-  );
-}
-
-function meta::relational::mapping::getTransformedRelationFunctionRelOp(classMapping:RelationFunctionInstanceSetImplementation[1], rfpm:RelationFunctionPropertyMapping[1]):TableAliasColumn[1]
-{
-  let relationColumnType = $rfpm.column.classifierGenericType.typeArguments->at(1).rawType->toOne();
-  ^TableAliasColumn(
-    alias = ^TableAlias(name = $classMapping.id, relationalElement = ^RelationFunction(owner = $classMapping)),
-    column = ^RelationFunctionColumn(column = $rfpm.column, name = $rfpm.column.name->toOne()->addQuotesIfNecessary(), type = meta::relational::mapping::pureTypeToDataType($relationColumnType)->toOne())
-  );
-}
-
 // Converts the primary-key Relation columns of a RelationFunctionInstanceSetImplementation
 // into TableAliasColumn instances anchored on a fresh TableAlias backed by a RelationFunction.
 function meta::relational::mapping::getRelationFunctionPkAsTableAliasColumns(classMapping:RelationFunctionInstanceSetImplementation[1]):TableAliasColumn[*]
@@ -583,60 +520,6 @@ function meta::relational::mapping::ensureRelationFunctionPrimaryKeyResolved(rf:
     | let pkCols = $rf->meta::relational::mapping::resolveRelationFunctionPrimaryKey([], $extensions);
       ^$rf(primaryKey = $pkCols);,
     | $rf
-  );
-}
-
-function meta::relational::mapping::transformRelationFunctionSemiStructuredPropertyMapping(propertyMappings:PropertyMapping[*], classMapping:SetImplementation[1]):PropertyMapping[*]
-{
-  $propertyMappings->match([
-    r: RelationFunctionPropertyMapping[1] |
-      let cm = $classMapping->cast(@RelationFunctionInstanceSetImplementation);
-      let newSetId = $classMapping.id + '_' + $r.property.name->toOne();
-      if($r.transformer->isNotEmpty() && $r.transformer->toOne()->instanceOf(BindingTransformer), 
-        | let dummySet = ^RootRelationalInstanceSetImplementation
-                          (
-                            id = 'generated_dummy_rfss_parent_set_' + $newSetId,
-                            root = true,
-                            userDefinedPrimaryKey = true,
-                            parent = $cm.parent,
-                            class = $cm.class,
-                            mainTableAlias = ^TableAlias(name = $cm.id, relationalElement = ^RelationFunction(owner = $cm))                
-                          );
-          let s = ^SemiStructuredEmbeddedRelationalInstanceSetImplementation
-          (
-            id = $newSetId,
-            root = false,
-            class = $r.property->functionReturnType().rawType->toOne()->cast(@Class<Any>),
-            parent = $cm.parent,
-            setMappingOwner = $dummySet,
-            sourceSetImplementationId = $cm.id,
-            targetSetImplementationId = $newSetId,
-            owner = $cm,
-            property = $r.property->cast(@Property<Nil,Any|*>),
-            relationalOperationElement = getTransformedRelationFunctionRelOp($cm, $r),
-            transformer = $r.transformer
-          );, 
-        | $r
-      );,
-    p: PropertyMapping[*] | $p
-  ]);
-}
-
-function meta::relational::mapping::transformRelationPropertyMappingsToRelational(propertyMappings:RelationFunctionPropertyMapping[*], classMapping:RelationFunctionInstanceSetImplementation[1]):RelationalPropertyMapping[*]
-{
-  $propertyMappings->map(r| 
-    ^RelationalPropertyMapping(
-      owner = $r.owner,
-      targetSetImplementationId = $r.targetSetImplementationId,
-      sourceSetImplementationId = $r.sourceSetImplementationId,
-      property = $r.property,
-      localMappingProperty = $r.localMappingProperty,
-      localMappingPropertyType = $r.localMappingPropertyType,
-      localMappingPropertyMultiplicity = $r.localMappingPropertyMultiplicity,
-      store = $r.store,
-      transformer = $r.transformer,
-      relationalOperationElement = getTransformedRelationFunctionRelOp($classMapping, $r)
-    );
   );
 }
 
@@ -700,8 +583,3 @@ function meta::relational::mapping::inferPrimaryKeyColumnNames(vs:meta::pure::me
         meta::relational::mapping::syntheticRelationalAccessorExtension()
       );
 }
-
-
-
-
-
