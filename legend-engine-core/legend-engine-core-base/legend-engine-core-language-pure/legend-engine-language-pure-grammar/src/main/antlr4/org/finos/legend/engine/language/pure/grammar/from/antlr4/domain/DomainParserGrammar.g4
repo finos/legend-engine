@@ -211,17 +211,17 @@ complexConstraint:                              identifier
                                                         constraintMessage?
                                                     PAREN_CLOSE
 ;
-constraintOwner:                                CONSTRAINT_OWNER COLON identifier
+constraintOwner:                                CONSTRAINT_OWNER identifier
 ;
-constraintExternalId:                           CONSTRAINT_EXTERNAL_ID COLON STRING
+constraintExternalId:                           CONSTRAINT_EXTERNAL_ID STRING
 ;
-constraintFunction:                             CONSTRAINT_FUNCTION COLON combinedExpression
+constraintFunction:                             CONSTRAINT_FUNCTION combinedExpression
 ;
-constraintEnforcementLevel:                     CONSTRAINT_ENFORCEMENT COLON constraintEnforcementLevelType
+constraintEnforcementLevel:                     CONSTRAINT_ENFORCEMENT constraintEnforcementLevelType
 ;
 constraintEnforcementLevelType:                 CONSTRAINT_ENFORCEMENT_LEVEL_ERROR | CONSTRAINT_ENFORCEMENT_LEVEL_WARN
 ;
-constraintMessage:                              CONSTRAINT_MESSAGE COLON combinedExpression
+constraintMessage:                              CONSTRAINT_MESSAGE combinedExpression
 ;
 constraintId:                                   identifier COLON
 ;
