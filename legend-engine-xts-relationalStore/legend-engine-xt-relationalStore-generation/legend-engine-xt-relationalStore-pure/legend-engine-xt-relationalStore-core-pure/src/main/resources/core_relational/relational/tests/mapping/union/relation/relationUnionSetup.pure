@@ -119,13 +119,13 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1Func():Relation<Any>[1]
-      lastName: lastName_s1
+      lastName: $src.lastName_s1->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2Func():Relation<Any>[1]
-      lastName: lastName_s2
+      lastName: $src.lastName_s2->toOne()
    }
 )
 
@@ -139,7 +139,7 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfRelat
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1Func():Relation<Any>[1]
-      lastName: lastName_s1
+      lastName: $src.lastName_s1->toOne()
    }
 
    Person[relSet2] : Relational
@@ -163,8 +163,8 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfRelat
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::advanced::personSet1WithFirmIdFunc():Relation<Any>[1]
-      lastName: lastName_s1,
-      +firmId: Integer[1]: FirmID
+      lastName: $src.lastName_s1->toOne(),
+      +firmId: Integer[1]: $src.FirmID->toOne()
    }
 
    Person[relSet2] : Relational
@@ -205,13 +205,13 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1FirmXOnlyFunc():Relation<Any>[1]
-      lastName: lastName_s1
+      lastName: $src.lastName_s1->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2Func():Relation<Any>[1]
-      lastName: lastName_s2
+      lastName: $src.lastName_s2->toOne()
    }
 )
 
@@ -245,15 +245,15 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1WithConstantFirstNameFunc():Relation<Any>[1]
-      lastName: lastName_s1,
-      firstName: firstName
+      lastName: $src.lastName_s1->toOne(),
+      firstName: $src.firstName->toOne()
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2WithConstantFirstNameFunc():Relation<Any>[1]
-      lastName: lastName_s2,
-      firstName: firstName
+      lastName: $src.lastName_s2->toOne(),
+      firstName: $src.firstName->toOne()
    }
 )
 
@@ -267,20 +267,20 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Person[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet1WithEmbeddedFirmFunc():Relation<Any>[1]
-      lastName: lastName_s1,
+      lastName: $src.lastName_s1->toOne(),
       firm
       (
-         legalName: firmName
+         legalName: $src.firmName->toOne()
       )
    }
 
    Person[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::personSet2WithEmbeddedFirmFunc():Relation<Any>[1]
-      lastName: lastName_s2,
+      lastName: $src.lastName_s2->toOne(),
       firm
       (
-         legalName: firmName
+         legalName: $src.firmName->toOne()
       )
    }
 )
@@ -301,14 +301,14 @@ Mapping meta::relational::tests::mapping::union::relation::mapping::unionOfTwoRe
    Address[rfSet1] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::addressSet1WithTypeFunc():Relation<Any>[1]
-      name: name,
-      type: EnumerationMapping GeographicEntityType: city_REGION
+      name: $src.name->toOne(),
+      type: EnumerationMapping GeographicEntityType: $src.city_REGION->toOne()
    }
 
    Address[rfSet2] : Relation
    {
       ~func meta::relational::tests::mapping::union::relation::addressSet2WithTypeFunc():Relation<Any>[1]
-      name: name,
-      type: EnumerationMapping GeographicEntityType: city_REGION
+      name: $src.name->toOne(),
+      type: EnumerationMapping GeographicEntityType: $src.city_REGION->toOne()
    }
 )

@@ -394,10 +394,16 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                              let res = prevalFuncColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                              $a->concatenate($res);,
                                                                                                                                           x:FuncColSpecArray<Any,Any>[1]|
+                                                                                                                                            // Per-sibling snapshot: reset shouldBeRouted / functionExpressionStack / depth
+                                                                                                                                            // from $lastState (the state entering the FuncColSpecArray, i.e. after Person.all()
+                                                                                                                                            // but before any column lambda). Without this reset, a prior column whose lambda
+                                                                                                                                            // body traversed an auto-mapped property (routeFunctionExpressionProperty sets
+                                                                                                                                            // shouldBeRouted=false on its NoSet emission) leaves shouldBeRouted=false in the fold
+                                                                                                                                            // accumulator.
                                                                                                                                             let res = $x.funcSpecs->fold({f, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@FuncColSpec<Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@FuncColSpec<Any, Any>)))
@@ -410,10 +416,12 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             $a->concatenate($res);,
                                                                                                                                           x:AggColSpecArray<Any,Any,Any>[1]|
+                                                                                                                                            // Per-sibling snapshot -- see the sibling FuncColSpecArray arm above for the full
+                                                                                                                                            // rationale. Same shouldBeRouted / functionExpressionStack / depth reset applied here.
                                                                                                                                             let res = $x.aggSpecs->fold({as, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@AggColSpec<Any, Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@AggColSpec<Any, Any, Any>)))
@@ -610,9 +618,7 @@ function meta::pure::router::routing::routeSubFunction(state:RoutingState[1], ex
                               ^$lastExpression(value=$fmain);,
                              |$fmain
                           );
-            ^$last(
-               value = $content
-            );,
+            ^$last(value = $content);,
          p: Path<Nil,Any|*>[1] | $p.path->last()->cast(@PropertyPathElement)->toOne().property->meta::pure::router::store::routing::processProperty($i, $state, $executionContext, $extensions, $debug);,       // TODO: cleanup needed
          p: Property<Nil,Any|*>[1] | $p->meta::pure::router::store::routing::processProperty($i, $state, $executionContext, $extensions, $debug);,                                                               // TODO: cleanup needed
          a: Any[1]|$state

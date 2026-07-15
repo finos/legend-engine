@@ -631,9 +631,25 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                     : "[" + LazyIterate.collect(classMapping.primaryKey, PureGrammarComposerUtility::convertIdentifier).makeString(", ") + "]";
             primaryKeyLine = getTabString(getBaseTabLevel() + 1) + "~primaryKey: " + pkBody + "\n";
         }
+        // Source form: ~func <descriptor> | ~src <expression>
+        // sourceLambda wraps the inline expression in a zero-arg lambda, so we
+        // strip the synthetic `|` prefix by rendering the body directly.
+        String sourceLine;
+        if (classMapping.relationFunction != null)
+        {
+            sourceLine = getTabString(getBaseTabLevel() + 1) + "~func " + classMapping.relationFunction.path + "\n";
+        }
+        else if (classMapping.sourceLambda != null)
+        {
+            sourceLine = getTabString(getBaseTabLevel() + 1) + "~src " + renderRelationLambdaBody(classMapping.sourceLambda) + "\n";
+        }
+        else
+        {
+            sourceLine = "";
+        }
         return ": Relation\n" +
         getTabString(getBaseTabLevel()) + "{\n" +
-        getTabString(getBaseTabLevel() + 1) + "~func " + classMapping.relationFunction.path + "\n" +
+        sourceLine +
         primaryKeyLine +
         LazyIterate.collect(classMapping.propertyMappings, pm -> getTabString(getBaseTabLevel() + 1) + pm.accept(this)).makeString(",\n") + (classMapping.propertyMappings.isEmpty() ? "" : "\n") +
         getTabString(getBaseTabLevel()) + "}";
@@ -648,10 +664,44 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(RelationFunctionPropertyMapping propertyMapping)
     {
+        // RHS form: bare column (legacy, `column` set) | inline expression
+        // (`valueFn` set, lambda body is the user expression over $src).
+        String rhs;
+        if (propertyMapping.valueFn != null)
+        {
+            rhs = renderRelationLambdaBody(propertyMapping.valueFn);
+        }
+        else
+        {
+            rhs = PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, identifierConverter());
+        }
         return PureGrammarComposerUtility.renderPossibleLocalMappingProperty(propertyMapping) +
                 (propertyMapping.bindingTransformer != null ? ": Binding " + propertyMapping.bindingTransformer.binding + " " : "") +
                 (propertyMapping.enumMappingId != null ? ": EnumerationMapping " + propertyMapping.enumMappingId + " " : "") +
-                ": " + PureGrammarComposerUtility.convertIdentifier(propertyMapping.column, identifierConverter());
+                ": " + rhs;
+    }
+
+    /**
+     * Render the body of a relation-mapping inline lambda — used for both
+     * {@code ~src <expression>} on a class mapping and the expression RHS
+     * of a property mapping. The parser wraps the user expression in a
+     * zero-parameter {@link LambdaFunction}, so to round-trip we strip the
+     * synthetic {@code |} prefix and emit just the body's value-specification.
+     */
+    private String renderRelationLambdaBody(LambdaFunction lambda)
+    {
+        if (lambda == null || lambda.body == null || lambda.body.isEmpty())
+        {
+            return "";
+        }
+        // Single-expression body is the common case; for the rare multi-expression
+        // body (shouldn't happen for ~src or property RHS, but defensive) we fall
+        // back to semicolon-joined rendering using the LambdaFunction visitor.
+        if (lambda.body.size() == 1 && (lambda.parameters == null || lambda.parameters.isEmpty()))
+        {
+            return lambda.body.get(0).accept(this);
+        }
+        return lambda.accept(this);
     }
 
     @Override

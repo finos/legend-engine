@@ -130,9 +130,9 @@ Mapping typeFunctions::relationFunctionMapping::H2Mapping
   *typeFunctions::model::Order: Relation 
   {
     ~func typeFunctions::orderFunction():Relation<Any>[1]
-    orderId: ORDERID,
-    orderName: ORDERNAME,
-    customer: Binding typeFunctions::store::CustomerBinding : CUSTOMER
+    orderId: $src.ORDERID->toOne(),
+    orderName: $src.ORDERNAME->toOne(),
+    customer: Binding typeFunctions::store::CustomerBinding : $src.CUSTOMER->toOne()
   }
 )
 

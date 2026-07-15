@@ -3203,9 +3203,13 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
             "  employees: my::Person[*];\n" +
             "  firm: my::Firm[1];\n" +
             "}\n" +
+            // Columns carry explicit `[1]` multiplicities — the post-RFPM validator
+            // requires the property multiplicity to subsume the lambda body multiplicity,
+            // and an unannotated column type defaults to `[0..1]`, which would clash with
+            // the `[1]` properties above.  This mirrors legend-pure's RelationMappingShared.
             "function my::personFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
             "{\n" +
-            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)>);\n" +
+            "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1], CITY:String[1])>);\n" +
             "}\n";
 
     public void testRelationMapping(String grammar)
@@ -3258,7 +3262,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "import meta::pure::metamodel::relation::*;\n" +
                 "function my::personFunctionWithQuotedCol():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, 'FIRM ID':Integer, CITY:String)>);\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], 'FIRM ID':Integer[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3336,7 +3340,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: FOO,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [37:5-18]: The system can't find the column FOO in the Relation (FIRSTNAME:String, AGE:Integer, FIRMID:Integer, CITY:String)");
+                ")\n", "COMPILATION error at [37:5-18]: The column 'FOO' can't be found in the relation");
     }
 
     @Test
@@ -3351,7 +3355,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    firstName: AGE,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [37:5-18]: Mismatching property and relation column types. Property type is String, but relation column it is mapped to has type Integer.");
+                ")\n", "COMPILATION error at [37:5-18]: Mismatching property and relation expression types. Property 'firstName' is of type 'String', but the expression mapped to it is of type 'Integer'.");
     }
 
     @Test
@@ -3360,7 +3364,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         testRelationMapping("###Pure\n" +
                 "Class my::Person1\n" +
                 "{\n" +
-                "  name: String[*];\n" +
+                "  names: String[*];\n" +
                 "  age: Integer[1];\n" +
                 "}\n" +
                 "\n" +
@@ -3370,10 +3374,10 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  my::Person1: Relation \n" +
                 "  {\n" +
                 "    ~func my::personFunction():Relation<Any>[1]\n" +
-                "    name: NAME,\n" +
+                "    names: FIRSTNAME,\n" +
                 "    age: AGE\n" +
                 "  }\n" +
-                ")\n", "COMPILATION error at [44:5-14]: Properties in relation mappings can only have multiplicity 1 or 0..1, but the property 'name' has multiplicity [*].");
+                ")\n");
     }
     
     @Test
@@ -3480,7 +3484,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3518,7 +3522,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -3559,7 +3563,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "function my::personWithAddressFunction():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
                 "{\n" +
-                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, STREET:String, CITY:String)>);\n" +
+                "  1->cast(@meta::pure::metamodel::relation::Relation<(FIRSTNAME:String[1], AGE:Integer[1], STREET:String[1], CITY:String[1])>);\n" +
                 "}\n" +
                 "###Mapping\n" +
                 "Mapping my::testMapping\n" +
@@ -4016,6 +4020,84 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation assocImpl = mapping._associationMappings().getFirst();
         // With union on Person side (2 members), we get 2 property mappings per direction = 4 total
         org.junit.Assert.assertEquals(4, assocImpl._propertyMappings().size());
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithIfThenElseLambdaBranches()
+    {
+        test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   firstName: String[1];\n" +
+                "   tag: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinIfMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      firstName: $src.firstName,\n" +
+                "      tag: $src.tag\n" +
+                "   }\n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {p:test::Person[1], f:test::Firm[1]|\n" +
+                "         if($p.tag == 'X', |$p.firstName, |$p.tag) == $f.id}\n" +
+                "   }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testModelJoinAssociationMappingWithInnerLambdaShadowingOuterParam()
+    {
+        test("###Pure\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "   name: String[1];\n" +
+                "   tags: String[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Firm\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::Firm_Person\n" +
+                "{\n" +
+                "   employees: test::Person[*];\n" +
+                "   employer: test::Firm[1];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping test::modelJoinShadowingMapping\n" +
+                "(\n" +
+                "   test::Person[p]: Pure {\n" +
+                "      ~src test::Person\n" +
+                "      name: $src.name,\n" +
+                "      tags: $src.tags\n" +
+                "   }\n" +
+                "   test::Firm[f]: Pure {\n" +
+                "      ~src test::Firm\n" +
+                "      id: $src.id\n" +
+                "   }\n\n" +
+                "   test::Firm_Person: ModelJoin {\n" +
+                "      {p:test::Person[1], f:test::Firm[1]|\n" +
+                "         $p.tags->filter(p|$p == $f.id)->size() > 0}\n" +
+                "   }\n" +
+                ")\n");
     }
 
 }

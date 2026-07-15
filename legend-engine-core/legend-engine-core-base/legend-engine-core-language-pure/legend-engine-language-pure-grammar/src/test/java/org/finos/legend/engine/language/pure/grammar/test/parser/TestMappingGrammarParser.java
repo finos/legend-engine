@@ -911,18 +911,6 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "        firm : jsonColumn\n" +
                 "    }\n" +
                 ")\n", "PARSER error at [8:9-12]: Unexpected token 'firm'. Valid alternatives: [',']");
-
-        // Column names cannot contain special characters
-        test("###Mapping\n" +
-                "Mapping my::testMapping\n" +
-                "(\n" +
-                "    *Person: Relation\n" +
-                "    {\n" +
-                "        ~func my::testFunc():Relation<Any>[1]\n" +
-                "        firstName : table.firstName,\n" +
-                "        firm : jsonColumn\n" +
-                "    }\n" +
-                ")\n", "PARSER error at [7:26]: Unexpected token '.'. Valid alternatives: [',']");
     }
 
     @Test
@@ -1315,4 +1303,5 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
         org.junit.Assert.assertEquals("addressSet", addressClassMapping.id);
         org.junit.Assert.assertEquals(classMapping.relationFunction.path, addressClassMapping.relationFunction.path);
     }
+
 }

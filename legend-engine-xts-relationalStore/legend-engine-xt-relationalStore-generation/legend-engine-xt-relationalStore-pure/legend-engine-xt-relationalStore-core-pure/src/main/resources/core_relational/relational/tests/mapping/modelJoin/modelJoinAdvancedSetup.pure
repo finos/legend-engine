@@ -712,6 +712,6 @@ Mapping meta::relational::tests::mapping::modelJoin::advanced::ColumnCollisionMa
 
   Person_Firm: ModelJoin
   {
-    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.country == $firm.headquarters.city}
+    {employees: meta::relational::tests::mapping::modelJoin::domain::Person[1], firm: meta::relational::tests::mapping::modelJoin::domain::Firm[1]|$employees.address.city == $firm.city && $employees.address.city == $firm.headquarters.city}
   }
 )

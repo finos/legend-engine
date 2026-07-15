@@ -186,6 +186,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::relation::transformRelationFunctionInstanceSetImplementation(r:RelationFunctionInstanceSetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionClassMapping[1]
 {
+   // The Pure metamodel stores both `~func <descriptor>` (ConcreteFunctionDefinition) and
+   // `~src <expression>` (LambdaFunction synthesised by the engine SecondPass for the inline
+   // form) in the same `relationFunction` field, typed as FunctionDefinition.  Round-tripping
+   // through the engine protocol requires us to split them: `~func` → PackageableElementPointer,
+   // `~src` → Lambda.  The engine Java protocol holds these as two mutually-exclusive nullable
+   // fields (RelationFunctionClassMapping.relationFunction / .sourceLambda) and the engine
+   // compiler SecondPass rebuilds the Pure-side LambdaFunction from `sourceLambda` when the
+   // protocol round-trips back in.
    ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionClassMapping
    (
       id = $r.id,
@@ -195,7 +203,14 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
       extendsClassMappingId = $r.superSetImplementationId,
       mappingClass = $r.mappingClass->map(mc|$mc->transformMappingClass($mapping, $extensions)),
       propertyMappings = $r.propertyMappings->map(pm|$pm->transformRelationFunctionPropertyMapping($mapping, $extensions)),
-      relationFunction = ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.FUNCTION, path=$r.relationFunction->elementToPath()),
+      relationFunction = $r.relationFunction->match([
+         c:ConcreteFunctionDefinition<Any>[1] | ^meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementPointer(type=meta::protocols::pure::vX_X_X::metamodel::m3::PackageableElementType.FUNCTION, path=$c->elementToPath()),
+         any:FunctionDefinition<Any>[1]       | []
+      ]),
+      sourceLambda = $r.relationFunction->match([
+         c:ConcreteFunctionDefinition<Any>[1] | [],
+         l:LambdaFunction<Any>[1]             | $l->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)
+      ]),
       primaryKey = $r.primaryKey.name
    );
 }
@@ -333,11 +348,19 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
                )
          );,
       r:meta::pure::mapping::relation::RelationFunctionPropertyMapping[1]|
+         // The Pure metamodel only carries `valueFn`; the engine protocol carries both
+         // `column` (the legacy bare-column form `propName: COL`) and `valueFn` (the
+         // inline expression form `propName: $src.A + $src.B`) as mutually-exclusive
+         // nullable fields.  We always emit `valueFn` here — the engine SecondPass
+         // already lowers the bare-column form to `{| $src.COL}` during compilation, so
+         // round-tripping through `valueFn` is lossless and avoids the brittle
+         // pattern-match needed to recover the legacy `column` shape from a compiled
+         // lambda.
          ^meta::protocols::pure::vX_X_X::metamodel::mapping::relation::RelationFunctionPropertyMapping
           (
              _type = 'relationFunctionPropertyMapping',
              property = ^meta::protocols::pure::vX_X_X::metamodel::m3::function::property::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
-             column = $r.column.name->toOne(),
+             valueFn = $r.valueFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions),
              source = $r.sourceSetImplementationId,
              target = $r.targetSetImplementationId,
              enumMappingId = $r.transformer->cast(@EnumerationMapping<Any>).name,
@@ -352,3 +375,4 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::
           )
    ]);
 }
+

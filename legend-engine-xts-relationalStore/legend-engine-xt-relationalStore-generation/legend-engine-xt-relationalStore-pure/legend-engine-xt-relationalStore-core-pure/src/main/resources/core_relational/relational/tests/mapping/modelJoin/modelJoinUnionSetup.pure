@@ -20,12 +20,19 @@
 ###Relational
 Database meta::relational::tests::mapping::modelJoin::union::store::Db
 (
+  // firmTable/firmTableB and fullTimeTable/contractTable back the ~func
+  // UnionBothSidesMapping, so columns property-mapped to [1] properties are
+  // NOT NULL to satisfy the strict multiplicity check. firmTable's
+  // CITY/COUNTRY/CODE stay nullable since they are not property-mapped.
+  // personTable, addressTableA/B and hqTableA/B are referenced only by
+  // full-Relational mappings (which are not subject to the strict check), so
+  // they are left as-is.
   Schema default
   (
     Table firmTable
     (
       ID INTEGER PRIMARY KEY,
-      LEGALNAME VARCHAR(100),
+      LEGALNAME VARCHAR(100) NOT NULL,
       CITY VARCHAR(100),
       COUNTRY VARCHAR(100),
       CODE VARCHAR(50)
@@ -34,7 +41,7 @@ Database meta::relational::tests::mapping::modelJoin::union::store::Db
     Table firmTableB
     (
       ID INTEGER PRIMARY KEY,
-      LEGALNAME VARCHAR(100),
+      LEGALNAME VARCHAR(100) NOT NULL,
       CITY VARCHAR(100),
       COUNTRY VARCHAR(100),
       CODE VARCHAR(50)
@@ -52,19 +59,19 @@ Database meta::relational::tests::mapping::modelJoin::union::store::Db
     Table fullTimeTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRSTNAME VARCHAR(100),
-      LASTNAME VARCHAR(100),
-      FIRMID INTEGER,
-      AGE INTEGER
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      AGE INTEGER NOT NULL
     )
 
     Table contractTable
     (
       ID INTEGER PRIMARY KEY,
-      FIRSTNAME VARCHAR(100),
-      LASTNAME VARCHAR(100),
-      FIRMID INTEGER,
-      AGE INTEGER
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      LASTNAME VARCHAR(100) NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      AGE INTEGER NOT NULL
     )
 
     Table addressTableA

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction;
 
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMappingVisitor;
@@ -24,10 +25,21 @@ import java.util.List;
 
 public class RelationFunctionClassMapping extends ClassMapping
 {
+    /**
+     * Set when the source form is {@code ~func <descriptor>}. Mutually exclusive with {@link #sourceLambda}.
+     */
     public PackageableElementPointer relationFunction;
+
+    /**
+     * Set when the source form is {@code ~src <expression>}. The lambda is a zero-arg wrapper around the
+     * inline expression and must evaluate to a {@code Relation<...>}. Mutually exclusive with
+     * {@link #relationFunction}.
+     */
+    public LambdaFunction sourceLambda;
+
     public List<PropertyMapping> propertyMappings;
     public List<String> primaryKey = Collections.emptyList();
-    
+
     @Override
     public <T> T accept(ClassMappingVisitor<T> visitor)
     {

@@ -14,16 +14,29 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.relationFunction;
 
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.BindingTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMappingVisitor;
 
 public class RelationFunctionPropertyMapping extends PropertyMapping
 {
+    /**
+     * Set when the property RHS is the bare-column form ({@code propName: COL}). The compiler lowers this
+     * to a synthetic lambda {@code { $src.COL}} at SecondPass. Mutually exclusive with {@link #valueFn}.
+     */
     public String column;
+
+    /**
+     * Set when the property RHS is a Pure expression over {@code $src} ({@code propName: $src.COL1 + $src.COL2}).
+     * The lambda body is the user expression; the compiler injects the {@code $src} parameter typed at the
+     * relation function's row type at SecondPass. Mutually exclusive with {@link #column}.
+     */
+    public LambdaFunction valueFn;
+
     public BindingTransformer bindingTransformer;
     public String enumMappingId;
-    
+
     @Override
     public <T> T accept(PropertyMappingVisitor<T> visitor)
     {

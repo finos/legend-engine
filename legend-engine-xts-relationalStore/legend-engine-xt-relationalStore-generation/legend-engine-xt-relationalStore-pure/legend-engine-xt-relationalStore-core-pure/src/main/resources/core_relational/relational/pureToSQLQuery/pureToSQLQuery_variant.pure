@@ -115,6 +115,25 @@ function meta::relational::functions::pureToSqlQuery::isAutomapWithVariantInput(
   ]);
 }
 
+// Returns true if any sub-expression of `v` involves a Variant. Used by the
+// RelationFunctionPropertyMapping lift router (processRelationFunctionPropertyMapping)
+// to decide whether to wrap the synthesised property mapping as semi-structured.
+// Walks the head spine first via isVariantInputWithInstanceValue (covers most cases:
+// `$src.payload->...`, `arr->filter(...)`, `arr->size()`, etc.), then recurses into
+// all parametersValues and routed-value-spec wrappers for completeness (covers
+// non-head-spine variants e.g. `if($cond, $variantA, $variantB)`).
+function meta::relational::functions::pureToSqlQuery::expressionTouchesVariant(v:ValueSpecification[1], state:State[1]):Boolean[1]
+{
+  let emptyVars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>));
+  if($v->isVariantInputWithInstanceValue($emptyVars, $state),
+     | true,
+     | $v->match([
+         fe: FunctionExpression[1]        | $fe.parametersValues->exists(p | $p->expressionTouchesVariant($state)),
+         rvs: RoutedValueSpecification[1] | $rvs.value->expressionTouchesVariant($state),
+         a: Any[1]                        | false
+       ]));
+}
+
 function meta::relational::functions::pureToSqlQuery::isSemiStructuredArrayInput(v: ValueSpecification[1], vars:Map<VariableExpression, ValueSpecification>[1], state: State[1]):Boolean[1]
 {
   let firstParam = $v->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo();
@@ -868,66 +887,116 @@ function meta::relational::functions::pureToSqlQuery::processVariantJoinStrings(
    ^OperationWithParentPropertyMapping(element = $resultOp, currentPropertyMapping = $semiStructuredPropertyMapping);
 }
 
+// Resolves placeholder TACs inside a SemiStructuredPropertyAccess by recursing into operand.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveSemiStructuredPropertyAccess(s:SemiStructuredPropertyAccess[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  // Two usage contexts for SemiStructuredPropertyAccess in processColumnsInRelationalOperationElements:
+  //
+  // 1. Top-level in a property mapping's relationalOperationElement (called from
+  //    processSemiStructuredRelationalPropertyMapping): the caller pre-populates
+  //    srcOperation.select.columns with the resolved parent value (e.g. array_first(...)).
+  //    We must NOT recursively resolve the operand — just wrap what's already there.
+  //
+  // 2. Nested inside a DynaFunction (called from resolveDynaFunction's parameter map):
+  //    srcOperation.select.columns is empty (select *). We must recursively resolve
+  //    the SSPA's operand to find the actual column reference.
+  let select = $srcOperation.select;
+  let currentContent = $state.inFilter->if(|$select.filteringOperation, |$select.columns);
+  if($currentContent->size() == 1,
+    | // Case 1: caller prepared the select with a single resolved parent — use directly.
+      let processedOperand = $currentContent->toOne();
+      let resolved = ^$s(operand = $processedOperand);
+      ^$srcOperation(select = $state.inFilter->if(|^$select(filteringOperation = $resolved), |^$select(columns = $resolved)));,
+    | // Case 2: nested inside DynaFunction — recursively resolve the inner operand.
+      let operandResult = $s.operand->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+      let processedOperand = $state.inFilter->if(|$operandResult.select.filteringOperation, |$operandResult.select.columns)->toOne();
+      let resolved = ^$s(operand = $processedOperand);
+      let sel = $operandResult.select;
+      ^$operandResult(select = $state.inFilter->if(|^$sel(filteringOperation = $resolved), |^$sel(columns = $resolved)));
+  );
+}
+
+// Resolves placeholder TACs inside SemiStructuredArrayElementAccess by recursing
+// into both operand and index.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveSemiStructuredArrayAccess(ssa:SemiStructuredArrayElementAccess[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let operandResult = $ssa.operand->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+  let processedOperand = $state.inFilter->if(|$operandResult.select.filteringOperation, |$operandResult.select.columns)->toOne();
+  let indexResult = $ssa.index->processColumnsInRelationalOperationElements($state, $operandResult, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+  let processedIndex = $state.inFilter->if(|$indexResult.select.filteringOperation, |$indexResult.select.columns)->toOne();
+  let resolved = ^$ssa(operand = $processedOperand, index = $processedIndex);
+  let sel = $indexResult.select;
+  ^$indexResult(select = $state.inFilter->if(|^$sel(filteringOperation = $resolved), |^$sel(columns = $resolved)));
+}
+
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processSemiStructuredRelationalPropertyMapping(origPropertyMappings:SemiStructuredRelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]): RelationalOperationElement[1]
 {
-   assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
-   let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)),
-                    | pair($oldSrcOperation, $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions)),
-                    | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
-                      let res = addMissingColumnIfUnion($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-                      let propName = $res.first;
-                      let srcOperation = $res.second;
-                      pair($srcOperation, processRelationalOperationElementOfPropertyMapping($propertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
-                );
-
-   let srcOperation = $result.first;
-   let finalResult = $result.second;
-
-   $finalResult->validate([], $extensions);
-
-   if ($property.multiplicity->hasToOneUpperBound(),
-       | $finalResult,
-       | if ($state.disableAutoFlatten == true,
-             | // disableAutoFlatten: return raw array column without LATERAL FLATTEN
-               $finalResult,
-             |
-               // Property is 1->MANY. Need to flatten
-         let navigation = if($state.inFilter, | $finalResult->cast(@SelectWithCursor).select.filteringOperation, | $finalResult->cast(@SelectWithCursor).select.columns)->toOne();
-         let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
-         let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
-         let leftAlias = $finalResult.currentTreeNode->toOne().alias;
-         let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
-         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
-         let join = ^Join(
+  assert($origPropertyMappings->size() >= 1, | 'Expected non-empty semi structured property mappings');
+  let result = if($origPropertyMappings->forAll(p | $p.owner->toOne()->instanceOf(meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation)
+                                                      || $p.owner->toOne()->instanceOf(meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation)),
+    | pair($oldSrcOperation, $origPropertyMappings->at(0).relationalOperationElement->processColumnsInRelationalOperationElements($state, $oldSrcOperation, $nodeId, $aggFromMap, true, $context, $extensions)),
+    | let propertyMappings = $origPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
+      let res = addMissingColumnIfUnion($propertyMappings, $property, $oldSrcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+      let propName = $res.first;
+      let srcOperation = $res.second;
+      pair($srcOperation, processRelationalOperationElementOfPropertyMapping($propertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
+  );
+  let srcOperation = $result.first;
+  let finalResult = $result.second;
+  $finalResult->validate([], $extensions);
+  if ($property.multiplicity->hasToOneUpperBound(),
+    | $finalResult,
+    | if ($state.disableAutoFlatten == true,
+        | // disableAutoFlatten: return raw array column without LATERAL FLATTEN.
+          // Also stamp avoidCastIfPrimitive=true on the navigation so the SQL renderer
+          // does NOT append a primitive cast (e.g. ::varchar in Snowflake). Array functions
+          // such as array_size / array_distinct / array_max need a true ARRAY/VARIANT input,
+          // not the stringified JSON that the cast would produce.
+          let swc = $finalResult->cast(@SelectWithCursor);
+          let sel = $swc.select;
+          let stamp = {c:RelationalOperationElement[1] | $c->match([
+              s: SemiStructuredObjectNavigation[1] | ^$s(avoidCastIfPrimitive=true),
+              a: Any[1] | $c
+          ])};
+          let updatedSel = if($state.inFilter,
+              | ^$sel(filteringOperation = $sel.filteringOperation->map(c | $stamp->eval($c))),
+              | ^$sel(columns = $sel.columns->map(c | $stamp->eval($c))));
+          ^$swc(select = $updatedSel);,
+        |
+            // Property is 1->MANY. Need to flatten
+          let navigation = if($state.inFilter, | $finalResult->cast(@SelectWithCursor).select.filteringOperation, | $finalResult->cast(@SelectWithCursor).select.columns)->toOne();
+          let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
+          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
+          let leftAlias = $finalResult.currentTreeNode->toOne().alias;
+          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
+          let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
+          let join = ^Join(
             name = $joinName,
             target = $rightAlias,
             aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
             operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
-         );
-
-         let lateralJoinNode = ^JoinTreeNode(
+          );
+          let lateralJoinNode = ^JoinTreeNode(
             database = ^Database(),
             joinName = $joinName,
             alias = $rightAlias,
             join = $join,
             joinType = $joinType,
             lateral = true
-         );
-
-         let joinAppliedNode = applyJoinInTree($finalResult.select.data->toOne(), $finalResult.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
-         let joinAppliedNodeSelect = $joinAppliedNode.select;
-         let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
-         let res = ^$joinAppliedNode(
+          );
+          let joinAppliedNode = applyJoinInTree($finalResult.select.data->toOne(), $finalResult.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+          let joinAppliedNodeSelect = $joinAppliedNode.select;
+          let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
+          let res = ^$joinAppliedNode(
             select = ^$joinAppliedNodeSelect(
-               columns = if($state.inFilter,|[],|$flattenOutput),
-               filteringOperation = if($state.inFilter,|$flattenOutput,|[])
+                columns = if($state.inFilter,|[],|$flattenOutput),
+                filteringOperation = if($state.inFilter,|$flattenOutput,|[])
             )
-         );
-
-         $res->validate([], $extensions);
-         $res;
-   );
-   );
+          );
+          $res->validate([], $extensions);
+          $res;
+      );
+  );
 }
 
 function meta::relational::functions::pureToSqlQuery::explodeInCurrentJoinOperation(op: RelationalOperationElement[1]):Boolean[1]
