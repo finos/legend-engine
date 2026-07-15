@@ -599,7 +599,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}\n",
                 null,
                 java.util.Collections.singletonList(
-                        "COMPILATION warning at [104:1-111:1]: recon is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+                        "COMPILATION warning at [104:1-111:1]: Relation Comparison 'meta::dataquality::TestRelationComparison' is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
         );
     }
 
@@ -651,7 +651,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}\n",
                 null,
                 java.util.Collections.singletonList(
-                        "COMPILATION warning at [104:1-110:1]: recon is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+                        "COMPILATION warning at [104:1-110:1]: Relation Comparison 'meta::dataquality::TestRelationComparison' is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
         );
     }
 
@@ -673,7 +673,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}\n",
                 null,
                 java.util.Collections.singletonList(
-                        "COMPILATION warning at [104:1-110:1]: recon is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+                        "COMPILATION warning at [104:1-110:1]: Relation Comparison 'meta::dataquality::TestRelationComparison' is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
         );
     }
 
@@ -694,7 +694,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
                 "}\n",
                 null,
                 java.util.Collections.singletonList(
-                        "COMPILATION warning at [104:1-111:1]: recon is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+                        "COMPILATION warning at [104:1-111:1]: Relation Comparison 'meta::dataquality::TestRelationComparison' is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
         );
     }
 

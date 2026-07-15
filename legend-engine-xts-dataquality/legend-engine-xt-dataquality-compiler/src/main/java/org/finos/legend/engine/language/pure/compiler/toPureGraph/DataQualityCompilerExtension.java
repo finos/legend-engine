@@ -282,9 +282,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     {
                         compileContext.pureModel.addDefects(Collections.singletonList(new Warning(
                                 relationComparison.sourceInformation,
-                                "Relation Comparison is using float/double field(s) " + floatingPointReconColumns
-                                        + " - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control",
-                                relationComparison.getPath())));
+                                "Relation Comparison '" + relationComparison.getPath() + "' " + "is using float/double field(s) " + floatingPointReconColumns
+                                        + " - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")));
                     }
 
                     // Set keys (optional)
