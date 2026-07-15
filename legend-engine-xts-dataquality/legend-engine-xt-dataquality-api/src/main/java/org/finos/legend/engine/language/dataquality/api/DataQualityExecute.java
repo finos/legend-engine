@@ -24,6 +24,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
@@ -447,7 +448,7 @@ public class DataQualityExecute
         if (dqComparisonElement == null)
         {
             return core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__DataQualityReconInput_1_(
-                    sourceLambdaFunction, targetLambdaFunction, Sets.immutable.ofAll(input.keys), input.aggregatedHash, Sets.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, input.defectLimit, false, input.enrichDQColumns, pureModel.getExecutionSupport()
+                    sourceLambdaFunction, targetLambdaFunction, input.keys == null ? Lists.immutable.empty() : Lists.immutable.ofAll(input.keys), input.aggregatedHash, input.colsForHash == null ? Lists.immutable.empty() : Lists.immutable.ofAll(input.colsForHash), input.sourceHashCol, input.targetHashCol, input.includeColumnValues, input.defectLimit, false, input.enrichDQColumns, pureModel.getExecutionSupport()
             );
         }
         return core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__DataQualityReconInput_1_(

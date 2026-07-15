@@ -179,11 +179,11 @@ reconSource:                            RECON_SOURCE COLON combinedExpression SE
 reconTarget:                            RECON_TARGET COLON combinedExpression SEMI_COLON
 ;
 reconKeys:                              RECON_KEYS COLON BRACKET_OPEN
-                                            (identifier (COMMA identifier)*)
+                                            (identifier (COMMA identifier)*)?
                                         BRACKET_CLOSE SEMI_COLON
 ;
 columnsToCompare:                       COLUMNS_TO_COMPARE COLON BRACKET_OPEN
-                                            (identifier (COMMA identifier)*)
+                                            (identifier (COMMA identifier)*)?
                                         BRACKET_CLOSE SEMI_COLON
 ;
 reconStrategy:                          RECON_STRATEGY COLON reconStrategyValue

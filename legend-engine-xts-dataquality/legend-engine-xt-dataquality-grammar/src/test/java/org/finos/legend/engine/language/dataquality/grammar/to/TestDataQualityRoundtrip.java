@@ -217,12 +217,26 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
     @Test
     public void testRelationComparison_requiredFieldsOnly()
     {
+        // empty columnsToCompare is omitted from the composed output
         test("###DataQualityValidation\n" +
                 "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
                 "{\n" +
                 "   source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
                 "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
                 "   keys: [id];\n" +
+                "   strategy: MD5Hash;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationComparison_noKeysOrColumnsToCompare()
+    {
+        // keys and columnsToCompare are optional - both omitted compares whole rows by digest
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "   source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
                 "   strategy: MD5Hash;\n" +
                 "}\n");
     }

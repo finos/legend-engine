@@ -273,8 +273,25 @@ public class DataQualityCompilerExtension implements CompilerExtension
                             targetLambda,
                             relationComparison.sourceInformation);
 
-                    // Set keys
-                    metamodel._keys(Lists.mutable.withAll(relationComparison.keys));
+                    // Warn (do not fail) if any key / columnToCompare is a floating-point typed column.
+                    List<String> floatingPointReconColumns = DataQualityValidationUtils.findFloatingPointReconColumns(
+                            relationComparison,
+                            sourceLambda,
+                            compileContext.pureModel);
+                    if (!floatingPointReconColumns.isEmpty())
+                    {
+                        compileContext.pureModel.addDefects(Collections.singletonList(new Warning(
+                                relationComparison.sourceInformation,
+                                "Relation Comparison is using float/double field(s) " + floatingPointReconColumns
+                                        + " - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control",
+                                relationComparison.getPath())));
+                    }
+
+                    // Set keys (optional)
+                    if (relationComparison.keys != null && !relationComparison.keys.isEmpty())
+                    {
+                        metamodel._keys(Lists.mutable.withAll(relationComparison.keys));
+                    }
 
                     // Set columnsToCompare (optional)
                     if (relationComparison.columnsToCompare != null && !relationComparison.columnsToCompare.isEmpty())

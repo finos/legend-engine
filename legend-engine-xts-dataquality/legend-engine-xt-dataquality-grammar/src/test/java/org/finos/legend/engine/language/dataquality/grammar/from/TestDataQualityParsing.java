@@ -378,15 +378,16 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
     }
 
     @Test
-    public void testParserErrorForMandatoryFields_relationComparison_missingKeys()
+    public void testParserForValidRelationComparisonGrammar_missingKeys()
     {
+        // keys is optional - when omitted, defaults to empty list (compares whole rows by digest)
         test("###DataQualityValidation\n" +
                 "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
                 "{\n" +
                 "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
                 "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
                 "    strategy: MD5Hash;\n" +
-                "}", "PARSER error at [2:1-7:1]: Field 'keys' is required");
+                "}");
     }
 
     @Test
@@ -402,8 +403,9 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
     }
 
     @Test
-    public void testParserErrorForValidRelationComparisonGrammar_emptyColumnsToCompare()
+    public void testParserForValidRelationComparisonGrammar_emptyColumnsToCompare()
     {
+        // empty columnsToCompare list is allowed - equivalent to omitting the field
         test("###DataQualityValidation\n" +
                 "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
                 "{\n" +
@@ -412,12 +414,13 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "    keys: [id];\n" +
                 "    columnsToCompare: [];\n" +
                 "    strategy: MD5Hash;\n" +
-                "}", "PARSER error at [7:24]: Unexpected token");
+                "}");
     }
 
-        @Test
-    public void testParserErrorForValidRelationComparisonGrammar_emptyKeys()
+    @Test
+    public void testParserForValidRelationComparisonGrammar_emptyKeys()
     {
+        // empty keys list is allowed - equivalent to omitting the field
         test("###DataQualityValidation\n" +
                 "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
                 "{\n" +
@@ -425,7 +428,7 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
                 "    keys: [];\n" +
                 "    strategy: MD5Hash;\n" +
-                "}", "PARSER error at [6:12]: Unexpected token");
+                "}");
     }
 
 }

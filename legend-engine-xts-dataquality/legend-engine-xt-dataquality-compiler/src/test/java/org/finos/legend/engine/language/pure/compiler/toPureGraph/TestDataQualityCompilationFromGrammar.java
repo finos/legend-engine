@@ -584,6 +584,120 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
         );
     }
 
+    @Test
+    public void testRelationComparison_warnsWhenColumnsToCompareContainsFloatAndDouble()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['SALARY', 'SCORE'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                null,
+                java.util.Collections.singletonList(
+                        "COMPILATION warning at [104:1-111:1]: recon is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+        );
+    }
+
+    @Test
+    public void testRelationComparison_noWarningWhenAllReconColumnsAreNonFloating()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['AGE'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_noWarningForDecimalColumn()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, AGE, BONUS])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, AGE, BONUS])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME', 'BONUS'];\n" +
+                "    columnsToCompare: ['AGE', 'BONUS'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_warnsForAllFloatingPointColumnsWhenColumnsToCompareIsEmpty()
+    {
+        // When columnsToCompare is omitted, all source columns are compared by default,
+        // so every Float/Double column in the source should be flagged (and Decimal should not).
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE, BONUS])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE, BONUS])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                null,
+                java.util.Collections.singletonList(
+                        "COMPILATION warning at [104:1-110:1]: recon is using float/double field(s) [SALARY, SCORE] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+        );
+    }
+
+    @Test
+    public void testRelationComparison_warnsOnlyForColumnsToCompareFloatsWhenKeysOmitted()
+    {
+        // keys is omitted -> the join key becomes a digest built from columnsToCompare, so there
+        // is no user-supplied key column to inspect. Only columns explicitly listed in
+        // columnsToCompare are checked; SCORE is not listed, so it must NOT be flagged even
+        // though it is a Float source column.
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, SCORE, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    columnsToCompare: ['SALARY', 'AGE'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                null,
+                java.util.Collections.singletonList(
+                        "COMPILATION warning at [104:1-110:1]: recon is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+        );
+    }
+
+    @Test
+    public void testRelationComparison_warnsForKeyFloatEvenWhenColumnsToCompareExcludesIt()
+    {
+        // A key that is a Float must be flagged even when columnsToCompare is non-empty and does
+        // not include it - the inspection set is the union of keys and columnsToCompare.
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, SALARY, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['SALARY'];\n" +
+                "    columnsToCompare: ['AGE'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                null,
+                java.util.Collections.singletonList(
+                        "COMPILATION warning at [104:1-111:1]: recon is using float/double field(s) [SALARY] - this may suffer from mismatches due to differences in floating point representation of the underlying dbs which we cannot control")
+        );
+    }
+
 
     private static final String COMPILATION_PREREQUISITE_CODE = "###Connection\n" +
             "RelationalDatabaseConnection meta::dataquality::H2\n" +
@@ -600,7 +714,7 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
             "###Relational\n" +
             "Database meta::dataquality::db\n" +
             "(\n" +
-            "   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT)\n" +
+            "   Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, SALARY DOUBLE, SCORE FLOAT, BONUS DECIMAL(18,4))\n" +
             "   Table addressTable (ID INT PRIMARY KEY, LOCATIONID INT, TYPE INT)\n" +
             "   Table locationTable (ID INT PRIMARY KEY, STREET VARCHAR(200), LOCALITY VARCHAR(200))\n" +
             "\n" +

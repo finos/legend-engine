@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -32,9 +32,9 @@ public class DataQualityReconInput
     public LambdaFunction source; //query pointing to source dataset
     public LambdaFunction target; //query pointing to target dataset
     public String packagePath; //optional package path to DataQualityRelationComparison element to get source/target lambdas if not provided directly in the input
-    public Set<String> keys; //these must exist on both source and target dataset - can either be primary keys or grouping keys if aggregated hash required. If empty then hash column will be used.
+    public LinkedHashSet<String> keys; //these must exist on both source and target dataset - can either be primary keys or grouping keys if aggregated hash required. If empty then hash column will be used. Insertion order is preserved and drives the SOURCE/TARGET column ordering of the recon output.
     public boolean aggregatedHash = false; //whether aggregated hash should be created based on the keys provided
-    public Set<String> colsForHash; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns.
+    public LinkedHashSet<String> colsForHash; //which columns you want the hash to be calculated on, these columns must exist on both source and target dataset. If empty then will calculate hash on all columns. Insertion order is preserved and drives the SOURCE/TARGET column ordering of the recon output.
     public String sourceHashCol; //if there already exists a column on source that contains the hash that you want to use in recon
     public String targetHashCol; //if there already exists a column on target that contains the hash that you want to use in recon
     public boolean includeColumnValues = false; //whether to include the compared column values in the output alongside keys and digest. Only applies when aggregatedHash is false.
