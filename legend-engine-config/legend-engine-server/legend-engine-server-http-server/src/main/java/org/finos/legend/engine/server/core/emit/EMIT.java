@@ -31,7 +31,7 @@ import java.util.Objects;
 @Path("emit")
 public class EMIT
 {
-    private static final String COVERAGE_REPORT_RESOURCE = "/emit/emit-coverage.html";
+    private static final String COVERAGE_REPORT_RESOURCE = "emit/emit-coverage.html";
 
     @GET
     @Path("html")
@@ -39,7 +39,8 @@ public class EMIT
     @Produces(MediaType.TEXT_HTML)
     public Response htmlEMIT()
     {
-        if (EMIT.class.getResource(COVERAGE_REPORT_RESOURCE) == null)
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl.getResource(COVERAGE_REPORT_RESOURCE) == null)
         {
             return Response.status(Response.Status.SERVICE_UNAVAILABLE)
                     .type(MediaType.TEXT_PLAIN)
@@ -49,7 +50,7 @@ public class EMIT
         return Response.status(Response.Status.OK).type(MediaType.TEXT_HTML).entity((StreamingOutput) out ->
         {
             try (InputStream in = Objects.requireNonNull(
-                    Thread.currentThread().getContextClassLoader().getResourceAsStream(COVERAGE_REPORT_RESOURCE),
+                    cl.getResourceAsStream(COVERAGE_REPORT_RESOURCE),
                     COVERAGE_REPORT_RESOURCE))
             {
                 IOUtils.copy(in, out);
