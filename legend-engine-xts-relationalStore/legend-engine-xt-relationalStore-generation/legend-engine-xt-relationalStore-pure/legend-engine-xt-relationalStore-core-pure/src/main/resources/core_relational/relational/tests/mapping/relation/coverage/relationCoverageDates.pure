@@ -1,0 +1,266 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Relation-mapping coverage for date / date-time typed properties (the classic
+// tests/mapping/dates.pure equivalent). A relation function returns DATE and
+// TIMESTAMP columns which are mapped to StrictDate[1] and DateTime[0..1]
+// properties; the queries exercise date/date-time filters, ranges, empty checks
+// and today()/now().
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+function meta::relational::tests::mapping::relation::coverage::tradeFunction():Relation<Any>[1]
+{
+   #>{coverageDB.tradeTable}#
+      ->select(~[ID, tradeDate, quantity, settlementDateTime]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::coverage::*;
+
+Mapping meta::relational::tests::mapping::relation::coverage::tradeRelationMapping
+(
+   *Trade: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::coverage::tradeFunction():Relation<Any>[1]
+      id: ID,
+      quantity: quantity,
+      date: tradeDate,
+      settlementDateTime: settlementDateTime
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testStrictDateFilter():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == %2014-12-01)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        1
+        2
+        3
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testStrictDateProject():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->project(~[id:t|$t.id, date:t|$t.date]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        id:Integer[1], date:Date[1]
+        1, 2014-12-01T00:00:00.000000000+0000
+        2, 2014-12-01T00:00:00.000000000+0000
+        3, 2014-12-01T00:00:00.000000000+0000
+        4, 2014-12-02T00:00:00.000000000+0000
+        5, 2014-12-02T00:00:00.000000000+0000
+        6, 2014-12-03T00:00:00.000000000+0000
+        7, 2014-12-03T00:00:00.000000000+0000
+        8, 2014-12-04T00:00:00.000000000+0000
+        9, 2014-12-04T00:00:00.000000000+0000
+        10, 2014-12-04T00:00:00.000000000+0000
+        11, 2014-12-05T00:00:00.000000000+0000
+        12, 2016-02-04T00:00:00.000000000+0000
+        13, 2016-03-28T00:00:00.000000000+0000
+        14, 2016-03-28T00:00:00.000000000+0000
+        15, 2016-02-14T00:00:00.000000000+0000
+     #,
+     $result.values->at(0)->sort(~id->ascending()),
+     0,
+     0
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeFilter():Boolean[1]
+{
+   // H2 stores TIMESTAMP at millisecond precision, so row 7's inserted
+   // 2014-12-04 15:22:23.123456789 is stored as .123. The filter literal must
+   // therefore use millisecond precision to match on equality.
+   let exact = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime == %2014-12-04T15:22:23.123)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        7
+     #->toString(),
+     $exact.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testEmptyDateQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime->isEmpty())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        10
+        11
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 < $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999))->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        settlementDateTime:Date[1]
+        2014-12-04T15:22:23.123+0000
+        2014-12-04T21:00:00.000+0000
+     #,
+     $result.values->at(0)->sort(~settlementDateTime->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testStrictDateFilterWithToday():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == today())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeFilterWithNow():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime <= now())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        12
+        13
+        14
+        15
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeNotEmptyProject():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == %2014-12-04 && $i.settlementDateTime->isNotEmpty())->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        settlementDateTime
+        2014-12-05T21:00:00.000000000+0000
+        2014-12-05T21:00:00.000000000+0000
+     #->toString(),
+     $result.values->at(0)->sort(~settlementDateTime->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeInclusiveRangeQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 <= $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999))->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        settlementDateTime:Date[1]
+        2014-12-04T15:22:23.123+0000
+        2014-12-04T21:00:00.000+0000
+     #,
+     $result.values->at(0)->sort(~settlementDateTime->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testDateTimeRetrieveWithTimeZone():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.id->in([12, 13, 14, 15]))->project(~[id:t|$t.id, settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        id:Integer[1], settlementDateTime:Date[1]
+        12, 2016-02-05T21:00:00.123+0000
+        13, 2016-03-29T21:00:00.123+0000
+        14, 2016-03-29T21:00:00.123+0000
+        15, 2016-02-15T21:00:00.123+0000
+     #,
+     $result.values->at(0)->sort(~id->ascending()),
+     0,
+     1
+   );
+}
