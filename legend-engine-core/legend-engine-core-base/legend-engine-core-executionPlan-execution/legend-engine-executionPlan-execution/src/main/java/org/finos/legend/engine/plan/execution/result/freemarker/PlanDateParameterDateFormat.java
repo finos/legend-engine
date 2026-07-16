@@ -30,7 +30,9 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,15 +62,63 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
         boolean performTzConversion;
         public boolean hasSubSecond;
         private final String datePattern;
+        private final String basePattern;
 
         PlanDateParameterFormatter(String datePattern, boolean isDateTime, boolean hasTimeOffset, boolean performTzConversion, boolean hasSubSecond)
         {
             this.isDateTime = isDateTime;
             this.hasTimeOffset = hasTimeOffset;
-            this.dateFormatter = DateTimeFormatter.ofPattern(datePattern);
-            this.performTzConversion = performTzConversion;
             this.hasSubSecond = hasSubSecond;
             this.datePattern = datePattern;
+            this.basePattern = hasSubSecond ? datePattern.substring(0, datePattern.indexOf(".SSS")) : datePattern;
+            this.dateFormatter = hasSubSecond ? buildSubSecondFormatter(this.basePattern, hasTimeOffset) : DateTimeFormatter.ofPattern(datePattern);
+            this.performTzConversion = performTzConversion;
+        }
+
+        private static DateTimeFormatter buildSubSecondFormatter(String basePattern, boolean hasTimeOffset)
+        {
+            // Accept 1-9 fractional-second digits (milliseconds, microseconds, nanoseconds) rather than the
+            // fixed 3-digit '.SSS' pattern, which rejects e.g. microsecond precision such as '.000000'.
+            DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder()
+                    .appendPattern(basePattern)
+                    .appendFraction(ChronoField.NANO_OF_SECOND, 1, 9, true);
+            if (hasTimeOffset)
+            {
+                builder.appendPattern("Z");
+            }
+            return builder.toFormatter();
+        }
+
+        /**
+         * Builds an output formatter that preserves the fractional-second precision of the original date string.
+         * For example, if the input had 6 fractional digits (".000000"), the output formatter will always emit
+         * exactly 6 fractional digits, rather than trimming trailing zeros down to 1 digit.
+         */
+        DateTimeFormatter buildOutputFormatter(String originalDate)
+        {
+            int dotIndex = originalDate.indexOf('.');
+            if (dotIndex < 0)
+            {
+                return this.dateFormatter;
+            }
+            int fracDigits = 0;
+            for (int i = dotIndex + 1; i < originalDate.length() && Character.isDigit(originalDate.charAt(i)); i++)
+            {
+                fracDigits++;
+            }
+            if (fracDigits == 0)
+            {
+                return this.dateFormatter;
+            }
+            int clampedFracDigits = Math.min(Math.max(fracDigits, 1), 9);
+            DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder()
+                    .appendPattern(this.basePattern)
+                    .appendFraction(ChronoField.NANO_OF_SECOND, clampedFracDigits, clampedFracDigits, true);
+            if (this.hasTimeOffset)
+            {
+                builder.appendPattern("Z");
+            }
+            return builder.toFormatter();
         }
 
         public LocalDateTime parse(String date) throws DateTimeParseException
@@ -144,13 +194,16 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
             try
             {
                 LocalDateTime dateTime = dtf.parse(dateAndTimeZone.date);
+                DateTimeFormatter outputFormatter = dtf.hasSubSecond
+                        ? dtf.buildOutputFormatter(dateAndTimeZone.date)
+                        : dtf.dateFormatter;
                 if (dtf.performTzConversion)
                 {
-                    return new PlanDateParameter(dateTime, dtf.dateFormatter, dateAndTimeZone.tz);
+                    return new PlanDateParameter(dateTime, outputFormatter, dateAndTimeZone.tz);
                 }
                 else
                 {
-                    return new PlanDateParameter(dateTime, dtf.dateFormatter);
+                    return new PlanDateParameter(dateTime, outputFormatter);
                 }
             }
             catch (DateTimeParseException e)
