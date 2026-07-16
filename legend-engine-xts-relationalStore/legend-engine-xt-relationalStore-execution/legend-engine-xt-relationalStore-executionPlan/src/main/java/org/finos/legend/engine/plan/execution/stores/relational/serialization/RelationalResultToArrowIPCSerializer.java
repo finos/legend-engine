@@ -25,10 +25,10 @@ import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResu
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.io.OutputStream;
@@ -77,7 +77,7 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
 
             try (VectorSchemaRoot root = VectorSchemaRoot.create(schema, allocator))
             {
-                try (ZstdOutputStream zstdOut = new ZstdOutputStream(out);
+                try (ZstdOutputStream zstdOut = new ZstdOutputStream(out,2);
                      WritableByteChannel channel = Channels.newChannel(zstdOut);
                      ArrowStreamWriter writer = new ArrowStreamWriter(root, null, channel))
                 {
@@ -98,19 +98,18 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
         }
     }
 
-
     // ----------------------------------------------------------------------
     // Schema construction (with Legend metadata as schema-level custom_metadata)
     // ----------------------------------------------------------------------
     private Schema buildSchema(RelationalResult rr) throws Exception
     {
-        List<SQLResultColumn> columns = rr.getSQLResultColumns();
+        List<Column> columns = rr.getResultSetColumns();
         List<Field> fields = new ArrayList<>();
 
-        for (SQLResultColumn col : columns)
+        for (Column col : columns)
         {
-            String name = col.getNonQuotedLabel();
-            ArrowType arrowType = jdbcToArrow(col.dataType);
+            String name = col.name;
+            ArrowType arrowType = jdbcToArrow(col.type);
             fields.add(new Field(name, FieldType.nullable(arrowType), null));
         }
 
@@ -131,7 +130,17 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
 
     private ArrowType jdbcToArrow(String sqlType)
     {
-        switch (sqlType)
+        // Normalize: strip whitespace and uppercase the base type name.
+        String normalized = sqlType.trim().toUpperCase();
+
+        // Extract the base type name (everything before the first parenthesis).
+        String baseType = normalized;
+        int parenIndex = normalized.indexOf('(');
+        if (parenIndex >= 0) {
+            baseType = normalized.substring(0, parenIndex).trim();
+        }
+
+        switch (baseType)
         {
             case "BIT":
             case "BOOLEAN":
@@ -149,11 +158,39 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
                 return new ArrowType.FloatingPoint(FloatingPointPrecision.SINGLE);
             case "DOUBLE":
                 return new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE);
-//            case "NUMERIC:
-//            case "DECIMAL:
-//                int p = precision <= 0 ? 38 : Math.min(precision, 38);
-//                int s = Math.max(scale, 0);
-//                return new ArrowType.Decimal(p, s, 128);
+            case "NUMERIC":
+            case "DECIMAL": {
+                // Defaults if no (precision, scale) is specified.
+                int precision = 38;
+                int scale = 0;
+
+                int closeParen = normalized.indexOf(')', parenIndex);
+                if (parenIndex >= 0 && closeParen > parenIndex) {
+                    String inside = normalized.substring(parenIndex + 1, closeParen);
+                    String[] parts = inside.split(",");
+                    try {
+                        if (parts.length >= 1 && !parts[0].trim().isEmpty()) {
+                            precision = Integer.parseInt(parts[0].trim());
+                        }
+                        if (parts.length >= 2 && !parts[1].trim().isEmpty()) {
+                            scale = Integer.parseInt(parts[1].trim());
+                        }
+                    }
+                    catch (NumberFormatException e) {
+                        // Malformed metadata: fall back to safe defaults.
+                        precision = 38;
+                    }
+                }
+
+                // Arrow 128-bit decimals cap precision at 38.
+                int p = (precision <= 0) ? 38 : Math.min(precision, 38);
+                // Scale must be non-negative and not exceed precision.
+                int s = Math.max(scale, 0);
+                if (s > p) {
+                    s = p;
+                }
+                return new ArrowType.Decimal(p, s, 128);
+            }
             case "DATE":
                 return new ArrowType.Date(DateUnit.DAY);
             case "TIME":
@@ -165,7 +202,6 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
                 return ArrowType.Utf8.INSTANCE; // fallback (CHAR, VARCHAR, CLOB, etc.)
         }
     }
-
     // ----------------------------------------------------------------------
     // Row streaming with batching + tracing (mirrors the original spans)
     // ----------------------------------------------------------------------
@@ -255,8 +291,7 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void setValue(FieldVector v, int idx, Object value) throws Exception
+    private void setValue(FieldVector v, int idx, Object value)
     {
         if (v instanceof BitVector)
         {
