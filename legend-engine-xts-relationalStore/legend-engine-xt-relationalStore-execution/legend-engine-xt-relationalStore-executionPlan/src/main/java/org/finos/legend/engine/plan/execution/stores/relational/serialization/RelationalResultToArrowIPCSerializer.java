@@ -77,7 +77,7 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
 
             try (VectorSchemaRoot root = VectorSchemaRoot.create(schema, allocator))
             {
-                try (ZstdOutputStream zstdOut = new ZstdOutputStream(out,2);
+                try (ZstdOutputStream zstdOut = new ZstdOutputStream(out);
                      WritableByteChannel channel = Channels.newChannel(zstdOut);
                      ArrowStreamWriter writer = new ArrowStreamWriter(root, null, channel))
                 {
