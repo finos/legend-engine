@@ -2835,6 +2835,8 @@ public class Handlers
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__Byte_MANY__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeMany(ps.get(2), "Byte")),
                 h("meta::core::runtime::getRuntimeWithModelQueryConnection_Class_1__Binding_1__String_1__Runtime_1_", "getRuntimeWithModelQueryConnection", false, ps -> res("meta::core::runtime::Runtime", "one"), ps -> typeOne(ps.get(2), "String")));
         register(h("meta::pure::functions::runtime::currentUserId__String_1_", "currentUserId", false, ps -> res("String", "one"), ps -> true));
+        register(h("meta::pure::functions::runtime::currentOrganizationName__String_1_", "currentOrganizationName", false, ps -> res("String", "one"), ps -> true));
+        register(h("meta::pure::functions::runtime::currentAccountName__String_1_", "currentAccountName", false, ps -> res("String", "one"), ps -> true));
     }
 
     private void registerUnitFunctions()

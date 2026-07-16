@@ -1143,6 +1143,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   covarSample,
   cumulativeDistribution,
   currentUserId,
+  currentOrganizationName,
+  currentAccountName,
   date,
   dateDiff,
   datePart,
