@@ -1270,6 +1270,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   sin,
   sinh,
   size,
+  split,
   splitPart,
   sqlFalse,
   sqlNull,

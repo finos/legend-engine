@@ -272,6 +272,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('sign',                   $allStates,            ^ToSql(format='sign(%s)')),
     dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
     dynaFnToSql('sinh',                   $allStates,            ^ToSql(format='sinh(%s)')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
     dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),

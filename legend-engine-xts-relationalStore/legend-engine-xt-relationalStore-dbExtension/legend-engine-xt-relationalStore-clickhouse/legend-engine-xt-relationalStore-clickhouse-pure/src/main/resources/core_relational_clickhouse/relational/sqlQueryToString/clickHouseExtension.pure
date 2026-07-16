@@ -125,6 +125,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='toSecond(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(hex(SHA1(%s)))')), 
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(SHA256(%s)))')), 
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='splitByString(%s, %s)', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='splitByString(%s, %s)[%s]', transform={p:String[*] | $p->at(1)->concatenate($p->at(0))->concatenate($p->at(2))})),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->transformSubstringForClickHouse()})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevPop', $p)})),
