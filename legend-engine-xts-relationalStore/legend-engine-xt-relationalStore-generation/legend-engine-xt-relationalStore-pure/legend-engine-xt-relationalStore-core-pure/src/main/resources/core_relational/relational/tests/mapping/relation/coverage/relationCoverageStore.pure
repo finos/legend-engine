@@ -81,6 +81,44 @@ Database meta::relational::tests::mapping::relation::coverage::coverageDB
       tradeDate DATE NOT NULL,
       settlementDateTime TIMESTAMP
    )
+
+   // Person / firm model backing the boolean, local-property, ~src, expression,
+   // graph-fetch, include, subtype and extends coverage. ACTIVE (BIT) backs a
+   // Boolean[1] property; EMPTYPE backs an EnumerationMapping / subtype
+   // discriminator; SALARY is nullable to exercise ->toOne() coercion.
+   Table personTable
+   (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      AGE INTEGER NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      ACTIVE BIT NOT NULL,
+      EMPTYPE VARCHAR(20) NOT NULL,
+      SALARY FLOAT,
+      FIRM_JSON VARCHAR(200) NOT NULL
+   )
+
+   Table firmTable
+   (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100) NOT NULL
+   )
+
+   // Processing-temporal table for the allVersions() milestoning coverage.
+   Table PERSON_TEMPORAL
+   (
+      milestoning
+      (
+         processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+      )
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      AGE INTEGER NOT NULL,
+      IN_Z DATE NOT NULL,
+      OUT_Z DATE NOT NULL
+   )
+
+   Join Person_Firm(personTable.FIRMID = firmTable.ID)
 )
 
 ###Pure
@@ -187,6 +225,24 @@ function meta::relational::tests::mapping::relation::coverage::createTablesAndFi
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (13, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
+
+   // person / firm model
+   dropAndCreateTableInDb(coverageDB, 'firmTable', $connection);
+   executeInDb('insert into firmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+   executeInDb('insert into firmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+
+   dropAndCreateTableInDb(coverageDB, 'personTable', $connection);
+   executeInDb('insert into personTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (1, \'Peter\',   23, 1, true,  \'CONTRACT\',  null,  \'{"legalName":"Firm X"}\');', $connection);
+   executeInDb('insert into personTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (2, \'John\',    30, 1, false, \'FULL_TIME\', 100.0, \'{"legalName":"Firm X"}\');', $connection);
+   executeInDb('insert into personTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (3, \'Jane\',    25, 2, true,  \'FULL_TIME\', 200.0, \'{"legalName":"Firm A"}\');', $connection);
+   executeInDb('insert into personTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (4, \'Anthony\', 40, 2, true,  \'CONTRACT\',  null,  \'{"legalName":"Firm A"}\');', $connection);
+
+   // processing-temporal model (allVersions)
+   dropAndCreateTableInDb(coverageDB, 'PERSON_TEMPORAL', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (1, \'Peter\',   23, \'2024-11-01\', \'9999-12-31\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (2, \'John\',    30, \'2025-11-01\', \'9999-12-31\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (3, \'Jane\',    23, \'2024-11-01\', \'2025-01-02\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (4, \'Anthony\', 19, \'2025-01-01\', \'9999-12-31\');', $connection);
 
    true;
 }

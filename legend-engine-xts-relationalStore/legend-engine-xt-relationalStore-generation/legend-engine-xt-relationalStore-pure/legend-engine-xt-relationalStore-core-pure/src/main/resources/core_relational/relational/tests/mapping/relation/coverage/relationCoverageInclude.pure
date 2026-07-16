@@ -1,0 +1,88 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-8: mapping include executed end-to-end. A base mapping contains a Relation
+// set; an outer mapping includes it, and a query is executed against the outer
+// mapping (existing include coverage is compile/roundtrip only).
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+function meta::relational::tests::mapping::relation::coverage::includePersonFunc():Relation<Any>[1]
+{
+   #>{coverageDB.personTable}#
+      ->select(~[FIRSTNAME, AGE]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+Mapping meta::relational::tests::mapping::relation::coverage::baseIncludeMapping
+(
+   *Person: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::coverage::includePersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      age: AGE
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::coverage::outerIncludeMapping
+(
+   include meta::relational::tests::mapping::relation::coverage::baseIncludeMapping
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testMappingIncludeQuery():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName, age:p|$p.age]),
+      outerIncludeMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, age
+        Anthony, 40
+        Jane, 25
+        John, 30
+        Peter, 23
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testMappingIncludeWithFilter():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.age > 25)->project(~[firstName:p|$p.firstName]),
+      outerIncludeMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        Anthony
+        John
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}

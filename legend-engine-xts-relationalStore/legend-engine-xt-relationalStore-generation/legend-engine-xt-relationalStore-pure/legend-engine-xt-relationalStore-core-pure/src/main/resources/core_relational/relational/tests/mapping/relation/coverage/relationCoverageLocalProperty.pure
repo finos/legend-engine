@@ -1,0 +1,103 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-2: dedicated local-property (+prop) coverage — a plain local property
+// (+firmId) and a computed local property (+doubleAge, via an expression RHS),
+// both queried and used as a filter predicate. Reuses the shared Person class.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+function meta::relational::tests::mapping::relation::coverage::localPropPersonFunc():Relation<Any>[1]
+{
+   #>{coverageDB.personTable}#
+      ->select(~[FIRSTNAME, AGE, FIRMID]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+Mapping meta::relational::tests::mapping::relation::coverage::localPropMapping
+(
+   *Person: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::coverage::localPropPersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      age: AGE,
+      +firmId: Integer[1]: FIRMID,
+      +doubleAge: Integer[1]: $src.AGE * 2
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName, firmId:p|$p.firmId]),
+      localPropMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, firmId
+        Anthony, 2
+        Jane, 2
+        John, 1
+        Peter, 1
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyFilter():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->filter(p|$p.firmId == 1)->project(~[firstName:p|$p.firstName]),
+      localPropMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        John
+        Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyComputed():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName, doubleAge:p|$p.doubleAge]),
+      localPropMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, doubleAge
+        Anthony, 80
+        Jane, 50
+        John, 60
+        Peter, 46
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
