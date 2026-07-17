@@ -15,6 +15,7 @@
 package org.finos.legend.engine.application.query.model;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.finos.legend.engine.application.query.api.ApplicationQueryException;
 import org.finos.legend.engine.shared.mongo.model.StoredAuditInformation;
 
@@ -45,7 +46,7 @@ public class QueryModelConverter
         Query query;
         try
         {
-            query = new ObjectMapper().convertValue(stored, Query.class);
+            query = new ObjectMapper().registerModule(new JavaTimeModule()).convertValue(stored, Query.class);
         }
         catch (Exception e)
         {

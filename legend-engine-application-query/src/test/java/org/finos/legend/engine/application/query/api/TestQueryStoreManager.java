@@ -318,8 +318,8 @@ public class TestQueryStoreManager
         return queryParameterValue;
     }
 
-    private TestMongoClientProvider testMongoClientProvider = new TestMongoClientProvider();
-    private final QueryStoreManager store = new QueryStoreManager(testMongoClientProvider.mongoClient);
+    private TestMongoClientProvider testMongoClientProvider;
+    private QueryStoreManager store;
     private static final TestVaultImplementation testVaultImplementation = new TestVaultImplementation();
 
     @BeforeClass
@@ -341,6 +341,7 @@ public class TestQueryStoreManager
     public void setup()
     {
         this.testMongoClientProvider = new TestMongoClientProvider();
+        this.store = new QueryStoreManager(this.testMongoClientProvider.mongoClient);
     }
 
     @After
