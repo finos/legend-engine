@@ -24,13 +24,13 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a
 {  
   if ($a->isEmpty(),
     |if ($type == Variant,
-      |'"null"',
+      |'\'null\'',
       |'null'
       ),
     |$a->toOne()->match(
       [
-        v : Variant[1] | '"'+$v->toString()->replace('"','""')+'"',
-        s : String[1] | if($s->contains('{') || $s->contains('['), |'"'+$s->replace('"','""')+'"', |$s),        
+        v : Variant[1] | '\'' + $v->toString()->replace('\\', '\\\\')->replace('\'', '\\\'') + '\'',
+        s : String[1] | if($s->contains('{') || $s->contains('['), |'\'' + $s->replace('\\', '\\\\')->replace('\'', '\\\'') + '\'', |$s),
         o : Any[1] | $o->toString()
       ]
     )

@@ -160,6 +160,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pct/pct_deephaven_adapter.pure line:281 column:150), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pct/pct_deephaven_adapter.pure line:281 column:150), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {

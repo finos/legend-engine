@@ -110,7 +110,9 @@ function meta::external::query::sql::reversePCT::generator::generateTests(funcKi
                                                                                                           let index = $reprocessed.second.replaced->indexOf($a);
                                                                                                           $b->replace($schema.name+'.'+$table.name->toOne(), 'csv(\''+$a.first.csv->replace('\r','')
                                                                                                             ->replace('\n','\\n')->replace('                  ','')
-                                                                                                            ->replace(', ',',')+'\')')
+                                                                                                            ->replace(', ',',')
+                                                                                                            // the csv body is embedded in a SQL string literal, whose only escape is quote doubling
+                                                                                                            ->replace('\'','\'\'')+'\')')
                                                                                                             ->replace($table.name->toOne(),'table'+$index->toString());                                                                                                            
                                                                                                     },
                                                                                                     $query

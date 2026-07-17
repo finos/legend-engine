@@ -58,6 +58,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Postgres"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Postgres"
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {

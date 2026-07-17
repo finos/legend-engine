@@ -17,8 +17,8 @@ import meta::pure::functions::string::*;
 
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toCSVString(string: String[1]):String[1]
 {
-   if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
-      | '"' + $string->replace('"', '""') + '"',
+   if($string->contains(',') || $string->contains('\'') || $string->contains('\n') || $string->contains('\r'),
+      | '\'' + $string->replace('\'', '\\\'') + '\'',
       | $string);
 }
 
@@ -27,7 +27,8 @@ function <<test.Test>> meta::pure::functions::relation::tests::toCSVString::test
   assertEquals('', ''->toCSVString());
   assertEquals('1', '1'->toCSVString());
   assertEquals('hello world', 'hello world'->toCSVString());
-  assertEquals('"hello\nworld"', 'hello\nworld'->toCSVString());
-  assertEquals('"hello, world"', 'hello, world'->toCSVString());
-  assertEquals('"""hello world"""', '"hello world"'->toCSVString());
+  assertEquals('\'hello\nworld\'', 'hello\nworld'->toCSVString());
+  assertEquals('\'hello, world\'', 'hello, world'->toCSVString());
+  assertEquals('"hello world"', '"hello world"'->toCSVString());
+  assertEquals('\'\\\'hello world\\\'\'', '\'hello world\''->toCSVString());
 }

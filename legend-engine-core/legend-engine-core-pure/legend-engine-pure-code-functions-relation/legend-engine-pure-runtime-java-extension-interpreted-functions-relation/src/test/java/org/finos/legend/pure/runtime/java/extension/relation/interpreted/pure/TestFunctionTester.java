@@ -51,11 +51,11 @@ public class TestFunctionTester extends PureExpressionTest
                         "{" +
                         "print(#TDS\n" +
                         "            id:Integer[1], payload:meta::pure::metamodel::variant::Variant[1]\n" +
-                        "            1, \"[1,2,3]\"\n" +
-                        "            2, \"[4,5,6]\"\n" +
-                        "            3, \"[7,8,9]\"\n" +
-                        "            4, \"[10,11,12]\"\n" +
-                        "            5, \"[13,14,15]\"\n" +
+                        "            1, '[1,2,3]'\n" +
+                        "            2, '[4,5,6]'\n" +
+                        "            3, '[7,8,9]'\n" +
+                        "            4, '[10,11,12]'\n" +
+                        "            5, '[13,14,15]'\n" +
                         "    #->extend(~abc:x|$x.id)->sort(~id->ascending())->toString(), 1);\n" +
                         "}");
 //        try

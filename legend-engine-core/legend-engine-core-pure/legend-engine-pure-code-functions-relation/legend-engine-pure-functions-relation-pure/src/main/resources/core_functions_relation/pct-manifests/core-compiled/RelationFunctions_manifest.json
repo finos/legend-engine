@@ -11,7 +11,7 @@
     },
     {
       "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
-      "expectedError" : "\nexpected: '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\"null\",1,2,\"null\"\\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"[]\"\\n#'\nactual:   '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\"null\",1,2,\"null\"\\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"null\"\\n#'"
+      "expectedError" : "\nexpected: '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'[3]\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'[]\\'\\n#'\nactual:   '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'[3]\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'null\\'\\n#'"
     }
   ]
 }

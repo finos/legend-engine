@@ -58,6 +58,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
     "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for keys().\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:9196 column:71), \"Expected one table alias column in operation\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {

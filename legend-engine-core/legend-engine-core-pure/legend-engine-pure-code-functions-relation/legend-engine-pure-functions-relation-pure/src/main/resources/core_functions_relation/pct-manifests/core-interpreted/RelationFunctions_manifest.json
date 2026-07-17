@@ -15,11 +15,11 @@
     },
     {
       "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
-      "expectedError" : "\nexpected: '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\"null\",1,2,\"null\"\\n   1,\"[1,2,3,4,5,6]\",2,3,\"[3]\"\\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"[]\"\\n#'\nactual:   '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\"null\",1,2,\"null\"\\n   1,\"[1,2,3,4,5,6]\",2,3,\"3\"\\n   2,\"[1,2,3,4,5,6]\",0,4,\"[1,2,3,4]\"\\n   3,\"[1,2,3,4,5,6]\",-3,-1,\"null\"\\n#'"
+      "expectedError" : "\nexpected: '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'[3]\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'[]\\'\\n#'\nactual:   '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'3\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'null\\'\\n#'"
     },
     {
       "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
-      "expectedError" : "\nexpected: '#TDS\\n   id,payload,divBy2\\n   1,\"[1,2,3]\",\"[2]\"\\n   2,\"[4,5,6]\",\"[4,6]\"\\n   3,\"[7,8,9]\",\"[8]\"\\n   4,\"[10,11,12]\",\"[10,12]\"\\n   5,\"[13,14,15]\",\"[14]\"\\n#'\nactual:   '#TDS\\n   id,payload,divBy2\\n   1,\"[1,2,3]\",\"2\"\\n   2,\"[4,5,6]\",\"[4,6]\"\\n   3,\"[7,8,9]\",\"8\"\\n   4,\"[10,11,12]\",\"[10,12]\"\\n   5,\"[13,14,15]\",\"14\"\\n#'"
+      "expectedError" : "\nexpected: '#TDS\\n   id,payload,divBy2\\n   1,\\'[1,2,3]\\',\\'[2]\\'\\n   2,\\'[4,5,6]\\',\\'[4,6]\\'\\n   3,\\'[7,8,9]\\',\\'[8]\\'\\n   4,\\'[10,11,12]\\',\\'[10,12]\\'\\n   5,\\'[13,14,15]\\',\\'[14]\\'\\n#'\nactual:   '#TDS\\n   id,payload,divBy2\\n   1,\\'[1,2,3]\\',\\'2\\'\\n   2,\\'[4,5,6]\\',\\'[4,6]\\'\\n   3,\\'[7,8,9]\\',\\'8\\'\\n   4,\\'[10,11,12]\\',\\'[10,12]\\'\\n   5,\\'[13,14,15]\\',\\'14\\'\\n#'"
     }
   ]
 }

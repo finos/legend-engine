@@ -66,11 +66,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 {
    let tds = #TDS
      id, payload:meta::pure::metamodel::variant::Variant
-     1, "[1,2,3]"
-     2, "[4,5,6]"
-     3, "[7,8,9]"
-     4, "[10,11,12]"
-     5, "[13,14,15]"
+     1, '[1,2,3]'
+     2, '[4,5,6]'
+     3, '[7,8,9]'
+     4, '[10,11,12]'
+     5, '[13,14,15]'
    #;
 
    let expr = {|
@@ -81,8 +81,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 
    assertEquals('#TDS\n'+
                 '   id,payload\n'+
-                '   1,"[1,2,3]"\n'+
-                '   2,"[4,5,6]"\n'+
+                '   1,\'[1,2,3]\'\n'+
+                '   2,\'[4,5,6]\'\n'+
                 '#', $res->toString());
 }
 
@@ -90,9 +90,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 {
    let tds = #TDS
      id, payload:meta::pure::metamodel::variant::Variant
-     1, "{""boolean"":true,  ""integer"":1, ""string"":""hello""}"
-     2, "{""boolean"":false, ""integer"":2, ""string"":""world""}"
-     3, "{""boolean"":true,  ""integer"":3, ""string"":""world""}"
+     1, '{"boolean":true,  "integer":1, "string":"hello"}'
+     2, '{"boolean":false, "integer":2, "string":"world"}'
+     3, '{"boolean":true,  "integer":3, "string":"world"}'
    #;
 
    let expr = {|
@@ -103,7 +103,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 
    assertEquals('#TDS\n'+
                 '   id,payload\n'+
-                '   1,"{""boolean"":true,""integer"":1,""string"":""hello""}"\n'+
+                '   1,\'{"boolean":true,"integer":1,"string":"hello"}\'\n'+
                 '#', $res->toString());
 }
 
@@ -111,11 +111,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 {
    let tds = #TDS
      id, payload:meta::pure::metamodel::variant::Variant
-     1, "[1,2,3]"
-     2, "[4,5,6]"
-     3, "[7,8,9]"
-     4, "[10,11,12]"
-     5, "[13,14,15]"
+     1, '[1,2,3]'
+     2, '[4,5,6]'
+     3, '[7,8,9]'
+     4, '[10,11,12]'
+     5, '[13,14,15]'
    #;
 
    let expr = {|
@@ -126,7 +126,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 
    assertEquals('#TDS\n'+
                 '   id,payload\n'+
-                '   2,"[4,5,6]"\n'+
-                '   4,"[10,11,12]"\n'+
+                '   2,\'[4,5,6]\'\n'+
+                '   4,\'[10,11,12]\'\n'+
                 '#', $res->toString());
 }
