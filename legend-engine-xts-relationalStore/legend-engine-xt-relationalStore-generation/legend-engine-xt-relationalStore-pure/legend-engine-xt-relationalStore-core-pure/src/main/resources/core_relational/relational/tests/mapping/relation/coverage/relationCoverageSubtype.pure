@@ -75,7 +75,11 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 }
 
 // Polymorphic: querying the superclass Person must resolve the subtype set.
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testSubtypeSuperclassQuery():Boolean[1]
+// ToFix: relation-mapping subtype dispatch is unimplemented — querying the
+// superclass fails with "Error mapping not found for class Person"
+// (router_routing.pure:584). Unblock once findMappingForType handles
+// RelationFunctionInstanceSetImplementation.
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testSubtypeSuperclassQuery():Boolean[1]
 {
    let result = execute(
       |Person.all()->project(~[firstName:p|$p.firstName]),

@@ -77,24 +77,27 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(coverageDB),
       meta::relational::extension::relationalExtensions()
    );
+   // #TDS date values must be in the datetime-as-long form the CSV parser
+   // recognises (YYYY-MM-DDT00:00:00.000+0000); a bare 'YYYY-MM-DD' is parsed as
+   // a String and rejected against a Date column by TestTDS.
    assertTdsEquivalent(
      #TDS
-        id:Integer[1], date:StrictDate[1]
-        1, 2014-12-01
-        2, 2014-12-01
-        3, 2014-12-01
-        4, 2014-12-02
-        5, 2014-12-02
-        6, 2014-12-03
-        7, 2014-12-03
-        8, 2014-12-04
-        9, 2014-12-04
-        10, 2014-12-04
-        11, 2014-12-05
-        12, 2016-02-04
-        13, 2016-03-28
-        14, 2016-03-28
-        15, 2016-02-14
+        id:Integer[1], date:Date[1]
+        1, 2014-12-01T00:00:00.000+0000
+        2, 2014-12-01T00:00:00.000+0000
+        3, 2014-12-01T00:00:00.000+0000
+        4, 2014-12-02T00:00:00.000+0000
+        5, 2014-12-02T00:00:00.000+0000
+        6, 2014-12-03T00:00:00.000+0000
+        7, 2014-12-03T00:00:00.000+0000
+        8, 2014-12-04T00:00:00.000+0000
+        9, 2014-12-04T00:00:00.000+0000
+        10, 2014-12-04T00:00:00.000+0000
+        11, 2014-12-05T00:00:00.000+0000
+        12, 2016-02-04T00:00:00.000+0000
+        13, 2016-03-28T00:00:00.000+0000
+        14, 2016-03-28T00:00:00.000+0000
+        15, 2016-02-14T00:00:00.000+0000
      #,
      $result.values->at(0)->sort(~id->ascending()),
      0,
