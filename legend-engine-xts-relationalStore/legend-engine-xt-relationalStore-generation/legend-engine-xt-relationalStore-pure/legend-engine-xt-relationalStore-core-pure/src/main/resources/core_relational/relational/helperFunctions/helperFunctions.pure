@@ -244,7 +244,9 @@ function <<access.private>> meta::relational::tests::csv::formatDateTime(date: D
 
 function meta::relational::tests::csv::escapeCSVString(string:String[1]):String[1]
 {
-   $string->meta::pure::functions::relation::toCSVString();
+   if($string->contains(',') || $string->contains('"') || $string->contains('\n') || $string->contains('\r'),
+      | '"' + $string->replace('"', '""') + '"',
+      | $string);
 }
 
 function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]):Pair<Class<Any>,AbstractProperty<Any>>[*]

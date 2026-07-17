@@ -70,7 +70,7 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                                 $r.result.rows->map(x|
                                   range($x.values->size())->map(z |
                                       $x.values->at($z)->match([
-                                        s: String[1] | $s->meta::relational::tests::csv::escapeCSVString(),
+                                        s: String[1] | $s->meta::pure::functions::relation::toCSVString(),
                                         a: Any[1] | if($a == TDSNull, |'null', |$a->toString())
                                       ]);
                                   )->makeString(',')
