@@ -1,0 +1,105 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-1: Boolean-typed property populated from a relation function column.
+// A relation accessor types a BIT/BOOLEAN SQL column as TinyInt (not Boolean), so a
+// bare `active: ACTIVE` mapping fails the type check. The supported form is an
+// expression RHS that coerces the TinyInt column to Boolean (`$src.ACTIVE == 1`).
+
+###Pure
+Class meta::relational::tests::mapping::relation::BoolPerson
+{
+   firstName: String[1];
+   active: Boolean[1];
+}
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::boolPersonFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#
+      ->select(~[FIRSTNAME, ACTIVE]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::boolPersonMapping
+(
+   *BoolPerson: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::boolPersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      active: $src.ACTIVE == 1
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testBooleanPropertyProject():Boolean[1]
+{
+   let result = execute(
+      |BoolPerson.all()->project(~[firstName:p|$p.firstName, active:p|$p.active]),
+      boolPersonMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, active
+        Anthony, true
+        Jane, true
+        John, false
+        Peter, true
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testBooleanPropertyFilterTrue():Boolean[1]
+{
+   let result = execute(
+      |BoolPerson.all()->filter(p|$p.active)->project(~[firstName:p|$p.firstName]),
+      boolPersonMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        Anthony
+        Jane
+        Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testBooleanPropertyFilterFalse():Boolean[1]
+{
+   let result = execute(
+      |BoolPerson.all()->filter(p|$p.active == false)->project(~[firstName:p|$p.firstName]),
+      boolPersonMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        John
+     #->toString(),
+     $result.values->at(0)->toString());
+}

@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap #26: subtype / inheritance for relation mappings. Marked test.Test per
+// request; the doc classifies this as NEW_DEV (polymorphic dispatch through
+// RelationFunctionInstanceSetImplementation may be unimplemented), so these may
+// need to move to test.ToFix after the run. Reuses the shared PersonWithEmployeeType
+// (extends Person) class and EmployeeType enum.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::subtypePersonFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#
+      ->select(~[FIRSTNAME, EMPTYPE]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::subtypeMapping
+(
+   meta::relational::tests::mapping::relation::EmployeeType: EnumerationMapping employeeTypeMapping
+   {
+      CONTRACT:  'CONTRACT',
+      FULL_TIME: 'FULL_TIME'
+   }
+
+   *PersonWithEmployeeType: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::subtypePersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      employeeType: EnumerationMapping employeeTypeMapping : EMPTYPE
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSubtypeDirectQuery():Boolean[1]
+{
+   let result = execute(
+      |PersonWithEmployeeType.all()->project(~[firstName:p|$p.firstName, employeeType:p|$p.employeeType->toString()]),
+      subtypeMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, employeeType
+        Anthony, CONTRACT
+        Jane, FULL_TIME
+        John, FULL_TIME
+        Peter, CONTRACT
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+// Polymorphic: querying the superclass Person must resolve the subtype set.
+// ToFix: relation-mapping subtype dispatch is unimplemented — querying the
+// superclass fails with "Error mapping not found for class Person"
+// (router_routing.pure:584). Unblock once findMappingForType handles
+// RelationFunctionInstanceSetImplementation.
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSubtypeSuperclassQuery():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName]),
+      subtypeMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        Anthony
+        Jane
+        John
+        Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}

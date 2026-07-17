@@ -1,0 +1,134 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-3: broaden ~src inline-source coverage (the #4941 alternative to ~func).
+// The relation expression is written on the class mapping via ~src rather than
+// as a named ~func reference: plain source, filter-in-source, and a projected
+// subset. The Pure runtime parser stack-overflows if a raw #>{store.table}#
+// literal appears directly under ~src inside a mapping element, so each source
+// expression is wrapped in a zero-arg helper function and invoked from ~src.
+// That still exercises the ~src / inline-expression code path (the class
+// mapping stores a lambda, not a function pointer) while avoiding the parser
+// limitation.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::srcPlainRel():Relation<(FIRSTNAME:String[1], AGE:Integer[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#->select(~[FIRSTNAME, AGE])->cast(@Relation<(FIRSTNAME:String[1], AGE:Integer[1])>);
+}
+
+function meta::relational::tests::mapping::relation::srcFilterRel():Relation<(FIRSTNAME:String[1], AGE:Integer[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#->filter(x | $x.AGE > 25)->select(~[FIRSTNAME, AGE])->cast(@Relation<(FIRSTNAME:String[1], AGE:Integer[1])>);
+}
+
+function meta::relational::tests::mapping::relation::srcSubsetRel():Relation<(FIRSTNAME:String[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#->select(~[FIRSTNAME])->cast(@Relation<(FIRSTNAME:String[1])>);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::srcPlainMapping
+(
+   *Person: Relation
+   {
+      ~src meta::relational::tests::mapping::relation::srcPlainRel()
+      firstName: FIRSTNAME,
+      age: AGE
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::srcFilterMapping
+(
+   *Person: Relation
+   {
+      ~src meta::relational::tests::mapping::relation::srcFilterRel()
+      firstName: FIRSTNAME,
+      age: AGE
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::srcSubsetMapping
+(
+   *Person: Relation
+   {
+      ~src meta::relational::tests::mapping::relation::srcSubsetRel()
+      firstName: FIRSTNAME
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSrcPlain():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName, age:p|$p.age]),
+      srcPlainMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, age
+        Anthony, 40
+        Jane, 25
+        John, 30
+        Peter, 23
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSrcWithFilterInSource():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName, age:p|$p.age]),
+      srcFilterMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, age
+        Anthony, 40
+        John, 30
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSrcSubset():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName]),
+      srcSubsetMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        Anthony
+        Jane
+        John
+        Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}

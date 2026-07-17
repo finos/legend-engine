@@ -1,0 +1,360 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Relation-mapping equivalent of the classic ~groupBy mapping tests. The classic
+// relational mapping pins its aggregation with a class-level ~groupBy clause; the
+// relation equivalent performs the ->groupBy(...) inside the backing ~func, so the
+// class set is already the grouped/aggregated relation. Reuses the classic groupBy
+// Position / Product domain but maps against the local NOT NULL coverage store.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+// ~groupBy(ACC_NUM, PRODUCT_ID, GSN), quantity = sum(QTY)
+function meta::relational::tests::mapping::relation::positionGroupByFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
+      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
+}
+
+// ~filter (PRODUCT_ID = 1) then the same groupBy.
+function meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
+      ->filter(x | $x.PRODUCT_ID == 1)
+      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
+}
+
+// Plain PRODUCT table.
+function meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.PRODUCT}#
+      ->select(~[ID, DESCRIPTION]);
+}
+
+// ~filter (ACTIVE = 1) then a keys-only groupBy (no aggregate = distinct).
+function meta::relational::tests::mapping::relation::productExplodedFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.PRODUCT_EXPLODED}#
+      ->filter(x | $x.ACTIVE == 1)
+      ->select(~[PRODUCT_ID, DESCRIPTION])
+      ->distinct();
+}
+
+// A single mapping-level groupBy carrying the full set of aggregate reducers
+// (sum / count / min / max / average) so the mapped class surfaces several
+// aggregate columns at once.
+function meta::relational::tests::mapping::relation::positionStatsFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
+      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~[
+         total  : x | $x.QTY : y | $y->sum(),
+         cnt    : x | $x.QTY : y | $y->count(),
+         minQty : x | $x.QTY : y | $y->min(),
+         maxQty : x | $x.QTY : y | $y->max(),
+         avgQty : x | $x.QTY : y | $y->average()
+      ]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::groupBy::model::domain::*;
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::groupByRelationMapping
+(
+   *Position[position]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::positionGroupByFunc():Relation<Any>[1]
+      acctNum: ACC_NUM,
+      gsn: GSN,
+      quantity: quantity,
+      +productId: Integer[1]: PRODUCT_ID
+   }
+
+   *Product[product]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
+      description: DESCRIPTION,
+      +id: Integer[1]: ID
+   }
+
+   PositionProduct: XStore
+   {
+      product[position, product]: $this.productId == $that.id,
+      positions[product, position]: $this.id == $that.productId
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::groupByRelationMappingWithFilter
+(
+   *Position[position]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
+      acctNum: ACC_NUM,
+      gsn: GSN,
+      quantity: quantity,
+      +productId: Integer[1]: PRODUCT_ID
+   }
+
+   *Product[product]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
+      description: DESCRIPTION,
+      +id: Integer[1]: ID
+   }
+
+   PositionProduct: XStore
+   {
+      product[position, product]: $this.productId == $that.id,
+      positions[product, position]: $this.id == $that.productId
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::groupByRelationMappingWithTwoGroupBys
+(
+   *Position[position]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
+      acctNum: ACC_NUM,
+      gsn: GSN,
+      quantity: quantity,
+      +productId: Integer[1]: PRODUCT_ID
+   }
+
+   *Product[product]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::productExplodedFunc():Relation<Any>[1]
+      description: DESCRIPTION,
+      +productId: Integer[1]: PRODUCT_ID
+   }
+
+   PositionProduct: XStore
+   {
+      product[position, product]: $this.productId == $that.productId,
+      positions[product, position]: $this.productId == $that.productId
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::multiAggregateRelationMapping
+(
+   *PositionStats: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::positionStatsFunc():Relation<Any>[1]
+      acctNum: ACC_NUM,
+      gsn: GSN,
+      total: total,
+      cnt: cnt,
+      minQty: minQty,
+      maxQty: maxQty,
+      avgQty: avgQty
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::groupBy::model::domain::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMapping():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900003, EA4GNY, 300
+        7900002, YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilter():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|$i.gsn == 'YU2EF5')->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900002, YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregate():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|$i.quantity > 0)->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900003, EA4GNY, 300
+        7900002, YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregateWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|and($i.quantity > 8, $i.product.description->in(['Gold'])))->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900003, EA4GNY, 300
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregateWithProject():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|or(and($i.quantity > 100, $i.quantity < 1000), $i.gsn->in(['EA4GNY'])))->project(~[gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, quantity
+        EA4GNY, 300
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProject():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, quantity
+        EA4GNY, 300
+        YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        EA4GNY, Gold
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithJoinAndTableFilter():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMappingWithFilter,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(
+      |Product.all()->project(~[gsn:pr|$pr.positions.gsn, description:pr|$pr.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        EA4GNY, Gold
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectAggregateWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(
+      |Product.all()->project(~[quantity:pr|$pr.positions.quantity, description:pr|$pr.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        quantity, description
+        8, Firm D
+        300, Gold
+     #->toString(),
+     $result.values->at(0)->sort([~description->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithMultipleGroupBys():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMappingWithTwoGroupBys,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+// Mapping-level groupBy carrying five aggregate reducers at once. TRADE has two groups:
+// (7900002/YU2EF5) with QTY {3,5} and (7900003/EA4GNY) with QTY {100,200}.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingMultipleAggregates():Boolean[1]
+{
+   let result = execute(
+      |PositionStats.all()->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, total:p|$p.total, cnt:p|$p.cnt, minQty:p|$p.minQty, maxQty:p|$p.maxQty, avgQty:p|$p.avgQty]),
+      multiAggregateRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, total, cnt, minQty, maxQty, avgQty
+        7900003, EA4GNY, 300, 2, 100, 200, 150.0
+        7900002, YU2EF5, 8, 2, 3, 5, 4.0
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}

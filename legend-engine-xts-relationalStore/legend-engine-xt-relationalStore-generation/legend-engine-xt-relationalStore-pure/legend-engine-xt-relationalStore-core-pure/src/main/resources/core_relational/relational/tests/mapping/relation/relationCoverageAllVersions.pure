@@ -1,0 +1,82 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-6: unbounded allVersions() milestoning on a relation-mapped processing-
+// temporal class (existing coverage is allVersionsInRange only). Reuses the shared
+// ProcessingTemporalPerson class, backed by the processing-milestoned PERSON_TEMPORAL
+// table. Contrasted with a point-in-time all(processingDate) query.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::temporalPersonFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.PERSON_TEMPORAL}#
+      ->select(~[FIRSTNAME, AGE]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::allVersionsMapping
+(
+   *ProcessingTemporalPerson: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::temporalPersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      age: AGE
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMilestoningAllVersions():Boolean[1]
+{
+   let result = execute(
+      |ProcessingTemporalPerson.allVersions()->project(~[firstName:p|$p.firstName, age:p|$p.age]),
+      allVersionsMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, age
+        Anthony, 19
+        Jane, 23
+        John, 30
+        Peter, 23
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMilestoningProcessingDate():Boolean[1]
+{
+   let result = execute(
+      {|ProcessingTemporalPerson.all(%2025-06-01)->project(~[firstName:p|$p.firstName])},
+      allVersionsMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName
+        Anthony
+        Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}

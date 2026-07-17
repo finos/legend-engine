@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Gap G-4: broaden expression-RHS coverage (the #4941 `col: <expr over $src>` form).
+// Arithmetic, string concat, and the sanctioned ->toOne() coercion of a nullable
+// column to a [1] property (the alternative to a NOT NULL column under the
+// multiplicity validator).
+
+###Pure
+Class meta::relational::tests::mapping::relation::ExprPerson
+{
+   firstName: String[1];
+   ageDoubled: Integer[1];
+   greeting: String[1];
+}
+
+Class meta::relational::tests::mapping::relation::SalariedPerson
+{
+   firstName: String[1];
+   salary: Float[1];
+}
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+function meta::relational::tests::mapping::relation::exprPersonFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#
+      ->select(~[FIRSTNAME, AGE]);
+}
+
+// Only rows with a non-null SALARY, so the ->toOne() coercion is total at runtime.
+function meta::relational::tests::mapping::relation::salariedPersonFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverageDB.cvPersonTable}#
+      ->filter(x | $x.SALARY->isNotEmpty())
+      ->select(~[FIRSTNAME, SALARY]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+Mapping meta::relational::tests::mapping::relation::exprMapping
+(
+   *ExprPerson: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::exprPersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      ageDoubled: $src.AGE * 2,
+      greeting: 'Hi ' + $src.FIRSTNAME
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::toOneMapping
+(
+   *SalariedPerson: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::salariedPersonFunc():Relation<Any>[1]
+      firstName: FIRSTNAME,
+      salary: $src.SALARY->toOne()
+   }
+)
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionArithmetic():Boolean[1]
+{
+   let result = execute(
+      |ExprPerson.all()->project(~[firstName:p|$p.firstName, ageDoubled:p|$p.ageDoubled]),
+      exprMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, ageDoubled
+        Anthony, 80
+        Jane, 50
+        John, 60
+        Peter, 46
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionConcat():Boolean[1]
+{
+   let result = execute(
+      |ExprPerson.all()->project(~[greeting:p|$p.greeting]),
+      exprMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        greeting
+        Hi Anthony
+        Hi Jane
+        Hi John
+        Hi Peter
+     #->toString(),
+     $result.values->at(0)->sort([~greeting->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExpressionToOneCoercion():Boolean[1]
+{
+   let result = execute(
+      |SalariedPerson.all()->project(~[firstName:p|$p.firstName, salary:p|$p.salary]),
+      toOneMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        firstName, salary
+        Jane, 200.0
+        John, 100.0
+     #->toString(),
+     $result.values->at(0)->sort([~firstName->ascending()])->toString());
+}
