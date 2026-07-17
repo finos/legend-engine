@@ -23,7 +23,7 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::includePersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.personTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#
       ->select(~[FIRSTNAME, AGE]);
 }
 

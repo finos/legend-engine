@@ -26,14 +26,14 @@ import meta::relational::tests::mapping::relation::coverage::*;
 // ~groupBy(ACC_NUM, PRODUCT_ID, GSN), quantity = sum(QTY)
 function meta::relational::tests::mapping::relation::coverage::positionGroupByFunc():Relation<Any>[1]
 {
-   #>{coverageDB.TRADE}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.TRADE}#
       ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
 }
 
 // ~filter (PRODUCT_ID = 1) then the same groupBy.
 function meta::relational::tests::mapping::relation::coverage::positionGroupByFilteredFunc():Relation<Any>[1]
 {
-   #>{coverageDB.TRADE}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.TRADE}#
       ->filter(x | $x.PRODUCT_ID == 1)
       ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
 }
@@ -41,14 +41,14 @@ function meta::relational::tests::mapping::relation::coverage::positionGroupByFi
 // Plain PRODUCT table.
 function meta::relational::tests::mapping::relation::coverage::productFunc():Relation<Any>[1]
 {
-   #>{coverageDB.PRODUCT}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.PRODUCT}#
       ->select(~[ID, DESCRIPTION]);
 }
 
 // ~filter (ACTIVE = 1) then a keys-only groupBy (no aggregate = distinct).
 function meta::relational::tests::mapping::relation::coverage::productExplodedFunc():Relation<Any>[1]
 {
-   #>{coverageDB.PRODUCT_EXPLODED}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.PRODUCT_EXPLODED}#
       ->filter(x | $x.ACTIVE == 1)
       ->select(~[PRODUCT_ID, DESCRIPTION])
       ->distinct();
@@ -59,7 +59,7 @@ function meta::relational::tests::mapping::relation::coverage::productExplodedFu
 // aggregate columns at once.
 function meta::relational::tests::mapping::relation::coverage::positionStatsFunc():Relation<Any>[1]
 {
-   #>{coverageDB.TRADE}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.TRADE}#
       ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~[
          total  : x | $x.QTY : y | $y->sum(),
          cnt    : x | $x.QTY : y | $y->count(),

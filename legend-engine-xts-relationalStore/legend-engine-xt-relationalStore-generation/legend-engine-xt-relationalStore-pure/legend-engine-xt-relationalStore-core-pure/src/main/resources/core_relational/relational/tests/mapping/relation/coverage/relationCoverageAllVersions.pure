@@ -24,7 +24,7 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::temporalPersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.PERSON_TEMPORAL}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.PERSON_TEMPORAL}#
       ->select(~[FIRSTNAME, AGE]);
 }
 
@@ -54,7 +54,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    let result = execute(
       |ProcessingTemporalPerson.allVersions()->project(~[firstName:p|$p.firstName, age:p|$p.age]),
       allVersionsMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::coverage::coverageDB),
       meta::relational::extension::relationalExtensions());
    assertEquals(
      #TDS
@@ -72,7 +72,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    let result = execute(
       {|ProcessingTemporalPerson.all(%2025-06-01)->project(~[firstName:p|$p.firstName])},
       allVersionsMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::coverage::coverageDB),
       meta::relational::extension::relationalExtensions());
    assertEquals(
      #TDS

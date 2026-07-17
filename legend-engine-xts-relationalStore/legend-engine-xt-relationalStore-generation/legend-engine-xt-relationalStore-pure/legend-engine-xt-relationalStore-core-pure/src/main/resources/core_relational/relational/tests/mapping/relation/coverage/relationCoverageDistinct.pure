@@ -26,7 +26,7 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::incomeFunctionFunc():Relation<Any>[1]
 {
-   #>{coverageDB.ACCOUNT_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.ACCOUNT_INFO}#
       ->select(~[IF_CODE, IF_NAME])
       ->distinct();
 }
@@ -36,7 +36,7 @@ function meta::relational::tests::mapping::relation::coverage::incomeFunctionFun
 // func-body filter's effect observable in the asserted TDS.
 function meta::relational::tests::mapping::relation::coverage::incomeFunctionWithFilterFunc():Relation<Any>[1]
 {
-   #>{coverageDB.ACCOUNT_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.ACCOUNT_INFO}#
       ->filter(r | $r.IF_TYPE == 'Type 2')
       ->select(~[IF_CODE, IF_NAME])
       ->distinct();
@@ -44,9 +44,9 @@ function meta::relational::tests::mapping::relation::coverage::incomeFunctionWit
 
 function meta::relational::tests::mapping::relation::coverage::incomeFunctionWithOtherInfoFunc():Relation<Any>[1]
 {
-   #>{coverageDB.ACCOUNT_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.ACCOUNT_INFO}#
       ->join(
-         #>{coverageDB.IF_OTHER_INFO}#
+         #>{meta::relational::tests::mapping::relation::coverage::coverageDB.IF_OTHER_INFO}#
             ->extend(~joinIfCode:r | $r.IF_CODE)
             ->select(~[joinIfCode, IF_OTHER_NAME]),
          JoinKind.LEFT,
@@ -58,15 +58,15 @@ function meta::relational::tests::mapping::relation::coverage::incomeFunctionWit
 
 function meta::relational::tests::mapping::relation::coverage::classificationFunc():Relation<Any>[1]
 {
-   #>{coverageDB.IF_OTHER_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.IF_OTHER_INFO}#
       ->select(~[IF_CODE, IF_OTHER_NAME]);
 }
 
 function meta::relational::tests::mapping::relation::coverage::incomeFunctionWithOtherInfo2Func():Relation<Any>[1]
 {
-   #>{coverageDB.ACCOUNT_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.ACCOUNT_INFO}#
       ->join(
-         #>{coverageDB.IF_OTHER_INFO}#
+         #>{meta::relational::tests::mapping::relation::coverage::coverageDB.IF_OTHER_INFO}#
             ->extend(~joinIfCode:r | $r.IF_CODE)
             ->select(~[joinIfCode, IF_OTHER_NAME]),
          JoinKind.LEFT,
@@ -78,7 +78,7 @@ function meta::relational::tests::mapping::relation::coverage::incomeFunctionWit
 
 function meta::relational::tests::mapping::relation::coverage::incomeFunctionWithCaseFunc():Relation<Any>[1]
 {
-   #>{coverageDB.ACCOUNT_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.ACCOUNT_INFO}#
       ->extend(~name:r | if($r.IF_NAME->isEmpty(), | 'C', | $r.IF_NAME->toOne()))
       ->select(~[IF_CODE, name])
       ->distinct();
@@ -86,7 +86,7 @@ function meta::relational::tests::mapping::relation::coverage::incomeFunctionWit
 
 function meta::relational::tests::mapping::relation::coverage::classificationWithCaseFunc():Relation<Any>[1]
 {
-   #>{coverageDB.IF_OTHER_INFO}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.IF_OTHER_INFO}#
       ->extend(~name:r | if($r.IF_OTHER_NAME->isEmpty(), | 'Unknown', | $r.IF_OTHER_NAME->toOne()))
       ->select(~[IF_CODE, name]);
 }
@@ -290,7 +290,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
       meta::external::store::relational::tests::testRuntime(coverageDB),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals(1, $result.values->at(0)->cast(@meta::pure::tds::TabularDataSet).rows->size());
+   assertEquals(1, $result.values->at(0)->size());
    assertEquals(
      #TDS
         name

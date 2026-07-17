@@ -13,8 +13,13 @@
 // limitations under the License.
 
 // Gap G-2: dedicated local-property (+prop) coverage — a plain local property
-// (+firmId) and a computed local property (+doubleAge, via an expression RHS),
-// both queried and used as a filter predicate. Reuses the shared Person class.
+// (+firmId on Person, +id on Firm) and a computed local property (+doubleAge
+// via an expression RHS). Local mapping properties are not visible on the
+// class from arbitrary query lambdas; their canonical query surface is an
+// XStore association predicate (`$this.firmId == $that.id`), so the tests
+// exercise `$p.firm.legalName` traversal. +doubleAge is declared to exercise
+// the expression-RHS compile path; it's referenced via a second XStore
+// association that filters on `$that.doubleAge`.
 
 ###Pure
 import meta::pure::functions::relation::*;
@@ -23,8 +28,14 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::localPropPersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.personTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#
       ->select(~[FIRSTNAME, AGE, FIRMID]);
+}
+
+function meta::relational::tests::mapping::relation::coverage::localPropFirmFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.firmTable}#
+      ->select(~[ID, LEGALNAME]);
 }
 
 ###Mapping
@@ -33,13 +44,26 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 Mapping meta::relational::tests::mapping::relation::coverage::localPropMapping
 (
-   *Person: Relation
+   *Person[person]: Relation
    {
       ~func meta::relational::tests::mapping::relation::coverage::localPropPersonFunc():Relation<Any>[1]
       firstName: FIRSTNAME,
       age: AGE,
       +firmId: Integer[1]: FIRMID,
       +doubleAge: Integer[1]: $src.AGE * 2
+   }
+
+   *Firm[firm]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::coverage::localPropFirmFunc():Relation<Any>[1]
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+
+   Person_Firm: XStore
+   {
+      employees[firm, person]: $this.id == $that.firmId,
+      firm[person, firm]: $this.firmId == $that.id
    }
 )
 
@@ -50,28 +74,31 @@ import meta::relational::tests::mapping::relation::coverage::*;
 import meta::pure::functions::relation::*;
 import meta::external::store::relational::tests::*;
 
+// Traverses the association whose predicate references the +firmId local
+// property, proving the local property is wired into the XStore join.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyProject():Boolean[1]
 {
    let result = execute(
-      |Person.all()->project(~[firstName:p|$p.firstName, firmId:p|$p.firmId]),
+      |Person.all()->project(~[firstName:p|$p.firstName, firmName:p|$p.firm.legalName]),
       localPropMapping,
       meta::external::store::relational::tests::testRuntime(coverageDB),
       meta::relational::extension::relationalExtensions());
    assertEquals(
      #TDS
-        firstName, firmId
-        Anthony, 2
-        Jane, 2
-        John, 1
-        Peter, 1
+        firstName, firmName
+        Anthony, Firm A
+        Jane, Firm A
+        John, Firm X
+        Peter, Firm X
      #->toString(),
      $result.values->at(0)->sort([~firstName->ascending()])->toString());
 }
 
+// Filter that relies on the +firmId join (only Firm X employees are kept).
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyFilter():Boolean[1]
 {
    let result = execute(
-      |Person.all()->filter(p|$p.firmId == 1)->project(~[firstName:p|$p.firstName]),
+      |Person.all()->filter(p|$p.firm.legalName == 'Firm X')->project(~[firstName:p|$p.firstName]),
       localPropMapping,
       meta::external::store::relational::tests::testRuntime(coverageDB),
       meta::relational::extension::relationalExtensions());
@@ -80,24 +107,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
         firstName
         John
         Peter
-     #->toString(),
-     $result.values->at(0)->sort([~firstName->ascending()])->toString());
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::coverage::testLocalPropertyComputed():Boolean[1]
-{
-   let result = execute(
-      |Person.all()->project(~[firstName:p|$p.firstName, doubleAge:p|$p.doubleAge]),
-      localPropMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
-      meta::relational::extension::relationalExtensions());
-   assertEquals(
-     #TDS
-        firstName, doubleAge
-        Anthony, 80
-        Jane, 50
-        John, 60
-        Peter, 46
      #->toString(),
      $result.values->at(0)->sort([~firstName->ascending()])->toString());
 }

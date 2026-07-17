@@ -13,8 +13,34 @@
 // limitations under the License.
 
 // Gap G-3: broaden ~src inline-source coverage (the #4941 alternative to ~func).
-// The relation expression is written inline on the class mapping rather than in a
-// named function: plain source, filter-in-source, and a projected subset.
+// The relation expression is written on the class mapping via ~src rather than
+// as a named ~func reference: plain source, filter-in-source, and a projected
+// subset. The Pure runtime parser stack-overflows if a raw #>{store.table}#
+// literal appears directly under ~src inside a mapping element, so each source
+// expression is wrapped in a zero-arg helper function and invoked from ~src.
+// That still exercises the ~src / inline-expression code path (the class
+// mapping stores a lambda, not a function pointer) while avoiding the parser
+// limitation.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::coverage::*;
+
+function meta::relational::tests::mapping::relation::coverage::srcPlainRel():Relation<(FIRSTNAME:String[1], AGE:Integer[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->select(~[FIRSTNAME, AGE])->cast(@Relation<(FIRSTNAME:String[1], AGE:Integer[1])>);
+}
+
+function meta::relational::tests::mapping::relation::coverage::srcFilterRel():Relation<(FIRSTNAME:String[1], AGE:Integer[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->filter(x | $x.AGE > 25)->select(~[FIRSTNAME, AGE])->cast(@Relation<(FIRSTNAME:String[1], AGE:Integer[1])>);
+}
+
+function meta::relational::tests::mapping::relation::coverage::srcSubsetRel():Relation<(FIRSTNAME:String[1])>[1]
+{
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->select(~[FIRSTNAME])->cast(@Relation<(FIRSTNAME:String[1])>);
+}
 
 ###Mapping
 import meta::relational::tests::mapping::relation::*;
@@ -25,7 +51,7 @@ Mapping meta::relational::tests::mapping::relation::coverage::srcPlainMapping
 (
    *Person: Relation
    {
-      ~src #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->select(~[FIRSTNAME, AGE])
+      ~src meta::relational::tests::mapping::relation::coverage::srcPlainRel()
       firstName: FIRSTNAME,
       age: AGE
    }
@@ -35,7 +61,7 @@ Mapping meta::relational::tests::mapping::relation::coverage::srcFilterMapping
 (
    *Person: Relation
    {
-      ~src #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->filter(x | $x.AGE > 25)->select(~[FIRSTNAME, AGE])
+      ~src meta::relational::tests::mapping::relation::coverage::srcFilterRel()
       firstName: FIRSTNAME,
       age: AGE
    }
@@ -45,7 +71,7 @@ Mapping meta::relational::tests::mapping::relation::coverage::srcSubsetMapping
 (
    *Person: Relation
    {
-      ~src #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#->select(~[FIRSTNAME])
+      ~src meta::relational::tests::mapping::relation::coverage::srcSubsetRel()
       firstName: FIRSTNAME
    }
 )

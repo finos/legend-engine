@@ -38,14 +38,14 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::exprPersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.personTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#
       ->select(~[FIRSTNAME, AGE]);
 }
 
 // Only rows with a non-null SALARY, so the ->toOne() coercion is total at runtime.
 function meta::relational::tests::mapping::relation::coverage::salariedPersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.personTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#
       ->filter(x | $x.SALARY->isNotEmpty())
       ->select(~[FIRSTNAME, SALARY]);
 }

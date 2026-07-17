@@ -208,8 +208,10 @@ function meta::relational::tests::mapping::relation::coverage::createTablesAndFi
    executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (22, 2, \'Gold\', 0);', $connection);
    executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (33, 2, \'Gold\', 0);', $connection);
 
-   // dates model
+   // dates model - use TIMESTAMP(9) so nanosecond precision datetimes round-trip (H2 defaults TIMESTAMP to millis).
    dropAndCreateTableInDb(coverageDB, 'tradeTable', $connection);
+   executeInDb('Drop table if exists tradeTable;', $connection);
+   executeInDb('Create Table tradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
    executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (3, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);

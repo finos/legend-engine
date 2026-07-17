@@ -26,17 +26,17 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::orgRelationFunc():Relation<Any>[1]
 {
-   #>{coverageDB.orgTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.orgTable}#
       ->filter(x | $x.filterVal <= 4)
       ->select(~[id, name, parentId]);
 }
 
 function meta::relational::tests::mapping::relation::coverage::orgRelationWithJoinFunc():Relation<Any>[1]
 {
-   #>{coverageDB.orgTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.orgTable}#
       ->select(~[id, name, parentId])
       ->join(
-         #>{coverageDB.otherTable}#->project(~[joinOrgId:t|$t.orgTableId, otherFilterVal:t|$t.filterVal]),
+         #>{meta::relational::tests::mapping::relation::coverage::coverageDB.otherTable}#->project(~[joinOrgId:t|$t.orgTableId, otherFilterVal:t|$t.filterVal]),
          JoinKind.INNER,
          {o, t | $o.id == $t.joinOrgId}
        )
@@ -46,16 +46,16 @@ function meta::relational::tests::mapping::relation::coverage::orgRelationWithJo
 
 function meta::relational::tests::mapping::relation::coverage::orgRelationWithParentNameFunc():Relation<Any>[1]
 {
-   #>{coverageDB.orgTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.orgTable}#
       ->filter(x | $x.filterVal <= 4)
       ->select(~[id, name, parentId])
       ->join(
-         #>{coverageDB.orgTable}#->project(~[pId:p|$p.id, pParentId:p|$p.parentId]),
+         #>{meta::relational::tests::mapping::relation::coverage::coverageDB.orgTable}#->project(~[pId:p|$p.id, pParentId:p|$p.parentId]),
          JoinKind.LEFT,
          {r, p | $r.parentId == $p.pId}
        )
       ->join(
-         #>{coverageDB.orgTable}#->project(~[gpId:g|$g.id, parentName:g|$g.name]),
+         #>{meta::relational::tests::mapping::relation::coverage::coverageDB.orgTable}#->project(~[gpId:g|$g.id, parentName:g|$g.name]),
          JoinKind.LEFT,
          {r, g | $r.pParentId == $g.gpId}
        )

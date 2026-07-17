@@ -29,7 +29,7 @@ import meta::relational::tests::mapping::relation::coverage::*;
 
 function meta::relational::tests::mapping::relation::coverage::boolPersonFunc():Relation<Any>[1]
 {
-   #>{coverageDB.personTable}#
+   #>{meta::relational::tests::mapping::relation::coverage::coverageDB.personTable}#
       ->select(~[FIRSTNAME, ACTIVE]);
 }
 
