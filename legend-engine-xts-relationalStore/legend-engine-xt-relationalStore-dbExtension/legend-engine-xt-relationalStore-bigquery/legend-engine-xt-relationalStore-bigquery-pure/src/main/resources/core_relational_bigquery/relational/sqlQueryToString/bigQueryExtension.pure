@@ -90,6 +90,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='extract( quarter from %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, 0)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract( second from %s)')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),

@@ -650,10 +650,10 @@
     "expectedError" : "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: The conversion of the varchar value '9999999999999992' overflowed an int column.\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."

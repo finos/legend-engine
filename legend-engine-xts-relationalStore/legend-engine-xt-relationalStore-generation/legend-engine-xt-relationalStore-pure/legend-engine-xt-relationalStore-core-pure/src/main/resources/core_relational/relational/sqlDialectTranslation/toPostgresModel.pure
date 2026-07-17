@@ -379,6 +379,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('toTimestamp',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH:MI:SS')), | $p))}),
     pair('sha1',                      functionCall('sha1')),
     pair('sha256',                    functionCall('sha256')),
+    pair('split',                     functionCall('string_to_array')),
     pair('splitPart',                 functionCall('split_part')),
     pair('substring',                 functionCall('substring')),
     pair('monthName',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_char', $p->concatenate(literal('Month')))}),
