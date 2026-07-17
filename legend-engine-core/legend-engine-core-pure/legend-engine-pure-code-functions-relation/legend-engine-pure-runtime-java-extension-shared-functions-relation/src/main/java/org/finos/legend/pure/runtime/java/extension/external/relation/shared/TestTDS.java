@@ -385,6 +385,8 @@ public abstract class TestTDS
     public static CsvSpecs makePureCsvSpecs()
     {
         return CsvSpecs.builder()
+                .quote('\'') // emulate Pure String quoting
+                .escape('\\') // emulate escaping from Pure
                 .nullValueLiterals(Arrays.asList("", "null", "NULL"))
                 .parsers(Parsers.MINIMAL) // BOOLEAN, LONG, DOUBLE, DATETIME, STRING
                 .build();

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::variant::convert::*;
+import meta::pure::metamodel::variant::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::test::pct::*;
 
@@ -28,12 +30,16 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
    if($oneCol->zip($twoCol)->fold({cols, acc|
           let oneVals = $one->map(x|$cols.first->eval($x));
           let twoVals = $two->map(x|$cols.second->eval($x));
-          $acc && if ($cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
-            |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta)))}, true),
-            |if ($cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
-              |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds)))}, true),
+          $acc && 
+          if ([
+                pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
+                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta)))}, true)),
+                pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
+                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds)))}, true)),
+                pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant),
+                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->cast(@Variant)->toJson() == $a.second->cast(@Variant)->toJson())}, true))
+              ],
               |$oneVals == $twoVals
-            )
           );
         },
         true

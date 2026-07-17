@@ -50,11 +50,11 @@ public class TestFunctionTester extends PureExpressionTest
                         "{" +
                         "   println(#TDS\n" +
                         "     id, payload:meta::pure::metamodel::variant::Variant\n" +
-                        "     1, \"[1,2,3]\"\n" +
-                        "     2, \"[4,5,6]\"\n" +
-                        "     3, \"[7,8,9]\"\n" +
-                        "     4, \"[10,11,12]\"\n" +
-                        "     5, \"[13,14,15]\"\n" +
+                        "     1, '[1,2,3]'\n" +
+                        "     2, '[4,5,6]'\n" +
+                        "     3, '[7,8,9]'\n" +
+                        "     4, '[10,11,12]'\n" +
+                        "     5, '[13,14,15]'\n" +
                         "   #->extend(~reversed:x | $x.payload->toMany(@Integer)->reverse()->toVariant()));\n" +
                         "}");
         execute("test():Any[*]");

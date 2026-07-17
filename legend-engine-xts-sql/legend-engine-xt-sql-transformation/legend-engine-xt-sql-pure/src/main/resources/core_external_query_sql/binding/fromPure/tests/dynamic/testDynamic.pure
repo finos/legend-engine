@@ -41,15 +41,15 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     generationFunction = {x:TableFunction[1], s:SqlTransformContext[1]|
       #TDS
         id, payload:meta::pure::metamodel::variant::Variant
-        1, "[1,2,3]"
-        2, "[4,5,6]"
+        1, '[1,2,3]'
+        2, '[4,5,6]'
       #
     }
   );
 
   let lambda = meta::external::query::sql::transformation::queryToPure::sqlToPure('select id from variant(\'a\')', $source, [], ^Map<String, ValueSpecification>())->cast(@FunctionDefinition<Any>);
 
-  assertEquals('|#TDS{\nid:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1]\n1,"[1,2,3]"\n2,"[4,5,6]"\n}#->meta::pure::functions::relation::select(~[id])',
+  assertEquals('|#TDS{\nid:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1]\n1,\'[1,2,3]\'\n2,\'[4,5,6]\'\n}#->meta::pure::functions::relation::select(~[id])',
               $lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
   );
 }
