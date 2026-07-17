@@ -634,6 +634,69 @@ Mapping meta::relational::tests::mapping::relation::LiftedConcatMapping
   }
 )
 
+// Variant + primitives: PAYLOAD->get() yields a scalar String and a String[*] array.
+Mapping meta::relational::tests::mapping::relation::LiftedPrimitiveMapping
+(
+  *PersonLiftedPrimitive[personLiftedPrimitive]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    firstName: $src.PAYLOAD->get('firstName')->to(@String),
+    tags: $src.PAYLOAD->get('tags')->toMany(@String)
+  }
+)
+
+// Variant + Class at-one: PAYLOAD->get('firm') coerced to a single PayloadFirm instance.
+Mapping meta::relational::tests::mapping::relation::LiftedClassMapping
+(
+  *PersonLiftedClass[personLiftedClass]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    firm: $src.PAYLOAD->get('firm')->to(@PayloadFirm)
+  }
+)
+
+// Variant + Class to-many: PAYLOAD->get('firms') expanded to a PayloadFirm list.
+Mapping meta::relational::tests::mapping::relation::LiftedClassToManyMapping
+(
+  *PersonLiftedClassToMany[personLiftedClassToMany]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    firms: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)
+  }
+)
+
+// Pass-through: PAYLOAD column surfaced unchanged as a raw Variant[1] property.
+Mapping meta::relational::tests::mapping::relation::LiftedPassthroughMapping
+(
+  *PersonLiftedPassthrough[personLiftedPassthrough]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    payload: PAYLOAD
+  }
+)
+
+// Explicit map: firms->map(f|$f.tags) produces String[*] from nested arrays.
+// The lift router wraps the body in array_flatten before emitting the LATERAL join.
+Mapping meta::relational::tests::mapping::relation::LiftedExplicitMapMapping
+(
+  *PersonLiftedExplicitMap[personLiftedExplicitMap]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    allTags: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)->map(f | $f.tags)
+  }
+)
+
+// Unsupported: Map<String,Variant>[1] is a structural container. The isStructuralContainer
+// guard at pureToSQLQuery.pure:1944 must reject this mapping at plan-generation time.
+Mapping meta::relational::tests::mapping::relation::LiftedUnsupportedMapping
+(
+  *PersonLiftedUnsupported[personLiftedUnsupported]: Relation
+  {
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    attributes: $src.PAYLOAD
+  }
+)
+
 Mapping meta::relational::tests::mapping::relation::MixedMapping
 (
   *Person[person]: Relation
@@ -1384,7 +1447,7 @@ function meta::relational::tests::mapping::relation::createCoverageTablesAndFill
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (4, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (5, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (6, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123\');', $connection);
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (8, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (9, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
    executeInDb('insert into cvTradeTable (ID, quantity, tradeDate) values (10, 38, \'2014-12-04\');', $connection);

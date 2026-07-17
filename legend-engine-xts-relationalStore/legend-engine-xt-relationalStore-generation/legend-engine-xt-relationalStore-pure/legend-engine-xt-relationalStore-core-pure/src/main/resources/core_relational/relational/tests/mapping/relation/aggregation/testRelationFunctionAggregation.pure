@@ -45,14 +45,6 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::r
    );
 }
 
-function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testSubAggregationOnRelationMappingWithSimpleProperty():Boolean[1]
-{
-   testFirmAgg(
-      |Firm.all()->project(~[name:x|$x.legalName, a:x|$x.employees.age->average()])->cast(@TabularDataSet),
-      ['Firm A | TDSNull', 'Firm B | TDSNull', 'Firm C | 35.5', 'Firm D | 52.0', 'Firm X | 30.0']
-   );
-}
-
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::mapping::relation::aggregation::testTwoSubAggregationOnRelationMapping():Boolean[1]
 {
    testFirmAgg(

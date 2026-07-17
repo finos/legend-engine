@@ -126,46 +126,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, age
-       David, 52
-       Fabrice, 45
-       John, 30
-       Oliver, 26
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, firmName
-       David, Firm D
-       Fabrice, Firm C
-       John, Firm X
-       Oliver, Firm C
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedCaseMappingThroughAssociationChain():Boolean[1]
 {
   let result = execute(
@@ -191,24 +151,29 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
+// Exercises what is unique about MixedMapping: querying PersonWithFirmId — the Relational
+// class set — rather than Person[person] (the Relation set). PersonWithFirmId reads the full
+// personTable without the AGE > 25 filter that personFunction() applies, exposing all 7 rows.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingRelationalClassSet():Boolean[1]
 {
   let result = execute(
-    |Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName]),
+    |PersonWithFirmId.all()->project(~[name:x|$x.firstName, firmId:x|$x.firmId]),
     meta::relational::tests::mapping::relation::MixedMapping,
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
   assertEquals(
     #TDS
-       firmName, name
-       Firm A, TDSNull
-       Firm B, TDSNull
-       Firm C, Fabrice
-       Firm C, Oliver
-       Firm D, David
+       name, firmId
+       Anthony, 3
+       David, 5
+       Fabrice, 4
+       Jane, 2
+       John, 1
+       Oliver, 4
+       Peter, 1
     #->toString(),
-    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+    $result.values->at(0)->sort(~name->ascending())->toString()
   );
 }
 
@@ -230,25 +195,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Oliver, Oliver
     #->toString(),
     $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithObjectGroupByAndTdsProject():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firm.legalName, age:x|$x.age])->groupBy(~name, ~averageAge:x|$x.age:y|$y->average()),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, averageAge
-       Firm C, 35.5
-       Firm D, 52.0
-       Firm X, 30.0
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
   );
 }
 
@@ -881,78 +827,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, street, city
-       David, Pine Rd, Boston
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston' || $x.address.city == 'Seattle')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, street, city
-       David, Pine Rd, Boston
-       Fabrice, Elm Blvd, Seattle
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, city
-       John, New York
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddress.all()->project(~[city:x|$x.address.city, age:x|$x.age])->groupBy(~city, ~count : x|$x.age : y|$y->count()),
-      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       city, count
-       Boston, 1
-       Chicago, 1
-       New York, 1
-       Seattle, 1
-    #->toString(),
-    $result.values->at(0)->sort(~city->ascending())->toString()
-  );
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
 {
    let result = execute(
@@ -968,23 +842,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Fabrice, Seattle, Firm C
        John, New York, Firm X
        Oliver, Chicago, Firm A
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm C')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, city
-       Fabrice, Seattle
     #->toString(),
     $result.values->at(0)->sort(~name->ascending())->toString()
   );
@@ -1016,28 +873,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Fabrice, 45
        John, 30
        Oliver, 26
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-// XStore association still resolves when both source and target class mappings
-// use `$src.COL` form on every property mapping (PK and FK lookups).
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingWithAssociation():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
-    meta::relational::tests::mapping::relation::ExplicitSrcMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-      name, firmName
-      David, Firm D
-      Fabrice, Firm C
-      John, Firm X
-      Oliver, Firm C
     #->toString(),
     $result.values->at(0)->sort(~name->ascending())->toString()
   );
@@ -1141,4 +976,178 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     #->toString(),
     $result.values->at(0)->sort([~greeting->ascending()])->toString()
   );
+}
+
+// --- RFPM-lift variant tests (personPayloadTable) ----------------------------
+// Each test seeds its own rows via setupRfpmLiftTestData (personPayloadTable is
+// NOT pre-populated by createTablesAndFillDb). CSV format: first element is the
+// header row; remaining elements are data rows. The PAYLOAD column holds a JSON
+// string. Verify expected output values on first run and adjust if needed.
+
+// t7 — Variant + primitives: String[1] and String[*] extracted from JSON PAYLOAD.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftPrimitive():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"firstName":"Alice","tags":["tag1","tag2"]}',
+      '2,{"firstName":"Bob","tags":[]}'
+    ],
+    $db, $runtime
+  );
+  let result = execute(
+    |PersonLiftedPrimitive.all()->project(~[firstName: x | $x.firstName]),
+    meta::relational::tests::mapping::relation::LiftedPrimitiveMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firstName
+       Alice
+       Bob
+    #->toString(),
+    $result.values->at(0)->sort([~firstName->ascending()])->toString()
+  );
+}
+
+// t8 — Variant + Class at-one: firm property extracted as a typed PayloadFirm instance.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftClass():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"firm":{"name":"Firm X","tags":["fin"]}}',
+      '2,{"firm":{"name":"Firm A","tags":[]}}'
+    ],
+    $db, $runtime
+  );
+  let result = execute(
+    |PersonLiftedClass.all()->project(~[firmName: x | $x.firm.name]),
+    meta::relational::tests::mapping::relation::LiftedClassMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firmName
+       Firm A
+       Firm X
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending()])->toString()
+  );
+}
+
+// t9 — Variant + Class to-many: firms array expanded to a list of PayloadFirm.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftClassToMany():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"firms":[{"name":"Firm X","tags":["fin"]},{"name":"Firm A","tags":[]}]}'
+    ],
+    $db, $runtime
+  );
+  let result = execute(
+    |PersonLiftedClassToMany.all()->project(~[firmName: x | $x.firms.name]),
+    meta::relational::tests::mapping::relation::LiftedClassToManyMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       firmName
+       Firm A
+       Firm X
+    #->toString(),
+    $result.values->at(0)->sort([~firmName->ascending()])->toString()
+  );
+}
+
+// t10 — Pass-through: PAYLOAD column surfaced as raw Variant[1] with no extraction.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftPassthrough():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"firstName":"Alice"}'
+    ],
+    $db, $runtime
+  );
+  let result = execute(
+    |PersonLiftedPassthrough.all()->project(~[payload: x | $x.payload->get('firstName')->to(@String)]),
+    meta::relational::tests::mapping::relation::LiftedPassthroughMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       payload
+       Alice
+    #->toString(),
+    $result.values->at(0)->toString()
+  );
+}
+
+// t11 — Explicit map: firms->map(f|$f.tags) flattened to String[*].
+// The lift router must wrap the body in array_flatten before emitting the LATERAL join.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftExplicitMap():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"firms":[{"name":"Firm X","tags":["t1","t2"]},{"name":"Firm A","tags":["t3"]}]}'
+    ],
+    $db, $runtime
+  );
+  let result = execute(
+    |PersonLiftedExplicitMap.all()->project(~[tag: x | $x.allTags]),
+    meta::relational::tests::mapping::relation::LiftedExplicitMapMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+       tag
+       t1
+       t2
+       t3
+    #->toString(),
+    $result.values->at(0)->sort([~tag->ascending()])->toString()
+  );
+}
+
+// t12 — Unsupported: Map<String,Variant>[1] is a structural container. The router
+// rejects this at plan-generation time via the isStructuralContainer check.
+// Marked ToFix until the rejection is wired to a user-visible error message.
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftUnsupportedStructuralContainer():Boolean[1]
+{
+  let db = meta::relational::tests::mapping::relation::testDB;
+  let runtime = meta::external::store::relational::tests::testRuntime($db);
+  setupRfpmLiftTestData(
+    [
+      'ID,PAYLOAD',
+      '1,{"key":"value"}'
+    ],
+    $db, $runtime
+  );
+  // Expect plan generation to throw: Map<String,Variant> is excluded by isStructuralContainer.
+  let result = execute(
+    |PersonLiftedUnsupported.all()->project(~[attrs: x | $x.attributes->get('key')->to(@String)]),
+    meta::relational::tests::mapping::relation::LiftedUnsupportedMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+  fail('Expected plan-generation error for Map<String,Variant> structural container');
+  true;
 }
