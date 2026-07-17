@@ -202,7 +202,102 @@ Database meta::relational::tests::mapping::relation::MilestonedDB
     SNAPSHOTDATE DATE NOT NULL
   )
 )
- 
+
+###Relational
+Database meta::relational::tests::mapping::relation::coverageDB
+(
+   Table ACCOUNT_INFO
+   (
+      IF_CODE INTEGER NOT NULL,
+      IF_NAME VARCHAR(200) NOT NULL,
+      IF_TYPE VARCHAR(20) NOT NULL
+   )
+
+   Table IF_OTHER_INFO
+   (
+      IF_CODE INTEGER PRIMARY KEY,
+      IF_OTHER_NAME VARCHAR(20) NOT NULL
+   )
+
+   Table orgTable
+   (
+      id INTEGER PRIMARY KEY,
+      filterVal INTEGER NOT NULL,
+      parentId INTEGER,
+      name VARCHAR(200) NOT NULL
+   )
+
+   Table otherTable
+   (
+      orgTableId INTEGER NOT NULL,
+      filterVal INTEGER NOT NULL
+   )
+
+   Table TRADE
+   (
+      TRADE_ID INTEGER PRIMARY KEY,
+      ACC_NUM INTEGER NOT NULL,
+      GSN VARCHAR(20) NOT NULL,
+      PRODUCT_ID INTEGER NOT NULL,
+      QTY INTEGER NOT NULL
+   )
+
+   Table PRODUCT
+   (
+      ID INTEGER PRIMARY KEY,
+      DESCRIPTION VARCHAR(20) NOT NULL
+   )
+
+   Table PRODUCT_EXPLODED
+   (
+      TRADEABLE_ID INTEGER PRIMARY KEY,
+      PRODUCT_ID INTEGER NOT NULL,
+      DESCRIPTION VARCHAR(20) NOT NULL,
+      ACTIVE INTEGER NOT NULL
+   )
+
+   Table cvTradeTable
+   (
+      ID INTEGER PRIMARY KEY,
+      quantity FLOAT NOT NULL,
+      tradeDate DATE NOT NULL,
+      settlementDateTime TIMESTAMP
+   )
+
+   Table cvPersonTable
+   (
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      AGE INTEGER NOT NULL,
+      FIRMID INTEGER NOT NULL,
+      ACTIVE BIT NOT NULL,
+      EMPTYPE VARCHAR(20) NOT NULL,
+      SALARY FLOAT,
+      FIRM_JSON VARCHAR(200) NOT NULL
+   )
+
+   Table cvFirmTable
+   (
+      ID INTEGER PRIMARY KEY,
+      LEGALNAME VARCHAR(100) NOT NULL
+   )
+
+   Table PERSON_TEMPORAL
+   (
+      milestoning
+      (
+         processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+      )
+      ID INTEGER PRIMARY KEY,
+      FIRSTNAME VARCHAR(100) NOT NULL,
+      AGE INTEGER NOT NULL,
+      IN_Z DATE NOT NULL,
+      OUT_Z DATE NOT NULL
+   )
+
+   Join Person_Firm(cvPersonTable.FIRMID = cvFirmTable.ID)
+)
+
 ###Pure
 Class meta::relational::tests::mapping::relation::Person
 {
@@ -425,6 +520,25 @@ Association meta::relational::tests::mapping::relation::Person_Group
 {
   members: meta::relational::tests::mapping::relation::Person[*];
   group: meta::relational::tests::mapping::relation::Group[1];
+}
+
+Class meta::relational::tests::mapping::relation::PositionStats
+{
+   acctNum : Integer[1];
+   gsn     : String[1];
+   total   : Integer[1];
+   cnt     : Integer[1];
+   minQty  : Integer[0..1];
+   maxQty  : Integer[0..1];
+   avgQty  : Float[0..1];
+}
+
+Class meta::relational::tests::mapping::relation::Trade
+{
+   id: Integer[1];
+   quantity: Float[1];
+   date: StrictDate[1];
+   settlementDateTime: DateTime[0..1];
 }
 
 ###Mapping
@@ -1068,6 +1182,7 @@ function meta::relational::tests::mapping::relation::setupRfpmLiftTestData(csvs:
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
 {
   createTablesAndFillDb();
+  createCoverageTablesAndFillDb();
 }
 
 function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boolean[1]
@@ -1200,4 +1315,105 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
 
   true;
+}
+
+function meta::relational::tests::mapping::relation::createCoverageTablesAndFillDb():Boolean[1]
+{
+   let connection = meta::external::store::relational::tests::testRuntime(coverageDB).connectionByElement(coverageDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   // distinct model
+   executeInDb('Drop table if exists ACCOUNT_INFO;', $connection);
+   executeInDb('Create Table ACCOUNT_INFO(IF_CODE INTEGER NOT NULL, IF_NAME VARCHAR(200) NOT NULL, IF_TYPE VARCHAR(20) NOT NULL);', $connection);
+   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1001, \'IF 1\', \'Type 1\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 1\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 1\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1022, \'IF 2\', \'Type 1\');', $connection);
+   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 2\');', $connection);
+
+   executeInDb('Drop table if exists IF_OTHER_INFO;', $connection);
+   executeInDb('Create Table IF_OTHER_INFO(IF_CODE INTEGER PRIMARY KEY, IF_OTHER_NAME VARCHAR(20) NOT NULL);', $connection);
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1001, \'IfName1\');', $connection);
+   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1002, \'IfName2\');', $connection);
+
+   // filter model
+   executeInDb('Drop table if exists orgTable;', $connection);
+   executeInDb('Create Table orgTable(id INTEGER PRIMARY KEY, filterVal INTEGER NOT NULL, parentId INTEGER, name VARCHAR(200) NOT NULL);', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (1, 4, -1, \'ROOT\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (2, 4, 1, \'Firm X\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (3, 4, 1, \'Firm A\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (4, 4, 2, \'Securities\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (5, 4, 2, \'Banking\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (6, 4, 2, \'Federation\');', $connection);
+   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (7, 6, 2, \'ShouldNotBeDisplayed\');', $connection);
+
+   executeInDb('Drop table if exists otherTable;', $connection);
+   executeInDb('Create Table otherTable(orgTableId INTEGER NOT NULL, filterVal INTEGER NOT NULL);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (1, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (2, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (3, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (4, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (5, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (6, 4);', $connection);
+   executeInDb('insert into otherTable (orgTableId, filterVal) values (7, 6);', $connection);
+
+   // groupBy model
+   executeInDb('Drop table if exists TRADE;', $connection);
+   executeInDb('Create Table TRADE(TRADE_ID INTEGER PRIMARY KEY, ACC_NUM INTEGER NOT NULL, GSN VARCHAR(20) NOT NULL, PRODUCT_ID INTEGER NOT NULL, QTY INTEGER NOT NULL);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (1, 7900002, \'YU2EF5\', 1, 3);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (2, 7900002, \'YU2EF5\', 1, 5);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (3, 7900003, \'EA4GNY\', 2, 100);', $connection);
+   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (4, 7900003, \'EA4GNY\', 2, 200);', $connection);
+
+   executeInDb('Drop table if exists PRODUCT;', $connection);
+   executeInDb('Create Table PRODUCT(ID INTEGER PRIMARY KEY, DESCRIPTION VARCHAR(20) NOT NULL);', $connection);
+   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (1, \'Firm D\');', $connection);
+   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (2, \'Gold\');', $connection);
+
+   executeInDb('Drop table if exists PRODUCT_EXPLODED;', $connection);
+   executeInDb('Create Table PRODUCT_EXPLODED(TRADEABLE_ID INTEGER PRIMARY KEY, PRODUCT_ID INTEGER NOT NULL, DESCRIPTION VARCHAR(20) NOT NULL, ACTIVE INTEGER NOT NULL);', $connection);
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (11, 1, \'Firm D\', 1);', $connection);
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (22, 2, \'Gold\', 0);', $connection);
+   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (33, 2, \'Gold\', 0);', $connection);
+
+   // dates model - TIMESTAMP(9) for nanosecond precision
+   executeInDb('Drop table if exists cvTradeTable;', $connection);
+   executeInDb('Create Table cvTradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (3, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (4, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (5, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (6, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123456789\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (8, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (9, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate) values (10, 38, \'2014-12-04\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate) values (11, 5, \'2014-12-05\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (12, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (13, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
+   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
+
+   // person / firm model
+   executeInDb('Drop table if exists cvFirmTable;', $connection);
+   executeInDb('Create Table cvFirmTable(ID INTEGER PRIMARY KEY, LEGALNAME VARCHAR(100) NOT NULL);', $connection);
+   executeInDb('insert into cvFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+   executeInDb('insert into cvFirmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+
+   executeInDb('Drop table if exists cvPersonTable;', $connection);
+   executeInDb('Create Table cvPersonTable(ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, AGE INTEGER NOT NULL, FIRMID INTEGER NOT NULL, ACTIVE BIT NOT NULL, EMPTYPE VARCHAR(20) NOT NULL, SALARY FLOAT, FIRM_JSON VARCHAR(200) NOT NULL);', $connection);
+   executeInDb('insert into cvPersonTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (1, \'Peter\',   23, 1, true,  \'CONTRACT\',  null,  \'{"legalName":"Firm X"}\');', $connection);
+   executeInDb('insert into cvPersonTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (2, \'John\',    30, 1, false, \'FULL_TIME\', 100.0, \'{"legalName":"Firm X"}\');', $connection);
+   executeInDb('insert into cvPersonTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (3, \'Jane\',    25, 2, true,  \'FULL_TIME\', 200.0, \'{"legalName":"Firm A"}\');', $connection);
+   executeInDb('insert into cvPersonTable (ID, FIRSTNAME, AGE, FIRMID, ACTIVE, EMPTYPE, SALARY, FIRM_JSON) values (4, \'Anthony\', 40, 2, true,  \'CONTRACT\',  null,  \'{"legalName":"Firm A"}\');', $connection);
+
+   // processing-temporal model (allVersions)
+   executeInDb('Drop table if exists PERSON_TEMPORAL;', $connection);
+   executeInDb('Create Table PERSON_TEMPORAL(ID INTEGER PRIMARY KEY, FIRSTNAME VARCHAR(100) NOT NULL, AGE INTEGER NOT NULL, IN_Z DATE NOT NULL, OUT_Z DATE NOT NULL);', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (1, \'Peter\',   23, \'2024-11-01\', \'9999-12-31\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (2, \'John\',    30, \'2025-11-01\', \'9999-12-31\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (3, \'Jane\',    23, \'2024-11-01\', \'2025-01-02\');', $connection);
+   executeInDb('insert into PERSON_TEMPORAL (ID, FIRSTNAME, AGE, IN_Z, OUT_Z) values (4, \'Anthony\', 19, \'2025-01-01\', \'9999-12-31\');', $connection);
+
+   true;
 }
