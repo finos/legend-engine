@@ -796,20 +796,16 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                  revsForTest(
                       'meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_',
                       [
-                        revError('|$tds->meta::pure::functions::relation::extend(~passthru:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload)->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())',
-                            'select "table0_0".id as "id", "table0_0".payload as "payload", "table0_0".payload as "passthru" from csv(\'id,payload\n     1,"[1,2,3]"\n     2,"[4,5,6]"\n     3,"[7,8,9]"\n     4,"[10,11,12]"\n     5,"[13,14,15]"\') as "table0_0" order by "id"',
-                            'Compilation error at ??, "Row 2 has too many columns (expected 2)"',
-                            ''
+                        rev('|$tds->meta::pure::functions::relation::extend(~passthru:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload)->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending())',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", "table0_0".payload as "passthru" from csv(\'id,payload\n     1,\'\'[1,2,3]\'\'\n     2,\'\'[4,5,6]\'\'\n     3,\'\'[7,8,9]\'\'\n     4,\'\'[10,11,12]\'\'\n     5,\'\'[13,14,15]\'\'\') as "table0_0" order by "id"'
                         )
                       ]
                  ),
                  revsForTest(
                       'meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_',
                       [
-                        revError('|$tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(0))->meta::pure::functions::relation::extend(~atCol1:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], atCol0:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(1))',
-                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->0) as TEXT) as JSON) as "atCol0", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->1) as TEXT) as JSON) as "atCol1" from csv(\'id,payload\n     1,"[1,2,3]"\n     2,"[4,5,6]"\n     3,"[7,8,9]"\n     4,"[10,11,12]"\n     5,"[13,14,15]"\') as "table0_0"',
-                            'Compilation error at ??, "Row 2 has too many columns (expected 2)"',
-                            ''
+                        rev('|$tds->meta::pure::functions::relation::extend(~atCol0:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(0))->meta::pure::functions::relation::extend(~atCol1:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], atCol0:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(1))',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->0) as TEXT) as JSON) as "atCol0", cast(cast((cast(cast("table0_0".payload as TEXT) as JSON)->1) as TEXT) as JSON) as "atCol1" from csv(\'id,payload\n     1,\'\'[1,2,3]\'\'\n     2,\'\'[4,5,6]\'\'\n     3,\'\'[7,8,9]\'\'\n     4,\'\'[10,11,12]\'\'\n     5,\'\'[13,14,15]\'\'\') as "table0_0"'
                         )
                       ]
                  ),
@@ -817,8 +813,8 @@ function meta::external::query::sql::reversePCT::tests::relation::functions::tra
                       'meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_',
                       [
                         revError('|$tds->meta::pure::functions::relation::extend(~[booleanKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'boolean\'),integerKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'integer\'),stringKey:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::navigation::get(\'string\')])',
-                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast(json_extract_path("table0_0".payload, Text\'boolean\') as TEXT) as JSON) as "booleanKey", cast(cast(json_extract_path("table0_0".payload, Text\'integer\') as TEXT) as JSON) as "integerKey", cast(cast(json_extract_path("table0_0".payload, Text\'string\') as TEXT) as JSON) as "stringKey" from csv(\'id,payload\n     1,"{""boolean"":true, ""integer"":1,""string"":""hello""}"\n     2,"{""boolean"":false,""integer"":2,""string"":""world""}"\n     3,"{""boolean"":true, ""integer"":3,""string"":""world""}"\') as "table0_0"',
-                            'Compilation error at ??, "Row 2 has too many columns (expected 2)"',
+                            'select "table0_0".id as "id", "table0_0".payload as "payload", cast(cast(json_extract_path("table0_0".payload, Text\'boolean\') as TEXT) as JSON) as "booleanKey", cast(cast(json_extract_path("table0_0".payload, Text\'integer\') as TEXT) as JSON) as "integerKey", cast(cast(json_extract_path("table0_0".payload, Text\'string\') as TEXT) as JSON) as "stringKey" from csv(\'id,payload\n     1,\'\'{"boolean":true, "integer":1,"string":"hello"}\'\'\n     2,\'\'{"boolean":false,"integer":2,"string":"world"}\'\'\n     3,\'\'{"boolean":true, "integer":3,"string":"world"}\'\'\') as "table0_0"',
+                            'Can\'t find a match for function \'meta::pure::functions::variant::navigation::get(String[0..1],String[1])\'.\nFunctions that can match if parameter types or multiplicities are changed:\n		get(Map<U, V>[1],U[1]):V[0..1]\n		get(Variant[0..1],String[1]):Variant[0..1]\n		get(Variant[0..1],Integer[1]):Variant[0..1]\n',
                             ''
                         )
                       ]
