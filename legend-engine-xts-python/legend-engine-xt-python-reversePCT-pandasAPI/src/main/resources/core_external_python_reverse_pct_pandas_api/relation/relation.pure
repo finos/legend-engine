@@ -6245,10 +6245,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload\n'+
-                  '0,"[]"\n'+
-                  '1,"[1]"\n'+
-                  '2,"[2,3,4]"\n'+
-                  '3,"null"}#->meta::pure::functions::relation::extend(~empty:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isEmpty())'+
+                  '0,\'[]\'\n'+
+                  '1,\'[1]\'\n'+
+                  '2,\'[2,3,4]\'\n'+
+                  '3,\'null\'}#->meta::pure::functions::relation::extend(~empty:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isEmpty())'+
                   '')
         ]
       ),
@@ -6257,10 +6257,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload\n'+
-                  '0,"[]"\n'+
-                  '1,"[1]"\n'+
-                  '2,"[2,3,4]"\n'+
-                  '3,"null"}#->meta::pure::functions::relation::extend(~notEmpty:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isNotEmpty())'+
+                  '0,\'[]\'\n'+
+                  '1,\'[1]\'\n'+
+                  '2,\'[2,3,4]\'\n'+
+                  '3,\'null\'}#->meta::pure::functions::relation::extend(~notEmpty:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::isNotEmpty())'+
                   '')
         ]
       ),
@@ -6269,10 +6269,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'val,payload\n'+
-                  '1,"[1,2,3]"\n'+
-                  '3,"[1,2,3]"\n'+
-                  '4,"[1,2,3]"\n'+
-                  '5,"null"}#->meta::pure::functions::relation::extend(~index:x: (val:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::indexOf($x.val->meta::pure::functions::multiplicity::toOne()))'+
+                  '1,\'[1,2,3]\'\n'+
+                  '3,\'[1,2,3]\'\n'+
+                  '4,\'[1,2,3]\'\n'+
+                  '5,\'null\'}#->meta::pure::functions::relation::extend(~index:x: (val:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::indexOf($x.val->meta::pure::functions::multiplicity::toOne()))'+
                   '')
         ]
       ),
@@ -6298,9 +6298,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload,val\n'+
-                  '1,"[1,2,3]",1\n'+
-                  '2,"[1,2,3]",4\n'+
-                  '3,"null",0}#->meta::pure::functions::relation::extend(~contains:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], val:Integer[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::contains($x.val->meta::pure::functions::multiplicity::toOne()))'+
+                  '1,\'[1,2,3]\',1\n'+
+                  '2,\'[1,2,3]\',4\n'+
+                  '3,\'null\',0}#->meta::pure::functions::relation::extend(~contains:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], val:Integer[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::contains($x.val->meta::pure::functions::multiplicity::toOne()))'+
                   '')
         ]
       ),
@@ -6309,16 +6309,16 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload\n'+
-                  '1,"[1,2,3]"\n'+
-                  '2,"[1,2,3,4,4,3,2,3,4,1,2]"\n'+
-                  '3,"null"}#->meta::pure::functions::relation::extend(~distinct:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::distinct()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())->meta::pure::functions::relation::extend(~removeDuplicates:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], distinct:meta::pure::metamodel::variant::Variant[1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::removeDuplicates()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())'+
+                  '1,\'[1,2,3]\'\n'+
+                  '2,\'[1,2,3,4,4,3,2,3,4,1,2]\'\n'+
+                  '3,\'null\'}#->meta::pure::functions::relation::extend(~distinct:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::distinct()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())->meta::pure::functions::relation::extend(~removeDuplicates:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], distinct:meta::pure::metamodel::variant::Variant[1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::removeDuplicates()->meta::pure::functions::collection::sort()->meta::pure::functions::variant::convert::toVariant())'+
                   '')
         ]
       ),
 
       meta::pure::functions::relation::tests::composition::testVariantColumn_modelOutputNotSupported_Function_1__Boolean_1_->testRev(
         [
-          noRev('|#TDS{\nid,payload\n1,"{\"name\":\"Jose\"}"\n2,"{\"name\":\"Juan\"}"\n3,"{\"name\":\"Pedro\"}"}#->meta::pure::functions::relation::project(~[name:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::to(@meta::pure::functions::relation::tests::composition::Person)])')
+          noRev('|#TDS{\nid,payload\n1,\'{"name":"Jose"}\'\n2,\'{"name":"Juan"}\'\n3,\'{"name":"Pedro"}\'}#->meta::pure::functions::relation::project(~[name:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::to(@meta::pure::functions::relation::tests::composition::Person)])')
         ]
       ),
 
@@ -6326,9 +6326,9 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload\n'+
-                  '1,"{"name":"Jose"}"\n'+
-                  '2,"{"name":"Juan"}"\n'+
-                  '3,"{"name":"Pedro"}"}#->meta::pure::functions::relation::project(~[name:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::to(@meta::pure::functions::relation::tests::composition::Person).name])'+
+                  '1,\'{"name":"Jose"}\'\n'+
+                  '2,\'{"name":"Juan"}\'\n'+
+                  '3,\'{"name":"Pedro"}\'}#->meta::pure::functions::relation::project(~[name:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::to(@meta::pure::functions::relation::tests::composition::Person).name])'+
                   '')
         ]
       ),
@@ -6515,10 +6515,10 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         [
           noRev('|#TDS{\n'+
                   'id,payload,fromRow,toRow\n'+
-                  '0,"null",1,2\n'+
-                  '1,"[1,2,3,4,5,6]",2,3\n'+
-                  '2,"[1,2,3,4,5,6]",0,4\n'+
-                  '3,"[1,2,3,4,5,6]",-3,-1}#->meta::pure::functions::relation::extend(~sliced:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], fromRow:Integer[0..1], toRow:Integer[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::slice($x.fromRow->meta::pure::functions::multiplicity::toOne(), $x.toRow->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::variant::convert::toVariant())'+
+                  '0,\'null\',1,2\n'+
+                  '1,\'[1,2,3,4,5,6]\',2,3\n'+
+                  '2,\'[1,2,3,4,5,6]\',0,4\n'+
+                  '3,\'[1,2,3,4,5,6]\',-3,-1}#->meta::pure::functions::relation::extend(~sliced:x: (id:Integer[0..1], payload:meta::pure::metamodel::variant::Variant[0..1], fromRow:Integer[0..1], toRow:Integer[0..1])[1]|$x.payload->meta::pure::functions::variant::convert::toMany(@Integer)->meta::pure::functions::collection::slice($x.fromRow->meta::pure::functions::multiplicity::toOne(), $x.toRow->meta::pure::functions::multiplicity::toOne())->meta::pure::functions::variant::convert::toVariant())'+
                   '')
         ]
       ),

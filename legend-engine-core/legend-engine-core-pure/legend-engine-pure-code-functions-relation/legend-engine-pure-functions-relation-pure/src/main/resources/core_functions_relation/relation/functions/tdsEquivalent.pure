@@ -37,7 +37,7 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
                     |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds)))}, true)),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant),
-                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->cast(@Variant)->toJson() == $a.second->cast(@Variant)->toJson())}, true))
+                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->toOne()->toString() == $a.second->toOne()->toString())}, true))
               ],
               |$oneVals == $twoVals
           );
