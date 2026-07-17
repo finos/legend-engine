@@ -236,6 +236,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='encode(digest(%s, \'sha1\'), \'hex\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='encode(digest(%s, \'sha256\'), \'hex\')')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='string_to_array(%s, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),

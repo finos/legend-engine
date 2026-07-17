@@ -400,12 +400,6 @@
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.000D\nactual:   0.0D\""
   }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), \"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy do'\""
   }, {
