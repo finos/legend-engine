@@ -77,6 +77,133 @@ public class TestFreemarkerTimeZoneProcessing
     }
 
     @Test
+    public void testDateTimeConstantWithMicrosecondTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.123456");
+        Assert.assertEquals("2018-10-15T16:00:00.123456", processDateConstantTimeZoneNoConversion("America/New_York", freeMarkerDateParameters));
+        Assert.assertEquals("2018-10-15T20:00:00.123456", processDateConstantTimeZoneNoConversion("GMT", freeMarkerDateParameters));
+        Assert.assertEquals("2018-10-15T20:00:00.123456", processDateConstantTimeZoneNoConversion("UTC", freeMarkerDateParameters));
+    }
+
+    @Test
+    public void testDateTimeConstantWithMicrosecondSpaceSeparatedTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", "2018-10-15 20:00:00.123456");
+        Assert.assertEquals("2018-10-15 16:00:00.123456", processDateConstantTimeZoneNoConversion("America/New_York", freeMarkerDateParameters));
+        Assert.assertEquals("2018-10-15 20:00:00.123456", processDateConstantTimeZoneNoConversion("GMT", freeMarkerDateParameters));
+        Assert.assertEquals("2018-10-15 20:00:00.123456", processDateConstantTimeZoneNoConversion("UTC", freeMarkerDateParameters));
+    }
+
+    @Test
+    public void testDateTimeConstantWithMicrosecondZerosTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> spaceSeparated = Maps.mutable.with("dateParam", "2026-07-06 23:59:59.000000");
+        Assert.assertEquals("2026-07-06 19:59:59.000000", processDateConstantTimeZoneNoConversion("America/New_York", spaceSeparated));
+        Assert.assertEquals("2026-07-06 23:59:59.000000", processDateConstantTimeZoneNoConversion("GMT", spaceSeparated));
+        Assert.assertEquals("2026-07-06 23:59:59.000000", processDateConstantTimeZoneNoConversion("UTC", spaceSeparated));
+
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.000000");
+        Assert.assertEquals("2026-07-06T19:59:59.000000", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2026-07-06T23:59:59.000000", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2026-07-06T23:59:59.000000", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+    }
+
+    // In TestFreemarkerTimeZoneProcessing.java
+    @Test
+    public void testDateTimeConstantWithMicrosecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", "2026-07-06 23:59:59.000000");
+        // These assertions capture the desired post-fix behavior.
+        // Before the fix, the call throws IllegalArgumentException (reproduces the bug).
+        Assert.assertEquals("2026-07-06 23:59:59.000000", processDateConstantTimeZoneNoConversion("GMT", freeMarkerDateParameters));
+        Assert.assertEquals("2026-07-06 23:59:59.000000", processDateConstantTimeZoneNoConversion("UTC", freeMarkerDateParameters));
+    }
+
+    @Test
+    public void testDateTimeConstantWith2SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.12");
+        Assert.assertEquals("2018-10-15T16:00:00.12", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.00");
+        Assert.assertEquals("2026-07-06T19:59:59.00", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
+    public void testDateTimeConstantWith4SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.1234");
+        Assert.assertEquals("2018-10-15T16:00:00.1234", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.1234", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.1234", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.0000");
+        Assert.assertEquals("2026-07-06T19:59:59.0000", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.0000", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.0000", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
+    public void testDateTimeConstantWith5SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.12345");
+        Assert.assertEquals("2018-10-15T16:00:00.12345", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12345", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12345", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.00000");
+        Assert.assertEquals("2026-07-06T19:59:59.00000", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00000", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00000", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
+    public void testDateTimeConstantWith7SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.1234567");
+        Assert.assertEquals("2018-10-15T16:00:00.1234567", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.1234567", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.1234567", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.0000000");
+        Assert.assertEquals("2026-07-06T19:59:59.0000000", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.0000000", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.0000000", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
+    public void testDateTimeConstantWith8SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.12345678");
+        Assert.assertEquals("2018-10-15T16:00:00.12345678", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12345678", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.12345678", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.00000000");
+        Assert.assertEquals("2026-07-06T19:59:59.00000000", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00000000", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.00000000", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
+    public void testDateTimeConstantWith9SubSecondsTimeZoneConversion() throws Exception
+    {
+        MutableMap<String, Object> tSeparated = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.123456789");
+        Assert.assertEquals("2018-10-15T16:00:00.123456789", processDateConstantTimeZoneNoConversion("America/New_York", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.123456789", processDateConstantTimeZoneNoConversion("GMT", tSeparated));
+        Assert.assertEquals("2018-10-15T20:00:00.123456789", processDateConstantTimeZoneNoConversion("UTC", tSeparated));
+
+        MutableMap<String, Object> zeros = Maps.mutable.with("dateParam", "2026-07-06T23:59:59.000000000");
+        Assert.assertEquals("2026-07-06T19:59:59.000000000", processDateConstantTimeZoneNoConversion("America/New_York", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.000000000", processDateConstantTimeZoneNoConversion("GMT", zeros));
+        Assert.assertEquals("2026-07-06T23:59:59.000000000", processDateConstantTimeZoneNoConversion("UTC", zeros));
+    }
+
+    @Test
     public void testConstantDateCollectionTimeZoneNoConversion() throws Exception
     {
         MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", Lists.mutable.with("2018-10-15", "2018-10-16"));
