@@ -59,8 +59,8 @@ Database demo::relation::db::EmployeeDB
     ID         INTEGER PRIMARY KEY,
     FIRST_NAME VARCHAR(100) NOT NULL,
     SALARY     FLOAT,
-    IN_Z       TIMESTAMP NOT NULL,
-    OUT_Z      TIMESTAMP NOT NULL
+    IN_Z       DATE NOT NULL,
+    OUT_Z      DATE NOT NULL
   )
 
   Join EmployeeFirmJoin(EmployeeTable.FIRM_ID = FirmTable.ID)

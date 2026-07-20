@@ -102,7 +102,7 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice"},{"First Name":"Carol"}]';
+                    data: '[{"First Name":"Alice"},{"First Name":"Bob"}]';
                   }#;
               }#
           ];
