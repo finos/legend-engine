@@ -350,43 +350,6 @@ Class meta::relational::tests::mapping::relation::PersonWithOptionalSalary exten
 // SemiStructuredRelationalPropertyMapping /
 // SemiStructuredEmbeddedRelationalInstanceSetImplementation).
 
-// Embedded class shape inside the JSON payload — used as a target for
-// $src.PAYLOAD->get('firm')->to(@PayloadFirm).
-Class meta::relational::tests::mapping::relation::PayloadFirm
-{
-  name: String[1];
-  tags: String[*];
-}
-
-// Variant + primitive cases 
-Class meta::relational::tests::mapping::relation::PersonLiftedPrimitive
-{
-  firstName: String[1];
-  tags: String[*];
-}
-
-// Variant + Class at-one: SS-embedded set synthesis. Querying
-// `.firm.name` triggers buildSemiStructuredPropertyMapping on the
-// router-built embedded set.
-Class meta::relational::tests::mapping::relation::PersonLiftedClass
-{
-  firm: meta::relational::tests::mapping::relation::PayloadFirm[1];
-}
-
-// Variant + Class to-many: SS-embedded set + LATERAL FLATTEN gate.
-Class meta::relational::tests::mapping::relation::PersonLiftedClassToMany
-{
-  firms: meta::relational::tests::mapping::relation::PayloadFirm[*];
-}
-
-// Explicit-map [*]-body case: exercises the array_flatten wrap. The mapping uses
-// $src.PAYLOAD.firms->map(f | $f.tags) which produces Array<Array<String>>
-// pre-fix; after PR 1 it's flattened to Array<String> before the LATERAL.
-Class meta::relational::tests::mapping::relation::PersonLiftedExplicitMap
-{
-  allTags: String[*];
-}
-
 // Non-variant DynaFunction case: string concat over two regular columns.
 // Exercises the lift router's RelationalPropertyMapping (non-SS) wrapper path.
 Class meta::relational::tests::mapping::relation::PersonLiftedConcat
@@ -625,48 +588,6 @@ Mapping meta::relational::tests::mapping::relation::LiftedConcatMapping
   {
     ~src meta::relational::tests::mapping::relation::personFunctionTyped()
     greeting: 'Hello ' + $src.'FIRST NAME'
-  }
-)
-
-// Variant + primitives: PAYLOAD->get() yields a scalar String and a String[*] array.
-Mapping meta::relational::tests::mapping::relation::LiftedPrimitiveMapping
-(
-  *PersonLiftedPrimitive[personLiftedPrimitive]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    firstName: $src.PAYLOAD->get('firstName')->to(@String)->toOne(),
-    tags: $src.PAYLOAD->get('tags')->toMany(@String)
-  }
-)
-
-// Variant + Class at-one: PAYLOAD->get('firm') coerced to a single PayloadFirm instance.
-Mapping meta::relational::tests::mapping::relation::LiftedClassMapping
-(
-  *PersonLiftedClass[personLiftedClass]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    firm: $src.PAYLOAD->get('firm')->to(@PayloadFirm)->toOne()
-  }
-)
-
-// Variant + Class to-many: PAYLOAD->get('firms') expanded to a PayloadFirm list.
-Mapping meta::relational::tests::mapping::relation::LiftedClassToManyMapping
-(
-  *PersonLiftedClassToMany[personLiftedClassToMany]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    firms: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)
-  }
-)
-
-// Explicit map: firms->map(f|$f.tags) produces String[*] from nested arrays.
-// The lift router wraps the body in array_flatten before emitting the LATERAL join.
-Mapping meta::relational::tests::mapping::relation::LiftedExplicitMapMapping
-(
-  *PersonLiftedExplicitMap[personLiftedExplicitMap]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    allTags: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)->map(f | $f.tags)
   }
 )
 

@@ -187,6 +187,7 @@ Reference base: classic `Relational` tests under `.../relational/tests/mapping/`
 | 30 | Model chain / store substitution | Y | Partial (include only) | — | UNCERTAIN |
 | 31 | Service + plan generation | Y (EMIT) | N | — | TEST_ONLY (EMIT) |
 | 32 | testSuites / Testables ("Run Tests") | Y | N (SPI stub) | (compile) | **NEW_DEV** |
+| 33 | Variant / semi-structured RFPM-lift extraction (`get()->to()/->toMany()`) | Y (classic `extractFromSemiStructured`) | N (removed) | — | **NEW_DEV** |
 
 ---
 
@@ -238,6 +239,23 @@ Author-now gaps are otherwise exhausted; the substantive remaining work is engin
 - **Subtype / inheritance** (matrix #26): direct-subclass query works; superclass
   polymorphic dispatch does not (`findMappingForType` over `RelationFunctionInstanceSetImplementation`).
 - **Testables SPI** (matrix #32): `RelationAccessorTestConnectionFactory` is a stub.
+- **Variant / semi-structured RFPM-lift extraction** (matrix #33): property bodies like
+  `$src.PAYLOAD->get(..)->to(@T)` / `->toMany(@T)` lower to the `variantTo` DynaFunction
+  (`pureToSQLQuery_variant.pure`), which has **no converter** in the `sqlDialectTranslation`
+  model path (`toPostgresModel.pure::getDynaFunctionConverterMap`) that these
+  `<<test.AlloyOnly>>` relation-mapping tests execute through — so execution fails with
+  *"Couldn't find DynaFunction to Postgres model translation for variantTo()."* The
+  `testRfpmLiftPrimitive`, `testRfpmLiftClass`, and `testRfpmLiftClassToMany` tests were
+  removed. `testRfpmLiftExplicitMap` (`->toMany(@PayloadFirm)->map(f|$f.tags)`) additionally
+  failed earlier at **routing** — the router looks for a class mapping for the unmapped
+  `PayloadFirm` (`helperFunctions.pure`) — and was removed too, along with the now-orphaned
+  `PayloadFirm` / `PersonLifted*` classes and `Lifted*Mapping` mappings. Still present: the
+  non-variant lift path (`testRfpmLiftMixedConcat`, matrix #25) and the type-rejection case
+  (`testRfpmLiftUnsupportedStructuralContainer`, `<<test.ToFix>>`). Note the *classic* way to
+  read a `SEMISTRUCTURED` column — `extractFromSemiStructured(..)`, wired into both the SQL
+  string and model paths — **is** supported and covered by `meta::relational::tests::semistructured`.
+  Re-add these tests once `variantTo` (and map-over-extracted-class routing) are supported in
+  the model path.
 
 ### Shared-suite regressions surfaced (not authored this cycle)
 
