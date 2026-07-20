@@ -996,16 +996,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 {
   let db = meta::relational::tests::mapping::relation::testDB;
   let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'default\n' +
-      'personPayloadTable\n' +
-      'ID,PAYLOAD\n' +
-      '1,"{""firstName"":""Alice"",""tags"":[""tag1"",""tag2""]}"\n' +
-      '2,"{""firstName"":""Bob"",""tags"":[]}"\n'
-    ],
-    $db, $runtime
-  );
+  let csv =
+    'default\n' +
+    'personPayloadTable\n' +
+    'ID,PAYLOAD\n' +
+    '1,"{""firstName"":""Alice"",""tags"":[""tag1"",""tag2""]}"\n' +
+    '2,"{""firstName"":""Bob"",""tags"":[]}"\n';
+  setupRfpmLiftTestData([$csv], $db, $runtime);
   let result = execute(
     |PersonLiftedPrimitive.all()->project(~[firstName: x | $x.firstName]),
     meta::relational::tests::mapping::relation::LiftedPrimitiveMapping,
@@ -1027,16 +1024,13 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 {
   let db = meta::relational::tests::mapping::relation::testDB;
   let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'default\n' +
-      'personPayloadTable\n' +
-      'ID,PAYLOAD\n' +
-      '1,"{""firm"":{""name"":""Firm X"",""tags"":[""fin""]}}"\n' +
-      '2,"{""firm"":{""name"":""Firm A"",""tags"":[]}}"\n'
-    ],
-    $db, $runtime
-  );
+  let csv =
+    'default\n' +
+    'personPayloadTable\n' +
+    'ID,PAYLOAD\n' +
+    '1,"{""firm"":{""name"":""Firm X"",""tags"":[""fin""]}}"\n' +
+    '2,"{""firm"":{""name"":""Firm A"",""tags"":[]}}"\n';
+  setupRfpmLiftTestData([$csv], $db, $runtime);
   let result = execute(
     |PersonLiftedClass.all()->project(~[firmName: x | $x.firm.name]),
     meta::relational::tests::mapping::relation::LiftedClassMapping,
@@ -1058,15 +1052,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 {
   let db = meta::relational::tests::mapping::relation::testDB;
   let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'default\n' +
-      'personPayloadTable\n' +
-      'ID,PAYLOAD\n' +
-      '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""fin""]},{""name"":""Firm A"",""tags"":[]}]}"\n'
-    ],
-    $db, $runtime
-  );
+  let csv =
+    'default\n' +
+    'personPayloadTable\n' +
+    'ID,PAYLOAD\n' +
+    '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""fin""]},{""name"":""Firm A"",""tags"":[]}]}"\n';
+  setupRfpmLiftTestData([$csv], $db, $runtime);
   let result = execute(
     |PersonLiftedClassToMany.all()->project(~[firmName: x | $x.firms.name]),
     meta::relational::tests::mapping::relation::LiftedClassToManyMapping,
@@ -1089,15 +1080,12 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 {
   let db = meta::relational::tests::mapping::relation::testDB;
   let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'default\n' +
-      'personPayloadTable\n' +
-      'ID,PAYLOAD\n' +
-      '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""t1"",""t2""]},{""name"":""Firm A"",""tags"":[""t3""]}]}"\n'
-    ],
-    $db, $runtime
-  );
+  let csv =
+    'default\n' +
+    'personPayloadTable\n' +
+    'ID,PAYLOAD\n' +
+    '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""t1"",""t2""]},{""name"":""Firm A"",""tags"":[""t3""]}]}"\n';
+  setupRfpmLiftTestData([$csv], $db, $runtime);
   let result = execute(
     |PersonLiftedExplicitMap.all()->project(~[tag: x | $x.allTags]),
     meta::relational::tests::mapping::relation::LiftedExplicitMapMapping,
@@ -1122,15 +1110,12 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relati
 {
   let db = meta::relational::tests::mapping::relation::testDB;
   let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'default\n' +
-      'personPayloadTable\n' +
-      'ID,PAYLOAD\n' +
-      '1,"{""key"":""value""}"\n'
-    ],
-    $db, $runtime
-  );
+  let csv =
+    'default\n' +
+    'personPayloadTable\n' +
+    'ID,PAYLOAD\n' +
+    '1,"{""key"":""value""}"\n';
+  setupRfpmLiftTestData([$csv], $db, $runtime);
   // Expect plan generation to throw: Map<String,Variant> is excluded by isStructuralContainer.
   // The size() query is used to avoid ->to() which has no Java compiled-mode binding.
   let result = execute(
