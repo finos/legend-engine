@@ -25,7 +25,6 @@ import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResu
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.AggregationAwareActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtensionLoader;
@@ -38,7 +37,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
-import java.util.*;
+import java.sql.ResultSetMetaData;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RelationalResultToArrowIPCSerializer extends Serializer
 {
@@ -98,18 +102,23 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
         }
     }
 
+
     // ----------------------------------------------------------------------
     // Schema construction (with Legend metadata as schema-level custom_metadata)
     // ----------------------------------------------------------------------
     private Schema buildSchema(RelationalResult rr) throws Exception
     {
-        List<Column> columns = rr.getResultSetColumns();
+        ResultSetMetaData md = rr.resultSetMetaData;
+        int columnCount = rr.columnCount;
         List<Field> fields = new ArrayList<>();
 
-        for (Column col : columns)
+        for (int i = 1; i <= columnCount; i++)
         {
-            String name = col.name;
-            ArrowType arrowType = jdbcToArrow(col.type);
+            String name = md.getColumnLabel(i);
+            int jdbcType = md.getColumnType(i);
+            int precision = md.getPrecision(i);
+            int scale = md.getScale(i);
+            ArrowType arrowType = jdbcToArrow(jdbcType, precision, scale);
             fields.add(new Field(name, FieldType.nullable(arrowType), null));
         }
 
@@ -128,75 +137,45 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
         return new Schema(fields, meta);
     }
 
-    private ArrowType jdbcToArrow(String sqlType)
+    private ArrowType jdbcToArrow(int sqlType, int precision, int scale)
     {
-        // Normalize: strip whitespace and uppercase the base type name.
-        String normalized = sqlType.trim().toUpperCase();
-
-        // Extract the base type name (everything before the first parenthesis).
-        String baseType = normalized;
-        int parenIndex = normalized.indexOf('(');
-        if (parenIndex >= 0) {
-            baseType = normalized.substring(0, parenIndex).trim();
-        }
-
-        switch (baseType)
+        switch (sqlType)
         {
-            case "BIT":
-            case "BOOLEAN":
+            case Types.BIT:
+            case Types.BOOLEAN:
                 return ArrowType.Bool.INSTANCE;
-            case "TINYINT":
+            case Types.TINYINT:
                 return new ArrowType.Int(8, true);
-            case "SMALLINT":
+            case Types.SMALLINT:
                 return new ArrowType.Int(16, true);
-            case "INTEGER":
+            case Types.INTEGER:
                 return new ArrowType.Int(32, true);
-            case "BIGINT":
+            case Types.BIGINT:
                 return new ArrowType.Int(64, true);
-            case "FLOAT":
-            case "REAL":
+            case Types.FLOAT:
+            case Types.REAL:
                 return new ArrowType.FloatingPoint(FloatingPointPrecision.SINGLE);
-            case "DOUBLE":
+            case Types.DOUBLE:
                 return new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE);
-            case "NUMERIC":
-            case "DECIMAL": {
-                // Defaults if no (precision, scale) is specified.
-                int precision = 38;
-                int scale = 0;
-
-                int closeParen = normalized.indexOf(')', parenIndex);
-                if (parenIndex >= 0 && closeParen > parenIndex) {
-                    String inside = normalized.substring(parenIndex + 1, closeParen);
-                    String[] parts = inside.split(",");
-                    try {
-                        if (parts.length >= 1 && !parts[0].trim().isEmpty()) {
-                            precision = Integer.parseInt(parts[0].trim());
-                        }
-                        if (parts.length >= 2 && !parts[1].trim().isEmpty()) {
-                            scale = Integer.parseInt(parts[1].trim());
-                        }
-                    }
-                    catch (NumberFormatException e) {
-                        // Malformed metadata: fall back to safe defaults.
-                        precision = 38;
-                    }
-                }
-
+            case Types.NUMERIC:
+            case Types.DECIMAL:
+            {
                 // Arrow 128-bit decimals cap precision at 38.
                 int p = (precision <= 0) ? 38 : Math.min(precision, 38);
                 // Scale must be non-negative and not exceed precision.
                 int s = Math.max(scale, 0);
-                if (s > p) {
+                if (s > p)
+                {
                     s = p;
                 }
                 return new ArrowType.Decimal(p, s, 128);
             }
-            case "DATE":
+            case Types.DATE:
                 return new ArrowType.Date(DateUnit.DAY);
-            case "TIME":
+            case Types.TIME:
                 return new ArrowType.Time(TimeUnit.MILLISECOND, 32);
-            case "TIMESTAMP":
-            case "TIMESTAMP_WITH_TIMEZONE":
+            case Types.TIMESTAMP:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
                 return new ArrowType.Timestamp(TimeUnit.MICROSECOND, "UTC");
             default:
                 return ArrowType.Utf8.INSTANCE; // fallback (CHAR, VARCHAR, CLOB, etc.)
@@ -291,7 +270,8 @@ public class RelationalResultToArrowIPCSerializer extends Serializer
         }
     }
 
-    private void setValue(FieldVector v, int idx, Object value)
+    @SuppressWarnings("unchecked")
+    private void setValue(FieldVector v, int idx, Object value) throws Exception
     {
         if (v instanceof BitVector)
         {
