@@ -122,31 +122,6 @@ function {doc.doc = 'Get all properties on the provided type / class'}
      ->concatenate($class.qualifiedPropertiesFromAssociations)
 }
 
-function {doc.doc = 'Get all properties on the provided class and (transitively) on every class-typed property in its hierarchy. Cycle-safe.'}
-   meta::pure::functions::meta::allNestedProperties(class:Class<Any>[1]) : AbstractProperty<Any>[*]
-{
-   meta::pure::functions::meta::allNestedProperties($class, ^Map<String, Class<Any>>())
-}
-
-function <<access.private>>
-   meta::pure::functions::meta::allNestedProperties(class:Class<Any>[1], visited:Map<String, Class<Any>>[1]) : AbstractProperty<Any>[*]
-{
-   let key = $class->elementToPath();
-   if($visited->get($key)->isNotEmpty(),
-      | [],
-      | let visitedNext = $visited->put($key, $class);
-        let properties = $class->allProperties();
-        let nestedClassTypes = $class->meta::pure::functions::meta::hierarchicalProperties()
-                                     ->map(p | $p.genericType.rawType->toOne())
-                                     ->filter(t | $t->instanceOf(Class))
-                                     ->cast(@Class<Any>)
-                                     ->removeDuplicates();
-        $properties->concatenate(
-           $nestedClassTypes->map(cl | $cl->meta::pure::functions::meta::allNestedProperties($visitedNext))
-        )->removeDuplicates();
-   );
-}
-
 function {doc.doc = 'Get all nested types present in the property tree of this class or its hierarchy.'}
    meta::pure::functions::meta::allNestedPropertyTypes(class : Class<Any>[1]) : Type[*]
 {
