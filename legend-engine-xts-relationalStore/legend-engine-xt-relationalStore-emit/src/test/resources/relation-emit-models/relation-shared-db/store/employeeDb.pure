@@ -24,7 +24,9 @@ Database demo::relation::db::EmployeeDB
     EMP_TYPE   VARCHAR(20) NOT NULL,
     ACTIVE     BIT NOT NULL,
     HIRE_DATE  TIMESTAMP NOT NULL,
-    SALARY     FLOAT
+    SALARY     FLOAT,
+    STREET     VARCHAR(100) NOT NULL,
+    CITY       VARCHAR(100) NOT NULL
   )
 
   Table FirmTable
@@ -46,6 +48,19 @@ Database demo::relation::db::EmployeeDB
   (
     ID          INTEGER PRIMARY KEY,
     DESCRIPTION VARCHAR(100) NOT NULL
+  )
+
+  Table TemporalEmployeeTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID         INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100) NOT NULL,
+    SALARY     FLOAT,
+    IN_Z       TIMESTAMP NOT NULL,
+    OUT_Z      TIMESTAMP NOT NULL
   )
 
   Join EmployeeFirmJoin(EmployeeTable.FIRM_ID = FirmTable.ID)

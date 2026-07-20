@@ -49,7 +49,6 @@ modelSources:
   model:
     root: relation-simple
     files:
-      - func/employeeFunc.pure
       - mapping/employeeMapping.pure
       - data/testData.pure
   dependencies:              # <-- nested inside modelSources, not at top level
@@ -64,7 +63,7 @@ modelSources:
   model:
     root: relation-simple
     files:
-      - func/employeeFunc.pure
+      - mapping/employeeMapping.pure
 dependencies:                # <-- top-level: IGNORED by EMIT loader
   - source: relation-shared-domain.emit.yaml
 ```
@@ -112,6 +111,40 @@ connections:
 
 Reference: `relational-service/service/personService.pure` uses `h2:` as the key, and
 `relational-service/runtime/personRuntime.pure` maps `h2: demo::connection::PersonH2Connection`.
+
+### 0c. Relation functions live in the mapping file, referenced by mangled name
+
+All relation functions (`~func`) are defined in a `###Pure` section at the **top of the
+same `.pure` file** as the mapping that uses them. No separate `func/` directory is used.
+
+The `~func` reference uses the **mangled name** form (no parentheses or type annotation)
+paired with a wildcard import over the function's package:
+
+```pure
+###Pure
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::employees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+}
+
+###Mapping
+import demo::relation::func::*;   // wildcard import makes the mangled name resolvable
+
+Mapping demo::relation::mapping::EmployeeSimpleMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~func demo::relation::func::employees__Relation_1_   // mangled name — no signature
+    ...
+  }
+```
+
+The mangled suffix for a `Relation<Any>[1]` return type is `__Relation_1_`. Functions
+returning typed column variants (`Relation<(COL:Type,…)>[1]`) use the same suffix because
+the column spec is erased in the mangled form. The EMIT model YAML `files:` list for each
+model therefore lists only `mapping/<name>.pure` and `data/testData.pure` — no `func/` entry.
 
 ### 1. Multiplicity — `[1]` property requires a `NOT NULL` column
 
@@ -221,6 +254,7 @@ modelSources:
       - model/firm.pure
       - model/employee.pure
       - model/employment.pure
+      - model/position.pure
 
 features:
   - scaffolding:class
@@ -285,6 +319,18 @@ Association demo::relation::domain::Employment
 {
   employer: demo::relation::domain::Firm[1];
   employees: demo::relation::domain::Employee[*];
+}
+```
+
+**`model/position.pure`** — `Position` class (used by `relation-groupBy`):
+
+```pure
+###Pure
+Class demo::relation::domain::Position
+{
+  gsn: String[1];
+  productId: Integer[1];
+  totalQty: Integer[1];
 }
 ```
 
@@ -385,6 +431,19 @@ large):
 
 ---
 
+## Implementation Status
+
+| Component | Status |
+|:---|:---|
+| Shared fixtures (`relation-shared-domain`, `relation-shared-db`) | ✅ Complete |
+| Wave 1: `relation-simple` | ✅ Complete — PARSE, COMPILE, TEST_EXECUTION pass |
+| Wave 1: `relation-service` | ✅ Complete — service test + PLAN_GENERATION pass |
+| Wave 2: `relation-join` through `relation-enumeration` | Pending |
+| Wave 3: `relation-src` through `relation-embedded` | Pending |
+| Wave 4: `relation-union` through `relation-milestoning` | Pending |
+
+---
+
 ## Implementation Waves
 
 Models are ordered from least to most complexity. Each model depends on Fixture A and
@@ -415,9 +474,8 @@ These two models validate the end-to-end pipeline before any feature-specific co
 
 ```
 relation-simple/
-  func/employeeFunc.pure      # the ~func relation function
-  mapping/employeeMapping.pure # ~func mapping + testSuites
-  data/testData.pure           # Data element with Relation rows
+  mapping/employeeMapping.pure  # ###Pure section (employees func) + ###Mapping section
+  data/testData.pure            # Data element with Relation rows
 ```
 
 **`relation-simple.emit.yaml`** key sections:
@@ -429,8 +487,7 @@ modelSources:
   model:
     root: relation-simple
     files:
-      - func/employeeFunc.pure
-      - mapping/employeeMapping.pure
+      - mapping/employeeMapping.pure   # ###Pure (employees func) + ###Mapping
       - data/testData.pure
   dependencies:
     - source: relation-shared-domain.emit.yaml
@@ -450,20 +507,12 @@ tags:
   - relation
 ```
 
-**`func/employeeFunc.pure`:**
+**`mapping/employeeMapping.pure`** — `###Pure` section (function) followed by `###Mapping`:
 
-```pure
-###Pure
-function demo::relation::func::employees():Relation<(ID:Integer, FIRST_NAME:String,
-    LAST_NAME:String, FIRM_ID:Integer, EMP_TYPE:String, ACTIVE:Integer,
-    HIRE_DATE:DateTime, SALARY:Float)[*]>[1]
-{
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
-}
-```
-
-The column list must exactly match the table definition. `SALARY` is omitted from the
-explicit column constraint so it surfaces as nullable.
+The file opens with a `###Pure` section defining the relation function, then a `###Mapping`
+section that references it by mangled name (see authoring rule 0c). The function return type
+is `Relation<Any>[1]` — column types are enforced by the compiler against the database schema,
+not stated explicitly in the function signature.
 
 **`mapping/employeeMapping.pure`** — the `~func` mapping:
 
@@ -727,9 +776,7 @@ on `FIRM_ID == ID`. The test asserts `Employee.all()->project([x|$x.firstName, x
 
 ```
 relation-join/
-  func/employeeFunc.pure      # reuse employees() function definition
-  func/firmFunc.pure          # new: firms() function
-  mapping/joinMapping.pure    # two ~func mappings + ModelJoin association + testSuites
+  mapping/joinMapping.pure    # ###Pure (employees + firms funcs) + ###Mapping with ModelJoin + testSuites
   data/testData.pure          # Relation rows for both EmployeeTable and FirmTable
 ```
 
@@ -742,23 +789,33 @@ modelSources:
   model:
     root: relation-join
     files:
-      - func/employeeFunc.pure
-      - func/firmFunc.pure
-      - mapping/joinMapping.pure
+      - mapping/joinMapping.pure   # ###Pure (employees + firms funcs) + ###Mapping
       - data/testData.pure
   dependencies:
     - source: relation-shared-domain.emit.yaml
     - source: relation-shared-db.emit.yaml
 ```
 
-**`mapping/joinMapping.pure`** key structure:
+**`mapping/joinMapping.pure`** key structure (the `###Pure` func section precedes this `###Mapping` block):
 
 ```pure
+###Pure
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::employees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{ #>{demo::relation::db::EmployeeDB.default.EmployeeTable}# }
+
+function demo::relation::func::firms(): meta::pure::metamodel::relation::Relation<Any>[1]
+{ #>{demo::relation::db::EmployeeDB.default.FirmTable}# }
+
+###Mapping
+import demo::relation::func::*;
+
 Mapping demo::relation::mapping::EmployeeJoinMapping
 (
   *demo::relation::domain::Employee: Relation
   {
-    ~func demo::relation::func::employees():Relation<Any>[1];
+    ~func demo::relation::func::employees__Relation_1_
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -768,7 +825,7 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
 
   *demo::relation::domain::Firm: Relation
   {
-    ~func demo::relation::func::firms():Relation<Any>[1];
+    ~func demo::relation::func::firms__Relation_1_
     id: ID,
     legalName: LEGAL_NAME
   }
@@ -831,15 +888,17 @@ in queries.
 inactive employees are never returned. The `testSuites:` data contains both active and
 inactive rows; the assertion verifies only active rows appear.
 
-**`func/employeeFilterFunc.pure`:**
+**`mapping/filterMapping.pure`** — `###Pure` section (filter function, defined at the top of the file):
 
 ```pure
-function demo::relation::func::activeEmployees():Relation<(…)>[1]
+function demo::relation::func::activeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
     ->filter(r | $r.ACTIVE == 1)
 }
 ```
+
+The `###Mapping` section follows in the same file, referencing `activeEmployees__Relation_1_`.
 
 **`testSuites:` assertion:** Supply 3 employees (2 active, 1 inactive); assert result
 contains only the 2 active ones. A second test case (optional) applies a query-time filter
@@ -872,16 +931,9 @@ relation function over `PositionTable` (part of the shared DB). The function app
 The `testSuites:` assertion loads a few `PositionTable` rows and verifies the grouped
 aggregate values.
 
-**Domain additions** (add to `relation-shared-domain` or define locally):
-
-```pure
-Class demo::relation::domain::Position
-{
-  gsn: String[1];
-  productId: Integer[1];
-  totalQty: Integer[1];
-}
-```
+**Domain:** `demo::relation::domain::Position` is defined in `relation-shared-domain/model/position.pure`
+(part of the shared fixture — no local class needed). The `groupBy` model depends on `relation-shared-domain`
+transitively via `relation-shared-db`.
 
 ---
 
@@ -960,22 +1012,25 @@ validates round-trip, compiler validates the source lambda, executor runs it.
 See authoring rule 4 above — the `~src` helper function must be a named zero-arg Pure
 function, not an inline expression.
 
-**`func/srcFuncs.pure`:**
+**`mapping/srcMapping.pure`** — `###Pure` section (two source helper functions, at the top of the file):
 
 ```pure
-function demo::relation::func::activeEmployeeSource():Relation<(…)>[1]
+function demo::relation::func::activeEmployeeSource(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
     ->select(~[ID, FIRST_NAME, LAST_NAME, ACTIVE])
 }
 
-function demo::relation::func::filteredEmployeeSource():Relation<(…)>[1]
+function demo::relation::func::filteredEmployeeSource(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
     ->filter(r | $r.ACTIVE == 1)
     ->select(~[ID, FIRST_NAME, LAST_NAME])
 }
 ```
+
+The `###Mapping` section follows, with two mapping variants referencing
+`activeEmployeeSource__Relation_1_` and `filteredEmployeeSource__Relation_1_` respectively.
 
 ---
 
@@ -1219,96 +1274,80 @@ emit-models/
       firm.pure
       employee.pure
       employment.pure
+      position.pure                 # Position class (used by relation-groupBy)
 
   relation-shared-db.emit.yaml
   relation-shared-db/
     store/
-      employeeDb.pure           # EmployeeTable, FirmTable, PositionTable, ProductTable,
-                                # TemporalEmployeeTable, plus joins
+      employeeDb.pure               # EmployeeTable, FirmTable, PositionTable, ProductTable,
+                                    # TemporalEmployeeTable (add for relation-milestoning), plus joins
 
-  relation-simple.emit.yaml
+  relation-simple.emit.yaml         # ✅ Complete
   relation-simple/
-    func/employeeFunc.pure
-    mapping/employeeMapping.pure
+    mapping/employeeMapping.pure    # ###Pure (employees func) + ###Mapping + testSuites
     data/testData.pure
 
-  relation-service.emit.yaml
+  relation-service.emit.yaml        # ✅ Complete (depends on relation-simple.emit.yaml)
   relation-service/
-    func/employeeFunc.pure      # (or depend on relation-simple; see below)
-    mapping/employeeMapping.pure
     connection/h2Connection.pure
     runtime/employeeRuntime.pure
-    service/employeeService.pure
-    data/testData.pure
+    service/employeeService.pure    # inline Relation test data; no data/ directory
 
   relation-join.emit.yaml
   relation-join/
-    func/firmFunc.pure
-    mapping/joinMapping.pure
+    mapping/joinMapping.pure        # ###Pure (employees + firms funcs) + ###Mapping + testSuites
     data/testData.pure
 
   relation-filter.emit.yaml
   relation-filter/
-    func/filterFunc.pure
-    mapping/filterMapping.pure
+    mapping/filterMapping.pure      # ###Pure (activeEmployees func) + ###Mapping + testSuites
     data/testData.pure
 
   relation-groupBy.emit.yaml
   relation-groupBy/
-    func/positionFunc.pure
-    mapping/groupByMapping.pure
+    mapping/groupByMapping.pure     # ###Pure (positions func) + ###Mapping + testSuites
     data/testData.pure
 
   relation-enumeration.emit.yaml
   relation-enumeration/
-    func/employeeFunc.pure
-    mapping/enumMapping.pure
+    mapping/enumMapping.pure        # ###Pure (employees func) + ###Mapping + testSuites
     data/testData.pure
 
   relation-src.emit.yaml
   relation-src/
-    func/srcFuncs.pure
-    mapping/srcMapping.pure
+    mapping/srcMapping.pure         # ###Pure (activeEmployeeSource + filteredEmployeeSource) + ###Mapping
     data/testData.pure
 
   relation-expression-rhs.emit.yaml
   relation-expression-rhs/
-    func/employeeFunc.pure
-    mapping/exprMapping.pure
+    mapping/exprMapping.pure        # ###Pure (employees func) + ###Mapping + testSuites
     data/testData.pure
 
   relation-embedded.emit.yaml
   relation-embedded/
-    func/employeeFunc.pure
-    mapping/embeddedMapping.pure
+    mapping/embeddedMapping.pure    # ###Pure (employees func) + ###Mapping + testSuites
     data/testData.pure
 
   relation-union.emit.yaml
   relation-union/
-    func/unionFuncs.pure        # contractEmployees(), fullTimeEmployees()
-    mapping/unionMapping.pure
+    mapping/unionMapping.pure       # ###Pure (contractEmployees + fullTimeEmployees) + ###Mapping
     data/testData.pure
 
   relation-relational-union.emit.yaml
   relation-relational-union/
-    func/relationFunc.pure
-    mapping/mixedUnionMapping.pure
+    mapping/mixedUnionMapping.pure  # ###Pure (relation func) + ###Mapping (mixed Relation/Relational)
     data/testData.pure
 
   relation-milestoning.emit.yaml
   relation-milestoning/
-    func/temporalFunc.pure
-    mapping/milestoningMapping.pure
+    mapping/milestoningMapping.pure # ###Pure (temporalEmployees func) + ###Mapping + testSuites
     data/testData.pure
 ```
 
-**Dependency note:** `relation-service` reuses the same mapping as `relation-simple`.
-Two implementation options:
-1. Depend on `relation-simple.emit.yaml` (add it to `modelSources.dependencies:`) — avoids
-   duplication but creates a model-on-model dependency.
-2. Copy the mapping file into `relation-service/` — duplication but full isolation.
-
-Prefer option 1 to keep models DRY. The EMIT runner resolves `dependencies:` transitively.
+**Dependency note:** `relation-service` reuses the mapping from `relation-simple` by declaring
+`relation-simple.emit.yaml` as a dependency (option 1 — implemented). `relation-service/`
+therefore contains only `connection/`, `runtime/`, and `service/` — no mapping or data files.
+The EMIT runner resolves `dependencies:` transitively.
 
 ---
 
@@ -1366,10 +1405,10 @@ The following are excluded from this plan — blocked at the engine layer:
 ## Recommended Authoring Order
 
 ```
-1.  relation-shared-domain  (no deps; write first)
-2.  relation-shared-db      (depends on shared-domain)
-3.  relation-simple         (Wave 1; validates testSuites path — foundational)
-4.  relation-service        (Wave 1; validates plan-generation path)
+1.  relation-shared-domain  (no deps; write first)                  ✅ DONE
+2.  relation-shared-db      (depends on shared-domain)              ✅ DONE
+3.  relation-simple         (Wave 1; validates testSuites path)     ✅ DONE — passes
+4.  relation-service        (Wave 1; validates plan-generation path) ✅ DONE — passes
 5.  relation-filter         (Wave 2; simplest function-body feature)
 6.  relation-enumeration    (Wave 2; EnumerationMapping)
 7.  relation-join           (Wave 2; ModelJoin association)

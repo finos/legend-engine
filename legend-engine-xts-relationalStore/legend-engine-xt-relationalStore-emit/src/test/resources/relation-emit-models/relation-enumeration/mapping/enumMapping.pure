@@ -1,0 +1,122 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::employeesWithType(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeEnumerationMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~func demo::relation::func::employeesWithType__Relation_1_
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    allEnumsSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.employeeType->toString(), x | $x.firstName],
+                    ['Type', 'First Name']
+                  );
+      tests:
+      [
+        enumLabels:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeEnumData
+              }#
+          ];
+          asserts:
+          [
+            shouldDecodeEnums:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Type":"CONTRACT","First Name":"Bob"},{"Type":"FULL_TIME","First Name":"Alice"},{"Type":"FULL_TIME","First Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    fullTimeOnlySuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.employeeType == demo::relation::domain::EmployeeType.FULL_TIME)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.employeeType->toString(), x | $x.firstName],
+                    ['Type', 'First Name']
+                  );
+      tests:
+      [
+        filterByEnum:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeEnumData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnFullTimeOnly:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Type":"FULL_TIME","First Name":"Alice"},{"Type":"FULL_TIME","First Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

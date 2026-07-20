@@ -1,0 +1,125 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+// Only rows with non-null SALARY so that ->toOne() coercion is total at runtime.
+function demo::relation::func::salariedEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+    ->filter(r | $r.SALARY->isNotEmpty())
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeExpressionMapping
+(
+  *demo::relation::domain::Employee: Relation
+  {
+    ~func demo::relation::func::salariedEmployees__Relation_1_
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    salaryDoubled: $src.SALARY->toOne() * 2.0,
+    fullGreeting: 'Hello, ' + $src.FIRST_NAME + ' ' + $src.LAST_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    doubledSalarySuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.salaryDoubled],
+                    ['First Name', 'Salary x2']
+                  );
+      tests:
+      [
+        doubledSalary:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::SalariedEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldDoubleValues:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Salary x2":180000.0},{"First Name":"Bob","Salary x2":150000.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    greetingSuite:
+    {
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.fullGreeting],
+                    ['Greeting']
+                  );
+      tests:
+      [
+        concatGreeting:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::SalariedEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldConcatNames:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Greeting":"Hello, Alice Green"},{"Greeting":"Hello, Bob Smith"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

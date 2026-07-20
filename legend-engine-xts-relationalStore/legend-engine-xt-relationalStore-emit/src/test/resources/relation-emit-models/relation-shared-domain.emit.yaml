@@ -28,12 +28,16 @@ modelSources:
       - model/firm.pure
       - model/employee.pure
       - model/employment.pure
+      - model/position.pure
+      - model/address.pure
+      - model/temporalEmployee.pure
 
 features:
   - scaffolding:class
   - grammar:enumeration
   - grammar:association
   - grammar:derived-property
+  - grammar:milestoning
 stores: []
 complexity: basic
 tags:

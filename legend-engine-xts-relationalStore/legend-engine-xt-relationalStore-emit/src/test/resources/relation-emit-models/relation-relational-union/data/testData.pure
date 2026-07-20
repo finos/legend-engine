@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// 4 rows: 2 CONTRACT (Relation leg), 2 FULL_TIME (Relational leg with ~filter).
+// Mixed union should return all 4 employees.
+
 ###Data
-Data demo::relation::data::EmployeeData
+Data demo::relation::data::EmployeeMixedUnionData
 {
   Relation
   #{
     default.EmployeeTable:
       ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
-      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
+      1,Alice,Green,1,CONTRACT,1,2020-01-15 00:00:00,90000.0,Main St,London
       2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
-      3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin;
+      3,Carol,White,1,FULL_TIME,1,2019-03-10 00:00:00,85000.0,Pine Rd,Berlin
+      4,David,Jones,2,FULL_TIME,1,2018-05-20 00:00:00,110000.0,Elm Rd,Madrid;
   }#
 }

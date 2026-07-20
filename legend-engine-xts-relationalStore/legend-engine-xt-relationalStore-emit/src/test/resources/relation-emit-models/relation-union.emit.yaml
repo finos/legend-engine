@@ -1,0 +1,47 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-union
+title: "Relation Function Mapping — Operation Union of Two Relation Sets"
+description: |
+  Two Employee set implementations (contractSet, fullTimeSet) backed by separate
+  relation functions are unioned via Operation { union(...) }. The testSuite verifies
+  that rows from both legs appear in query results. Known exclusion: the importDataFlow
+  discriminator pattern (matrix #28) is not covered here.
+
+modelSources:
+  model:
+    root: relation-union
+    files:
+      - mapping/unionMapping.pure   # ###Pure (contractEmployees + fullTimeEmployees) + ###Mapping + testSuites
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:relation-union
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: complex
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - union
