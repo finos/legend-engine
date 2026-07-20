@@ -639,8 +639,8 @@ Mapping meta::relational::tests::mapping::relation::LiftedPrimitiveMapping
 (
   *PersonLiftedPrimitive[personLiftedPrimitive]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
-    firstName: $src.PAYLOAD->get('firstName')->to(@String),
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
+    firstName: $src.PAYLOAD->get('firstName')->to(@String)->toOne(),
     tags: $src.PAYLOAD->get('tags')->toMany(@String)
   }
 )
@@ -650,8 +650,8 @@ Mapping meta::relational::tests::mapping::relation::LiftedClassMapping
 (
   *PersonLiftedClass[personLiftedClass]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
-    firm: $src.PAYLOAD->get('firm')->to(@PayloadFirm)
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
+    firm: $src.PAYLOAD->get('firm')->to(@PayloadFirm)->toOne()
   }
 )
 
@@ -660,7 +660,7 @@ Mapping meta::relational::tests::mapping::relation::LiftedClassToManyMapping
 (
   *PersonLiftedClassToMany[personLiftedClassToMany]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
     firms: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)
   }
 )
@@ -670,8 +670,8 @@ Mapping meta::relational::tests::mapping::relation::LiftedPassthroughMapping
 (
   *PersonLiftedPassthrough[personLiftedPassthrough]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
-    payload: PAYLOAD
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
+    payload: $src.PAYLOAD->toOne()
   }
 )
 
@@ -681,7 +681,7 @@ Mapping meta::relational::tests::mapping::relation::LiftedExplicitMapMapping
 (
   *PersonLiftedExplicitMap[personLiftedExplicitMap]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
     allTags: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)->map(f | $f.tags)
   }
 )
@@ -692,8 +692,8 @@ Mapping meta::relational::tests::mapping::relation::LiftedUnsupportedMapping
 (
   *PersonLiftedUnsupported[personLiftedUnsupported]: Relation
   {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction()
-    attributes: $src.PAYLOAD
+    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
+    attributes: $src.PAYLOAD->toOne()->cast(@meta::pure::functions::collection::Map<String, meta::pure::metamodel::variant::Variant>)
   }
 )
 

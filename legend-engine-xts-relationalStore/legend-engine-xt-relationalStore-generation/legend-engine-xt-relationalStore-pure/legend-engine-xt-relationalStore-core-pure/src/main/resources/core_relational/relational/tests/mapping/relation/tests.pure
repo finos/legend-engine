@@ -23,6 +23,8 @@ import meta::pure::router::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
 import meta::relational::tests::mapping::relation::*;
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQuery():Boolean[1]
@@ -1071,8 +1073,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 }
 
 // t10 — Pass-through: PAYLOAD column surfaced as raw Variant[1] with no extraction.
-// Asserts row count only: navigating a Variant property via ->to() has no Java
-// compiled-mode binding, so the query avoids typed extraction from the Variant.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftPassthrough():Boolean[1]
 {
   let db = meta::relational::tests::mapping::relation::testDB;
