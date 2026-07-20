@@ -25,7 +25,7 @@ import demo::relation::func::*;
 
 Mapping demo::relation::mapping::EmployeeEmbeddedMapping
 (
-  *demo::relation::domain::Employee: Relation
+  *demo::relation::domain::ExtendedEmployee: Relation
   {
     ~func demo::relation::func::employeesWithAddress__Relation_1_
     id: ID,
@@ -52,7 +52,7 @@ Mapping demo::relation::mapping::EmployeeEmbeddedMapping
   [
     addressCitySuite:
     {
-      function: |demo::relation::domain::Employee.all()
+      function: |demo::relation::domain::ExtendedEmployee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(
                     [x | $x.firstName, x | $x.address.city],
@@ -88,7 +88,7 @@ Mapping demo::relation::mapping::EmployeeEmbeddedMapping
     },
     londonFilterSuite:
     {
-      function: |demo::relation::domain::Employee.all()
+      function: |demo::relation::domain::ExtendedEmployee.all()
                   ->filter(e | $e.address.city == 'London')
                   ->sortBy(x | $x.firstName)
                   ->project(

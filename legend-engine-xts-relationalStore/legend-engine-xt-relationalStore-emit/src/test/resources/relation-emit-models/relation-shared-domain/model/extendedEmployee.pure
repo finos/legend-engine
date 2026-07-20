@@ -13,14 +13,9 @@
 // limitations under the License.
 
 ###Pure
-Class demo::relation::domain::Employee
+Class demo::relation::domain::ExtendedEmployee extends demo::relation::domain::Employee
 {
-  id: Integer[1];
-  firstName: String[1];
-  lastName: String[1];
-  employeeType: demo::relation::domain::EmployeeType[1];
-  active: Boolean[1];
-  hireDate: DateTime[1];
-  salary: Float[0..1];
-  fullName() { $this.firstName + ' ' + $this.lastName }: String[1];
+  salaryDoubled: Float[0..1];
+  fullGreeting: String[1];
+  address: demo::relation::domain::Address[0..1];
 }

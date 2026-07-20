@@ -30,6 +30,7 @@ modelSources:
       - model/employment.pure
       - model/position.pure
       - model/address.pure
+      - model/extendedEmployee.pure
       - model/temporalEmployee.pure
 
 features:

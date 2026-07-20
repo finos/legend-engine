@@ -27,7 +27,7 @@ import demo::relation::func::*;
 
 Mapping demo::relation::mapping::EmployeeExpressionMapping
 (
-  *demo::relation::domain::Employee: Relation
+  *demo::relation::domain::ExtendedEmployee: Relation
   {
     ~func demo::relation::func::salariedEmployees__Relation_1_
     id: ID,
@@ -51,7 +51,7 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
   [
     doubledSalarySuite:
     {
-      function: |demo::relation::domain::Employee.all()
+      function: |demo::relation::domain::ExtendedEmployee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(
                     [x | $x.firstName, x | $x.salaryDoubled],
@@ -87,7 +87,7 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
     },
     greetingSuite:
     {
-      function: |demo::relation::domain::Employee.all()
+      function: |demo::relation::domain::ExtendedEmployee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(
                     [x | $x.fullGreeting],
