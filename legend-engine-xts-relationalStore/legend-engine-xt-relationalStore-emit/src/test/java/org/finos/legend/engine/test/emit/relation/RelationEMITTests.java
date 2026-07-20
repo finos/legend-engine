@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.test.emit.relational;
+package org.finos.legend.engine.test.emit.relation;
 
 import org.finos.legend.engine.test.emit.junit.EMITTestSuiteBuilder;
 import org.junit.jupiter.api.DynamicContainer;
@@ -21,21 +21,23 @@ import org.junit.jupiter.api.TestFactory;
 import java.util.stream.Stream;
 
 /**
- * JUnit 5 runner for the classic <b>relational mapping</b> EMIT suite. Discovers
- * EMIT models under {@code relational-emit-models/} on the test classpath and yields
+ * JUnit 5 runner for the relation ({@code ~func}) mapping EMIT suite. Discovers
+ * EMIT models under {@code relation-emit-models/} on the test classpath and yields
  * one dynamic test per granular operation (init/parse/compile, file generation,
  * individual mapping tests, service plans).
  *
- * <p>The sibling relation ({@code ~func}) mapping suite lives under
- * {@code relation-emit-models/} and is driven by
- * {@link org.finos.legend.engine.test.emit.relation.RelationEMITTests}. The two use
- * separate resource roots so a failure is unambiguously attributable to one feature.
+ * <p>Kept as a peer to {@link org.finos.legend.engine.test.emit.relational.RelationalEMITTests}
+ * within the same Maven module: same dependency profile, but the two suites use
+ * distinct classpath resource roots ({@code relational-emit-models/} vs
+ * {@code relation-emit-models/}) so a failure is unambiguously attributable to the
+ * classic-relational or the relation-mapping code path.
  */
-public class RelationalEMITTests
+public class RelationEMITTests
 {
     @TestFactory
     Stream<DynamicContainer> emit()
     {
-        return EMITTestSuiteBuilder.testContainers("relational-emit-models/");
+        return EMITTestSuiteBuilder.testContainers("relation-emit-models/");
     }
 }
+
