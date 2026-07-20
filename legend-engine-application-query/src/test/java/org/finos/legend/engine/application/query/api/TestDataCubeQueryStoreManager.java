@@ -127,8 +127,8 @@ public class TestDataCubeQueryStoreManager
         }
     }
 
-    private TestMongoClientProvider testMongoClientProvider = new TestMongoClientProvider();
-    private final DataCubeQueryStoreManager store = new DataCubeQueryStoreManager(testMongoClientProvider.mongoClient);
+    private TestMongoClientProvider testMongoClientProvider;
+    private DataCubeQueryStoreManager store;
     private static final TestVaultImplementation testVaultImplementation = new TestVaultImplementation();
 
     @BeforeClass
@@ -150,6 +150,7 @@ public class TestDataCubeQueryStoreManager
     public void setup()
     {
         this.testMongoClientProvider = new TestMongoClientProvider();
+        this.store = new DataCubeQueryStoreManager(this.testMongoClientProvider.mongoClient);
     }
 
     @After
