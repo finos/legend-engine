@@ -74,7 +74,7 @@ Mapping demo::relation::mapping::EmployeeEnumerationMapping
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"Type":"CONTRACT","First Name":"Bob"},{"Type":"FULL_TIME","First Name":"Alice"},{"Type":"FULL_TIME","First Name":"Carol"}]';
+                    data: '[{"Type":"FULL_TIME","First Name":"Alice"},{"Type":"CONTRACT","First Name":"Bob"},{"Type":"FULL_TIME","First Name":"Carol"}]';
                   }#;
               }#
           ];

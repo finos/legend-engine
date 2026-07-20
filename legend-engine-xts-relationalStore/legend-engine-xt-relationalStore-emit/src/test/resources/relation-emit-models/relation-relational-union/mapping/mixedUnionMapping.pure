@@ -31,7 +31,7 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfSet, relSet)
   }
 
-  Employee[rfSet]: Relation
+  *demo::relation::domain::Employee[rfSet]: Relation
   {
     ~func demo::relation::func::mixedContractEmployees__Relation_1_
     id: ID,
@@ -43,7 +43,7 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
     salary: SALARY
   }
 
-  Employee[relSet]: Relational
+  *demo::relation::domain::Employee[relSet]: Relational
   {
     ~filter [demo::relation::db::EmployeeDB]EmployeeTable.EMP_TYPE = 'FULL_TIME'
     ~primaryKey
