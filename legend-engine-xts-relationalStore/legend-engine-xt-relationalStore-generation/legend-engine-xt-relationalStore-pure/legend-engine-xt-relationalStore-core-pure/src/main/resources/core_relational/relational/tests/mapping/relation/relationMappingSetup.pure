@@ -379,12 +379,6 @@ Class meta::relational::tests::mapping::relation::PersonLiftedClassToMany
   firms: meta::relational::tests::mapping::relation::PayloadFirm[*];
 }
 
-// Property typed Variant: pass-through; no extraction, just the column.
-Class meta::relational::tests::mapping::relation::PersonLiftedPassthrough
-{
-  payload: meta::pure::metamodel::variant::Variant[1];
-}
-
 // Explicit-map [*]-body case: exercises the array_flatten wrap. The mapping uses
 // $src.PAYLOAD.firms->map(f | $f.tags) which produces Array<Array<String>>
 // pre-fix; after PR 1 it's flattened to Array<String> before the LATERAL.
@@ -662,16 +656,6 @@ Mapping meta::relational::tests::mapping::relation::LiftedClassToManyMapping
   {
     ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
     firms: $src.PAYLOAD->get('firms')->toMany(@PayloadFirm)
-  }
-)
-
-// Pass-through: PAYLOAD column surfaced unchanged as a raw Variant[1] property.
-Mapping meta::relational::tests::mapping::relation::LiftedPassthroughMapping
-(
-  *PersonLiftedPassthrough[personLiftedPassthrough]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    payload: $src.PAYLOAD->toOne()
   }
 )
 

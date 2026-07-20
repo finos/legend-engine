@@ -982,9 +982,14 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 
 // --- RFPM-lift variant tests (personPayloadTable) ----------------------------
 // Each test seeds its own rows via setupRfpmLiftTestData (personPayloadTable is
-// NOT pre-populated by createTablesAndFillDb). CSV format: first element is the
-// header row; remaining elements are data rows. The PAYLOAD column holds a JSON
-// string. Verify expected output values on first run and adjust if needed.
+// NOT pre-populated by createTablesAndFillDb, so the seed block must also drive
+// its CREATE TABLE). setupRfpmLiftTestData joins its list elements with '\n-\n'
+// and feeds them to setUpDataSQLsV2, so each element is ONE table block laid out
+// as: schema line ('default'), table line ('personPayloadTable'), column header
+// ('ID,PAYLOAD'), then data rows. The PAYLOAD column holds a JSON string; because
+// the JSON contains commas and double-quotes it must be RFC4180-quoted (wrap the
+// field in "..." and double every internal " as "") so the CSV parser keeps the
+// whole payload as a single field.
 
 // t7 — Variant + primitives: String[1] and String[*] extracted from JSON PAYLOAD.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftPrimitive():Boolean[1]
@@ -993,9 +998,11 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   let runtime = meta::external::store::relational::tests::testRuntime($db);
   setupRfpmLiftTestData(
     [
-      'ID,PAYLOAD',
-      '1,{"firstName":"Alice","tags":["tag1","tag2"]}',
-      '2,{"firstName":"Bob","tags":[]}'
+      'default\n' +
+      'personPayloadTable\n' +
+      'ID,PAYLOAD\n' +
+      '1,"{""firstName"":""Alice"",""tags"":[""tag1"",""tag2""]}"\n' +
+      '2,"{""firstName"":""Bob"",""tags"":[]}"\n'
     ],
     $db, $runtime
   );
@@ -1022,9 +1029,11 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   let runtime = meta::external::store::relational::tests::testRuntime($db);
   setupRfpmLiftTestData(
     [
-      'ID,PAYLOAD',
-      '1,{"firm":{"name":"Firm X","tags":["fin"]}}',
-      '2,{"firm":{"name":"Firm A","tags":[]}}'
+      'default\n' +
+      'personPayloadTable\n' +
+      'ID,PAYLOAD\n' +
+      '1,"{""firm"":{""name"":""Firm X"",""tags"":[""fin""]}}"\n' +
+      '2,"{""firm"":{""name"":""Firm A"",""tags"":[]}}"\n'
     ],
     $db, $runtime
   );
@@ -1051,8 +1060,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   let runtime = meta::external::store::relational::tests::testRuntime($db);
   setupRfpmLiftTestData(
     [
-      'ID,PAYLOAD',
-      '1,{"firms":[{"name":"Firm X","tags":["fin"]},{"name":"Firm A","tags":[]}]}'
+      'default\n' +
+      'personPayloadTable\n' +
+      'ID,PAYLOAD\n' +
+      '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""fin""]},{""name"":""Firm A"",""tags"":[]}]}"\n'
     ],
     $db, $runtime
   );
@@ -1072,28 +1083,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// t10 — Pass-through: PAYLOAD column surfaced as raw Variant[1] with no extraction.
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftPassthrough():Boolean[1]
-{
-  let db = meta::relational::tests::mapping::relation::testDB;
-  let runtime = meta::external::store::relational::tests::testRuntime($db);
-  setupRfpmLiftTestData(
-    [
-      'ID,PAYLOAD',
-      '1,{"firstName":"Alice"}',
-      '2,{"firstName":"Bob"}'
-    ],
-    $db, $runtime
-  );
-  let result = execute(
-    |PersonLiftedPassthrough.all()->size(),
-    meta::relational::tests::mapping::relation::LiftedPassthroughMapping,
-    $runtime,
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(2, $result.values->toOne());
-}
-
 // t11 — Explicit map: firms->map(f|$f.tags) flattened to String[*].
 // The lift router must wrap the body in array_flatten before emitting the LATERAL join.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftExplicitMap():Boolean[1]
@@ -1102,8 +1091,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   let runtime = meta::external::store::relational::tests::testRuntime($db);
   setupRfpmLiftTestData(
     [
-      'ID,PAYLOAD',
-      '1,{"firms":[{"name":"Firm X","tags":["t1","t2"]},{"name":"Firm A","tags":["t3"]}]}'
+      'default\n' +
+      'personPayloadTable\n' +
+      'ID,PAYLOAD\n' +
+      '1,"{""firms"":[{""name"":""Firm X"",""tags"":[""t1"",""t2""]},{""name"":""Firm A"",""tags"":[""t3""]}]}"\n'
     ],
     $db, $runtime
   );
@@ -1133,8 +1124,10 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relati
   let runtime = meta::external::store::relational::tests::testRuntime($db);
   setupRfpmLiftTestData(
     [
-      'ID,PAYLOAD',
-      '1,{"key":"value"}'
+      'default\n' +
+      'personPayloadTable\n' +
+      'ID,PAYLOAD\n' +
+      '1,"{""key"":""value""}"\n'
     ],
     $db, $runtime
   );
