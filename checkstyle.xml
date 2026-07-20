@@ -36,6 +36,17 @@
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
+
+
+    <!-- Checkstyle 8.26+ hardcodes a new CustomImportOrder violation for blank lines
+         within an import group. With no customImportOrderRules configured (as here),
+         all imports form a single group, so this flags every blank line inside any
+         import block. Suppress to retain pre-8.26 behavior. -->
+    <module name="SuppressionSingleFilter">
+        <property name="checks" value="CustomImportOrder"/>
+        <property name="message" value="Extra separation in import group"/>
+    </module>
+
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
