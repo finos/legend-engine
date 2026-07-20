@@ -1188,7 +1188,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                              data= ^RootJoinTreeNode(alias = $child.alias, childrenData=$child.childrenData)
                            ),
                           |let q = $child.alias.relationalElement->cast(@SelectSQLQuery);
-                           ^$q(columns=$q.columns->map(c|$c->match([a:Alias[1]|$a, t:TableAliasColumn[1]|^Alias(name=$t.column.name, relationalElement=$t)])));
+                           ^$q(columns=$q.columns->map(c|$c->match([a:Alias[1]|$a, t:TableAliasColumn[1]|^Alias(name=$t.column.name, relationalElement=$t), s:SemiStructuredArrayFlattenOutput[1]|let colName = $s->extractColumnName(); ^Alias(name = $colName, relationalElement = $s);])));
                       );
 
    let targetAlias = if($child.alias.relationalElement->instanceOf(SelectSQLQuery),|$child.alias, |^TableAlias(name=$child.alias.name, relationalElement=$nestedSelect));
@@ -1374,6 +1374,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::extract
                 w:WindowColumn[1]|$w.columnName,
                 tac:TableAliasColumn[1]|$tac.columnName->orElse($tac.column.name),
                 c:Column[1]|$c.name,
+                s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn.column.name,
                 r:RelationalOperationElement[1]|fail('Extracting column name from ' + $r->type().name->toOne() + ' not supported yet!'); '';
               ]);
 }
@@ -1382,7 +1383,8 @@ function meta::relational::functions::pureToSqlQuery::getNewColumnNameWithAlias(
 {
   let existingColumnCount = $s.columns->map(c | $c->match([
                                                             a: Alias[1] | $a.name->toLower()->stripMatchingQuotes(),
-                                                            t: TableAliasColumn[1] | $t.column.name->toLower()->stripMatchingQuotes()
+                                                            t: TableAliasColumn[1] | $t.column.name->toLower()->stripMatchingQuotes(),
+                                                            s: SemiStructuredArrayFlattenOutput[1] | $s->extractColumnName()->toLower()->stripMatchingQuotes()
                                                           ])
                                             )->filter(c|$c->startsWith($aliasesToUse->toOne().column.name->toLower()->stripMatchingQuotes() + '_'))->size();
   let existingColumnName = $aliasesToUse->toOne().column.name;
@@ -2764,7 +2766,8 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
           select = ^$firstSel(
                          columns = $transformed.element->cast(@SelectWithCursor).select->at(0).columns
                                       ->map(c|$c->match([a:Alias[1]|^$a(relationalElement=^TableAliasColumn(column=^Column(name=$a.name, type=^meta::relational::metamodel::datatype::Integer()), alias=$rootTable)),
-                                                         t:TableAliasColumn[1]|^$t(alias=$rootTable)
+                                                         t:TableAliasColumn[1]|^$t(alias=$rootTable),
+                                                         s:SemiStructuredArrayFlattenOutput[1]|let colName = $s->extractColumnName(); ^Alias(name = $colName, relationalElement = ^TableAliasColumn(column = ^Column(name = $colName, type = ^meta::relational::metamodel::datatype::SemiStructured()), alias = $rootTable));
                                                         ])),
                          data = $newRoot,
                          savedFilteringOperation = [],
@@ -6859,10 +6862,14 @@ function meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newA
                   ^Alias(
                       name=$als.name,
                       relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::Integer()))
-                  );
+                  );,
+                s:SemiStructuredArrayFlattenOutput[1] |
+                  ^Alias(name=$als.name, relationalElement=^TableAliasColumn(alias=$newAlias, column=^Column(name = $als.name, type = ^meta::relational::metamodel::datatype::SemiStructured())))
             ]);,
         tac: TableAliasColumn[1] | ^Alias(name=$tac.columnName->orElse($tac.column.name), relationalElement=^$tac(alias =$newAlias)),
-        cn:ColumnName[1] | ^Alias(name=$cn.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer())))
+        cn:ColumnName[1] | ^Alias(name=$cn.name, relationalElement=^TableAliasColumn( alias = $newAlias, column = ^Column(name = $cn.name, type = ^meta::relational::metamodel::datatype::Integer()))),
+        s:SemiStructuredArrayFlattenOutput[1] | let colName = $s->extractColumnName();
+                                                ^Alias(name = $colName, relationalElement = ^TableAliasColumn(alias = $newAlias, column = ^Column(name = $colName, type = ^meta::relational::metamodel::datatype::SemiStructured())));
       ]);
    );
 }
