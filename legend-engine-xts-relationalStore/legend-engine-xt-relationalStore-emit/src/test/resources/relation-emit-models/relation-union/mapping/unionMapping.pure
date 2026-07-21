@@ -17,13 +17,13 @@ import meta::pure::metamodel::relation::*;
 
 function demo::relation::func::contractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
     ->filter(r | $r.EMP_TYPE == 'CONTRACT')
 }
 
 function demo::relation::func::fullTimeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
     ->filter(r | $r.EMP_TYPE == 'FULL_TIME')
 }
 
@@ -39,7 +39,7 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
 
   *demo::relation::domain::Employee[contractSet]: Relation
   {
-    ~func demo::relation::func::contractEmployees__Relation_1_
+    ~func demo::relation::func::contractEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -51,7 +51,7 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
 
   *demo::relation::domain::Employee[fullTimeSet]: Relation
   {
-    ~func demo::relation::func::fullTimeEmployees__Relation_1_
+    ~func demo::relation::func::fullTimeEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

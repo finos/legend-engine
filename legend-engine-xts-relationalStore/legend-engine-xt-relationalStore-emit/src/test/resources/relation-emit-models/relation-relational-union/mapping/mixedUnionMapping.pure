@@ -33,7 +33,7 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
 
   *demo::relation::domain::Employee[rfSet]: Relation
   {
-    ~func demo::relation::func::mixedContractEmployees__Relation_1_
+    ~func demo::relation::func::mixedContractEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

@@ -29,7 +29,7 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
 (
   *demo::relation::domain::ExtendedEmployee: Relation
   {
-    ~func demo::relation::func::salariedEmployees__Relation_1_
+    ~func demo::relation::func::salariedEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

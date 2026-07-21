@@ -27,7 +27,7 @@ Mapping demo::relation::mapping::EmployeeEnumerationMapping
 (
   *demo::relation::domain::Employee: Relation
   {
-    ~func demo::relation::func::employeesWithType__Relation_1_
+    ~func demo::relation::func::employeesWithType():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

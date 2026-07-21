@@ -28,7 +28,7 @@ Mapping demo::relation::mapping::EmployeeFilterMapping
 (
   *demo::relation::domain::Employee: Relation
   {
-    ~func demo::relation::func::activeEmployees__Relation_1_
+    ~func demo::relation::func::activeEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

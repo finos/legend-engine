@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Milestoned mappings use the typed function signature form (~func funcName():ReturnType)
-// rather than the mangled name. This matches the pattern in TemporalMilestonedMapping
-// and allVersionsMapping in the engine unit tests.
+// The engine's ~func grammar only accepts a full function descriptor (funcName():Type[mult]),
+// and the descriptor's return type must be UNQUALIFIED (no package path) — see
+// FunctionDescriptor.validateType in legend-pure. A mangled id (funcName__Relation_1_)
+// or a fully-qualified return type both fail here (parser or "can't find element" respectively).
 
 ###Pure
 import meta::pure::metamodel::relation::*;
@@ -29,7 +30,7 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
 (
   *demo::relation::domain::TemporalEmployee: Relation
   {
-    ~func demo::relation::func::temporalEmployees():meta::pure::metamodel::relation::Relation<Any>[1]
+    ~func demo::relation::func::temporalEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     salary: SALARY

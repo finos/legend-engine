@@ -29,7 +29,7 @@ Mapping demo::relation::mapping::PositionGroupByMapping
 (
   *demo::relation::domain::Position: Relation
   {
-    ~func demo::relation::func::positions__Relation_1_
+    ~func demo::relation::func::positions():Relation<Any>[1]
     gsn: GSN,
     productId: PRODUCT_ID,
     totalQty: TOTAL_QTY

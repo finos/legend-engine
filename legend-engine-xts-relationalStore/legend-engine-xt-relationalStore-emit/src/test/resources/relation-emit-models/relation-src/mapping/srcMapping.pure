@@ -24,7 +24,7 @@ import meta::pure::metamodel::relation::*;
 function demo::relation::func::employeeSource():
   meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRST_NAME:String[1], LAST_NAME:String[1])>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
     ->select(~[ID, FIRST_NAME, LAST_NAME])
     ->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRST_NAME:String[1], LAST_NAME:String[1])>)
 }
@@ -32,7 +32,7 @@ function demo::relation::func::employeeSource():
 function demo::relation::func::activeEmployeeSource():
   meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRST_NAME:String[1], LAST_NAME:String[1])>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
     ->filter(r | $r.ACTIVE == 1)
     ->select(~[ID, FIRST_NAME, LAST_NAME])
     ->cast(@meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRST_NAME:String[1], LAST_NAME:String[1])>)

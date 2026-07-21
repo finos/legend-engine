@@ -27,7 +27,7 @@ Mapping demo::relation::mapping::EmployeeEmbeddedMapping
 (
   *demo::relation::domain::ExtendedEmployee: Relation
   {
-    ~func demo::relation::func::employeesWithAddress__Relation_1_
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
