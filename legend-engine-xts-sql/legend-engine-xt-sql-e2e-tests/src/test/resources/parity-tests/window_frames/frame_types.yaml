@@ -1,0 +1,108 @@
+tests:
+  # ROWS UNBOUNDED PRECEDING TO CURRENT ROW (default)
+  - id: frame_rows_unbounded_current
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS UNBOUNDED PRECEDING TO CURRENT ROW"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_unbounded_current_avg
+    sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS UNBOUNDED PRECEDING TO CURRENT ROW"
+    category: "window_frames"
+
+  # ROWS UNBOUNDED PRECEDING TO UNBOUNDED FOLLOWING (whole partition)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_whole_partition
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS total FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS UNBOUNDED PRECEDING TO UNBOUNDED FOLLOWING"
+    category: "window_frames"
+
+  # ROWS N PRECEDING TO N FOLLOWING (sliding window)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_sliding_3
+    sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS moving_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS N PRECEDING TO N FOLLOWING"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_lookback_2
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS sum_3 FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS N PRECEDING TO CURRENT ROW"
+    category: "window_frames"
+
+  # ROWS CURRENT ROW TO UNBOUNDED FOLLOWING
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_current_to_end
+    sql: "SELECT name, salary, COUNT(*) OVER (ORDER BY name ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS remaining FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS CURRENT ROW TO UNBOUNDED FOLLOWING"
+    category: "window_frames"
+
+  # RANGE BETWEEN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_range_default
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY salary RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum_sum FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "RANGE UNBOUNDED PRECEDING TO CURRENT ROW"
+    category: "window_frames"
+
+  # Default frame (no explicit ROWS/RANGE)
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: frame_default_implicit
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name) AS running FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Default frame (implicit)"
+    category: "window_frames"
+
+  # Frame with different aggregates
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: frame_multi_agg
+    sql: "SELECT name, salary, SUM(salary) OVER w AS run_sum, AVG(salary) OVER w AS run_avg, COUNT(*) OVER w AS run_cnt, MIN(salary) OVER w AS run_min, MAX(salary) OVER w AS run_max FROM persons WHERE salary IS NOT NULL WINDOW w AS (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) ORDER BY 1"
+    feature: "Frame with multiple aggregates"
+    category: "window_frames"
+
+  # ROWS N PRECEDING TO N PRECEDING (lookback only)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_lookback_only
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN 2 PRECEDING AND 1 PRECEDING) AS prev_2 FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS N PRECEDING TO N PRECEDING"
+    category: "window_frames"
+
+  # ROWS N FOLLOWING TO N FOLLOWING (lookahead only)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_lookahead
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN 1 FOLLOWING AND 2 FOLLOWING) AS next_2 FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS N FOLLOWING TO N FOLLOWING"
+    category: "window_frames"
+
+  # RANGE with partition
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_range_partition
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (PARTITION BY dept_id ORDER BY salary RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS dept_cum FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "RANGE with PARTITION BY"
+    category: "window_frames"
+
+  # ROWS CURRENT ROW only
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: frame_rows_current_only
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN CURRENT ROW AND CURRENT ROW) AS self_only FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "ROWS CURRENT ROW only"
+    category: "window_frames"
+
+  # Large sliding window
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_rows_wide_sliding
+    sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN 3 PRECEDING AND 3 FOLLOWING) AS wide_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Wide sliding window"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

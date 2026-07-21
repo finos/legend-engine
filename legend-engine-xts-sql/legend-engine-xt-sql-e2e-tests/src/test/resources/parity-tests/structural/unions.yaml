@@ -1,0 +1,118 @@
+tests:
+  # UNION ALL
+  - id: union_all_basic
+    sql: "SELECT name, salary FROM persons WHERE dept_id = 1 UNION ALL SELECT name, salary FROM persons WHERE dept_id = 2 ORDER BY 1"
+    feature: "UNION ALL"
+    category: "set_operations"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: union_all_different_cols
+    sql: "SELECT name AS label, salary AS value FROM persons WHERE id <= 3 UNION ALL SELECT status AS label, amount AS value FROM orders WHERE id <= 3 ORDER BY 1"
+    feature: "UNION ALL"
+    category: "set_operations"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: union_all_with_limit
+    sql: "SELECT name FROM persons WHERE dept_id = 1 UNION ALL SELECT name FROM persons WHERE dept_id = 2 ORDER BY 1 LIMIT 5"
+    feature: "UNION ALL"
+    category: "set_operations"
+
+  # UNION (dedup)
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: union_dedup
+    sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL UNION SELECT dept_id FROM persons WHERE salary > 60000 ORDER BY 1"
+    feature: "UNION"
+    category: "set_operations"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: union_dedup_strings
+    sql: "SELECT name FROM persons WHERE age > 30 UNION SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
+    feature: "UNION"
+    category: "set_operations"
+
+  # Multiple UNIONs
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: union_multiple
+    sql: "SELECT name FROM persons WHERE dept_id = 1 UNION ALL SELECT name FROM persons WHERE dept_id = 2 UNION ALL SELECT name FROM persons WHERE dept_id = 3 ORDER BY 1"
+    feature: "Multiple UNION"
+    category: "set_operations"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+  - id: union_multiple_mixed
+    sql: "SELECT 'dept1' AS src, name FROM persons WHERE dept_id = 1 UNION ALL SELECT 'dept2', name FROM persons WHERE dept_id = 2 ORDER BY 1, 2"
+    feature: "Multiple UNION"
+    category: "set_operations"
+
+  # UNION with aggregates
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: union_with_agg
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id UNION ALL SELECT NULL, COUNT(*) FROM persons ORDER BY 1"
+    feature: "UNION with aggregates"
+    category: "set_operations"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: union_with_agg_sum
+    sql: "SELECT 'by_dept' AS label, dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id UNION ALL SELECT 'overall', NULL, SUM(salary) FROM persons WHERE salary IS NOT NULL ORDER BY 1, 2"
+    feature: "UNION with aggregates"
+    category: "set_operations"
+
+  # EXCEPT
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: except_basic
+    sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL EXCEPT SELECT id FROM departments WHERE budget < 600000 ORDER BY 1"
+    feature: "EXCEPT"
+    category: "set_operations"
+
+  # INTERSECT
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: intersect_basic
+    sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND salary > 50000 INTERSECT SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND age > 30 ORDER BY 1"
+    feature: "INTERSECT"
+    category: "set_operations"
+
+  # UNION ALL with NULL values
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: union_all_nulls
+    sql: "SELECT name, age FROM persons WHERE age IS NULL UNION ALL SELECT name, age FROM persons WHERE age > 40 ORDER BY 1"
+    feature: "UNION ALL with NULLs"
+    category: "set_operations"
+
+  # UNION ALL with expressions
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: union_all_expression
+    sql: "SELECT name, salary * 1.1 AS adjusted FROM persons WHERE dept_id = 1 AND salary IS NOT NULL UNION ALL SELECT name, salary * 0.9 FROM persons WHERE dept_id = 2 AND salary IS NOT NULL ORDER BY 1"
+    feature: "UNION ALL with expressions"
+    category: "set_operations"
+
+  # UNION with CASE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: union_with_case
+    sql: "SELECT 'active' AS status, name FROM persons WHERE active = true UNION ALL SELECT 'inactive', name FROM persons WHERE active = false ORDER BY 1, 2"
+    feature: "UNION with CASE/labels"
+    category: "set_operations"
+
+  # UNION ALL count verification
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: union_all_count
+    sql: "SELECT COUNT(*) AS total FROM (SELECT id FROM persons WHERE dept_id = 1 UNION ALL SELECT id FROM persons WHERE dept_id = 2) sub"
+    feature: "UNION ALL count"
+    category: "set_operations"
+
+  # UNION dedup with NULL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: union_dedup_null
+    sql: "SELECT dept_id FROM persons UNION SELECT NULL ORDER BY 1"
+    feature: "UNION dedup with NULL"
+    category: "set_operations"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

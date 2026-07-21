@@ -1,0 +1,649 @@
+tests:
+- id: abs__big__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(bigint) → bigint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__big__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(bigint) → bigint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__big__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(bigint) → bigint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__dp__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__dp__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__dp__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__int__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(integer) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__int__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(integer) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__int__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(integer) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__num__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__num__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__num__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__real__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(real) → real
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__real__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(real) → real
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__real__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(real) → real
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__small__from_table
+  sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
+  function: abs
+  signature: abs(smallint) → smallint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__small__negative
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val < 0 ORDER BY 1
+  function: abs
+  signature: abs(smallint) → smallint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: abs__small__null
+  sql: SELECT ABS(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: abs
+  signature: abs(smallint) → smallint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: acos__dp__from_table
+  sql: SELECT ACOS(float_val / (ABS(float_val) + 1)) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: acos
+  signature: acos(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: acosh__dp__from_table
+  sql: SELECT ACOSH(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: acosh
+  signature: acosh(double precision) → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: asin__dp__from_table
+  sql: SELECT ASIN(float_val / (ABS(float_val) + 1)) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: asin
+  signature: asin(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: asinh__dp__from_table
+  sql: SELECT ASINH(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: asinh
+  signature: asinh(double precision) → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: atan__dp__from_table
+  sql: SELECT ATAN(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: atan
+  signature: atan(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: atan2__dp_dp__from_table
+  sql: SELECT ATAN2(float_val, 1.0) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: atan2
+  signature: atan2(double precision, double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: atanh__dp__from_table
+  sql: SELECT ATANH(float_val / (ABS(float_val) + 1)) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: atanh
+  signature: atanh(double precision) → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: cbrt__dp__from_table
+  sql: SELECT CBRT(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: cbrt
+  signature: cbrt(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__dp__from_table
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ceil
+  signature: ceil(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__dp__negative
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: ceil
+  signature: ceil(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__dp__null
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: ceil
+  signature: ceil(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__num__from_table
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ceil
+  signature: ceil(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__num__negative
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: ceil
+  signature: ceil(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceil__num__null
+  sql: SELECT CEIL(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: ceil
+  signature: ceil(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__dp__from_table
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ceiling
+  signature: ceiling(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__dp__negative
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: ceiling
+  signature: ceiling(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__dp__null
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: ceiling
+  signature: ceiling(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__num__from_table
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ceiling
+  signature: ceiling(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__num__negative
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: ceiling
+  signature: ceiling(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ceiling__num__null
+  sql: SELECT CEILING(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: ceiling
+  signature: ceiling(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: cos__dp__from_table
+  sql: SELECT COS(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: cos
+  signature: cos(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: cosh__dp__from_table
+  sql: SELECT COSH(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: cosh
+  signature: cosh(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: degrees__dp__from_table
+  sql: SELECT DEGREES(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: degrees
+  signature: degrees(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: div__num_num__from_table
+  sql: SELECT DIV(numeric_val, 3.0) AS result FROM numbers WHERE numeric_val IS NOT NULL AND numeric_val <> 0 ORDER BY 1
+  function: div
+  signature: div(numeric, numeric) → numeric
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+- id: exp__dp__from_table
+  sql: SELECT EXP(small_val::double precision) AS result FROM numbers WHERE small_val IS NOT NULL AND small_val BETWEEN -10 AND 10 ORDER BY 1
+  function: exp
+  signature: exp(double precision) → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: exp__num__from_table
+  sql: SELECT EXP(small_val::double precision) AS result FROM numbers WHERE small_val IS NOT NULL AND small_val BETWEEN -10 AND 10 ORDER BY 1
+  function: exp
+  signature: exp(numeric) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: factorial__big__from_table
+  sql: SELECT FACTORIAL(small_val::bigint) AS result FROM numbers WHERE small_val IS NOT NULL AND small_val >= 0 AND small_val <= 20 ORDER BY 1
+  function: factorial
+  signature: factorial(bigint) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: floor__dp__from_table
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: floor
+  signature: floor(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: floor__dp__negative
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: floor
+  signature: floor(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: floor__dp__null
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: floor
+  signature: floor(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: floor__num__from_table
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: floor
+  signature: floor(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: floor__num__negative
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val < 0 ORDER BY 1
+  function: floor
+  signature: floor(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: floor__num__null
+  sql: SELECT FLOOR(float_val) AS result FROM numbers WHERE float_val IS NULL ORDER BY 1
+  function: floor
+  signature: floor(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: gcd__big_big__from_table
+  sql: SELECT GCD(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: gcd
+  signature: gcd(bigint, bigint) → bigint
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: gcd__int_int__from_table
+  sql: SELECT GCD(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: gcd
+  signature: gcd(integer, integer) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: gcd__num_num__from_table
+  sql: SELECT GCD(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: gcd
+  signature: gcd(numeric, numeric) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: lcm__big_big__from_table
+  sql: SELECT LCM(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: lcm
+  signature: lcm(bigint, bigint) → bigint
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: lcm__int_int__from_table
+  sql: SELECT LCM(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: lcm
+  signature: lcm(integer, integer) → integer
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: lcm__num_num__from_table
+  sql: SELECT LCM(int_val, small_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: lcm
+  signature: lcm(numeric, numeric) → numeric
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: ln__dp__from_table
+  sql: SELECT LN(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ln
+  signature: ln(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ln__num__from_table
+  sql: SELECT LN(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: ln
+  signature: ln(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: log__dp__from_table
+  sql: SELECT LOG(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: log
+  signature: log(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: log__num__from_table
+  sql: SELECT LOG(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: log
+  signature: log(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: log__num_num__from_table
+  sql: SELECT LOG(10::numeric, ABS(numeric_val) + 1) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: log
+  signature: log(numeric, numeric) → numeric
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+- id: log10__dp__from_table
+  sql: SELECT LOG(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: log10
+  signature: log10(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: log10__num__from_table
+  sql: SELECT LOG(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: log10
+  signature: log10(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: min_scale__num__from_table
+  sql: SELECT MIN_SCALE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: min_scale
+  signature: min_scale(numeric) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: mod__big_big__from_table
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 0 ORDER BY 1
+  function: mod
+  signature: mod(bigint, bigint) → bigint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__big_big__null
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: mod
+  signature: mod(bigint, bigint) → bigint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__int_int__from_table
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 0 ORDER BY 1
+  function: mod
+  signature: mod(integer, integer) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__int_int__null
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: mod
+  signature: mod(integer, integer) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__num_num__from_table
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 0 ORDER BY 1
+  function: mod
+  signature: mod(numeric, numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__num_num__null
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: mod
+  signature: mod(numeric, numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__small_small__from_table
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 0 ORDER BY 1
+  function: mod
+  signature: mod(smallint, smallint) → smallint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: mod__small_small__null
+  sql: SELECT MOD(int_val, 3) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: mod
+  signature: mod(smallint, smallint) → smallint
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: pi__basic
+  sql: SELECT PI() AS result FROM numbers WHERE id = 1
+  function: pi
+  signature: pi() → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: power__dp_dp__from_table
+  sql: SELECT POWER(small_val::numeric, 2) AS result FROM numbers WHERE small_val IS NOT NULL AND small_val >= 0 ORDER BY 1
+  function: power
+  signature: power(double precision, double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: power__num_num__from_table
+  sql: SELECT POWER(small_val::numeric, 2) AS result FROM numbers WHERE small_val IS NOT NULL AND small_val >= 0 ORDER BY 1
+  function: power
+  signature: power(numeric, numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: radians__dp__from_table
+  sql: SELECT RADIANS(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: radians
+  signature: radians(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: random__basic
+  sql: SELECT CASE WHEN RANDOM() >= 0 AND RANDOM() < 1 THEN 1 ELSE 0 END AS result FROM numbers WHERE id = 1
+  function: random
+  signature: random() → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: round__dp__from_table
+  sql: SELECT ROUND(float_val::numeric) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: round
+  signature: round(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: round__num__from_table
+  sql: SELECT ROUND(float_val::numeric) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: round
+  signature: round(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: round__num_int__from_table
+  sql: SELECT ROUND(numeric_val, 2) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: round
+  signature: round(numeric, integer) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: round__num_int__zero_dp
+  sql: SELECT ROUND(numeric_val, 0) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: round
+  signature: round(numeric, integer) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: scale__num__from_table
+  sql: SELECT SCALE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: scale
+  signature: scale(numeric) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: setseed__dp__basic
+  sql: SELECT SETSEED(0.5) FROM numbers WHERE id = 1
+  function: setseed
+  signature: setseed(double precision) → void
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: sign__dp__from_table
+  sql: SELECT SIGN(int_val) AS result FROM numbers WHERE int_val IS NOT NULL ORDER BY 1
+  function: sign
+  signature: sign(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sign__dp__null
+  sql: SELECT SIGN(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: sign
+  signature: sign(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sign__num__from_table
+  sql: SELECT SIGN(int_val) AS result FROM numbers WHERE int_val IS NOT NULL ORDER BY 1
+  function: sign
+  signature: sign(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sign__num__null
+  sql: SELECT SIGN(int_val) AS result FROM numbers WHERE int_val IS NULL ORDER BY 1
+  function: sign
+  signature: sign(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sin__dp__from_table
+  sql: SELECT SIN(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: sin
+  signature: sin(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sinh__dp__from_table
+  sql: SELECT SINH(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: sinh
+  signature: sinh(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sqrt__dp__from_table
+  sql: SELECT SQRT(ABS(float_val)) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: sqrt
+  signature: sqrt(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: sqrt__num__from_table
+  sql: SELECT SQRT(ABS(float_val)) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: sqrt
+  signature: sqrt(numeric) → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: tan__dp__from_table
+  sql: SELECT TAN(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: tan
+  signature: tan(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: tanh__dp__from_table
+  sql: SELECT TANH(float_val) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: tanh
+  signature: tanh(double precision) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: trim_scale__num__from_table
+  sql: SELECT TRIM_SCALE(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: trim_scale
+  signature: trim_scale(numeric) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: trunc__dp__from_table
+  sql: SELECT TRUNC(float_val::double precision) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: trunc
+  signature: trunc(double precision) → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: trunc__macaddr__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: trunc
+  signature: trunc(macaddr) → macaddr
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: trunc__macaddr8__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: trunc
+  signature: trunc(macaddr8) → macaddr8
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: trunc__num__from_table
+  sql: SELECT TRUNC(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: trunc
+  signature: trunc(numeric) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: trunc__num_int__from_table
+  sql: SELECT TRUNC(numeric_val, 2) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: trunc
+  signature: trunc(numeric, integer) → numeric
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: width_bucket__anycompatible_anycompatiblearray__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: width_bucket
+  signature: width_bucket(anycompatible, anycompatiblearray) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: width_bucket__dp_dp_dp_int__from_table
+  sql: SELECT WIDTH_BUCKET(float_val, -10.0, 10.0, 5) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
+  function: width_bucket
+  signature: width_bucket(double precision, double precision, double precision, integer) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: width_bucket__num_num_num_int__from_table
+  sql: SELECT WIDTH_BUCKET(numeric_val, -100000.0, 100000.0, 10) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
+  function: width_bucket
+  signature: width_bucket(numeric, numeric, numeric, integer) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: random_cov
+  sql: SELECT RANDOM() AS result FROM persons WHERE id = 1
+  function: random
+  signature: random() → double precision
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: setseed_double_precision_cov
+  sql: SELECT SETSEED(NULL) AS result FROM persons WHERE id = 1
+  function: setseed
+  signature: setseed(double precision) → void
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: trunc_macaddr_cov
+  sql: SELECT TRUNC(NULL) AS result FROM persons WHERE id = 1
+  function: trunc
+  signature: trunc(macaddr) → macaddr
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: trunc_macaddr8_cov
+  sql: SELECT TRUNC(NULL) AS result FROM persons WHERE id = 1
+  function: trunc
+  signature: trunc(macaddr8) → macaddr8
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: width_bucket_anycompatible_anycompatiblear_cov
+  sql: SELECT WIDTH_BUCKET(NULL) AS result FROM persons WHERE id = 1
+  function: width_bucket
+  signature: width_bucket(anycompatible, anycompatiblearray) → integer
+  expected_tds_status: BUG
+  expected_rel_status: BUG

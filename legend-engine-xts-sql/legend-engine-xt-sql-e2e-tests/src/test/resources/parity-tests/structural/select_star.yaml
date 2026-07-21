@@ -1,0 +1,59 @@
+tests:
+  # SELECT *
+  - id: star_basic
+    sql: "SELECT * FROM departments ORDER BY id"
+    feature: "SELECT *"
+    category: "select_star"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: star_with_where
+    sql: "SELECT * FROM persons WHERE dept_id = 1 ORDER BY id"
+    feature: "SELECT * with WHERE"
+    category: "select_star"
+
+  # SELECT table.*
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: star_qualified
+    sql: "SELECT p.* FROM persons p WHERE p.id <= 3 ORDER BY p.id"
+    feature: "SELECT table.*"
+    category: "select_star"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: star_qualified_join
+    sql: "SELECT p.*, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY p.id"
+    feature: "SELECT table.* with join"
+    category: "select_star"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: star_multiple_tables
+    sql: "SELECT p.*, d.* FROM persons p JOIN departments d ON p.dept_id = d.id WHERE p.id <= 3 ORDER BY p.id"
+    feature: "SELECT multiple table.*"
+    category: "select_star"
+
+  # SELECT * from subquery
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: star_from_subquery
+    sql: "SELECT * FROM (SELECT name, salary FROM persons WHERE salary IS NOT NULL) sub ORDER BY name"
+    feature: "SELECT * from subquery"
+    category: "select_star"
+
+  # SELECT * from CTE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: star_from_cte
+    sql: "WITH cte AS (SELECT name, dept_id FROM persons WHERE dept_id IS NOT NULL) SELECT * FROM cte ORDER BY name"
+    feature: "SELECT * from CTE"
+    category: "select_star"
+
+  # Mixed star and named columns
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: star_mixed_with_expression
+    sql: "SELECT p.*, salary * 1.1 AS adjusted_salary FROM persons p WHERE p.salary IS NOT NULL AND p.id <= 3 ORDER BY p.id"
+    feature: "SELECT table.* with extra expression"
+    category: "select_star"
+
+    expected_tds_status: PASS
+    expected_rel_status: ERROR

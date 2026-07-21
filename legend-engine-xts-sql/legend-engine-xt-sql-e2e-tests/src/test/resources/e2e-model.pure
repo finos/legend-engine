@@ -1,0 +1,516 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+Database e2e::TestDB
+(
+  Schema public
+  (
+    Table persons
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200),
+      age INTEGER,
+      salary DECIMAL(10,2),
+      hire_date DATE,
+      active BIT,
+      dept_id INTEGER
+    )
+    Table departments
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200),
+      budget DECIMAL(15,2),
+      created_at TIMESTAMP
+    )
+    Table orders
+    (
+      id INTEGER PRIMARY KEY,
+      person_id INTEGER,
+      amount DECIMAL(10,2),
+      order_date TIMESTAMP,
+      status VARCHAR(50)
+    )
+    Table numbers
+    (
+      id INTEGER PRIMARY KEY,
+      int_val INTEGER,
+      float_val DOUBLE,
+      numeric_val DECIMAL(20,5),
+      small_val INTEGER,
+      big_val BIGINT
+    )
+    Table strings
+    (
+      id INTEGER PRIMARY KEY,
+      val VARCHAR(500),
+      nullable_val VARCHAR(500),
+      unicode_val VARCHAR(500),
+      empty_val VARCHAR(500)
+    )
+    Table dates
+    (
+      id INTEGER PRIMARY KEY,
+      d DATE,
+      ts TIMESTAMP,
+      tsz TIMESTAMP
+    )
+    Table empty_table
+    (
+      id INTEGER PRIMARY KEY,
+      val VARCHAR(200)
+    )
+  )
+
+  Join PersonDepartment(public.persons.dept_id = public.departments.id)
+  Join PersonOrder(public.persons.id = public.orders.person_id)
+)
+
+
+###Pure
+Class e2e::Person
+{
+  id: Integer[1];
+  name: String[0..1];
+  age: Integer[0..1];
+  salary: Float[0..1];
+  hireDate: StrictDate[0..1];
+  active: Boolean[0..1];
+  deptId: Integer[0..1];
+}
+
+Class e2e::Department
+{
+  id: Integer[1];
+  name: String[0..1];
+  budget: Float[0..1];
+  createdAt: DateTime[0..1];
+}
+
+Class e2e::Order
+{
+  id: Integer[1];
+  personId: Integer[0..1];
+  amount: Float[0..1];
+  orderDate: DateTime[0..1];
+  status: String[0..1];
+}
+
+Class e2e::NumberRow
+{
+  id: Integer[1];
+  intVal: Integer[0..1];
+  floatVal: Float[0..1];
+  numericVal: Float[0..1];
+  smallVal: Integer[0..1];
+  bigVal: Integer[0..1];
+}
+
+Class e2e::StringRow
+{
+  id: Integer[1];
+  val: String[0..1];
+  nullableVal: String[0..1];
+  unicodeVal: String[0..1];
+  emptyVal: String[0..1];
+}
+
+Class e2e::DateRow
+{
+  id: Integer[1];
+  d: StrictDate[0..1];
+  ts: DateTime[0..1];
+  tsz: DateTime[0..1];
+}
+
+Class e2e::EmptyRow
+{
+  id: Integer[1];
+  val: String[0..1];
+}
+
+Association e2e::PersonDepartment
+{
+  persons: e2e::Person[*];
+  department: e2e::Department[0..1];
+}
+
+
+// TDS functions for each table
+function e2e::tds_persons(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.name, 'name'),
+    col(x | $x.age, 'age'),
+    col(x | $x.salary, 'salary'),
+    col(x | $x.hireDate, 'hire_date'),
+    col(x | $x.active, 'active'),
+    col(x | $x.deptId, 'dept_id')
+  ])
+}
+
+function e2e::tds_departments(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Department.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.name, 'name'),
+    col(x | $x.budget, 'budget'),
+    col(x | $x.createdAt, 'created_at')
+  ])
+}
+
+function e2e::tds_orders(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Order.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.personId, 'person_id'),
+    col(x | $x.amount, 'amount'),
+    col(x | $x.orderDate, 'order_date'),
+    col(x | $x.status, 'status')
+  ])
+}
+
+function e2e::tds_numbers(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::NumberRow.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.intVal, 'int_val'),
+    col(x | $x.floatVal, 'float_val'),
+    col(x | $x.numericVal, 'numeric_val'),
+    col(x | $x.smallVal, 'small_val'),
+    col(x | $x.bigVal, 'big_val')
+  ])
+}
+
+function e2e::tds_strings(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::StringRow.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.val, 'val'),
+    col(x | $x.nullableVal, 'nullable_val'),
+    col(x | $x.unicodeVal, 'unicode_val'),
+    col(x | $x.emptyVal, 'empty_val')
+  ])
+}
+
+function e2e::tds_dates(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::DateRow.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.d, 'd'),
+    col(x | $x.ts, 'ts'),
+    col(x | $x.tsz, 'tsz')
+  ])
+}
+
+function e2e::tds_empty_table(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::EmptyRow.all()->project([
+    col(x | $x.id, 'id'),
+    col(x | $x.val, 'val')
+  ])
+}
+
+// Relation functions for each table
+function e2e::rel_persons(): meta::pure::metamodel::relation::Relation<(id:Integer, name:String, age:Integer, salary:Float, hire_date:Date, active:Boolean, dept_id:Integer)>[1]
+{
+  e2e::Person.all()->project(~[
+    id: x | $x.id,
+    name: x | $x.name,
+    age: x | $x.age,
+    salary: x | $x.salary,
+    hire_date: x | $x.hireDate,
+    active: x | $x.active,
+    dept_id: x | $x.deptId
+  ])
+}
+
+function e2e::rel_departments(): meta::pure::metamodel::relation::Relation<(id:Integer, name:String, budget:Float, created_at:DateTime)>[1]
+{
+  e2e::Department.all()->project(~[
+    id: x | $x.id,
+    name: x | $x.name,
+    budget: x | $x.budget,
+    created_at: x | $x.createdAt
+  ])
+}
+
+function e2e::rel_orders(): meta::pure::metamodel::relation::Relation<(id:Integer, person_id:Integer, amount:Float, order_date:DateTime, status:String)>[1]
+{
+  e2e::Order.all()->project(~[
+    id: x | $x.id,
+    person_id: x | $x.personId,
+    amount: x | $x.amount,
+    order_date: x | $x.orderDate,
+    status: x | $x.status
+  ])
+}
+
+function e2e::rel_numbers(): meta::pure::metamodel::relation::Relation<(id:Integer, int_val:Integer, float_val:Float, numeric_val:Float, small_val:Integer, big_val:Integer)>[1]
+{
+  e2e::NumberRow.all()->project(~[
+    id: x | $x.id,
+    int_val: x | $x.intVal,
+    float_val: x | $x.floatVal,
+    numeric_val: x | $x.numericVal,
+    small_val: x | $x.smallVal,
+    big_val: x | $x.bigVal
+  ])
+}
+
+function e2e::rel_strings(): meta::pure::metamodel::relation::Relation<(id:Integer, val:String, nullable_val:String, unicode_val:String, empty_val:String)>[1]
+{
+  e2e::StringRow.all()->project(~[
+    id: x | $x.id,
+    val: x | $x.val,
+    nullable_val: x | $x.nullableVal,
+    unicode_val: x | $x.unicodeVal,
+    empty_val: x | $x.emptyVal
+  ])
+}
+
+function e2e::rel_dates(): meta::pure::metamodel::relation::Relation<(id:Integer, d:Date, ts:DateTime, tsz:DateTime)>[1]
+{
+  e2e::DateRow.all()->project(~[
+    id: x | $x.id,
+    d: x | $x.d,
+    ts: x | $x.ts,
+    tsz: x | $x.tsz
+  ])
+}
+
+function e2e::rel_empty_table(): meta::pure::metamodel::relation::Relation<(id:Integer, val:String)>[1]
+{
+  e2e::EmptyRow.all()->project(~[
+    id: x | $x.id,
+    val: x | $x.val
+  ])
+}
+
+// Joined functions — perform the join inside Pure so SQL only references one func() call
+function e2e::tds_person_with_dept(): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.deptId->isNotEmpty())
+    ->project([
+      col(p | $p.name, 'name'),
+      col(p | $p.department.name, 'dept_name')
+    ])
+}
+
+function e2e::rel_person_with_dept(): meta::pure::metamodel::relation::Relation<(name:String, dept_name:String)>[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.deptId->isNotEmpty())
+    ->project(~[
+      name: p | $p.name,
+      dept_name: p | $p.department.name
+    ])
+}
+
+// Parameterized functions — accept parameters for filtering
+function e2e::tds_persons_by_dept(deptId: Integer[1]): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.deptId == $deptId)
+    ->project([
+      col(p | $p.id, 'id'),
+      col(p | $p.name, 'name'),
+      col(p | $p.age, 'age'),
+      col(p | $p.salary, 'salary')
+    ])
+}
+
+function e2e::tds_persons_by_name(name: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.name == $name)
+    ->project([
+      col(p | $p.id, 'id'),
+      col(p | $p.name, 'name'),
+      col(p | $p.age, 'age'),
+      col(p | $p.salary, 'salary')
+    ])
+}
+
+function e2e::tds_persons_by_min_age(minAge: Integer[1]): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.age->isNotEmpty() && ($p.age->toOne() >= $minAge))
+    ->project([
+      col(p | $p.id, 'id'),
+      col(p | $p.name, 'name'),
+      col(p | $p.age, 'age')
+    ])
+}
+
+function e2e::tds_persons_by_active(active: Boolean[1]): meta::pure::tds::TabularDataSet[1]
+{
+  e2e::Person.all()
+    ->filter(p | $p.active == $active)
+    ->project([
+      col(p | $p.id, 'id'),
+      col(p | $p.name, 'name'),
+      col(p | $p.active, 'active')
+    ])
+}
+
+
+###Mapping
+Mapping e2e::TestMapping
+(
+  *e2e::Person: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.persons.id
+    )
+    ~mainTable [e2e::TestDB]public.persons
+    id: [e2e::TestDB]public.persons.id,
+    name: [e2e::TestDB]public.persons.name,
+    age: [e2e::TestDB]public.persons.age,
+    salary: [e2e::TestDB]public.persons.salary,
+    hireDate: [e2e::TestDB]public.persons.hire_date,
+    active: [e2e::TestDB]public.persons.active,
+    deptId: [e2e::TestDB]public.persons.dept_id
+  }
+
+  *e2e::Department: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.departments.id
+    )
+    ~mainTable [e2e::TestDB]public.departments
+    id: [e2e::TestDB]public.departments.id,
+    name: [e2e::TestDB]public.departments.name,
+    budget: [e2e::TestDB]public.departments.budget,
+    createdAt: [e2e::TestDB]public.departments.created_at
+  }
+
+  *e2e::Order: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.orders.id
+    )
+    ~mainTable [e2e::TestDB]public.orders
+    id: [e2e::TestDB]public.orders.id,
+    personId: [e2e::TestDB]public.orders.person_id,
+    amount: [e2e::TestDB]public.orders.amount,
+    orderDate: [e2e::TestDB]public.orders.order_date,
+    status: [e2e::TestDB]public.orders.status
+  }
+
+  *e2e::NumberRow: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.numbers.id
+    )
+    ~mainTable [e2e::TestDB]public.numbers
+    id: [e2e::TestDB]public.numbers.id,
+    intVal: [e2e::TestDB]public.numbers.int_val,
+    floatVal: [e2e::TestDB]public.numbers.float_val,
+    numericVal: [e2e::TestDB]public.numbers.numeric_val,
+    smallVal: [e2e::TestDB]public.numbers.small_val,
+    bigVal: [e2e::TestDB]public.numbers.big_val
+  }
+
+  *e2e::StringRow: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.strings.id
+    )
+    ~mainTable [e2e::TestDB]public.strings
+    id: [e2e::TestDB]public.strings.id,
+    val: [e2e::TestDB]public.strings.val,
+    nullableVal: [e2e::TestDB]public.strings.nullable_val,
+    unicodeVal: [e2e::TestDB]public.strings.unicode_val,
+    emptyVal: [e2e::TestDB]public.strings.empty_val
+  }
+
+  *e2e::DateRow: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.dates.id
+    )
+    ~mainTable [e2e::TestDB]public.dates
+    id: [e2e::TestDB]public.dates.id,
+    d: [e2e::TestDB]public.dates.d,
+    ts: [e2e::TestDB]public.dates.ts,
+    tsz: [e2e::TestDB]public.dates.tsz
+  }
+
+  *e2e::EmptyRow: Relational
+  {
+    ~primaryKey
+    (
+      [e2e::TestDB]public.empty_table.id
+    )
+    ~mainTable [e2e::TestDB]public.empty_table
+    id: [e2e::TestDB]public.empty_table.id,
+    val: [e2e::TestDB]public.empty_table.val
+  }
+
+  e2e::PersonDepartment: Relational
+  {
+    AssociationMapping
+    (
+      department[e2e_Person, e2e_Department]: [e2e::TestDB]@PersonDepartment,
+      persons[e2e_Department, e2e_Person]: [e2e::TestDB]@PersonDepartment
+    )
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection e2e::TestConnection
+{
+  store: e2e::TestDB;
+  type: Postgres;
+  specification: Static
+  {
+    name: 'test';
+    host: 'localhost';
+    port: 5432;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: '';
+    userNameVaultReference: 'unused';
+    passwordVaultReference: 'unused';
+  };
+}
+
+
+###Runtime
+Runtime e2e::TestRuntime
+{
+  mappings:
+  [
+    e2e::TestMapping
+  ];
+  connections:
+  [
+    e2e::TestDB:
+    [
+      connection_1: e2e::TestConnection
+    ]
+  ];
+}
+

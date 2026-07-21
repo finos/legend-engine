@@ -76,6 +76,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
                 (ctx.where() == null ? "" : ctx.where().accept(this)) +
                 (ctx.GROUP() == null ? "" : " group by " + ListIterate.collect(ctx.expr(), c -> c.accept(this)).makeString(", ")) +
                 (ctx.having == null ? "" : " having " + ctx.having.accept(this)) +
+                (ctx.windows.isEmpty() ? "" : " WINDOW " + ListIterate.collect(ctx.windows, w -> w.accept(this)).makeString(", ")) +
                 (str.isEmpty() ? "" : " order by " + str.makeString(", ")) +
                 (ctx.limitClause() == null ? "" : ctx.limitClause().accept(this)) +
                 (ctx.offsetClause() == null ? "" : ctx.offsetClause().accept(this));
@@ -142,7 +143,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitQueryTermIntersectExtension(SqlBaseParser.QueryTermIntersectExtensionContext ctx)
     {
-        throw new RuntimeException("Not implemented yet");
+        return " " + ctx.operator.getText() + " " + ctx.second.accept(this);
     }
 
     @Override
@@ -155,9 +156,10 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     public String visitJoinType(SqlBaseParser.JoinTypeContext ctx)
     {
         return (ctx.INNER() == null ? "" : "inner ") +
-                (ctx.LEFT() == null ? "" : "left outer ") +
-                (ctx.RIGHT() == null ? "" : "right outer ") +
-                (ctx.FULL() == null ? "" : "full outer ");
+                (ctx.LEFT() == null ? "" : "left ") +
+                (ctx.RIGHT() == null ? "" : "right ") +
+                (ctx.FULL() == null ? "" : "full ") +
+                (ctx.OUTER() == null ? "" : "outer ");
     }
 
     @Override
@@ -185,14 +187,6 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitParameterOrSimpleLiteral(SqlBaseParser.ParameterOrSimpleLiteralContext ctx)
     {
-//                : nullLiteral
-//                        | intervalLiteral
-//                        | escapedCharsStringLiteral
-//                        | stringLiteral
-//                        | numericLiteral
-//                        | booleanLiteral
-//                        | bitString
-//                        | parameterExpr
         return (ctx.nullLiteral() == null ? "" : ctx.nullLiteral().accept(this)) +
                 (ctx.intervalLiteral() == null ? "" : ctx.intervalLiteral().accept(this)) +
                 (ctx.escapedCharsStringLiteral() == null ? "" : ctx.escapedCharsStringLiteral().accept(this)) +
@@ -347,13 +341,15 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //                    | qname OPEN_ROUND_BRACKET (setQuant? expr (COMMA expr)*)? (ORDER BY sortItem (COMMA sortItem)*)? CLOSE_ROUND_BRACKET within? filter?
 //                    ((IGNORE|RESPECT) NULLS)? over?                                              #functionCall
         return ctx.qname().accept(this) + "(" +
-                (ctx.setQuant() == null ? "" : "*") +
+                (ctx.ASTERISK() != null ? "*" : "") +
+                (ctx.setQuant() == null ? "" : ctx.setQuant().getText() + " ") +
                 ListIterate.collect(ctx.expr(), x -> x.accept(this)).makeString(", ") +
                 (ctx.ORDER() == null ? "" : " order by " + ListIterate.collect(ctx.sortItem(), x -> x.accept(this)).makeString(", ")) +
                 ")" +
                 (ctx.within() == null ? "" : ctx.within().accept(this)) +
                 (ctx.filter() == null ? "" : ctx.filter().accept(this)) +
-                (ctx.NULLS() == null ? "" : (ctx.IGNORE() == null ? "" : ctx.IGNORE().getText()) + (ctx.RESPECT() == null ? "" : ctx.RESPECT().getText()) + ctx.NULLS().accept(this)) +
+                (ctx.IGNORE() != null ? " IGNORE NULLS" : "") +
+                (ctx.RESPECT() != null ? " RESPECT NULLS" : "") +
                 (ctx.over() == null ? "" : ctx.over().accept(this));
     }
 
@@ -758,7 +754,12 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitQueryOptParens(SqlBaseParser.QueryOptParensContext ctx)
     {
-        throw new RuntimeException("");
+        if (ctx.queryStatement() != null)
+        {
+            String inner = ctx.queryStatement().accept(this);
+            return ctx.OPEN_ROUND_BRACKET() != null ? "(" + inner + ")" : inner;
+        }
+        return "(" + ctx.queryOptParens().accept(this) + ")";
     }
 
     @Override
@@ -768,14 +769,19 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
 //        : LIMIT (limit=parameterOrInteger | ALL)
 //                | FETCH (FIRST | NEXT) (limit=parameterOrInteger) (ROW | ROWS) ONLY
 //    ;
-        return (ctx.limit == null ? "" : " limit " + (ctx.ALL() == null ? "" : "all") + (ctx.limit == null ? "" : ctx.limit.accept(this))) +
-                (ctx.FETCH() == null ? "" : "fetchTODO");
+        if (ctx.FETCH() != null)
+        {
+            return " FETCH " + (ctx.FIRST() != null ? "FIRST" : "NEXT") + " " +
+                    ctx.limit.accept(this) + " " +
+                    (ctx.ROW() != null ? "ROW" : "ROWS") + " ONLY";
+        }
+        return " limit " + (ctx.ALL() != null ? "ALL" : ctx.limit.accept(this));
     }
 
     @Override
     public String visitOffsetClause(SqlBaseParser.OffsetClauseContext ctx)
     {
-        throw new RuntimeException("");
+        return " offset " + ctx.parameterOrInteger().accept(this);
     }
 
     @Override
@@ -788,7 +794,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitValuesRelation(SqlBaseParser.ValuesRelationContext ctx)
     {
-        throw new RuntimeException("");
+        return "VALUES " + ListIterate.collect(ctx.values(), x -> x.accept(this)).makeString(", ");
     }
 
     @Override
@@ -808,7 +814,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitFilter(SqlBaseParser.FilterContext ctx)
     {
-        throw new RuntimeException("");
+        return " FILTER (" + ctx.where().accept(this).trim() + ")";
     }
 
     @Override
@@ -827,7 +833,11 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitLateralRelation(SqlBaseParser.LateralRelationContext ctx)
     {
-        return "LATERAL " + (ctx.queryStatement() != null ? ctx.queryStatement().accept(this) : ctx.table().accept(this));
+        if (ctx.queryStatement() != null)
+        {
+            return "LATERAL (" + ctx.queryStatement().accept(this) + ")";
+        }
+        return "LATERAL " + ctx.table().accept(this);
     }
 
     @Override
@@ -898,7 +908,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitBetween(SqlBaseParser.BetweenContext ctx)
     {
-        throw new RuntimeException("");
+        return (ctx.NOT() == null ? "" : " not") + " between " + ctx.lower.accept(this) + " and " + ctx.upper.accept(this);
     }
 
     @Override
@@ -925,7 +935,9 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitArrayLike(SqlBaseParser.ArrayLikeContext ctx)
     {
-        throw new RuntimeException("");
+        return (ctx.NOT() == null ? "" : " not") + (ctx.LIKE() == null ? " ilike " : " like ") +
+                ctx.quant.accept(this) + " (" + ctx.v.accept(this) + ")" +
+                (ctx.ESCAPE() == null ? "" : " escape " + ctx.escape.accept(this));
     }
 
     @Override
@@ -938,7 +950,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitDistinctFrom(SqlBaseParser.DistinctFromContext ctx)
     {
-        throw new RuntimeException("");
+        return " is " + (ctx.NOT() == null ? "" : "not ") + "distinct from " + ctx.right.accept(this);
     }
 
     @Override
@@ -958,7 +970,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitFromStringLiteralCast(SqlBaseParser.FromStringLiteralCastContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.dataType().accept(this) + " " + ctx.stringLiteral().accept(this);
     }
 
     @Override
@@ -1020,7 +1032,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitArraySlice(SqlBaseParser.ArraySliceContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.base.accept(this) + "[" + (ctx.from == null ? "" : ctx.from.accept(this)) + ":" + (ctx.to == null ? "" : ctx.to.accept(this)) + "]";
     }
 
     @Override
@@ -1033,19 +1045,19 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitEmptyArray(SqlBaseParser.EmptyArrayContext ctx)
     {
-        throw new RuntimeException("");
+        return (ctx.ARRAY() == null ? "" : "ARRAY") + "[]";
     }
 
     @Override
     public String visitSpecialDateTimeFunction(SqlBaseParser.SpecialDateTimeFunctionContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.name.getText() + (ctx.precision == null ? "" : "(" + ctx.precision.accept(this) + ")");
     }
 
     @Override
     public String visitCurrentSchema(SqlBaseParser.CurrentSchemaContext ctx)
     {
-        throw new RuntimeException("");
+        return "CURRENT_SCHEMA";
     }
 
     @Override
@@ -1057,25 +1069,27 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitSessionUser(SqlBaseParser.SessionUserContext ctx)
     {
-        throw new RuntimeException("");
+        return "SESSION_USER";
     }
 
     @Override
     public String visitLeft(SqlBaseParser.LeftContext ctx)
     {
-        throw new RuntimeException("");
+        return "LEFT(" + ctx.strOrColName.accept(this) + ", " + ctx.len.accept(this) + ")";
     }
 
     @Override
     public String visitRight(SqlBaseParser.RightContext ctx)
     {
-        throw new RuntimeException("");
+        return "RIGHT(" + ctx.strOrColName.accept(this) + ", " + ctx.len.accept(this) + ")";
     }
 
     @Override
     public String visitSubstring(SqlBaseParser.SubstringContext ctx)
     {
-        throw new RuntimeException("");
+        // SUBSTRING OPEN_ROUND_BRACKET expr FROM expr (FOR expr)? CLOSE_ROUND_BRACKET
+        return "SUBSTRING(" + ctx.expr(0).accept(this) + " FROM " + ctx.expr(1).accept(this) +
+                (ctx.FOR() == null ? "" : " FOR " + ctx.expr(2).accept(this)) + ")";
     }
 
     @Override
@@ -1103,7 +1117,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitCast(SqlBaseParser.CastContext ctx)
     {
-        throw new RuntimeException("");
+        return (ctx.TRY_CAST() != null ? "TRY_CAST" : "CAST") + "(" + ctx.expr().accept(this) + " AS " + ctx.dataType().accept(this) + ")";
     }
 
     @Override
@@ -1123,7 +1137,8 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitIfCase(SqlBaseParser.IfCaseContext ctx)
     {
-        throw new RuntimeException("");
+        return "IF(" + ctx.condition.accept(this) + ", " + ctx.trueValue.accept(this) +
+                (ctx.falseValue == null ? "" : ", " + ctx.falseValue.accept(this)) + ")";
     }
 
     @Override
@@ -1197,7 +1212,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitParameterPlaceholder(SqlBaseParser.ParameterPlaceholderContext ctx)
     {
-        throw new RuntimeException("");
+        return "?";
     }
 
     @Override
@@ -1215,19 +1230,23 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitDollarQuotedStringLiteral(SqlBaseParser.DollarQuotedStringLiteralContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.getText();
     }
 
     @Override
     public String visitBitString(SqlBaseParser.BitStringContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.BIT_STRING().getText();
     }
 
     @Override
     public String visitSubscriptSafe(SqlBaseParser.SubscriptSafeContext ctx)
     {
-        throw new RuntimeException("");
+        if (ctx.qname() != null)
+        {
+            return ctx.qname().accept(this);
+        }
+        return ctx.value.accept(this) + "[" + ctx.index.accept(this) + "]";
     }
 
     @Override
@@ -1251,37 +1270,44 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitNamedWindow(SqlBaseParser.NamedWindowContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.name.getText() + " AS " + ctx.windowDefinition().accept(this);
     }
 
     @Override
     public String visitWithin(SqlBaseParser.WithinContext ctx)
     {
-        throw new RuntimeException("");
+        return " WITHIN GROUP (ORDER BY " + ctx.sortItem().accept(this) + ")";
     }
 
     @Override
     public String visitWindowFrame(SqlBaseParser.WindowFrameContext ctx)
     {
-        throw new RuntimeException("");
+        // frameType=RANGE|ROWS start=frameBound
+        // frameType=RANGE|ROWS BETWEEN start=frameBound AND end=frameBound
+        String frameType = ctx.frameType.getText().toUpperCase();
+        if (ctx.BETWEEN() != null)
+        {
+            return frameType + " BETWEEN " + ctx.start.accept(this) + " AND " + ctx.end.accept(this);
+        }
+        return frameType + " " + ctx.start.accept(this);
     }
 
     @Override
     public String visitUnboundedFrame(SqlBaseParser.UnboundedFrameContext ctx)
     {
-        throw new RuntimeException("");
+        return "UNBOUNDED " + ctx.boundType.getText().toUpperCase();
     }
 
     @Override
     public String visitCurrentRowBound(SqlBaseParser.CurrentRowBoundContext ctx)
     {
-        throw new RuntimeException("");
+        return "CURRENT ROW";
     }
 
     @Override
     public String visitBoundedFrame(SqlBaseParser.BoundedFrameContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.expr().accept(this) + " " + ctx.boundType.getText().toUpperCase();
     }
 
     @Override
@@ -1346,7 +1372,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitStringLiteralOrIdentifierOrQname(SqlBaseParser.StringLiteralOrIdentifierOrQnameContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.getText();
     }
 
     @Override
@@ -1358,13 +1384,16 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitIntervalLiteral(SqlBaseParser.IntervalLiteralContext ctx)
     {
-        throw new RuntimeException("");
+        return "INTERVAL " + (ctx.sign == null ? "" : ctx.sign.getText()) +
+                ctx.stringLiteral().accept(this) +
+                (ctx.from == null ? "" : " " + ctx.from.accept(this)) +
+                (ctx.to == null ? "" : " TO " + ctx.to.accept(this));
     }
 
     @Override
     public String visitIntervalField(SqlBaseParser.IntervalFieldContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.getText().toUpperCase();
     }
 
     @Override
@@ -1412,7 +1441,7 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitValues(SqlBaseParser.ValuesContext ctx)
     {
-        throw new RuntimeException("");
+        return "(" + ListIterate.collect(ctx.expr(), x -> x.accept(this)).makeString(", ") + ")";
     }
 
     @Override
@@ -1839,98 +1868,97 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitBitwiseShift(SqlBaseParser.BitwiseShiftContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.value.accept(this) + " " + ctx.operator.getText() + " " + ctx.shift.accept(this);
     }
 
     @Override
     public String visitJsonBinary(SqlBaseParser.JsonBinaryContext ctx)
     {
-        throw new RuntimeException("");
+        return ctx.left.accept(this) + " " + ctx.jsonOperator().accept(this) + " " + ctx.right.accept(this);
     }
 
     @Override
     public String visitJsonExtract(SqlBaseParser.JsonExtractContext ctx)
     {
-        throw new RuntimeException("");
+        return "->";
     }
 
     @Override
     public String visitJsonExtractText(SqlBaseParser.JsonExtractTextContext ctx)
     {
-        throw new RuntimeException("");
+        return "->>";
     }
 
     @Override
     public String visitJsonPathExtract(SqlBaseParser.JsonPathExtractContext ctx)
     {
-        throw new RuntimeException("");
+        return "#>";
     }
 
     @Override
     public String visitJsonPathExtractText(SqlBaseParser.JsonPathExtractTextContext ctx)
     {
-        throw new RuntimeException("");
+        return "#>>";
     }
 
     @Override
     public String visitJsonbContainRight(SqlBaseParser.JsonbContainRightContext ctx)
     {
-        throw new RuntimeException("");
+        return "@>";
     }
 
     @Override
     public String visitJsonbContainLeft(SqlBaseParser.JsonbContainLeftContext ctx)
     {
-        throw new RuntimeException("");
+        return "<@";
     }
 
     @Override
     public String visitJsonbContainTopKey(SqlBaseParser.JsonbContainTopKeyContext ctx)
     {
-        throw new RuntimeException("");
+        return "?";
     }
 
     @Override
     public String visitJsonbContainAnyTopKey(SqlBaseParser.JsonbContainAnyTopKeyContext ctx)
     {
-        throw new RuntimeException("");
+        return "?|";
     }
 
     @Override
     public String visitJsonbContainAllTopKey(SqlBaseParser.JsonbContainAllTopKeyContext ctx)
     {
-        throw new RuntimeException("");
+        return "?&";
     }
 
     @Override
     public String visitJsonbConcat(SqlBaseParser.JsonbConcatContext ctx)
     {
-        throw new RuntimeException("");
+        return "||";
     }
 
     @Override
     public String visitJsonbDelete(SqlBaseParser.JsonbDeleteContext ctx)
     {
-        throw new RuntimeException("");
+        return "-";
     }
 
     @Override
     public String visitJsonbPathDelete(SqlBaseParser.JsonbPathDeleteContext ctx)
     {
-        throw new RuntimeException("");
+        return "#-";
     }
 
     @Override
     public String visitJsonbPathContainAnyValue(SqlBaseParser.JsonbPathContainAnyValueContext ctx)
     {
-        throw new RuntimeException("");
+        return "@?";
     }
 
     @Override
     public String visitJsonbPathPredicateCheck(SqlBaseParser.JsonbPathPredicateCheckContext ctx)
     {
-        throw new RuntimeException("");
+        return "@@";
     }
 }
-
 

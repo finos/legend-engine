@@ -1,0 +1,77 @@
+tests:
+  # Basic HAVING with different aggregates
+  - id: having_count
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 1 ORDER BY 1"
+    feature: "HAVING with COUNT"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_sum
+    sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000 ORDER BY 1"
+    feature: "HAVING with SUM"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_avg
+    sql: "SELECT dept_id, AVG(age) AS avg_age FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING AVG(age) > 30 ORDER BY 1"
+    feature: "HAVING with AVG"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_min_max
+    sql: "SELECT dept_id, MAX(salary) AS max_sal FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING MAX(salary) > 60000 ORDER BY 1"
+    feature: "HAVING with MAX"
+    category: "having"
+
+  # Compound HAVING
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_multiple_conditions
+    sql: "SELECT dept_id, COUNT(*) AS cnt, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 1 AND SUM(salary) > 80000 ORDER BY 1"
+    feature: "HAVING with multiple conditions"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_or
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 3 OR COUNT(*) = 1 ORDER BY 1"
+    feature: "HAVING with OR"
+    category: "having"
+
+  # HAVING with expressions
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_expression
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) * 2 > 4 ORDER BY 1"
+    feature: "HAVING with arithmetic expression"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_case
+    sql: "SELECT dept_id, SUM(CASE WHEN salary > 50000 THEN 1 ELSE 0 END) AS high_earners FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(CASE WHEN salary > 50000 THEN 1 ELSE 0 END) > 0 ORDER BY 1"
+    feature: "HAVING with CASE"
+    category: "having"
+
+  # HAVING without GROUP BY (whole table is one group)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_no_group_by
+    sql: "SELECT COUNT(*) AS total FROM persons HAVING COUNT(*) > 0"
+    feature: "HAVING without GROUP BY"
+    category: "having"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_no_group_by_false
+    sql: "SELECT COUNT(*) AS total FROM persons HAVING COUNT(*) > 9999"
+    feature: "HAVING without GROUP BY (no result)"
+    category: "having"
+
+  # HAVING referencing non-selected aggregate
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: having_non_selected_agg
+    sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING AVG(salary) > 50000 ORDER BY 1"
+    feature: "HAVING with non-selected aggregate"
+    category: "having"
+
+    expected_tds_status: PASS
+    expected_rel_status: PASS
