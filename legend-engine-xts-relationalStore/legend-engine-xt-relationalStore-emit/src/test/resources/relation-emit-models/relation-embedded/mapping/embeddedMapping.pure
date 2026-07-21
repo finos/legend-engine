@@ -17,7 +17,7 @@ import meta::pure::metamodel::relation::*;
 
 function demo::relation::func::employeesWithAddress(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
 }
 
 ###Mapping

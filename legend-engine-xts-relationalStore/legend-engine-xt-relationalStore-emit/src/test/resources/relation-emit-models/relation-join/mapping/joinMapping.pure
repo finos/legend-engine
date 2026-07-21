@@ -17,12 +17,12 @@ import meta::pure::metamodel::relation::*;
 
 function demo::relation::func::joinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
 }
 
 function demo::relation::func::joinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.FirmTable}#
+  #>{demo::relation::db::EmployeeDB.FirmTable}#
 }
 
 ###Mapping

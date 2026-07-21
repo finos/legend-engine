@@ -18,7 +18,7 @@ import meta::pure::metamodel::relation::*;
 
 function demo::relation::func::positions(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.PositionTable}#
+  #>{demo::relation::db::EmployeeDB.PositionTable}#
     ->groupBy(~[GSN, PRODUCT_ID], ~[TOTAL_QTY: x | $x.QTY : y | $y->sum()])
 }
 

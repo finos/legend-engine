@@ -18,7 +18,7 @@ import meta::pure::metamodel::relation::*;
 // Only rows with non-null SALARY so that ->toOne() coercion is total at runtime.
 function demo::relation::func::salariedEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.EmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
     ->filter(r | $r.SALARY->isNotEmpty())
 }
 

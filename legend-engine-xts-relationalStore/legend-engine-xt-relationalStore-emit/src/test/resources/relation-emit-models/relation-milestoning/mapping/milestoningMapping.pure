@@ -21,7 +21,7 @@ import meta::pure::metamodel::relation::*;
 
 function demo::relation::func::temporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  #>{demo::relation::db::EmployeeDB.default.TemporalEmployeeTable}#
+  #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
 }
 
 ###Mapping
