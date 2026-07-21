@@ -241,4 +241,91 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "}\n");
     }
 
+    @Test
+    public void testRelationValidation_withTestSuites()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationValidation meta::external::dataquality::testvalidation\n" +
+                "{\n" +
+                "   query: |#>{my::Store.myTable}#->filter(c|$c.name == 'ok')->from(dq::dqDevRuntime);\n" +
+                "   validations: [\n" +
+                "   {\n" +
+                "     name: 'testValidation';\n" +
+                "     assertion: rel|$rel->assertRelationNotEmpty();\n" +
+                "    }\n" +
+                "   ];\n" +
+                "   testSuites:\n" +
+                "   [\n" +
+                "      testSuite1:\n" +
+                "      {\n" +
+                "         data:\n" +
+                "         [\n" +
+                "            my::Store:\n" +
+                "               Reference\n" +
+                "               #{\n" +
+                "                 my::embedded::data\n" +
+                "               }#\n" +
+                "         ]\n" +
+                "         tests:\n" +
+                "         [\n" +
+                "            test1:\n" +
+                "            {\n" +
+                "               asserts:\n" +
+                "               [\n" +
+                "                  assert1:\n" +
+                "                     EqualToJson\n" +
+                "                     #{\n" +
+                "                       expected :\n" +
+                "                         ExternalFormat\n" +
+                "                         #{\n" +
+                "                           contentType: 'application/json';\n" +
+                "                           data: '[]';\n" +
+                "                         }#;\n" +
+                "                     }#\n" +
+                "               ]\n" +
+                "            }\n" +
+                "         ]\n" +
+                "      }\n" +
+                "   ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRelationComparison_withTestSuites()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "   source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "   keys: [id];\n" +
+                "   strategy: MD5Hash;\n" +
+                "   testSuites:\n" +
+                "   [\n" +
+                "      testSuite1:\n" +
+                "      {\n" +
+                "         tests:\n" +
+                "         [\n" +
+                "            test1:\n" +
+                "            {\n" +
+                "               asserts:\n" +
+                "               [\n" +
+                "                  assert1:\n" +
+                "                     EqualToJson\n" +
+                "                     #{\n" +
+                "                       expected :\n" +
+                "                         ExternalFormat\n" +
+                "                         #{\n" +
+                "                           contentType: 'application/json';\n" +
+                "                           data: '[]';\n" +
+                "                         }#;\n" +
+                "                     }#\n" +
+                "               ]\n" +
+                "            }\n" +
+                "         ]\n" +
+                "      }\n" +
+                "   ];\n" +
+                "}\n");
+    }
+
 }

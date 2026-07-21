@@ -24,7 +24,9 @@ import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarCo
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
@@ -35,8 +37,15 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestData;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestSuite;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestData;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestSuite;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -98,6 +107,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
                 renderPersistenceStrategy(dataqualityRelationValidation, context) +
+                renderRelationValidationTestSuites(dataqualityRelationValidation, context) +
                 "}";
     }
 
@@ -124,6 +134,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   strategy: " + renderReconStrategy(relationComparison.strategy) + ";\n" +
                 (Objects.isNull(relationComparison.expectedMatch) ? "" :
                     "   expectedMatch: " + relationComparison.expectedMatch + ";\n") +
+                renderRelationComparisonTestSuites(relationComparison, context) +
                 "}";
     }
 
@@ -359,5 +370,107 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
     private static String renderAssertion(RelationValidation relationValidation, PureGrammarComposerContext context)
     {
         return relationValidation.assertion.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+    }
+
+    // -------------------- Testable rendering --------------------
+
+    private static String dqIndent(int level)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < level; i++)
+        {
+            sb.append("   ");
+        }
+        return sb.toString();
+    }
+
+    private static String renderRelationValidationTestSuites(DataqualityRelationValidation validation, PureGrammarComposerContext context)
+    {
+        if (Objects.isNull(validation.testSuites) || validation.testSuites.isEmpty())
+        {
+            return "";
+        }
+        String suites = validation.testSuites.stream()
+                .map(suite -> renderTestSuite(suite.id, suite.testData == null ? null : suite.testData.testData, suite.tests, 2, context))
+                .collect(Collectors.joining(",\n"));
+        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "];\n";
+    }
+
+    private static String renderRelationComparisonTestSuites(DataQualityRelationComparison comparison, PureGrammarComposerContext context)
+    {
+        if (Objects.isNull(comparison.testSuites) || comparison.testSuites.isEmpty())
+        {
+            return "";
+        }
+        String suites = comparison.testSuites.stream()
+                .map(suite -> renderTestSuite(suite.id, suite.testData == null ? null : suite.testData.testData, suite.tests, 2, context))
+                .collect(Collectors.joining(",\n"));
+        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "];\n";
+    }
+
+    private static String renderTestSuite(String suiteId, List<FunctionTestData> testData, List<AtomicTest> tests, int baseIndent, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(dqIndent(baseIndent)).append(PureGrammarComposerUtility.convertIdentifier(suiteId)).append(":\n");
+        str.append(dqIndent(baseIndent)).append("{\n");
+
+        if (testData != null && !testData.isEmpty())
+        {
+            str.append(dqIndent(baseIndent + 1)).append("data:\n");
+            str.append(dqIndent(baseIndent + 1)).append("[\n");
+            str.append(testData.stream()
+                    .map(td -> renderStoreTestData(td, baseIndent + 2, context))
+                    .collect(Collectors.joining(",\n")));
+            str.append("\n").append(dqIndent(baseIndent + 1)).append("]\n");
+        }
+
+        if (tests != null && !tests.isEmpty())
+        {
+            str.append(dqIndent(baseIndent + 1)).append("tests:\n");
+            str.append(dqIndent(baseIndent + 1)).append("[\n");
+            str.append(tests.stream()
+                    .map(t -> renderAtomicTest(t, baseIndent + 2, context))
+                    .collect(Collectors.joining(",\n")));
+            str.append("\n").append(dqIndent(baseIndent + 1)).append("]\n");
+        }
+
+        str.append(dqIndent(baseIndent)).append("}");
+        return str.toString();
+    }
+
+    private static String renderStoreTestData(FunctionTestData testData, int baseIndent, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(dqIndent(baseIndent)).append(testData.packageableElementPointer.path).append(":\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(
+                testData.data,
+                PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(dqIndent(baseIndent + 1)).build()));
+        return str.toString();
+    }
+
+    private static String renderAtomicTest(AtomicTest test, int baseIndent, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(dqIndent(baseIndent)).append(PureGrammarComposerUtility.convertIdentifier(test.id)).append(":\n");
+        str.append(dqIndent(baseIndent)).append("{\n");
+        if (test.assertions != null && !test.assertions.isEmpty())
+        {
+            str.append(dqIndent(baseIndent + 1)).append("asserts:\n");
+            str.append(dqIndent(baseIndent + 1)).append("[\n");
+            str.append(test.assertions.stream()
+                    .map(a -> renderTestAssertion(a, baseIndent + 2, context))
+                    .collect(Collectors.joining(",\n")));
+            str.append("\n").append(dqIndent(baseIndent + 1)).append("]\n");
+        }
+        str.append(dqIndent(baseIndent)).append("}");
+        return str.toString();
+    }
+
+    private static String renderTestAssertion(TestAssertion assertion, int baseIndent, PureGrammarComposerContext context)
+    {
+        String composed = HelperTestAssertionGrammarComposer.composeTestAssertion(
+                assertion,
+                PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(dqIndent(baseIndent)).build());
+        return composed;
     }
 }

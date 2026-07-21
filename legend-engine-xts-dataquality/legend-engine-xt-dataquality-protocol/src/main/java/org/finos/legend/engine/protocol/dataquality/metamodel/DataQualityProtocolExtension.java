@@ -18,11 +18,17 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestSuite;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
+import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;
 import java.util.Map;
@@ -57,6 +63,14 @@ public class DataQualityProtocolExtension implements PureProtocolExtension
                         .withSubtype(DataQualityRelationComparison.class, "dataQualityRelationComparison")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(DataQualityPersistenceStrategy.class)
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(TestSuite.class)
+                        .withSubtype(DataQualityRelationValidationTestSuite.class, "dataQualityRelationValidationTestSuite")
+                        .withSubtype(DataQualityRelationComparisonTestSuite.class, "dataQualityRelationComparisonTestSuite")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(AtomicTest.class)
+                        .withSubtype(DataQualityRelationValidationTest.class, "dataQualityRelationValidationTest")
+                        .withSubtype(DataQualityRelationComparisonTest.class, "dataQualityRelationComparisonTest")
                         .build()
         ));
     }

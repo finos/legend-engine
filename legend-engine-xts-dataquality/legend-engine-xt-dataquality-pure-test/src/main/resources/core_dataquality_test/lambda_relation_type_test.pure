@@ -1,0 +1,163 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::dataquality::*;
+import meta::external::dataquality::datarecon::*;
+import meta::external::dataquality::lambdaRelationType::*;
+import meta::external::dataquality::tests::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+import meta::pure::metamodel::relation::*;
+
+// Test compiler for `getLambdaRelationType`; mirrors the compiler used by the DQ recon /
+// sample-values tests (compileViaGrammar), which is what the engine wires in at runtime.
+function meta::external::dataquality::tests::lambdaRelationType::testCompiler(): Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
+{
+  {l:LambdaFunction<Any>[1] | compileViaGrammar($l)}
+}
+
+function meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(dq:String[1]): DataQualityRelationComparison[1]
+{
+  loadModel($dq)
+    ->filter(c | $c->elementToPath() == 'meta::external::dataquality::tests::domain::RelationComparison')
+    ->toOne()->cast(@DataQualityRelationComparison);
+}
+
+// -------------------- Validation branch --------------------
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationValidation_assertRelationNotEmpty():Boolean[1]
+{
+  let element = loadDataQualityRelationValidation(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[FIRSTNAME, LASTNAME]);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nonEmptyDataset\';' +
+    '             description: \'dataset should not be empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::assertRelationNotEmpty();' +
+    '          }' +
+    '         ];' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // assertRelationNotEmpty → buildOneRowIfEmptyExpression → COUNT-only relation.
+  assertEquals(['COUNT'], $relType.columns.name);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationValidation_assertRelationEmpty():Boolean[1]
+{
+  let element = loadDataQualityRelationValidation(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME]);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nameNotEmpty\';' +
+    '             description: \'name columns should not be empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME, LASTNAME]);' +
+    '          }' +
+    '         ];' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // assertRelationEmpty(~[cols]) → buildSelectExpression → projected columns only.
+  assertEquals(['FIRSTNAME', 'LASTNAME'], $relType.columns.name);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationValidation_assertRelationEmptyWithFilter():Boolean[1]
+{
+  let element = loadDataQualityRelationValidation(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME]);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'invalidFirstName\';' +
+    '             description: \'first name should not be \\\'invalid\\\'\';' +
+    '             assertion: rel|$rel->filter(row|$row.FIRSTNAME == \'invalid\')->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME]);' +
+    '          }' +
+    '         ];' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // Filter is preserved upstream; projection controls the emitted column set.
+  assertEquals(['FIRSTNAME'], $relType.columns.name);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationValidation_queryEndsWithFrom():Boolean[1]
+{
+  let element = loadDataQualityRelationValidation(
+    '###DataQualityValidation' +
+    '      DataQualityRelationValidation meta::external::dataquality::tests::domain::RelationValidation' +
+    '      {' +
+    '        query: #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME])' +
+    '                 ->from(meta::external::dataquality::tests::domain::dataqualitymappings, meta::external::dataquality::tests::domain::DataQualityRuntime);' +
+    '        validations: [' +
+    '          {' +
+    '             name: \'nameNotEmpty\';' +
+    '             description: \'name columns should not be empty\';' +
+    '             assertion: rel|$rel->meta::external::dataquality::assertRelationEmpty(~[FIRSTNAME, LASTNAME]);' +
+    '          }' +
+    '         ];' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  assertEquals(['FIRSTNAME', 'LASTNAME'], $relType.columns.name);
+}
+
+// -------------------- Comparison branch --------------------
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationComparison_dynamicHash():Boolean[1]
+{
+  let element = meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(
+    '###DataQualityValidation' +
+    '      DataQualityRelationComparison meta::external::dataquality::tests::domain::RelationComparison' +
+    '      {' +
+    '        source: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME]);' +
+    '        target: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME]);' +
+    '        keys: [ID];' +
+    '        columnsToCompare: [FIRSTNAME, LASTNAME];' +
+    '        strategy: MD5Hash;' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // Reconciliation output columns: hash cols first, then key SOURCE/TARGET, then compare SOURCE/TARGET.
+  assertEquals(
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'LASTNAME_SOURCE', 'LASTNAME_TARGET'],
+    $relType.columns.name
+  );
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationComparison_precomputedHash():Boolean[1]
+{
+  let element = meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(
+    '###DataQualityValidation' +
+    '      DataQualityRelationComparison meta::external::dataquality::tests::domain::RelationComparison' +
+    '      {' +
+    '        source: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH]);' +
+    '        target: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, HASH]);' +
+    '        keys: [ID];' +
+    '        strategy: MD5Hash' +
+    '        {' +
+    '          sourceHashColumn: HASH;' +
+    '          targetHashColumn: HASH;' +
+    '          aggregatedHash: false;' +
+    '        };' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  assertEquals(['HASH_SOURCE', 'HASH_TARGET', 'ID_SOURCE', 'ID_TARGET'], $relType.columns.name);
+}

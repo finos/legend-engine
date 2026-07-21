@@ -81,11 +81,7 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
       $withDqCols->meta::external::dataquality::buildOrderedSelectExpression($orderedCols, $projectedRelType);
   );
 
-  // Build final lambda - if there are parameters, create new lambda with merged params; otherwise preserve baseLambda structure
-  if ($allParams->isEmpty(),
-    | ^$baseLambda(expressionSequence=$withOrderedCols),
-    | lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $withOrderedCols)
-  );
+  lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $withOrderedCols);
 }
 
 function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentColNames: String[*], keys: String[*], compareCols: String[*], sourceHashCol: String[1], targetHashCol: String[1]): String[*]

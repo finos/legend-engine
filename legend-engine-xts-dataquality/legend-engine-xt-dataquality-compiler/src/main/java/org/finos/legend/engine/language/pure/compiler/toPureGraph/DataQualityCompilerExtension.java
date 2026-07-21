@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ListIterable;
@@ -23,11 +24,14 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ParametersInference;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPersistenceStrategy;
@@ -40,6 +44,10 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MappingAndRuntimeDataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestSuite;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestSuite;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
@@ -49,15 +57,29 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityStoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityPropertyGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidation_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationValidationTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestData;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRootGraphFetchTree_Impl;
@@ -81,6 +103,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.navigation._class._Class;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
@@ -207,6 +230,7 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     {
                         metamodel._persistenceStrategy(buildPersistenceStrategy(dataqualityRelationValidation.persistenceStrategy, compileContext));
                     }
+                    processDataQualityTestSuites(dataqualityRelationValidation.testSuites, metamodel, dataqualityRelationValidation.sourceInformation, compileContext);
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(dataqualityRelationValidation.sourceInformation), compileContext.getExecutionSupport());
                 },
                 this::dataQualityRelationValidationPrerequisiteElementsPass
@@ -309,6 +333,8 @@ public class DataQualityCompilerExtension implements CompilerExtension
                     {
                         metamodel._expectedMatch(relationComparison.expectedMatch);
                     }
+
+                    processDataQualityTestSuites(relationComparison.testSuites, metamodel, relationComparison.sourceInformation, compileContext);
 
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(relationComparison.sourceInformation), compileContext.getExecutionSupport());
                 },
@@ -667,6 +693,187 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithNumberColInference, handlers.h("meta::external::dataquality::rowsWithValueOutsideRange_Relation_1__ColSpec_1__Number_1__Number_1__Relation_1_", "rowsWithValueOutsideRange", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> ps.size() == 4 && handlers.typeOne(ps.get(0), handlers.getTaxoMap().get("cov_relation_Relation")) && handlers.typeOne(ps.get(1), handlers.getTaxoMap().get("cov_relation_ColSpec")) && handlers.typeOne(ps.get(2), handlers.getTaxoMap().get("cov_Number")) && handlers.typeOne(ps.get(3), handlers.getTaxoMap().get("cov_Number"))))),
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.grp(RowsWithStringColInference, handlers.h("meta::external::dataquality::rowsWithColumnDiffersFromPattern_Relation_1__ColSpec_1__String_1__Relation_1_", "rowsWithColumnDiffersFromPattern", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> org.eclipse.collections.impl.factory.Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getOnly(), ps.get(1)._genericType()._typeArguments().getOnly()), ps -> ps.size() == 3 && handlers.typeOne(ps.get(0), handlers.getTaxoMap().get("cov_relation_Relation")) && handlers.typeOne(ps.get(1), handlers.getTaxoMap().get("cov_relation_ColSpec")) && handlers.typeOne(ps.get(2), handlers.getTaxoMap().get("cov_String")))))
                 ));
+    }
+
+    private static void processDataQualityTestSuites(List<DataQualityRelationValidationTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationValidation_Impl metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
+    {
+        if (testSuites == null || testSuites.isEmpty())
+        {
+            return;
+        }
+        List<String> testSuiteIds = ListIterate.collect(testSuites, s -> s.id);
+        List<String> duplicateTestSuiteIds = testSuiteIds.stream().filter(e -> Collections.frequency(testSuiteIds, e) > 1).distinct().collect(Collectors.toList());
+        if (!duplicateTestSuiteIds.isEmpty())
+        {
+            throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", elementSourceInformation, EngineErrorType.COMPILATION);
+        }
+        ProcessingContext processingContext = new ProcessingContext("DataQualityRelationValidation '" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(metamodel) + "' Test Suites");
+        metamodel._tests(ListIterate.collect(testSuites, suite ->
+        {
+            Root_meta_external_dataquality_DataQualityRelationValidationTestSuite pureSuite = (Root_meta_external_dataquality_DataQualityRelationValidationTestSuite) suite.accept(new TestFirstPassBuilder(compileContext, processingContext));
+            pureSuite._testable(metamodel);
+            for (Root_meta_pure_test_AtomicTest pureTest : pureSuite._tests())
+            {
+                pureTest._testable(metamodel);
+            }
+            return pureSuite;
+        }));
+    }
+
+    private static void processDataQualityTestSuites(List<DataQualityRelationComparisonTestSuite> testSuites, Root_meta_external_dataquality_DataQualityRelationComparison_Impl metamodel, org.finos.legend.engine.protocol.pure.m3.SourceInformation elementSourceInformation, CompileContext compileContext)
+    {
+        if (testSuites == null || testSuites.isEmpty())
+        {
+            return;
+        }
+        List<String> testSuiteIds = ListIterate.collect(testSuites, s -> s.id);
+        List<String> duplicateTestSuiteIds = testSuiteIds.stream().filter(e -> Collections.frequency(testSuiteIds, e) > 1).distinct().collect(Collectors.toList());
+        if (!duplicateTestSuiteIds.isEmpty())
+        {
+            throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", elementSourceInformation, EngineErrorType.COMPILATION);
+        }
+        ProcessingContext processingContext = new ProcessingContext("DataQualityRelationComparison '" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(metamodel) + "' Test Suites");
+        metamodel._tests(ListIterate.collect(testSuites, suite ->
+        {
+            Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite pureSuite = (Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite) suite.accept(new TestFirstPassBuilder(compileContext, processingContext));
+            pureSuite._testable(metamodel);
+            for (Root_meta_pure_test_AtomicTest pureTest : pureSuite._tests())
+            {
+                pureTest._testable(metamodel);
+            }
+            return pureSuite;
+        }));
+    }
+
+    private static Root_meta_external_dataquality_DataQualityRelationValidationTestData buildRelationValidationTestData(org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_external_dataquality_DataQualityRelationValidationTestData pureTestData = new Root_meta_external_dataquality_DataQualityRelationValidationTestData_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationValidationTestData"));
+        if (testData.testData != null && !testData.testData.isEmpty())
+        {
+            pureTestData._testData(ListIterate.collect(testData.testData, data -> buildStoreTestData(data, context, processingContext)));
+        }
+        return pureTestData;
+    }
+
+    private static Root_meta_external_dataquality_DataQualityRelationComparisonTestData buildRelationComparisonTestData(org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_external_dataquality_DataQualityRelationComparisonTestData pureTestData = new Root_meta_external_dataquality_DataQualityRelationComparisonTestData_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationComparisonTestData"));
+        if (testData.testData != null && !testData.testData.isEmpty())
+        {
+            pureTestData._testData(ListIterate.collect(testData.testData, data -> buildStoreTestData(data, context, processingContext)));
+        }
+        return pureTestData;
+    }
+
+    private static Root_meta_external_dataquality_DataQualityStoreTestData buildStoreTestData(FunctionTestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_external_dataquality_DataQualityStoreTestData pureStoreData = new Root_meta_external_dataquality_DataQualityStoreTestData_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityStoreTestData"));
+        if (testData.doc != null)
+        {
+            pureStoreData._doc(testData.doc);
+        }
+        pureStoreData._element(context.pureModel.getPackageableElement(testData.packageableElementPointer.path, testData.packageableElementPointer.sourceInformation));
+        pureStoreData._data(testData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+        return pureStoreData;
+    }
+
+    @Override
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.testable.Test>> getExtraTestProcessors()
+    {
+        return Collections.singletonList((test, context, processingContext) ->
+        {
+            if (test instanceof DataQualityRelationValidationTestSuite)
+            {
+                DataQualityRelationValidationTestSuite testSuite = (DataQualityRelationValidationTestSuite) test;
+                Root_meta_external_dataquality_DataQualityRelationValidationTestSuite pureSuite = new Root_meta_external_dataquality_DataQualityRelationValidationTestSuite_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationValidationTestSuite"));
+                pureSuite._id(testSuite.id);
+                if (testSuite.tests == null || testSuite.tests.isEmpty())
+                {
+                    throw new EngineException("DataQualityRelationValidation TestSuites should have at least 1 test", testSuite.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                List<String> testIds = ListIterate.collect(testSuite.tests, t -> t.id);
+                List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
+                if (!duplicateTestIds.isEmpty())
+                {
+                    throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", testSuite.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                RichIterable<? extends Root_meta_pure_test_AtomicTest> pureTests = ListIterate.collect(testSuite.tests, atomicTest -> (Root_meta_pure_test_AtomicTest) atomicTest.accept(new TestFirstPassBuilder(context, processingContext)));
+                pureSuite._tests(pureTests);
+                if (testSuite.testData != null)
+                {
+                    pureSuite._testData(buildRelationValidationTestData(testSuite.testData, context, processingContext));
+                }
+                return pureSuite;
+            }
+            else if (test instanceof DataQualityRelationValidationTest)
+            {
+                DataQualityRelationValidationTest atomicTest = (DataQualityRelationValidationTest) test;
+                Root_meta_external_dataquality_DataQualityRelationValidationTest_Impl pureTest = new Root_meta_external_dataquality_DataQualityRelationValidationTest_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationValidationTest"));
+                pureTest._id(atomicTest.id);
+                if (atomicTest.assertions == null || atomicTest.assertions.isEmpty())
+                {
+                    throw new EngineException("DataQualityRelationValidation Tests should have at least 1 assert", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                if (atomicTest.assertions.size() > 1)
+                {
+                    throw new EngineException("DataQualityRelationValidation Tests support only 1 assertion per test", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                List<String> assertionIds = ListIterate.collect(atomicTest.assertions, a -> a.id);
+                List<String> duplicateAssertionIds = assertionIds.stream().filter(e -> Collections.frequency(assertionIds, e) > 1).distinct().collect(Collectors.toList());
+                if (!duplicateAssertionIds.isEmpty())
+                {
+                    throw new EngineException("Multiple assertions found with ids : '" + String.join(",", duplicateAssertionIds) + "'", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                pureTest._assertions(ListIterate.collect(atomicTest.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
+                return pureTest;
+            }
+            else if (test instanceof DataQualityRelationComparisonTestSuite)
+            {
+                DataQualityRelationComparisonTestSuite testSuite = (DataQualityRelationComparisonTestSuite) test;
+                Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite pureSuite = new Root_meta_external_dataquality_DataQualityRelationComparisonTestSuite_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationComparisonTestSuite"));
+                pureSuite._id(testSuite.id);
+                if (testSuite.tests == null || testSuite.tests.isEmpty())
+                {
+                    throw new EngineException("DataQualityRelationComparison TestSuites should have at least 1 test", testSuite.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                List<String> testIds = ListIterate.collect(testSuite.tests, t -> t.id);
+                List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
+                if (!duplicateTestIds.isEmpty())
+                {
+                    throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", testSuite.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                RichIterable<? extends Root_meta_pure_test_AtomicTest> pureTests = ListIterate.collect(testSuite.tests, atomicTest -> (Root_meta_pure_test_AtomicTest) atomicTest.accept(new TestFirstPassBuilder(context, processingContext)));
+                pureSuite._tests(pureTests);
+                if (testSuite.testData != null)
+                {
+                    pureSuite._testData(buildRelationComparisonTestData(testSuite.testData, context, processingContext));
+                }
+                return pureSuite;
+            }
+            else if (test instanceof DataQualityRelationComparisonTest)
+            {
+                DataQualityRelationComparisonTest atomicTest = (DataQualityRelationComparisonTest) test;
+                Root_meta_external_dataquality_DataQualityRelationComparisonTest_Impl pureTest = new Root_meta_external_dataquality_DataQualityRelationComparisonTest_Impl("", null, context.pureModel.getClass("meta::external::dataquality::DataQualityRelationComparisonTest"));
+                pureTest._id(atomicTest.id);
+                if (atomicTest.assertions == null || atomicTest.assertions.isEmpty())
+                {
+                    throw new EngineException("DataQualityRelationComparison Tests should have at least 1 assert", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                if (atomicTest.assertions.size() > 1)
+                {
+                    throw new EngineException("DataQualityRelationComparison Tests support only 1 assertion per test", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                List<String> assertionIds = ListIterate.collect(atomicTest.assertions, a -> a.id);
+                List<String> duplicateAssertionIds = assertionIds.stream().filter(e -> Collections.frequency(assertionIds, e) > 1).distinct().collect(Collectors.toList());
+                if (!duplicateAssertionIds.isEmpty())
+                {
+                    throw new EngineException("Multiple assertions found with ids : '" + String.join(",", duplicateAssertionIds) + "'", atomicTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                pureTest._assertions(ListIterate.collect(atomicTest.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
+                return pureTest;
+            }
+            return null;
+        });
     }
 
 }

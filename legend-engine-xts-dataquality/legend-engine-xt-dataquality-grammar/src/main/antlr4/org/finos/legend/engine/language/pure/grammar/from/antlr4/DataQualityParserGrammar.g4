@@ -38,6 +38,10 @@ identifier:                             VALID_STRING | STRING
                                         | RECON_AGGREGATED_HASH
                                         | RECON_EXPECTED_MATCH
                                         | PERSISTENCE_STRATEGY
+                                        | DQ_TEST_SUITES
+                                        | DQ_TEST_DATA
+                                        | DQ_TEST_TESTS
+                                        | DQ_TEST_ASSERTS
 ;
 
 
@@ -128,6 +132,7 @@ relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotype
                                                  relationFunc
                                                  | validations
                                                  | persistenceStrategy
+                                                 | dqTestSuites
                                              )*
                                         BRACE_CLOSE
 ;
@@ -170,6 +175,7 @@ relationComparisonDefinition:   DATAQUALITYRELATIONCOMPARISON qualifiedName
                                         | columnsToCompare
                                         | reconStrategy
                                         | reconExpectedMatch
+                                        | dqTestSuites
                                     )*
                                 BRACE_CLOSE
 ;
@@ -204,4 +210,45 @@ reconTargetHashColumn:                  RECON_TARGET_HASH_COLUMN COLON identifie
 reconAggregatedHash:                    RECON_AGGREGATED_HASH COLON BOOLEAN SEMI_COLON
 ;
 reconExpectedMatch:                     RECON_EXPECTED_MATCH COLON FLOAT SEMI_COLON
+;
+
+// -------------------- Testable ----------------------------------------------------------
+dqTestSuites:                           DQ_TEST_SUITES COLON BRACKET_OPEN
+                                            (dqTestSuite (COMMA dqTestSuite)*)?
+                                        BRACKET_CLOSE
+;
+dqTestSuite:                            identifier COLON BRACE_OPEN
+                                            (
+                                                dqTestSuiteData
+                                                | dqTestSuiteTests
+                                            )*
+                                        BRACE_CLOSE
+;
+dqTestSuiteData:                        DQ_TEST_DATA COLON BRACKET_OPEN
+                                            (dqStoreTestData (COMMA dqStoreTestData)*)?
+                                        BRACKET_CLOSE
+;
+dqStoreTestData:                        qualifiedName COLON dqEmbeddedData
+;
+dqEmbeddedData:                         identifier ISLAND_OPEN (dqEmbeddedDataContent)*
+;
+dqEmbeddedDataContent:                  ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+dqTestSuiteTests:                       DQ_TEST_TESTS COLON BRACKET_OPEN
+                                            (dqTestBlock (COMMA dqTestBlock)*)?
+                                        BRACKET_CLOSE
+;
+dqTestBlock:                            identifier COLON BRACE_OPEN
+                                            (dqTestAsserts)*
+                                        BRACE_CLOSE
+;
+dqTestAsserts:                          DQ_TEST_ASSERTS COLON BRACKET_OPEN
+                                            (dqTestAssert (COMMA dqTestAssert)*)?
+                                        BRACKET_CLOSE
+;
+dqTestAssert:                           identifier COLON dqTestAssertion
+;
+dqTestAssertion:                        identifier ISLAND_OPEN (dqTestAssertionContent)*
+;
+dqTestAssertionContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;

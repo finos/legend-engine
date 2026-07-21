@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.dataquality.metamodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestSuite;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
@@ -35,4 +36,5 @@ public class DataqualityRelationValidation extends ModelGenerationSpecification
     public LambdaFunction query;
     public List<RelationValidation> validations = Collections.emptyList();
     public DataQualityPersistenceStrategy persistenceStrategy;
+    public List<DataQualityRelationValidationTestSuite> testSuites = Collections.emptyList();
 }
