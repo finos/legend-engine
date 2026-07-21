@@ -1,0 +1,137 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Mirrors relationMappingSetup.pure's MixedCaseAssociationChainMapping: the root class
+// (Employee) is mapped via classic Relational here (not ~func) while Firm stays
+// ~func-mapped, and the Employment association is wired XStore across that
+// Relational/Relation store-type boundary — the same pattern the reference test uses for
+// Person(Relational)<->Firm(Relation). EmployeeDepartment is a new, model-local
+// association (Employee/Department aren't already linked by an association in the
+// shared domain) reusing the DepartmentEmployeeJoin declared on the shared DB.
+//
+// departmentId is [0..1] (DEPARTMENT_ID is a nullable column) rather than [1] — the
+// #4941 multiplicity validator requires a NOT NULL column (or ->toOne()) for a [1]
+// property, and DEPARTMENT_ID must stay nullable for the 12+ other models that don't
+// populate it.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::EmployeeDepartment
+{
+  department: demo::relation::domain::Department[0..1];
+  employeesInDept: demo::relation::domain::Employee[*];
+}
+
+function demo::relation::func::chainFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.FirmTable}#
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::MixedAssociationChainMapping
+(
+  *demo::relation::domain::Employee[emp]: Relational
+  {
+    ~primaryKey ([demo::relation::db::EmployeeDB]EmployeeTable.ID)
+    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
+    firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
+    lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [demo::relation::db::EmployeeDB]EmployeeTable.EMP_TYPE,
+    active: [demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE == 1,
+    hireDate: [demo::relation::db::EmployeeDB]EmployeeTable.HIRE_DATE,
+    salary: [demo::relation::db::EmployeeDB]EmployeeTable.SALARY,
+    +firmId: Integer[1]: [demo::relation::db::EmployeeDB]EmployeeTable.FIRM_ID,
+    +departmentId: Integer[0..1]: [demo::relation::db::EmployeeDB]EmployeeTable.DEPARTMENT_ID
+  }
+
+  *demo::relation::domain::Department[dept]: Relational
+  {
+    ~primaryKey ([demo::relation::db::EmployeeDB]DepartmentTable.ID)
+    ~mainTable [demo::relation::db::EmployeeDB]DepartmentTable
+    name: [demo::relation::db::EmployeeDB]DepartmentTable.NAME,
+    code: [demo::relation::db::EmployeeDB]DepartmentTable.CODE,
+    +id: Integer[1]: [demo::relation::db::EmployeeDB]DepartmentTable.ID
+  }
+
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::chainFirms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::Employment: XStore
+  {
+    employer[emp, firm]: $this.firmId == $that.id,
+    employees[firm, emp]: $this.id == $that.firmId
+  }
+
+  demo::relation::domain::EmployeeDepartment: XStore
+  {
+    department[emp, dept]: $this.departmentId == $that.id,
+    employeesInDept[dept, emp]: $this.id == $that.departmentId
+  }
+
+  testSuites:
+  [
+    chainedAssociationSuite:
+    {
+      // Filter on the intermediate hop (department.name), project through BOTH hops
+      // (department.name, employer.legalName) in the same query.
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.department.name == 'Engineering')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.department.name, x | $x.employer.legalName],
+                    ['Name', 'Department', 'Firm']
+                  );
+      tests:
+      [
+        engineeringOnly:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeChainData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterOnIntermediateHopAndProjectBoth:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Department":"Engineering","Firm":"Acme"},{"Name":"Carol","Department":"Engineering","Firm":"Acme"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

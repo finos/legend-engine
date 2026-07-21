@@ -12,28 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Mirrors relationCoverageInclude.pure's shape exactly: a base mapping with the real
+// property mappings, and an outer mapping that does nothing but `include base`. Queries
+// execute against the outer mapping to prove include is wired end-to-end, not just at
+// parse/compile time.
+
 ###Pure
 import meta::pure::metamodel::relation::*;
 
-function demo::relation::func::mixedContractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+function demo::relation::func::includeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->filter(r | $r.EMP_TYPE == 'CONTRACT')
 }
 
 ###Mapping
 import demo::relation::func::*;
 
-Mapping demo::relation::mapping::EmployeeMixedUnionMapping
+Mapping demo::relation::mapping::BaseIncludeMapping
 (
-  *demo::relation::domain::Employee: Operation
+  *demo::relation::domain::Employee: Relation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfSet, relSet)
-  }
-
-  demo::relation::domain::Employee[rfSet]: Relation
-  {
-    ~func demo::relation::func::mixedContractEmployees():Relation<Any>[1]
+    ~func demo::relation::func::includeEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -43,27 +42,20 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
     salary: SALARY
   }
 
-  demo::relation::domain::Employee[relSet]: Relational
-  {
-    ~filter [demo::relation::db::EmployeeDB] FullTimeFilter
-    ~primaryKey
-    (
-      [demo::relation::db::EmployeeDB]EmployeeTable.ID
-    )
-    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
-    firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
-    lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME
-  }
-
   demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
   {
     FULL_TIME: ['FULL_TIME'],
     CONTRACT: ['CONTRACT']
   }
+)
+
+Mapping demo::relation::mapping::OuterIncludeMapping
+(
+  include demo::relation::mapping::BaseIncludeMapping
 
   testSuites:
   [
-    mixedUnionSuite:
+    includeSuite:
     {
       function: |demo::relation::domain::Employee.all()
                   ->sortBy(x | $x.firstName)
@@ -73,71 +65,63 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
                   );
       tests:
       [
-        bothLegs:
+        allEmployeesThroughInclude:
         {
           data:
           [
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeMixedUnionData
+                demo::relation::data::EmployeeIncludeData
               }#
           ];
           asserts:
           [
-            shouldCombineMixedSets:
+            shouldQueryThroughIncludedMapping:
               EqualToJson
               #{
                 expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"},{"First Name":"Carol","Last Name":"White"},{"First Name":"David","Last Name":"Jones"}]';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"}]';
                   }#;
               }#
           ];
         }
       ];
     },
-    lastNameFilterAcrossSetsSuite:
+    includeFilterSuite:
     {
-      // Filters across the mixed Relation+Relational union on lastName (a plain
-      // passthrough column, in the outer project() list), matching one row from EACH
-      // leg — Green from rfSet (Relation), White from relSet (Relational). Mirrors
-      // testUnionOfRelationAndRelational_FilterAcrossSets. Deliberately does NOT add an
-      // association hop off the union root: testUnionRelationAndRelational_FilterToFirm
-      // / ...ProjectThroughFirm / ...FilterFromFirm in testRelationUnionAdvanced.pure are
-      // ALL <<test.ToFix>> — association traversal off a mixed Relation+Relational union
-      // is blocked in both directions, confirmed (not just suspected) before writing this.
       function: |demo::relation::domain::Employee.all()
-                  ->filter(e | $e.lastName->in(['Green', 'White']))
+                  ->filter(e | $e.active == true)
                   ->sortBy(x | $x.firstName)
                   ->project(
-                    [x | $x.firstName, x | $x.lastName],
-                    ['First Name', 'Last Name']
+                    [x | $x.firstName],
+                    ['First Name']
                   );
       tests:
       [
-        oneRowFromEachLeg:
+        activeOnlyThroughInclude:
         {
           data:
           [
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeMixedUnionData
+                demo::relation::data::EmployeeIncludeData
               }#
           ];
           asserts:
           [
-            shouldFilterAcrossMixedSetsOnProjectedColumn:
+            shouldFilterThroughIncludedMapping:
               EqualToJson
               #{
                 expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Carol","Last Name":"White"}]';
+                    data: '[{"First Name":"Alice"},{"First Name":"Bob"}]';
                   }#;
               }#
           ];

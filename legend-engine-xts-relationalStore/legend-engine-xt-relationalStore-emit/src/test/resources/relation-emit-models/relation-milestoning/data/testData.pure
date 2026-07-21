@@ -30,3 +30,18 @@ Data demo::relation::data::TemporalEmployeeData
       3,Carol,60000.0,2023-01-01,2024-01-01;
   }#
 }
+
+// Same shape as TemporalEmployeeData (processing-temporal), mirrored for the
+// business-temporal scheme: Dave/Eve open-ended, Frank closed 2023-01-01..2024-01-01.
+###Data
+Data demo::relation::data::BusinessTemporalEmployeeData
+{
+  Relation
+  #{
+    default.BusinessTemporalEmployeeTable:
+      ID,FIRST_NAME,SALARY,FROM_Z,THRU_Z
+      1,Dave,95000.0,2024-01-01,9999-12-31
+      2,Eve,80000.0,2024-06-01,9999-12-31
+      3,Frank,65000.0,2023-01-01,2024-01-01;
+  }#
+}

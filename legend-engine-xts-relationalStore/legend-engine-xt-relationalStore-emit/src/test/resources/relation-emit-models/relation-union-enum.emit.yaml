@@ -1,0 +1,53 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-union-enum
+title: "Relation Function Mapping — Union with Enum Filter and Embedded Property"
+description: |
+  Two Relation-mapped union legs (contractSet, fullTimeSet) both declare the same
+  EmployeeType EnumerationMapping and the same embedded address(street, city)
+  property, on ExtendedEmployee. Both filtering by enum value and projecting/filtering
+  on the embedded property work across the union — neither touches the documented
+  unionBase.ACTIVE SQL-gen bug (that bug is specific to expression-derived,
+  non-projected boolean properties, not enums or embedded structs).
+
+modelSources:
+  model:
+    root: relation-union-enum
+    files:
+      - mapping/unionEnumMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:relation-union
+  - grammar:enumeration-mapping
+  - grammar:embedded-relation
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: complex
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - union
+  - enumeration
+  - embedded

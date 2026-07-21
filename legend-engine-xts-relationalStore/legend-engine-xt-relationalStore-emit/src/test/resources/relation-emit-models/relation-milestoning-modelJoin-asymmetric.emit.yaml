@@ -1,0 +1,55 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-milestoning-modelJoin-asymmetric
+title: "ModelJoin Between Business-Temporal and Processing-Temporal Relation Classes"
+description: |
+  A single-hop ModelJoin directly between BusinessTemporalEmployee (business-temporal)
+  and TemporalEmployee (processing-temporal), both Relation-mapped, matched by id.
+  Mirrors testModelJoinMilestoning.pure::testMilestoningDiffScheme's shape (two
+  different milestoning schemes joined together), simplified to always-temporally-valid
+  test data on both sides — this model proves the cross-scheme ModelJoin mechanism
+  works, not the full null-propagation matrix (that stays unit-test-only breadth per
+  the "one or two representative uses, not the whole matrix" principle). The
+  same-scheme variant (two classes of the identical milestoning type) is out of scope
+  for this pass — it would require a second class of the same temporal type beyond
+  what the shared fixtures currently provide.
+
+modelSources:
+  model:
+    root: relation-milestoning-modelJoin-asymmetric
+    files:
+      - mapping/asymmetricMilestoningMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:milestoning
+  - store:relation-model-join
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: complex
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - milestoning
+  - modeljoin

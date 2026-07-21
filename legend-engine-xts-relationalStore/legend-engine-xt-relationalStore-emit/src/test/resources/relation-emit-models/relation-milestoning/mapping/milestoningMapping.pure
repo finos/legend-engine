@@ -25,12 +25,25 @@ function demo::relation::func::temporalEmployees(): meta::pure::metamodel::relat
   #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
 }
 
+function demo::relation::func::businessTemporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
+}
+
 ###Mapping
 Mapping demo::relation::mapping::TemporalEmployeeMapping
 (
   *demo::relation::domain::TemporalEmployee: Relation
   {
     ~func demo::relation::func::temporalEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  *demo::relation::domain::BusinessTemporalEmployee: Relation
+  {
+    ~func demo::relation::func::businessTemporalEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     salary: SALARY
@@ -104,6 +117,121 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"First Name":"Alice"},{"First Name":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    allVersionsInRangeSuite:
+    {
+      // Range (2023-06-01, 2024-02-01) includes Alice (IN=2024-01-01, before the range
+      // end) and Carol (whose 2023-01-01..2024-01-01 window overlaps the range start),
+      // but excludes Bob (IN=2024-06-01, after the range end) — a distinct result from
+      // both allVersionsSuite (all 3) and pointInTimeSuite (Alice+Bob).
+      function: |demo::relation::domain::TemporalEmployee.allVersionsInRange(%2023-06-01, %2024-02-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        versionsOverlappingRange:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::TemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnVersionsOverlappingRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice"},{"First Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    businessTemporalPointInTimeSuite:
+    {
+      // Same shape as pointInTimeSuite above, but for the business-temporal class
+      // (FROM_Z/THRU_Z) added in Wave 0, proving the second milestoning scheme works
+      // end-to-end in the same model.
+      function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        activeAtDate:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::BusinessTemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterByBusinessDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Dave"},{"First Name":"Eve"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    businessTemporalAllVersionsInRangeSuite:
+    {
+      function: |demo::relation::domain::BusinessTemporalEmployee.allVersionsInRange(%2023-06-01, %2024-02-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName],
+                    ['First Name']
+                  );
+      tests:
+      [
+        versionsOverlappingRange:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::BusinessTemporalEmployeeData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnVersionsOverlappingRange:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Dave"},{"First Name":"Frank"}]';
                   }#;
               }#
           ];

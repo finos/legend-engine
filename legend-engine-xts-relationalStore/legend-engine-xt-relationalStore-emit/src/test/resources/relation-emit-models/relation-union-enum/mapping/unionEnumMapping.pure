@@ -1,0 +1,203 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Uses ExtendedEmployee (not the shared Employee) so the embedded address property is
+// available without touching the shared Employee class.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::unionEnumContractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    ->filter(r | $r.EMP_TYPE == 'CONTRACT')
+}
+
+function demo::relation::func::unionEnumFullTimeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    ->filter(r | $r.EMP_TYPE == 'FULL_TIME')
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::EmployeeUnionEnumMapping
+(
+  *demo::relation::domain::ExtendedEmployee: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(contractSet, fullTimeSet)
+  }
+
+  demo::relation::domain::ExtendedEmployee[contractSet]: Relation
+  {
+    ~func demo::relation::func::unionEnumContractEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+
+  demo::relation::domain::ExtendedEmployee[fullTimeSet]: Relation
+  {
+    ~func demo::relation::func::unionEnumFullTimeEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  testSuites:
+  [
+    enumFilterAcrossUnionSuite:
+    {
+      // Mirrors testUnionTwoRelationMappings_EnumFilter: filtering by the SAME
+      // EnumerationMapping declared independently in both legs.
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->filter(e | $e.employeeType == demo::relation::domain::EmployeeType.FULL_TIME)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.employeeType->toString()],
+                    ['Name', 'Type']
+                  );
+      tests:
+      [
+        fullTimeAcrossUnion:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeUnionEnumData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterByEnumAcrossUnion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Carol","Type":"FULL_TIME"},{"Name":"David","Type":"FULL_TIME"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    embeddedProjectAcrossUnionSuite:
+    {
+      // Mirrors testUnionTwoRelationMappings_EmbeddedFirmProject's shape (embedded
+      // property projected uniformly across both union legs), substituting the
+      // embedded address for the reference's embedded firm.
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.address.city],
+                    ['Name', 'City']
+                  );
+      tests:
+      [
+        allCitiesAcrossUnion:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeUnionEnumData
+              }#
+          ];
+          asserts:
+          [
+            shouldProjectEmbeddedPropertyAcrossUnion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","City":"London"},{"Name":"Bob","City":"Paris"},{"Name":"Carol","City":"Berlin"},{"Name":"David","City":"London"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    embeddedFilterAcrossUnionSuite:
+    {
+      // Filtering on the embedded property across the union — matches one row from
+      // EACH leg (Alice from contractSet, David from fullTimeSet), both in London.
+      function: |demo::relation::domain::ExtendedEmployee.all()
+                  ->filter(e | $e.address.city == 'London')
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.address.city],
+                    ['Name', 'City']
+                  );
+      tests:
+      [
+        londonAcrossBothLegs:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeUnionEnumData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterEmbeddedPropertyAcrossUnion:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","City":"London"},{"Name":"David","City":"London"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

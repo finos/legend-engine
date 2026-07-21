@@ -104,6 +104,48 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
           ];
         }
       ];
+    },
+    lastNameFilterAcrossSetsSuite:
+    {
+      // Filters on lastName — a plain passthrough column that IS part of the outer
+      // project() list — matching one row from EACH leg (Green from contractSet, White
+      // from fullTimeSet), unlike the removed activeFilterSuite above. Mirrors
+      // testUnionOfTwoRelationMappings_FilterAcrossSets's exact shape
+      // ($p.lastName->in([...])).
+      function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.lastName->in(['Green', 'White']))
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.lastName],
+                    ['First Name', 'Last Name']
+                  );
+      tests:
+      [
+        oneRowFromEachLeg:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeUnionData
+              }#
+          ];
+          asserts:
+          [
+            shouldFilterAcrossBothLegsOnProjectedColumn:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Carol","Last Name":"White"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
     }
     // activeFilterSuite (filter on `active` — an expression-derived boolean, $src.ACTIVE == 1 —
     // that is NOT part of the outer project()) was removed: it hits a genuine SQL-generation

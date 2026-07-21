@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Both temporal tables here use DATE (not TIMESTAMP) milestoning columns — matching
+// this repo's existing TemporalEmployeeTable/BusinessTemporalEmployeeTable schemas —
+// so both sides are navigated with a plain %date argument (not the date-vs-datetime
+// asymmetry the reference unit test also exercises, which doesn't apply to our schema).
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::EmployeeTemporalLink
+{
+  businessRecord: demo::relation::domain::BusinessTemporalEmployee[1];
+  processingRecord: demo::relation::domain::TemporalEmployee[1];
+}
+
+function demo::relation::func::asymmetricBusinessEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
+}
+
+function demo::relation::func::asymmetricProcessingEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
+(
+  *demo::relation::domain::BusinessTemporalEmployee[biz]: Relation
+  {
+    ~func demo::relation::func::asymmetricBusinessEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  *demo::relation::domain::TemporalEmployee[proc]: Relation
+  {
+    ~func demo::relation::func::asymmetricProcessingEmployees():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    salary: SALARY
+  }
+
+  demo::relation::domain::EmployeeTemporalLink: ModelJoin
+  {
+    {businessRecord: demo::relation::domain::BusinessTemporalEmployee[1], processingRecord: demo::relation::domain::TemporalEmployee[1] | $businessRecord.id == $processingRecord.id}
+  }
+
+  testSuites:
+  [
+    diffSchemeModelJoinSuite:
+    {
+      // BusinessTemporalEmployee.all(%date) queries the business-temporal endpoint;
+      // navigating .processingRecord(%date) queries the processing-temporal endpoint at
+      // its own as-of date, through the same ModelJoin. Both employees are temporally
+      // valid on both sides at the query date, so both sides' names match.
+      function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.processingRecord(%2025-01-01).firstName],
+                    ['BizName', 'ProcName']
+                  );
+      tests:
+      [
+        crossSchemeModelJoinAtDate:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::AsymmetricMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            shouldJoinAcrossDifferentMilestoningSchemes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"BizName":"Alice","ProcName":"Alice"},{"BizName":"Bob","ProcName":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
