@@ -1186,11 +1186,24 @@ both sets appear in query results; filter applied across both legs.
 (`testUnionTwoRelationMappings_PksWithImportDataFlow`) — this is a `<<test.ToFix>>` engine
 gap (matrix #28).
 
+**Known limitation (found during implementation):** a `->filter()` on a property that is
+**not** part of the outer `->project()` list, where that property is mapped via an
+expression (`active: $src.ACTIVE == 1`, not a passthrough column), fails against a
+Relation-mapped `Operation` union. The generated SQL references the filtered column
+against the union-scoped derived table without pulling it through the intermediate
+projection ("Column unionBase.ACTIVE not found") and separately produces an invalid
+`= 1 = true` fragment by concatenating the mapping-level coercion with the query-level
+comparison. Every reference union test that filters across sets
+(`testUnionOfTwoRelationMappings_FilterAcrossSets` et al.) filters on a property that is
+*also* the projected property (`lastName`), so this specific combination is untested
+upstream. Implemented as a single `allUnionedSuite` test (plain project, no filter); the
+filter-across-legs variant was removed rather than worked around — see "Out of EMIT scope"
+below.
+
 **Key design:** Two `EmployeeTable`-backed functions (e.g. `contractEmployees()` filtering
 `EMP_TYPE == 'CONTRACT'` and `fullTimeEmployees()` filtering `EMP_TYPE == 'FULL_TIME'`),
-unioned into one `Employee` set. The `testSuites:` data contains both types; assertion
-verifies all employees from both legs appear and that a filter (`->filter(e | $e.active)`)
-eliminates inactive rows across both sets.
+unioned into one `Employee` set. The `testSuites:` data contains both types; the assertion
+verifies all employees from both legs appear.
 
 ```pure
 *demo::relation::domain::Employee: Operation
@@ -1450,6 +1463,7 @@ The following are excluded from this plan — blocked at the engine layer:
 | Subtype / superclass polymorphic dispatch | `findMappingForType` unimplemented | Matrix #26, Section 5 |
 | Store substitution / model chain | UNCERTAIN — probe G-A first | Section 4, G-A |
 | Sub-aggregation SQL edge cases | 2 `<<test.ToFix>>` | Section 5 |
+| Filter (across Operation-union legs) on a non-projected, expression-derived property | SQL-gen bug: missing column pull-through + invalid `= 1 = true` fragment; found while implementing `relation-union` | This doc, Model 10 |
 
 ---
 

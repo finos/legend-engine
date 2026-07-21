@@ -20,7 +20,7 @@ Data demo::relation::data::EmployeeFirmData
     default.EmployeeTable:
       ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
       1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
-      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris;
     default.FirmTable:
       ID,LEGAL_NAME
       1,Acme
