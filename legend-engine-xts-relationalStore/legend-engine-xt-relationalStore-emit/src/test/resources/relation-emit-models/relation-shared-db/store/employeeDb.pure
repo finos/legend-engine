@@ -26,13 +26,23 @@ Database demo::relation::db::EmployeeDB
     HIRE_DATE  TIMESTAMP NOT NULL,
     SALARY     FLOAT,
     STREET     VARCHAR(100) NOT NULL,
-    CITY       VARCHAR(100) NOT NULL
+    CITY       VARCHAR(100) NOT NULL,
+    DEPARTMENT_ID  INTEGER,
+    ACTIVE_STATUS  VARCHAR(20)
   )
 
   Table FirmTable
   (
     ID         INTEGER PRIMARY KEY,
     LEGAL_NAME VARCHAR(100) NOT NULL
+  )
+
+  Table DepartmentTable
+  (
+    ID         INTEGER PRIMARY KEY,
+    FIRM_ID    INTEGER NOT NULL,
+    NAME       VARCHAR(100) NOT NULL,
+    CODE       VARCHAR(20) NOT NULL
   )
 
   Table PositionTable
@@ -63,8 +73,23 @@ Database demo::relation::db::EmployeeDB
     OUT_Z      DATE NOT NULL
   )
 
+  Table BusinessTemporalEmployeeTable
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+    ID         INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100) NOT NULL,
+    SALARY     FLOAT,
+    FROM_Z     DATE NOT NULL,
+    THRU_Z     DATE NOT NULL
+  )
+
   Join EmployeeFirmJoin(EmployeeTable.FIRM_ID = FirmTable.ID)
   Join PositionProductJoin(PositionTable.PRODUCT_ID = ProductTable.ID)
+  Join FirmDepartmentJoin(FirmTable.ID = DepartmentTable.FIRM_ID)
+  Join DepartmentEmployeeJoin(DepartmentTable.ID = EmployeeTable.DEPARTMENT_ID)
 
   Filter FullTimeFilter(EmployeeTable.EMP_TYPE = 'FULL_TIME')
 )

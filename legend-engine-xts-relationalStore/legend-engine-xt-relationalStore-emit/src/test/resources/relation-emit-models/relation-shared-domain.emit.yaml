@@ -32,6 +32,9 @@ modelSources:
       - model/address.pure
       - model/extendedEmployee.pure
       - model/temporalEmployee.pure
+      - model/department.pure
+      - model/activeStatus.pure
+      - model/businessTemporalEmployee.pure
 
 features:
   - scaffolding:class

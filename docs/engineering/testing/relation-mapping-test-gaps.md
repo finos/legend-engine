@@ -183,7 +183,7 @@ Reference base: classic `Relational` tests under `.../relational/tests/mapping/`
 | 26 | Subtype / inheritance | Y | Direct: Y · Superclass: ToFix | — | MIXED (NEW_DEV) |
 | 27 | Mapping extension (`extends [setId]`) | Y | N (deleted) | Y (roundtrip) | **NEW_DEV** |
 | 28 | Union `importDataFlow` / PK discriminator | Y | 1 ToFix | — | **NEW_DEV** |
-| 29 | Graph fetch (`->graphFetch()/serialize()`) | Y | Y (coverage) | — | DONE |
+| 29 | Graph fetch (`->graphFetch()/serialize()`) | Y | N (only classic-embedded mapping tests use `graphFetch`; zero occurrences under `mapping/relation/`) | — | **UNCERTAIN** |
 | 30 | Model chain / store substitution | Y | Partial (include only) | — | UNCERTAIN |
 | 31 | Service + plan generation | Y (EMIT) | N | — | TEST_ONLY (EMIT) |
 | 32 | testSuites / Testables ("Run Tests") | Y | N (SPI stub) | (compile) | **NEW_DEV** |
