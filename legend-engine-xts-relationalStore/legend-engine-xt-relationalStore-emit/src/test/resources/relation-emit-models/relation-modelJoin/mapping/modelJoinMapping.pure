@@ -21,9 +21,14 @@
 ###Pure
 import meta::pure::metamodel::relation::*;
 
+// ->distinct() with no explicit keys dedupes on the full row. The existing
+// EmployeeModelJoinData has no duplicate rows, so this is a no-op there; the new
+// distinctSuite below supplies data with an intentional exact-duplicate row to make
+// the dedup effect visible.
 function demo::relation::func::modelJoinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.EmployeeTable}#
+    ->distinct()
 }
 
 function demo::relation::func::modelJoinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
@@ -99,6 +104,45 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    distinctSuite:
+    {
+      // EmployeeDistinctData carries an exact-duplicate Alice row (same ID, same every
+      // column). ->distinct() in the function body dedupes it before the ModelJoin
+      // association is ever resolved, so the result still has exactly one Alice.
+      function: |demo::relation::domain::Employee.all()
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.employer.legalName],
+                    ['Name', 'Firm']
+                  );
+      tests:
+      [
+        duplicateRowDeduped:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeDistinctData
+              }#
+          ];
+          asserts:
+          [
+            shouldDedupeBeforeModelJoin:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Firm":"Acme"}]';
                   }#;
               }#
           ];

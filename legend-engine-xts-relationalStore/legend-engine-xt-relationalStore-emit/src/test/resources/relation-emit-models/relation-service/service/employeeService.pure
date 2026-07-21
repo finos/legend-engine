@@ -16,16 +16,17 @@
 Service demo::relation::service::EmployeeService
 {
   pattern: '/api/relation/employees';
-  documentation: 'List all employees via relation mapping.';
+  documentation: 'Count of employees per employeeType via relation mapping.';
   autoActivateUpdates: true;
   execution: Single
   {
+    // Aggregating query (project -> groupBy) rather than a flat projection, so this
+    // service's PLAN_GENERATION is exercised for a query shape richer than a plain
+    // project — count of employees per employeeType.
     query: |demo::relation::domain::Employee.all()
-              ->sortBy(x | $x.firstName)
-              ->project(
-                [x | $x.firstName, x | $x.lastName],
-                ['First Name', 'Last Name']
-              );
+              ->project(~[type: x | $x.employeeType->toString(), name: x | $x.firstName])
+              ->groupBy(~type, ~headcount: x | $x.name : y | $y->count())
+              ->sort([~type->ascending()]);
     mapping: demo::relation::mapping::EmployeeSimpleMapping;
     runtime: demo::relation::runtime::EmployeeRuntime;
   }
@@ -61,7 +62,7 @@ Service demo::relation::service::EmployeeService
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"}]';
+                    data: '[{"type":"CONTRACT","headcount":1},{"type":"FULL_TIME","headcount":1}]';
                   }#;
               }#
           ]

@@ -16,10 +16,17 @@
 import meta::pure::functions::relation::*;
 import meta::pure::metamodel::relation::*;
 
+// ->filter() before ->groupBy() excludes zero-quantity rows from the aggregation
+// entirely (a real-world "don't aggregate no-op positions" case), combined with a
+// second aggregate (AVG_QTY) alongside the existing sum.
 function demo::relation::func::positions(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.PositionTable}#
-    ->groupBy(~[GSN, PRODUCT_ID], ~[TOTAL_QTY: x | $x.QTY : y | $y->sum()])
+    ->filter(r | $r.QTY > 0)
+    ->groupBy(~[GSN, PRODUCT_ID], ~[
+      TOTAL_QTY: x | $x.QTY : y | $y->sum(),
+      AVG_QTY: x | $x.QTY : y | $y->average()
+    ])
 }
 
 ###Mapping
@@ -32,7 +39,8 @@ Mapping demo::relation::mapping::PositionGroupByMapping
     ~func demo::relation::func::positions():Relation<Any>[1]
     gsn: GSN,
     productId: PRODUCT_ID,
-    totalQty: TOTAL_QTY
+    totalQty: TOTAL_QTY,
+    avgQty: AVG_QTY
   }
 
   testSuites:
@@ -67,6 +75,45 @@ Mapping demo::relation::mapping::PositionGroupByMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    multiAggregateSuite:
+    {
+      // Same aggregated groups as groupBySuite (the QTY=0 sentinel row added to
+      // PositionData is excluded by the ->filter() in the function body either way),
+      // but this testSuite also projects the second aggregate (avgQty).
+      function: |demo::relation::domain::Position.all()
+                  ->sortBy(x | $x.gsn)
+                  ->project(
+                    [x | $x.gsn, x | $x.productId, x | $x.totalQty, x | $x.avgQty],
+                    ['GSN', 'Product ID', 'Total Qty', 'Avg Qty']
+                  );
+      tests:
+      [
+        multipleAggregatesWithPreFilter:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::PositionData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregateWithAverageAndExcludeZeroQty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300,"Avg Qty":150.0},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8,"Avg Qty":4.0}]';
                   }#;
               }#
           ];

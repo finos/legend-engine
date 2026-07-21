@@ -118,6 +118,45 @@ Mapping demo::relation::mapping::EmployeeFilterMapping
           ];
         }
       ];
+    },
+    activeCountByTypeSuite:
+    {
+      // Query-level TDS groupBy (a .project(~[...]) producing named columns, then
+      // ->groupBy(~key, ~agg:...)) over the already-filtered active-only set, combining
+      // the existing in-body filter with the EnumerationMapping-decoded employeeType as
+      // the grouping key. Carol is excluded up front (inactive, per activeEmployees()'s
+      // body filter), so only Alice (FULL_TIME) and Bob (CONTRACT) are counted.
+      function: |demo::relation::domain::Employee.all()
+                  ->project(~[type: x | $x.employeeType->toString(), name: x | $x.firstName])
+                  ->groupBy(~type, ~headcount: x | $x.name : y | $y->count())
+                  ->sort([~type->ascending()]);
+      tests:
+      [
+        oneActiveEmployeePerType:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::EmployeeFilterData
+              }#
+          ];
+          asserts:
+          [
+            shouldCountActiveEmployeesByType:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"type":"CONTRACT","headcount":1},{"type":"FULL_TIME","headcount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
     }
   ]
 )

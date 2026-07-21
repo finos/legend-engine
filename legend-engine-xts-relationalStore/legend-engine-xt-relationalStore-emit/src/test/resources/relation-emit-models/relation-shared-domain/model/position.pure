@@ -18,4 +18,5 @@ Class demo::relation::domain::Position
   gsn: String[1];
   productId: Integer[1];
   totalQty: Integer[1];
+  avgQty: Float[0..1];
 }

@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// ACTIVE_STATUS: Alice and Bob are ACTIVE; Carol is INACTIVE (consistent with her
+// ACTIVE=0 boolean column) — gives twoEnumsAndedSuite a genuine narrowing effect.
 ###Data
 Data demo::relation::data::EmployeeEnumData
 {
   Relation
   #{
     default.EmployeeTable:
-      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
-      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
-      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
-      3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin;
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY,DEPARTMENT_ID,ACTIVE_STATUS
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London,,ACTIVE
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris,,ACTIVE
+      3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin,,INACTIVE;
   }#
 }

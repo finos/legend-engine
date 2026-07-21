@@ -27,3 +27,22 @@ Data demo::relation::data::EmployeeFirmData
       2,Beta;
   }#
 }
+
+// Acme (1) has two employees (Alice, Carol) so the sub-aggregation testSuite has
+// something non-trivial to count/sum; Beta (2) keeps a single employee (Bob).
+###Data
+Data demo::relation::data::EmployeeFirmAggData
+{
+  Relation
+  #{
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
+      3,Carol,White,1,FULL_TIME,1,2019-03-10 00:00:00,60000.0,Pine Rd,Berlin;
+    default.FirmTable:
+      ID,LEGAL_NAME
+      1,Acme
+      2,Beta;
+  }#
+}

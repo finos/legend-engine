@@ -24,3 +24,20 @@ Data demo::relation::data::EmployeeAddressData
       3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin;
   }#
 }
+
+// Separate from EmployeeAddressData so David (a second London employee) doesn't disturb
+// addressCitySuite/londonFilterSuite's existing row-count assertions. David makes the
+// city-headcount grouping non-trivial (London has 2 employees, not 1).
+###Data
+Data demo::relation::data::EmployeeCityHeadcountData
+{
+  Relation
+  #{
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
+      3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin
+      4,David,Jones,2,FULL_TIME,1,2018-05-20 00:00:00,110000.0,High St,London;
+  }#
+}
