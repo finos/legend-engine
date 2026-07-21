@@ -95,7 +95,7 @@ connections:
 connections:
 [
   h2:
-    Relation #{ ... }#
+    Relational #{ ... }#   // NOT `Relation #{ ... }#` — see rule 0b2 below
 ]
 ```
 
@@ -105,12 +105,46 @@ connections:
 connections:
 [
   EmployeeH2Connection:   // element name, not the runtime id — will not match
-    Relation #{ ... }#
+    Relational #{ ... }#
 ]
 ```
 
 Reference: `relational-service/service/personService.pure` uses `h2:` as the key, and
 `relational-service/runtime/personRuntime.pure` maps `h2: demo::connection::PersonH2Connection`.
+
+### 0b2. Service testSuite connection data must use `Relational #{…}#` (CSV-string), not `Relation #{…}#` (TDS)
+
+A `Service` testSuite's connection-keyed `data:` block (`connections: [ id: … ]`) is wired
+via `TestConnectionBuilder.visit(Connection)`, which calls
+`RelationalConnectionFactory.tryBuildTestConnection(Connection, List<EmbeddedData>, …)`. That
+overload only recognises `RelationalCSVData` (the classic `Relational #{ 'col1,col2\n' +
+'1,val\n'; }#` string-CSV form) — it never converts `RelationElementsData` (the `Relation
+#{ col1,col2 \n 1,val }#` TDS form used everywhere else in these EMIT models). Using
+`Relation #{…}#` in a service connections block fails at TEST_EXECUTION with
+`UnsupportedOperationException: Unsupported test data type 'RelationElementsData' with
+connection type 'RelationalDatabaseConnection'`.
+
+The `RelationElementsData` → `RelationalCSVData` conversion (`buildRelationCSVDataFromRelationElementData`)
+only exists on the **store-keyed** overloads (`tryBuildConnectionForStoreData`,
+`tryBuildTestConnectionsForStore`) used by *mapping*-level testSuites (`data: [
+demo::relation::db::EmployeeDB: Reference #{…}# ]` or a bare `Relation #{…}#` against the
+Database). That asymmetry is why `relation-simple`'s mapping testSuite works with `Relation
+#{…}#` but `relation-service`'s service testSuite does not — always use `Relational
+#{…}#` (CSV-string) for a Service's connection-keyed data:
+
+```pure
+connections:
+[
+  h2:
+    Relational
+    #{
+      default.EmployeeTable:
+        'ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY\n' +
+        '1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London\n' +
+        '2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris\n';
+    }#
+]
+```
 
 ### 0c. Relation functions live in the mapping file, referenced by mangled name
 
@@ -713,11 +747,12 @@ Service demo::relation::service::EmployeeService
         connections:
         [
           h2:                    // must match the id in the Runtime connections map
-            Relation
+            Relational             // NOT `Relation` — see rule 0b2
             #{
-              default.EmployeeTable: ID, FIRST_NAME, LAST_NAME, FIRM_ID, EMP_TYPE, ACTIVE, HIRE_DATE, SALARY
-                1, 'Alice', 'Green', 1, 'FULL_TIME', 1, '2020-01-15 00:00:00', 90000.0
-                2, 'Bob', 'Smith', 2, 'CONTRACT', 1, '2021-06-01 00:00:00', 75000.0
+              default.EmployeeTable:
+                'ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY\n' +
+                '1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0\n' +
+                '2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0\n';
             }#
         ]
       ]
