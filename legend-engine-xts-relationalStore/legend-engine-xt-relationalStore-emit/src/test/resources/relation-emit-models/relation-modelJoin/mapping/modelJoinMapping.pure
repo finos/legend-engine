@@ -21,14 +21,9 @@
 ###Pure
 import meta::pure::metamodel::relation::*;
 
-// ->distinct() with no explicit keys dedupes on the full row. The existing
-// EmployeeModelJoinData has no duplicate rows, so this is a no-op there; the new
-// distinctSuite below supplies data with an intentional exact-duplicate row to make
-// the dedup effect visible.
 function demo::relation::func::modelJoinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->distinct()
 }
 
 function demo::relation::func::modelJoinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
@@ -110,12 +105,14 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
         }
       ];
     },
-    distinctSuite:
+    firmFilterSuite:
     {
-      // EmployeeDistinctData carries an exact-duplicate Alice row (same ID, same every
-      // column). ->distinct() in the function body dedupes it before the ModelJoin
-      // association is ever resolved, so the result still has exactly one Alice.
+      // Filter on a property reached through the ModelJoin traversal itself
+      // ($e.employer.legalName), rather than on a raw column — mirrors
+      // relationCoverageLocalProperty.pure::testLocalPropertyFilter's shape
+      // ($p.firm.legalName == 'Firm X'), applied here via ModelJoin instead of XStore.
       function: |demo::relation::domain::Employee.all()
+                  ->filter(e | $e.employer.legalName == 'Acme')
                   ->sortBy(x | $x.firstName)
                   ->project(
                     [x | $x.firstName, x | $x.employer.legalName],
@@ -123,19 +120,19 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
                   );
       tests:
       [
-        duplicateRowDeduped:
+        acmeOnly:
         {
           data:
           [
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeDistinctData
+                demo::relation::data::EmployeeModelJoinData
               }#
           ];
           asserts:
           [
-            shouldDedupeBeforeModelJoin:
+            shouldFilterOnModelJoinTraversedProperty:
               EqualToJson
               #{
                 expected:
