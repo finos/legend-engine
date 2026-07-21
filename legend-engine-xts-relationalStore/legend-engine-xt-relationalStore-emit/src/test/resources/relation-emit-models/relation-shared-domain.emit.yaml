@@ -35,6 +35,7 @@ modelSources:
       - model/department.pure
       - model/activeStatus.pure
       - model/businessTemporalEmployee.pure
+      - model/temporalDepartment.pure
 
 features:
   - scaffolding:class

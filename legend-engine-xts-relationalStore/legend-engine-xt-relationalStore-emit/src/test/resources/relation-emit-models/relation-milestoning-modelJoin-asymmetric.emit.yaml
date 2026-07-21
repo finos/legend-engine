@@ -13,18 +13,20 @@
 # limitations under the License.
 
 name: relation-milestoning-modelJoin-asymmetric
-title: "ModelJoin Between Business-Temporal and Processing-Temporal Relation Classes"
+title: "ModelJoin Across Milestoning Schemes — Diff-Scheme and Same-Scheme"
 description: |
-  A single-hop ModelJoin directly between BusinessTemporalEmployee (business-temporal)
-  and TemporalEmployee (processing-temporal), both Relation-mapped, matched by id.
-  Mirrors testModelJoinMilestoning.pure::testMilestoningDiffScheme's shape (two
-  different milestoning schemes joined together), simplified to always-temporally-valid
-  test data on both sides — this model proves the cross-scheme ModelJoin mechanism
-  works, not the full null-propagation matrix (that stays unit-test-only breadth per
-  the "one or two representative uses, not the whole matrix" principle). The
-  same-scheme variant (two classes of the identical milestoning type) is out of scope
-  for this pass — it would require a second class of the same temporal type beyond
-  what the shared fixtures currently provide.
+  Two single-hop ModelJoin combinations between milestoned Relation-mapped classes:
+  (1) diffSchemeModelJoinSuite — BusinessTemporalEmployee (business-temporal) <->
+  TemporalEmployee (processing-temporal), matched by id, mirroring
+  testModelJoinMilestoning.pure::testMilestoningDiffScheme's shape. (2)
+  sameSchemeModelJoinSuite — TemporalEmployee <-> TemporalDepartment, both
+  processing-temporal, matched by a real employeeId FK, mirroring
+  testMilestoningSameScheme's shape of querying each side at its own independent
+  as-of date. Both suites use simplified, deliberately-small test data (not the full
+  null-propagation matrix, which stays unit-test-only breadth per the "one or two
+  representative uses, not the whole matrix" principle) but the same-scheme suite's
+  data does include a mid-window version change specifically to prove the two dates
+  are resolved independently, not just that same-scheme joins compile.
 
 modelSources:
   model:

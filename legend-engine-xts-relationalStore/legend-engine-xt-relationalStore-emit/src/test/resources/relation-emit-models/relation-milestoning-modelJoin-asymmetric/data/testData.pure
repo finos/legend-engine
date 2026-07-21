@@ -29,3 +29,22 @@ Data demo::relation::data::AsymmetricMilestoningData
       2,Bob,75000.0,2024-06-01,9999-12-31;
   }#
 }
+
+// Alice's department is renamed between 2025-03-01 (Engineering -> Platform Engineering);
+// Bob's department has a single, always-valid version. Both employees are valid throughout.
+###Data
+Data demo::relation::data::SameSchemeMilestoningData
+{
+  Relation
+  #{
+    default.TemporalEmployeeTable:
+      ID,FIRST_NAME,SALARY,IN_Z,OUT_Z
+      1,Alice,90000.0,2024-01-01,9999-12-31
+      2,Bob,75000.0,2024-01-01,9999-12-31;
+    default.TemporalDepartmentTable:
+      ID,NAME,EMPLOYEE_ID,IN_Z,OUT_Z
+      10,Engineering,1,2024-01-01,2025-03-01
+      11,Platform Engineering,1,2025-03-01,9999-12-31
+      20,Marketing,2,2024-01-01,9999-12-31;
+  }#
+}

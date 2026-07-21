@@ -25,9 +25,11 @@ description: |
   row resolves — unlike the reference unit test, this model does not exercise the
   TDSNull-for-no-match path, since no existing EMIT model has proven how a
   Relation-mapped ModelJoin's unmatched leg serializes to JSON, and reproducing that
-  specific edge case isn't necessary to demonstrate the chaining mechanism itself.
-  Deliberately excludes union, milestoning, and sub-aggregation — this is already a
-  two-hop combination on its own.
+  specific edge case isn't necessary to demonstrate the chaining mechanism itself. A
+  third testSuite (chainedAggregationSuite) sub-aggregates ($firm.departments.staff->count())
+  across both chained hops in one collection expression, extending relation-join's
+  single-hop sub-aggregation pattern to this model's 2-hop chain. Still deliberately
+  excludes union and milestoning — this is already a rich combination on its own.
 
 modelSources:
   model:

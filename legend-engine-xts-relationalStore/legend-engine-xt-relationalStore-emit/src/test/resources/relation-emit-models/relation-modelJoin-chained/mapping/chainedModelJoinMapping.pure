@@ -167,6 +167,47 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
           ];
         }
       ];
+    },
+    chainedAggregationSuite:
+    {
+      // Sub-aggregates over BOTH chained ModelJoin hops in one collection expression
+      // ($firm.departments.staff, flattening the 2-hop to-many chain), extending
+      // relation-join's single-hop subAggregationSuite pattern to a 2-hop chain.
+      function: |demo::relation::domain::Firm.all()
+                  ->sortBy(x | $x.legalName)
+                  ->project(
+                    ~[
+                      name: x | $x.legalName,
+                      headcount: x | $x.departments.staff->count()
+                    ]
+                  );
+      tests:
+      [
+        headcountAcrossTwoHops:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::ChainedModelJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldCountStaffAcrossChainedHops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Acme","headcount":3},{"name":"Beta","headcount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
     }
   ]
 )

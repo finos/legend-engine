@@ -26,6 +26,13 @@ Association demo::relation::domain::EmployeeTemporalLink
   processingRecord: demo::relation::domain::TemporalEmployee[1];
 }
 
+// Same-scheme link: both TemporalEmployee and TemporalDepartment are processing-temporal.
+Association demo::relation::domain::EmployeeDepartmentSameScheme
+{
+  employee: demo::relation::domain::TemporalEmployee[1];
+  department: demo::relation::domain::TemporalDepartment[1];
+}
+
 function demo::relation::func::asymmetricBusinessEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
@@ -34,6 +41,11 @@ function demo::relation::func::asymmetricBusinessEmployees(): meta::pure::metamo
 function demo::relation::func::asymmetricProcessingEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
+}
+
+function demo::relation::func::sameSchemeDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.TemporalDepartmentTable}#
 }
 
 ###Mapping
@@ -57,9 +69,22 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
     salary: SALARY
   }
 
+  *demo::relation::domain::TemporalDepartment[dept]: Relation
+  {
+    ~func demo::relation::func::sameSchemeDepartments():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    employeeId: EMPLOYEE_ID
+  }
+
   demo::relation::domain::EmployeeTemporalLink: ModelJoin
   {
     {businessRecord: demo::relation::domain::BusinessTemporalEmployee[1], processingRecord: demo::relation::domain::TemporalEmployee[1] | $businessRecord.id == $processingRecord.id}
+  }
+
+  demo::relation::domain::EmployeeDepartmentSameScheme: ModelJoin
+  {
+    {employee: demo::relation::domain::TemporalEmployee[1], department: demo::relation::domain::TemporalDepartment[1] | $employee.id == $department.employeeId}
   }
 
   testSuites:
@@ -98,6 +123,49 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"BizName":"Alice","ProcName":"Alice"},{"BizName":"Bob","ProcName":"Bob"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    sameSchemeModelJoinSuite:
+    {
+      // Both TemporalEmployee and TemporalDepartment are processing-temporal. The employee
+      // side is queried at %2025-01-01, the department side at %2025-06-01 (a LATER date,
+      // deliberately different) — Alice's department is renamed between those two dates
+      // (Engineering -> Platform Engineering on 2025-03-01), so this proves the department
+      // navigation resolves its own independent as-of date rather than reusing the
+      // employee query's date: if it incorrectly reused %2025-01-01, Alice would still show
+      // "Engineering".
+      function: |demo::relation::domain::TemporalEmployee.all(%2025-01-01)
+                  ->sortBy(x | $x.firstName)
+                  ->project(
+                    [x | $x.firstName, x | $x.department(%2025-06-01).name],
+                    ['EmpName', 'DeptName']
+                  );
+      tests:
+      [
+        sameSchemeModelJoinAtIndependentDates:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::SameSchemeMilestoningData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveDepartmentAtItsOwnDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"EmpName":"Alice","DeptName":"Platform Engineering"},{"EmpName":"Bob","DeptName":"Marketing"}]';
                   }#;
               }#
           ];

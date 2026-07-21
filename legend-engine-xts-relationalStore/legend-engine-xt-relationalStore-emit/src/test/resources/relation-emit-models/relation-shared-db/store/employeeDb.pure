@@ -86,6 +86,19 @@ Database demo::relation::db::EmployeeDB
     THRU_Z     DATE NOT NULL
   )
 
+  Table TemporalDepartmentTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+    ID          INTEGER PRIMARY KEY,
+    NAME        VARCHAR(100) NOT NULL,
+    EMPLOYEE_ID INTEGER NOT NULL,
+    IN_Z        DATE NOT NULL,
+    OUT_Z       DATE NOT NULL
+  )
+
   Join EmployeeFirmJoin(EmployeeTable.FIRM_ID = FirmTable.ID)
   Join PositionProductJoin(PositionTable.PRODUCT_ID = ProductTable.ID)
   Join FirmDepartmentJoin(FirmTable.ID = DepartmentTable.FIRM_ID)

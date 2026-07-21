@@ -1,0 +1,56 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-inline-embedded
+title: "Relation Function Mapping — Inline Embedded Property Form"
+description: |
+  Exercises the OTHER embedded-property grammar form: `address () Inline [addressSet]`,
+  which points at a separate sibling class-mapping block for the embedded type sharing the
+  same underlying ~func row source — as opposed to relation-embedded's direct inline form
+  `address(street: STREET, city: CITY)`. Combined with a filter on the embedded property
+  (mirroring relation-embedded's londonFilterSuite) so this isn't a bare single-feature
+  model; employeeType's EnumerationMapping is exercised incidentally too, since it's a
+  required inherited property. Deliberately does NOT combine this embedded form with an
+  association traversal: testInlineEmbeddedRelationMappingWithAssociation has the identical
+  query shape and cross-firm data as testEmbeddedRelationMappingWithAssociation, which is a
+  documented live #4932 XStore->ModelJoin-rewrite regression (firm resolves to TDSNull for
+  cross-firm rows) — both tests are still tagged <<test.Test>>, not <<test.ToFix>>, so that
+  annotation alone isn't evidence either one currently passes.
+
+modelSources:
+  model:
+    root: relation-inline-embedded
+    files:
+      - mapping/inlineEmbeddedMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:embedded-relation-inline
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: complex
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - embedded
+  - inline
