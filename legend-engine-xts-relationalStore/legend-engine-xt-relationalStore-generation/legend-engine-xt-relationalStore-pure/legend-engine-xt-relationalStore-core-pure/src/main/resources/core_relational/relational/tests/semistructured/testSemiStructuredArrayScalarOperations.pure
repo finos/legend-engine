@@ -336,3 +336,85 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::flattening:
     'R3,1,1,GroupA,B3,CREATE,Y3,Unknown,999,Z3,999,L6,2,1,1,1,1\n'
   );
 }
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayInJoinWithFilter(conn: Connection[1]):Boolean[1]
+{
+  // Basic join with primitive String[*] array + filter on the flattened column.
+  // Exercises switchAliasForColumns (inner + outer match arms).
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredPrimitiveArrayInJoinWithFilter__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Last Name,First Name Right,Other Names\n' +
+    'Anthony,Allen,Anthony,O1\n' +
+    'John,Hill,John,O1\n' +
+    'John,Johnson,John,O1\n' +
+    'John,Hill,John,O1\n' +
+    'John,Johnson,John,O1\n' +
+    'Peter,Smith,Peter,O1\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayGroupByAggJoin(conn: Connection[1]):Boolean[1]
+{
+  // User's exact pattern: groupBy(agg) -> join with project containing String[*] array.
+  // Exercises buildCorrelatedSubQuery, extractColumnName, getNewColumnNameWithAlias, switchAliasForColumns.
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredPrimitiveArrayGroupByAggJoin__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Name Count,First Name Right,Other Names\n' +
+    'Anthony,1,Anthony,O1\n' +
+    'Anthony,1,Anthony,O2\n' +
+    'David,1,David,O5\n' +
+    'David,1,David,O6\n' +
+    'Fabrice,1,Fabrice,O3\n' +
+    'Fabrice,1,Fabrice,O4\n' +
+    'John,2,John,O1\n' +
+    'John,2,John,O1\n' +
+    'John,2,John,O2\n' +
+    'John,2,John,O2\n' +
+    'Oliver,1,Oliver,O5\n' +
+    'Oliver,1,Oliver,O6\n' +
+    'Peter,1,Peter,O1\n' +
+    'Peter,1,Peter,O2\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayWithReplace(conn: Connection[1]):Boolean[1]
+{
+  // replace() alongside a primitive String[*] array column in the same project.
+  // Exercises inferRelationalType and the replace DynaFunction type guard.
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredPrimitiveArrayWithReplace__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Last Name Modified,Other Names\n' +
+    'Anthony,Allen,O1\n' +
+    'Anthony,Allen,O2\n' +
+    'David,HarrIs,O5\n' +
+    'David,HarrIs,O6\n' +
+    'Fabrice,Roberts,O3\n' +
+    'Fabrice,Roberts,O4\n' +
+    'John,HIll,O1\n' +
+    'John,HIll,O2\n' +
+    'John,Johnson,O1\n' +
+    'John,Johnson,O2\n' +
+    'Oliver,HIll,O5\n' +
+    'Oliver,HIll,O6\n' +
+    'Peter,SmIth,O1\n' +
+    'Peter,SmIth,O2\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayConcatenate(conn: Connection[1]):Boolean[1]
+{
+  // UNION ALL of two TDS results each containing a primitive String[*] array column.
+  // Exercises processConcatenate column mapping for SemiStructuredArrayFlattenOutput.
+  arrayScalarExecute($conn,
+    'flatten::semiStructuredPrimitiveArrayConcatenate__TabularDataSet_1_',
+    'flatten::mapping::H2Mapping',
+    'First Name,Other Names\n' +
+    'Peter,O1\n' +
+    'Peter,O2\n' +
+    'Fabrice,O3\n' +
+    'Fabrice,O4\n'
+  );
+}

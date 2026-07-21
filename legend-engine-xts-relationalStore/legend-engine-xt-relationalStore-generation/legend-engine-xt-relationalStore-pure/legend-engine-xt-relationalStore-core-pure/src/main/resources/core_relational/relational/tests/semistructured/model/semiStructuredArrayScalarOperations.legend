@@ -461,3 +461,78 @@ function flatten::semiStructuredArrayFilterJoinStringsPrefixSuffix(): TabularDat
         col(x | $x.firm.addresses->filter(a | $a.name->startsWith('A1')).name->joinStrings('[', '-', ']'), 'Matching Address Names')
     ])
 }
+
+// ===== Tests for SemiStructuredArrayFlattenOutput in join/subquery code paths =====
+
+// Exercises switchAliasForColumns (inner + outer match) with a basic join containing a primitive String[*] array,
+// plus filter on the flattened array column to validate the alias was remapped correctly.
+function flatten::semiStructuredPrimitiveArrayInJoinWithFilter(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.lastName, 'Last Name')
+    ])
+    ->join(
+        flatten::model::Person.all()
+        ->project([
+            col(x | $x.firstName, 'First Name Right'),
+            col(x | $x.firm.otherNames, 'Other Names')
+        ]),
+        meta::relational::metamodel::join::JoinType.INNER,
+        {a, b | $a.getString('First Name') == $b.getString('First Name Right')}
+    )
+    ->filter(row | $row.getString('Other Names') == 'O1')
+}
+
+// Exercises buildCorrelatedSubQuery, extractColumnName, getNewColumnNameWithAlias, and switchAliasForColumns.
+function flatten::semiStructuredPrimitiveArrayGroupByAggJoin(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->groupBy(
+        [x | $x.firstName],
+        [agg(x | $x.lastName, x | $x->count())],
+        ['First Name', 'Name Count']
+    )
+    ->join(
+        flatten::model::Person.all()
+        ->project([
+            col(x | $x.firstName, 'First Name Right'),
+            col(x | $x.firm.otherNames, 'Other Names')
+        ]),
+        meta::relational::metamodel::join::JoinType.INNER,
+        {a, b | $a.getString('First Name') == $b.getString('First Name Right')}
+    )
+}
+
+// Exercises inferRelationalType and the replace DynaFunction type guard when a primitive String[*] array column
+// coexists with a replace() call in the same project.
+function flatten::semiStructuredPrimitiveArrayWithReplace(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.lastName->replace('i', 'I'), 'Last Name Modified'),
+        col(x | $x.firm.otherNames, 'Other Names')
+    ])
+}
+
+// Exercises processConcatenate column mapping when a SemiStructuredArrayFlattenOutput column
+// appears in a UNION ALL (concatenate) of two TDS results.
+function flatten::semiStructuredPrimitiveArrayConcatenate(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->filter(x | $x.firstName == 'Peter')
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.otherNames, 'Other Names')
+    ])
+    ->concatenate(
+        flatten::model::Person.all()
+        ->filter(x | $x.firstName == 'Fabrice')
+        ->project([
+            col(x | $x.firstName, 'First Name'),
+            col(x | $x.firm.otherNames, 'Other Names')
+        ])
+    )
+}

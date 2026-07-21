@@ -181,6 +181,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
         assert(!$failOnMatchFailure || $type->isNotEmpty(), 'Fail to find type of semi structure array operand');
         $type->head();,
       fl: meta::relational::metamodel::FoldRelationalLambda[1] | $fl.parameters->at(1).value->inferRelationalType($failOnMatchFailure),
+      s: meta::relational::metamodel::relation::SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn.column.type,
       l : Any[1] | if($failOnMatchFailure, | fail('Not supported yet: ' + $l->type()->elementToPath()); ^meta::relational::metamodel::datatype::DataType();, |[]);
    ]);
 }
