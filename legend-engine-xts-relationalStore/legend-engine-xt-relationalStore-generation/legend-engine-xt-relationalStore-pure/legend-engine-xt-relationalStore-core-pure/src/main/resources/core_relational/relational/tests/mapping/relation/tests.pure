@@ -626,6 +626,36 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
+// Polymorphic: querying the superclass Person must resolve to the subtype set
+// (PersonWithEmployeeType, mapped above via EnumerationRelationMapping — that
+// Mapping provides a set implementation only for the subtype, not for Person
+// itself, so this forces the router to dispatch through the superclass).
+// ToFix: relation-mapping subtype dispatch is unimplemented — querying the
+// superclass fails with "Error mapping not found for class Person"
+// (router_routing.pure:584). Unblock once findMappingForType handles
+// RelationFunctionInstanceSetImplementation. Reuses EnumerationRelationMapping
+// and testDB.personTable (same data as testEnumerationMappingProjection above)
+// rather than a dedicated mapping/table.
+function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSubtypeSuperclassQuery():Boolean[1]
+{
+  let result = execute(
+      |Person.all()->project(~[firstName:p|$p.firstName]),
+      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       firstName
+       David
+       Fabrice
+       John
+       Oliver
+    #->toString(),
+    $result.values->at(0)->sort(~firstName->ascending())->toString()
+  );
+}
+
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
 {
    let result = execute(

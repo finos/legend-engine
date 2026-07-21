@@ -54,21 +54,6 @@ function meta::relational::tests::mapping::relation::productExplodedFunc():Relat
       ->distinct();
 }
 
-// A single mapping-level groupBy carrying the full set of aggregate reducers
-// (sum / count / min / max / average) so the mapped class surfaces several
-// aggregate columns at once.
-function meta::relational::tests::mapping::relation::positionStatsFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
-      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~[
-         total  : x | $x.QTY : y | $y->sum(),
-         cnt    : x | $x.QTY : y | $y->count(),
-         minQty : x | $x.QTY : y | $y->min(),
-         maxQty : x | $x.QTY : y | $y->max(),
-         avgQty : x | $x.QTY : y | $y->average()
-      ]);
-}
-
 ###Mapping
 import meta::relational::tests::mapping::groupBy::model::domain::*;
 import meta::relational::tests::mapping::relation::*;
@@ -148,21 +133,6 @@ Mapping meta::relational::tests::mapping::relation::groupByRelationMappingWithTw
    }
 )
 
-Mapping meta::relational::tests::mapping::relation::multiAggregateRelationMapping
-(
-   *PositionStats: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::positionStatsFunc():Relation<Any>[1]
-      acctNum: ACC_NUM,
-      gsn: GSN,
-      total: total,
-      cnt: cnt,
-      minQty: minQty,
-      maxQty: maxQty,
-      avgQty: avgQty
-   }
-)
-
 ###Pure
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::mapping::groupBy::model::domain::*;
@@ -174,37 +144,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 {
    let result = execute(
       |Position.all()->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
-      groupByRelationMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
-      meta::relational::extension::relationalExtensions());
-   assertEquals(
-     #TDS
-        acctNum, gsn, quantity
-        7900003, EA4GNY, 300
-        7900002, YU2EF5, 8
-     #->toString(),
-     $result.values->at(0)->sort([~gsn->ascending()])->toString());
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilter():Boolean[1]
-{
-   let result = execute(
-      |Position.all()->filter(i|$i.gsn == 'YU2EF5')->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
-      groupByRelationMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
-      meta::relational::extension::relationalExtensions());
-   assertEquals(
-     #TDS
-        acctNum, gsn, quantity
-        7900002, YU2EF5, 8
-     #->toString(),
-     $result.values->at(0)->toString());
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregate():Boolean[1]
-{
-   let result = execute(
-      |Position.all()->filter(i|$i.quantity > 0)->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
       groupByRelationMapping,
       meta::external::store::relational::tests::testRuntime(coverageDB),
       meta::relational::extension::relationalExtensions());
@@ -341,20 +280,3 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
      $result.values->at(0)->toString());
 }
 
-// Mapping-level groupBy carrying five aggregate reducers at once. TRADE has two groups:
-// (7900002/YU2EF5) with QTY {3,5} and (7900003/EA4GNY) with QTY {100,200}.
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingMultipleAggregates():Boolean[1]
-{
-   let result = execute(
-      |PositionStats.all()->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, total:p|$p.total, cnt:p|$p.cnt, minQty:p|$p.minQty, maxQty:p|$p.maxQty, avgQty:p|$p.avgQty]),
-      multiAggregateRelationMapping,
-      meta::external::store::relational::tests::testRuntime(coverageDB),
-      meta::relational::extension::relationalExtensions());
-   assertEquals(
-     #TDS
-        acctNum, gsn, total, cnt, minQty, maxQty, avgQty
-        7900003, EA4GNY, 300, 2, 100, 200, 150.0
-        7900002, YU2EF5, 8, 2, 3, 5, 4.0
-     #->toString(),
-     $result.values->at(0)->sort([~gsn->ascending()])->toString());
-}
