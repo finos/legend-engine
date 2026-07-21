@@ -51,7 +51,7 @@ Mapping demo::relation::mapping::MixedAssociationChainMapping
     firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
     lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: [demo::relation::db::EmployeeDB]EmployeeTable.EMP_TYPE,
-    active: [demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE == 1,
+    active: case(equal([demo::relation::db::EmployeeDB]EmployeeTable.ACTIVE, 1), sqlTrue(), sqlFalse()),
     hireDate: [demo::relation::db::EmployeeDB]EmployeeTable.HIRE_DATE,
     salary: [demo::relation::db::EmployeeDB]EmployeeTable.SALARY,
     +firmId: Integer[1]: [demo::relation::db::EmployeeDB]EmployeeTable.FIRM_ID,

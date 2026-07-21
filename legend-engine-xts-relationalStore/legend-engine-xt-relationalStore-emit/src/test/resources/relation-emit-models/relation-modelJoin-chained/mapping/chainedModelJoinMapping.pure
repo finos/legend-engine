@@ -102,7 +102,7 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
                     [x | $x.legalName, x | $x.departments.name],
                     ['Legal Name', 'Dept Name']
                   )
-                  ->sort([~'Legal Name'->ascending(), ~'Dept Name'->ascending()]);
+                  ->sort(['Legal Name', 'Dept Name']);
       tests:
       [
         firmToDepartment:
@@ -139,7 +139,7 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
                     [x | $x.legalName, x | $x.departments.staff.firstName],
                     ['Legal Name', 'Employee Name']
                   )
-                  ->sort([~'Legal Name'->ascending(), ~'Employee Name'->ascending()]);
+                  ->sort(['Legal Name', 'Employee Name']);
       tests:
       [
         firmToDepartmentToEmployee:

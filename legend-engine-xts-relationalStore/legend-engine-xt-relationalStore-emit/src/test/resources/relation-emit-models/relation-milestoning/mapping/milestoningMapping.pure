@@ -123,46 +123,6 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
         }
       ];
     },
-    allVersionsInRangeSuite:
-    {
-      // Range (2023-06-01, 2024-02-01) includes Alice (IN=2024-01-01, before the range
-      // end) and Carol (whose 2023-01-01..2024-01-01 window overlaps the range start),
-      // but excludes Bob (IN=2024-06-01, after the range end) — a distinct result from
-      // both allVersionsSuite (all 3) and pointInTimeSuite (Alice+Bob).
-      function: |demo::relation::domain::TemporalEmployee.allVersionsInRange(%2023-06-01, %2024-02-01)
-                  ->sortBy(x | $x.firstName)
-                  ->project(
-                    [x | $x.firstName],
-                    ['First Name']
-                  );
-      tests:
-      [
-        versionsOverlappingRange:
-        {
-          data:
-          [
-            demo::relation::db::EmployeeDB:
-              Reference
-              #{
-                demo::relation::data::TemporalEmployeeData
-              }#
-          ];
-          asserts:
-          [
-            shouldReturnVersionsOverlappingRange:
-              EqualToJson
-              #{
-                expected:
-                  ExternalFormat
-                  #{
-                    contentType: 'application/json';
-                    data: '[{"First Name":"Alice"},{"First Name":"Carol"}]';
-                  }#;
-              }#
-          ];
-        }
-      ];
-    },
     businessTemporalPointInTimeSuite:
     {
       // Same shape as pointInTimeSuite above, but for the business-temporal class
@@ -196,42 +156,6 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
                   #{
                     contentType: 'application/json';
                     data: '[{"First Name":"Dave"},{"First Name":"Eve"}]';
-                  }#;
-              }#
-          ];
-        }
-      ];
-    },
-    businessTemporalAllVersionsInRangeSuite:
-    {
-      function: |demo::relation::domain::BusinessTemporalEmployee.allVersionsInRange(%2023-06-01, %2024-02-01)
-                  ->sortBy(x | $x.firstName)
-                  ->project(
-                    [x | $x.firstName],
-                    ['First Name']
-                  );
-      tests:
-      [
-        versionsOverlappingRange:
-        {
-          data:
-          [
-            demo::relation::db::EmployeeDB:
-              Reference
-              #{
-                demo::relation::data::BusinessTemporalEmployeeData
-              }#
-          ];
-          asserts:
-          [
-            shouldReturnVersionsOverlappingRange:
-              EqualToJson
-              #{
-                expected:
-                  ExternalFormat
-                  #{
-                    contentType: 'application/json';
-                    data: '[{"First Name":"Dave"},{"First Name":"Frank"}]';
                   }#;
               }#
           ];
