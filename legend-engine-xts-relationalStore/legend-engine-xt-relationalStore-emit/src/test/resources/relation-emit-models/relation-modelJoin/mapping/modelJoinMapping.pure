@@ -12,47 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// ModelJoin pairs lambda parameters to association ends by TYPE, not by name (name
+// matching is only required for self-associations, where both ends share a type).
+// The join condition references the same +firmId / id local-and-real properties used
+// by relation-join's XStore form — ModelJoin is a drop-in alternative wiring for the
+// same underlying association.
+
 ###Pure
 import meta::pure::metamodel::relation::*;
 
-function demo::relation::func::mixedContractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
+function demo::relation::func::modelJoinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->filter(r | $r.EMP_TYPE == 'CONTRACT')
+}
+
+function demo::relation::func::modelJoinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.FirmTable}#
 }
 
 ###Mapping
 import demo::relation::func::*;
 
-Mapping demo::relation::mapping::EmployeeMixedUnionMapping
+Mapping demo::relation::mapping::EmployeeModelJoinMapping
 (
-  *demo::relation::domain::Employee: Operation
+  *demo::relation::domain::Employee[emp]: Relation
   {
-    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(rfSet, relSet)
-  }
-
-  demo::relation::domain::Employee[rfSet]: Relation
-  {
-    ~func demo::relation::func::mixedContractEmployees():Relation<Any>[1]
+    ~func demo::relation::func::modelJoinEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
     employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
     active: $src.ACTIVE == 1,
     hireDate: HIRE_DATE,
-    salary: SALARY
+    salary: SALARY,
+    +firmId: Integer[1]: FIRM_ID
   }
 
-  demo::relation::domain::Employee[relSet]: Relational
+  *demo::relation::domain::Firm[firm]: Relation
   {
-    ~filter [demo::relation::db::EmployeeDB] FullTimeFilter
-    ~primaryKey
-    (
-      [demo::relation::db::EmployeeDB]EmployeeTable.ID
-    )
-    ~mainTable [demo::relation::db::EmployeeDB]EmployeeTable
-    firstName: [demo::relation::db::EmployeeDB]EmployeeTable.FIRST_NAME,
-    lastName: [demo::relation::db::EmployeeDB]EmployeeTable.LAST_NAME
+    ~func demo::relation::func::modelJoinFirms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
   }
 
   demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
@@ -61,38 +62,43 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
     CONTRACT: ['CONTRACT']
   }
 
+  demo::relation::domain::Employment: ModelJoin
+  {
+    {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
+  }
+
   testSuites:
   [
-    mixedUnionSuite:
+    modelJoinSuite:
     {
       function: |demo::relation::domain::Employee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(
-                    [x | $x.firstName, x | $x.lastName],
-                    ['First Name', 'Last Name']
+                    [x | $x.firstName, x | $x.employer.legalName],
+                    ['Name', 'Firm']
                   );
       tests:
       [
-        bothLegs:
+        withFirm:
         {
           data:
           [
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeMixedUnionData
+                demo::relation::data::EmployeeModelJoinData
               }#
           ];
           asserts:
           [
-            shouldCombineMixedSets:
+            shouldJoinViaModelJoin:
               EqualToJson
               #{
                 expected:
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"},{"First Name":"Carol","Last Name":"White"},{"First Name":"David","Last Name":"Jones"}]';
+                    data: '[{"Name":"Alice","Firm":"Acme"},{"Name":"Bob","Firm":"Beta"}]';
                   }#;
               }#
           ];

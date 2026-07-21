@@ -438,9 +438,10 @@ large):
 | Shared fixtures (`relation-shared-domain`, `relation-shared-db`) | ✅ Complete |
 | Wave 1: `relation-simple` | ✅ Complete — PARSE, COMPILE, TEST_EXECUTION pass |
 | Wave 1: `relation-service` | ✅ Complete — service test + PLAN_GENERATION pass |
-| Wave 2: `relation-join` through `relation-enumeration` | Pending |
-| Wave 3: `relation-src` through `relation-embedded` | Pending |
-| Wave 4: `relation-union` through `relation-milestoning` | Pending |
+| Wave 2: `relation-join`, `relation-filter`, `relation-enumeration`, `relation-groupBy` | Implemented — fixing issues found during test runs |
+| Wave 3: `relation-src`, `relation-expression-rhs`, `relation-embedded` | Implemented — fixing issues found during test runs |
+| Wave 4: `relation-union`, `relation-relational-union`, `relation-milestoning` | Implemented — fixing issues found during test runs |
+| Extra: `relation-modelJoin` | Implemented — ModelJoin alternative to relation-join's XStore |
 
 ---
 
@@ -871,6 +872,51 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
 
 ---
 
+### Model 3b: `relation-modelJoin` (extra — not in original wave numbering)
+
+**Mirrors:** `relation-join`, but swaps the association mechanism.  
+**Exercises:** `ModelJoin` (instead of `XStore`) as the association wiring between two
+`Relation`-mapped classes.  
+**Pipeline phases:** PARSE, COMPILE, TEST_EXECUTION.
+
+**Why this model exists:** `relation-join` demonstrates the XStore form, which is what
+every reference unit test uses for a plain Relation-to-Relation association. `ModelJoin`
+is a viable alternative — `HelperMappingBuilder.processModelJoinAssociationMapping`
+(legend-engine compiler) is generic over `InstanceSetImplementation` and pairs every
+(source-set, target-set) combination regardless of whether the sets are `Relational` or
+`Relation`-mapped, so it works for two `Relation`-mapped classes exactly as it does for
+two `Relational` ones. This model is a dedicated, isolated demonstration of that path so
+a regression here is attributable to ModelJoin specifically, not conflated with the core
+join model.
+
+**Key design:** Identical domain/DB/data shape to `relation-join` (two relation functions,
+`+firmId` local property on `Employee`, real `id` property on `Firm`), but the association
+is declared as:
+
+```pure
+demo::relation::domain::Employment: ModelJoin
+{
+  {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
+}
+```
+
+**Authoring note:** ModelJoin pairs lambda parameters to association ends by **type**, not
+by name — name matching is only enforced for self-associations (where both ends share a
+type and type-based pairing is ambiguous). The lambda parameter multiplicities are always
+`[1]` regardless of the association's actual declared end multiplicities (e.g. `employees:
+Employee[*]` on the `Employment` association itself) — the lambda is a pointwise join
+predicate evaluated per-instance-pair, not over the collection.
+
+**File structure:**
+
+```
+relation-modelJoin/
+  mapping/modelJoinMapping.pure   # ###Pure (modelJoinEmployees + modelJoinFirms funcs) + ###Mapping with ModelJoin + testSuites
+  data/testData.pure              # Relation rows for both EmployeeTable and FirmTable
+```
+
+---
+
 ### Model 4: `relation-filter`
 
 **Mirrors:** `relational-filter`  
@@ -1295,7 +1341,12 @@ emit-models/
 
   relation-join.emit.yaml
   relation-join/
-    mapping/joinMapping.pure        # ###Pure (employees + firms funcs) + ###Mapping + testSuites
+    mapping/joinMapping.pure        # ###Pure (employees + firms funcs) + ###Mapping (XStore) + testSuites
+    data/testData.pure
+
+  relation-modelJoin.emit.yaml
+  relation-modelJoin/
+    mapping/modelJoinMapping.pure   # ###Pure (modelJoinEmployees + modelJoinFirms funcs) + ###Mapping (ModelJoin) + testSuites
     data/testData.pure
 
   relation-filter.emit.yaml
@@ -1411,7 +1462,8 @@ The following are excluded from this plan — blocked at the engine layer:
 4.  relation-service        (Wave 1; validates plan-generation path) ✅ DONE — passes
 5.  relation-filter         (Wave 2; simplest function-body feature)
 6.  relation-enumeration    (Wave 2; EnumerationMapping)
-7.  relation-join           (Wave 2; ModelJoin association)
+7.  relation-join           (Wave 2; XStore association)
+7b. relation-modelJoin      (extra; ModelJoin as an alternative association wiring)
 8.  relation-groupBy        (Wave 2; groupBy + aggregates)
 9.  relation-src            (Wave 3; ~src inline form)
 10. relation-expression-rhs (Wave 3; expression RHS + toOne)

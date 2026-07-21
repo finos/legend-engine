@@ -37,7 +37,7 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(contractSet, fullTimeSet)
   }
 
-  *demo::relation::domain::Employee[contractSet]: Relation
+  demo::relation::domain::Employee[contractSet]: Relation
   {
     ~func demo::relation::func::contractEmployees():Relation<Any>[1]
     id: ID,
@@ -49,7 +49,7 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
     salary: SALARY
   }
 
-  *demo::relation::domain::Employee[fullTimeSet]: Relation
+  demo::relation::domain::Employee[fullTimeSet]: Relation
   {
     ~func demo::relation::func::fullTimeEmployees():Relation<Any>[1]
     id: ID,

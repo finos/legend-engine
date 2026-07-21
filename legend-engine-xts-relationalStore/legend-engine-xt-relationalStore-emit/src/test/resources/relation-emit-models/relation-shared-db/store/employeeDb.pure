@@ -65,4 +65,6 @@ Database demo::relation::db::EmployeeDB
 
   Join EmployeeFirmJoin(EmployeeTable.FIRM_ID = FirmTable.ID)
   Join PositionProductJoin(PositionTable.PRODUCT_ID = ProductTable.ID)
+
+  Filter FullTimeFilter(EmployeeTable.EMP_TYPE = 'FULL_TIME')
 )
