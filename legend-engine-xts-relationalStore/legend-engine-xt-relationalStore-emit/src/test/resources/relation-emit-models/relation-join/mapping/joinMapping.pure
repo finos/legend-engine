@@ -12,19 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::joinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
-
-function demo::relation::func::joinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.FirmTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -32,7 +19,7 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
 (
   *demo::relation::domain::Employee[emp]: Relation
   {
-    ~func demo::relation::func::joinEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -45,7 +32,7 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
 
   *demo::relation::domain::Firm[firm]: Relation
   {
-    ~func demo::relation::func::joinFirms():Relation<Any>[1]
+    ~func demo::relation::func::firms():Relation<Any>[1]
     id: ID,
     legalName: LEGAL_NAME
   }

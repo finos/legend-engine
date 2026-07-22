@@ -17,14 +17,6 @@
 // execute against the outer mapping to prove include is wired end-to-end, not just at
 // parse/compile time.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::includeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -32,7 +24,7 @@ Mapping demo::relation::mapping::BaseIncludeMapping
 (
   *demo::relation::domain::Employee: Relation
   {
-    ~func demo::relation::func::includeEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

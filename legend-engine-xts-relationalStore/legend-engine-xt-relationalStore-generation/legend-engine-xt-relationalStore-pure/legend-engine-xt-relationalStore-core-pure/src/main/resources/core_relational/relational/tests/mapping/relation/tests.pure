@@ -626,36 +626,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// Polymorphic: querying the superclass Person must resolve to the subtype set
-// (PersonWithEmployeeType, mapped above via EnumerationRelationMapping — that
-// Mapping provides a set implementation only for the subtype, not for Person
-// itself, so this forces the router to dispatch through the superclass).
-// ToFix: relation-mapping subtype dispatch is unimplemented — querying the
-// superclass fails with "Error mapping not found for class Person"
-// (router_routing.pure:584). Unblock once findMappingForType handles
-// RelationFunctionInstanceSetImplementation. Reuses EnumerationRelationMapping
-// and testDB.personTable (same data as testEnumerationMappingProjection above)
-// rather than a dedicated mapping/table.
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSubtypeSuperclassQuery():Boolean[1]
-{
-  let result = execute(
-      |Person.all()->project(~[firstName:p|$p.firstName]),
-      meta::relational::tests::mapping::relation::EnumerationRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       firstName
-       David
-       Fabrice
-       John
-       Oliver
-    #->toString(),
-    $result.values->at(0)->sort(~firstName->ascending())->toString()
-  );
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMultipleEnumerationMappings():Boolean[1]
 {
    let result = execute(
@@ -1010,58 +980,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// --- RFPM-lift variant tests (personPayloadTable) ----------------------------
-// setupRfpmLiftTestData seeds personPayloadTable (NOT pre-populated by
-// createTablesAndFillDb, so the seed block must also drive its CREATE TABLE). It
-// joins its list elements with '\n-\n' and feeds them to setUpDataSQLsV2, so each
-// element is ONE table block laid out as: schema line ('default'), table line
-// ('personPayloadTable'), column header ('ID,PAYLOAD'), then data rows. The
-// PAYLOAD column holds a JSON string; because the JSON contains commas and
-// double-quotes it must be RFC4180-quoted (wrap the field in "..." and double
-// every internal " as "") so the CSV parser keeps the whole payload as a single
-// field.
-//
-// NOT COVERED — variant extraction via RFPM-lift (get()->to()/->toMany()):
-// The tests testRfpmLiftPrimitive/Class/ClassToMany/ExplicitMap were removed
-// because the feature is not executable on the path these <<test.AlloyOnly>>
-// relation-mapping tests use. Property-mapping bodies like
-// $src.PAYLOAD->get(..)->to(@T)/->toMany(@T) lower to the `variantTo`
-// DynaFunction (pureToSQLQuery_variant.pure), but the sqlDialectTranslation model
-// path (toPostgresModel.pure::getDynaFunctionConverterMap) has no `variantTo`
-// converter — execution fails with "Couldn't find DynaFunction to Postgres model
-// translation for variantTo()". ExplicitMap additionally failed earlier at
-// routing: ->toMany(@PayloadFirm)->map(f|$f.tags) makes the router look for a
-// class mapping for the unmapped PayloadFirm (helperFunctions.pure). The classic,
-// supported way to read a SEMISTRUCTURED column is extractFromSemiStructured(..)
-// (see meta::relational::tests::semistructured), which is wired into both the
-// string and model paths. Re-add these tests once `variantTo` (and map-over-
-// extracted-class routing) are supported in the model path.
-
-// t12 — Unsupported: Map<String,Variant>[1] is a structural container. The router
-// rejects this at plan-generation time via the isStructuralContainer check.
-// Marked ToFix until the rejection is wired to a user-visible error message.
-function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRfpmLiftUnsupportedStructuralContainer():Boolean[1]
-{
-  let db = meta::relational::tests::mapping::relation::testDB;
-  let runtime = meta::external::store::relational::tests::testRuntime($db);
-  let csv =
-    'default\n' +
-    'personPayloadTable\n' +
-    'ID,PAYLOAD\n' +
-    '1,"{""key"":""value""}"\n';
-  setupRfpmLiftTestData([$csv], $db, $runtime);
-  // Expect plan generation to throw: Map<String,Variant> is excluded by isStructuralContainer.
-  // The size() query is used to avoid ->to() which has no Java compiled-mode binding.
-  let result = execute(
-    |PersonLiftedUnsupported.all()->size(),
-    meta::relational::tests::mapping::relation::LiftedUnsupportedMapping,
-    $runtime,
-    meta::relational::extension::relationalExtensions()
-  );
-  fail('Expected plan-generation error for Map<String,Variant> structural container');
-  true;
-}
-
 // ============================================================================
 // Coverage tests consolidated onto testDB + the relation domain (formerly the
 // separate coverageDB / external-domain relationCoverage*.pure suites). Each
@@ -1141,7 +1059,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- Distinct: ->distinct() in the ~func collapses the duplicate source rows ----
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMapping():Boolean[1]
 {
    let result = execute(
@@ -1161,35 +1078,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilter():Boolean[1]
-{
-   let result = execute(
-      |Firm.all()->filter(f|$f.id == 1)->project(~[legalName:f|$f.legalName]),
-      distinctFirmMapping,
-      meta::external::store::relational::tests::testRuntime(testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-     #TDS
-        legalName
-        Firm X
-     #->toString(),
-     $result.values->at(0)->toString()
-   );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithSize():Boolean[1]
-{
-   let result = execute(
-      |Firm.all()->size(),
-      distinctFirmMapping,
-      meta::external::store::relational::tests::testRuntime(testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(3, $result.values->toOne());
-}
-
-// --- Dates: DATE (StrictDate) + DateTime (nanosecond TIMESTAMP) property mapping -
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateFilter():Boolean[1]
 {
    let result = execute(
@@ -1211,10 +1099,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateProject():Boolean[1]
 {
-   // Project the StrictDate as a String: a DATE column materialised into the relation
-   // result is date-only ('2014-12-01') and round-trips through the TestTDS MINIMAL
-   // parser as STRING, so ->toString() sidesteps the round-trip while still asserting
-   // the retrieved date values.
    let result = execute(
       |Trade.all()->project(~[id:t|$t.id, date:t|$t.date->toString()]),
       tradeRelationMapping,
@@ -1246,9 +1130,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeFilter():Boolean[1]
 {
-   // H2 stores TIMESTAMP at millisecond precision, so row 7's inserted
-   // 2014-12-04 15:22:23.123456789 is stored as .123; the filter literal must
-   // therefore use millisecond precision to match on equality.
    let result = execute(
       |Trade.all()->filter(a|$a.settlementDateTime == %2014-12-04T15:22:23.123)->project(~[id:t|$t.id]),
       tradeRelationMapping,

@@ -12,15 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::mixedContractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->filter(r | $r.EMP_TYPE == 'CONTRACT')
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -33,7 +24,7 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
 
   demo::relation::domain::Employee[rfSet]: Relation
   {
-    ~func demo::relation::func::mixedContractEmployees():Relation<Any>[1]
+    ~func demo::relation::func::contractEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

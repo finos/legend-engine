@@ -17,19 +17,6 @@
 // FunctionDescriptor.validateType in legend-pure. A mangled id (funcName__Relation_1_)
 // or a fully-qualified return type both fail here (parser or "can't find element" respectively).
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::temporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
-}
-
-function demo::relation::func::businessTemporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
-}
-
 ###Mapping
 Mapping demo::relation::mapping::TemporalEmployeeMapping
 (

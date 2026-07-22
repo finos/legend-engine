@@ -12,14 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::employees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -27,7 +19,7 @@ Mapping demo::relation::mapping::EmployeeSimpleMapping
 (
   *demo::relation::domain::Employee: Relation
   {
-    ~func demo::relation::func::employees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

@@ -15,21 +15,6 @@
 // Uses ExtendedEmployee (not the shared Employee) so the embedded address property is
 // available without touching the shared Employee class.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::unionEnumContractEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->filter(r | $r.EMP_TYPE == 'CONTRACT')
-}
-
-function demo::relation::func::unionEnumFullTimeEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-    ->filter(r | $r.EMP_TYPE == 'FULL_TIME')
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -42,7 +27,7 @@ Mapping demo::relation::mapping::EmployeeUnionEnumMapping
 
   demo::relation::domain::ExtendedEmployee[contractSet]: Relation
   {
-    ~func demo::relation::func::unionEnumContractEmployees():Relation<Any>[1]
+    ~func demo::relation::func::contractEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -59,7 +44,7 @@ Mapping demo::relation::mapping::EmployeeUnionEnumMapping
 
   demo::relation::domain::ExtendedEmployee[fullTimeSet]: Relation
   {
-    ~func demo::relation::func::unionEnumFullTimeEmployees():Relation<Any>[1]
+    ~func demo::relation::func::fullTimeEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

@@ -27,19 +27,9 @@ Association demo::relation::domain::DepartmentStaff
   staff: demo::relation::domain::Employee[1];
 }
 
-function demo::relation::func::chainedFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.FirmTable}#
-}
-
 function demo::relation::func::chainedDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.DepartmentTable}#
-}
-
-function demo::relation::func::chainedEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
 }
 
 ###Mapping
@@ -49,7 +39,7 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
 (
   *demo::relation::domain::Firm[firm]: Relation
   {
-    ~func demo::relation::func::chainedFirms():Relation<Any>[1]
+    ~func demo::relation::func::firms():Relation<Any>[1]
     id: ID,
     legalName: LEGAL_NAME
   }
@@ -65,7 +55,7 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
 
   *demo::relation::domain::Employee[emp]: Relation
   {
-    ~func demo::relation::func::chainedEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

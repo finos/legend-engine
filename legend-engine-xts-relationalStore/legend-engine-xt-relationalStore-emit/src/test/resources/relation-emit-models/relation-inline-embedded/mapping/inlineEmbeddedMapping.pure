@@ -12,13 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::inlineEmbeddedEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
 
 ###Mapping
 import demo::relation::func::*;
@@ -27,7 +20,7 @@ Mapping demo::relation::mapping::EmployeeInlineEmbeddedMapping
 (
   *demo::relation::domain::ExtendedEmployee[empAddr]: Relation
   {
-    ~func demo::relation::func::inlineEmbeddedEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -40,7 +33,7 @@ Mapping demo::relation::mapping::EmployeeInlineEmbeddedMapping
 
   *demo::relation::domain::Address[addressSet]: Relation
   {
-    ~func demo::relation::func::inlineEmbeddedEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     street: STREET,
     city: CITY
   }

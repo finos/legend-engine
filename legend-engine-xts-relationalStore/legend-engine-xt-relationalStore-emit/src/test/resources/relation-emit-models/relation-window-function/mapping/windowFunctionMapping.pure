@@ -32,11 +32,6 @@ function demo::relation::func::rankedEmployees(): meta::pure::metamodel::relatio
     ->extend(over(~FIRM_ID, ~SALARY->ascending()), ~[RANK: {p, w, r | $p->rank($w, $r)}])
 }
 
-function demo::relation::func::windowFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.FirmTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -58,7 +53,7 @@ Mapping demo::relation::mapping::RankedEmployeeMapping
 
   *demo::relation::domain::Firm[firm]: Relation
   {
-    ~func demo::relation::func::windowFirms():Relation<Any>[1]
+    ~func demo::relation::func::firms():Relation<Any>[1]
     id: ID,
     legalName: LEGAL_NAME
   }
@@ -69,10 +64,9 @@ Mapping demo::relation::mapping::RankedEmployeeMapping
     CONTRACT: ['CONTRACT']
   }
 
-  demo::relation::domain::Employment: XStore
+  demo::relation::domain::Employment: ModelJoin
   {
-    employer[emp, firm]: $this.firmId == $that.id,
-    employees[firm, emp]: $this.id == $that.firmId
+    {employer: demo::relation::domain::Firm[1], employees: demo::relation::domain::Employee[1] | $employer.id == $employees.firmId}
   }
 
   testSuites:

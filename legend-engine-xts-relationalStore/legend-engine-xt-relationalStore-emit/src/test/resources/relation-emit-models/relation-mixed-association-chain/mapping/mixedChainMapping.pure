@@ -34,11 +34,6 @@ Association demo::relation::domain::EmployeeDepartment
   employeesInDept: demo::relation::domain::Employee[*];
 }
 
-function demo::relation::func::chainFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.FirmTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -69,7 +64,7 @@ Mapping demo::relation::mapping::MixedAssociationChainMapping
 
   *demo::relation::domain::Firm[firm]: Relation
   {
-    ~func demo::relation::func::chainFirms():Relation<Any>[1]
+    ~func demo::relation::func::firms():Relation<Any>[1]
     id: ID,
     legalName: LEGAL_NAME
   }

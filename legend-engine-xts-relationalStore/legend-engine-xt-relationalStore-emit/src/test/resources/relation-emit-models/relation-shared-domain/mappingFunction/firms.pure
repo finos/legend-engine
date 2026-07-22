@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Connection
-RelationalDatabaseConnection demo::relation::connection::EmployeeServiceJoinH2Connection
+###Pure
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::firms(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  store: demo::relation::db::EmployeeDB;
-  type: H2;
-  specification: LocalH2
-  {
-  };
-  auth: DefaultH2;
+  #>{demo::relation::db::EmployeeDB.FirmTable}#
 }
+

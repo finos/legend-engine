@@ -26,10 +26,6 @@ Class demo::relation::domain::EmployeeWithStatus extends demo::relation::domain:
   activeStatus: demo::relation::domain::ActiveStatus[1];
 }
 
-function demo::relation::func::employeesWithType(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
 
 ###Mapping
 import demo::relation::func::*;
@@ -38,7 +34,7 @@ Mapping demo::relation::mapping::EmployeeEnumerationMapping
 (
   *demo::relation::domain::EmployeeWithStatus: Relation
   {
-    ~func demo::relation::func::employeesWithType():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,

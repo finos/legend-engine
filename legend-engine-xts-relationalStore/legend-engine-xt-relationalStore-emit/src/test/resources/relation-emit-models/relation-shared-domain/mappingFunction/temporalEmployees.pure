@@ -11,14 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-###Connection
-RelationalDatabaseConnection demo::relation::connection::EmployeeH2Connection
+###Pure
+import meta::pure::metamodel::relation::*;
+function demo::relation::func::temporalEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
-  store: demo::relation::db::EmployeeDB;
-  type: H2;
-  specification: LocalH2
-  {
-  };
-  auth: DefaultH2;
+  #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
 }

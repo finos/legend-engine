@@ -25,7 +25,7 @@ modelSources:
   model:
     root: relation-include
     files:
-      - mapping/includeMapping.pure   # ###Pure (includeEmployees func) + ###Mapping (base + outer-include) + testSuites
+      - mapping/includeMapping.pure   # ###Mapping (base + outer-include) + testSuites; reuses shared employeesWithAddress func
   dependencies:
     - source: relation-shared-data.emit.yaml
 

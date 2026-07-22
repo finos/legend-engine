@@ -18,19 +18,6 @@
 // by relation-join's XStore form — ModelJoin is a drop-in alternative wiring for the
 // same underlying association.
 
-###Pure
-import meta::pure::metamodel::relation::*;
-
-function demo::relation::func::modelJoinEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.EmployeeTable}#
-}
-
-function demo::relation::func::modelJoinFirms(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.FirmTable}#
-}
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -38,7 +25,7 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
 (
   *demo::relation::domain::Employee[emp]: Relation
   {
-    ~func demo::relation::func::modelJoinEmployees():Relation<Any>[1]
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     lastName: LAST_NAME,
@@ -51,7 +38,7 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
 
   *demo::relation::domain::Firm[firm]: Relation
   {
-    ~func demo::relation::func::modelJoinFirms():Relation<Any>[1]
+    ~func demo::relation::func::firms():Relation<Any>[1]
     id: ID,
     legalName: LEGAL_NAME
   }

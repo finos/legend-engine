@@ -33,16 +33,6 @@ Association demo::relation::domain::EmployeeDepartmentSameScheme
   department: demo::relation::domain::TemporalDepartment[1];
 }
 
-function demo::relation::func::asymmetricBusinessEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.BusinessTemporalEmployeeTable}#
-}
-
-function demo::relation::func::asymmetricProcessingEmployees(): meta::pure::metamodel::relation::Relation<Any>[1]
-{
-  #>{demo::relation::db::EmployeeDB.TemporalEmployeeTable}#
-}
-
 function demo::relation::func::sameSchemeDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.TemporalDepartmentTable}#
@@ -55,7 +45,7 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
 (
   *demo::relation::domain::BusinessTemporalEmployee[biz]: Relation
   {
-    ~func demo::relation::func::asymmetricBusinessEmployees():Relation<Any>[1]
+    ~func demo::relation::func::businessTemporalEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     salary: SALARY
@@ -63,7 +53,7 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
 
   *demo::relation::domain::TemporalEmployee[proc]: Relation
   {
-    ~func demo::relation::func::asymmetricProcessingEmployees():Relation<Any>[1]
+    ~func demo::relation::func::temporalEmployees():Relation<Any>[1]
     id: ID,
     firstName: FIRST_NAME,
     salary: SALARY
