@@ -536,12 +536,12 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          pair($storeContract, $mapping->resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
          let roots = $o->resolveInstanceSetImplementations();
-         let resolvedPairs = $roots->map(r|$r->cast(@SetImplementation)->storeContractForSetImplementation($mapping, $extensions));
+         let resolvedPairs = $roots->map(r|$r->storeContractForSetImplementation($mapping, $extensions));
          let storeContract = $resolvedPairs.first->removeDuplicatesBy(x|$x.id)->toOne();
          let store = $resolvedPairs.second->removeDuplicatesBy(x|$x->elementToPath())->toOne();
          pair($storeContract, $store);,
       e: EmbeddedSetImplementation[1]|
-         $e.owner->toOne()->cast(@SetImplementation)->storeContractForSetImplementation($mapping, $extensions);
+         $e->resolveRootFromEmbedded()->storeContractForSetImplementation($mapping, $extensions);
   ]);
 }
 
