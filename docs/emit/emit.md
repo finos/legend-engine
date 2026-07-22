@@ -299,13 +299,21 @@ being scoped to the `Testable` metamodel concept alone.
 
 Actual EMIT tests are **spread throughout the codebase**, living in the modules that own the
 features being tested. Each module that contributes EMIT tests adds a test-scoped dependency
-on `legend-engine-emit-junit` and places its models under `src/test/resources/emit-models/`:
+on `legend-engine-emit-junit` and places its models under a classpath root, conventionally
+`src/test/resources/emit-models/`. When a single module hosts more than one independently
+owned suite, each suite gets its own disambiguated root and its own `*EMITTests` runner instead
+of sharing `emit-models/`, so a failure is unambiguously attributable to one feature area rather
+than the module as a whole. `legend-engine-xt-relationalStore-emit` is the concrete example —
+it owns both the classic relational-mapping suite and the relation (`~func`) mapping suite:
 
 ```
 legend-engine-xts-relationalStore/
-  legend-engine-xt-relationalStore-emit/    ← Module owning the relational EMIT examples
+  legend-engine-xt-relationalStore-emit/    ← Module owning both EMIT suites below
+    src/test/java/.../emit/
+      relational/RelationalEMITTests.java   ← Classic relational-mapping suite runner
+      relation/RelationEMITTests.java       ← Relation (`~func`) mapping suite runner
     src/test/resources/
-      emit-models/
+      relational-emit-models/               ← Classic relational-mapping models
         relational-simple.emit.yaml         ← Test descriptor configures sources
         relational-simple/                  ← Model sources (paths resolved relative to YAML)
           store/db.pure
@@ -319,12 +327,26 @@ legend-engine-xts-relationalStore/
           model/person.pure
           model/firm.pure
           model/employment.pure
+      relation-emit-models/                 ← Relation (`~func`) mapping models
+        relation-simple.emit.yaml
+        relation-simple/
+          ...
+        relation-modelJoin.emit.yaml        ← Relation leaf combined with a relational leaf
+        relation-milestoning.emit.yaml
+        ...
 ```
 
 (Tests reuse `relational-shared-domain` via the descriptor `dependencies`
 mechanism; see §4.1.)
 
-The same pattern applies to other extension modules (`legend-engine-xts-service`, `legend-engine-xts-generation`, etc.) — each owns the EMIT models for its feature area, with one `*.emit.yaml` per test and a sibling source-root directory.
+The same pattern applies to other extension modules (`legend-engine-xts-service`, `legend-engine-xts-generation`, etc.) — each owns the EMIT models for its feature area, with one `*.emit.yaml` per test and a sibling source-root directory. Most modules host a single suite and keep the plain `emit-models/` root name; disambiguate only when a module genuinely hosts more than one independently-owned suite, as above.
+
+> **Coverage-report caveat:** the HTML coverage report's discovery walk (§5.4) only looks under
+> a root literally named `emit-models/` by default. A module using a disambiguated root name —
+> like `relational-emit-models/` and `relation-emit-models/` above — is invisible to the report
+> unless its consuming pom adds that root to `includedRelativeSubpaths`. `legend-engine-server-http-server`
+> does this explicitly (see the table in §5.4) so both relational-store suites are represented in
+> the coverage dashboard; any other module that disambiguates its root needs the same override.
 
 The `EMITRunner` automatically discovers all `*.emit.yaml` files. The YAML file explicitly configures which directories and files comprise the test.
 
@@ -644,7 +666,7 @@ still applies, are:
 | Parameter | Default | Server override |
 |---|---|---|
 | `outputFilePath` | `${project.build.outputDirectory}/emit/emit-coverage.html` (i.e. `target/classes/emit/...`, so jar packaging automatically bundles it into the consuming jar) | Pinned explicitly to the default so the server jar's bundled resource path stays fixed if the plugin default ever changes |
-| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | — |
+| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | `["src/test/resources/emit-models", "src/test/resources/relational-emit-models", "src/test/resources/relation-emit-models"]` (adds the two disambiguated relational-store roots on top of the default) |
 | `excludedDirectoryNames` | `["target"]` | `["target", "legend-engine-emit-junit"]` (excludes the binding module's bootstrap examples from the server-side report) |
 | `excludedDirectoryNamePrefixes` | `["."]` | — |
 | `excludedRelativeSubpaths` | `["src/main"]` | — |

@@ -46,6 +46,11 @@
                                 <name>target</name>
                                 <name>legend-engine-emit-junit</name>
                             </excludedDirectoryNames>
+                            <includedRelativeSubpaths>
+                                <subpath>src/test/resources/emit-models</subpath>
+                                <subpath>src/test/resources/relational-emit-models</subpath>
+                                <subpath>src/test/resources/relation-emit-models</subpath>
+                            </includedRelativeSubpaths>
                         </configuration>
                     </execution>
                 </executions>
