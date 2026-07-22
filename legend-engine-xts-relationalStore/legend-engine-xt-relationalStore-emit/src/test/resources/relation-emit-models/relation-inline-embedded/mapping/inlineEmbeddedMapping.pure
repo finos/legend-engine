@@ -84,8 +84,6 @@ Mapping demo::relation::mapping::EmployeeInlineEmbeddedMapping
     },
     londonFilterSuite:
     {
-      // Proves filtering resolves correctly through the Inline mechanism's
-      // shared-row-source wiring, a different codegen path from the direct embed form.
       function: |demo::relation::domain::ExtendedEmployee.all()
                   ->filter(e | $e.address.city == 'London')
                   ->sortBy(x | $x.firstName)

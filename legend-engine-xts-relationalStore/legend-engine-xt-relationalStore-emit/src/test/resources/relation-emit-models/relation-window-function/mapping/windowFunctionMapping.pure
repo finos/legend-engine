@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// rank is a REAL property on a model-local subclass, not a `+local` mapping property —
-// local mapping properties are only usable inside an XStore/ModelJoin predicate, not
-// queryable/projectable from an arbitrary lambda (confirmed while building Wave 1's
-// relation-filter uplift). This mirrors relationMappingSetup.pure's own pattern:
-// ExtendedPerson.rank is a real declared property, not a +local one.
 
 ###Pure
 import meta::pure::metamodel::relation::*;
@@ -73,9 +68,6 @@ Mapping demo::relation::mapping::RankedEmployeeMapping
   [
     rankWithinFirmSuite:
     {
-      // Rank is computed per-firm (partitioned by FIRM_ID, ordered by SALARY ascending)
-      // by the window function, then projected together with the ModelJoin-traversed
-      // employer.legalName in the same query.
       function: |demo::relation::domain::RankedEmployee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(

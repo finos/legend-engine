@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ~src requires the source function to return a TYPED Relation (not Relation<Any>).
-// A raw #>{store.table}# literal causes a parser stack-overflow under ~src, so each
-// source expression is wrapped in a zero-arg helper that returns the typed result via
-// ->select() + ->cast(). The mapping references it as ~src funcName() (call expression,
-// not the mangled-name form used by ~func).
 
 ###Pure
 import meta::pure::metamodel::relation::*;

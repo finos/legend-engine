@@ -160,9 +160,6 @@ Mapping demo::relation::mapping::ChainedModelJoinMapping
     },
     chainedAggregationSuite:
     {
-      // Sub-aggregates over BOTH chained ModelJoin hops in one collection expression
-      // ($firm.departments.staff, flattening the 2-hop to-many chain), extending
-      // relation-join's single-hop subAggregationSuite pattern to a 2-hop chain.
       function: |demo::relation::domain::Firm.all()
                   ->sortBy(x | $x.legalName)
                   ->project(

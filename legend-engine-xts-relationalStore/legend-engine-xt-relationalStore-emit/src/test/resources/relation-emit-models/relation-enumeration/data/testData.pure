@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ACTIVE_STATUS: Alice and Bob are ACTIVE; Carol is INACTIVE (consistent with her
-// ACTIVE=0 boolean column) — gives twoEnumsAndedSuite a genuine narrowing effect.
 ###Data
 Data demo::relation::data::EmployeeEnumData
 {

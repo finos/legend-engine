@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Alice/Bob (CONTRACT leg) and Carol/David (FULL_TIME leg). Alice and David share
-// London so the embedded-filter testSuite has a match from each leg.
 ###Data
 Data demo::relation::data::EmployeeUnionEnumData
 {

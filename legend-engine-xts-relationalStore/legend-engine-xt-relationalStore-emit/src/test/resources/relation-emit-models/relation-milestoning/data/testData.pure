@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 3 rows. For all(%2025-01-01) the milestoning filter is IN_Z <= 2025-01-01 < OUT_Z:
-//   Alice:  IN_Z=2024-01-01 <= 2025-01-01 < OUT_Z=9999-12-31  → INCLUDED
-//   Bob:    IN_Z=2024-06-01 <= 2025-01-01 < OUT_Z=9999-12-31  → INCLUDED
-//   Carol:  IN_Z=2023-01-01 <= 2025-01-01 < OUT_Z=2024-01-01? → 2025-01-01 >= OUT_Z → EXCLUDED
-// allVersions() returns all 3 rows.
-
 ###Data
 Data demo::relation::data::TemporalEmployeeData
 {
@@ -31,8 +25,6 @@ Data demo::relation::data::TemporalEmployeeData
   }#
 }
 
-// Same shape as TemporalEmployeeData (processing-temporal), mirrored for the
-// business-temporal scheme: Dave/Eve open-ended, Frank closed 2023-01-01..2024-01-01.
 ###Data
 Data demo::relation::data::BusinessTemporalEmployeeData
 {

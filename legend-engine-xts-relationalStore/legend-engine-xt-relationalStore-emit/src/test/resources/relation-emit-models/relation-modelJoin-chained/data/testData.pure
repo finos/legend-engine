@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Acme (1) has two departments (Engineering/10, Marketing/20); Beta (2) has one
-// (Research/30). Every department has at least one employee, so both hops resolve
-// for every row (no unmatched-leg / TDSNull case in this model — see the yaml
-// description for why that edge case is deliberately out of scope here).
 ###Data
 Data demo::relation::data::ChainedModelJoinData
 {

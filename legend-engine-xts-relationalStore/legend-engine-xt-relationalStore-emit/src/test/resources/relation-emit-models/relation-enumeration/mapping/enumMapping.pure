@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// EmployeeWithStatus is declared here (model-local), not in the shared domain: adding
-// a [1] activeStatus property directly to the shared Employee class would require every
-// other model mapping Employee to map it too. ACTIVE_STATUS is a nullable column at the
-// schema level (added in Wave 0), so the [1] property is backed via a ->toOne() coercion,
-// same pattern as the existing ACTIVE BIT->Boolean coercion.
-
 ###Pure
 import meta::pure::metamodel::relation::*;
 
@@ -134,9 +128,6 @@ Mapping demo::relation::mapping::EmployeeEnumerationMapping
     },
     twoEnumsAndedSuite:
     {
-      // Two independently-declared EnumerationMappings (EmployeeType, ActiveStatus) on the
-      // same class, ANDed together in a single filter. Only Alice is FULL_TIME AND ACTIVE:
-      // Bob is CONTRACT, Carol is FULL_TIME but INACTIVE.
       function: |demo::relation::domain::EmployeeWithStatus.all()
                   ->filter(e | $e.employeeType == demo::relation::domain::EmployeeType.FULL_TIME
                             && $e.activeStatus == demo::relation::domain::ActiveStatus.ACTIVE)

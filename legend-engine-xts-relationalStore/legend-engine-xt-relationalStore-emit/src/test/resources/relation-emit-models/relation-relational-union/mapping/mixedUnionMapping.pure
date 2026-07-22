@@ -92,14 +92,6 @@ Mapping demo::relation::mapping::EmployeeMixedUnionMapping
     },
     lastNameFilterAcrossSetsSuite:
     {
-      // Filters across the mixed Relation+Relational union on lastName (a plain
-      // passthrough column, in the outer project() list), matching one row from EACH
-      // leg — Green from rfSet (Relation), White from relSet (Relational). Mirrors
-      // testUnionOfRelationAndRelational_FilterAcrossSets. Deliberately does NOT add an
-      // association hop off the union root: testUnionRelationAndRelational_FilterToFirm
-      // / ...ProjectThroughFirm / ...FilterFromFirm in testRelationUnionAdvanced.pure are
-      // ALL <<test.ToFix>> — association traversal off a mixed Relation+Relational union
-      // is blocked in both directions, confirmed (not just suspected) before writing this.
       function: |demo::relation::domain::Employee.all()
                   ->filter(e | $e.lastName->in(['Green', 'White']))
                   ->sortBy(x | $x.firstName)

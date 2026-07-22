@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Acme (1) has two employees (Alice, Carol) so the sub-aggregation testSuite has
-// something non-trivial to count/sum; Beta (2) keeps a single employee (Bob).
 ###Data
 Data demo::relation::data::EmployeeFirmAggData
 {

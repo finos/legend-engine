@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Row 5 (QTY=0) would form its own group (ZZ9999/1) if it weren't excluded by the
-// ->filter(r|$r.QTY>0) added to the positions() function body. Its exclusion is
-// implicitly proven by groupBySuite's unchanged assertion still showing only the
-// original two groups.
 ###Data
 Data demo::relation::data::PositionData
 {

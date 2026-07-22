@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Uses ExtendedEmployee (not the shared Employee) so the embedded address property is
-// available without touching the shared Employee class.
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -106,9 +103,6 @@ Mapping demo::relation::mapping::EmployeeUnionEnumMapping
     },
     embeddedProjectAcrossUnionSuite:
     {
-      // Mirrors testUnionTwoRelationMappings_EmbeddedFirmProject's shape (embedded
-      // property projected uniformly across both union legs), substituting the
-      // embedded address for the reference's embedded firm.
       function: |demo::relation::domain::ExtendedEmployee.all()
                   ->sortBy(x | $x.firstName)
                   ->project(
@@ -145,8 +139,6 @@ Mapping demo::relation::mapping::EmployeeUnionEnumMapping
     },
     embeddedFilterAcrossUnionSuite:
     {
-      // Filtering on the embedded property across the union — matches one row from
-      // EACH leg (Alice from contractSet, David from fullTimeSet), both in London.
       function: |demo::relation::domain::ExtendedEmployee.all()
                   ->filter(e | $e.address.city == 'London')
                   ->sortBy(x | $x.firstName)

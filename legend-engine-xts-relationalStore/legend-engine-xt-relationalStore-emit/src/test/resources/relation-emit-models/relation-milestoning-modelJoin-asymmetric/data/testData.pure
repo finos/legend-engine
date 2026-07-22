@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Alice (id=1) and Bob (id=2) each have a row in BOTH temporal tables, matched by ID,
-// both temporally valid at the 2025-01-01 query date on both sides.
 ###Data
 Data demo::relation::data::AsymmetricMilestoningData
 {
@@ -30,8 +28,6 @@ Data demo::relation::data::AsymmetricMilestoningData
   }#
 }
 
-// Alice's department is renamed between 2025-03-01 (Engineering -> Platform Engineering);
-// Bob's department has a single, always-valid version. Both employees are valid throughout.
 ###Data
 Data demo::relation::data::SameSchemeMilestoningData
 {

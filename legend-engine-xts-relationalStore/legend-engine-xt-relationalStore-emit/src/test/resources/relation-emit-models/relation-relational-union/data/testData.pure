@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 4 rows: 2 CONTRACT (Relation leg), 2 FULL_TIME (Relational leg with ~filter).
-// Mixed union should return all 4 employees.
-
 ###Data
 Data demo::relation::data::EmployeeMixedUnionData
 {

@@ -92,11 +92,6 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
     },
     lastNameFilterAcrossSetsSuite:
     {
-      // Filters on lastName — a plain passthrough column that IS part of the outer
-      // project() list — matching one row from EACH leg (Green from contractSet, White
-      // from fullTimeSet), unlike the removed activeFilterSuite above. Mirrors
-      // testUnionOfTwoRelationMappings_FilterAcrossSets's exact shape
-      // ($p.lastName->in([...])).
       function: |demo::relation::domain::Employee.all()
                   ->filter(e | $e.lastName->in(['Green', 'White']))
                   ->sortBy(x | $x.firstName)
@@ -132,16 +127,5 @@ Mapping demo::relation::mapping::EmployeeUnionMapping
         }
       ];
     }
-    // activeFilterSuite (filter on `active` — an expression-derived boolean, $src.ACTIVE == 1 —
-    // that is NOT part of the outer project()) was removed: it hits a genuine SQL-generation
-    // gap for Relation-mapped Operation unions. The generated SQL references the filtered
-    // column against the union-scoped derived table without pulling it through the
-    // intermediate projection ("Column unionBase.ACTIVE not found"), and separately mangles
-    // the mapping-level `= 1` coercion with the query-level `== true` comparison into an
-    // invalid `= 1 = true` fragment. Every reference union test that filters across sets
-    // (testUnionOfTwoRelationMappings_FilterAcrossSets et al. in testRelationUnion.pure)
-    // filters on a property that is ALSO part of the outer projection (lastName), so this
-    // combination — filtering on a non-projected, expression-derived property — is untested
-    // upstream and not something this EMIT suite can route around without masking the gap.
   ]
 )

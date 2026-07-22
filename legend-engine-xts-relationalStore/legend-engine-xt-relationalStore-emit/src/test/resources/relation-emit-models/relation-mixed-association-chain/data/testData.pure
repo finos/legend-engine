@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Alice and Carol are in the Engineering department (10) at Acme (1); Bob is in
-// Marketing (20) at Beta (2) and should be excluded by the department.name filter.
 ###Data
 Data demo::relation::data::EmployeeChainData
 {

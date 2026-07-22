@@ -12,10 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Scenario-specific overlay: the address suites use the shared 3-row EmployeeData
-// (from relation-shared-data); this 4-row set is kept local so David (a second London
-// employee) doesn't disturb addressCitySuite/londonFilterSuite's row-count assertions.
-// David makes the city-headcount grouping non-trivial (London has 2 employees, not 1).
 ###Data
 Data demo::relation::data::EmployeeCityHeadcountData
 {

@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// All salaries are non-null (avoids null-ordering ambiguity in the window function's
-// ->ascending() clause). Two employees per firm so rank is non-trivial (1 and 2).
 ###Data
 Data demo::relation::data::RankedEmployeeData
 {

@@ -16,9 +16,6 @@
 import meta::pure::functions::relation::*;
 import meta::pure::metamodel::relation::*;
 
-// ->filter() before ->groupBy() excludes zero-quantity rows from the aggregation
-// entirely (a real-world "don't aggregate no-op positions" case), combined with a
-// second aggregate (AVG_QTY) alongside the existing sum.
 function demo::relation::func::positions(): meta::pure::metamodel::relation::Relation<Any>[1]
 {
   #>{demo::relation::db::EmployeeDB.PositionTable}#
@@ -83,9 +80,6 @@ Mapping demo::relation::mapping::PositionGroupByMapping
     },
     multiAggregateSuite:
     {
-      // Same aggregated groups as groupBySuite (the QTY=0 sentinel row added to
-      // PositionData is excluded by the ->filter() in the function body either way),
-      // but this testSuite also projects the second aggregate (avgQty).
       function: |demo::relation::domain::Position.all()
                   ->sortBy(x | $x.gsn)
                   ->project(

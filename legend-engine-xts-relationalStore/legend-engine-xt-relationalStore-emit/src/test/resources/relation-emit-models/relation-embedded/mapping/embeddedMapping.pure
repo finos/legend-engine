@@ -117,13 +117,6 @@ Mapping demo::relation::mapping::EmployeeEmbeddedMapping
     },
     cityHeadcountSuite:
     {
-      // NOTE: this deliberately does NOT combine the embedded address property with an
-      // association traversal (e.g. $x.employer.legalName) in the same query. That
-      // combination mirrors tests.pure::testEmbeddedRelationMappingWithAssociation, which
-      // is a documented active shared-suite regression (firm resolves to TDSNull for
-      // cross-firm rows, caused by the #4932 XStore->ModelJoin rewrite) as of this
-      // session's gap analysis. Query-level groupBy over the embedded property's field
-      // is a safe combination that doesn't touch the regressed association-resolution path.
       function: |demo::relation::domain::ExtendedEmployee.all()
                   ->project(~[city: x | $x.address.city, name: x | $x.firstName])
                   ->groupBy(~city, ~headcount: x | $x.name : y | $y->count())

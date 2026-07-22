@@ -1076,7 +1076,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByFilterOnAggregate():Boolean[1]
 {
    let result = execute(
-      |GroupByClass.all()->filter(x|$x.sum > 50)->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
+      |GroupByClass.all(%2020-01-01)->filter(x|$x.sum > 50)->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
       GroupByMapping,
       meta::external::store::relational::tests::testRuntime(testDB),
       meta::relational::extension::relationalExtensions()
@@ -1095,7 +1095,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByThroughModelJoin():Boolean[1]
 {
    let result = execute(
-      |GroupByClass.all()->project(~[firmId:x|$x.firmId, firmName:x|$x.groupedByFirm.legalName]),
+      |GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, firmName:x|$x.groupedByFirm.legalName]),
       GroupByAssociationMapping,
       meta::external::store::relational::tests::testRuntime(testDB),
       meta::relational::extension::relationalExtensions()
@@ -1259,8 +1259,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- Gap #1: a ->distinct() set joined (ModelJoin) to another class -------------
-// Navigate from the distinct Firm set (ids 1,2,3 after dedup) to its employees.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithJoin():Boolean[1]
 {
    let result = execute(
@@ -1281,7 +1279,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- Gap #2: filter + ->distinct() in the same ~func ----------------------------
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilterInFunc():Boolean[1]
 {
    let result = execute(
@@ -1300,7 +1297,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- Gap #3: if/case computed column via ->extend(...) in the ~func -------------
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithCase():Boolean[1]
 {
    let result = execute(
@@ -1320,11 +1316,10 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- Gap #4: navigate from Firm to the grouped set (firmGroupings[*]) + aggregate -
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByNavigateToGroupedSet():Boolean[1]
 {
    let result = execute(
-      |Firm.all()->project(~[firm:x|$x.legalName, total:x|$x.firmGroupings.sum]),
+      |Firm.all()->project(~[firm:x|$x.legalName, total:x|$x.firmGroupings(%2020-01-01).sum]),
       GroupByAssociationMapping,
       meta::external::store::relational::tests::testRuntime(testDB),
       meta::relational::extension::relationalExtensions()

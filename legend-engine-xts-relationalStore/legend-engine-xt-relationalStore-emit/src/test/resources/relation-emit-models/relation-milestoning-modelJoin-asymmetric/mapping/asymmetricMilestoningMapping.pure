@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Both temporal tables here use DATE (not TIMESTAMP) milestoning columns — matching
-// this repo's existing TemporalEmployeeTable/BusinessTemporalEmployeeTable schemas —
-// so both sides are navigated with a plain %date argument (not the date-vs-datetime
-// asymmetry the reference unit test also exercises, which doesn't apply to our schema).
-
 ###Pure
 import meta::pure::metamodel::relation::*;
 
@@ -26,7 +21,6 @@ Association demo::relation::domain::EmployeeTemporalLink
   processingRecord: demo::relation::domain::TemporalEmployee[1];
 }
 
-// Same-scheme link: both TemporalEmployee and TemporalDepartment are processing-temporal.
 Association demo::relation::domain::EmployeeDepartmentSameScheme
 {
   employee: demo::relation::domain::TemporalEmployee[1];
@@ -81,10 +75,6 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
   [
     diffSchemeModelJoinSuite:
     {
-      // BusinessTemporalEmployee.all(%date) queries the business-temporal endpoint;
-      // navigating .processingRecord(%date) queries the processing-temporal endpoint at
-      // its own as-of date, through the same ModelJoin. Both employees are temporally
-      // valid on both sides at the query date, so both sides' names match.
       function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
                   ->sortBy(x | $x.firstName)
                   ->project(
@@ -121,13 +111,6 @@ Mapping demo::relation::mapping::AsymmetricMilestoningModelJoinMapping
     },
     sameSchemeModelJoinSuite:
     {
-      // Both TemporalEmployee and TemporalDepartment are processing-temporal. The employee
-      // side is queried at %2025-01-01, the department side at %2025-06-01 (a LATER date,
-      // deliberately different) — Alice's department is renamed between those two dates
-      // (Engineering -> Platform Engineering on 2025-03-01), so this proves the department
-      // navigation resolves its own independent as-of date rather than reusing the
-      // employee query's date: if it incorrectly reused %2025-01-01, Alice would still show
-      // "Engineering".
       function: |demo::relation::domain::TemporalEmployee.all(%2025-01-01)
                   ->sortBy(x | $x.firstName)
                   ->project(

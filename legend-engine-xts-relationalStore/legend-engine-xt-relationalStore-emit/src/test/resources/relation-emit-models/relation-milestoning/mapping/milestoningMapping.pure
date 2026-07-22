@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// The engine's ~func grammar only accepts a full function descriptor (funcName():Type[mult]),
-// and the descriptor's return type must be UNQUALIFIED (no package path) — see
-// FunctionDescriptor.validateType in legend-pure. A mangled id (funcName__Relation_1_)
-// or a fully-qualified return type both fail here (parser or "can't find element" respectively).
-
 ###Mapping
 Mapping demo::relation::mapping::TemporalEmployeeMapping
 (
@@ -112,9 +107,6 @@ Mapping demo::relation::mapping::TemporalEmployeeMapping
     },
     businessTemporalPointInTimeSuite:
     {
-      // Same shape as pointInTimeSuite above, but for the business-temporal class
-      // (FROM_Z/THRU_Z) added in Wave 0, proving the second milestoning scheme works
-      // end-to-end in the same model.
       function: |demo::relation::domain::BusinessTemporalEmployee.all(%2025-01-01)
                   ->sortBy(x | $x.firstName)
                   ->project(

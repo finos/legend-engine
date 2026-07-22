@@ -89,10 +89,6 @@ Mapping demo::relation::mapping::EmployeeJoinMapping
     },
     subAggregationSuite:
     {
-      // Sub-aggregation over an association-traversed to-many collection ($firm.employees),
-      // combining the existing XStore wiring with count()/sum() aggregates. Both employees'
-      // salaries are non-null by construction — do not add an inner ->filter() to the
-      // aggregation chain itself (that combination is a known blocked engine gap).
       function: |demo::relation::domain::Firm.all()
                   ->sortBy(x | $x.legalName)
                   ->project(

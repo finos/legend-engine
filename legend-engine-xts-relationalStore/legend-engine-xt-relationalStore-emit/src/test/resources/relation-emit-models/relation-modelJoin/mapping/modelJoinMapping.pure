@@ -12,12 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// ModelJoin pairs lambda parameters to association ends by TYPE, not by name (name
-// matching is only required for self-associations, where both ends share a type).
-// The join condition references the same +firmId / id local-and-real properties used
-// by relation-join's XStore form — ModelJoin is a drop-in alternative wiring for the
-// same underlying association.
-
 ###Mapping
 import demo::relation::func::*;
 
@@ -94,10 +88,6 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
     },
     firmFilterSuite:
     {
-      // Filter on a property reached through the ModelJoin traversal itself
-      // ($e.employer.legalName), rather than on a raw column — mirrors
-      // relationCoverageLocalProperty.pure::testLocalPropertyFilter's shape
-      // ($p.firm.legalName == 'Firm X'), applied here via ModelJoin instead of XStore.
       function: |demo::relation::domain::Employee.all()
                   ->filter(e | $e.employer.legalName == 'Acme')
                   ->sortBy(x | $x.firstName)
