@@ -826,6 +826,61 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilter():Boolean[1]
+{
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithComplexFilter():Boolean[1]
+{
+   let result = execute(
+      |PersonWithAddress.all()->filter(x|$x.address.city == 'Boston' || $x.address.city == 'Seattle')->project(~[name:x|$x.firstName, street:x|$x.address.street, city:x|$x.address.city]),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       name, street, city
+       David, Pine Rd, Boston
+       Fabrice, Elm Blvd, Seattle
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
+{
+   let result = execute(
+      |PersonWithAddress.all()->project(~[city:x|$x.address.city, age:x|$x.age])->groupBy(~city, ~count : x|$x.age : y|$y->count()),
+      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
+      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+    #TDS
+       city, count
+       Boston, 1
+       Chicago, 1
+       New York, 1
+       Seattle, 1
+    #->toString(),
+    $result.values->at(0)->sort(~city->ascending())->toString()
+  );
+}
+
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociation():Boolean[1]
 {
    let result = execute(
@@ -872,6 +927,28 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Fabrice, 45
        John, 30
        Oliver, 26
+    #->toString(),
+    $result.values->at(0)->sort(~name->ascending())->toString()
+  );
+}
+
+// XStore association still resolves when both source and target class mappings
+// use `$src.COL` form on every property mapping (PK and FK lookups).
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testExplicitSrcMappingWithAssociation():Boolean[1]
+{
+  let result = execute(
+    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
+    meta::relational::tests::mapping::relation::ExplicitSrcMapping,
+    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals(
+    #TDS
+      name, firmName
+      David, Firm D
+      Fabrice, Firm C
+      John, Firm X
+      Oliver, Firm C
     #->toString(),
     $result.values->at(0)->sort(~name->ascending())->toString()
   );
