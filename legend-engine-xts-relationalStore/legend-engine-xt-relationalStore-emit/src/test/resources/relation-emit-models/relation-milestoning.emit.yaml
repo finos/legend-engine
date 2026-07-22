@@ -40,7 +40,7 @@ features:
   - execution:test-data
 stores:
   - relational
-complexity: complex
+complexity: basic
 tags:
   - h2
   - mapping-test
