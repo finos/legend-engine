@@ -302,6 +302,11 @@ function meta::relational::tests::mapping::modelJoin::milestoning::function::tra
   #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.trackingTable}#->select(~[ID, SHIPMENTID, PREFIX])
 }
 
+function meta::relational::tests::mapping::modelJoin::milestoning::function::auditTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.auditTable}#->select(~[ID, ENTITYREF, MESSAGE, IN_Z, OUT_Z])
+}
+
 function meta::relational::tests::mapping::modelJoin::milestoning::function::productMilTable(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
 {
   #>{meta::relational::tests::mapping::modelJoin::milestoning::store::Db.productMilTable}#->select(~[ID, ORDERID, CODE, CATEGORY, FROM_Z, THRU_Z])
@@ -446,6 +451,46 @@ Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestoningSam
   Order_Shipment: ModelJoin
   {
     {order_ship: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], shipments: meta::relational::tests::mapping::modelJoin::milestoning::domain::Shipment[1]|$order_ship.product.code == $shipments.trackingRef.prefix}
+  }
+)
+
+// =========================================================================
+// Different milestoning schemes (Order=business, AuditEntry=processing)
+// =========================================================================
+Mapping meta::relational::tests::mapping::modelJoin::milestoning::MilestoningDiffSchemeMapping
+(
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[order]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::orderTable():Relation<Any>[1]
+    description: DESCRIPTION,
+    refCode: REFCODE,
+    +id: Integer[1]: ID,
+    +productId: Integer[1]: PRODUCTID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[product]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::productTable():Relation<Any>[1]
+    code: CODE,
+    category: CATEGORY,
+    +id: Integer[1]: ID,
+    +orderId: Integer[1]: ORDERID
+  }
+  *meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[audit]: Relation
+  {
+    ~func meta::relational::tests::mapping::modelJoin::milestoning::function::auditTable():Relation<Any>[1]
+    entityRef: ENTITYREF,
+    message: MESSAGE,
+    +id: Integer[1]: ID
+  }
+
+  Order_Product: ModelJoin
+  {
+    {order: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], product: meta::relational::tests::mapping::modelJoin::milestoning::domain::Product[1]|$order.id == $product.orderId}
+  }
+
+  Order_Audit: ModelJoin
+  {
+    {order_audit: meta::relational::tests::mapping::modelJoin::milestoning::domain::Order[1], auditEntries: meta::relational::tests::mapping::modelJoin::milestoning::domain::AuditEntry[1]|$order_audit.product.code == $auditEntries.entityRef}
   }
 )
 
