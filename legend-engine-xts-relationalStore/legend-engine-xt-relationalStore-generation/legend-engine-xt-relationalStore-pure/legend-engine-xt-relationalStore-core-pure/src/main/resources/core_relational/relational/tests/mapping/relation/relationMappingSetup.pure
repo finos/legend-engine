@@ -1287,3 +1287,89 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
 
   true;
 }
+
+// ============================================================================
+// Additional relation-mapping coverage: filter + ->distinct() and an if/case
+// computed column in the backing ~func, plus a distinct Firm set joined via
+// ModelJoin to Person. Reuses the testDB store and the relation domain classes
+// (Person, Firm) already defined above.
+// ============================================================================
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+import meta::relational::tests::mapping::relation::*;
+
+// Gap #2 — filter + ->distinct() in the same ~func (ID <= 2 then distinct).
+function meta::relational::tests::mapping::relation::distinctFirmFilteredFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->filter(x | $x.ID <= 2)
+      ->select(~[ID, LEGALNAME])
+      ->distinct();
+}
+
+// Gap #3 — if/case computed column via ->extend(...) then ->distinct() in the ~func.
+function meta::relational::tests::mapping::relation::firmWithCaseFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->extend(~name:r | if($r.ID == 1, | 'Primary Firm', | $r.LEGALNAME->toOne()))
+      ->select(~[ID, name])
+      ->distinct();
+}
+
+// Gap #1 — the full (unfiltered) Person relation, joined to a distinct Firm set below.
+function meta::relational::tests::mapping::relation::personAllFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->select(~['FIRST NAME', AGE, FIRMID]);
+}
+
+###Mapping
+import meta::relational::tests::mapping::relation::*;
+
+// Gap #1 — a distinct Firm set joined via ModelJoin to Person; navigate distinctFirm -> employees.
+Mapping meta::relational::tests::mapping::relation::distinctFirmJoinMapping
+(
+   *Person[person]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personAllFunc__Relation_1_
+      firstName: 'FIRST NAME',
+      age: AGE,
+      +firmId: Integer[1]: FIRMID
+   }
+
+   *Firm[firm]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+
+   Person_Firm: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1] | $firm.id == $employees.firmId}
+   }
+)
+
+// Gap #2 — filter + distinct in the ~func.
+Mapping meta::relational::tests::mapping::relation::distinctFirmFilteredMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFilteredFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+)
+
+// Gap #3 — if/case computed column in the ~func (name = 'Primary Firm' for ID 1, else LEGALNAME).
+Mapping meta::relational::tests::mapping::relation::distinctFirmCaseMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::firmWithCaseFunc__Relation_1_
+      legalName: name,
+      +id: Integer[1]: ID
+   }
+)

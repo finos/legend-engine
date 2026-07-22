@@ -1181,3 +1181,86 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
      1
    );
 }
+
+// --- Gap #1: a ->distinct() set joined (ModelJoin) to another class -------------
+// Navigate from the distinct Firm set (ids 1,2,3 after dedup) to its employees.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[firm:x|$x.legalName, employee:x|$x.employees.firstName]),
+      distinctFirmJoinMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, employee
+        Firm A, Jane
+        Firm B, Anthony
+        Firm X, John
+        Firm X, Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firm->ascending(), ~employee->ascending()])->toString()
+   );
+}
+
+// --- Gap #2: filter + ->distinct() in the same ~func ----------------------------
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilterInFunc():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName]),
+      distinctFirmFilteredMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+        Firm X
+     #->toString(),
+     $result.values->at(0)->sort(~legalName->ascending())->toString()
+   );
+}
+
+// --- Gap #3: if/case computed column via ->extend(...) in the ~func -------------
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithCase():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName]),
+      distinctFirmCaseMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+        Firm B
+        Primary Firm
+     #->toString(),
+     $result.values->at(0)->sort(~legalName->ascending())->toString()
+   );
+}
+
+// --- Gap #4: navigate from Firm to the grouped set (firmGroupings[*]) + aggregate -
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByNavigateToGroupedSet():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[firm:x|$x.legalName, total:x|$x.firmGroupings.sum]),
+      GroupByAssociationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, total
+        Firm A, 23
+        Firm B, 19
+        Firm C, 71
+        Firm D, 52
+        Firm X, 53
+     #->toString(),
+     $result.values->at(0)->sort(~firm->ascending())->toString()
+   );
+}
