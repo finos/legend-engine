@@ -199,6 +199,24 @@ public class FunctionCoverageReport
         // Load error details from parity report
         Map<String, FailureInfo> failureMap = loadFailures(parityReportFile);
 
+        // Reclassify FUNCTION_NOT_SUPPORTED as NOT_APPLICABLE (unsupported, not error)
+        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+        {
+            for (FunctionCatalogExtractor.PgFunction fn : fns)
+            {
+                String errCat = getErrorCategory(fn, failureMap);
+                if (ErrorCategorizer.FUNCTION_NOT_SUPPORTED.equals(errCat))
+                {
+                    fn.tdsStatus = "NOT_APPLICABLE";
+                    fn.relStatus = "NOT_APPLICABLE";
+                    if (fn.notes.isEmpty())
+                    {
+                        fn.notes = "Function not supported";
+                    }
+                }
+            }
+        }
+
         StringBuilder md = new StringBuilder();
         md.append("# Postgres Function Coverage — Legend SQL (LegendSql)\n\n");
 
@@ -228,23 +246,31 @@ public class FunctionCoverageReport
         int totalRelError = 0;
         int totalRelSkip = 0;
         int totalTests = 0;
+        int totalUnsupported = 0;
         Set<String> uniqueNames = new HashSet<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
             for (FunctionCatalogExtractor.PgFunction fn : fns)
             {
                 uniqueNames.add(fn.name);
+                if ("NOT_APPLICABLE".equals(fn.tdsStatus))
+                {
+                    totalUnsupported++;
+                }
                 if (fn.coverage != null)
                 {
                     totalTests += fn.coverage.total;
-                    totalTdsPass += fn.coverage.tdsPass;
-                    totalTdsFail += fn.coverage.tdsFail;
-                    totalTdsError += fn.coverage.tdsError;
-                    totalTdsSkip += fn.coverage.tdsSkip;
-                    totalRelPass += fn.coverage.relPass;
-                    totalRelFail += fn.coverage.relFail;
-                    totalRelError += fn.coverage.relError;
-                    totalRelSkip += fn.coverage.relSkip;
+                    if (!"NOT_APPLICABLE".equals(fn.tdsStatus))
+                    {
+                        totalTdsPass += fn.coverage.tdsPass;
+                        totalTdsFail += fn.coverage.tdsFail;
+                        totalTdsError += fn.coverage.tdsError;
+                        totalTdsSkip += fn.coverage.tdsSkip;
+                        totalRelPass += fn.coverage.relPass;
+                        totalRelFail += fn.coverage.relFail;
+                        totalRelError += fn.coverage.relError;
+                        totalRelSkip += fn.coverage.relSkip;
+                    }
                 }
             }
         }
@@ -258,6 +284,7 @@ public class FunctionCoverageReport
         md.append(String.format("| FAIL | %d | %d |\n", totalTdsFail, totalRelFail));
         md.append(String.format("| ERROR | %d | %d |\n", totalTdsError, totalRelError));
         md.append(String.format("| SKIP | %d | %d |\n", totalTdsSkip, totalRelSkip));
+        md.append(String.format("| UNSUPPORTED | %d | %d |\n", totalUnsupported, totalUnsupported));
         md.append("\n---\n\n");
 
         // === 2. Error Categories ===
@@ -346,7 +373,7 @@ public class FunctionCoverageReport
         {
             for (FunctionCatalogExtractor.PgFunction fn : entry.getValue())
             {
-                if ("ERROR".equals(fn.tdsStatus))
+                if ("NOT_APPLICABLE".equals(fn.tdsStatus) && fn.coverage != null)
                 {
                     String errCat = getErrorCategory(fn, failureMap);
                     if (ErrorCategorizer.FUNCTION_NOT_SUPPORTED.equals(errCat)
@@ -480,11 +507,17 @@ public class FunctionCoverageReport
     private static String rowColour(String tdsStatus, String relStatus)
     {
         boolean bothPass = "PASS".equals(tdsStatus) && "PASS".equals(relStatus);
+        boolean bothUnsupported = "NOT_APPLICABLE".equals(tdsStatus) && "NOT_APPLICABLE".equals(relStatus);
         boolean bothError = ("ERROR".equals(tdsStatus) || "NOT_APPLICABLE".equals(tdsStatus))
-                && ("ERROR".equals(relStatus) || "NOT_APPLICABLE".equals(relStatus));
+                && ("ERROR".equals(relStatus) || "NOT_APPLICABLE".equals(relStatus))
+                && !bothUnsupported;
         if (bothPass)
         {
             return "\uD83D\uDFE2"; // 🟢
+        }
+        if (bothUnsupported)
+        {
+            return "⚪"; // grey — unsupported
         }
         if (bothError)
         {
@@ -573,7 +606,17 @@ public class FunctionCoverageReport
         {
             FunctionCoverageMapper.TestResultEntry te = fn.coverage.testDetails.get(0);
             String anchor = "fail-" + te.testId + "-TDS";
-            return String.format("[%s](failure-details.md#%s)", cat, anchor);
+            boolean isFail = "FAIL".equals(fn.tdsStatus) || "FAIL".equals(fn.relStatus);
+            if (isFail)
+            {
+                // Result mismatches link to the failure-details report
+                return String.format("[%s](failure-details.md#%s)", cat, anchor);
+            }
+            else
+            {
+                // Errors link to the Error Details section in the same file
+                return String.format("[%s](#%s)", cat, anchor);
+            }
         }
         return cat;
     }
@@ -737,7 +780,7 @@ public class FunctionCoverageReport
             for (FunctionCatalogExtractor.PgFunction fn : fns)
             {
                 uniqueNames.add(fn.name);
-                if (fn.coverage != null)
+                if (fn.coverage != null && !"NOT_APPLICABLE".equals(fn.tdsStatus))
                 {
                     totalTdsPass += fn.coverage.tdsPass;
                     totalTdsFail += fn.coverage.tdsFail;

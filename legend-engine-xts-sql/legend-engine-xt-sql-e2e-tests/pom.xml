@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-sql</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.135.1-SNAPSHOT</version>
+        <version>PENTEJ-ENGINE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -73,6 +73,37 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Copy generated parity reports into JAR so they are available on the classpath -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-parity-reports</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/sql-parity</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>function-coverage.md</include>
+                                        <include>structural-parity.md</include>
+                                        <include>failure-details.md</include>
+                                        <include>function-coverage.html</include>
+                                        <include>structural-parity.html</include>
+                                        <include>failure-details.html</include>
+                                        <include>parity-report.json</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -111,6 +142,19 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Markdown to HTML for report generation -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.22.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark-ext-gfm-tables</artifactId>
+            <version>0.22.0</version>
             <scope>test</scope>
         </dependency>
 

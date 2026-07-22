@@ -27,6 +27,7 @@ import org.finos.legend.engine.postgres.e2e.coverage.FailureDetailReport;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCatalogExtractor;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCoverageMapper;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCoverageReport;
+import org.finos.legend.engine.postgres.e2e.coverage.HtmlReportGenerator;
 import org.finos.legend.engine.postgres.e2e.coverage.StructuralParityReport;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
@@ -491,6 +492,9 @@ public class TestPostgresParity
             // Failure detail report (full result set comparisons)
             FailureDetailReport failureDetailReport = new FailureDetailReport();
             failureDetailReport.generate(report.getResults(), "target");
+
+            // Generate HTML versions of the markdown reports
+            new HtmlReportGenerator().generateAll("target");
         }
         catch (Exception e)
         {

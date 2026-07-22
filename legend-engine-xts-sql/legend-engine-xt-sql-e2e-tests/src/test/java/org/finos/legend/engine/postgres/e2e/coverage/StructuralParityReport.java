@@ -1,4 +1,4 @@
-// Copyright 2026 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -640,15 +640,22 @@ public class StructuralParityReport
         {
             return "";
         }
+        boolean isFail = "FAIL".equals(fc.tdsStatus()) || "FAIL".equals(fc.relStatus());
         for (TestEntry te : fc.tests)
         {
             if (failureMap.containsKey(te.testId + "|TDS"))
             {
-                return String.format("[%s](failure-details.md#fail-%s-TDS)", category, te.testId);
+                String anchor = "fail-" + te.testId + "-TDS";
+                return isFail
+                        ? String.format("[%s](failure-details.md#%s)", category, anchor)
+                        : String.format("[%s](#%s)", category, anchor);
             }
             if (failureMap.containsKey(te.testId + "|Relation"))
             {
-                return String.format("[%s](failure-details.md#fail-%s-Relation)", category, te.testId);
+                String anchor = "fail-" + te.testId + "-Relation";
+                return isFail
+                        ? String.format("[%s](failure-details.md#%s)", category, anchor)
+                        : String.format("[%s](#%s)", category, anchor);
             }
         }
         return category;
