@@ -74,7 +74,7 @@ Mapping demo::relation::mapping::RankedEmployeeMapping
     rankWithinFirmSuite:
     {
       // Rank is computed per-firm (partitioned by FIRM_ID, ordered by SALARY ascending)
-      // by the window function, then projected together with the XStore-traversed
+      // by the window function, then projected together with the ModelJoin-traversed
       // employer.legalName in the same query.
       function: |demo::relation::domain::RankedEmployee.all()
                   ->sortBy(x | $x.firstName)

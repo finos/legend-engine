@@ -13,12 +13,12 @@
 # limitations under the License.
 
 name: relation-window-function
-title: "Relation Function Mapping — Window Function + XStore Association"
+title: "Relation Function Mapping — Window Function + ModelJoin Association"
 description: |
   A window function (->extend(over(...), ~[RANK:{p,w,r|$p->rank($w,$r)}])) ranks
   employees by salary within each firm, backing a real `rank` property on a
   model-local RankedEmployee subclass (mirroring relationMappingSetup.pure's
-  ExtendedPerson/WindowColumnMapping). Combined with an XStore association to Firm so
+  ExtendedPerson/WindowColumnMapping). Combined with a ModelJoin association to Firm so
   this isn't a bare single-feature model. This is new territory for EMIT — no existing
   model exercises window syntax end-to-end from raw text before this one.
 
@@ -48,3 +48,4 @@ tags:
   - relation
   - window-function
   - association
+  - modeljoin
