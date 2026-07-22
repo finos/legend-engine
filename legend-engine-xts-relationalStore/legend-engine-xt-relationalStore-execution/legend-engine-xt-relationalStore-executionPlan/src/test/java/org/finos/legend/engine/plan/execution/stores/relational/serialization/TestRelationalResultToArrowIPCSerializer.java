@@ -72,22 +72,23 @@ public class TestRelationalResultToArrowIPCSerializer
     {
         RelationalResult rr = mock(RelationalResult.class);
 
-        // Methods used by the serializer
+        // --- Methods used by the serializer ---
         when(rr.getResultSet()).thenReturn(rs);
-        when(rr.getSQLResultColumns()).thenReturn(buildSqlColumns());
         when(rr.getColumnListForSerializer()).thenReturn(java.util.Collections.emptyList());
+        // getValue(i) delegates to the live ResultSet, reading the column
+        // immediately before the serializer evaluates rs.wasNull().
+        when(rr.getValue(anyInt()))
+                .thenAnswer(inv -> rs.getObject((Integer) inv.getArgument(0)));
 
-        // getValue(i) is invoked per column inside writeRow(...).
-        // Delegate to the underlying ResultSet.getObject(i).
-        when(rr.getValue(anyInt())).thenAnswer(inv -> rs.getObject((Integer) inv.getArgument(0)));
-
-        // Public fields read directly by the serializer
+        // --- Public FIELDS read directly by the serializer ---
+        // buildSchema() reads rr.resultSetMetaData and rr.columnCount as fields,
+        // NOT via getters. These MUST be set or buildSchema NPEs.
+        setField(rr, "resultSetMetaData", rs.getMetaData());
         setField(rr, "columnCount", 4);
         // builder / activities / generationInfo / topSpan stay null - safe.
 
         return rr;
     }
-
     // ------------------------------------------------------------------
     // Setup / Teardown
     // ------------------------------------------------------------------
