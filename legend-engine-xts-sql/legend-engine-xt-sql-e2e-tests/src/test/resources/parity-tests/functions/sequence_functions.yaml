@@ -1,0 +1,31 @@
+tests:
+  - id: nextval__regclass__basic
+    sql: "SELECT NEXTVAL('test_seq') AS result"
+    function: nextval
+    signature: "nextval(regclass) → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: currval__regclass__basic
+    sql: "SELECT CURRVAL('test_seq') AS result FROM (SELECT NEXTVAL('test_seq')) AS init"
+    function: currval
+    signature: "currval(regclass) → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lastval__basic
+    sql: "SELECT LASTVAL() AS result FROM (SELECT NEXTVAL('test_seq')) AS init"
+    function: lastval
+    signature: "lastval() → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: setval__regclass_big__basic
+    sql: "SELECT SETVAL('test_seq', 42) AS result"
+    function: setval
+    signature: "setval(regclass, bigint) → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: setval__regclass_big_bool__basic
+    sql: "SELECT SETVAL('test_seq', 100, true) AS result"
+    function: setval
+    signature: "setval(regclass, bigint, boolean) → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

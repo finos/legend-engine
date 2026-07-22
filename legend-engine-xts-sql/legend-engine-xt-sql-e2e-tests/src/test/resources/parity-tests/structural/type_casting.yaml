@@ -1,0 +1,96 @@
+tests:
+  # CAST integer to text
+  - id: cast_int_to_text
+    sql: "SELECT CAST(age AS TEXT) AS result FROM persons WHERE age IS NOT NULL ORDER BY 1"
+    feature: "CAST integer to text"
+    category: "type_casting"
+
+  # CAST text to integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_text_to_int
+    sql: "SELECT CAST(nullable_val AS INTEGER) AS result FROM strings WHERE nullable_val ~ '^[0-9]+$' ORDER BY 1"
+    feature: "CAST text to integer"
+    category: "type_casting"
+
+  # CAST numeric to integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_numeric_to_int
+    sql: "SELECT CAST(numeric_val AS INTEGER) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1"
+    feature: "CAST numeric to integer"
+    category: "type_casting"
+
+  # CAST with NULL
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: cast_null
+    sql: "SELECT CAST(NULL AS INTEGER) AS result FROM persons WHERE id = 1"
+    feature: "CAST NULL"
+    category: "type_casting"
+
+  # CAST in WHERE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_in_where
+    sql: "SELECT name, salary FROM persons WHERE CAST(salary AS INTEGER) > 60000 ORDER BY 1"
+    feature: "CAST in WHERE"
+    category: "type_casting"
+
+  # Boolean casting
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_bool
+    sql: "SELECT CAST(active AS TEXT) AS result FROM persons WHERE active IS NOT NULL ORDER BY 1"
+    feature: "Boolean to text"
+    category: "type_casting"
+
+  # Implicit coercion
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: implicit_coercion
+    sql: "SELECT int_val + float_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL ORDER BY 1"
+    feature: "Implicit type coercion"
+    category: "type_casting"
+
+  # CAST float to integer (truncation)
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: cast_float_to_int
+    sql: "SELECT CAST(float_val AS INTEGER) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1"
+    feature: "CAST float to integer"
+    category: "type_casting"
+
+  # CAST integer to boolean
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: cast_int_to_bool
+    sql: "SELECT CAST(1 AS BOOLEAN) AS t_val, CAST(0 AS BOOLEAN) AS f_val FROM persons WHERE id = 1"
+    feature: "CAST integer to boolean"
+    category: "type_casting"
+
+  # CAST in expression
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: cast_in_expression
+    sql: "SELECT name, CAST(salary AS INTEGER) * 2 AS doubled FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "CAST in expression"
+    category: "type_casting"
+
+  # CAST date to text
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: cast_date_to_text
+    sql: "SELECT CAST(hire_date AS TEXT) AS result FROM persons WHERE hire_date IS NOT NULL ORDER BY 1"
+    feature: "CAST date to text"
+    category: "type_casting"
+
+  # CAST in ORDER BY
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: cast_in_order_by
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY CAST(salary AS INTEGER) DESC"
+    feature: "CAST in ORDER BY"
+    category: "type_casting"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

@@ -1,0 +1,288 @@
+tests:
+  - id: col_description__oid_int__no_generator
+    sql: "SELECT COL_DESCRIPTION('persons'::regclass, 1) AS result FROM persons WHERE id = 1"
+    function: col_description
+    signature: "col_description(oid, integer) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: current_database__basic
+    sql: "SELECT CURRENT_DATABASE() AS result FROM persons WHERE id = 1"
+    function: current_database
+    signature: "current_database() → name"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: current_query__no_generator
+    sql: "SELECT CURRENT_QUERY() AS result FROM persons WHERE id = 1"
+    function: current_query
+    signature: "current_query() → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: current_schema__basic
+    sql: "SELECT CURRENT_SCHEMA() AS result FROM persons WHERE id = 1"
+    function: current_schema
+    signature: "current_schema() → name"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: current_schemas__bool__basic
+    sql: "SELECT CURRENT_SCHEMAS(true) AS result FROM persons WHERE id = 1"
+    function: current_schemas
+    signature: "current_schemas(boolean) → name[]"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: current_user__basic
+    sql: "SELECT CURRENT_USER AS result FROM persons WHERE id = 1"
+    function: current_user
+    signature: "current_user() → name"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__name_oid_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(name, oid, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__name_oid_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(name, oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__name_txt_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(name, text, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__name_txt_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(name, text, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_oid_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, oid, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_oid_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_txt_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, text, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__oid_txt_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(oid, text, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__txt_small_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(text, smallint, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_column_privilege__txt_txt_txt__no_generator
+    sql: "SELECT HAS_COLUMN_PRIVILEGE('persons', 'id', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_column_privilege
+    signature: "has_column_privilege(text, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__name_oid_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(name, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__name_txt_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(name, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__oid_oid_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(oid, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__oid_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__oid_txt_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_database_privilege__txt_txt__no_generator
+    sql: "SELECT HAS_DATABASE_PRIVILEGE(CURRENT_DATABASE(), 'CONNECT') AS result FROM persons WHERE id = 1"
+    function: has_database_privilege
+    signature: "has_database_privilege(text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__name_oid_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(name, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__name_txt_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(name, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__oid_oid_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(oid, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__oid_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__oid_txt_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_schema_privilege__txt_txt__no_generator
+    sql: "SELECT HAS_SCHEMA_PRIVILEGE('public', 'USAGE') AS result FROM persons WHERE id = 1"
+    function: has_schema_privilege
+    signature: "has_schema_privilege(text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__name_oid_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(name, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__name_txt_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(name, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__oid_oid_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(oid, oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__oid_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(oid, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__oid_txt_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(oid, text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: has_table_privilege__txt_txt__no_generator
+    sql: "SELECT HAS_TABLE_PRIVILEGE('persons', 'SELECT') AS result FROM persons WHERE id = 1"
+    function: has_table_privilege
+    signature: "has_table_privilege(text, text) → boolean"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: obj_description__oid__no_generator
+    sql: "SELECT OBJ_DESCRIPTION('persons'::regclass) AS result FROM persons WHERE id = 1"
+    function: obj_description
+    signature: "obj_description(oid) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: obj_description__oid_name__no_generator
+    sql: "SELECT OBJ_DESCRIPTION('persons'::regclass) AS result FROM persons WHERE id = 1"
+    function: obj_description
+    signature: "obj_description(oid, name) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: session_user__basic
+    sql: "SELECT SESSION_USER AS result FROM persons WHERE id = 1"
+    function: session_user
+    signature: "session_user() → name"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: shobj_description__oid_name__no_generator
+    sql: "SELECT SHOBJ_DESCRIPTION(0, 'pg_database') AS result FROM persons WHERE id = 1"
+    function: shobj_description
+    signature: "shobj_description(oid, name) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: version__basic
+    sql: "SELECT VERSION() AS result FROM persons WHERE id = 1"
+    function: version
+    signature: "version() → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP

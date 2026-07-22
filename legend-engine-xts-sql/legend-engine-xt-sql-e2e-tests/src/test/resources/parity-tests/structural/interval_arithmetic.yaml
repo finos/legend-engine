@@ -1,0 +1,177 @@
+tests:
+  # Date + Interval
+  - id: interval_date_plus_days
+    sql: "SELECT d + INTERVAL '1 day' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_date_plus_months
+    sql: "SELECT d + INTERVAL '1 month' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_date_plus_years
+    sql: "SELECT d + INTERVAL '1 year' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Date - Interval
+  - id: interval_date_minus_days
+    sql: "SELECT d - INTERVAL '7 days' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date - interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_date_minus_months
+    sql: "SELECT d - INTERVAL '3 months' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date - interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Timestamp + Interval
+  - id: interval_ts_plus_hours
+    sql: "SELECT ts + INTERVAL '2 hours' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_ts_plus_minutes
+    sql: "SELECT ts + INTERVAL '30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_ts_plus_seconds
+    sql: "SELECT ts + INTERVAL '90 seconds' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp + interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Timestamp - Interval
+  - id: interval_ts_minus_hours
+    sql: "SELECT ts - INTERVAL '2 hours' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp - interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_ts_minus_minutes
+    sql: "SELECT ts - INTERVAL '30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp - interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Date - Date → integer (days)
+  - id: interval_date_diff_literal
+    sql: "SELECT d - DATE '2020-01-01' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "date - date"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Timestamp - Timestamp → interval
+  - id: interval_ts_diff_literal
+    sql: "SELECT ts - TIMESTAMP '2020-01-01 00:00:00' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "timestamp - timestamp"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Interval * scalar
+  - id: interval_multiply_scalar
+    sql: "SELECT INTERVAL '1 hour' * 3 AS result FROM dates WHERE id = 1"
+    feature: "interval * scalar"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: interval_divide_scalar
+    sql: "SELECT INTERVAL '1 day' / 2 AS result FROM dates WHERE id = 1"
+    feature: "interval / scalar"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Compound interval literals
+  - id: interval_compound_literal
+    sql: "SELECT d + INTERVAL '1 year 2 months 3 days' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "compound interval literal"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: interval_compound_time
+    sql: "SELECT ts + INTERVAL '1 day 2 hours 30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "compound interval literal"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Interval in WHERE predicate
+  - id: interval_in_where_filter
+    sql: "SELECT d AS result FROM dates WHERE d > CURRENT_DATE - INTERVAL '365 days' AND d IS NOT NULL ORDER BY 1"
+    feature: "interval in WHERE"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_in_where_ts
+    sql: "SELECT ts AS result FROM dates WHERE ts > NOW() - INTERVAL '10 years' AND ts IS NOT NULL ORDER BY 1"
+    feature: "interval in WHERE"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Extract from interval expression
+  - id: interval_extract_epoch
+    sql: "SELECT EXTRACT(EPOCH FROM ts - TIMESTAMP '2020-01-01') AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "EXTRACT from interval"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: interval_extract_days
+    sql: "SELECT EXTRACT(DAY FROM ts - TIMESTAMP '2020-01-01') AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    feature: "EXTRACT from interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # Interval with aggregation
+  - id: interval_max_date_plus
+    sql: "SELECT MAX(d + INTERVAL '1 day') AS result FROM dates WHERE d IS NOT NULL"
+    feature: "aggregate on date+interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_min_date_minus
+    sql: "SELECT MIN(d - INTERVAL '1 month') AS result FROM dates WHERE d IS NOT NULL"
+    feature: "aggregate on date-interval"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Interval column usage (using the i INTERVAL column in dates table)
+  - id: interval_column_plus_date
+    sql: "SELECT d + i AS result FROM dates WHERE d IS NOT NULL AND i IS NOT NULL ORDER BY 1"
+    feature: "date + interval column"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: interval_column_plus_ts
+    sql: "SELECT ts + i AS result FROM dates WHERE ts IS NOT NULL AND i IS NOT NULL ORDER BY 1"
+    feature: "timestamp + interval column"
+    category: "interval_arithmetic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # make_interval combined with arithmetic
+  - id: interval_make_interval_plus_date
+    sql: "SELECT MAKE_INTERVAL(days => 10) + d AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
+    feature: "make_interval + date"
+    category: "interval_arithmetic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

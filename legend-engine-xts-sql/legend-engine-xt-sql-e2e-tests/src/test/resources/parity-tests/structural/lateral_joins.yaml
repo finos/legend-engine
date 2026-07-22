@@ -1,0 +1,59 @@
+tests:
+  # CROSS JOIN LATERAL
+  - id: lateral_cross_basic
+    sql: "SELECT p.name, g.val FROM persons p CROSS JOIN LATERAL GENERATE_SERIES(1, p.dept_id) AS g(val) WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "CROSS JOIN LATERAL"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_cross_subquery
+    sql: "SELECT p.name, sub.colleague FROM persons p CROSS JOIN LATERAL (SELECT p2.name AS colleague FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.id != p.id) sub WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "CROSS JOIN LATERAL subquery"
+    category: "lateral_joins"
+
+  # LEFT JOIN LATERAL
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_left_join
+    sql: "SELECT p.name, sub.top_sal FROM persons p LEFT JOIN LATERAL (SELECT MAX(salary) AS top_sal FROM persons p2 WHERE p2.dept_id = p.dept_id) sub ON TRUE WHERE p.id <= 5 ORDER BY 1"
+    feature: "LEFT JOIN LATERAL"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_left_join_no_match
+    sql: "SELECT p.name, sub.colleague FROM persons p LEFT JOIN LATERAL (SELECT p2.name AS colleague FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.id != p.id AND p2.salary > 999999) sub ON TRUE WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "LEFT JOIN LATERAL with no match"
+    category: "lateral_joins"
+
+  # LATERAL with LIMIT (top-N per group)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_top_n
+    sql: "SELECT d.name AS dept, sub.person_name FROM departments d CROSS JOIN LATERAL (SELECT p.name AS person_name FROM persons p WHERE p.dept_id = d.id ORDER BY p.salary DESC LIMIT 2) sub ORDER BY 1, 2"
+    feature: "LATERAL top-N per group"
+    category: "lateral_joins"
+
+  # Function in FROM (implicit LATERAL)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_function_in_from
+    sql: "SELECT g.val FROM GENERATE_SERIES(1, 5) AS g(val) ORDER BY 1"
+    feature: "function in FROM"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_function_cross_join
+    sql: "SELECT p.name, g.val FROM persons p, GENERATE_SERIES(1, 2) AS g(val) WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "function in FROM with cross join"
+    category: "lateral_joins"
+
+  # LATERAL with aggregation
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lateral_aggregate
+    sql: "SELECT p.name, sub.dept_count FROM persons p CROSS JOIN LATERAL (SELECT COUNT(*) AS dept_count FROM persons p2 WHERE p2.dept_id = p.dept_id) sub WHERE p.id <= 5 ORDER BY 1"
+    feature: "LATERAL with aggregation"
+    category: "lateral_joins"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

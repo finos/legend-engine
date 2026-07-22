@@ -146,6 +146,7 @@ import org.finos.legend.engine.server.core.emit.EMIT;
 import org.finos.legend.engine.server.core.exceptionMappers.CatchAllExceptionMapper;
 import org.finos.legend.engine.server.core.exceptionMappers.JsonInformationExceptionMapper;
 import org.finos.legend.engine.server.core.pct.PCT;
+import org.finos.legend.engine.server.core.sql.SQLDocumentation;
 import org.finos.legend.engine.server.core.session.SessionAttributeBundle;
 import org.finos.legend.engine.server.core.session.SessionTracker;
 import org.finos.legend.engine.server.core.session.StoreExecutableManagerSessionListener;
@@ -353,6 +354,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // PCT
         environment.jersey().register(new PCT());
         environment.jersey().register(new Documentation());
+
+        // SQL
+        environment.jersey().register(new SQLDocumentation());
 
         // EMIT
         environment.jersey().register(new EMIT());

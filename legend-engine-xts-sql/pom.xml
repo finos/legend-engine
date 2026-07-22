@@ -31,5 +31,6 @@
         <module>legend-engine-xt-sql-postgres-server</module>
         <module>legend-engine-xt-sql-http-api</module>
         <module>legend-engine-xt-sql-transformation</module>
+        <module>legend-engine-xt-sql-e2e-tests</module>
     </modules>
 </project>

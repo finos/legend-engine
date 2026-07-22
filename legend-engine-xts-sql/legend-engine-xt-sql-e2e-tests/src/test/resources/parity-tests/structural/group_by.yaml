@@ -1,0 +1,126 @@
+tests:
+  # Basic GROUP BY
+  - id: group_by_single
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "GROUP BY single column"
+    category: "group_by"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_single_sum
+    sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "GROUP BY single column"
+    category: "group_by"
+
+  # GROUP BY multiple columns
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_multi
+    sql: "SELECT dept_id, active, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL GROUP BY dept_id, active ORDER BY 1, 2"
+    feature: "GROUP BY multiple columns"
+    category: "group_by"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_multi_agg2
+    sql: "SELECT dept_id, active, AVG(salary) AS avg_sal FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id, active ORDER BY 1, 2"
+    feature: "GROUP BY multiple columns"
+    category: "group_by"
+
+  # GROUP BY with HAVING
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_having
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 2 ORDER BY 1"
+    feature: "GROUP BY with HAVING"
+    category: "group_by"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_having_sum
+    sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000 ORDER BY 1"
+    feature: "GROUP BY with HAVING"
+    category: "group_by"
+
+  # GROUP BY with multiple aggregates
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_multi_agg
+    sql: "SELECT dept_id, COUNT(*) AS cnt, SUM(salary) AS total, AVG(salary) AS avg_sal, MIN(salary) AS min_sal, MAX(salary) AS max_sal FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "GROUP BY with multiple aggregates"
+    category: "group_by"
+
+  # GROUP BY with expression
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_expression
+    sql: "SELECT CASE WHEN salary > 70000 THEN 'High' ELSE 'Low' END AS band, COUNT(*) AS cnt FROM persons WHERE salary IS NOT NULL GROUP BY CASE WHEN salary > 70000 THEN 'High' ELSE 'Low' END ORDER BY 1"
+    feature: "GROUP BY expression"
+    category: "group_by"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_expression_calc
+    sql: "SELECT CAST(salary / 10000 AS INTEGER) * 10000 AS bracket, COUNT(*) AS cnt FROM persons WHERE salary IS NOT NULL GROUP BY CAST(salary / 10000 AS INTEGER) * 10000 ORDER BY 1"
+    feature: "GROUP BY expression"
+    category: "group_by"
+
+  # ORDER BY aggregate
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: group_by_order_agg
+    sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY SUM(salary) DESC"
+    feature: "ORDER BY aggregate"
+    category: "group_by"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: group_by_order_count
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY COUNT(*) DESC, dept_id"
+    feature: "ORDER BY aggregate"
+    category: "group_by"
+
+  # Conditional aggregation
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: group_by_cond_agg
+    sql: "SELECT dept_id, COUNT(CASE WHEN salary > 60000 THEN 1 END) AS high_earners, COUNT(CASE WHEN salary <= 60000 THEN 1 END) AS others FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Conditional aggregation"
+    category: "group_by"
+
+  # GROUP BY with alias reference (positional)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_positional
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY 1 ORDER BY 1"
+    feature: "GROUP BY positional"
+    category: "group_by"
+
+  # GROUP BY with COALESCE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_coalesce
+    sql: "SELECT COALESCE(dept_id, -1) AS dept, COUNT(*) AS cnt FROM persons GROUP BY COALESCE(dept_id, -1) ORDER BY 1"
+    feature: "GROUP BY with COALESCE"
+    category: "group_by"
+
+  # GROUP BY + DISTINCT aggregate
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_distinct_agg
+    sql: "SELECT dept_id, COUNT(DISTINCT active) AS unique_active FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "GROUP BY + COUNT(DISTINCT)"
+    category: "group_by"
+
+  # GROUP BY with MIN/MAX on strings
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_min_max_string
+    sql: "SELECT dept_id, MIN(name) AS first_name, MAX(name) AS last_name FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "GROUP BY MIN/MAX on strings"
+    category: "group_by"
+
+  # HAVING with multiple conditions
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: group_by_having_multi
+    sql: "SELECT dept_id, COUNT(*) AS cnt, AVG(salary) AS avg_sal FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id HAVING COUNT(*) >= 2 AND AVG(salary) > 50000 ORDER BY 1"
+    feature: "HAVING with multiple conditions"
+    category: "group_by"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

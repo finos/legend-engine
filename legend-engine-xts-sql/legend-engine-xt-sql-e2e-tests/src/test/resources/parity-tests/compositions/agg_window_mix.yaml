@@ -1,0 +1,66 @@
+tests:
+  # Window function alongside GROUP BY aggregate
+  - id: comp_agg_window_dept_pct
+    sql: "SELECT dept_id, SUM(salary) AS dept_total, SUM(SUM(salary)) OVER () AS grand_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Window over aggregate"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_agg_window_running
+    sql: "SELECT dept_id, COUNT(*) AS cnt, SUM(COUNT(*)) OVER (ORDER BY dept_id) AS running_cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Window over aggregate"
+    category: "compositions"
+
+  # Running percentage within partition
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_running_pct
+    sql: "SELECT name, dept_id, salary, ROUND(salary * 100.0 / SUM(salary) OVER (PARTITION BY dept_id), 2) AS pct_of_dept FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Running percentage within partition"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_running_pct_cumulative
+    sql: "SELECT name, salary, ROUND(SUM(salary) OVER (ORDER BY name) * 100.0 / SUM(salary) OVER (), 2) AS cum_pct FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Running percentage within partition"
+    category: "compositions"
+
+  # Rank within department
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_rank_in_dept
+    sql: "SELECT name, dept_id, salary, RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dept_rank FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Rank within group"
+    category: "compositions"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: comp_dense_rank_in_dept
+    sql: "SELECT name, dept_id, salary, DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dept_drank FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Rank within group"
+    category: "compositions"
+
+  # Salary vs department average
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: comp_salary_vs_avg
+    sql: "SELECT name, dept_id, salary, salary - AVG(salary) OVER (PARTITION BY dept_id) AS diff_from_avg FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Value vs partition average"
+    category: "compositions"
+
+  # Multiple windows + CASE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_multi_window_case
+    sql: "SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS overall_rank, CASE WHEN salary > AVG(salary) OVER () THEN 'Above' ELSE 'Below' END AS vs_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Multiple windows + CASE"
+    category: "compositions"
+
+  # Window + arithmetic expression
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_window_arithmetic
+    sql: "SELECT name, salary, SUM(salary) OVER (PARTITION BY dept_id) AS dept_total, salary * 100.0 / SUM(salary) OVER (PARTITION BY dept_id) AS pct FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Window + arithmetic"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
