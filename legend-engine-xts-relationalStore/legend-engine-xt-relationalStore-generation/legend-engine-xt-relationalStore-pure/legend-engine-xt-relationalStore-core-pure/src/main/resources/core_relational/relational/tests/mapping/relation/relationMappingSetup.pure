@@ -908,6 +908,60 @@ Mapping meta::relational::tests::mapping::relation::MixedCaseAssociationChainMap
   // }
 )
 
+Mapping meta::relational::tests::mapping::relation::tradeRelationMapping
+(
+   *Trade: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::tradeFunction__Relation_1_
+      id: ID,
+      quantity: quantity,
+      date: tradeDate,
+      settlementDateTime: settlementDateTime
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::filterJoinMapping
+(
+   *Person: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithJoinFilter__Relation_1_
+      firstName: 'FIRST NAME',
+      age: AGE
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::distinctFirmMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::GroupByAssociationMapping
+(
+   *GroupByClass[groupByClass]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_
+      firmId: FIRMID,
+      sum: SUM
+   }
+
+   *Firm[firm]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+      legalName: legalName,
+      +id: Integer[1]: ID
+   }
+
+   GroupByClass_Firm: ModelJoin
+   {
+      {groupByClass: GroupByClass[1], firm: Firm[1] | $groupByClass.firmId == $firm.id}
+   }
+)
+
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -1052,6 +1106,27 @@ function meta::relational::tests::mapping::relation::personFunctionWithAddress()
 {
   #>{meta::relational::tests::mapping::relation::testDB.personWithAddressTable}#
     ->select(~[FIRSTNAME, AGE, STREET, CITY, FIRMID])
+}
+
+function meta::relational::tests::mapping::relation::tradeFunction():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.tradeTable}#
+      ->select(~[ID, tradeDate, quantity, settlementDateTime]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithJoinFilter():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {p, g | $p.ID == $g.PERSONID})
+      ->filter(x | $x.GROUPNAME == 'Group C')
+      ->select(~['FIRST NAME', AGE]);
+}
+
+function meta::relational::tests::mapping::relation::distinctFirmFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->select(~[ID, LEGALNAME])
+      ->distinct();
 }
 
 // Helper for the RFPM-lift variant tests.
@@ -1201,7 +1276,6 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\', \'2024-11-01\', \'2024-12-31\');', $connection);
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
 
-  // dates coverage: DATE column (StrictDate) + nullable nanosecond TIMESTAMP(9) (DateTime).
   executeInDb('Drop table if exists tradeTable;', $connection);
   executeInDb('Create Table tradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
   executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
@@ -1220,7 +1294,6 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
   executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
 
-  // distinct coverage: intentional duplicate rows, collapsed by ->distinct() in distinctFirmFunc().
   executeInDb('Drop table if exists distinctFirmTable;', $connection);
   executeInDb('Create Table distinctFirmTable(ID INT, LEGALNAME VARCHAR(100));', $connection);
   executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
@@ -1231,104 +1304,3 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
 
   true;
 }
-
-// ============================================================================
-// Coverage funcs/mappings for relation-mapping features not covered by the EMIT
-// suite or the tests above: date/date-time typed properties (tradeTable),
-// ->distinct() in the backing ~func (distinctFirmTable), a func-body filter on a
-// joined column, and (via GroupByAssociationMapping) an XStore over a grouped set.
-// All reuse the testDB store + the relation domain classes (Trade, Person, Firm,
-// GroupByClass) — no separate store or external domain model.
-// ============================================================================
-
-###Pure
-import meta::pure::functions::relation::*;
-import meta::pure::metamodel::relation::*;
-import meta::relational::tests::mapping::relation::*;
-
-// Dates: DATE (StrictDate) + nullable nanosecond TIMESTAMP (DateTime) columns.
-function meta::relational::tests::mapping::relation::tradeFunction():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::testDB.tradeTable}#
-      ->select(~[ID, tradeDate, quantity, settlementDateTime]);
-}
-
-// Filter on a JOINED table's column inside the backing ~func (not covered by EMIT):
-// joins persons to their group membership and keeps only 'Group C' members.
-function meta::relational::tests::mapping::relation::personFunctionWithJoinFilter():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
-      ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {p, g | $p.ID == $g.PERSONID})
-      ->filter(x | $x.GROUPNAME == 'Group C')
-      ->select(~['FIRST NAME', AGE]);
-}
-
-// Distinct in the backing ~func: distinctFirmTable holds duplicate rows.
-function meta::relational::tests::mapping::relation::distinctFirmFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
-      ->select(~[ID, LEGALNAME])
-      ->distinct();
-}
-
-###Mapping
-import meta::relational::tests::mapping::relation::*;
-
-// Dates: reuse the existing Trade class.
-Mapping meta::relational::tests::mapping::relation::tradeRelationMapping
-(
-   *Trade: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::tradeFunction__Relation_1_
-      id: ID,
-      quantity: quantity,
-      date: tradeDate,
-      settlementDateTime: settlementDateTime
-   }
-)
-
-// Filter-on-joined-column: reuse Person.
-Mapping meta::relational::tests::mapping::relation::filterJoinMapping
-(
-   *Person: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::personFunctionWithJoinFilter__Relation_1_
-      firstName: 'FIRST NAME',
-      age: AGE
-   }
-)
-
-// Distinct: reuse Firm.
-Mapping meta::relational::tests::mapping::relation::distinctFirmMapping
-(
-   *Firm: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
-      legalName: LEGALNAME,
-      +id: Integer[1]: ID
-   }
-)
-
-// GroupBy set related to Firm via XStore (navigate from an aggregate row to its firm).
-Mapping meta::relational::tests::mapping::relation::GroupByAssociationMapping
-(
-   *GroupByClass[groupByClass]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_
-      firmId: FIRMID,
-      sum: SUM
-   }
-
-   *Firm[firm]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
-      legalName: legalName,
-      +id: Integer[1]: ID
-   }
-
-   GroupByClass_Firm: XStore
-   {
-      groupedByFirm[groupByClass, firm]: $this.firmId == $that.id,
-      firmGroupings[firm, groupByClass]: $this.id == $that.firmId
-   }
-)

@@ -1037,8 +1037,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- GroupBy: navigate from a grouped set to its Firm via XStore ----------------
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByThroughXStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByThroughModelJoin():Boolean[1]
 {
    let result = execute(
       |GroupByClass.all()->project(~[firmId:x|$x.firmId, firmName:x|$x.groupedByFirm.legalName]),

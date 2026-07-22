@@ -69,8 +69,6 @@ Mapping demo::relation::mapping::EmployeeUnionEnumMapping
   [
     enumFilterAcrossUnionSuite:
     {
-      // Mirrors testUnionTwoRelationMappings_EnumFilter: filtering by the SAME
-      // EnumerationMapping declared independently in both legs.
       function: |demo::relation::domain::ExtendedEmployee.all()
                   ->filter(e | $e.employeeType == demo::relation::domain::EmployeeType.FULL_TIME)
                   ->sortBy(x | $x.firstName)

@@ -36,12 +36,6 @@ modelSources:
       - model/activeStatus.pure
       - model/businessTemporalEmployee.pure
       - model/temporalDepartment.pure
-      - mappingFunction/employeesWithAddresss.pure
-      - mappingFunction/firms.pure
-      - mappingFunction/temporalEmployees.pure
-      - mappingFunction/businessTemporalEmployees.pure
-      - mappingFunction/contractEmployees.pure
-      - mappingFunction/fullTimeEmployees.pure
 
 features:
   - scaffolding:class

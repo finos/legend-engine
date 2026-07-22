@@ -26,7 +26,7 @@ description: |
 
 modelSources:
   model:
-    root: relation-shared-data
+    root: relation-shared-domain
     files:
       - data/employeeData.pure
   dependencies:

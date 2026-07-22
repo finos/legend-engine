@@ -21,9 +21,15 @@ description: |
 
 modelSources:
   model:
-    root: relation-shared-db
+    root: relation-shared-domain
     files:
       - store/employeeDb.pure
+      - mappingFunction/employeesWithAddresss.pure
+      - mappingFunction/firms.pure
+      - mappingFunction/temporalEmployees.pure
+      - mappingFunction/businessTemporalEmployees.pure
+      - mappingFunction/contractEmployees.pure
+      - mappingFunction/fullTimeEmployees.pure
   dependencies:
     - source: relation-shared-domain.emit.yaml
 
