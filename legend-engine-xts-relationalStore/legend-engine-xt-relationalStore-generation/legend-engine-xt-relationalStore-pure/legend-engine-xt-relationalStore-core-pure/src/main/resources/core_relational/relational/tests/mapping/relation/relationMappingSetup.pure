@@ -60,8 +60,6 @@ Database meta::relational::tests::mapping::relation::testDB
     FIRMID INTEGER NOT NULL
   )
 
-  // Source for the date/date-time coverage tests. tradeDate is DATE (StrictDate),
-  // settlementDateTime is a nullable TIMESTAMP (seeded at nanosecond precision).
   Table tradeTable
   (
     ID INTEGER PRIMARY KEY,
@@ -70,8 +68,6 @@ Database meta::relational::tests::mapping::relation::testDB
     settlementDateTime TIMESTAMP
   )
 
-  // Source for the distinct coverage tests: intentionally holds duplicate rows
-  // so the backing ~func's ->distinct() is observable through Firm.all().
   Table distinctFirmTable
   (
     ID INTEGER NOT NULL,
@@ -295,8 +291,6 @@ Class meta::relational::tests::mapping::relation::GroupByClass
   sum: Integer[1];
 }
 
-// Relates a grouped/aggregated relation set (GroupByClass) to Firm via XStore,
-// so a query can navigate from an aggregate row to its firm.
 Association meta::relational::tests::mapping::relation::GroupByClass_Firm
 {
   groupedByFirm: meta::relational::tests::mapping::relation::Firm[1];
@@ -508,17 +502,6 @@ Mapping meta::relational::tests::mapping::relation::LiftedConcatMapping
   {
     ~src meta::relational::tests::mapping::relation::personFunctionTyped()
     greeting: 'Hello ' + $src.'FIRST NAME'
-  }
-)
-
-// Unsupported: Map<String,Variant>[1] is a structural container. The isStructuralContainer
-// guard at pureToSQLQuery.pure:1944 must reject this mapping at plan-generation time.
-Mapping meta::relational::tests::mapping::relation::LiftedUnsupportedMapping
-(
-  *PersonLiftedUnsupported[personLiftedUnsupported]: Relation
-  {
-    ~func meta::relational::tests::mapping::relation::personWithPayloadFunction__Relation_1_
-    attributes: $src.PAYLOAD->toOne()->cast(@meta::pure::functions::collection::Map<String, meta::pure::metamodel::variant::Variant>)
   }
 )
 

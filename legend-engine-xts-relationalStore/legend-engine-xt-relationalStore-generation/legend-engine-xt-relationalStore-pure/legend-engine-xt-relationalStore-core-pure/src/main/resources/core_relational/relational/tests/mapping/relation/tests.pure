@@ -153,9 +153,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// Exercises what is unique about MixedMapping: querying PersonWithFirmId — the Relational
-// class set — rather than Person[person] (the Relation set). PersonWithFirmId reads the full
-// personTable without the AGE > 25 filter that personFunction() applies, exposing all 7 rows.
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingRelationalClassSet():Boolean[1]
 {
   let result = execute(
@@ -223,7 +220,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupBy():Boolean[1]
 {
   let result = execute(
-    |GroupByClass.all()->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
+    |GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
     meta::relational::tests::mapping::relation::GroupByMapping,
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
@@ -951,7 +948,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// t6 — Non-variant DynaFunction (string concat). Lift router routes through
+// Non-variant DynaFunction (string concat). Lift router routes through
 // the RelationalPropertyMapping arm (no SS PM).
 // Uses the existing personFunction → personTable, seeded once by
 // createTablesAndFillDb (no setupRfpmLiftTestData call needed).
@@ -980,24 +977,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// ============================================================================
-// Coverage tests consolidated onto testDB + the relation domain (formerly the
-// separate coverageDB / external-domain relationCoverage*.pure suites). Each
-// covers a relation-mapping path not exercised by the tests above or by the
-// relation EMIT integration suite:
-//   - filter on a JOINED column inside the backing ~func
-//   - query-level filter on an AGGREGATED property + XStore over a grouped set
-//   - ->distinct() inside the backing ~func
-//   - DATE / DateTime property mapping incl. nanosecond TIMESTAMP precision
-// ============================================================================
-
-###Pure
-import meta::relational::functions::asserts::*;
-import meta::relational::tests::mapping::relation::*;
-import meta::pure::functions::relation::*;
-import meta::external::store::relational::tests::*;
-
-// --- Filter: filter on a joined table's column inside the ~func -----------------
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testFilterMappingWithJoin():Boolean[1]
 {
    let result = execute(
@@ -1017,7 +996,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
    );
 }
 
-// --- GroupBy: query-level filter on the aggregated `sum` property ---------------
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByFilterOnAggregate():Boolean[1]
 {
    let result = execute(
