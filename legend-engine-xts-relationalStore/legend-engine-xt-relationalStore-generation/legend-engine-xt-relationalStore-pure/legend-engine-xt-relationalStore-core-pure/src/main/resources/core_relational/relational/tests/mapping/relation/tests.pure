@@ -1061,3 +1061,695 @@ function <<test.ToFix, test.AlloyOnly>> meta::relational::tests::mapping::relati
   fail('Expected plan-generation error for Map<String,Variant> structural container');
   true;
 }
+
+// ============================================================================
+// Coverage tests migrated from the former relationCoverage{Dates,Filter,GroupBy,
+// Distinct}.pure files. Each suite drives the coverageDB store + mappings defined
+// in relationMappingSetup.pure and asserts the relation-mapping equivalent of the
+// classic dates / ~filter / ~groupBy / ~distinct mapping behaviour.
+// ============================================================================
+
+// --- Dates coverage -------------------------------------------------------------
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateFilter():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == %2014-12-01)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        1
+        2
+        3
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateProject():Boolean[1]
+{
+   // Project the StrictDate as a String. A StrictDate (DATE) column materialised into
+   // the relation result is a date-only value ('2014-12-01'); round-tripping that
+   // through the TestTDS MINIMAL parser infers it as STRING and it is then rejected
+   // against a StrictDate column ("Not supported data type STRING for Pure type
+   // StrictDate"). Projecting ->toString() yields a String column, which sidesteps the
+   // round-trip while still asserting the retrieved date values. (DateTime/TIMESTAMP
+   // columns carry a time component and parse as datetime, so they project directly.)
+   let result = execute(
+      |Trade.all()->project(~[id:t|$t.id, date:t|$t.date->toString()]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id, date
+        1, 2014-12-01
+        2, 2014-12-01
+        3, 2014-12-01
+        4, 2014-12-02
+        5, 2014-12-02
+        6, 2014-12-03
+        7, 2014-12-03
+        8, 2014-12-04
+        9, 2014-12-04
+        10, 2014-12-04
+        11, 2014-12-05
+        12, 2016-02-04
+        13, 2016-03-28
+        14, 2016-03-28
+        15, 2016-02-14
+     #->toString(),
+     $result.values->at(0)->sort([~id->ascending()])->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeFilter():Boolean[1]
+{
+   // H2 stores TIMESTAMP at millisecond precision, so row 7's inserted
+   // 2014-12-04 15:22:23.123456789 is stored as .123. The filter literal must
+   // therefore use millisecond precision to match on equality.
+   let exact = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime == %2014-12-04T15:22:23.123)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        7
+     #->toString(),
+     $exact.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmptyDateQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime->isEmpty())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        10
+        11
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 < $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999))->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        settlementDateTime:Date[1]
+        2014-12-04T15:22:23.123+0000
+        2014-12-04T21:00:00.000+0000
+     #,
+     $result.values->at(0)->sort(~settlementDateTime->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateFilterWithToday():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == today())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeFilterWithNow():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime <= now())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        1
+        2
+        3
+        4
+        5
+        6
+        7
+        8
+        9
+        12
+        13
+        14
+        15
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeNotEmptyProject():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == %2014-12-04 && $i.settlementDateTime->isNotEmpty())->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        settlementDateTime
+        2014-12-05T21:00:00.000000000+0000
+        2014-12-05T21:00:00.000000000+0000
+     #->toString(),
+     $result.values->at(0)->sort(~settlementDateTime->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeInclusiveRangeQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 <= $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999))->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        settlementDateTime:Date[1]
+        2014-12-04T15:22:23.123+0000
+        2014-12-04T21:00:00.000+0000
+     #,
+     $result.values->at(0)->sort(~settlementDateTime->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeRetrieveWithTimeZone():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.id->in([12, 13, 14, 15]))->project(~[id:t|$t.id, settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        id:Integer[1], settlementDateTime:Date[1]
+        12, 2016-02-05T21:00:00.123+0000
+        13, 2016-03-29T21:00:00.123+0000
+        14, 2016-03-29T21:00:00.123+0000
+        15, 2016-02-15T21:00:00.123+0000
+     #,
+     $result.values->at(0)->sort(~id->ascending()),
+     0,
+     1
+   );
+}
+
+// --- Filter coverage ------------------------------------------------------------
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::filter::model::domain::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testFilterMapping():Boolean[1]
+{
+   let result = execute(
+      |Org.all()->project(~[name:o|$o.name]),
+      orgRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        name
+        Banking
+        Federation
+        Firm A
+        Firm X
+        ROOT
+        Securities
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testFilterMappingWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Org.all()->project(~[name:o|$o.name]),
+      orgRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        name
+        Banking
+        Federation
+        Firm A
+        Firm X
+        ROOT
+        Securities
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testFilterMappingWithJoinNotEmpty():Boolean[1]
+{
+   let result = execute(
+      |Org.all()->filter(o|$o.parentName->isNotEmpty())->project(~[name:o|$o.name]),
+      orgRelationMappingWithParentName,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        name
+        Banking
+        Federation
+        Securities
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// --- GroupBy coverage -----------------------------------------------------------
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::groupBy::model::domain::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMapping():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900003, EA4GNY, 300
+        7900002, YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregateWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|and($i.quantity > 8, $i.product.description->in(['Gold'])))->project(~[acctNum:p|$p.acctNum, gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        acctNum, gsn, quantity
+        7900003, EA4GNY, 300
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingWithFilterOnAggregateWithProject():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->filter(i|or(and($i.quantity > 100, $i.quantity < 1000), $i.gsn->in(['EA4GNY'])))->project(~[gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, quantity
+        EA4GNY, 300
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProject():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, quantity:p|$p.quantity]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, quantity
+        EA4GNY, 300
+        YU2EF5, 8
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        EA4GNY, Gold
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithJoinAndTableFilter():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMappingWithFilter,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(
+      |Product.all()->project(~[gsn:pr|$pr.positions.gsn, description:pr|$pr.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        EA4GNY, Gold
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->sort([~gsn->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectAggregateWithGroupByInJoin():Boolean[1]
+{
+   let result = execute(
+      |Product.all()->project(~[quantity:pr|$pr.positions.quantity, description:pr|$pr.description]),
+      groupByRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        quantity, description
+        8, Firm D
+        300, Gold
+     #->toString(),
+     $result.values->at(0)->sort([~description->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testGroupByMappingProjectWithMultipleGroupBys():Boolean[1]
+{
+   let result = execute(
+      |Position.all()->project(~[gsn:p|$p.gsn, description:p|$p.product.description]),
+      groupByRelationMappingWithTwoGroupBys,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions());
+   assertEquals(
+     #TDS
+        gsn, description
+        YU2EF5, Firm D
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+// --- Distinct coverage ----------------------------------------------------------
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::tests::mapping::distinct::model::domain::*;
+import meta::relational::tests::mapping::relation::*;
+import meta::pure::functions::relation::*;
+import meta::external::store::relational::tests::*;
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingSelectAll():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name]),
+      distinctRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        IF 1
+        IF 2
+        IF 2
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingSelectAllWithFilter():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->filter(i | $i.code == 1002)->project(~[name:i|$i.name, code:i|$i.code]),
+      distinctRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, code
+        IF 2, 1002
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingSimpleProjectSelectAll():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name, code:i|$i.code])->sort([~code->ascending()]),
+      distinctRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, code
+        IF 1, 1001
+        IF 2, 1002
+        IF 2, 1022
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingSimpleProjectDistinct():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name])->distinct(),
+      distinctRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        IF 1
+        IF 2
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// The func body filters to IF_TYPE = 'Type 2' then distincts, so only one row survives.
+// Projecting name + code proves which row the func-body filter kept (1002, 'IF 2').
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilterSelectAll():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name, code:i|$i.code]),
+      distinctRelationMappingWithFilter,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, code
+        IF 2, 1002
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+// Contrast with testDistinctMappingSelectAll (3 rows, unfiltered): the func-body filter here
+// excludes every 'Type 1' row, so the mapped class exposes exactly one row.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilterExcludesRows():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name]),
+      distinctRelationMappingWithFilter,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(1, $result.values->at(0)->size());
+   assertEquals(
+     #TDS
+        name
+        IF 2
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithJoinSelectAll():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name]),
+      distinctRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name
+        IF 1
+        IF 2
+        IF 2
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithJoinProject():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[IfName:i|$i.IfName]),
+      distinctRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        IfName
+        IfName1
+        IfName2
+        TDSNull
+     #->toString(),
+     $result.values->at(0)->sort([~IfName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testProjectDistinctMappingWithDistinctInJoin():Boolean[1]
+{
+   let result = execute(
+      |Classification.all()->project(~[name:c|$c.name, incomeFunction:c|$c.incomeFunctions.name]),
+      distinctRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, incomeFunction
+        IfName1, IF 1
+        IfName2, IF 2
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testProjectDistinctMappingWithDistinctInJoinWithDup():Boolean[1]
+{
+   let result = execute(
+      |Classification.all()->project(~[name:c|$c.name, incomeFunction:c|$c.incomeFunctions.name]),
+      distinctRelationMappingWithJoinWithDup,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, incomeFunction
+        IfName1, IF 1
+        IfName2, IF 2
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithDistinctInJoinWithFilter():Boolean[1]
+{
+   let result = execute(
+      |Classification.all()->filter(c | $c.name == 'IfName2')->project(~[name:c|$c.name, incomeFunction:c|$c.incomeFunctions.name]),
+      distinctRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, incomeFunction
+        IfName2, IF 2
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithDistinctInJoinWithFilterOnJoin():Boolean[1]
+{
+   let result = execute(
+      |Classification.all()->filter(c | $c.incomeFunctions->exists(i | $i.name == 'IF 2'))->project(~[name:c|$c.name, incomeFunction:c|$c.incomeFunctions.name]),
+      distinctRelationMappingWithJoin,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, incomeFunction
+        IfName2, IF 2
+     #->toString(),
+     $result.values->at(0)->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithCaseStatement():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->project(~[name:i|$i.name, IfName:i|$i.Classification.name])->sort([~name->ascending(), ~IfName->ascending()]),
+      distinctRelationMappingWithCase,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, IfName
+        IF 1, IfName1
+        IF 2, IfName2
+        IF 2, TDSNull
+     #->toString(),
+     $result.values->at(0)->sort([~name->ascending(), ~IfName->ascending()])->toString());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithSize():Boolean[1]
+{
+   let result = execute(
+      |IncomeFunction.all()->size(),
+      distinctRelationMapping,
+      meta::external::store::relational::tests::testRuntime(coverageDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(3, $result.values->toOne());
+}

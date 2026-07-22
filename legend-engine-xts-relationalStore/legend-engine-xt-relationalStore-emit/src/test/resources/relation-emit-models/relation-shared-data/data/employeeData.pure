@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Canonical 3-row Employee dataset shared across the simple-schema relation-mapping
+// EMIT models: Alice/Bob active, Carol inactive (ACTIVE=0) with a null SALARY. Models
+// that need only active or only salaried rows filter Carol out in their own function
+// body or suite query, so this single set serves them all.
 ###Data
-Data demo::relation::data::EmployeeSrcData
+Data demo::relation::data::EmployeeData
 {
   Relation
   #{
@@ -22,5 +26,23 @@ Data demo::relation::data::EmployeeSrcData
       1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
       2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
       3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin;
+  }#
+}
+
+// Employee + Firm set for association scenarios: Alice at Acme (1), Bob at Beta (2),
+// so employer.legalName resolves to a distinct firm per employee across the join.
+###Data
+Data demo::relation::data::EmployeeFirmData
+{
+  Relation
+  #{
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
+      1,Alice,Green,1,FULL_TIME,1,2020-01-15 00:00:00,90000.0,Main St,London
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris;
+    default.FirmTable:
+      ID,LEGAL_NAME
+      1,Acme
+      2,Beta;
   }#
 }

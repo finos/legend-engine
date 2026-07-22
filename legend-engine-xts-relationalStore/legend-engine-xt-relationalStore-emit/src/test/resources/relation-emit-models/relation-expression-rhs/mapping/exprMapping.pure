@@ -66,7 +66,7 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::SalariedEmployeeData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:
@@ -102,7 +102,7 @@ Mapping demo::relation::mapping::EmployeeExpressionMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::SalariedEmployeeData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:

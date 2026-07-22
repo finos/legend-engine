@@ -25,10 +25,9 @@ modelSources:
     root: relation-join
     files:
       - mapping/joinMapping.pure   # ###Pure (employees + firms funcs) + ###Mapping with XStore + testSuites
-      - data/testData.pure
+      - data/testData.pure   # scenario-specific EmployeeFirmAggData only; EmployeeFirmData comes from relation-shared-data
   dependencies:
-    - source: relation-shared-domain.emit.yaml
-    - source: relation-shared-db.emit.yaml
+    - source: relation-shared-data.emit.yaml
 
 features:
   - scaffolding:class

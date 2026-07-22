@@ -86,7 +86,7 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeModelJoinData
+                demo::relation::data::EmployeeFirmData
               }#
           ];
           asserts:
@@ -127,7 +127,7 @@ Mapping demo::relation::mapping::EmployeeModelJoinMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeModelJoinData
+                demo::relation::data::EmployeeFirmData
               }#
           ];
           asserts:

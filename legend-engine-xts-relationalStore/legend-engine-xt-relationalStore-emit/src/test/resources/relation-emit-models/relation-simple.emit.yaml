@@ -27,10 +27,8 @@ modelSources:
     root: relation-simple
     files:
       - mapping/employeeMapping.pure
-      - data/testData.pure
   dependencies:
-    - source: relation-shared-domain.emit.yaml
-    - source: relation-shared-db.emit.yaml
+    - source: relation-shared-data.emit.yaml
 
 features:
   - scaffolding:class

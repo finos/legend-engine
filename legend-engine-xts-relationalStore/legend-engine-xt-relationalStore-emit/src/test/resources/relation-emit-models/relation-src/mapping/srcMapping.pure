@@ -68,7 +68,7 @@ Mapping demo::relation::mapping::EmployeePlainSrcMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeSrcData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:
@@ -119,7 +119,7 @@ Mapping demo::relation::mapping::EmployeeFilteredSrcMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeSrcData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:

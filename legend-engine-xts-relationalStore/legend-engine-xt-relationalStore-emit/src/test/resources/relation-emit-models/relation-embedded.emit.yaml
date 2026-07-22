@@ -25,10 +25,9 @@ modelSources:
     root: relation-embedded
     files:
       - mapping/embeddedMapping.pure   # ###Pure (employees func) + ###Mapping with embedded + testSuites
-      - data/testData.pure
+      - data/testData.pure   # scenario-specific EmployeeCityHeadcountData only; EmployeeData comes from relation-shared-data
   dependencies:
-    - source: relation-shared-domain.emit.yaml
-    - source: relation-shared-db.emit.yaml
+    - source: relation-shared-data.emit.yaml
 
 features:
   - scaffolding:class

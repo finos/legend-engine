@@ -72,7 +72,7 @@ Mapping demo::relation::mapping::OuterIncludeMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeIncludeData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:
@@ -84,7 +84,7 @@ Mapping demo::relation::mapping::OuterIncludeMapping
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"}]';
+                    data: '[{"First Name":"Alice","Last Name":"Green"},{"First Name":"Bob","Last Name":"Smith"},{"First Name":"Carol","Last Name":"White"}]';
                   }#;
               }#
           ];
@@ -109,7 +109,7 @@ Mapping demo::relation::mapping::OuterIncludeMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeIncludeData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:

@@ -29,10 +29,8 @@ modelSources:
     root: relation-modelJoin
     files:
       - mapping/modelJoinMapping.pure   # ###Pure (employees + firms funcs) + ###Mapping with ModelJoin + testSuites
-      - data/testData.pure
   dependencies:
-    - source: relation-shared-domain.emit.yaml
-    - source: relation-shared-db.emit.yaml
+    - source: relation-shared-data.emit.yaml
 
 features:
   - scaffolding:class

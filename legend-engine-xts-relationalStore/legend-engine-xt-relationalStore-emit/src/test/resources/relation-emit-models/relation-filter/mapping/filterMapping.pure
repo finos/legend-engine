@@ -63,7 +63,7 @@ Mapping demo::relation::mapping::EmployeeFilterMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeFilterData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:
@@ -100,7 +100,7 @@ Mapping demo::relation::mapping::EmployeeFilterMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeFilterData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:
@@ -139,7 +139,7 @@ Mapping demo::relation::mapping::EmployeeFilterMapping
             demo::relation::db::EmployeeDB:
               Reference
               #{
-                demo::relation::data::EmployeeFilterData
+                demo::relation::data::EmployeeData
               }#
           ];
           asserts:

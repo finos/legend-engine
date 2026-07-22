@@ -25,10 +25,8 @@ modelSources:
     root: relation-expression-rhs
     files:
       - mapping/exprMapping.pure   # ###Pure (salariedEmployees func) + ###Mapping + testSuites
-      - data/testData.pure
   dependencies:
-    - source: relation-shared-domain.emit.yaml
-    - source: relation-shared-db.emit.yaml
+    - source: relation-shared-data.emit.yaml
 
 features:
   - scaffolding:class
