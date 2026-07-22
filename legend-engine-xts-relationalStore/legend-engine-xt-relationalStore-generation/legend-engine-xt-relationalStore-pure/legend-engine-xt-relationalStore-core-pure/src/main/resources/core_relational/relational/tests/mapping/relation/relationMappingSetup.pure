@@ -60,6 +60,24 @@ Database meta::relational::tests::mapping::relation::testDB
     FIRMID INTEGER NOT NULL
   )
 
+  // Source for the date/date-time coverage tests. tradeDate is DATE (StrictDate),
+  // settlementDateTime is a nullable TIMESTAMP (seeded at nanosecond precision).
+  Table tradeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    quantity FLOAT NOT NULL,
+    tradeDate DATE NOT NULL,
+    settlementDateTime TIMESTAMP
+  )
+
+  // Source for the distinct coverage tests: intentionally holds duplicate rows
+  // so the backing ~func's ->distinct() is observable through Firm.all().
+  Table distinctFirmTable
+  (
+    ID INTEGER NOT NULL,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+
   Join GroupMembership_Person(groupMembershipTable.PERSONID = personTable.ID)
 )
 
@@ -203,68 +221,6 @@ Database meta::relational::tests::mapping::relation::MilestonedDB
   )
 )
 
-###Relational
-Database meta::relational::tests::mapping::relation::coverageDB
-(
-   Table ACCOUNT_INFO
-   (
-      IF_CODE INTEGER NOT NULL,
-      IF_NAME VARCHAR(200) NOT NULL,
-      IF_TYPE VARCHAR(20) NOT NULL
-   )
-
-   Table IF_OTHER_INFO
-   (
-      IF_CODE INTEGER PRIMARY KEY,
-      IF_OTHER_NAME VARCHAR(20) NOT NULL
-   )
-
-   Table orgTable
-   (
-      id INTEGER PRIMARY KEY,
-      filterVal INTEGER NOT NULL,
-      parentId INTEGER,
-      name VARCHAR(200) NOT NULL
-   )
-
-   Table otherTable
-   (
-      orgTableId INTEGER NOT NULL,
-      filterVal INTEGER NOT NULL
-   )
-
-   Table TRADE
-   (
-      TRADE_ID INTEGER PRIMARY KEY,
-      ACC_NUM INTEGER NOT NULL,
-      GSN VARCHAR(20) NOT NULL,
-      PRODUCT_ID INTEGER NOT NULL,
-      QTY INTEGER NOT NULL
-   )
-
-   Table PRODUCT
-   (
-      ID INTEGER PRIMARY KEY,
-      DESCRIPTION VARCHAR(20) NOT NULL
-   )
-
-   Table PRODUCT_EXPLODED
-   (
-      TRADEABLE_ID INTEGER PRIMARY KEY,
-      PRODUCT_ID INTEGER NOT NULL,
-      DESCRIPTION VARCHAR(20) NOT NULL,
-      ACTIVE INTEGER NOT NULL
-   )
-
-   Table cvTradeTable
-   (
-      ID INTEGER PRIMARY KEY,
-      quantity FLOAT NOT NULL,
-      tradeDate DATE NOT NULL,
-      settlementDateTime TIMESTAMP
-   )
-)
-
 ###Pure
 Class meta::relational::tests::mapping::relation::Person
 {
@@ -333,10 +289,18 @@ Class meta::relational::tests::mapping::relation::PersonLiftedUnsupported
   attributes: meta::pure::functions::collection::Map<String, meta::pure::metamodel::variant::Variant>[1];
 }
 
-Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::GroupByClass
+Class meta::relational::tests::mapping::relation::GroupByClass
 {
   firmId: Integer[1];
   sum: Integer[1];
+}
+
+// Relates a grouped/aggregated relation set (GroupByClass) to Firm via XStore,
+// so a query can navigate from an aggregate row to its firm.
+Association meta::relational::tests::mapping::relation::GroupByClass_Firm
+{
+  groupedByFirm: meta::relational::tests::mapping::relation::Firm[1];
+  firmGroupings: meta::relational::tests::mapping::relation::GroupByClass[*];
 }
 
 Class meta::relational::tests::mapping::relation::Firm
@@ -444,17 +408,6 @@ Association meta::relational::tests::mapping::relation::Person_Group
 {
   members: meta::relational::tests::mapping::relation::Person[*];
   group: meta::relational::tests::mapping::relation::Group[1];
-}
-
-Class meta::relational::tests::mapping::relation::PositionStats
-{
-   acctNum : Integer[1];
-   gsn     : String[1];
-   total   : Integer[1];
-   cnt     : Integer[1];
-   minQty  : Integer[0..1];
-   maxQty  : Integer[0..1];
-   avgQty  : Float[0..1];
 }
 
 Class meta::relational::tests::mapping::relation::Trade
@@ -1117,7 +1070,6 @@ function meta::relational::tests::mapping::relation::setupRfpmLiftTestData(csvs:
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
 {
   createTablesAndFillDb();
-  createCoverageTablesAndFillDb();
 }
 
 function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boolean[1]
@@ -1249,95 +1201,44 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\', \'2024-11-01\', \'2024-12-31\');', $connection);
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
 
+  // dates coverage: DATE column (StrictDate) + nullable nanosecond TIMESTAMP(9) (DateTime).
+  executeInDb('Drop table if exists tradeTable;', $connection);
+  executeInDb('Create Table tradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (3, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (4, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (5, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (6, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (8, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (9, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate) values (10, 38, \'2014-12-04\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate) values (11, 5, \'2014-12-05\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (12, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (13, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
+
+  // distinct coverage: intentional duplicate rows, collapsed by ->distinct() in distinctFirmFunc().
+  executeInDb('Drop table if exists distinctFirmTable;', $connection);
+  executeInDb('Create Table distinctFirmTable(ID INT, LEGALNAME VARCHAR(100));', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (3, \'Firm B\');', $connection);
+
   true;
 }
 
-function meta::relational::tests::mapping::relation::createCoverageTablesAndFillDb():Boolean[1]
-{
-   let connection = meta::external::store::relational::tests::testRuntime(coverageDB).connectionByElement(coverageDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
-
-   // distinct model
-   executeInDb('Drop table if exists ACCOUNT_INFO;', $connection);
-   executeInDb('Create Table ACCOUNT_INFO(IF_CODE INTEGER NOT NULL, IF_NAME VARCHAR(200) NOT NULL, IF_TYPE VARCHAR(20) NOT NULL);', $connection);
-   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1001, \'IF 1\', \'Type 1\');', $connection);
-   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 1\');', $connection);
-   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 1\');', $connection);
-   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1022, \'IF 2\', \'Type 1\');', $connection);
-   executeInDb('insert into ACCOUNT_INFO (IF_CODE, IF_NAME, IF_TYPE) values (1002, \'IF 2\', \'Type 2\');', $connection);
-
-   executeInDb('Drop table if exists IF_OTHER_INFO;', $connection);
-   executeInDb('Create Table IF_OTHER_INFO(IF_CODE INTEGER PRIMARY KEY, IF_OTHER_NAME VARCHAR(20) NOT NULL);', $connection);
-   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1001, \'IfName1\');', $connection);
-   executeInDb('insert into IF_OTHER_INFO (IF_CODE, IF_OTHER_NAME) values (1002, \'IfName2\');', $connection);
-
-   // filter model
-   executeInDb('Drop table if exists orgTable;', $connection);
-   executeInDb('Create Table orgTable(id INTEGER PRIMARY KEY, filterVal INTEGER NOT NULL, parentId INTEGER, name VARCHAR(200) NOT NULL);', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (1, 4, -1, \'ROOT\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (2, 4, 1, \'Firm X\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (3, 4, 1, \'Firm A\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (4, 4, 2, \'Securities\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (5, 4, 2, \'Banking\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (6, 4, 2, \'Federation\');', $connection);
-   executeInDb('insert into orgTable (id, filterVal, parentId, name) values (7, 6, 2, \'ShouldNotBeDisplayed\');', $connection);
-
-   executeInDb('Drop table if exists otherTable;', $connection);
-   executeInDb('Create Table otherTable(orgTableId INTEGER NOT NULL, filterVal INTEGER NOT NULL);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (1, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (2, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (3, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (4, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (5, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (6, 4);', $connection);
-   executeInDb('insert into otherTable (orgTableId, filterVal) values (7, 6);', $connection);
-
-   // groupBy model
-   executeInDb('Drop table if exists TRADE;', $connection);
-   executeInDb('Create Table TRADE(TRADE_ID INTEGER PRIMARY KEY, ACC_NUM INTEGER NOT NULL, GSN VARCHAR(20) NOT NULL, PRODUCT_ID INTEGER NOT NULL, QTY INTEGER NOT NULL);', $connection);
-   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (1, 7900002, \'YU2EF5\', 1, 3);', $connection);
-   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (2, 7900002, \'YU2EF5\', 1, 5);', $connection);
-   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (3, 7900003, \'EA4GNY\', 2, 100);', $connection);
-   executeInDb('insert into TRADE (TRADE_ID, ACC_NUM, GSN, PRODUCT_ID, QTY) values (4, 7900003, \'EA4GNY\', 2, 200);', $connection);
-
-   executeInDb('Drop table if exists PRODUCT;', $connection);
-   executeInDb('Create Table PRODUCT(ID INTEGER PRIMARY KEY, DESCRIPTION VARCHAR(20) NOT NULL);', $connection);
-   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (1, \'Firm D\');', $connection);
-   executeInDb('insert into PRODUCT (ID, DESCRIPTION) values (2, \'Gold\');', $connection);
-
-   executeInDb('Drop table if exists PRODUCT_EXPLODED;', $connection);
-   executeInDb('Create Table PRODUCT_EXPLODED(TRADEABLE_ID INTEGER PRIMARY KEY, PRODUCT_ID INTEGER NOT NULL, DESCRIPTION VARCHAR(20) NOT NULL, ACTIVE INTEGER NOT NULL);', $connection);
-   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (11, 1, \'Firm D\', 1);', $connection);
-   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (22, 2, \'Gold\', 0);', $connection);
-   executeInDb('insert into PRODUCT_EXPLODED (TRADEABLE_ID, PRODUCT_ID, DESCRIPTION, ACTIVE) values (33, 2, \'Gold\', 0);', $connection);
-
-   // dates model - TIMESTAMP(9) for nanosecond precision
-   executeInDb('Drop table if exists cvTradeTable;', $connection);
-   executeInDb('Create Table cvTradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (3, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (4, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (5, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (6, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (8, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (9, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate) values (10, 38, \'2014-12-04\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate) values (11, 5, \'2014-12-05\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (12, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (13, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
-   executeInDb('insert into cvTradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
-
-   true;
-}
-
 // ============================================================================
-// Coverage relation functions migrated from the former relationCoverage{Dates,
-// Filter,GroupBy,Distinct}.pure files. These reuse the coverageDB store and the
-// createCoverageTablesAndFillDb() seed above; each is the relation-mapping
-// equivalent of a classic ~filter / ~groupBy / ~distinct / dates mapping test,
-// with the operation performed inside the backing ~func.
+// Coverage funcs/mappings for relation-mapping features not covered by the EMIT
+// suite or the tests above: date/date-time typed properties (tradeTable),
+// ->distinct() in the backing ~func (distinctFirmTable), a func-body filter on a
+// joined column, and (via GroupByAssociationMapping) an XStore over a grouped set.
+// All reuse the testDB store + the relation domain classes (Trade, Person, Firm,
+// GroupByClass) — no separate store or external domain model.
 // ============================================================================
 
 ###Pure
@@ -1345,161 +1246,40 @@ import meta::pure::functions::relation::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::tests::mapping::relation::*;
 
-// --- Dates: DATE / TIMESTAMP typed columns mapped to StrictDate / DateTime ------
+// Dates: DATE (StrictDate) + nullable nanosecond TIMESTAMP (DateTime) columns.
 function meta::relational::tests::mapping::relation::tradeFunction():Relation<Any>[1]
 {
-   #>{meta::relational::tests::mapping::relation::coverageDB.cvTradeTable}#
+   #>{meta::relational::tests::mapping::relation::testDB.tradeTable}#
       ->select(~[ID, tradeDate, quantity, settlementDateTime]);
 }
 
-// --- Filter: ->filter(...) inside the backing ~func -----------------------------
-function meta::relational::tests::mapping::relation::orgRelationFunc():Relation<Any>[1]
+// Filter on a JOINED table's column inside the backing ~func (not covered by EMIT):
+// joins persons to their group membership and keeps only 'Group C' members.
+function meta::relational::tests::mapping::relation::personFunctionWithJoinFilter():Relation<Any>[1]
 {
-   #>{meta::relational::tests::mapping::relation::coverageDB.orgTable}#
-      ->filter(x | $x.filterVal <= 4)
-      ->select(~[id, name, parentId]);
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {p, g | $p.ID == $g.PERSONID})
+      ->filter(x | $x.GROUPNAME == 'Group C')
+      ->select(~['FIRST NAME', AGE]);
 }
 
-function meta::relational::tests::mapping::relation::orgRelationWithJoinFunc():Relation<Any>[1]
+// Distinct in the backing ~func: distinctFirmTable holds duplicate rows.
+function meta::relational::tests::mapping::relation::distinctFirmFunc():Relation<Any>[1]
 {
-   #>{meta::relational::tests::mapping::relation::coverageDB.orgTable}#
-      ->select(~[id, name, parentId])
-      ->join(
-         #>{meta::relational::tests::mapping::relation::coverageDB.otherTable}#->project(~[joinOrgId:t|$t.orgTableId, otherFilterVal:t|$t.filterVal]),
-         JoinKind.INNER,
-         {o, t | $o.id == $t.joinOrgId}
-       )
-      ->filter(x | $x.otherFilterVal <= 4)
-      ->select(~[id, name, parentId]);
-}
-
-function meta::relational::tests::mapping::relation::orgRelationWithParentNameFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.orgTable}#
-      ->filter(x | $x.filterVal <= 4)
-      ->select(~[id, name, parentId])
-      ->join(
-         #>{meta::relational::tests::mapping::relation::coverageDB.orgTable}#->project(~[pId:p|$p.id, pParentId:p|$p.parentId]),
-         JoinKind.LEFT,
-         {r, p | $r.parentId == $p.pId}
-       )
-      ->join(
-         #>{meta::relational::tests::mapping::relation::coverageDB.orgTable}#->project(~[gpId:g|$g.id, parentName:g|$g.name]),
-         JoinKind.LEFT,
-         {r, g | $r.pParentId == $g.gpId}
-       )
-      ->select(~[id, name, parentName]);
-}
-
-// --- GroupBy: ->groupBy(...) inside the backing ~func ---------------------------
-// ~groupBy(ACC_NUM, PRODUCT_ID, GSN), quantity = sum(QTY)
-function meta::relational::tests::mapping::relation::positionGroupByFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
-      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
-}
-
-// ~filter (PRODUCT_ID = 1) then the same groupBy.
-function meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.TRADE}#
-      ->filter(x | $x.PRODUCT_ID == 1)
-      ->groupBy(~[ACC_NUM, PRODUCT_ID, GSN], ~quantity : x | $x.QTY : y | $y->sum());
-}
-
-// Plain PRODUCT table.
-function meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.PRODUCT}#
-      ->select(~[ID, DESCRIPTION]);
-}
-
-// ~filter (ACTIVE = 1) then a keys-only groupBy (no aggregate = distinct).
-function meta::relational::tests::mapping::relation::productExplodedFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.PRODUCT_EXPLODED}#
-      ->filter(x | $x.ACTIVE == 1)
-      ->select(~[PRODUCT_ID, DESCRIPTION])
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->select(~[ID, LEGALNAME])
       ->distinct();
 }
 
-// --- Distinct: ->distinct() inside the backing ~func ----------------------------
-function meta::relational::tests::mapping::relation::incomeFunctionFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.ACCOUNT_INFO}#
-      ->select(~[IF_CODE, IF_NAME])
-      ->distinct();
-}
-
-// Discriminating filter: only the single 'Type 2' row survives, so after distinct the
-// mapped class has one row. The unfiltered mapping yields 3 distinct rows, making the
-// func-body filter's effect observable in the asserted TDS.
-function meta::relational::tests::mapping::relation::incomeFunctionWithFilterFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.ACCOUNT_INFO}#
-      ->filter(r | $r.IF_TYPE == 'Type 2')
-      ->select(~[IF_CODE, IF_NAME])
-      ->distinct();
-}
-
-function meta::relational::tests::mapping::relation::incomeFunctionWithOtherInfoFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.ACCOUNT_INFO}#
-      ->join(
-         #>{meta::relational::tests::mapping::relation::coverageDB.IF_OTHER_INFO}#
-            ->extend(~joinIfCode:r | $r.IF_CODE)
-            ->select(~[joinIfCode, IF_OTHER_NAME]),
-         JoinKind.LEFT,
-         {a, o | $a.IF_CODE == $o.joinIfCode}
-      )
-      ->select(~[IF_CODE, IF_NAME, IF_OTHER_NAME])
-      ->distinct();
-}
-
-function meta::relational::tests::mapping::relation::classificationFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.IF_OTHER_INFO}#
-      ->select(~[IF_CODE, IF_OTHER_NAME]);
-}
-
-function meta::relational::tests::mapping::relation::incomeFunctionWithOtherInfo2Func():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.ACCOUNT_INFO}#
-      ->join(
-         #>{meta::relational::tests::mapping::relation::coverageDB.IF_OTHER_INFO}#
-            ->extend(~joinIfCode:r | $r.IF_CODE)
-            ->select(~[joinIfCode, IF_OTHER_NAME]),
-         JoinKind.LEFT,
-         {a, o | $a.IF_CODE == $o.joinIfCode && $a.IF_CODE->isNotEmpty()}
-      )
-      ->select(~[IF_CODE, IF_NAME, IF_OTHER_NAME])
-      ->distinct();
-}
-
-function meta::relational::tests::mapping::relation::incomeFunctionWithCaseFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.ACCOUNT_INFO}#
-      ->extend(~name:r | if($r.IF_NAME->isEmpty(), | 'C', | $r.IF_NAME->toOne()))
-      ->select(~[IF_CODE, name])
-      ->distinct();
-}
-
-function meta::relational::tests::mapping::relation::classificationWithCaseFunc():Relation<Any>[1]
-{
-   #>{meta::relational::tests::mapping::relation::coverageDB.IF_OTHER_INFO}#
-      ->extend(~name:r | if($r.IF_OTHER_NAME->isEmpty(), | 'Unknown', | $r.IF_OTHER_NAME->toOne()))
-      ->select(~[IF_CODE, name]);
-}
-
-// --- Dates mapping (Trade class already declared above) -------------------------
 ###Mapping
 import meta::relational::tests::mapping::relation::*;
 
+// Dates: reuse the existing Trade class.
 Mapping meta::relational::tests::mapping::relation::tradeRelationMapping
 (
    *Trade: Relation
    {
-      ~func meta::relational::tests::mapping::relation::tradeFunction():Relation<Any>[1]
+      ~func meta::relational::tests::mapping::relation::tradeFunction__Relation_1_
       id: ID,
       quantity: quantity,
       date: tradeDate,
@@ -1507,210 +1287,48 @@ Mapping meta::relational::tests::mapping::relation::tradeRelationMapping
    }
 )
 
-// --- Filter mappings (classic filter Org domain) --------------------------------
-###Mapping
-import meta::relational::tests::mapping::filter::model::domain::*;
-import meta::relational::tests::mapping::relation::*;
-
-Mapping meta::relational::tests::mapping::relation::orgRelationMapping
+// Filter-on-joined-column: reuse Person.
+Mapping meta::relational::tests::mapping::relation::filterJoinMapping
 (
-   *Org: Relation
+   *Person: Relation
    {
-      ~func meta::relational::tests::mapping::relation::orgRelationFunc():Relation<Any>[1]
-      name: name
+      ~func meta::relational::tests::mapping::relation::personFunctionWithJoinFilter__Relation_1_
+      firstName: 'FIRST NAME',
+      age: AGE
    }
 )
 
-Mapping meta::relational::tests::mapping::relation::orgRelationMappingWithJoin
+// Distinct: reuse Firm.
+Mapping meta::relational::tests::mapping::relation::distinctFirmMapping
 (
-   *Org: Relation
+   *Firm: Relation
    {
-      ~func meta::relational::tests::mapping::relation::orgRelationWithJoinFunc():Relation<Any>[1]
-      name: name
+      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
    }
 )
 
-Mapping meta::relational::tests::mapping::relation::orgRelationMappingWithParentName
+// GroupBy set related to Firm via XStore (navigate from an aggregate row to its firm).
+Mapping meta::relational::tests::mapping::relation::GroupByAssociationMapping
 (
-   *Org: Relation
+   *GroupByClass[groupByClass]: Relation
    {
-      ~func meta::relational::tests::mapping::relation::orgRelationWithParentNameFunc():Relation<Any>[1]
-      name: name,
-      parentName: parentName
-   }
-)
-
-// --- GroupBy mappings (classic groupBy Position / Product domain) ----------------
-###Mapping
-import meta::relational::tests::mapping::groupBy::model::domain::*;
-import meta::relational::tests::mapping::relation::*;
-
-Mapping meta::relational::tests::mapping::relation::groupByRelationMapping
-(
-   *Position[position]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::positionGroupByFunc():Relation<Any>[1]
-      acctNum: ACC_NUM,
-      gsn: GSN,
-      quantity: quantity,
-      +productId: Integer[1]: PRODUCT_ID
+      ~func meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_
+      firmId: FIRMID,
+      sum: SUM
    }
 
-   *Product[product]: Relation
+   *Firm[firm]: Relation
    {
-      ~func meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
-      description: DESCRIPTION,
+      ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+      legalName: legalName,
       +id: Integer[1]: ID
    }
 
-   PositionProduct: XStore
+   GroupByClass_Firm: XStore
    {
-      product[position, product]: $this.productId == $that.id,
-      positions[product, position]: $this.id == $that.productId
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::groupByRelationMappingWithFilter
-(
-   *Position[position]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
-      acctNum: ACC_NUM,
-      gsn: GSN,
-      quantity: quantity,
-      +productId: Integer[1]: PRODUCT_ID
-   }
-
-   *Product[product]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::productFunc():Relation<Any>[1]
-      description: DESCRIPTION,
-      +id: Integer[1]: ID
-   }
-
-   PositionProduct: XStore
-   {
-      product[position, product]: $this.productId == $that.id,
-      positions[product, position]: $this.id == $that.productId
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::groupByRelationMappingWithTwoGroupBys
-(
-   *Position[position]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::positionGroupByFilteredFunc():Relation<Any>[1]
-      acctNum: ACC_NUM,
-      gsn: GSN,
-      quantity: quantity,
-      +productId: Integer[1]: PRODUCT_ID
-   }
-
-   *Product[product]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::productExplodedFunc():Relation<Any>[1]
-      description: DESCRIPTION,
-      +productId: Integer[1]: PRODUCT_ID
-   }
-
-   PositionProduct: XStore
-   {
-      product[position, product]: $this.productId == $that.productId,
-      positions[product, position]: $this.productId == $that.productId
-   }
-)
-
-// --- Distinct mappings (classic distinct IncomeFunction / Classification domain) -
-###Mapping
-import meta::relational::tests::mapping::distinct::model::domain::*;
-import meta::relational::tests::mapping::relation::*;
-
-Mapping meta::relational::tests::mapping::relation::distinctRelationMapping
-(
-   *IncomeFunction[incomeFunction]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::incomeFunctionFunc():Relation<Any>[1]
-      code: IF_CODE,
-      name: IF_NAME
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::distinctRelationMappingWithFilter
-(
-   *IncomeFunction[incomeFunction]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::incomeFunctionWithFilterFunc():Relation<Any>[1]
-      code: IF_CODE,
-      name: IF_NAME
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::distinctRelationMappingWithJoin
-(
-   *IncomeFunction[incomeFunction]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::incomeFunctionWithOtherInfoFunc():Relation<Any>[1]
-      code: IF_CODE,
-      name: IF_NAME,
-      IfName: IF_OTHER_NAME,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   *Classification[classification]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::classificationFunc():Relation<Any>[1]
-      name: IF_OTHER_NAME,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   SDI_IF: ModelJoin
-   {
-      {incomeFunctions: meta::relational::tests::mapping::distinct::model::domain::IncomeFunction[1], Classification: meta::relational::tests::mapping::distinct::model::domain::Classification[1] | $incomeFunctions.ifCode == $Classification.ifCode}
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::distinctRelationMappingWithJoinWithDup
-(
-   *IncomeFunction[incomeFunction]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::incomeFunctionWithOtherInfo2Func():Relation<Any>[1]
-      name: IF_NAME,
-      IfName: IF_OTHER_NAME,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   *Classification[classification]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::classificationFunc():Relation<Any>[1]
-      name: IF_OTHER_NAME,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   SDI_IF: ModelJoin
-   {
-      {incomeFunctions: meta::relational::tests::mapping::distinct::model::domain::IncomeFunction[1], Classification: meta::relational::tests::mapping::distinct::model::domain::Classification[1] | $incomeFunctions.ifCode == $Classification.ifCode && $incomeFunctions.ifCode->isNotEmpty()}
-   }
-)
-
-Mapping meta::relational::tests::mapping::relation::distinctRelationMappingWithCase
-(
-   *IncomeFunction[incomeFunction]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::incomeFunctionWithCaseFunc():Relation<Any>[1]
-      code: IF_CODE,
-      name: name,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   *Classification[classification]: Relation
-   {
-      ~func meta::relational::tests::mapping::relation::classificationWithCaseFunc():Relation<Any>[1]
-      name: name,
-      +ifCode: Integer[1]: IF_CODE
-   }
-
-   SDI_IF: ModelJoin
-   {
-      {incomeFunctions: meta::relational::tests::mapping::distinct::model::domain::IncomeFunction[1], Classification: meta::relational::tests::mapping::distinct::model::domain::Classification[1] | $incomeFunctions.ifCode == $Classification.ifCode}
+      groupedByFirm[groupByClass, firm]: $this.firmId == $that.id,
+      firmGroupings[firm, groupByClass]: $this.id == $that.firmId
    }
 )
