@@ -1,0 +1,143 @@
+tests:
+  # INNER JOIN
+  - id: join_inner_basic
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "INNER JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_inner_multi_condition
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id AND d.budget > 500000 ORDER BY 1"
+    feature: "INNER JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_inner_with_where
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary > 60000 ORDER BY 1"
+    feature: "INNER JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_inner_implicit
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "INNER JOIN"
+    category: "joins"
+
+  # LEFT JOIN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_left_basic
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p LEFT JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "LEFT JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_left_null_fk
+    sql: "SELECT p.name, COALESCE(d.name, 'No Dept') AS dept_name FROM persons p LEFT JOIN departments d ON p.dept_id = d.id WHERE d.id IS NULL ORDER BY 1"
+    feature: "LEFT JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_left_with_agg
+    sql: "SELECT d.name AS dept_name, COUNT(p.id) AS cnt FROM departments d LEFT JOIN persons p ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
+    feature: "LEFT JOIN"
+    category: "joins"
+
+  # RIGHT JOIN
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: join_right_basic
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p RIGHT JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "RIGHT JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_right_unmatched
+    sql: "SELECT COALESCE(p.name, 'N/A') AS person, d.name AS dept_name FROM persons p RIGHT JOIN departments d ON p.dept_id = d.id ORDER BY 2"
+    feature: "RIGHT JOIN"
+    category: "joins"
+
+  # FULL OUTER JOIN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_full_outer
+    sql: "SELECT COALESCE(p.name, 'N/A') AS person, COALESCE(d.name, 'N/A') AS dept FROM persons p FULL OUTER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "FULL OUTER JOIN"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_full_outer_count
+    sql: "SELECT COUNT(*) AS total FROM persons p FULL OUTER JOIN departments d ON p.dept_id = d.id"
+    feature: "FULL OUTER JOIN"
+    category: "joins"
+
+  # CROSS JOIN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_cross_basic
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p CROSS JOIN departments d WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "CROSS JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_cross_count
+    sql: "SELECT COUNT(*) AS total FROM persons p CROSS JOIN departments d WHERE p.id <= 3"
+    feature: "CROSS JOIN"
+    category: "joins"
+
+  # Self-join
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_self
+    sql: "SELECT a.name AS person_a, b.name AS person_b FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id WHERE a.dept_id = 1 ORDER BY 1, 2"
+    feature: "Self-join"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_self_salary_compare
+    sql: "SELECT a.name AS higher, b.name AS lower FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.salary > b.salary WHERE a.dept_id IS NOT NULL AND a.salary IS NOT NULL AND b.salary IS NOT NULL ORDER BY 1, 2"
+    feature: "Self-join"
+    category: "joins"
+
+  # Multi-table JOIN (3 tables)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: join_three_tables
+    sql: "SELECT p.name, d.name AS dept_name, o.amount FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id ORDER BY 1, 3"
+    feature: "Multi-table JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_three_tables_mixed
+    sql: "SELECT p.name, d.name AS dept_name, COALESCE(o.amount, 0) AS amount FROM persons p INNER JOIN departments d ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id WHERE p.salary IS NOT NULL ORDER BY 1, 3"
+    feature: "Multi-table JOIN"
+    category: "joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: join_three_tables_agg
+    sql: "SELECT d.name AS dept, COUNT(DISTINCT p.id) AS emps, COUNT(o.id) AS orders FROM departments d LEFT JOIN persons p ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id GROUP BY d.name ORDER BY 1"
+    feature: "Multi-table JOIN"
+    category: "joins"
+
+  # JOIN with aggregation
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: join_with_agg
+    sql: "SELECT d.name AS dept_name, COUNT(*) AS emp_count, SUM(p.salary) AS total_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
+    feature: "JOIN + aggregation"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: join_with_agg_having
+    sql: "SELECT d.name AS dept_name, COUNT(*) AS emp_count FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 2 ORDER BY 1"
+    feature: "JOIN + aggregation"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: join_with_agg_avg
+    sql: "SELECT d.name AS dept_name, AVG(p.salary) AS avg_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
+    feature: "JOIN + aggregation"
+    category: "joins"
+
+    expected_tds_status: PASS
+    expected_rel_status: ERROR

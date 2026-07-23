@@ -1,0 +1,955 @@
+tests:
+- id: array_to_string__anyarray_txt__no_generator
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: array_to_string
+  signature: array_to_string(anyarray, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: array_to_string__anyarray_txt_txt__from_table
+  sql: SELECT ARRAY_TO_STRING(ARRAY[val, nullable_val], ', ') AS result FROM strings ORDER BY 1
+  function: array_to_string
+  signature: array_to_string(anyarray, text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: ascii__txt__from_table
+  sql: SELECT ASCII(val) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: ascii
+  signature: ascii(text) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: bit_length__bit__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: bit_length
+  signature: bit_length(bit) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: bit_length__bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: bit_length
+  signature: bit_length(bytea) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: bit_length__txt__from_table
+  sql: SELECT BIT_LENGTH(val) AS result FROM strings ORDER BY 1
+  function: bit_length
+  signature: bit_length(text) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: btrim__bytea_bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: btrim
+  signature: btrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: btrim__txt__from_table
+  sql: SELECT BTRIM(val) AS result FROM strings ORDER BY 1
+  function: btrim
+  signature: btrim(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: btrim__txt_txt__from_table
+  sql: SELECT BTRIM(val, 'hx') AS result FROM strings ORDER BY 1
+  function: btrim
+  signature: btrim(text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: char_length__char__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: char_length
+  signature: char_length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: char_length__txt__from_table
+  sql: SELECT CHAR_LENGTH(val) AS result FROM strings ORDER BY 1
+  function: char_length
+  signature: char_length(text) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: character_length__char__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: character_length
+  signature: character_length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: character_length__txt__from_table
+  sql: SELECT CHARACTER_LENGTH(val) AS result FROM strings ORDER BY 1
+  function: character_length
+  signature: character_length(text) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: chr__int__from_table
+  sql: SELECT CHR(65 + id) AS result FROM numbers WHERE id <= 5 ORDER BY 1
+  function: chr
+  signature: chr(integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: concat__variadic__from_table
+  sql: SELECT CONCAT(val, '-', nullable_val) AS result FROM strings ORDER BY 1
+  function: concat
+  signature: concat(VARIADIC "any") → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: concat_ws__txt_variadic__from_table
+  sql: SELECT CONCAT_WS(', ', val, nullable_val) AS result FROM strings ORDER BY 1
+  function: concat_ws
+  signature: concat_ws(text, VARIADIC "any") → text
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+- id: decode__txt_txt__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: decode
+  signature: decode(text, text) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: encode__bytea_txt__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: encode
+  signature: encode(bytea, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: format__txt__from_table
+  sql: SELECT FORMAT('Hello World') AS result FROM strings WHERE id = 1
+  function: format
+  signature: format(text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: format__txt_variadic__from_table
+  sql: SELECT FORMAT('Hello %s, age %s', name, age) AS result FROM persons WHERE age IS NOT NULL ORDER BY 1
+  function: format
+  signature: format(text, VARIADIC "any") → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: initcap__txt__from_table
+  sql: SELECT INITCAP(val) AS result FROM strings ORDER BY 1
+  function: initcap
+  signature: initcap(text) → text
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+- id: is_normalized__txt_txtNFCtxt__from_table
+  sql: SELECT IS_NORMALIZED(unicode_val) AS result FROM strings WHERE unicode_val IS NOT NULL ORDER BY 1
+  function: is_normalized
+  signature: is_normalized(text, text DEFAULT 'NFC'::text) → boolean
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: left__txt_int__from_table
+  sql: SELECT LEFT(val, 3) AS result FROM strings ORDER BY 1
+  function: left
+  signature: left(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: left__txt_int__negative
+  sql: SELECT LEFT(val, -2) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: left
+  signature: left(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__bit__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bit) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bytea) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__bytea_name__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bytea, name) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__char__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__lseg__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(lseg) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__path__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(path) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__txt__from_table
+  sql: SELECT LENGTH(val) AS result FROM strings ORDER BY 1
+  function: length
+  signature: length(text) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__txt__null
+  sql: SELECT LENGTH(nullable_val) AS result FROM strings ORDER BY 1
+  function: length
+  signature: length(text) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length__tsvector__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(tsvector) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower__anymultirange__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: lower
+  signature: lower(anymultirange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower__anyrange__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: lower
+  signature: lower(anyrange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower__txt__from_table
+  sql: SELECT LOWER(val) AS result FROM strings ORDER BY 1
+  function: lower
+  signature: lower(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower__txt__null
+  sql: SELECT LOWER(nullable_val) AS result FROM strings ORDER BY 1
+  function: lower
+  signature: lower(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lpad__txt_int__from_table
+  sql: SELECT LPAD(val, 15) AS result FROM strings ORDER BY 1
+  function: lpad
+  signature: lpad(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lpad__txt_int_txt__from_table
+  sql: SELECT LPAD(val, 15, '*') AS result FROM strings ORDER BY 1
+  function: lpad
+  signature: lpad(text, integer, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ltrim__bytea_bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: ltrim
+  signature: ltrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ltrim__txt__from_table
+  sql: SELECT LTRIM(val) AS result FROM strings ORDER BY 1
+  function: ltrim
+  signature: ltrim(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ltrim__txt_txt__from_table
+  sql: SELECT LTRIM(val, ' ') AS result FROM strings ORDER BY 1
+  function: ltrim
+  signature: ltrim(text, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: md5__bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: md5
+  signature: md5(bytea) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: md5__txt__from_table
+  sql: SELECT MD5(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: md5
+  signature: md5(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: normalize__txt_txtNFCtxt__from_table
+  sql: SELECT NORMALIZE(unicode_val) AS result FROM strings WHERE unicode_val IS NOT NULL ORDER BY 1
+  function: normalize
+  signature: normalize(text, text DEFAULT 'NFC'::text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: octet_length__bit__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(bit) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: octet_length__bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(bytea) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: octet_length__char__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: octet_length__txt__from_table
+  sql: SELECT OCTET_LENGTH(val) AS result FROM strings ORDER BY 1
+  function: octet_length
+  signature: octet_length(text) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: overlay__bit_bit_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bit, bit, integer) → bit
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: overlay__bit_bit_int_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bit, bit, integer, integer) → bit
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: overlay__bytea_bytea_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bytea, bytea, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: overlay__bytea_bytea_int_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bytea, bytea, integer, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: overlay__txt_txt_int__special_syntax
+  sql: SELECT OVERLAY(val PLACING 'XX' FROM 1) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: overlay
+  signature: overlay(text, text, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: overlay__txt_txt_int_int__special_syntax
+  sql: SELECT OVERLAY(val PLACING 'XX' FROM 1 FOR 2) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: overlay
+  signature: overlay(text, text, integer, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: overlay__txt_txt_int_int__func_syntax
+  sql: SELECT OVERLAY(val, 'XX', 1, 2) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: overlay
+  signature: overlay(text, text, integer, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: position__bit_bit__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: position
+  signature: position(bit, bit) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: position__bytea_bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: position
+  signature: position(bytea, bytea) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: position__txt_txt__from_table
+  sql: SELECT POSITION('lo' IN val) AS result FROM strings ORDER BY 1
+  function: position
+  signature: position(text, text) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: quote_ident__txt__from_table
+  sql: SELECT QUOTE_IDENT(val) AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: quote_ident
+  signature: quote_ident(text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: quote_literal__anyelement__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: quote_literal
+  signature: quote_literal(anyelement) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: quote_literal__txt__from_table
+  sql: SELECT QUOTE_LITERAL(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: quote_literal
+  signature: quote_literal(text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: quote_nullable__anyelement__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: quote_nullable
+  signature: quote_nullable(anyelement) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: quote_nullable__txt__from_table
+  sql: SELECT QUOTE_NULLABLE(nullable_val) AS result FROM strings ORDER BY 1
+  function: quote_nullable
+  signature: quote_nullable(text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_match__txt_txt__from_table
+  sql: SELECT REGEXP_MATCH(val, '([a-z]+)') AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: regexp_match
+  signature: regexp_match(text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_match__txt_txt_txt__from_table
+  sql: SELECT REGEXP_MATCH(val, '([a-z]+)', 'i') AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: regexp_match
+  signature: regexp_match(text, text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_matches__txt_txt__from_table
+  sql: SELECT REGEXP_MATCHES(val, '([a-z]+)', 'g') AS result FROM strings WHERE id = 1
+  function: regexp_matches
+  signature: regexp_matches(text, text) → SETOF text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_matches__txt_txt_txt__from_table
+  sql: SELECT REGEXP_MATCHES(val, '([a-z]+)', 'g') AS result FROM strings WHERE id = 1
+  function: regexp_matches
+  signature: regexp_matches(text, text, text) → SETOF text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace__txt_txt_txt__from_table
+  sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace__txt_txt_txt_int__from_table
+  sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace__txt_txt_txt_int_int__from_table
+  sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, integer, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace__txt_txt_txt_int_int_txt__from_table
+  sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, integer, integer, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace__txt_txt_txt_txt__global
+  sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X', 'gi') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_split_to_array__txt_txt__from_table
+  sql: SELECT REGEXP_SPLIT_TO_ARRAY(val, '\s+') AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: regexp_split_to_array
+  signature: regexp_split_to_array(text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_split_to_array__txt_txt_txt__from_table
+  sql: SELECT REGEXP_SPLIT_TO_ARRAY(val, '\s+') AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
+  function: regexp_split_to_array
+  signature: regexp_split_to_array(text, text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_split_to_table__txt_txt__from_table
+  sql: SELECT REGEXP_SPLIT_TO_TABLE(val, '\s+') AS result FROM strings WHERE id = 1
+  function: regexp_split_to_table
+  signature: regexp_split_to_table(text, text) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_split_to_table__txt_txt_txt__from_table
+  sql: SELECT REGEXP_SPLIT_TO_TABLE(val, '\s+') AS result FROM strings WHERE id = 1
+  function: regexp_split_to_table
+  signature: regexp_split_to_table(text, text, text) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: repeat__txt_int__from_table
+  sql: SELECT REPEAT(val, 2) AS result FROM strings WHERE val IS NOT NULL AND LENGTH(val) < 10 ORDER BY 1
+  function: repeat
+  signature: repeat(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: replace__txt_txt_txt__from_table
+  sql: SELECT REPLACE(val, 'hello', 'HELLO') AS result FROM strings ORDER BY 1
+  function: replace
+  signature: replace(text, text, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: reverse__txt__from_table
+  sql: SELECT REVERSE(val) AS result FROM strings ORDER BY 1
+  function: reverse
+  signature: reverse(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: right__txt_int__from_table
+  sql: SELECT RIGHT(val, 3) AS result FROM strings ORDER BY 1
+  function: right
+  signature: right(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: rpad__txt_int__from_table
+  sql: SELECT RPAD(val, 15) AS result FROM strings ORDER BY 1
+  function: rpad
+  signature: rpad(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: rpad__txt_int_txt__from_table
+  sql: SELECT RPAD(val, 15, '*') AS result FROM strings ORDER BY 1
+  function: rpad
+  signature: rpad(text, integer, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: rtrim__bytea_bytea__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: rtrim
+  signature: rtrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: rtrim__txt__from_table
+  sql: SELECT RTRIM(val) AS result FROM strings ORDER BY 1
+  function: rtrim
+  signature: rtrim(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: rtrim__txt_txt__from_table
+  sql: SELECT RTRIM(val, ' ') AS result FROM strings ORDER BY 1
+  function: rtrim
+  signature: rtrim(text, text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: split_part__txt_txt_int__from_table
+  sql: SELECT SPLIT_PART(val, ' ', 1) AS result FROM strings ORDER BY 1
+  function: split_part
+  signature: split_part(text, text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: starts_with__txt_txt__from_table
+  sql: SELECT STARTS_WITH(val, 'he') AS result FROM strings ORDER BY 1
+  function: starts_with
+  signature: starts_with(text, text) → boolean
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: string_to_array__txt_txt__from_table
+  sql: SELECT STRING_TO_ARRAY(val, ' ') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: string_to_array
+  signature: string_to_array(text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: string_to_array__txt_txt_txt__from_table
+  sql: SELECT STRING_TO_ARRAY(val, ' ', '') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: string_to_array
+  signature: string_to_array(text, text, text) → text[]
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: strpos__txt_txt__from_table
+  sql: SELECT STRPOS(val, 'lo') AS result FROM strings ORDER BY 1
+  function: strpos
+  signature: strpos(text, text) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substr__bytea_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substr
+  signature: substr(bytea, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substr__bytea_int_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substr
+  signature: substr(bytea, integer, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substr__txt_int__from_table
+  sql: SELECT SUBSTR(val, 2) AS result FROM strings ORDER BY 1
+  function: substr
+  signature: substr(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substr__txt_int_int__from_table
+  sql: SELECT SUBSTR(val, 1, 3) AS result FROM strings ORDER BY 1
+  function: substr
+  signature: substr(text, integer, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__bit_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bit, integer) → bit
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__bit_int_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bit, integer, integer) → bit
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__bytea_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bytea, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__bytea_int_int__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bytea, integer, integer) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__txt_int__from_table
+  sql: SELECT SUBSTRING(val, 2) AS result FROM strings ORDER BY 1
+  function: substring
+  signature: substring(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__txt_int__special_syntax
+  sql: SELECT SUBSTRING(val FROM 2) AS result FROM strings ORDER BY 1
+  function: substring
+  signature: substring(text, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__txt_int_int__from_table
+  sql: SELECT SUBSTRING(val, 1, 3) AS result FROM strings ORDER BY 1
+  function: substring
+  signature: substring(text, integer, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__txt_int_int__special_syntax
+  sql: SELECT SUBSTRING(val FROM 1 FOR 3) AS result FROM strings ORDER BY 1
+  function: substring
+  signature: substring(text, integer, integer) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substring__txt_txt__from_table
+  sql: SELECT SUBSTRING(val FROM '[a-z]+') AS result FROM strings WHERE val ~ '[a-z]' ORDER BY 1
+  function: substring
+  signature: substring(text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: substring__txt_txt_txt__from_table
+  sql: SELECT SUBSTRING(val SIMILAR '%#"[a-z]+#"%' ESCAPE '#') AS result FROM strings WHERE val ~ '[a-z]' ORDER BY 1
+  function: substring
+  signature: substring(text, text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: to_hex__big__from_table
+  sql: SELECT TO_HEX(int_val) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val >= 0 ORDER BY 1
+  function: to_hex
+  signature: to_hex(bigint) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: to_hex__int__from_table
+  sql: SELECT TO_HEX(int_val) AS result FROM numbers WHERE int_val IS NOT NULL AND int_val >= 0 ORDER BY 1
+  function: to_hex
+  signature: to_hex(integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: translate__txt_txt_txt__from_table
+  sql: SELECT TRANSLATE(val, 'aeiou', 'AEIOU') AS result FROM strings ORDER BY 1
+  function: translate
+  signature: translate(text, text, text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: unistr__txt__from_table
+  sql: SELECT UNISTR('\0041') AS result FROM strings WHERE id = 1
+  function: unistr
+  signature: unistr(text) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: upper__anymultirange__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: upper
+  signature: upper(anymultirange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: upper__anyrange__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: upper
+  signature: upper(anyrange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: upper__txt__from_table
+  sql: SELECT UPPER(val) AS result FROM strings ORDER BY 1
+  function: upper
+  signature: upper(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: upper__txt__null
+  sql: SELECT UPPER(nullable_val) AS result FROM strings ORDER BY 1
+  function: upper
+  signature: upper(text) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: array_to_string_anyarray_text_cov
+  sql: SELECT ARRAY_TO_STRING(NULL) AS result FROM persons WHERE id = 1
+  function: array_to_string
+  signature: array_to_string(anyarray, text) → text
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: bit_length_bit_cov
+  sql: SELECT BIT_LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: bit_length
+  signature: bit_length(bit) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: bit_length_bytea_cov
+  sql: SELECT BIT_LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: bit_length
+  signature: bit_length(bytea) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: btrim_bytea_bytea_cov
+  sql: SELECT BTRIM(NULL) AS result FROM persons WHERE id = 1
+  function: btrim
+  signature: btrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: char_length_character_cov
+  sql: SELECT CHAR_LENGTH(name) AS result FROM persons WHERE id = 1
+  function: char_length
+  signature: char_length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: character_length_character_cov
+  sql: SELECT CHARACTER_LENGTH(name) AS result FROM persons WHERE id = 1
+  function: character_length
+  signature: character_length(character) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: decode_text_text_cov
+  sql: SELECT DECODE(NULL) AS result FROM persons WHERE id = 1
+  function: decode
+  signature: decode(text, text) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: encode_bytea_text_cov
+  sql: SELECT ENCODE(NULL) AS result FROM persons WHERE id = 1
+  function: encode
+  signature: encode(bytea, text) → text
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: length_bit_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bit) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_bytea_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bytea) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_bytea_name_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(bytea, name) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_character_cov
+  sql: SELECT LENGTH(name) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(character) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_lseg_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(lseg) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_path_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(path) → double precision
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: length_tsvector_cov
+  sql: SELECT LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: length
+  signature: length(tsvector) → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower_anymultirange_cov
+  sql: SELECT LOWER(NULL) AS result FROM persons WHERE id = 1
+  function: lower
+  signature: lower(anymultirange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: lower_anyrange_cov
+  sql: SELECT LOWER(NULL) AS result FROM persons WHERE id = 1
+  function: lower
+  signature: lower(anyrange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: ltrim_bytea_bytea_cov
+  sql: SELECT LTRIM(NULL) AS result FROM persons WHERE id = 1
+  function: ltrim
+  signature: ltrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: md5_bytea_cov
+  sql: SELECT MD5(NULL) AS result FROM persons WHERE id = 1
+  function: md5
+  signature: md5(bytea) → text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: octet_length_bit_cov
+  sql: SELECT OCTET_LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(bit) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: octet_length_bytea_cov
+  sql: SELECT OCTET_LENGTH(NULL) AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(bytea) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: octet_length_character_cov
+  sql: SELECT OCTET_LENGTH(name) AS result FROM persons WHERE id = 1
+  function: octet_length
+  signature: octet_length(character) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: overlay_bit_bit_integer_cov
+  sql: SELECT OVERLAY(NULL) AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bit, bit, integer) → bit
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: overlay_bit_bit_integer_integer_cov
+  sql: SELECT OVERLAY(NULL) AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bit, bit, integer, integer) → bit
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: overlay_bytea_bytea_integer_cov
+  sql: SELECT OVERLAY(NULL) AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bytea, bytea, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: overlay_bytea_bytea_integer_integer_cov
+  sql: SELECT OVERLAY(NULL) AS result FROM persons WHERE id = 1
+  function: overlay
+  signature: overlay(bytea, bytea, integer, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: position_bit_bit_cov
+  sql: SELECT POSITION(NULL) AS result FROM persons WHERE id = 1
+  function: position
+  signature: position(bit, bit) → integer
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: position_bytea_bytea_cov
+  sql: SELECT POSITION(NULL) AS result FROM persons WHERE id = 1
+  function: position
+  signature: position(bytea, bytea) → integer
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: quote_literal_anyelement_cov
+  sql: SELECT QUOTE_LITERAL(NULL) AS result FROM persons WHERE id = 1
+  function: quote_literal
+  signature: quote_literal(anyelement) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: quote_nullable_anyelement_cov
+  sql: SELECT QUOTE_NULLABLE(NULL) AS result FROM persons WHERE id = 1
+  function: quote_nullable
+  signature: quote_nullable(anyelement) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_matches_text_text_cov
+  sql: SELECT REGEXP_MATCHES(NULL) AS result FROM persons WHERE id = 1
+  function: regexp_matches
+  signature: regexp_matches(text, text) → SETOF text[]
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: regexp_matches_text_text_text_cov
+  sql: SELECT REGEXP_MATCHES(NULL) AS result FROM persons WHERE id = 1
+  function: regexp_matches
+  signature: regexp_matches(text, text, text) → SETOF text[]
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: regexp_replace_text_text_text_integer_cov
+  sql: SELECT REGEXP_REPLACE(name, '([aeiou])', '*', 1) AS result FROM persons WHERE id = 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_replace_text_text_text_integer_int_cov
+  sql: SELECT REGEXP_REPLACE(name, '([aeiou])', '*', 1) AS result FROM persons WHERE id = 1
+  function: regexp_replace
+  signature: regexp_replace(text, text, text, integer, integer) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: regexp_split_to_table_text_text_cov
+  sql: SELECT REGEXP_SPLIT_TO_TABLE(NULL) AS result FROM persons WHERE id = 1
+  function: regexp_split_to_table
+  signature: regexp_split_to_table(text, text) → SETOF text
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: regexp_split_to_table_text_text_text_cov
+  sql: SELECT REGEXP_SPLIT_TO_TABLE(NULL) AS result FROM persons WHERE id = 1
+  function: regexp_split_to_table
+  signature: regexp_split_to_table(text, text, text) → SETOF text
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: rtrim_bytea_bytea_cov
+  sql: SELECT RTRIM(NULL) AS result FROM persons WHERE id = 1
+  function: rtrim
+  signature: rtrim(bytea, bytea) → bytea
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: substr_bytea_integer_cov
+  sql: SELECT SUBSTR(NULL) AS result FROM persons WHERE id = 1
+  function: substr
+  signature: substr(bytea, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substr_bytea_integer_integer_cov
+  sql: SELECT SUBSTR(NULL) AS result FROM persons WHERE id = 1
+  function: substr
+  signature: substr(bytea, integer, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substring_bit_integer_cov
+  sql: SELECT SUBSTRING(NULL) AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bit, integer) → bit
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substring_bit_integer_integer_cov
+  sql: SELECT SUBSTRING(NULL) AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bit, integer, integer) → bit
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substring_bytea_integer_cov
+  sql: SELECT SUBSTRING(NULL) AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bytea, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substring_bytea_integer_integer_cov
+  sql: SELECT SUBSTRING(NULL) AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(bytea, integer, integer) → bytea
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: substring_text_text_text_cov
+  sql: SELECT SUBSTRING(name) AS result FROM persons WHERE id = 1
+  function: substring
+  signature: substring(text, text, text) → text
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: upper_anymultirange_cov
+  sql: SELECT UPPER(NULL) AS result FROM persons WHERE id = 1
+  function: upper
+  signature: upper(anymultirange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: upper_anyrange_cov
+  sql: SELECT UPPER(NULL) AS result FROM persons WHERE id = 1
+  function: upper
+  signature: upper(anyrange) → anyelement
+  expected_tds_status: PASS
+  expected_rel_status: PASS

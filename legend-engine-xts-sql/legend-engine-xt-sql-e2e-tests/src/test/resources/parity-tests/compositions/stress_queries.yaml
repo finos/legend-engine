@@ -1,0 +1,80 @@
+tests:
+  # Full analytics dashboard query
+  - id: stress_dashboard
+    sql: "SELECT d.name AS department, p.name AS employee, p.salary, RANK() OVER (PARTITION BY d.name ORDER BY p.salary DESC) AS dept_rank, CASE WHEN p.salary > 80000 THEN 'Senior' WHEN p.salary > 50000 THEN 'Mid' ELSE 'Junior' END AS band, COUNT(o.id) AS order_count, COALESCE(SUM(o.amount), 0) AS total_orders FROM persons p INNER JOIN departments d ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id WHERE p.salary IS NOT NULL GROUP BY d.name, p.name, p.salary ORDER BY 1, 4"
+    feature: "JOIN + window + aggregate + CASE"
+    category: "compositions"
+
+  # Z-score calculation
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_zscore
+    sql: "SELECT name, salary, ROUND(CAST((salary - AVG(salary) OVER ()) / NULLIF(STDDEV(salary) OVER (), 0) AS NUMERIC), 3) AS z_score FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Deeply nested expressions"
+    category: "compositions"
+
+  # Top-N per group
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_top_n_per_group
+    sql: "SELECT name, dept_id, salary FROM (SELECT name, dept_id, salary, ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rn FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL) sub WHERE rn <= 2 ORDER BY 1"
+    feature: "Top-N per group via subquery"
+    category: "compositions"
+
+  # Running total with CASE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: stress_running_case
+    sql: "SELECT name, salary, SUM(CASE WHEN salary > 60000 THEN salary ELSE 0 END) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS high_earner_running FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Window with CASE expression"
+    category: "compositions"
+
+  # Multiple aggregates with COALESCE across joins
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_multi_agg_join
+    sql: "SELECT d.name AS dept, COUNT(DISTINCT p.id) AS employees, COALESCE(AVG(p.salary), 0) AS avg_salary, COALESCE(SUM(o.amount), 0) AS total_orders, COALESCE(COUNT(DISTINCT o.id), 0) AS order_count FROM departments d LEFT JOIN persons p ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id GROUP BY d.name ORDER BY 1"
+    feature: "Multi-aggregate + COALESCE + JOINs"
+    category: "compositions"
+
+  # Percentile simulation via ROW_NUMBER
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_percentile_sim
+    sql: "SELECT name, salary, ROUND(CAST(rn AS NUMERIC) / cnt * 100, 1) AS percentile FROM (SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary) AS rn, COUNT(*) OVER () AS cnt FROM persons WHERE salary IS NOT NULL) sub ORDER BY 1"
+    feature: "Percentile via ROW_NUMBER"
+    category: "compositions"
+
+  # Cumulative distribution
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_cume_dist
+    sql: "SELECT name, salary, CUME_DIST() OVER (ORDER BY salary) AS cume, PERCENT_RANK() OVER (ORDER BY salary) AS pct_rank FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "CUME_DIST + PERCENT_RANK"
+    category: "compositions"
+
+  # Year-over-year style comparison via LAG
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: stress_lag_comparison
+    sql: "SELECT dept_id, SUM(salary) AS total, LAG(SUM(salary)) OVER (ORDER BY dept_id) AS prev, SUM(salary) - COALESCE(LAG(SUM(salary)) OVER (ORDER BY dept_id), 0) AS diff FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "LAG comparison over aggregates"
+    category: "compositions"
+
+  # Nested CASE with window
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_nested_case_window
+    sql: "SELECT name, salary, CASE WHEN RANK() OVER (ORDER BY salary DESC) <= 3 THEN 'Top 3' WHEN RANK() OVER (ORDER BY salary DESC) <= 6 THEN 'Mid' ELSE 'Bottom' END AS tier FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Nested CASE with window function"
+    category: "compositions"
+
+  # COALESCE chain with window
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: stress_coalesce_window
+    sql: "SELECT name, COALESCE(salary, 0) AS sal, SUM(COALESCE(salary, 0)) OVER (ORDER BY name) AS running FROM persons ORDER BY 1"
+    feature: "COALESCE + window"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

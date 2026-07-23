@@ -1,0 +1,110 @@
+tests:
+  # PARTITION BY single column
+  - id: partition_single
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (PARTITION BY dept_id) AS dept_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "PARTITION BY single column"
+    category: "window_partitioning"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: partition_single_rank
+    sql: "SELECT name, dept_id, salary, RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dept_rank FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "PARTITION BY single column"
+    category: "window_partitioning"
+
+  # PARTITION BY multiple columns
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: partition_multi
+    sql: "SELECT name, dept_id, active, ROW_NUMBER() OVER (PARTITION BY dept_id, active ORDER BY name) AS rn FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL ORDER BY 1"
+    feature: "PARTITION BY multiple columns"
+    category: "window_partitioning"
+
+  # No PARTITION BY (whole result)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: partition_none
+    sql: "SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS overall_rank FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "No PARTITION BY"
+    category: "window_partitioning"
+
+  # ORDER BY DESC in window
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: window_order_desc
+    sql: "SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Window ORDER BY DESC"
+    category: "window_partitioning"
+
+  # ORDER BY multiple columns in window
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: window_order_multi
+    sql: "SELECT name, dept_id, salary, ROW_NUMBER() OVER (ORDER BY dept_id, salary DESC) AS rn FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Window ORDER BY multiple columns"
+    category: "window_partitioning"
+
+  # Multiple window functions in same SELECT
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: multi_window_funcs
+    sql: "SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn, RANK() OVER (ORDER BY salary DESC) AS rnk, DENSE_RANK() OVER (ORDER BY salary DESC) AS drnk FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Multiple window functions"
+    category: "window_partitioning"
+
+  # Different OVER clauses in same query
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: different_over_clauses
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (PARTITION BY dept_id) AS dept_total, SUM(salary) OVER () AS grand_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "Different OVER clauses"
+    category: "window_partitioning"
+
+  # Window function with PARTITION BY + ORDER BY + frame
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: partition_order_frame
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (PARTITION BY dept_id ORDER BY salary ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "PARTITION BY + ORDER BY + frame"
+    category: "window_partitioning"
+
+  # NTILE window function
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: window_ntile
+    sql: "SELECT name, salary, NTILE(3) OVER (ORDER BY salary DESC) AS tercile FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "NTILE"
+    category: "window_partitioning"
+
+  # LAG window function
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: window_lag
+    sql: "SELECT name, salary, LAG(salary) OVER (ORDER BY name) AS prev_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "LAG"
+    category: "window_partitioning"
+
+  # LEAD window function
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: window_lead
+    sql: "SELECT name, salary, LEAD(salary) OVER (ORDER BY name) AS next_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "LEAD"
+    category: "window_partitioning"
+
+  # LAG with offset and default
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: window_lag_offset
+    sql: "SELECT name, salary, LAG(salary, 2, 0) OVER (ORDER BY name) AS prev2 FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "LAG with offset"
+    category: "window_partitioning"
+
+  # FIRST_VALUE / LAST_VALUE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_first_last_value
+    sql: "SELECT name, dept_id, salary, FIRST_VALUE(name) OVER (PARTITION BY dept_id ORDER BY salary DESC) AS top_earner FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "FIRST_VALUE"
+    category: "window_partitioning"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

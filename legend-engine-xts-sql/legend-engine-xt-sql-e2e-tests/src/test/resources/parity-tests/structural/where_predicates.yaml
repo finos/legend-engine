@@ -1,0 +1,133 @@
+tests:
+  # BETWEEN
+  - id: where_between_basic
+    sql: "SELECT name, salary FROM persons WHERE salary BETWEEN 40000 AND 60000 ORDER BY 1"
+    feature: "BETWEEN"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_not_between
+    sql: "SELECT name, salary FROM persons WHERE salary NOT BETWEEN 40000 AND 60000 ORDER BY 1"
+    feature: "NOT BETWEEN"
+    category: "where_predicates"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: where_between_text
+    sql: "SELECT name FROM persons WHERE name BETWEEN 'A' AND 'M' ORDER BY 1"
+    feature: "BETWEEN with text"
+    category: "where_predicates"
+
+  # IN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_in_list
+    sql: "SELECT name, dept_id FROM persons WHERE dept_id IN (1, 2, 3) ORDER BY 1"
+    feature: "IN (list)"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_not_in_list
+    sql: "SELECT name, dept_id FROM persons WHERE dept_id NOT IN (1, 2) ORDER BY 1"
+    feature: "NOT IN (list)"
+    category: "where_predicates"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: where_in_subquery
+    sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE name = 'Engineering') ORDER BY 1"
+    feature: "IN (subquery)"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_not_in_subquery
+    sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE name = 'Engineering') ORDER BY 1"
+    feature: "NOT IN (subquery)"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_in_strings
+    sql: "SELECT name FROM persons WHERE name IN ('Alice', 'Bob', 'Charlie') ORDER BY 1"
+    feature: "IN with strings"
+    category: "where_predicates"
+
+  # LIKE / ILIKE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_like_percent
+    sql: "SELECT name FROM persons WHERE name LIKE 'A%' ORDER BY 1"
+    feature: "LIKE with %"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_like_underscore
+    sql: "SELECT name FROM persons WHERE name LIKE '_o%' ORDER BY 1"
+    feature: "LIKE with _"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_not_like
+    sql: "SELECT name FROM persons WHERE name NOT LIKE 'A%' ORDER BY 1"
+    feature: "NOT LIKE"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_ilike
+    sql: "SELECT name FROM persons WHERE name ILIKE 'a%' ORDER BY 1"
+    feature: "ILIKE"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_not_ilike
+    sql: "SELECT name FROM persons WHERE name NOT ILIKE 'a%' ORDER BY 1"
+    feature: "NOT ILIKE"
+    category: "where_predicates"
+
+  # EXISTS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_exists
+    sql: "SELECT name FROM persons p WHERE EXISTS (SELECT 1 FROM departments d WHERE d.id = p.dept_id) ORDER BY 1"
+    feature: "EXISTS"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_not_exists
+    sql: "SELECT name FROM persons p WHERE NOT EXISTS (SELECT 1 FROM departments d WHERE d.id = p.dept_id AND d.name = 'Engineering') ORDER BY 1"
+    feature: "NOT EXISTS"
+    category: "where_predicates"
+
+  # ANY / ALL
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_any
+    sql: "SELECT name, salary FROM persons WHERE salary > ANY(SELECT salary FROM persons WHERE dept_id = 1) ORDER BY 1"
+    feature: "ANY"
+    category: "where_predicates"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_all
+    sql: "SELECT name, salary FROM persons WHERE salary > ALL(SELECT salary FROM persons WHERE dept_id = 2) ORDER BY 1"
+    feature: "ALL"
+    category: "where_predicates"
+
+  # Compound predicates
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: where_and_or
+    sql: "SELECT name FROM persons WHERE (dept_id = 1 AND salary > 50000) OR (dept_id = 2 AND age < 30) ORDER BY 1"
+    feature: "compound AND/OR"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: where_not_compound
+    sql: "SELECT name FROM persons WHERE NOT (dept_id = 1 AND salary > 50000) ORDER BY 1"
+    feature: "NOT with compound"
+    category: "where_predicates"
+    expected_tds_status: PASS
+    expected_rel_status: FAIL
+  - id: where_precedence
+    sql: "SELECT name FROM persons WHERE dept_id = 1 OR dept_id = 2 AND salary > 50000 ORDER BY 1"
+    feature: "operator precedence (AND binds tighter)"
+    category: "where_predicates"
+
+    expected_tds_status: PASS
+    expected_rel_status: PASS
