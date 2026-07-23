@@ -1,0 +1,46 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-src
+title: "Relation Function Mapping — ~src Inline Source Form"
+description: |
+  Exercises the ~src inline-source mapping form (the #4941 alternative to ~func).
+  The source expression is wrapped in a zero-arg helper function that returns a typed
+  Relation, avoiding the parser stack-overflow on raw #>{...}# literals under ~src.
+  Two mapping variants: plain source (all columns) and filter-in-source (active only).
+  Asserts PARSE round-trip, COMPILE, and TEST_EXECUTION via mapping testSuites.
+
+modelSources:
+  model:
+    root: relation-src
+    files:
+      - mapping/srcMapping.pure   # ###Pure (typed source funcs) + ###Mapping + testSuites
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:relation-src
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - src

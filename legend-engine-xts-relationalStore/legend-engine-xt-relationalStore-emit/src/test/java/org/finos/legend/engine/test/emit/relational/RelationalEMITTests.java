@@ -21,16 +21,21 @@ import org.junit.jupiter.api.TestFactory;
 import java.util.stream.Stream;
 
 /**
- * Example wiring of {@link EMITTestSuiteBuilder} into JUnit 5 for the relational
- * store. Discovers EMIT models under {@code emit-models/} on the test classpath
- * and yields one dynamic test per granular operation (init/parse/compile,
- * file generation, individual mapping tests, service plans).
+ * JUnit 5 runner for the classic <b>relational mapping</b> EMIT suite. Discovers
+ * EMIT models under {@code relational-emit-models/} on the test classpath and yields
+ * one dynamic test per granular operation (init/parse/compile, file generation,
+ * individual mapping tests, service plans).
+ *
+ * <p>The sibling relation ({@code ~func}) mapping suite lives under
+ * {@code relation-emit-models/} and is driven by
+ * {@link org.finos.legend.engine.test.emit.relation.RelationEMITTests}. The two use
+ * separate resource roots so a failure is unambiguously attributable to one feature.
  */
 public class RelationalEMITTests
 {
     @TestFactory
     Stream<DynamicContainer> emit()
     {
-        return EMITTestSuiteBuilder.testContainers("emit-models/");
+        return EMITTestSuiteBuilder.testContainers("relational-emit-models/");
     }
 }

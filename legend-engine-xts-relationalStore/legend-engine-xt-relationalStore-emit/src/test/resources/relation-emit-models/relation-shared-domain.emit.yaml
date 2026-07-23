@@ -1,0 +1,50 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-shared-domain
+title: "Shared Domain Types for Relation Mapping EMIT Models"
+description: |
+  Employee, Firm, EmployeeType enumeration, and their Employment association —
+  the common domain types reused across all relation-mapping EMIT scenarios.
+  No store, mapping or runtime is declared here; those are layered on by
+  each consuming model via the EMIT dependencies mechanism.
+
+modelSources:
+  model:
+    root: relation-shared-domain
+    files:
+      - model/employeeType.pure
+      - model/firm.pure
+      - model/employee.pure
+      - model/employment.pure
+      - model/position.pure
+      - model/address.pure
+      - model/extendedEmployee.pure
+      - model/temporalEmployee.pure
+      - model/department.pure
+      - model/activeStatus.pure
+      - model/businessTemporalEmployee.pure
+      - model/temporalDepartment.pure
+
+features:
+  - scaffolding:class
+  - grammar:enumeration
+  - grammar:association
+  - grammar:derived-property
+  - grammar:milestoning
+stores: []
+complexity: basic
+tags:
+  - shared-domain
+  - relation

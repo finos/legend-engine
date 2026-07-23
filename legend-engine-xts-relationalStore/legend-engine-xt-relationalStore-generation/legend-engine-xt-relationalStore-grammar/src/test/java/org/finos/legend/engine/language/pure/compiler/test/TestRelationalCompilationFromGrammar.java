@@ -4093,4 +4093,60 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    ]\n" +
                 ")\n");
     }
+
+    @Test
+    public void testRelationFunctionMappingWithTestSuiteCompiles()
+    {
+        test(RELATION_PK_DB +
+                RELATION_PK_CLASS +
+                "###Pure\n" +
+                "function my::personFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::db.personTable}#->filter(x | $x.AGE > 25)\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    personSuite:\n" +
+                "    {\n" +
+                "      function: |my::Person.all()->project(~['First Name': x|$x.firstName, 'Age': x|$x.age]);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            my::db:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                default.personTable:\n" +
+                "                  ID,FIRSTNAME,AGE,FIRMID\n" +
+                "                  1,John,30,100\n" +
+                "                  2,Jane,20,100;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            shouldPass:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                First Name, Age\n" +
+                "                John      , 30;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
 }

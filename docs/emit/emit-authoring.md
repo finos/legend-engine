@@ -52,7 +52,7 @@ Every EMIT test is two things on disk:
    that make up the model.
 
 ```
-emit-models/
+<classpath-root>/                      ← e.g. emit-models/, or relational-emit-models/ (see §3)
   relational-simple.emit.yaml          ← descriptor
   relational-simple/                   ← source root (same stem)
     store/db.pure
@@ -91,7 +91,8 @@ Apply the rule from `emit.md` §3.2:
 |---|---|
 | Only basic types (`class`, `enumeration`, `association`, `function`, constraints) | `legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/test/resources/emit-models/` (bootstrap examples for the framework itself — only for true core fixtures) |
 | M2M mapping (no service, no store) | `legend-engine-core/legend-engine-core-emit/legend-engine-emit-m2m` |
-| Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit` |
+| Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relational-emit-models/`, run by `RelationalEMITTests` |
+| Relation (`~func`) function-based class mapping — `ClassName: Relation { ~func f():Relation<Any>[1]; ... }` | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relation-emit-models/`, run by `RelationEMITTests` |
 | Service / service-test (where the mapping & store are already on the service-emit classpath) | `legend-engine-xts-service/legend-engine-xt-service-emit` |
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
@@ -413,6 +414,15 @@ The argument is the classpath root under which `*.emit.yaml` files are
 discovered — `"emit-models/"` is the convention. Discovery will find
 everything in the root and all its sub-directories, so adding a new
 descriptor is purely a matter of dropping the YAML in.
+
+If your target module already hosts an independently-owned suite for a different feature
+area, don't share its root — give your suite its own disambiguated root name and its own
+`*EMITTests` class, so a failure is attributable to one feature rather than the whole module.
+`legend-engine-xt-relationalStore-emit` does this: classic relational-mapping models live under
+`relational-emit-models/` (`RelationalEMITTests`), and relation (`~func`) mapping models live
+under `relation-emit-models/` (`RelationEMITTests`). Note the HTML coverage-report caveat in
+`emit.md` §5.4 — a disambiguated root needs an explicit `includedRelativeSubpaths` entry in the
+consuming pom to show up in that report; plain `emit-models/` roots don't need this.
 
 `testContainers(...)` returns one `DynamicContainer` per model, named after
 the model, with its tasks grouped by phase: a `Load Model Descriptor` task,

@@ -1,0 +1,51 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-window-function
+title: "Relation Function Mapping — Window Function + ModelJoin Association"
+description: |
+  A window function (->extend(over(...), ~[RANK:{p,w,r|$p->rank($w,$r)}])) ranks
+  employees by salary within each firm, backing a real `rank` property on a
+  model-local RankedEmployee subclass (mirroring relationMappingSetup.pure's
+  ExtendedPerson/WindowColumnMapping). Combined with a ModelJoin association to Firm so
+  this isn't a bare single-feature model. This is new territory for EMIT — no existing
+  model exercises window syntax end-to-end from raw text before this one.
+
+modelSources:
+  model:
+    root: relation-window-function
+    files:
+      - mapping/windowFunctionMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:window-function
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - window-function
+  - association
+  - modeljoin

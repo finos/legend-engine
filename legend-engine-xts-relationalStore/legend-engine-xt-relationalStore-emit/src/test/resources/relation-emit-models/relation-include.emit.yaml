@@ -1,0 +1,46 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-include
+title: "Relation Function Mapping — Mapping Include"
+description: |
+  A base mapping (BaseIncludeMapping) maps Employee via ~func with a normal property
+  list; an outer mapping (OuterIncludeMapping) does nothing but `include
+  BaseIncludeMapping` and carries the testSuites. Proves the mapping-include mechanism
+  executes end-to-end for a relation mapping (existing include coverage elsewhere is
+  compile/round-trip only).
+
+modelSources:
+  model:
+    root: relation-include
+    files:
+      - mapping/includeMapping.pure   # ###Mapping (base + outer-include) + testSuites; reuses shared employeesWithAddress func
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:mapping-include
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - include

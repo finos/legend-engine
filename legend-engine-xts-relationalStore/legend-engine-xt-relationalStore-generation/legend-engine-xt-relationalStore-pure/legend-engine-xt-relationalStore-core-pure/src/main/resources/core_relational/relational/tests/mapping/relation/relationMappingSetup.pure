@@ -60,6 +60,20 @@ Database meta::relational::tests::mapping::relation::testDB
     FIRMID INTEGER NOT NULL
   )
 
+  Table tradeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    quantity FLOAT NOT NULL,
+    tradeDate DATE NOT NULL,
+    settlementDateTime TIMESTAMP
+  )
+
+  Table distinctFirmTable
+  (
+    ID INTEGER NOT NULL,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+
   Join GroupMembership_Person(groupMembershipTable.PERSONID = personTable.ID)
 )
 
@@ -202,7 +216,7 @@ Database meta::relational::tests::mapping::relation::MilestonedDB
     SNAPSHOTDATE DATE NOT NULL
   )
 )
- 
+
 ###Pure
 Class meta::relational::tests::mapping::relation::Person
 {
@@ -255,49 +269,6 @@ Class meta::relational::tests::mapping::relation::PersonWithOptionalSalary exten
 // SemiStructuredRelationalPropertyMapping /
 // SemiStructuredEmbeddedRelationalInstanceSetImplementation).
 
-// Embedded class shape inside the JSON payload — used as a target for
-// $src.PAYLOAD->get('firm')->to(@PayloadFirm).
-Class meta::relational::tests::mapping::relation::PayloadFirm
-{
-  name: String[1];
-  tags: String[*];
-}
-
-// Variant + primitive cases 
-Class meta::relational::tests::mapping::relation::PersonLiftedPrimitive
-{
-  firstName: String[1];
-  tags: String[*];
-}
-
-// Variant + Class at-one: SS-embedded set synthesis. Querying
-// `.firm.name` triggers buildSemiStructuredPropertyMapping on the
-// router-built embedded set.
-Class meta::relational::tests::mapping::relation::PersonLiftedClass
-{
-  firm: meta::relational::tests::mapping::relation::PayloadFirm[1];
-}
-
-// Variant + Class to-many: SS-embedded set + LATERAL FLATTEN gate.
-Class meta::relational::tests::mapping::relation::PersonLiftedClassToMany
-{
-  firms: meta::relational::tests::mapping::relation::PayloadFirm[*];
-}
-
-// Property typed Variant: pass-through; no extraction, just the column.
-Class meta::relational::tests::mapping::relation::PersonLiftedPassthrough
-{
-  payload: meta::pure::metamodel::variant::Variant[1];
-}
-
-// Explicit-map [*]-body case: exercises the array_flatten wrap. The mapping uses
-// $src.PAYLOAD.firms->map(f | $f.tags) which produces Array<Array<String>>
-// pre-fix; after PR 1 it's flattened to Array<String> before the LATERAL.
-Class meta::relational::tests::mapping::relation::PersonLiftedExplicitMap
-{
-  allTags: String[*];
-}
-
 // Non-variant DynaFunction case: string concat over two regular columns.
 // Exercises the lift router's RelationalPropertyMapping (non-SS) wrapper path.
 Class meta::relational::tests::mapping::relation::PersonLiftedConcat
@@ -318,6 +289,12 @@ Class <<temporal.businesstemporal>> meta::relational::tests::mapping::relation::
 {
   firmId: Integer[1];
   sum: Integer[1];
+}
+
+Association meta::relational::tests::mapping::relation::GroupByClass_Firm
+{
+  groupedByFirm: meta::relational::tests::mapping::relation::Firm[1];
+  firmGroupings: meta::relational::tests::mapping::relation::GroupByClass[*];
 }
 
 Class meta::relational::tests::mapping::relation::Firm
@@ -425,6 +402,14 @@ Association meta::relational::tests::mapping::relation::Person_Group
 {
   members: meta::relational::tests::mapping::relation::Person[*];
   group: meta::relational::tests::mapping::relation::Group[1];
+}
+
+Class meta::relational::tests::mapping::relation::Trade
+{
+   id: Integer[1];
+   quantity: Float[1];
+   date: StrictDate[1];
+   settlementDateTime: DateTime[0..1];
 }
 
 ###Mapping
@@ -906,6 +891,103 @@ Mapping meta::relational::tests::mapping::relation::MixedCaseAssociationChainMap
   // }
 )
 
+Mapping meta::relational::tests::mapping::relation::tradeRelationMapping
+(
+   *Trade: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::tradeFunction__Relation_1_
+      id: ID,
+      quantity: quantity,
+      date: tradeDate,
+      settlementDateTime: settlementDateTime
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::filterJoinMapping
+(
+   *Person: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithJoinFilter__Relation_1_
+      firstName: 'FIRST NAME',
+      age: AGE
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::distinctFirmMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::GroupByAssociationMapping
+(
+   *GroupByClass[groupByClass]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personFunctionWithGroupBy__Relation_1_
+      firmId: FIRMID,
+      sum: SUM
+   }
+
+   *Firm[firm]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::firmFunction__Relation_1_
+      legalName: legalName,
+      +id: Integer[1]: ID
+   }
+
+   GroupByClass_Firm: ModelJoin
+   {
+      {firmGroupings: GroupByClass[1], groupedByFirm: Firm[1] | $firmGroupings.firmId == $groupedByFirm.id}
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::distinctFirmJoinMapping
+(
+   *Person[person]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::personAllFunc__Relation_1_
+      firstName: 'FIRST NAME',
+      age: AGE,
+      +firmId: Integer[1]: FIRMID
+   }
+
+   *Firm[firm]: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+
+   Person_Firm: ModelJoin
+   {
+      {employees: Person[1], firm: Firm[1] | $firm.id == $employees.firmId}
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::distinctFirmFilteredMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::distinctFirmFilteredFunc__Relation_1_
+      legalName: LEGALNAME,
+      +id: Integer[1]: ID
+   }
+)
+
+Mapping meta::relational::tests::mapping::relation::distinctFirmCaseMapping
+(
+   *Firm: Relation
+   {
+      ~func meta::relational::tests::mapping::relation::firmWithCaseFunc__Relation_1_
+      legalName: name,
+      +id: Integer[1]: ID
+   }
+)
+
 ###Pure
 import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::*;
@@ -1052,6 +1134,27 @@ function meta::relational::tests::mapping::relation::personFunctionWithAddress()
     ->select(~[FIRSTNAME, AGE, STREET, CITY, FIRMID])
 }
 
+function meta::relational::tests::mapping::relation::tradeFunction():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.tradeTable}#
+      ->select(~[ID, tradeDate, quantity, settlementDateTime]);
+}
+
+function meta::relational::tests::mapping::relation::personFunctionWithJoinFilter():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->join(#>{meta::relational::tests::mapping::relation::testDB.groupMembershipTable}#, JoinKind.INNER, {p, g | $p.ID == $g.PERSONID})
+      ->filter(x | $x.GROUPNAME == 'Group C')
+      ->select(~['FIRST NAME', AGE]);
+}
+
+function meta::relational::tests::mapping::relation::distinctFirmFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->select(~[ID, LEGALNAME])
+      ->distinct();
+}
+
 // Helper for the RFPM-lift variant tests.
 // Each test calls this with its own scenario-specific CSV; setUpDataSQLsV2
 // generates DROP+CREATE+INSERT against personPayloadTable (declared in testDB
@@ -1063,6 +1166,28 @@ function meta::relational::tests::mapping::relation::setupRfpmLiftTestData(csvs:
   let sqls = $csvs->joinStrings('\n-\n')->meta::alloy::service::execution::setUpDataSQLsV2($db, $dbConfig);
   $sqls->map(sql | meta::relational::metamodel::execute::executeInDb($sql, $connection));
   true;
+}
+
+function meta::relational::tests::mapping::relation::distinctFirmFilteredFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->filter(x | $x.ID <= 2)
+      ->select(~[ID, LEGALNAME])
+      ->distinct();
+}
+
+function meta::relational::tests::mapping::relation::firmWithCaseFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.distinctFirmTable}#
+      ->extend(~name:r | if($r.ID == 1, | 'Primary Firm', | $r.LEGALNAME->toOne()))
+      ->select(~[ID, name])
+      ->distinct();
+}
+
+function meta::relational::tests::mapping::relation::personAllFunc():Relation<Any>[1]
+{
+   #>{meta::relational::tests::mapping::relation::testDB.personTable}#
+      ->select(~['FIRST NAME', AGE, FIRMID]);
 }
 
 function <<meta::pure::profiles::test.BeforePackage>> meta::relational::tests::mapping::relation::setUp():Boolean[1]
@@ -1198,6 +1323,32 @@ function meta::relational::tests::mapping::relation::createTablesAndFillDb():Boo
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (3, \'Firm B\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (4, \'Firm C\', \'2024-11-01\', \'2024-12-31\', \'2024-11-01\', \'2024-12-31\');', $connection);
   executeInDb('insert into FIRM_TABLE_BITEMPORAL(ID, LEGALNAME, IN_Z, OUT_Z, FROM_Z, THRU_Z) values (5, \'Firm D\', \'2024-11-01\', \'2025-01-01\', \'2024-11-01\', \'2025-01-01\');', $connection);
+
+  executeInDb('Drop table if exists tradeTable;', $connection);
+  executeInDb('Create Table tradeTable(ID INT PRIMARY KEY, quantity FLOAT NOT NULL, tradeDate DATE NOT NULL, settlementDateTime TIMESTAMP(9));', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (1, 25, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (2, 320, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (3, 11, \'2014-12-01\', \'2014-12-02 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (4, 23, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (5, 32, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (6, 27, \'2014-12-03\', \'2014-12-04 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (7, 44, \'2014-12-03\', \'2014-12-04 15:22:23.123\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (8, 22, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (9, 45, \'2014-12-04\', \'2014-12-05 21:00:00\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate) values (10, 38, \'2014-12-04\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate) values (11, 5, \'2014-12-05\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (12, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (13, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (14, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);
+  executeInDb('insert into tradeTable (ID, quantity, tradeDate, settlementDateTime) values (15, 45, \'2016-02-14\', \'2016-02-15T21:00:00.123456789\');', $connection);
+
+  executeInDb('Drop table if exists distinctFirmTable;', $connection);
+  executeInDb('Create Table distinctFirmTable(ID INT, LEGALNAME VARCHAR(100));', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (1, \'Firm X\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (2, \'Firm A\');', $connection);
+  executeInDb('insert into distinctFirmTable (ID, LEGALNAME) values (3, \'Firm B\');', $connection);
 
   true;
 }

@@ -1,0 +1,200 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::relation::*;
+
+Association demo::relation::domain::FirmDepartments
+{
+  firm: demo::relation::domain::Firm[1];
+  departments: demo::relation::domain::Department[1];
+}
+
+Association demo::relation::domain::DepartmentStaff
+{
+  department: demo::relation::domain::Department[1];
+  staff: demo::relation::domain::Employee[1];
+}
+
+function demo::relation::func::chainedDepartments(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.DepartmentTable}#
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::ChainedModelJoinMapping
+(
+  *demo::relation::domain::Firm[firm]: Relation
+  {
+    ~func demo::relation::func::firms():Relation<Any>[1]
+    id: ID,
+    legalName: LEGAL_NAME
+  }
+
+  *demo::relation::domain::Department[dept]: Relation
+  {
+    ~func demo::relation::func::chainedDepartments():Relation<Any>[1]
+    id: ID,
+    name: NAME,
+    code: CODE,
+    +firmId: Integer[1]: FIRM_ID
+  }
+
+  *demo::relation::domain::Employee[emp]: Relation
+  {
+    ~func demo::relation::func::employeesWithAddress():Relation<Any>[1]
+    id: ID,
+    firstName: FIRST_NAME,
+    lastName: LAST_NAME,
+    employeeType: EnumerationMapping EmployeeTypeMapping: EMP_TYPE,
+    active: $src.ACTIVE == 1,
+    hireDate: HIRE_DATE,
+    salary: SALARY,
+    +departmentId: Integer[0..1]: DEPARTMENT_ID
+  }
+
+  demo::relation::domain::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    FULL_TIME: ['FULL_TIME'],
+    CONTRACT: ['CONTRACT']
+  }
+
+  demo::relation::domain::FirmDepartments: ModelJoin
+  {
+    {firm: demo::relation::domain::Firm[1], departments: demo::relation::domain::Department[1] | $firm.id == $departments.firmId}
+  }
+
+  demo::relation::domain::DepartmentStaff: ModelJoin
+  {
+    {department: demo::relation::domain::Department[1], staff: demo::relation::domain::Employee[1] | $department.id == $staff.departmentId}
+  }
+
+  testSuites:
+  [
+    singleHopSuite:
+    {
+      // Proves the Firm->Department hop alone before chaining a second hop onto it.
+      function: |demo::relation::domain::Firm.all()
+                  ->project(
+                    [x | $x.legalName, x | $x.departments.name],
+                    ['Legal Name', 'Dept Name']
+                  )
+                  ->sort(['Legal Name', 'Dept Name']);
+      tests:
+      [
+        firmToDepartment:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::ChainedModelJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldListDepartmentsPerFirm:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Legal Name":"Acme","Dept Name":"Engineering"},{"Legal Name":"Acme","Dept Name":"Marketing"},{"Legal Name":"Beta","Dept Name":"Research"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    chainedTwoHopSuite:
+    {
+      // Chains both ModelJoin hops in one navigation: firm.departments.staff.firstName.
+      function: |demo::relation::domain::Firm.all()
+                  ->project(
+                    [x | $x.legalName, x | $x.departments.staff.firstName],
+                    ['Legal Name', 'Employee Name']
+                  )
+                  ->sort(['Legal Name', 'Employee Name']);
+      tests:
+      [
+        firmToDepartmentToEmployee:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::ChainedModelJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldListEmployeesAcrossTwoHops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Legal Name":"Acme","Employee Name":"Alice"},{"Legal Name":"Acme","Employee Name":"Bob"},{"Legal Name":"Acme","Employee Name":"Carol"},{"Legal Name":"Beta","Employee Name":"Dave"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    chainedAggregationSuite:
+    {
+      function: |demo::relation::domain::Firm.all()
+                  ->sortBy(x | $x.legalName)
+                  ->project(
+                    ~[
+                      name: x | $x.legalName,
+                      headcount: x | $x.departments.staff->count()
+                    ]
+                  );
+      tests:
+      [
+        headcountAcrossTwoHops:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::ChainedModelJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldCountStaffAcrossChainedHops:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Acme","headcount":3},{"name":"Beta","headcount":1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

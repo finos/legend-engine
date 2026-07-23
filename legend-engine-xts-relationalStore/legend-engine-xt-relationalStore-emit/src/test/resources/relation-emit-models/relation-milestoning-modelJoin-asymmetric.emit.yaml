@@ -1,0 +1,57 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-milestoning-modelJoin-asymmetric
+title: "ModelJoin Across Milestoning Schemes — Diff-Scheme and Same-Scheme"
+description: |
+  Two single-hop ModelJoin combinations between milestoned Relation-mapped classes:
+  (1) diffSchemeModelJoinSuite — BusinessTemporalEmployee (business-temporal) <->
+  TemporalEmployee (processing-temporal), matched by id, mirroring
+  testModelJoinMilestoning.pure::testMilestoningDiffScheme's shape. (2)
+  sameSchemeModelJoinSuite — TemporalEmployee <-> TemporalDepartment, both
+  processing-temporal, matched by a real employeeId FK, mirroring
+  testMilestoningSameScheme's shape of querying each side at its own independent
+  as-of date. Both suites use simplified, deliberately-small test data (not the full
+  null-propagation matrix, which stays unit-test-only breadth per the "one or two
+  representative uses, not the whole matrix" principle) but the same-scheme suite's
+  data does include a mid-window version change specifically to prove the two dates
+  are resolved independently, not just that same-scheme joins compile.
+
+modelSources:
+  model:
+    root: relation-milestoning-modelJoin-asymmetric
+    files:
+      - mapping/asymmetricMilestoningMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relation-shared-domain.emit.yaml
+    - source: relation-shared-db.emit.yaml
+
+features:
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - grammar:milestoning
+  - store:relation-model-join
+  - execution:data-element
+  - execution:test-data
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - milestoning
+  - modeljoin

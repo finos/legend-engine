@@ -23,6 +23,8 @@ import meta::pure::router::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
 import meta::relational::tests::mapping::relation::*;
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testSimpleMappingQuery():Boolean[1]
@@ -126,46 +128,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMapping():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, age
-       David, 52
-       Fabrice, 45
-       John, 30
-       Oliver, 26
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithAssociation():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firstName, firmName:x|$x.firm.legalName]),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, firmName
-       David, Firm D
-       Fabrice, Firm C
-       John, Firm X
-       Oliver, Firm C
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedCaseMappingThroughAssociationChain():Boolean[1]
 {
   let result = execute(
@@ -191,24 +153,26 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingQueryWithPreFilter():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingRelationalClassSet():Boolean[1]
 {
   let result = execute(
-    |Firm.all()->filter(x|$x.legalName != 'Firm X')->project(~[firmName:x|$x.legalName, name:x|$x.employees.firstName]),
+    |PersonWithFirmId.all()->project(~[name:x|$x.firstName, firmId:x|$x.firmId]),
     meta::relational::tests::mapping::relation::MixedMapping,
     meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
     meta::relational::extension::relationalExtensions()
   );
   assertEquals(
     #TDS
-       firmName, name
-       Firm A, TDSNull
-       Firm B, TDSNull
-       Firm C, Fabrice
-       Firm C, Oliver
-       Firm D, David
+       name, firmId
+       Anthony, 3
+       David, 5
+       Fabrice, 4
+       Jane, 2
+       John, 1
+       Oliver, 4
+       Peter, 1
     #->toString(),
-    $result.values->at(0)->sort([~firmName->ascending(), ~name->ascending()])->toString()
+    $result.values->at(0)->sort(~name->ascending())->toString()
   );
 }
 
@@ -230,25 +194,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Oliver, Oliver
     #->toString(),
     $result.values->at(0)->sort([~name1->ascending(), ~name2->ascending()])->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMixedMappingWithObjectGroupByAndTdsProject():Boolean[1]
-{
-  let result = execute(
-    |Person.all()->project(~[name:x|$x.firm.legalName, age:x|$x.age])->groupBy(~name, ~averageAge:x|$x.age:y|$y->average()),
-    meta::relational::tests::mapping::relation::MixedMapping,
-    meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-    meta::relational::extension::relationalExtensions()
-  );
-  assertEquals(
-    #TDS
-       name, averageAge
-       Firm C, 35.5
-       Firm D, 52.0
-       Firm X, 30.0
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
   );
 }
 
@@ -916,23 +861,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithFilterOnMultipleProperties():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddress.all()->filter(x|$x.address.city == 'New York' && $x.address.street == 'Main St')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, city
-       John, New York
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingGroupBy():Boolean[1]
 {
    let result = execute(
@@ -968,23 +896,6 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
        Fabrice, Seattle, Firm C
        John, New York, Firm X
        Oliver, Chicago, Firm A
-    #->toString(),
-    $result.values->at(0)->sort(~name->ascending())->toString()
-  );
-}
-
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter():Boolean[1]
-{
-   let result = execute(
-      |PersonWithAddressAndFirm.all()->filter(x|$x.firmOfAddr.legalName == 'Firm C')->project(~[name:x|$x.firstName, city:x|$x.address.city]),
-      meta::relational::tests::mapping::relation::InlineEmbeddedWithAssociationRelationMapping,
-      meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB),
-      meta::relational::extension::relationalExtensions()
-   );
-   assertEquals(
-    #TDS
-       name, city
-       Fabrice, Seattle
     #->toString(),
     $result.values->at(0)->sort(~name->ascending())->toString()
   );
@@ -1114,7 +1025,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
   );
 }
 
-// t6 — Non-variant DynaFunction (string concat). Lift router routes through
+// Non-variant DynaFunction (string concat). Lift router routes through
 // the RelationalPropertyMapping arm (no SS PM).
 // Uses the existing personFunction → personTable, seeded once by
 // createTablesAndFillDb (no setupRfpmLiftTestData call needed).
@@ -1141,4 +1052,287 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
     #->toString(),
     $result.values->at(0)->sort([~greeting->ascending()])->toString()
   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testFilterMappingWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[name:x|$x.firstName, age:x|$x.age]),
+      filterJoinMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        name, age
+        Anthony, 19
+        Fabrice, 45
+        Oliver, 26
+     #->toString(),
+     $result.values->at(0)->sort(~name->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByFilterOnAggregate():Boolean[1]
+{
+   let result = execute(
+      |GroupByClass.all(%2020-01-01)->filter(x|$x.sum > 50)->project(~[firmId:x|$x.firmId, sum:x|$x.sum]),
+      GroupByMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firmId, sum
+        1, 53
+        4, 71
+        5, 52
+     #->toString(),
+     $result.values->at(0)->sort(~firmId->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByThroughModelJoin():Boolean[1]
+{
+   let result = execute(
+      |GroupByClass.all(%2020-01-01)->project(~[firmId:x|$x.firmId, firmName:x|$x.groupedByFirm.legalName]),
+      GroupByAssociationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firmId, firmName
+        1, Firm X
+        2, Firm A
+        3, Firm B
+        4, Firm C
+        5, Firm D
+     #->toString(),
+     $result.values->at(0)->sort(~firmId->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMapping():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName]),
+      distinctFirmMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+        Firm B
+        Firm X
+     #->toString(),
+     $result.values->at(0)->sort(~legalName->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateFilter():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.date == %2014-12-01)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        1
+        2
+        3
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testStrictDateProject():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->project(~[id:t|$t.id, date:t|$t.date->toString()]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id, date
+        1, 2014-12-01
+        2, 2014-12-01
+        3, 2014-12-01
+        4, 2014-12-02
+        5, 2014-12-02
+        6, 2014-12-03
+        7, 2014-12-03
+        8, 2014-12-04
+        9, 2014-12-04
+        10, 2014-12-04
+        11, 2014-12-05
+        12, 2016-02-04
+        13, 2016-03-28
+        14, 2016-03-28
+        15, 2016-02-14
+     #->toString(),
+     $result.values->at(0)->sort([~id->ascending()])->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeFilter():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime == %2014-12-04T15:22:23.123)->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        7
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testEmptyDateQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(a|$a.settlementDateTime->isEmpty())->project(~[id:t|$t.id]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        id
+        10
+        11
+     #->toString(),
+     $result.values->at(0)->sort(~id->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeInclusiveRangeQuery():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|(%2014-12-04T15:22:23.123456789 <= $i.settlementDateTime) && ($i.settlementDateTime < %2014-12-04T23:59:59.999999999))->project(~[settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        settlementDateTime:Date[1]
+        2014-12-04T15:22:23.123+0000
+        2014-12-04T21:00:00.000+0000
+     #,
+     $result.values->at(0)->sort(~settlementDateTime->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDateTimeRetrieveWithTimeZone():Boolean[1]
+{
+   let result = execute(
+      |Trade.all()->filter(i|$i.id->in([12, 13, 14, 15]))->project(~[id:t|$t.id, settlementDateTime:t|$t.settlementDateTime]),
+      tradeRelationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertTdsEquivalent(
+     #TDS
+        id:Integer[1], settlementDateTime:Date[1]
+        12, 2016-02-05T21:00:00.123+0000
+        13, 2016-03-29T21:00:00.123+0000
+        14, 2016-03-29T21:00:00.123+0000
+        15, 2016-02-15T21:00:00.123+0000
+     #,
+     $result.values->at(0)->sort(~id->ascending()),
+     0,
+     1
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithJoin():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[firm:x|$x.legalName, employee:x|$x.employees.firstName]),
+      distinctFirmJoinMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, employee
+        Firm A, Jane
+        Firm B, Anthony
+        Firm X, John
+        Firm X, Peter
+     #->toString(),
+     $result.values->at(0)->sort([~firm->ascending(), ~employee->ascending()])->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithFilterInFunc():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName]),
+      distinctFirmFilteredMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+        Firm X
+     #->toString(),
+     $result.values->at(0)->sort(~legalName->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testDistinctMappingWithCase():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[legalName:f|$f.legalName]),
+      distinctFirmCaseMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        legalName
+        Firm A
+        Firm B
+        Primary Firm
+     #->toString(),
+     $result.values->at(0)->sort(~legalName->ascending())->toString()
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testMappingWithGroupByNavigateToGroupedSet():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()->project(~[firm:x|$x.legalName, total:x|$x.firmGroupings(%2020-01-01).sum]),
+      GroupByAssociationMapping,
+      meta::external::store::relational::tests::testRuntime(testDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        firm, total
+        Firm A, 23
+        Firm B, 19
+        Firm C, 71
+        Firm D, 52
+        Firm X, 53
+     #->toString(),
+     $result.values->at(0)->sort(~firm->ascending())->toString()
+   );
 }

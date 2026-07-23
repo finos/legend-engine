@@ -1,0 +1,27 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Data
+Data demo::relation::data::EmployeeUnionData
+{
+  Relation
+  #{
+    default.EmployeeTable:
+      ID,FIRST_NAME,LAST_NAME,FIRM_ID,EMP_TYPE,ACTIVE,HIRE_DATE,SALARY,STREET,CITY
+      1,Alice,Green,1,CONTRACT,1,2020-01-15 00:00:00,90000.0,Main St,London
+      2,Bob,Smith,2,CONTRACT,1,2021-06-01 00:00:00,75000.0,Oak Ave,Paris
+      3,Carol,White,1,FULL_TIME,0,2019-03-10 00:00:00,,Pine Rd,Berlin
+      4,David,Jones,2,FULL_TIME,1,2018-05-20 00:00:00,110000.0,Elm Rd,Madrid;
+  }#
+}
