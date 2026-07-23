@@ -1,0 +1,77 @@
+tests:
+  # Column aliases
+  - id: alias_column_as
+    sql: "SELECT name AS person_name, salary AS annual_salary FROM persons ORDER BY 1"
+    feature: "column alias with AS"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_column_no_as
+    sql: "SELECT name person_name, salary annual_salary FROM persons ORDER BY 1"
+    feature: "column alias without AS"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_expression
+    sql: "SELECT name, salary * 1.1 AS adjusted_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "expression alias"
+    category: "aliases"
+
+  # Table aliases
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: alias_table
+    sql: "SELECT p.name, p.salary FROM persons p ORDER BY 1"
+    feature: "table alias"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_self_join
+    sql: "SELECT p1.name, p2.name AS colleague FROM persons p1 JOIN persons p2 ON p1.dept_id = p2.dept_id AND p1.id < p2.id ORDER BY 1, 2"
+    feature: "self-join with aliases"
+    category: "aliases"
+
+  # Alias usage in clauses
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: alias_in_order_by
+    sql: "SELECT name, salary * 2 AS double_salary FROM persons WHERE salary IS NOT NULL ORDER BY double_salary DESC"
+    feature: "alias in ORDER BY"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: alias_in_having
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 1 ORDER BY cnt DESC"
+    feature: "alias in HAVING"
+    category: "aliases"
+
+  # Quoted identifiers
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_quoted_identifier
+    sql: "SELECT name AS \"Person Name\", salary AS \"Annual Salary\" FROM persons ORDER BY 1"
+    feature: "quoted identifier alias"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_quoted_reserved_word
+    sql: "SELECT name AS \"select\", dept_id AS \"from\" FROM persons ORDER BY 1"
+    feature: "reserved word as quoted alias"
+    category: "aliases"
+
+  # Subquery alias
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_subquery
+    sql: "SELECT sub.person_name, sub.sal FROM (SELECT name AS person_name, salary AS sal FROM persons) sub WHERE sub.sal IS NOT NULL ORDER BY 1"
+    feature: "subquery alias"
+    category: "aliases"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: alias_subquery_column_list
+    sql: "SELECT s.n, s.s FROM (SELECT name, salary FROM persons) s(n, s) WHERE s.s IS NOT NULL ORDER BY 1"
+    feature: "subquery alias with column list"
+    category: "aliases"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

@@ -1,0 +1,107 @@
+tests:
+  # Basic CTE
+  - id: cte_basic
+    sql: "WITH active_persons AS (SELECT name, salary FROM persons WHERE active = true) SELECT name, salary FROM active_persons ORDER BY 1"
+    feature: "Basic CTE"
+    category: "ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_basic_filter
+    sql: "WITH high_earners AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM high_earners ORDER BY 1"
+    feature: "Basic CTE"
+    category: "ctes"
+
+  # Multiple CTEs
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_multiple
+    sql: "WITH dept_stats AS (SELECT dept_id, AVG(salary) AS avg_sal FROM persons WHERE salary IS NOT NULL GROUP BY dept_id), high_earners AS (SELECT name, salary, dept_id FROM persons WHERE salary > 70000) SELECT h.name, h.salary, d.avg_sal FROM high_earners h INNER JOIN dept_stats d ON h.dept_id = d.dept_id ORDER BY 1"
+    feature: "Multiple CTEs"
+    category: "ctes"
+
+  # CTE referencing another CTE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_chained
+    sql: "WITH base AS (SELECT id, name, salary FROM persons WHERE salary IS NOT NULL), ranked AS (SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rn FROM base) SELECT name, salary, rn FROM ranked WHERE rn <= 5 ORDER BY 1"
+    feature: "CTE referencing CTE"
+    category: "ctes"
+
+  # CTE with aggregation
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_with_agg
+    sql: "WITH dept_summary AS (SELECT dept_id, COUNT(*) AS cnt, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id) SELECT dept_id, cnt, total FROM dept_summary ORDER BY 1"
+    feature: "CTE with aggregation"
+    category: "ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_with_agg_having
+    sql: "WITH dept_counts AS (SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 2) SELECT dept_id, cnt FROM dept_counts ORDER BY 1"
+    feature: "CTE with aggregation"
+    category: "ctes"
+
+  # CTE used in JOIN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_in_join
+    sql: "WITH order_totals AS (SELECT person_id, SUM(amount) AS total_orders FROM orders GROUP BY person_id) SELECT p.name, COALESCE(o.total_orders, 0) AS total FROM persons p LEFT JOIN order_totals o ON p.id = o.person_id ORDER BY 1"
+    feature: "CTE in JOIN"
+    category: "ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_in_join_dept
+    sql: "WITH dept_avg AS (SELECT dept_id, AVG(salary) AS avg_sal FROM persons WHERE salary IS NOT NULL GROUP BY dept_id) SELECT d.name, COALESCE(da.avg_sal, 0) AS avg_salary FROM departments d LEFT JOIN dept_avg da ON d.id = da.dept_id ORDER BY 1"
+    feature: "CTE in JOIN"
+    category: "ctes"
+
+  # CTE used multiple times
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_used_twice
+    sql: "WITH emp_data AS (SELECT dept_id, salary FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL) SELECT (SELECT COUNT(*) FROM emp_data) AS total_emps, (SELECT AVG(salary) FROM emp_data) AS avg_salary"
+    feature: "CTE referenced multiple times"
+    category: "ctes"
+
+  # Recursive CTE (basic counter)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_recursive
+    sql: "WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 5) SELECT x FROM cnt ORDER BY 1"
+    feature: "Recursive CTE"
+    category: "ctes"
+
+  # CTE with window function
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_with_window
+    sql: "WITH ranked AS (SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rnk FROM persons WHERE salary IS NOT NULL) SELECT name, salary, rnk FROM ranked WHERE rnk <= 3 ORDER BY 1"
+    feature: "CTE with window function"
+    category: "ctes"
+
+  # CTE with UNION
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_with_union
+    sql: "WITH high AS (SELECT name, salary FROM persons WHERE salary > 70000), low AS (SELECT name, salary FROM persons WHERE salary <= 70000 AND salary IS NOT NULL) SELECT name, salary, 'high' AS band FROM high UNION ALL SELECT name, salary, 'low' FROM low ORDER BY 1"
+    feature: "CTE with UNION"
+    category: "ctes"
+
+  # CTE with filtering on aggregated result
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_filter_agg
+    sql: "WITH dept_stats AS (SELECT dept_id, COUNT(*) AS cnt, AVG(salary) AS avg_sal FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id) SELECT dept_id, cnt, avg_sal FROM dept_stats WHERE cnt > 2 ORDER BY 1"
+    feature: "CTE filter on aggregate"
+    category: "ctes"
+
+  # CTE with CASE expression
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cte_with_case
+    sql: "WITH categorized AS (SELECT name, salary, CASE WHEN salary > 80000 THEN 'Senior' WHEN salary > 50000 THEN 'Mid' ELSE 'Junior' END AS band FROM persons WHERE salary IS NOT NULL) SELECT band, COUNT(*) AS cnt FROM categorized GROUP BY band ORDER BY 1"
+    feature: "CTE with CASE"
+    category: "ctes"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

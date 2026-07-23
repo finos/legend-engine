@@ -1,0 +1,106 @@
+tests:
+  # SELECT DISTINCT
+  - id: distinct_single
+    sql: "SELECT DISTINCT dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY 1"
+    feature: "DISTINCT single column"
+    category: "distinct"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_single_name
+    sql: "SELECT DISTINCT active FROM persons WHERE active IS NOT NULL ORDER BY 1"
+    feature: "DISTINCT single column"
+    category: "distinct"
+
+  # DISTINCT multiple columns
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_multi
+    sql: "SELECT DISTINCT dept_id, active FROM persons WHERE dept_id IS NOT NULL AND active IS NOT NULL ORDER BY 1, 2"
+    feature: "DISTINCT multiple columns"
+    category: "distinct"
+
+  # DISTINCT with NULL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_with_null
+    sql: "SELECT DISTINCT dept_id FROM persons ORDER BY 1"
+    feature: "DISTINCT with NULLs"
+    category: "distinct"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_with_null_age
+    sql: "SELECT DISTINCT age FROM persons ORDER BY 1"
+    feature: "DISTINCT with NULLs"
+    category: "distinct"
+
+  # COUNT(DISTINCT)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: count_distinct
+    sql: "SELECT COUNT(DISTINCT dept_id) AS cnt FROM persons WHERE dept_id IS NOT NULL"
+    feature: "COUNT(DISTINCT)"
+    category: "distinct"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: count_distinct_grouped
+    sql: "SELECT dept_id, COUNT(DISTINCT active) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "COUNT(DISTINCT)"
+    category: "distinct"
+
+  # DISTINCT ON
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_on
+    sql: "SELECT DISTINCT ON (dept_id) dept_id, name, salary FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY dept_id, salary DESC"
+    feature: "DISTINCT ON"
+    category: "distinct"
+
+  # DISTINCT with ORDER BY
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: distinct_with_order
+    sql: "SELECT DISTINCT dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY dept_id DESC"
+    feature: "DISTINCT + ORDER BY"
+    category: "distinct"
+
+  # DISTINCT with expression
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_expression
+    sql: "SELECT DISTINCT CASE WHEN salary > 70000 THEN 'High' ELSE 'Low' END AS band FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "DISTINCT expression"
+    category: "distinct"
+
+  # DISTINCT in subquery
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_in_subquery
+    sql: "SELECT COUNT(*) AS cnt FROM (SELECT DISTINCT dept_id FROM persons WHERE dept_id IS NOT NULL) sub"
+    feature: "DISTINCT in subquery"
+    category: "distinct"
+
+  # DISTINCT with COALESCE
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_coalesce
+    sql: "SELECT DISTINCT COALESCE(dept_id, -1) AS dept FROM persons ORDER BY 1"
+    feature: "DISTINCT with COALESCE"
+    category: "distinct"
+
+  # SUM(DISTINCT)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: sum_distinct
+    sql: "SELECT SUM(DISTINCT dept_id) AS result FROM persons WHERE dept_id IS NOT NULL"
+    feature: "SUM(DISTINCT)"
+    category: "distinct"
+
+  # DISTINCT + LIMIT
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: distinct_limit
+    sql: "SELECT DISTINCT dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY 1 LIMIT 2"
+    feature: "DISTINCT + LIMIT"
+    category: "distinct"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

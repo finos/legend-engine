@@ -1,0 +1,61 @@
+tests:
+  - id: to_char__big_txt__from_table
+    sql: "SELECT TO_CHAR(big_val, '9999999999') AS result FROM numbers WHERE big_val IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(bigint, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__dp_txt__from_table
+    sql: "SELECT TO_CHAR(float_val, '999.99') AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(double precision, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__int_txt__from_table
+    sql: "SELECT TO_CHAR(int_val, '999999') AS result FROM numbers WHERE int_val IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__intv_txt__from_table
+    sql: "SELECT TO_CHAR(INTERVAL '1 year 2 months 3 days', 'YYYY MM DD') AS result FROM dates WHERE id = 1"
+    function: to_char
+    signature: "to_char(interval, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__num_txt__from_table
+    sql: "SELECT TO_CHAR(numeric_val, '999999.99') AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(numeric, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__real_txt__from_table
+    sql: "SELECT TO_CHAR(float_val::real, '999.99') AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(real, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__tstz_txt__from_table
+    sql: "SELECT TO_CHAR(tsz::timestamptz, 'YYYY-MM-DD HH24:MI:SS TZ') AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(timestamp with time zone, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_char__ts_txt__from_table
+    sql: "SELECT TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SS') AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
+    function: to_char
+    signature: "to_char(timestamp without time zone, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: to_date__txt_txt__from_table
+    sql: "SELECT TO_DATE('2023-01-15', 'YYYY-MM-DD') AS result FROM dates WHERE id = 1"
+    function: to_date
+    signature: "to_date(text, text) → date"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: to_number__txt_txt__from_table
+    sql: "SELECT TO_NUMBER('12,345.67', '99G999D99') AS result FROM numbers WHERE id = 1"
+    function: to_number
+    signature: "to_number(text, text) → numeric"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

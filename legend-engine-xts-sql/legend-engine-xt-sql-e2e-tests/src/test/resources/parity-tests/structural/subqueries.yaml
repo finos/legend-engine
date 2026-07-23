@@ -1,0 +1,155 @@
+tests:
+  # Scalar subquery in SELECT
+  - id: subquery_scalar_select
+    sql: "SELECT name, salary, (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) AS avg_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in SELECT"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_scalar_max
+    sql: "SELECT name, salary, (SELECT MAX(salary) FROM persons) AS max_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in SELECT"
+    category: "subqueries"
+
+  # Subquery in WHERE with IN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_in_where
+    sql: "SELECT name FROM persons WHERE id IN (SELECT person_id FROM orders WHERE amount > 100) ORDER BY 1"
+    feature: "Subquery with IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_in_dept
+    sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
+    feature: "Subquery with IN"
+    category: "subqueries"
+
+  # Subquery with NOT IN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_not_in
+    sql: "SELECT name FROM persons WHERE id NOT IN (SELECT person_id FROM orders WHERE person_id IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with NOT IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_not_in_dept
+    sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "Subquery with NOT IN"
+    category: "subqueries"
+
+  # Subquery in WHERE with EXISTS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_exists
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Subquery with EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_exists_dept
+    sql: "SELECT d.name FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id AND p.salary > 70000) ORDER BY 1"
+    feature: "Subquery with EXISTS"
+    category: "subqueries"
+
+  # Subquery with NOT EXISTS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_not_exists
+    sql: "SELECT p.name FROM persons p WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Subquery with NOT EXISTS"
+    category: "subqueries"
+
+  # Derived table (subquery in FROM)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_derived_table
+    sql: "SELECT sub.dept_id, sub.avg_salary FROM (SELECT dept_id, AVG(salary) AS avg_salary FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL GROUP BY dept_id) sub ORDER BY 1"
+    feature: "Derived table (subquery in FROM)"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: subquery_derived_join
+    sql: "SELECT p.name, sub.avg_salary FROM persons p INNER JOIN (SELECT dept_id, AVG(salary) AS avg_salary FROM persons WHERE salary IS NOT NULL GROUP BY dept_id) sub ON p.dept_id = sub.dept_id ORDER BY 1"
+    feature: "Derived table (subquery in FROM)"
+    category: "subqueries"
+
+  # Correlated subquery
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: subquery_correlated
+    sql: "SELECT p.name, p.salary FROM persons p WHERE p.salary > (SELECT AVG(salary) FROM persons WHERE dept_id = p.dept_id AND salary IS NOT NULL) ORDER BY 1"
+    feature: "Correlated subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_correlated_count
+    sql: "SELECT p.name, (SELECT COUNT(*) FROM orders o WHERE o.person_id = p.id) AS order_count FROM persons p ORDER BY 1"
+    feature: "Correlated subquery"
+    category: "subqueries"
+
+  # Subquery with aggregate comparison
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_agg_comparison
+    sql: "SELECT name, salary FROM persons WHERE salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with aggregate comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_agg_min
+    sql: "SELECT name, salary FROM persons WHERE salary = (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with aggregate comparison"
+    category: "subqueries"
+
+  # Subquery in HAVING
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_in_having
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > (SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id) sub) ORDER BY 1"
+    feature: "Subquery in HAVING"
+    category: "subqueries"
+
+  # Subquery with UNION
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_union
+    sql: "SELECT name FROM persons WHERE id IN (SELECT person_id FROM orders WHERE amount > 100 UNION SELECT person_id FROM orders WHERE status = 'completed') ORDER BY 1"
+    feature: "Subquery with UNION"
+    category: "subqueries"
+
+  # Lateral-style derived table with aggregation
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_derived_agg_filter
+    sql: "SELECT sub.dept_id, sub.total FROM (SELECT dept_id, SUM(salary) AS total FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000) sub ORDER BY 1"
+    feature: "Derived table with HAVING"
+    category: "subqueries"
+
+  # Subquery returning single row in arithmetic
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: subquery_scalar_arithmetic
+    sql: "SELECT name, salary - (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) AS above_min FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in arithmetic"
+    category: "subqueries"
+
+  # EXISTS with multiple conditions
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_exists_multi_cond
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id AND o.amount > 100 AND o.status = 'completed') ORDER BY 1"
+    feature: "EXISTS with multiple conditions"
+    category: "subqueries"
+
+  # Subquery in CASE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: subquery_in_case
+    sql: "SELECT name, CASE WHEN salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) THEN 'Above' ELSE 'Below' END AS vs_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Subquery in CASE"
+    category: "subqueries"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

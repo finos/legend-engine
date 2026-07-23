@@ -1,0 +1,54 @@
+tests:
+  # WINDOW clause
+  - id: named_window_basic
+    sql: "SELECT name, salary, SUM(salary) OVER w AS running, AVG(salary) OVER w AS avg_running FROM persons WHERE salary IS NOT NULL WINDOW w AS (ORDER BY name) ORDER BY 1"
+    feature: "WINDOW clause"
+    category: "window_frames"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: named_window_partition
+    sql: "SELECT name, dept_id, salary, RANK() OVER w AS dept_rank, SUM(salary) OVER w AS dept_running FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL WINDOW w AS (PARTITION BY dept_id ORDER BY salary DESC) ORDER BY 1"
+    feature: "WINDOW clause"
+    category: "window_frames"
+
+  # Multiple named windows
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: named_window_multiple
+    sql: "SELECT name, salary, SUM(salary) OVER w1 AS running, RANK() OVER w2 AS rnk FROM persons WHERE salary IS NOT NULL WINDOW w1 AS (ORDER BY name), w2 AS (ORDER BY salary DESC) ORDER BY 1"
+    feature: "Multiple named windows"
+    category: "window_frames"
+
+  # Named window with frame clause
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: named_window_with_frame
+    sql: "SELECT name, salary, AVG(salary) OVER w AS moving_avg FROM persons WHERE salary IS NOT NULL WINDOW w AS (ORDER BY name ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) ORDER BY 1"
+    feature: "Named window with frame"
+    category: "window_frames"
+
+  # Named window with partition
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: named_window_partition_frame
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER w AS dept_running FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL WINDOW w AS (PARTITION BY dept_id ORDER BY salary ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) ORDER BY 1"
+    feature: "Named window with partition + frame"
+    category: "window_frames"
+
+  # Named window reused with different aggregates
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: named_window_multi_agg
+    sql: "SELECT name, salary, MIN(salary) OVER w AS run_min, MAX(salary) OVER w AS run_max, COUNT(*) OVER w AS run_cnt FROM persons WHERE salary IS NOT NULL WINDOW w AS (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) ORDER BY 1"
+    feature: "Named window with multiple aggregates"
+    category: "window_frames"
+
+  # Named window with LAG/LEAD
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: named_window_lag_lead
+    sql: "SELECT name, salary, LAG(salary) OVER w AS prev, LEAD(salary) OVER w AS next FROM persons WHERE salary IS NOT NULL WINDOW w AS (ORDER BY name) ORDER BY 1"
+    feature: "Named window with LAG/LEAD"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
