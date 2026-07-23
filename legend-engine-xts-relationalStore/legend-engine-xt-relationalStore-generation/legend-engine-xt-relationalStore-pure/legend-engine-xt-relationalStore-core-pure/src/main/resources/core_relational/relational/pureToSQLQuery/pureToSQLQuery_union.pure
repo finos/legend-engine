@@ -253,13 +253,16 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
                                                             |[]
                                                         );
 
+                                                        let milestoningNames = $milestoning->map(m|$m.name->stripMatchingQuotes());
+                                                        let dedupedExtraFKs = $extraFKs->filter(fk|!$milestoningNames->contains($fk.name->stripMatchingQuotes()));
+
                                                         let cols = if($fullGet,
                                                                       | $allColumnsName->map(n|let found = $vals->filter(a|$a.name == $n);
                                                                                           if ($found->isEmpty(),|^Alias(name=$n, relationalElement = $sqlNull),|$found);
                                                                                       ),
                                                                       |[]
                                                                   );
-                                                        ^$q(columns = $newKeys->concatenate($cols)->concatenate($milestoning)->concatenate($extraFKs));
+                                                        ^$q(columns = $newKeys->concatenate($cols)->concatenate($milestoning)->concatenate($dedupedExtraFKs));
                                                     )->pushSavedFilteringOperation($extensions);
                                                  );
 
@@ -431,6 +434,10 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
          let missingFks = $sourceCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$sourceCols->indexOf($c)->toString(), $z))));
          let mappedFkPropertyNames = $sourceCols.first.values.first->removeDuplicates();
 
+         let sourceSetImpls = $sourceSetImplementationIds->map(id| $state->getClassMappingById($id)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+         let srcMilestoningColumns = $sourceSetImpls->map(s|$s.mainTableAlias.relationalElement->findMainNamedRelation()->match([t:Table[1]|$t.milestoning->getAllTemporalColumns(), r:NamedRelation[1]|^List<Column>(values=[])]));
+         let srcMilestoningNames = $sourceSetImpls->map(s| $srcMilestoningColumns->at($sourceSetImpls->indexOf($s)).values->map(c| $c.name->toString() + '_' + $sourceSetImpls->indexOf($s)->toString()))->removeDuplicates();
+
          $srcOperation->addMissingColumnToUnion({q,i|let y = $union.currentTreeNodes->at($i);
 
                                                      let colSet = $sourceCols->at($i);
@@ -449,10 +456,11 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
                                                                                    );
 
 
-                                                     let names = $q.columns->map(m|$m->cast(@Alias).name);
-                                                     let allFks = $mappedOnes->concatenate($col);
-                                                     let partitionedFks = $allFks->partition({c|$names->contains($c.name)});
-                                                      $partitionedFks.first.values->map(f|let col = $q.columns->cast(@Alias)->filter(c|$c.name == $f.name)->toOne(); assertEquals($col.relationalElement,$f.relationalElement,| 'FK column addition failed for column alias: ' + $f.name+ '  , column with same name but different RelationalElement exists in Union'););          
+                                                      let names = $q.columns->map(m|$m->cast(@Alias).name);
+                                                      let allFks = $mappedOnes->concatenate($col);
+                                                      let nonMilestoningFks = $allFks->filter(fk|!$srcMilestoningNames->contains($fk.name->stripMatchingQuotes()));
+                                                      let partitionedFks = $nonMilestoningFks->partition({c|$names->contains($c.name)});
+                                                       $partitionedFks.first.values->map(f|let col = $q.columns->cast(@Alias)->filter(c|$c.name == $f.name)->toOne(); assertEquals($col.relationalElement,$f.relationalElement,| 'FK column addition failed for column alias: ' + $f.name+ '  , column with same name but different RelationalElement exists in Union'););
                                                      ^$q(columns+=$partitionedFks.second.values);
                                                     },
                                                 $sourceRelation->toOne()->isNestedUnion(),
@@ -822,7 +830,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                                                                                      ^Alias(name = $name, relationalElement = $relationalElement);
                                                   );
                                                   ^$q(columns += $columns);
-   };
+   }
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::union::canJoinTreeNodesBeSimplyMergedUsingOrOperation(relationalPropertyMappings:RelationalPropertyMapping[*], mapping:Mapping[1], state:State[0..1]):Boolean[1]

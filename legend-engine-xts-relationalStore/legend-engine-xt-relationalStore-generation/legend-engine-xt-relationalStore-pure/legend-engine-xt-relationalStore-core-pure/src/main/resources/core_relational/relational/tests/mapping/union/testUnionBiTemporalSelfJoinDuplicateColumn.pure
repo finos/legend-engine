@@ -1,0 +1,204 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::mapping::union::biTemporal::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+
+function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::testBiTemporalUnionWithSelfJoin_duplicateColumnRegression():Boolean[1]
+{
+   let result = execute(
+      |BiTemporalPerson.all(%2024-10-30, %2024-10-30)
+         ->project([p|$p.name, p|$p.contactInfo.email], ['Name', 'Email']),
+      biTemporalUnionMapping,
+      biTemporalTestRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('select "unionBase"."BENEFICIARYLast_Name_CUSTOMERLast_Name" as "Name", "customer_1".Email as "Email" from (select "root".lake_from as "lake_from_0", "root".lake_thru as "lake_thru_0", null as "lake_from_1", null as "lake_thru_1", "root".Beneficiary_Id as "pk_0_0", "root".Account_Id as "pk_1_0", "root".As_Of_Date as "pk_2_0", null as "pk_0_1", null as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", null as Customer_ID_1, null as Terminated_Record_Flag_1 from OLAP.BENEFICIARY as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\' union all select null as "lake_from_0", null as "lake_thru_0", "root".lake_from as "lake_from_1", "root".lake_thru as "lake_thru_1", null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".Customer_ID as "pk_0_1", "root".As_Of_Date as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", "root".Customer_ID as Customer_ID_1, "root".Terminated_Record_Flag as Terminated_Record_Flag_1 from OLAP.CUSTOMER as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\') as "unionBase" left outer join OLAP.CUSTOMER as "customer_1" on ("unionBase".Customer_ID_1 = "customer_1".Customer_ID and "customer_1".Terminated_Record_Flag = 0 and "customer_1".lake_thru > \'9999-01-01\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\')', $result->sqlRemoveFormatting());
+}
+function meta::relational::tests::mapping::union::biTemporal::biTemporalTestRuntime():meta::core::runtime::Runtime[1]
+{
+   meta::external::store::relational::tests::testRuntime(biTemporalDB);
+}
+
+
+###Relational
+Database meta::relational::tests::mapping::union::biTemporal::biTemporalDB
+(
+   Schema OLAP
+   (
+      Table CUSTOMER
+      (
+         milestoning(
+            business(BUS_FROM = lake_from, BUS_THRU = lake_thru),
+            processing(PROCESSING_IN = lake_from, PROCESSING_OUT = lake_thru)
+         )
+         Customer_ID INTEGER PRIMARY KEY,
+         As_Of_Date DATE PRIMARY KEY,
+         lake_from DATE,
+         lake_thru DATE,
+         First_Name VARCHAR(100),
+         Last_Name VARCHAR(100),
+         Terminated_Record_Flag INTEGER,
+         Email VARCHAR(200)
+      )
+
+      Table BENEFICIARY
+      (
+         milestoning(
+            business(BUS_FROM = lake_from, BUS_THRU = lake_thru),
+            processing(PROCESSING_IN = lake_from, PROCESSING_OUT = lake_thru)
+         )
+         Beneficiary_Id INTEGER PRIMARY KEY,
+         Account_Id INTEGER PRIMARY KEY,
+         As_Of_Date DATE PRIMARY KEY,
+         lake_from DATE,
+         lake_thru DATE,
+         First_Name VARCHAR(100),
+         Last_Name VARCHAR(100),
+         Terminated_Record_Flag INTEGER
+      )
+   )
+
+   Join Customer_Self_Join_Live(
+      OLAP.CUSTOMER.Customer_ID = {target}.Customer_ID
+      and {target}.Terminated_Record_Flag = 0
+      and {target}.lake_thru > '9999-01-01'
+   )
+)
+
+
+###Pure
+import meta::relational::tests::mapping::union::biTemporal::*;
+
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::relational::tests::mapping::union::biTemporal::BiTemporalParty
+{
+   type: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::relational::tests::mapping::union::biTemporal::BiTemporalPerson extends BiTemporalParty
+{
+   name: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::relational::tests::mapping::union::biTemporal::ContactInfo
+{
+   email: String[0..1];
+   usageType: String[1];
+}
+
+Association meta::relational::tests::mapping::union::biTemporal::Party_ContactInfo
+{
+   party: BiTemporalParty[1];
+   contactInfo: ContactInfo[*];
+}
+
+
+###Mapping
+import meta::relational::tests::mapping::union::biTemporal::*;
+
+Mapping meta::relational::tests::mapping::union::biTemporal::biTemporalUnionMapping
+(
+   BiTemporalParty[selectParty]: Relational
+   {
+      ~primaryKey
+      (
+         [biTemporalDB]OLAP.CUSTOMER.Customer_ID,
+         [biTemporalDB]OLAP.CUSTOMER.As_Of_Date
+      )
+      ~mainTable [biTemporalDB]OLAP.CUSTOMER
+      type: 'Individual'
+   }
+
+   BiTemporalParty[selectBeneficiary]: Relational
+   {
+      ~primaryKey
+      (
+         [biTemporalDB]OLAP.BENEFICIARY.Beneficiary_Id,
+         [biTemporalDB]OLAP.BENEFICIARY.Account_Id,
+         [biTemporalDB]OLAP.BENEFICIARY.As_Of_Date
+      )
+      ~mainTable [biTemporalDB]OLAP.BENEFICIARY
+      type: 'Beneficiary'
+   }
+
+   *BiTemporalParty: Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(selectParty, selectBeneficiary)
+   }
+
+   BiTemporalPerson[selectPerson] extends [selectParty]: Relational
+   {
+      name: [biTemporalDB]OLAP.CUSTOMER.Last_Name
+   }
+
+   BiTemporalPerson[selectBeneficiaryPerson] extends [selectBeneficiary]: Relational
+   {
+      name: [biTemporalDB]OLAP.BENEFICIARY.Last_Name
+   }
+
+   *BiTemporalPerson: Operation
+   {
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(selectBeneficiaryPerson, selectPerson)
+   }
+
+   ContactInfo[selectContactInfo]: Relational
+   {
+      ~primaryKey
+      (
+         [biTemporalDB]OLAP.CUSTOMER.Customer_ID,
+         [biTemporalDB]OLAP.CUSTOMER.As_Of_Date
+      )
+      ~mainTable [biTemporalDB]OLAP.CUSTOMER
+      email: [biTemporalDB]OLAP.CUSTOMER.Email,
+      usageType: 'primaryEmail'
+   }
+
+   Party_ContactInfo: Relational
+   {
+      AssociationMapping
+      (
+         party[selectContactInfo, selectParty]: [biTemporalDB]@Customer_Self_Join_Live,
+         contactInfo[selectParty, selectContactInfo]: [biTemporalDB]@Customer_Self_Join_Live
+      )
+   }
+)
+
+
+###Pure
+import meta::relational::tests::mapping::union::biTemporal::*;
+import meta::relational::metamodel::execute::*;
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::union::biTemporal::setUp():Boolean[1]
+{
+   let connection = biTemporalTestRuntime().connectionByElement(biTemporalDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   executeInDb('CREATE SCHEMA IF NOT EXISTS OLAP;', $connection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'CUSTOMER', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'BENEFICIARY', $connection);
+
+   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, Email) values (1, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Alice\', \'Alice\', 0, \'alice@test.com\');', $connection);
+   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, Email) values (2, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Bob\', \'Bob\', 0, \'bob@test.com\');', $connection);
+
+   executeInDb('insert into OLAP.BENEFICIARY (Beneficiary_Id, Account_Id, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag) values (10, 100, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Charlie\', \'Charlie\', 0);', $connection);
+
+   true;
+}
