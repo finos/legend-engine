@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-persistence</artifactId>
-        <version>4.135.5</version>
+        <version>4.135.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-persistence-emit</artifactId>
