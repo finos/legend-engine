@@ -1,0 +1,189 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::query::milestoning::multiHopCrossJoin::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::extension::*;
+import meta::pure::profiles::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+
+Class <<temporal.businesstemporal>> meta::relational::tests::query::milestoning::multiHopCrossJoin::Loan
+{
+   gsn: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::query::milestoning::multiHopCrossJoin::LoanPosition
+{
+   gsn: String[1];
+   firmAccount: String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::relational::tests::query::milestoning::multiHopCrossJoin::LedgerEntry
+{
+   glAccount: String[1];
+   amount: Float[1];
+   currency: String[1];
+   fxRates: FxRate[*];
+   amountInUSD(d: Date[1]) {
+      $this.fxRates->filter(
+         r| ($r.businessDate == $d) && ($r.rateType == 'SPOT') && ($r.toCurrency == 'USD') && ($r.fromCurrency == $this.currency)
+      )->toOne().rate * $this.amount
+   }: Float[1];
+}
+
+Class meta::relational::tests::query::milestoning::multiHopCrossJoin::FxRate
+{
+   rate: Float[1];
+   businessDate: Date[1];
+   rateType: String[1];
+   fromCurrency: String[1];
+   toCurrency: String[1];
+}
+
+Association meta::relational::tests::query::milestoning::multiHopCrossJoin::Loan_LoanPosition
+{
+   loan: Loan[1];
+   loanPositions: LoanPosition[*];
+}
+
+Association meta::relational::tests::query::milestoning::multiHopCrossJoin::LoanPosition_LedgerEntry
+{
+   loanPosition: LoanPosition[1];
+   ledgerEntries: LedgerEntry[*];
+}
+
+function <<test.Test>> meta::relational::tests::query::milestoning::multiHopCrossJoin::testMultiHopMilestonedProjectionWithCrossJoinedDerivedProperty():Boolean[1]
+{
+   let result = meta::relational::functions::sqlstring::toSQLString(
+      |Loan.all(%2025-11-28)->filter(x|$x.gsn == 'GSN1')->project(
+         [
+            x|$x.loanPositions.ledgerEntries.amount,
+            x|$x.loanPositions.ledgerEntries.currency,
+            x|$x.loanPositions.ledgerEntries.amountInUSD(%2025-11-28),
+            x|$x.loanPositions.ledgerEntries.glAccount,
+            x|$x.gsn
+         ],
+         ['Amount', 'Currency', 'USD Value', 'GL Account', 'GSN']
+      ),
+      multiHopCrossJoinMapping,
+      meta::relational::runtime::DatabaseType.H2,
+      meta::relational::extension::relationalExtensions()
+   );
+   assert($result->length() > 0);
+}
+
+
+###Relational
+Database meta::relational::tests::query::milestoning::multiHopCrossJoin::multiHopCrossJoinDb
+(
+   Table LOANS
+   (
+      milestoning(business(BUS_SNAPSHOT_DATE = BUSINESS_DATE))
+      GSN VARCHAR(64) PRIMARY KEY,
+      BUSINESS_DATE DATE NOT NULL
+   )
+
+   Table LOAN_POSITIONS
+   (
+      milestoning(business(BUS_SNAPSHOT_DATE = BUSINESS_DATE))
+      GSN VARCHAR(64) NOT NULL,
+      FIRM_ACCOUNT VARCHAR(10) NOT NULL,
+      BUSINESS_DATE DATE NOT NULL
+   )
+
+   Table LEDGER_ENTRIES
+   (
+      milestoning(business(BUS_SNAPSHOT_DATE = BUSINESS_DATE))
+      GSN VARCHAR(64) NOT NULL,
+      FIRM_ACCOUNT VARCHAR(10) NOT NULL,
+      BUSINESS_DATE DATE NOT NULL,
+      GL_ACCOUNT VARCHAR(10),
+      CURRENCY VARCHAR(10),
+      BALANCE_AMOUNT DOUBLE
+   )
+
+   Table FX_RATES
+   (
+      milestoning(business(BUS_FROM = BUSINESS_DATE, BUS_THRU = BUSINESS_DATE))
+      ID INTEGER PRIMARY KEY,
+      BUSINESS_DATE DATE,
+      FROM_CUR VARCHAR(10),
+      TO_CUR VARCHAR(10),
+      RT_TYPE VARCHAR(10),
+      RATE_MULT DOUBLE
+   )
+
+   Join LoanToLoanPositionJoin(LOANS.GSN = LOAN_POSITIONS.GSN)
+   Join LoanPositionToLedgerEntryJoin(LOAN_POSITIONS.GSN = LEDGER_ENTRIES.GSN and LOAN_POSITIONS.FIRM_ACCOUNT = LEDGER_ENTRIES.FIRM_ACCOUNT)
+   Join LedgerEntryToFxRateCrossJoin(LEDGER_ENTRIES.CURRENCY is not null and FX_RATES.BUSINESS_DATE is not null)
+)
+
+
+###Mapping
+import meta::relational::tests::query::milestoning::multiHopCrossJoin::*;
+
+Mapping meta::relational::tests::query::milestoning::multiHopCrossJoin::multiHopCrossJoinMapping
+(
+   *Loan: Relational
+   {
+      ~mainTable [multiHopCrossJoinDb]LOANS
+      gsn: [multiHopCrossJoinDb]LOANS.GSN
+   }
+
+   *LoanPosition: Relational
+   {
+      ~mainTable [multiHopCrossJoinDb]LOAN_POSITIONS
+      gsn: [multiHopCrossJoinDb]LOAN_POSITIONS.GSN,
+      firmAccount: [multiHopCrossJoinDb]LOAN_POSITIONS.FIRM_ACCOUNT
+   }
+
+   *LedgerEntry: Relational
+   {
+      ~mainTable [multiHopCrossJoinDb]LEDGER_ENTRIES
+      glAccount: [multiHopCrossJoinDb]LEDGER_ENTRIES.GL_ACCOUNT,
+      amount: [multiHopCrossJoinDb]LEDGER_ENTRIES.BALANCE_AMOUNT,
+      currency: [multiHopCrossJoinDb]LEDGER_ENTRIES.CURRENCY,
+      fxRates: [multiHopCrossJoinDb]@LedgerEntryToFxRateCrossJoin
+   }
+
+   *FxRate: Relational
+   {
+      ~mainTable [multiHopCrossJoinDb]FX_RATES
+      rate: [multiHopCrossJoinDb]FX_RATES.RATE_MULT,
+      businessDate: [multiHopCrossJoinDb]FX_RATES.BUSINESS_DATE,
+      rateType: [multiHopCrossJoinDb]FX_RATES.RT_TYPE,
+      fromCurrency: [multiHopCrossJoinDb]FX_RATES.FROM_CUR,
+      toCurrency: [multiHopCrossJoinDb]FX_RATES.TO_CUR
+   }
+
+   Loan_LoanPosition: Relational
+   {
+      AssociationMapping
+      (
+         loanPositions: [multiHopCrossJoinDb]@LoanToLoanPositionJoin,
+         loan: [multiHopCrossJoinDb]@LoanToLoanPositionJoin
+      )
+   }
+
+   LoanPosition_LedgerEntry: Relational
+   {
+      AssociationMapping
+      (
+         ledgerEntries: [multiHopCrossJoinDb]@LoanPositionToLedgerEntryJoin,
+         loanPosition: [multiHopCrossJoinDb]@LoanPositionToLedgerEntryJoin
+      )
+   }
+)
