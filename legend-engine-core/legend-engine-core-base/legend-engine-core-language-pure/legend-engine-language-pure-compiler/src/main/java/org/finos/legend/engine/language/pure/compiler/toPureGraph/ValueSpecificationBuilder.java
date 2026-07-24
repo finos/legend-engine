@@ -886,11 +886,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 ListIterate.collect(collection.values, expression ->
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification res = expression.accept(this);
-                    // Multi-element collection literals still require every element to be [1] --
-                    // this preserves the invariant that operators like `+` / `-` / `*` (which the parser
-                    // rewrites into variadic `plus([a, b])` etc.) rely on for element-wise semantics.
-                    // Single-element literals are treated as a semantically transparent wrapper (matches
-                    // Pure's own behaviour and fixes PROD-85545: e.g. `concatenate([$optional], $many)`).
                     if (collection.values.size() > 1 && !isExactlyOne(res._multiplicity()))
                     {
                         throw new EngineException(
@@ -906,9 +901,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 : MostCommonType.mostCommon(transformed.collect(ValueSpecificationAccessor::_genericType).distinct(), this.context.pureModel);
         _genericType._classifierGenericType(this.context.pureModel.getGenericType(M3Paths.GenericType));
 
-        // For a single-element literal wrapping a non-[1] variable, the effective outer multiplicity is
-        // that element's multiplicity (bracket is a semantic no-op). Otherwise trust the parser-supplied
-        // literal-count multiplicity, as before.
         Multiplicity effectiveMultiplicity =
                 (transformed.size() == 1 && !isExactlyOne(transformed.get(0)._multiplicity()))
                         ? transformed.get(0)._multiplicity()
@@ -919,8 +911,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
                 ._multiplicity(effectiveMultiplicity)
                 ._values(transformed.collect(valueSpecification ->
                 {
-                    // Only auto-unwrap InstanceValues that are truly [1] with a single stored raw.
-                    // Many-mult wrappers stay wrapped so downstream flattening sees the correct shape.
                     if (valueSpecification instanceof InstanceValue
                             && ((InstanceValue) valueSpecification)._values().size() == 1
                             && isExactlyOne(valueSpecification._multiplicity()))
