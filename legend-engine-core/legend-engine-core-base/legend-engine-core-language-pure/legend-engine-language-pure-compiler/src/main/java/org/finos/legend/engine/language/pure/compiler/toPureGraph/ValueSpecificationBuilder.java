@@ -882,31 +882,60 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     @Override
     public ValueSpecification visit(Collection collection)
     {
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> transformed = ListIterate.collect(collection.values, expression ->
-        {
-            ValueSpecification res = expression.accept(this);
-            if (res._multiplicity()._lowerBound()._value() != 1 || res._multiplicity()._upperBound()._value() == null || res._multiplicity()._upperBound()._value() != 1)
-            {
-                throw new EngineException("Collection element must have a multiplicity [1] - Context:" + processingContext.getStack() + ", multiplicity:" + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(res._multiplicity()), expression.sourceInformation, EngineErrorType.COMPILATION);
-            }
-            return res;
-        });
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> transformed =
+                ListIterate.collect(collection.values, expression ->
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification res = expression.accept(this);
+                    // Multi-element collection literals still require every element to be [1] --
+                    // this preserves the invariant that operators like `+` / `-` / `*` (which the parser
+                    // rewrites into variadic `plus([a, b])` etc.) rely on for element-wise semantics.
+                    // Single-element literals are treated as a semantically transparent wrapper (matches
+                    // Pure's own behaviour and fixes PROD-85545: e.g. `concatenate([$optional], $many)`).
+                    if (collection.values.size() > 1 && !isExactlyOne(res._multiplicity()))
+                    {
+                        throw new EngineException(
+                                "Collection element must have a multiplicity [1] - Context:" + processingContext.getStack()
+                                        + ", multiplicity:" + org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.print(res._multiplicity()),
+                                expression.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                    return res;
+                });
+
         GenericType _genericType = collection.values.isEmpty()
                 ? this.context.pureModel.getGenericType(M3Paths.Nil)
                 : MostCommonType.mostCommon(transformed.collect(ValueSpecificationAccessor::_genericType).distinct(), this.context.pureModel);
         _genericType._classifierGenericType(this.context.pureModel.getGenericType(M3Paths.GenericType));
+
+        // For a single-element literal wrapping a non-[1] variable, the effective outer multiplicity is
+        // that element's multiplicity (bracket is a semantic no-op). Otherwise trust the parser-supplied
+        // literal-count multiplicity, as before.
+        Multiplicity effectiveMultiplicity =
+                (transformed.size() == 1 && !isExactlyOne(transformed.get(0)._multiplicity()))
+                        ? transformed.get(0)._multiplicity()
+                        : this.context.pureModel.getMultiplicity(collection.multiplicity);
+
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, this.context.pureModel.getClass(M3Paths.InstanceValue))
                 ._genericType(_genericType)
-                ._multiplicity(this.context.pureModel.getMultiplicity(collection.multiplicity))
+                ._multiplicity(effectiveMultiplicity)
                 ._values(transformed.collect(valueSpecification ->
-                        {
-                            if (valueSpecification instanceof InstanceValue && ((InstanceValue) valueSpecification)._values().size() == 1)
-                            {
-                                return ((InstanceValue) valueSpecification)._values().getFirst();
-                            }
-                            return valueSpecification;
-                        }
-                ));
+                {
+                    // Only auto-unwrap InstanceValues that are truly [1] with a single stored raw.
+                    // Many-mult wrappers stay wrapped so downstream flattening sees the correct shape.
+                    if (valueSpecification instanceof InstanceValue
+                            && ((InstanceValue) valueSpecification)._values().size() == 1
+                            && isExactlyOne(valueSpecification._multiplicity()))
+                    {
+                        return ((InstanceValue) valueSpecification)._values().getFirst();
+                    }
+                    return valueSpecification;
+                }));
+    }
+
+    private static boolean isExactlyOne(Multiplicity m)
+    {
+        Long lb = m._lowerBound()._value();
+        Long ub = m._upperBound()._value();
+        return lb != null && lb == 1L && ub != null && ub == 1L;
     }
 
     @Override
