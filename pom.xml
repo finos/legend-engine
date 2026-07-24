@@ -153,7 +153,7 @@
         <!-- Databases -->
         <databricks.version>3.1.1</databricks.version>
         <hikaricp.version>7.0.2</hikaricp.version>
-        <h2.version>2.1.214</h2.version>
+        <h2.version>2.2.220</h2.version>
         <mariadb.version>3.0.6</mariadb.version>
         <postgres.version>42.7.4</postgres.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
