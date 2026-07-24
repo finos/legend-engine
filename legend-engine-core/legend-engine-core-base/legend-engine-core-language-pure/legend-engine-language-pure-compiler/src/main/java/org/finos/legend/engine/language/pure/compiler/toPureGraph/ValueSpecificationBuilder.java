@@ -885,7 +885,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> transformed =
                 ListIterate.collect(collection.values, expression ->
                 {
-                    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification res = expression.accept(this);
+                    ValueSpecification res = expression.accept(this);
                     if (collection.values.size() > 1 && !isExactlyOne(res._multiplicity()))
                     {
                         throw new EngineException(

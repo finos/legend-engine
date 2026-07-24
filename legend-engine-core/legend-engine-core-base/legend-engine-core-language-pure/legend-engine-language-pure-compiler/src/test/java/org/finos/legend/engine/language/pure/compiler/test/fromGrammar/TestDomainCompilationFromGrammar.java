@@ -1555,7 +1555,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSingleElementCollectionLiteralAcceptsOptional_PROD_85545()
+    public void testSingleElementCollectionLiteralAcceptsOptional()
     {
 
         test("Class test::A\n" +
@@ -1567,7 +1567,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSingleElementCollectionLiteralAcceptsMany_PROD_85545()
+    public void testSingleElementCollectionLiteralAcceptsMany()
     {
 
         test("Class test::A\n" +
@@ -1579,7 +1579,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSingleElementCollectionInIfBranches_PROD_85545()
+    public void testSingleElementCollectionInIfBranches()
     {
         test("Class test::A\n" +
                 "{\n" +
@@ -1589,7 +1589,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testSingleElementCollectionInConstructorManySlot_PROD_85545()
+    public void testSingleElementCollectionInConstructorManySlot()
     {
 
         test("Class test::Foo { xs : String[*]; }\n" +
@@ -1600,7 +1600,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
-    public void testMultiElementCollectionStillRejectsNonOne_PROD_85545()
+    public void testMultiElementCollectionStillRejectsNonOne()
     {
 
         test("Class test::A\n" +
