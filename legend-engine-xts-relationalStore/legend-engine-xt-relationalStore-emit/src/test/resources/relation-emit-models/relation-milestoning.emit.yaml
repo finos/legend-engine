@@ -15,11 +15,14 @@
 name: relation-milestoning
 title: "Relation Function Mapping — Processing-Temporal Milestoning"
 description: |
-  A <<temporal.processingtemporal>> TemporalEmployee class is backed by a relation
-  function over TemporalEmployeeTable (milestoning declared as
-  processing(PROCESSING_IN=IN_Z, PROCESSING_OUT=OUT_Z)). Two testSuites: allVersions()
-  returns all rows; all(%date) applies the milestoning filter and returns only rows
-  whose IN_Z/OUT_Z window contains the query date.
+  Relation-mapped temporal classes exercised through the temporal query functions.
+  A <<temporal.processingtemporal>> TemporalEmployee is backed by a relation function
+  over TemporalEmployeeTable (processing(PROCESSING_IN=IN_Z, PROCESSING_OUT=OUT_Z)),
+  and a <<temporal.businesstemporal>> BusinessTemporalEmployee is backed by its own
+  relation function. Three testSuites: allVersions() returns every row; the processing
+  all(%date) applies the processing-temporal milestoning filter; the business-temporal
+  all(%date) applies the business-temporal filter — so this model exercises both
+  milestoning schemes plus the all-versions and point-in-time query forms.
 
 modelSources:
   model:
@@ -32,15 +35,20 @@ modelSources:
     - source: relation-shared-db.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - milestoning:all-versions-query
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - grammar:milestoning
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - mapping-test

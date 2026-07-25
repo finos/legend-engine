@@ -37,15 +37,16 @@ modelSources:
     - source: relation-shared-data.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-inline-embedded
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - grammar:embedded-relation-inline
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - mapping-test

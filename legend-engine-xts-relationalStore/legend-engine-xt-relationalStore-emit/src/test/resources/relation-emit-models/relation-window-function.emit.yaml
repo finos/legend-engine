@@ -33,15 +33,19 @@ modelSources:
     - source: relation-shared-db.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:class-inheritance
+  - grammar:function
+  - mapping:relation-local-property
+  - mapping:relation-model-join
+  - mapping:relation-window-function
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - grammar:window-function
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - mapping-test
