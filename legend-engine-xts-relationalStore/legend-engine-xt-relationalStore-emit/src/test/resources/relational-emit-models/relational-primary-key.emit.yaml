@@ -1,0 +1,36 @@
+name: relational-primary-key
+title: "Relational Mapping with a Composite Primary Key"
+description: |
+  The Person class from `relational-shared-domain` is mapped onto a table
+  whose identity is a two-column composite key, declared with an explicit
+  `~primaryKey (col, col)` block listing both columns. Proves that a
+  relational class mapping can key its instances on more than one column —
+  the identity used to de-duplicate and correlate rows is the declared
+  primary key, not the table's own PRIMARY KEY declaration.
+
+modelSources:
+  model:
+    root: relational-primary-key
+    files:
+      - store/db.pure
+      - data/testData.pure
+      - mapping/personMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-primary-key
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - composite-key
+  - h2
+  - mapping-test
+  - primary-key
+  - shared-domain

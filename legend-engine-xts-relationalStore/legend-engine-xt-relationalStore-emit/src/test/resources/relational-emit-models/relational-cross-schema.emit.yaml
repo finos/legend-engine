@@ -1,0 +1,49 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-cross-schema
+title: "Relational Store — Cross-Schema Join"
+description: |
+  Closes store:relational-cross-schema. Sale (mapped to the SALES.SALE table) has
+  a seller property realised through the Emp_Sale join, which crosses from the
+  SALES schema to the HR.EMPLOYEE table in the shared two-schema JoinsDB store.
+  The test query projects each sale's seller name alongside its amount, proving a
+  join whose two sides live in different schemas resolves end-to-end.
+
+modelSources:
+  model:
+    root: relational-cross-schema
+    files:
+      - mapping/crossSchemaMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relational-shared-joins.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-schema
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - cross-schema
+  - join
+  - shared-store

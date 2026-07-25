@@ -1,0 +1,38 @@
+name: relational-main-table-alias
+title: "Main Table Declaration with Scoped Column References"
+description: |
+  The Person class from `relational-shared-domain` is mapped onto a
+  schema-qualified table, with the class mapping pinning its main table via
+  `~mainTable [db]hr.PersonTable` and then binding properties inside a
+  `scope([db]hr.PersonTable) ( ... )` block so each column is named bare rather
+  than repeating the database-and-table prefix. Proves that the scope form
+  resolves bare column identifiers against the declared table alias.
+
+modelSources:
+  model:
+    root: relational-main-table-alias
+    files:
+      - store/db.pure
+      - data/testData.pure
+      - mapping/personMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-main-table-alias
+  - mapping:relational-table-alias-column
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - main-table
+  - mapping-test
+  - schema
+  - scope
+  - shared-domain

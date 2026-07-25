@@ -1,0 +1,46 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::joins::Employee
+{
+  name: String[1];
+}
+
+Class demo::joins::Department
+{
+  name: String[1];
+  location: String[1];
+}
+
+Class demo::joins::Sale
+{
+  amount: Integer[1];
+}
+
+// department is [0..1] so a class mapping that navigates it produces a LEFT OUTER
+// JOIN (rows with no department survive) — used by relational-left-outer-join.
+Association demo::joins::EmpDept
+{
+  department: demo::joins::Department[0..1];
+  employees: demo::joins::Employee[*];
+}
+
+// seller is [1]; the Emp_Sale join crosses the HR and SALES schemas — used by
+// relational-cross-schema and (chained through EmpDept) relational-nested-join.
+Association demo::joins::EmpSale
+{
+  seller: demo::joins::Employee[1];
+  sales: demo::joins::Sale[*];
+}

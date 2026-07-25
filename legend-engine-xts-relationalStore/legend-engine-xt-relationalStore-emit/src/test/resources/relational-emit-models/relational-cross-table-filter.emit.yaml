@@ -1,0 +1,50 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-cross-table-filter
+title: "Relational Store — Cross-Table Filter"
+description: |
+  Closes store:relational-cross-table-filter. The Employee class mapping applies
+  NycDeptFilter through the Emp_Dept join
+  (~filter [db]@Emp_Dept | [db]NycDeptFilter). The filter predicate is on a column
+  of DEPARTMENT — a different table than the mapped EMPLOYEE — reached via the
+  join, so only employees whose department is in NYC survive. This is distinct
+  from relational-filter, whose predicate is on the mapped table itself.
+
+modelSources:
+  model:
+    root: relational-cross-table-filter
+    files:
+      - mapping/crossTableFilterMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relational-shared-joins.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-cross-table-filter
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - cross-table-filter
+  - filter
+  - join
+  - shared-store

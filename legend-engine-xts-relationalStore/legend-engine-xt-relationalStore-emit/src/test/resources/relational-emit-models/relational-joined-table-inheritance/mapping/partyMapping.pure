@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::PartyJoinedTableMapping
+(
+  *demo::joined::Party[party]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PartyDB]PartyTable.id
+    )
+    ~mainTable [demo::store::PartyDB]PartyTable
+    name: [demo::store::PartyDB]PartyTable.name
+  }
+
+  *demo::joined::Organisation[organisation]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PartyDB]OrganisationTable.partyId
+    )
+    ~mainTable [demo::store::PartyDB]OrganisationTable
+    name: [demo::store::PartyDB]@PartyOrganisation | [demo::store::PartyDB]PartyTable.name,
+    registrationNumber: [demo::store::PartyDB]OrganisationTable.registrationNumber
+  }
+
+  testSuites:
+  [
+    joinedTableInheritanceSuite:
+    {
+      function: |demo::joined::Organisation.all()->sortBy(x|$x.name)->project([x|$x.name, x|$x.registrationNumber], ['Name', 'Registration']);
+      tests:
+      [
+        inheritedPropertyCrossesJoin:
+        {
+          data:
+          [
+            demo::store::PartyDB:
+              Reference
+              #{
+                demo::data::PartyData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveInheritedName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Acme Holdings","Registration":"REG-001"},{"Name":"Beta Corp","Registration":"REG-003"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

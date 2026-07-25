@@ -1,0 +1,50 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-left-outer-join
+title: "Relational Store — Left Outer Join"
+description: |
+  Closes store:relational-left-outer-join. Employee.department is a [0..1]
+  association implemented via the Emp_Dept join; projecting the department name
+  produces a LEFT OUTER JOIN. The test data includes an employee (Carol) whose
+  DEPT_ID matches no DEPARTMENT row: she still appears in the result with a null
+  department, which an inner join would have dropped — locking in the outer
+  semantics. Note: OUTER is the only outer-join keyword in the classic relational
+  store grammar (INNER/OUTER); RIGHT/FULL outer have no classic-store form.
+
+modelSources:
+  model:
+    root: relational-left-outer-join
+    files:
+      - mapping/leftOuterJoinMapping.pure
+      - data/testData.pure
+  dependencies:
+    - source: relational-shared-joins.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-left-outer-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - left-outer-join
+  - join
+  - shared-store

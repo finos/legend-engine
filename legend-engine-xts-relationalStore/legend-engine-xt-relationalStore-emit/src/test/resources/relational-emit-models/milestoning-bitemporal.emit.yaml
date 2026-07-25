@@ -1,0 +1,50 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: milestoning-bitemporal
+title: "Relational Milestoning — Bitemporal Point-in-Time Query"
+description: |
+  Closes milestoning:bi-temporal over a table-backed relational mapping (the
+  relation-function suite proves milestoning only over ~func sources; this
+  exercises the classic-store router path). PRODUCT is bitemporally milestoned —
+  business validity (FROM_Z/THRU_Z) plus processing validity (IN_Z/OUT_Z) — and
+  the BiProduct class carries <<temporal.bitemporal>>. The query all(processingDate,
+  businessDate) selects the single version whose both windows contain the given
+  dates, proving bitemporal point-in-time resolution end-to-end.
+
+modelSources:
+  model:
+    root: milestoning-bitemporal
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - milestoning:bi-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - milestoning
+  - bitemporal
+  - temporal

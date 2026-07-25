@@ -1,0 +1,33 @@
+name: relational-group-by
+title: "Relational Mapping with a GROUP BY Projection"
+description: |
+  A SalesSummary class is mapped onto a row-level sales table, with the class
+  mapping declaring `~groupBy (SalesTable.salesPerson)` and binding
+  `totalAmount` to the aggregate expression `sum(SalesTable.amount)`. Proves
+  that a class mapping can aggregate its main table — one instance per group,
+  with aggregate columns computed by the store rather than in the engine.
+
+modelSources:
+  model:
+    root: relational-group-by
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/salesMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-group-by
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - aggregate
+  - group-by
+  - h2
+  - mapping-test

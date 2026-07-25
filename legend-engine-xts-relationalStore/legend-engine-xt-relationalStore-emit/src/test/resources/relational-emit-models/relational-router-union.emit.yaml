@@ -1,0 +1,36 @@
+name: relational-router-union
+title: "Router Union Over Two Set Implementations"
+description: |
+  A Product class backed by two relational set implementations combined with
+  the `special_union` router operation, the counterpart to the plain `union`
+  used by `relational-store-union`. Where `union` is pushed down as a single
+  store query, `special_union` is resolved by the router, which executes each
+  set implementation in its own right and concatenates the results. Proves that
+  routing path for a relational model.
+
+modelSources:
+  model:
+    root: relational-router-union
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/productMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:router-union
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - operation-mapping
+  - router
+  - union
