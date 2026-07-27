@@ -1,0 +1,156 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+###Relational
+Database store::multi::DbA
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+Database store::multi::DbB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+###Pure
+Class model::multi::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+###Mapping
+Mapping execution::multi::MappingA
+(
+  *model::multi::Firm: Relational
+  {
+    ~primaryKey ([store::multi::DbA]FIRM_TABLE.ID)
+    ~mainTable [store::multi::DbA]FIRM_TABLE
+    id: [store::multi::DbA]FIRM_TABLE.ID,
+    name: [store::multi::DbA]FIRM_TABLE.NAME
+  }
+)
+Mapping execution::multi::MappingB
+(
+  *model::multi::Firm: Relational
+  {
+    ~primaryKey ([store::multi::DbB]FIRM_TABLE.ID)
+    ~mainTable [store::multi::DbB]FIRM_TABLE
+    id: [store::multi::DbB]FIRM_TABLE.ID,
+    name: [store::multi::DbB]FIRM_TABLE.NAME
+  }
+)
+###Connection
+RelationalDatabaseConnection model::multi::ConnectionA
+{
+  store: store::multi::DbA;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+RelationalDatabaseConnection model::multi::ConnectionB
+{
+  store: store::multi::DbB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+###Runtime
+Runtime execution::multi::RuntimeA
+{
+  mappings:
+  [
+    execution::multi::MappingA
+  ];
+  connections:
+  [
+    store::multi::DbA:
+    [
+      connection_1: model::multi::ConnectionA
+    ]
+  ];
+}
+Runtime execution::multi::RuntimeB
+{
+  mappings:
+  [
+    execution::multi::MappingB
+  ];
+  connections:
+  [
+    store::multi::DbB:
+    [
+      connection_1: model::multi::ConnectionB
+    ]
+  ];
+}
+###Service
+Service service::svctd::MultiExecService
+{
+  pattern: '/firmNames/multiExec';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |model::multi::Firm.all()->project(~['Name': f | $f.name]);
+    key: 'env';
+    executions['KEY_A']:
+    {
+      mapping: execution::multi::MappingA;
+      runtime: execution::multi::RuntimeA;
+    }
+    executions['KEY_B']:
+    {
+      mapping: execution::multi::MappingB;
+      runtime: execution::multi::RuntimeB;
+    }
+  }
+  testSuites:
+  [
+    testSuite_1 'multi-exec with resolver'
+    (
+      store::multi::DbA:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,NAME
+            1,Alice
+            2,Bob;
+        }#;
+      test_onlyKeyA 'runs against KEY_A only' [ 'KEY_A' ] =>
+        Relation
+        #{
+          Name
+          Alice
+          Bob;
+        }#;
+      // fails for KEY_B as store::multi::DbB is not present in the test data
+      test_allKeys 'runs against every configured key' =>
+        Relation
+        #{
+          Name
+          Alice
+          Bob;
+        }#;
+    )
+  ]
+}

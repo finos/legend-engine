@@ -118,7 +118,6 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
         {
             EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
 
-            // 1. Get actual result as JSON
             String actualJson;
             if (this.result instanceof ConstantResult)
             {
@@ -126,7 +125,8 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
             }
             else if (this.result instanceof StreamingResult)
             {
-                actualJson = ((StreamingResult) this.result).flush(((StreamingResult) this.result).getSerializer(this.serializationFormat));
+                StreamingResult streamingResult = (StreamingResult) this.result;
+                actualJson = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
             }
             else
             {

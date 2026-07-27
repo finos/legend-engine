@@ -1,0 +1,85 @@
+###Relational
+Database store::base::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+###Pure
+Class model::base::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+###Mapping
+Mapping execution::base::FirmMapping
+(
+  *model::base::Firm: Relational
+  {
+    ~primaryKey ([store::base::FirmDB]FIRM_TABLE.ID)
+    ~mainTable [store::base::FirmDB]FIRM_TABLE
+    id: [store::base::FirmDB]FIRM_TABLE.ID,
+    name: [store::base::FirmDB]FIRM_TABLE.NAME
+  }
+)
+###Connection
+RelationalDatabaseConnection model::base::FirmConnection
+{
+  store: store::base::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+###Runtime
+Runtime execution::base::FirmRuntime
+{
+  mappings:
+  [
+    execution::base::FirmMapping
+  ];
+  connections:
+  [
+    store::base::FirmDB:
+    [
+      connection_1: model::base::FirmConnection
+    ]
+  ];
+}
+###Service
+Service service::svctd::BaseResolverService
+{
+  pattern: '/firmNames/baseResolver';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::base::Firm.all()->project(~['Name': f | $f.name]);
+    mapping: execution::base::FirmMapping;
+    runtime: execution::base::FirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1 'inline base resolver'
+    (
+      store::base::FirmDB:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,NAME
+            10,Carol
+            20,Dave;
+        }#;
+      test_1 'lists inline rows' =>
+        Relation
+        #{
+          Name
+          Carol
+          Dave;
+        }#;
+    )
+  ]
+}

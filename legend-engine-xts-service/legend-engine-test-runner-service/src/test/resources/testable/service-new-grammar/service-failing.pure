@@ -1,0 +1,90 @@
+###Relational
+Database store::fail::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+###Pure
+Class model::fail::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+###Mapping
+Mapping execution::fail::FirmMapping
+(
+  *model::fail::Firm: Relational
+  {
+    ~primaryKey ([store::fail::FirmDB]FIRM_TABLE.ID)
+    ~mainTable [store::fail::FirmDB]FIRM_TABLE
+    id: [store::fail::FirmDB]FIRM_TABLE.ID,
+    name: [store::fail::FirmDB]FIRM_TABLE.NAME
+  }
+)
+###Connection
+RelationalDatabaseConnection model::fail::FirmConnection
+{
+  store: store::fail::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+###Runtime
+Runtime execution::fail::FirmRuntime
+{
+  mappings:
+  [
+    execution::fail::FirmMapping
+  ];
+  connections:
+  [
+    store::fail::FirmDB:
+    [
+      connection_1: model::fail::FirmConnection
+    ]
+  ];
+}
+###Data
+Data data::fail::DefaultFirms
+{
+  store::fail::FirmDB:
+    Relation
+    #{
+      default.FIRM_TABLE:
+        ID,NAME
+        1,Alice
+        2,Bob;
+    }#;
+}
+###Service
+Service service::svctd::FailingService
+{
+  pattern: '/firmNames/failing';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::fail::Firm.all()->project(~['Name': f | $f.name]);
+    mapping: execution::fail::FirmMapping;
+    runtime: execution::fail::FirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1 'failing assertion'
+    (
+      data::fail::DefaultFirms;
+      test_1 'should fail' =>
+        Relation
+        #{
+          Name
+          Alice
+          NotBob;
+        }#;
+    )
+  ]
+}

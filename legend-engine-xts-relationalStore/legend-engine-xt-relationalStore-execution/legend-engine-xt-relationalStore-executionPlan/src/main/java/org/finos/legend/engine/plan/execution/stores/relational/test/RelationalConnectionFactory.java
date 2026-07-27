@@ -101,8 +101,14 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data, TestConnectionBuildParameters hints)
     {
         List<RelationalCSVData> relationalCSVDataList = ListIterate.selectInstancesOf(data, RelationalCSVData.class);
-        if (data.size() == relationalCSVDataList.size() && sourceConnection instanceof RelationalDatabaseConnection && !data.isEmpty())
+        List<RelationElementsData> relationElementsDataList = ListIterate.selectInstancesOf(data, RelationElementsData.class);
+        if (data.size() == relationalCSVDataList.size() + relationElementsDataList.size() && sourceConnection instanceof RelationalDatabaseConnection && !data.isEmpty())
         {
+            if (!relationElementsDataList.isEmpty())
+            {
+                relationalCSVDataList = new ArrayList<>(relationalCSVDataList);
+                relationalCSVDataList.add(buildRelationCSVDataFromRelationElementData(relationElementsDataList));
+            }
             RelationalCSVData relationalData;
             if (relationalCSVDataList.size() == 1)
             {
