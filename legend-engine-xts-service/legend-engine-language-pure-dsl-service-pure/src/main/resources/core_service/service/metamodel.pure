@@ -168,6 +168,7 @@ Class meta::legend::service::metamodel::ParameterValue
 Class meta::legend::service::metamodel::ServiceTestData
 {
   connectionsTestData : ConnectionTestData[*];
+  resolvedData: Map<PackageableElement, meta::pure::data::EmbeddedData>[0..1];
 }
 
 Class meta::legend::service::metamodel::ConnectionTestData
