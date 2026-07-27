@@ -65,6 +65,7 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetc
 import org.finos.legend.engine.plan.execution.result.graphFetch.DelayedGraphFetchResultWithExecInfo;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphFetchResult;
 import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatch;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
@@ -80,6 +81,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Aggrega
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.result.DatabaseIdentifiersCaseSensitiveVisitor;
@@ -100,6 +102,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Aggreg
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ConstantExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.TempTableColumnMetaData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ErrorExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
@@ -149,8 +152,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -309,8 +314,12 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         else if (executionNode instanceof CreateAndPopulateTempTableExecutionNode)
         {
             CreateAndPopulateTempTableExecutionNode createAndPopulateTempTableExecutionNode = (CreateAndPopulateTempTableExecutionNode) executionNode;
-            Stream<Result> results = createAndPopulateTempTableExecutionNode.inputVarNames.stream().map(this.executionState::getResult);
-            Stream<?> inputStream = results.flatMap(result ->
+            // Collect into a List so the onClose handler can close each Result without re-consuming the stream.
+            List<Result> resultList = createAndPopulateTempTableExecutionNode.inputVarNames.stream()
+                    .map(this.executionState::getResult)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toList());
+            Stream<?> inputStream = resultList.stream().flatMap(result ->
             {
                 if (result instanceof ConstantResult)
                 {
@@ -353,8 +362,29 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     RelationalResult r = ((DeferredRelationalResult) result).evaluate();
                     return r.toStream().map(m -> m);
                 }
+                if (result instanceof JsonStreamingResult)
+                {
+                    return ((JsonStreamingResult) result).toStream().map(Object::toString);
+                }
                 throw new IllegalArgumentException("Unexpected Result Type : " + result.getClass().getName());
-            }).onClose(() -> results.forEach(Result::close));
+            }).onClose(() -> resultList.forEach(Result::close));
+
+            // A JsonStreamingResult input (produced by serialize(...)) means this node is populating a single SemiStructured/JSON column temp table, not a normal tabular one
+            boolean isSemiStructuredIngest = resultList.stream().anyMatch(r -> r instanceof org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult);
+            if (isSemiStructuredIngest)
+            {
+                //serialize each streamed object to one JSON document and load it via a byte-size-bounded batched PreparedStatement (memory-bounded, no CSV).
+                RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
+                try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState))
+                {
+                    loadVariantTempTable(connectionManagerConnection, databaseCommands, createAndPopulateTempTableExecutionNode, inputStream);
+                }
+                catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+                }
+                return new ConstantResult("success");
+            }
 
             if (!(createAndPopulateTempTableExecutionNode.implementation instanceof JavaPlatformImplementation))
             {
@@ -1395,6 +1425,62 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
         }
         throw new RuntimeException("CreateAndPopulateTempTableExecutionNode should be used within RelationalBlockExecutionNode");
+    }
+
+    // Memory-bounded load of a single VARIANT-column temp table: each streamed object is serialized to one JSON document and bound into a batched PreparedStatement, flushed by byte-size threshold (never materializes the stream).
+    private void loadVariantTempTable(Connection connection, RelationalDatabaseCommands databaseCommands, CreateAndPopulateTempTableExecutionNode node, Stream<?> inputStream)
+    {
+        String tableName = databaseCommands.processTempTableName(node.tempTableName);
+        TempTableColumnMetaData semiStructuredColMeta = node.tempTableColumnMetaData.get(0);
+        String variantColumn = semiStructuredColMeta.column.label;
+        String columnTypeSql = semiStructuredColMeta.column.dataType;
+        long batchByteThreshold = 4L * 1024 * 1024; // flush at ~4MB accumulated JSON
+        int maxBatchRows = 1000;
+        try (Statement statement = connection.createStatement())
+        {
+            statement.execute(databaseCommands.dropTempTable(tableName));
+            Column col = new Column(variantColumn, columnTypeSql);
+            String createSql = databaseCommands.createTempTable(tableName, java.util.Collections.singletonList(col));
+            statement.execute(createSql);
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+        String insertSql = databaseCommands.getSemiStructuredInsertStatement(tableName, variantColumn);
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertSql))
+        {
+            long batchedBytes = 0;
+            int batchedRows = 0;
+            Iterator<?> iterator = inputStream.iterator();
+            while (iterator.hasNext())
+            {
+                Object object = iterator.next();
+                String json = object instanceof String ? (String) object : OBJECT_MAPPER.writeValueAsString(object);
+                preparedStatement.setString(1, json);
+                preparedStatement.addBatch();
+                batchedBytes += json.length();
+                batchedRows++;
+                if (batchedBytes >= batchByteThreshold || batchedRows >= maxBatchRows)
+                {
+                    preparedStatement.executeBatch();
+                    batchedBytes = 0;
+                    batchedRows = 0;
+                }
+            }
+            if (batchedRows > 0)
+            {
+                preparedStatement.executeBatch();
+            }
+        }
+        catch (SQLException | JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            inputStream.close();
+        }
     }
 
     @JsonIgnore
