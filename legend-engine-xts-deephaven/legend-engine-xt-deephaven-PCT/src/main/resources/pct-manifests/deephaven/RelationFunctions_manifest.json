@@ -70,6 +70,9 @@
     "test" : "meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testJoinOnNullKey_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_",
     "expectedError" : "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""
   }, {
@@ -100,11 +103,17 @@
     "test" : "meta::pure::functions::relation::tests::composition::testProjectDistinct_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::distinct_Relation_1__Relation_1_\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust_Function_1__Boolean_1_",
     "expectedError" : "\"Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_\""
