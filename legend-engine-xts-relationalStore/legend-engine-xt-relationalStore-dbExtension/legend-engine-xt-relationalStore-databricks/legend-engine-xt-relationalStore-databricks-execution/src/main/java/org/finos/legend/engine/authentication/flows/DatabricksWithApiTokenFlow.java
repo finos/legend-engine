@@ -23,6 +23,8 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
+import java.util.Properties;
+
 public class DatabricksWithApiTokenFlow implements DatabaseAuthenticationFlow<DatabricksDatasourceSpecification, ApiTokenAuthenticationStrategy>
 {
     @Override
@@ -41,6 +43,16 @@ public class DatabricksWithApiTokenFlow implements DatabaseAuthenticationFlow<Da
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.Databricks;
+    }
+
+    @Override
+    public Properties getDataSourceProperties(String dataSourceName, Identity identity,
+                                              DatabricksDatasourceSpecification ds, ApiTokenAuthenticationStrategy auth, RuntimeContext ctx)
+    {
+        Properties p = new Properties();
+        p.setProperty("AuthMech", "3");
+        p.setProperty("UID", "token");
+        return p;
     }
 
     @Override

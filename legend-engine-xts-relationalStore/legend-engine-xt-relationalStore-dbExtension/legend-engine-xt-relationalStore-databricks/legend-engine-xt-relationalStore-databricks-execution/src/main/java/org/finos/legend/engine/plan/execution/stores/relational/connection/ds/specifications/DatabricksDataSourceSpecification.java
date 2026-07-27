@@ -42,10 +42,6 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(DATABRICKS_PORT, key.getPort());
         this.extraDatasourceProperties.put(DATABRICKS_PROTOCOL, key.getProtocol());
         this.extraDatasourceProperties.put(DATABRICKS_HTTP_PATH, key.getHttpPath());
-        this.extraDatasourceProperties.put("hostname", key.getHostname());
-        this.extraDatasourceProperties.put("port", key.getPort());
-        this.extraDatasourceProperties.put("protocol", key.getProtocol());
-        this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
     }
 
     public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)

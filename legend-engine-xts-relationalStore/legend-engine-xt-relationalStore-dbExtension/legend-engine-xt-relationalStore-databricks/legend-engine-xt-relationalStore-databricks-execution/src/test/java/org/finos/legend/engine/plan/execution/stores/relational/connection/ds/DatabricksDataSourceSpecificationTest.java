@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
@@ -92,7 +94,7 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
 
         String url = extractURL(profile);
         Assert.assertEquals(
-                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;AuthMech=3;httpPath=/httpPath;UID=token",
+                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=0;EnableTelemetry=0;httpPath=/httpPath",
                 url
         );
 
@@ -105,6 +107,30 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
                 properties.getProperty(DATABRICKS_PROTOCOL));
         Assert.assertEquals("/httpPath",
                 properties.getProperty(DATABRICKS_HTTP_PATH));
+    }
+
+    @Test
+    public void testDatabricksOAuthUrl()
+    {
+        DatabricksDataSourceSpecification profile = buildDatabricksDataSource(
+                "hostname",
+                "443",
+                "https",
+                "/httpPath"
+        );
+
+        AuthenticationStrategy oauthStrategy = new TestDatabaseAuthenticationStrategy();
+        String url = profile.getDatabaseManager().buildURL(
+                "hostname",
+                443,
+                "dummy",
+                profile.extraDatasourceProperties,
+                oauthStrategy
+        );
+        Assert.assertEquals(
+                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=0;EnableTelemetry=0;httpPath=/httpPath",
+                url
+        );
     }
 
 }
