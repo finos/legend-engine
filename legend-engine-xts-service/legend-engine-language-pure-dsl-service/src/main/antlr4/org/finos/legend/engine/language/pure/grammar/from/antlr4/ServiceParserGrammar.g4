@@ -161,7 +161,7 @@ serviceTestConnectionsData:             SERVICE_TEST_CONNECTION_DATA COLON BRACK
 ;
 serviceTestConnectionData:              qualifiedName COLON embeddedData
 ;
-// -------- New flat-form data + atomic-test statements (mirrors DataProduct/Function grammar) --------
+// -------- New flat-form data + atomic-test statements (mirrors Function grammar) --------
 serviceTestDataStatement:               (baseDataResolver | referenceDataResolver) SEMI_COLON
 ;
 referenceDataResolver:                  qualifiedName
